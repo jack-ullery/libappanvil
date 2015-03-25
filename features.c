@@ -26,9 +26,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <libintl.h>
-#include <locale.h>
-#define _(s) gettext(s)
 
 #include "features.h"
 #include "lib.h"
@@ -61,7 +58,7 @@ static int features_snprintf(struct features_struct *fst, const char *fmt, ...)
 
 	if (remaining < 0) {
 		errno = EINVAL;
-		PERROR(_("Invalid features buffer offset\n"));
+		PERROR("Invalid features buffer offset\n");
 		return -1;
 	}
 
@@ -71,11 +68,11 @@ static int features_snprintf(struct features_struct *fst, const char *fmt, ...)
 
 	if (i < 0) {
 		errno = EIO;
-		PERROR(_("Failed to write to features buffer\n"));
+		PERROR("Failed to write to features buffer\n");
 		return -1;
 	} else if (i >= remaining) {
 		errno = ENOBUFS;
-		PERROR(_("Feature buffer full."));
+		PERROR("Feature buffer full.");
 		return -1;
 	}
 

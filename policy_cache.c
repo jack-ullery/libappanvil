@@ -18,8 +18,6 @@
 
 #include <ctype.h>
 #include <dirent.h>
-#include <libintl.h>
-#include <locale.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -27,7 +25,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#define _(s) gettext(s)
 
 #include "lib.h"
 #include "parser.h"
@@ -50,7 +47,7 @@ bool valid_cached_file_version(const char *cachename)
 	char buffer[16];
 	autofclose FILE *f;
 	if (!(f = fopen(cachename, "r"))) {
-		PERROR(_("Error: Could not read cache file '%s', skipping...\n"), cachename);
+		PERROR("Error: Could not read cache file '%s', skipping...\n", cachename);
 		return false;
 	}
 	size_t res = fread(buffer, 1, 16, f);
@@ -133,15 +130,15 @@ error:
 		if (mkdir(policy_cache->path, 0700) == 0)
 			goto create_file;
 		if (show_cache)
-			PERROR(_("Can't create cache directory: %s\n"),
+			PERROR("Can't create cache directory: %s\n",
 			       policy_cache->path);
 	} else if (!S_ISDIR(stat_file.st_mode)) {
 		if (show_cache)
-			PERROR(_("File in cache directory location: %s\n"),
+			PERROR("File in cache directory location: %s\n",
 			       policy_cache->path);
 	} else {
 		if (show_cache)
-			PERROR(_("Can't update cache directory: %s\n"),
+			PERROR("Can't update cache directory: %s\n",
 			       policy_cache->path);
 	}
 
@@ -158,7 +155,7 @@ char *cache_filename(const char *cachedir, const char *basename)
 	char *cachename;
 
 	if (asprintf(&cachename, "%s/%s", cachedir, basename) < 0) {
-		PERROR(_("Memory allocation error."));
+		PERROR("Memory allocation error.");
 		exit(1);
 	}
 
