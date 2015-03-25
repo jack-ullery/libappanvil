@@ -46,6 +46,6 @@ void valid_read_cache(const char *cachename);
 int cache_hit(const char *cachename);
 int setup_cache_tmp(const char **cachetmpname, const char *cachename);
 void install_cache(const char *cachetmpname, const char *cachename);
-char *setup_cache(const char *cacheloc);
+int setup_cache(const char *cacheloc);
 
 #endif /* __AA_POLICY_CACHE_H */

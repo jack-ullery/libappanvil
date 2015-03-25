@@ -228,27 +228,18 @@ void install_cache(const char *cachetmpname, const char *cachename)
 	}
 }
 
-char *setup_cache(const char *cacheloc)
+int setup_cache(const char *cacheloc)
 {
 	autofree char *cache_features_path = NULL;
 	autofree char *cache_flags = NULL;
-	char *cachedir;
 
-	if (cacheloc) {
-		cachedir = strdup(cacheloc);
-		if (!cachedir) {
-			PERROR(_("Memory allocation error."));
-			exit(1);
-		}
-	} else {
-		if (asprintf(&cachedir, "%s/cache", basedir) == -1) {
-			PERROR(_("Memory allocation error."));
-			exit(1);
-		}
+	if (!cacheloc) {
+		errno = EINVAL;
+		return -1;
 	}
 
 	if (force_clear_cache)
-		exit(clear_cache_files(cachedir));
+		exit(clear_cache_files(cacheloc));
 
 	/*
          * Deal with cache directory versioning:
@@ -256,16 +247,17 @@ char *setup_cache(const char *cacheloc)
          *  - If cache/.features exists, and does not match features_string,
          *    force cache reading/writing off.
          */
-	if (asprintf(&cache_features_path, "%s/.features", cachedir) == -1) {
+	if (asprintf(&cache_features_path, "%s/.features", cacheloc) == -1) {
 		PERROR(_("Memory allocation error."));
-		exit(1);
+		errno = ENOMEM;
+		return -1;
 	}
 
 	cache_flags = load_features_file(cache_features_path);
 	if (cache_flags) {
 		if (strcmp(features_string, cache_flags) != 0) {
 			if (write_cache && cond_clear_cache) {
-				if (create_cache(cachedir, cache_features_path,
+				if (create_cache(cacheloc, cache_features_path,
 						 features_string))
 					skip_read_cache = 1;
 			} else {
@@ -276,8 +268,8 @@ char *setup_cache(const char *cacheloc)
 			}
 		}
 	} else if (write_cache) {
-		create_cache(cachedir, cache_features_path, features_string);
+		create_cache(cacheloc, cache_features_path, features_string);
 	}
 
-	return cachedir;
+	return 0;
 }
