@@ -203,6 +203,8 @@ aa_policy_cache *aa_policy_cache_ref(aa_policy_cache *policy_cache)
 void aa_policy_cache_unref(aa_policy_cache *policy_cache)
 {
 	if (policy_cache && atomic_dec_and_test(&policy_cache->ref_count)) {
+		aa_features_unref(policy_cache->kernel_features);
+		aa_features_unref(policy_cache->features);
 		free(policy_cache->features_path);
 		free(policy_cache->path);
 		free(policy_cache);
