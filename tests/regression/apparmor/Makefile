@@ -135,6 +135,21 @@ Install libdbus-1-dev or equivalent package to build and run these tests${nl}\
 ************************************************************************${nl})
 endif
 
+ifdef USE_SYSTEM
+  ifneq (,$(shell pkg-config --atleast-version 2.10 libapparmor && echo TRUE))
+    SRC+=aa_policy_cache.c
+    AA_POLICY_CACHE_TEST=aa_policy_cache
+  else
+    $(warning ${nl}\
+    ************************************************************************${nl}\
+    Skipping aa_policy_cache tests: requires libapparmor 2.10 or newer ...${nl}\
+    ************************************************************************${nl})
+  endif
+else
+  SRC+=aa_policy_cache.c
+  AA_POLICY_CACHE_TEST=aa_policy_cache
+endif
+
 EXEC=$(SRC:%.c=%)
 
 TESTS=access \
@@ -194,6 +209,8 @@ TESTS=access \
 ifneq (,$(shell pkg-config --exists dbus-1 && echo TRUE))
 TESTS+=dbus_eavesdrop dbus_message dbus_service dbus_unrequested_reply
 endif
+
+TESTS+=$(AA_POLICY_CACHE_TEST)
 
 # Tests that can crash the kernel should be placed here
 RISKY_TESTS=
