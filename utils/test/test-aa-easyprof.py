@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2011-2013 Canonical Ltd.
+#    Copyright (C) 2011-2015 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -505,6 +505,36 @@ POLICYGROUPS_DIR="%s/templates"
             self.assertTrue(os.path.exists(path), "Could not find '%s'" % path)
             open(path).read()
 
+#     def test_templates_list_include(self):
+#         '''Test templates (list with --include-templates-dir)'''
+#         args = self.full_args
+#         args.append('--list-templates')
+#         (self.options, self.args) = easyprof.parse_args(args)
+# 
+#         easyp = easyprof.AppArmorEasyProfile(None, self.options)
+#         for i in easyp.get_templates():
+#             self.assertTrue(os.path.exists(i), "Could not find '%s'" % i)
+# 
+#         self.assertTrue(False, "TODO")
+# 
+#     def test_templates_show_include(self):
+#         '''Test templates (show with --include-templates-dir)'''
+#         files = []
+#         for f in glob.glob("%s/templates/*" % self.tmpdir):
+#             files.append(f)
+# 
+#         for f in files:
+#             args = self.full_args
+#             args += ['--show-template', '--template', f]
+#             (self.options, self.args) = easyprof.parse_args(args)
+#             easyp = easyprof.AppArmorEasyProfile(None, self.options)
+# 
+#             path = os.path.join(easyp.dirs['templates'], f)
+#             self.assertTrue(os.path.exists(path), "Could not find '%s'" % path)
+#             open(path).read()
+# 
+#         self.assertTrue(False, "TODO")
+
 #
 # Policygroups tests
 #
@@ -533,6 +563,36 @@ POLICYGROUPS_DIR="%s/templates"
             path = os.path.join(easyp.dirs['policygroups'], f)
             self.assertTrue(os.path.exists(path), "Could not find '%s'" % path)
             open(path).read()
+
+#     def test_policygroups_list_include(self):
+#         '''Test policygroups (list with --include-policy-groups-dir)'''
+#         args = self.full_args
+#         args.append('--list-policy-groups')
+#         (self.options, self.args) = easyprof.parse_args(args)
+# 
+#         easyp = easyprof.AppArmorEasyProfile(None, self.options)
+#         for i in easyp.get_templates():
+#             self.assertTrue(os.path.exists(i), "Could not find '%s'" % i)
+# 
+#         self.assertTrue(False, "TODO")
+# 
+#     def test_policygroups_show_include(self):
+#         '''Test policygroups (show with --include-policy-groups-dir)'''
+#         files = []
+#         for f in glob.glob("%s/policygroups/*" % self.tmpdir):
+#             files.append(f)
+# 
+#         for f in files:
+#             args = self.full_args
+#             args += ['--show-template', '--template', f]
+#             (self.options, self.args) = easyprof.parse_args(args)
+#             easyp = easyprof.AppArmorEasyProfile(None, self.options)
+# 
+#             path = os.path.join(easyp.dirs['policygroups'], f)
+#             self.assertTrue(os.path.exists(path), "Could not find '%s'" % path)
+#             open(path).read()
+# 
+#         self.assertTrue(False, "TODO")
 
 #
 # Manifest file argument tests
