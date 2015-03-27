@@ -97,7 +97,7 @@ the specified template uses this value. May be specified multiple times.
 
 List available templates.
 
-=item --show-template=TEMPLATE
+=item --show-template
 
 Display template specified with --template.
 
@@ -117,7 +117,7 @@ List available policy groups.
 
 =item --show-policy-group
 
-Display policy groups specified with --policy.
+Display policy groups specified with --policy-groups.
 
 =item --policy-groups-dir=PATH
 
