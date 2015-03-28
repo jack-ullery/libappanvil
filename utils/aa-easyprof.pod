@@ -97,7 +97,7 @@ the specified template uses this value. May be specified multiple times.
 
 List available templates.
 
-=item --show-template=TEMPLATE
+=item --show-template
 
 Display template specified with --template.
 
@@ -105,17 +105,29 @@ Display template specified with --template.
 
 Use PATH instead of system templates directory.
 
+=item --include-templates-dir=PATH
+
+Include PATH when searching for templates in addition to the system templates
+directory (or the one specified with --templates-dir). System templates will
+match before those in PATH.
+
 =item --list-policy-groups
 
 List available policy groups.
 
 =item --show-policy-group
 
-Display policy groups specified with --policy.
+Display policy groups specified with --policy-groups.
 
 =item --policy-groups-dir=PATH
 
 Use PATH instead of system policy-groups directory.
+
+=item --include-policy-groups-dir=PATH
+
+Include PATH when searching for policy groups in addition to the system
+policy-groups directory (or the one specified with --policy-groups-dir). System
+policy-groups will match before those in PATH.
 
 =item --policy-version=VERSION
 
