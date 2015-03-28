@@ -97,7 +97,7 @@ if __name__ == "__main__":
                 elif os.path.exists(inc_g):
                     files.append(inc_g)
                 else:
-                    warn("Could not find '%s'" % g)
+                    error("Could not find '%s'" % g)
 
             apparmor.easyprof.print_files(files)
             sys.exit(0)

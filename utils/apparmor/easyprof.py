@@ -433,7 +433,7 @@ class AppArmorEasyProfile:
         elif template.startswith('/') and not allow_abs_path:
             raise AppArmorException("Cannot use an absolute path template '%s'" % template)
 
-        # If have abs path, just use it
+        # If have an abs path, just use it
         if template.startswith('/'):
             if not os.path.exists(template):
                 raise AppArmorException('%s does not exist' % (template))
