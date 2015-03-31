@@ -11,10 +11,16 @@
 
 import apparmor.aa as aa
 import unittest
+from common_test import AATest, setup_all_tests
 
 from apparmor.regex import strip_quotes
 
-class AARegexHasComma(unittest.TestCase):
+class AARegexTest(AATest):
+    def _run_test(self, params, expected):
+        return regex_test(self, params, expected)
+
+
+class AARegexHasComma(AATest):
     '''Tests for apparmor.aa.RE_RULE_HAS_COMMA'''
 
     def _check(self, line, expected=True):
@@ -94,7 +100,7 @@ def setup_has_comma_testcases():
         setattr(AARegexHasComma, 'test_comma_%d' % (i), stub_test_comma)
         setattr(AARegexHasComma, 'test_no_comma_%d' % (i), stub_test_no_comma)
 
-class AARegexSplitComment(unittest.TestCase):
+class AARegexSplitComment(AATest):
     '''Tests for RE_HAS_COMMENT_SPLIT'''
 
     def _check(self, line, expected, comment=None, not_comment=None):
@@ -166,23 +172,10 @@ def regex_test(self, line, expected):
         self.assertEqual(group, expected[i], 'Group %d mismatch in rule %s' % (i,line))
 
 
-def setup_regex_tests(test_class):
-    '''Create tests in test_class using test_class.tests and regex_tests()
-
-    test_class.tests should be tuples of (line, expected_results) where
-    expected_results is False if test_class.regex.search(line) should not
-    match. If the search should match, expected_results should be a tuple of
-    the expected groups, with all of the strings stripped.
-    '''
-    for (i, (line, expected)) in enumerate(test_class.tests):
-        def stub_test(self, line=line, expected=expected):
-            regex_test(self, line, expected)
-
-        stub_test.__doc__ = "test '%s'" % (line)
-        setattr(test_class, 'test_%d' % (i), stub_test)
 
 
-class AARegexCapability(unittest.TestCase):
+
+class AARegexCapability(AARegexTest):
     '''Tests for RE_PROFILE_CAP'''
 
     def setUp(self):
@@ -197,7 +190,7 @@ class AARegexCapability(unittest.TestCase):
     ]
 
 
-class AARegexPath(unittest.TestCase):
+class AARegexPath(AARegexTest):
     '''Tests for RE_PROFILE_PATH_ENTRY'''
 
     def setUp(self):
@@ -216,7 +209,7 @@ class AARegexPath(unittest.TestCase):
     ]
 
 
-class AARegexBareFile(unittest.TestCase):
+class AARegexBareFile(AARegexTest):
     '''Tests for RE_PROFILE_BARE_FILE_ENTRY'''
 
     def setUp(self):
@@ -234,7 +227,7 @@ class AARegexBareFile(unittest.TestCase):
     ]
 
 
-class AARegexDbus(unittest.TestCase):
+class AARegexDbus(AARegexTest):
     '''Tests for RE_PROFILE_DBUS'''
 
     def setUp(self):
@@ -250,7 +243,7 @@ class AARegexDbus(unittest.TestCase):
         ('   audit dbusdriver,', False),
     ]
 
-class AARegexMount(unittest.TestCase):
+class AARegexMount(AARegexTest):
     '''Tests for RE_PROFILE_MOUNT'''
 
     def setUp(self):
@@ -274,7 +267,7 @@ class AARegexMount(unittest.TestCase):
 
 
 
-class AARegexSignal(unittest.TestCase):
+class AARegexSignal(AARegexTest):
     '''Tests for RE_PROFILE_SIGNAL'''
 
     def setUp(self):
@@ -300,7 +293,7 @@ class AARegexSignal(unittest.TestCase):
     ]
 
 
-class AARegexPtrace(unittest.TestCase):
+class AARegexPtrace(AARegexTest):
     '''Tests for RE_PROFILE_PTRACE'''
 
     def setUp(self):
@@ -322,7 +315,7 @@ class AARegexPtrace(unittest.TestCase):
     ]
 
 
-class AARegexPivotRoot(unittest.TestCase):
+class AARegexPivotRoot(AARegexTest):
     '''Tests for RE_PROFILE_PIVOT_ROOT'''
 
     def setUp(self):
@@ -349,7 +342,7 @@ class AARegexPivotRoot(unittest.TestCase):
         ('pivot_rootbeer /new, # comment', False),
     ]
 
-class AARegexUnix(unittest.TestCase):
+class AARegexUnix(AARegexTest):
     '''Tests for RE_PROFILE_UNIX'''
 
     def setUp(self):
@@ -374,7 +367,7 @@ class AARegexUnix(unittest.TestCase):
         ('deny unixlike,', False),
     ]
 
-class TestStripQuotes(unittest.TestCase):
+class TestStripQuotes(AATest):
     def test_strip_quotes_01(self):
         self.assertEqual('foo', strip_quotes('foo'))
     def test_strip_quotes_02(self):
@@ -395,22 +388,9 @@ class TestStripQuotes(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    verbosity = 2
-
+    # these two are not converted to a tests[] loop yet
     setup_has_comma_testcases()
     setup_split_comment_testcases()
 
-    test_suite = unittest.TestSuite()
-    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexHasComma))
-    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexSplitComment))
-    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestStripQuotes))
-
-    for tests in (AARegexCapability, AARegexPath, AARegexBareFile,
-                  AARegexDbus, AARegexMount, AARegexUnix,
-                  AARegexSignal, AARegexPtrace, AARegexPivotRoot):
-        setup_regex_tests(tests)
-        test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(tests))
-
-    result = unittest.TextTestRunner(verbosity=verbosity).run(test_suite)
-    if not result.wasSuccessful():
-        exit(1)
+    setup_all_tests()
+    unittest.main(verbosity=2)
