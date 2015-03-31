@@ -16,7 +16,7 @@ import tempfile
 from common_test import write_file
 
 from apparmor.aa import check_for_apparmor, get_profile_flags, is_skippable_file, parse_profile_start
-from apparmor.common import AppArmorException
+from apparmor.common import AppArmorException, AppArmorBug
 
 class AaTestWithTempdir(unittest.TestCase):
     def setUp(self):
@@ -91,10 +91,10 @@ class AaTest_get_profile_flags(AaTestWithTempdir):
         self._test_get_flags('/foo flags=(complain,  audit)', 'complain,  audit')
 
     def test_get_flags_invalid_01(self):
-        with self.assertRaises(AppArmorException):
+        with self.assertRaises(AppArmorBug):
             self._test_get_flags('/foo ()', None)
     def test_get_flags_invalid_02(self):
-        with self.assertRaises(AppArmorException):
+        with self.assertRaises(AppArmorBug):
             self._test_get_flags('/foo flags=()', None)
     def test_get_flags_invalid_03(self):
         with self.assertRaises(AppArmorException):
@@ -177,13 +177,18 @@ class AaTest_parse_profile_start(unittest.TestCase):
         expected = ('/foo', 'bar', None, False, False, True)
         self.assertEqual(result, expected)
 
+    def test_parse_profile_start_06(self):
+        result = self._parse('profile "/foo" (complain) {', None, None)
+        expected = ('/foo', '/foo', 'complain', False, False, False)
+        self.assertEqual(result, expected)
+
 
     def test_parse_profile_start_invalid_01(self):
         with self.assertRaises(AppArmorException):
             self._parse('/foo {', '/bar', '/bar') # child profile without profile keyword
 
     def test_parse_profile_start_invalid_02(self):
-        with self.assertRaises(AttributeError): # XXX does this need error handling in parse_profile_start?
+        with self.assertRaises(AppArmorBug):
             self._parse('xy', '/bar', '/bar') # not a profile start
 
 
