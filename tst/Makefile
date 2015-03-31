@@ -10,7 +10,7 @@ ifeq ($(VERBOSE),1)
   PROVE_ARG+=-v
   PYTEST_ARG = -v
 else
-  undefine VERBOSE
+  VERBOSE=
 endif
 
 all: tests
