@@ -49,7 +49,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_CAP, RE
                             RE_PROFILE_HAT_DEF, RE_PROFILE_DBUS, RE_PROFILE_MOUNT,
                             RE_PROFILE_SIGNAL, RE_PROFILE_PTRACE, RE_PROFILE_PIVOT_ROOT,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
-                            strip_quotes )
+                            strip_quotes, parse_profile_start_line )
 
 import apparmor.rules as aarules
 
@@ -613,11 +613,9 @@ def get_profile_flags(filename, program):
     with open_file_read(filename) as f_in:
         for line in f_in:
             if RE_PROFILE_START.search(line):
-                matches = RE_PROFILE_START.search(line).groups()
-                profile = matches[1] or matches[3]
-                flags = matches[6]
-                if flags and flags.strip() == '':
-                    raise AppArmorException(_('Invalid syntax in %(filename)s for profile %(profile)s: Empty set of flags.' % { 'filename': filename, 'profile': profile } ))
+                matches = parse_profile_start_line(line, filename)
+                profile = matches['profile']
+                flags = matches['flags']
                 if profile == program or program is None:
                     return flags
 
@@ -2637,26 +2635,23 @@ def attach_profile_data(profiles, profile_data):
 
 
 def parse_profile_start(line, file, lineno, profile, hat):
-    matches = RE_PROFILE_START.search(line).groups()
+    matches = parse_profile_start_line(line, file)
 
     pps_set_profile = False
     pps_set_hat_external = False
 
     if profile:
         #print(profile, hat)
-        if profile != hat or not matches[3]:
+        if profile != hat or not matches['profile_keyword']:
             raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line: %(line)s.') % { 'profile': profile, 'file': file, 'line': lineno + 1 })
     # Keep track of the start of a profile
-    if profile and profile == hat and matches[3]:
+    if profile and profile == hat and matches['profile_keyword']:
         # local profile
-        hat = matches[3]
+        hat = matches['profile']
         in_contained_hat = True
         pps_set_profile = True
     else:
-        if matches[1]:
-            profile = matches[1]
-        else:
-            profile = matches[3]
+        profile = matches['profile']
         #print(profile)
         if len(profile.split('//')) >= 2:
             profile, hat = profile.split('//')[:2]
@@ -2668,11 +2663,7 @@ def parse_profile_start(line, file, lineno, profile, hat):
         else:
             hat = profile
 
-    flags = matches[6]
-
-    profile = strip_quotes(profile)
-    if hat:
-        hat = strip_quotes(hat)
+    flags = matches['flags']
 
     return (profile, hat, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
 

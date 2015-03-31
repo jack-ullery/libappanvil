@@ -14,6 +14,11 @@
 # ----------------------------------------------------------------------
 
 import re
+from apparmor.common import AppArmorBug, AppArmorException
+
+# setup module translations
+from apparmor.translations import init_translation
+_ = init_translation()
 
 ## Profile parsing Regex
 RE_AUDIT_DENY           = '^\s*(?P<audit>audit\s+)?(?P<allow>allow\s+|deny\s+)?'  # line start, optionally: leading whitespace, <audit> and <allow>/deny
@@ -54,6 +59,52 @@ RE_RULE_HAS_COMMA = re.compile('^' + __re_no_or_quoted_hash +
     ',\s*(#.*)?$')  # match comma plus any trailing comment
 RE_HAS_COMMENT_SPLIT = re.compile('^(?P<not_comment>' + __re_no_or_quoted_hash + ')' + # store in 'not_comment' group
     '(?P<comment>#.*)$')  # match trailing comment and store in 'comment' group
+
+
+
+RE_PROFILE_START_2        = re.compile(
+    '^(?P<leadingspace>\s*)' +
+    '(' +
+        '(?P<plainprofile>(/\S+|"[^"]+"))' + # just a path
+        '|' + # or
+        '(' + 'profile' + '\s+(?P<namedprofile>(\S+|"[^"]+"))' + '(\s+(?P<attachment>(/\S+|"/[^"]+")))?' + ')' + # 'profile', profile name, optionally attachment
+    ')' +
+    '\s+((flags=)?\((?P<flags>.+)\)\s+)?\{' +
+    RE_EOL)
+
+def parse_profile_start_line(line, filename):
+    matches = RE_PROFILE_START_2.search(line)
+
+    if not matches:
+        raise AppArmorBug('The given line from file %(filename)s is not the start of a profile: %(line)s' % { 'filename': filename, 'line': line } )
+
+    result = {}
+
+    for section in [ 'leadingspace', 'plainprofile', 'namedprofile', 'attachment', 'flags', 'comment']:
+        if matches.group(section):
+            result[section] = matches.group(section)
+
+            # sections with optional quotes
+            if section in ['plainprofile', 'namedprofile', 'attachment']:
+                result[section] = strip_quotes(result[section])
+        else:
+            result[section] = None
+
+    if result['flags'] and result['flags'].strip() == '':
+        raise AppArmorException(_('Invalid syntax in %(filename)s: Empty set of flags in line %(line)s.' % { 'filename': filename, 'line': line } ))
+
+    if result['plainprofile']:
+        result['profile'] = result['plainprofile']
+        result['profile_keyword'] = False
+    else:
+        result['profile'] = result['namedprofile']
+        result['profile_keyword'] = True
+
+    if result['attachment']:
+        # XXX keep the broken behaviour until proper handling for attachment is implemented
+        result['profile'] = "%s %s" % (result['profile'], result['attachment'])
+
+    return result
 
 
 def strip_quotes(data):
