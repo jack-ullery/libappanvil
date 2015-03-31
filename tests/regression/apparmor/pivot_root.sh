@@ -53,7 +53,7 @@ if [ -x "${FINDMNT}" ] && ${FINDMNT} -no PROPAGATION / > /dev/null 2>&1 ; then
 	if [ "$(${FINDMNT} -no PROPAGATION /)" == "shared" ] ; then
 		root_was_shared="yes"
 	fi
-elif [ "$(ps -hp1  -ocomm)" = "systemd" ] ; then
+elif [ "$(ps hp1  -ocomm)" = "systemd" ] ; then
 	# no findmnt or findmnt doesn't know the PROPAGATION column,
 	# but init is systemd so assume rootfs is shared
 	root_was_shared="yes"
