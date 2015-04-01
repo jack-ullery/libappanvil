@@ -261,9 +261,19 @@ class AaTest_serialize_parse_profile_start(unittest.TestCase):
         expected = ('/foo', '/foo', None, False, True) # note that in_contained_hat == False and that profile == hat == child profile
         self.assertEqual(result, expected)
 
+    def test_serialize_parse_profile_start_14(self):
+        result = self._parse('/ext//hat {', '/bar', '/bar', True, True) # external hat inside a profile - XXX should this error out?
+        expected = ('/ext', '/ext', None, False, True) # XXX additionally note that hat == profile, but should be 'hat'
+        self.assertEqual(result, expected)
+
+    def test_serialize_parse_profile_start_15(self):
+        result = self._parse('/ext//hat {', '/bar', '/bar', True, False) # external hat inside a profile - XXX should this error out?
+        expected = ('/ext', 'hat', None, False, False)
+        self.assertEqual(result, expected)
+
 
     def test_serialize_parse_profile_start_invalid_01(self):
-        with self.assertRaises(AttributeError): # XXX change to AppArmorBug?
+        with self.assertRaises(AppArmorBug):
             self._parse('xy', '/bar', '/bar', False, False) # not a profile start
 
     # XXX not catched as error. See also test_serialize_parse_profile_start_13() - maybe this is wanted behaviour here?

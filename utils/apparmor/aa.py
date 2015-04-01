@@ -3707,17 +3707,15 @@ def serialize_profile(profile_data, name, options):
     return string + '\n'
 
 def serialize_parse_profile_start(line, file, lineno, profile, hat, prof_data_profile, prof_data_external, correct):
-    matches = RE_PROFILE_START.search(line).groups()
-    if profile and profile == hat and matches[3]:
-        hat = matches[3]
+    matches = parse_profile_start_line(line, file)
+
+    if profile and profile == hat and matches['profile_keyword']:
+        hat = matches['profile']
         in_contained_hat = True
         if prof_data_profile:
             pass
     else:
-        if matches[1]:
-            profile = matches[1]
-        else:
-            profile = matches[3]
+        profile = matches['profile']
         if len(profile.split('//')) >= 2:
             profile, hat = profile.split('//')[:2]
         else:
@@ -3728,10 +3726,7 @@ def serialize_parse_profile_start(line, file, lineno, profile, hat, prof_data_pr
         else:
             hat = profile
 
-    flags = matches[6]
-    profile = strip_quotes(profile)
-    if hat:
-        hat = strip_quotes(hat)
+    flags = matches['flags']
 
     return (profile, hat, flags, in_contained_hat, correct)
 
