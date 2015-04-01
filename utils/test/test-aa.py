@@ -309,26 +309,32 @@ class AaTest_parse_profile_start(AATest):
 
 class AaTest_write_header(AATest):
     tests = [
-        # name       embedded_hat    write_flags    depth   flags           attachment      expected
-        (['/foo',    False,          True,          1,      'complain',     None        ],  '  /foo flags=(complain) {'),
-        (['/foo',    True,           True,          1,      'complain',     None        ],  '  profile /foo flags=(complain) {'),
-        (['/foo sp', False,          False,         2,      'complain',     None        ],  '    "/foo sp" {'),
-        (['/foo'    ,False,          False,         2,      'complain',     None        ],  '    /foo {'),
-        (['/foo',    True,           False,         2,      'complain',     None        ],  '    profile /foo {'),
-        (['/foo',    False,          True,          0,      None,           None        ],  '/foo {'),
-        (['/foo',    True,           True,          0,      None,           None        ],  'profile /foo {'),
-        (['/foo',    False,          False,         0,      None,           None        ],  '/foo {'),
-        (['/foo',    True,           False,         0,      None,           None        ],  'profile /foo {'),
-        (['bar',     False,          True,          1,      'complain',     None,       ],  '  profile bar flags=(complain) {'),
-        (['bar',     False,          True,          1,      'complain',     '/foo'      ],  '  profile bar /foo flags=(complain) {'),
-        (['bar',     True,           True,          1,      'complain',     '/foo'      ],  '  profile bar /foo flags=(complain) {'),
-        (['bar baz', False,          True,          1,      None,           '/foo'      ],  '  profile "bar baz" /foo {'),
-        (['bar',     True,           True,          1,      None,           '/foo'      ],  '  profile bar /foo {'),
-        (['bar baz', False,          True,          1,      'complain',     '/foo sp'   ],  '  profile "bar baz" "/foo sp" flags=(complain) {'),
-        (['^foo',    False,          True,          1,      'complain',     None        ],  '  profile ^foo flags=(complain) {'),
-        (['^foo',    True,           True,          1,      'complain',     None        ],  '  ^foo flags=(complain) {'),
-        (['^foo',    True,           True,          1.5,    'complain',     None        ],  '   ^foo flags=(complain) {'),
-        (['^foo',    True,           True,          1.3,    'complain',     None        ],  '  ^foo flags=(complain) {'),
+        # name       embedded_hat    write_flags    depth   flags           attachment  prof.keyw.  comment    expected
+        (['/foo',    False,          True,          1,      'complain',     None,       None,       None    ],  '  /foo flags=(complain) {'),
+        (['/foo',    True,           True,          1,      'complain',     None,       None,       None    ],  '  profile /foo flags=(complain) {'),
+        (['/foo sp', False,          False,         2,      'complain',     None,       None,       None    ],  '    "/foo sp" {'),
+        (['/foo'    ,False,          False,         2,      'complain',     None,       None,       None    ],  '    /foo {'),
+        (['/foo',    True,           False,         2,      'complain',     None,       None,       None    ],  '    profile /foo {'),
+        (['/foo',    False,          True,          0,      None,           None,       None,       None    ],  '/foo {'),
+        (['/foo',    True,           True,          0,      None,           None,       None,       None    ],  'profile /foo {'),
+        (['/foo',    False,          False,         0,      None,           None,       None,       None    ],  '/foo {'),
+        (['/foo',    True,           False,         0,      None,           None,       None,       None    ],  'profile /foo {'),
+        (['bar',     False,          True,          1,      'complain',     None,       None,       None    ],  '  profile bar flags=(complain) {'),
+        (['bar',     False,          True,          1,      'complain',     '/foo',     None,       None    ],  '  profile bar /foo flags=(complain) {'),
+        (['bar',     True,           True,          1,      'complain',     '/foo',     None,       None    ],  '  profile bar /foo flags=(complain) {'),
+        (['bar baz', False,          True,          1,      None,           '/foo',     None,       None    ],  '  profile "bar baz" /foo {'),
+        (['bar',     True,           True,          1,      None,           '/foo',     None,       None    ],  '  profile bar /foo {'),
+        (['bar baz', False,          True,          1,      'complain',     '/foo sp',  None,       None    ],  '  profile "bar baz" "/foo sp" flags=(complain) {'),
+        (['^foo',    False,          True,          1,      'complain',     None,       None,       None    ],  '  profile ^foo flags=(complain) {'),
+        (['^foo',    True,           True,          1,      'complain',     None,       None,       None    ],  '  ^foo flags=(complain) {'),
+        (['^foo',    True,           True,          1.5,    'complain',     None,       None,       None    ],  '   ^foo flags=(complain) {'),
+        (['^foo',    True,           True,          1.3,    'complain',     None,       None,       None    ],  '  ^foo flags=(complain) {'),
+        (['/foo',    False,          True,          1,      'complain',     None,       'profile',  None    ],  '  profile /foo flags=(complain) {'),
+        (['/foo',    True,           True,          1,      'complain',     None,       'profile',  None    ],  '  profile /foo flags=(complain) {'),
+        (['/foo',    False,          True,          1,      'complain',     None,       None,       '# x'   ],  '  /foo flags=(complain) { # x'),
+        (['/foo',    True,           True,          1,      None,           None,       None,       '# x'   ],  '  profile /foo { # x'),
+        (['/foo',    False,          True,          1,      None,           None,       'profile',  '# x'   ],  '  profile /foo { # x'),
+        (['/foo',    True,           True,          1,      'complain',     None,       'profile',  '# x'   ],  '  profile /foo flags=(complain) { # x'),
      ]
 
     def _run_test(self, params, expected):
@@ -336,7 +342,7 @@ class AaTest_write_header(AATest):
         embedded_hat = params[1]
         write_flags = params[2]
         depth = params[3]
-        prof_data = { 'flags': params[4], 'attachment': params[5], 'profile_keyword': None, 'header_comment': None }
+        prof_data = { 'flags': params[4], 'attachment': params[5], 'profile_keyword': params[6], 'header_comment': params[7] }
 
         result = write_header(prof_data, depth, name, embedded_hat, write_flags)
         self.assertEqual(result, [expected])
