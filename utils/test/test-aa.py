@@ -10,15 +10,16 @@
 # ------------------------------------------------------------------
 
 import unittest
+from common_test import AATest, setup_all_tests
 import os
 import shutil
 import tempfile
 from common_test import read_file, write_file
 
-from apparmor.aa import check_for_apparmor, get_profile_flags, set_profile_flags, is_skippable_file, parse_profile_start, serialize_parse_profile_start
+from apparmor.aa import check_for_apparmor, get_profile_flags, set_profile_flags, is_skippable_file, parse_profile_start, write_header, serialize_parse_profile_start
 from apparmor.common import AppArmorException, AppArmorBug
 
-class AaTestWithTempdir(unittest.TestCase):
+class AaTestWithTempdir(AATest):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='aa-py-')
 
@@ -220,7 +221,7 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
         set_profile_flags('%s/file-not-found' % self.tmpdir, '/foo', 'audit')
 
 
-class AaTest_is_skippable_file(unittest.TestCase):
+class AaTest_is_skippable_file(AATest):
     def test_not_skippable_01(self):
         self.assertFalse(is_skippable_file('bin.ping'))
     def test_not_skippable_02(self):
@@ -262,7 +263,7 @@ class AaTest_is_skippable_file(unittest.TestCase):
     def test_skippable_13(self):
         self.assertTrue(is_skippable_file('README'))
 
-class AaTest_parse_profile_start(unittest.TestCase):
+class AaTest_parse_profile_start(AATest):
     def _parse(self, line, profile, hat):
         return parse_profile_start(line, 'somefile', 1, profile, hat)
         # (profile, hat, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
@@ -306,7 +307,33 @@ class AaTest_parse_profile_start(unittest.TestCase):
         with self.assertRaises(AppArmorBug):
             self._parse('xy', '/bar', '/bar') # not a profile start
 
-class AaTest_serialize_parse_profile_start(unittest.TestCase):
+class AaTest_write_header(AATest):
+    tests = [
+        # name       embedded_hat    write_flags    depth   flags           attachment      expected
+        (['/foo',    False,          True,          1,      'complain',     None        ],  '  /foo flags=(complain) {'),
+        (['/foo',    True,           True,          1,      'complain',     None        ],  '  profile /foo flags=(complain) {'),
+        (['/foo sp', False,          False,         2,      'complain',     None        ],  '    profile "/foo sp" {'), # XXX why is the profile keyword added here?
+        (['/foo'    ,False,          False,         2,      'complain',     None        ],  '    /foo {'),
+        (['/foo',    True,           False,         2,      'complain',     None        ],  '    profile /foo {'),
+        (['/foo',    False,          True,          0,      None,           None        ],  '/foo {'),
+        (['/foo',    True,           True,          0,      None,           None        ],  'profile /foo {'),
+        (['/foo',    False,          False,         0,      None,           None        ],  '/foo {'),
+        (['/foo',    True,           False,         0,      None,           None        ],  'profile /foo {'),
+        (['^foo',    False,          True,          1,      'complain',     None        ],  '  profile ^foo flags=(complain) {'),
+        (['^foo',    True,           True,          1,      'complain',     None        ],  '  ^foo flags=(complain) {'),
+     ]
+
+    def _run_test(self, params, expected):
+        name = params[0]
+        embedded_hat = params[1]
+        write_flags = params[2]
+        depth = params[3]
+        prof_data = { 'flags': params[4], 'attachment': params[5] }
+
+        result = write_header(prof_data, depth, name, embedded_hat, write_flags)
+        self.assertEqual(result, [expected])
+
+class AaTest_serialize_parse_profile_start(AATest):
     def _parse(self, line, profile, hat, prof_data_profile, prof_data_external):
         # 'correct' is always True in the code that uses serialize_parse_profile_start() (set some lines above the function call)
         return serialize_parse_profile_start(line, 'somefile', 1, profile, hat, prof_data_profile, prof_data_external, True)
@@ -397,4 +424,5 @@ class AaTest_serialize_parse_profile_start(unittest.TestCase):
     #        self._parse('/foo {', '/bar', '/bar', False, False) # child profile without profile keyword
 
 if __name__ == '__main__':
+    setup_all_tests()
     unittest.main(verbosity=2)
