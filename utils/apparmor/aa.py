@@ -3285,10 +3285,15 @@ def escape(escape):
 def write_header(prof_data, depth, name, embedded_hat, write_flags):
     pre = '  ' * depth
     data = []
+    unquoted_name = name
     name = quote_if_needed(name)
 
-    if (not embedded_hat and re.search('^[^/]|^"[^/]', name)) or (embedded_hat and re.search('^[^^]', name)):
-        name = 'profile %s' % name
+    attachment = ''
+    if prof_data['attachment']:
+        attachment = ' %s' % quote_if_needed(prof_data['attachment'])
+
+    if (not embedded_hat and re.search('^[^/]', unquoted_name)) or (embedded_hat and re.search('^[^^]', unquoted_name)) or prof_data['attachment']:
+        name = 'profile %s%s' % (name, attachment)
 
     if write_flags and prof_data['flags']:
         data.append('%s%s flags=(%s) {' % (pre, name, prof_data['flags']))
