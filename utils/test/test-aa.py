@@ -15,7 +15,7 @@ import shutil
 import tempfile
 from common_test import write_file
 
-from apparmor.aa import check_for_apparmor, get_profile_flags, is_skippable_file, parse_profile_start
+from apparmor.aa import check_for_apparmor, get_profile_flags, is_skippable_file, parse_profile_start, serialize_parse_profile_start
 from apparmor.common import AppArmorException, AppArmorBug
 
 class AaTestWithTempdir(unittest.TestCase):
@@ -191,6 +191,85 @@ class AaTest_parse_profile_start(unittest.TestCase):
         with self.assertRaises(AppArmorBug):
             self._parse('xy', '/bar', '/bar') # not a profile start
 
+class AaTest_serialize_parse_profile_start(unittest.TestCase):
+    def _parse(self, line, profile, hat, prof_data_profile, prof_data_external):
+        # 'correct' is always True in the code that uses serialize_parse_profile_start() (set some lines above the function call)
+        return serialize_parse_profile_start(line, 'somefile', 1, profile, hat, prof_data_profile, prof_data_external, True)
+
+    def test_serialize_parse_profile_start_01(self):
+        result = self._parse('/foo {', None, None, False, False)
+        expected = ('/foo', '/foo', None, False, True)
+        self.assertEqual(result, expected)
+
+    def test_serialize_parse_profile_start_02(self):
+        result = self._parse('/foo (complain) {', None, None, False, False)
+        expected = ('/foo', '/foo', 'complain', False, True)
+        self.assertEqual(result, expected)
+
+    def test_serialize_parse_profile_start_03(self):
+        result = self._parse('profile foo /foo {', None, None, False, False) # named profile
+        expected = ('foo /foo', 'foo /foo', None, False, True) # XXX yes, that's what happens with the current code :-/
+        self.assertEqual(result, expected)
+
+    def test_serialize_parse_profile_start_04(self):
+        result = self._parse('profile /foo {', '/bar', '/bar', False, False) # child profile
+        expected = ('/bar', '/foo', None, True, True)
+        self.assertEqual(result, expected)
+
+    def test_serialize_parse_profile_start_05(self):
+        result = self._parse('/foo//bar {', None, None, False, False) # external hat
+        expected = ('/foo', 'bar', None, False, False) # note correct == False here
+        self.assertEqual(result, expected)
+
+    def test_serialize_parse_profile_start_06(self):
+        result = self._parse('profile "/foo" (complain) {', None, None, False, False)
+        expected = ('/foo', '/foo', 'complain', False, True)
+        self.assertEqual(result, expected)
+
+    def test_serialize_parse_profile_start_07(self):
+        result = self._parse('/foo {', None, None, True, False)
+        expected = ('/foo', '/foo', None, False, True)
+        self.assertEqual(result, expected)
+
+    def test_serialize_parse_profile_start_08(self):
+        result = self._parse('/foo {', None, None, False, True)
+        expected = ('/foo', '/foo', None, False, True)
+        self.assertEqual(result, expected)
+
+    def test_serialize_parse_profile_start_09(self):
+        result = self._parse('/foo {', None, None, True, True)
+        expected = ('/foo', '/foo', None, False, True)
+        self.assertEqual(result, expected)
+
+    def test_serialize_parse_profile_start_10(self):
+        result = self._parse('profile /foo {', '/bar', '/bar', True, False) # child profile
+        expected = ('/bar', '/foo', None, True, True)
+        self.assertEqual(result, expected)
+
+    def test_serialize_parse_profile_start_11(self):
+        result = self._parse('profile /foo {', '/bar', '/bar', False, True) # child profile
+        expected = ('/bar', '/foo', None, True, True)
+        self.assertEqual(result, expected)
+
+    def test_serialize_parse_profile_start_12(self):
+        result = self._parse('profile /foo {', '/bar', '/bar', True, True) # child profile
+        expected = ('/bar', '/foo', None, True, True)
+        self.assertEqual(result, expected)
+
+    def test_serialize_parse_profile_start_13(self):
+        result = self._parse('/foo {', '/bar', '/bar', False, False) # child profile without 'profile' keyword - XXX should this error out?
+        expected = ('/foo', '/foo', None, False, True) # note that in_contained_hat == False and that profile == hat == child profile
+        self.assertEqual(result, expected)
+
+
+    def test_serialize_parse_profile_start_invalid_01(self):
+        with self.assertRaises(AttributeError): # XXX change to AppArmorBug?
+            self._parse('xy', '/bar', '/bar', False, False) # not a profile start
+
+    # XXX not catched as error. See also test_serialize_parse_profile_start_13() - maybe this is wanted behaviour here?
+    #def test_serialize_parse_profile_start_invalid_02(self):
+    #    with self.assertRaises(AppArmorException):
+    #        self._parse('/foo {', '/bar', '/bar', False, False) # child profile without profile keyword
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
