@@ -327,6 +327,8 @@ class AaTest_write_header(AATest):
         (['bar baz', False,          True,          1,      'complain',     '/foo sp'   ],  '  profile "bar baz" "/foo sp" flags=(complain) {'),
         (['^foo',    False,          True,          1,      'complain',     None        ],  '  profile ^foo flags=(complain) {'),
         (['^foo',    True,           True,          1,      'complain',     None        ],  '  ^foo flags=(complain) {'),
+        (['^foo',    True,           True,          1.5,    'complain',     None        ],  '   ^foo flags=(complain) {'),
+        (['^foo',    True,           True,          1.3,    'complain',     None        ],  '  ^foo flags=(complain) {'),
      ]
 
     def _run_test(self, params, expected):
@@ -334,7 +336,7 @@ class AaTest_write_header(AATest):
         embedded_hat = params[1]
         write_flags = params[2]
         depth = params[3]
-        prof_data = { 'flags': params[4], 'attachment': params[5] }
+        prof_data = { 'flags': params[4], 'attachment': params[5], 'profile_keyword': None, 'header_comment': None }
 
         result = write_header(prof_data, depth, name, embedded_hat, write_flags)
         self.assertEqual(result, [expected])

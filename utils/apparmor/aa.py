@@ -105,7 +105,8 @@ transitions = hasher()
 # a) rules (as dict): alias, change_profile, include, lvar, rlimit
 # b) rules (as hasher): allow, deny
 # c) one for each rule class
-# d) other: declared, external, flags, name, profile
+# d) other: declared, external, flags, name, profile, attachment,
+#           profile_keyword, header_comment (these two are currently only set by set_profile_flags())
 aa = hasher()  # Profiles originally in sd, replace by aa
 original_aa = hasher()
 extras = hasher()  # Inactive profiles from extras
@@ -3284,7 +3285,7 @@ def escape(escape):
     return escape
 
 def write_header(prof_data, depth, name, embedded_hat, write_flags):
-    pre = '  ' * depth
+    pre = ' ' * int(depth * 2)
     data = []
     unquoted_name = name
     name = quote_if_needed(name)
@@ -3293,13 +3294,18 @@ def write_header(prof_data, depth, name, embedded_hat, write_flags):
     if prof_data['attachment']:
         attachment = ' %s' % quote_if_needed(prof_data['attachment'])
 
-    if (not embedded_hat and re.search('^[^/]', unquoted_name)) or (embedded_hat and re.search('^[^^]', unquoted_name)) or prof_data['attachment']:
+    comment = ''
+    if prof_data['header_comment']:
+        comment = ' %s' % prof_data['header_comment']
+
+    if (not embedded_hat and re.search('^[^/]', unquoted_name)) or (embedded_hat and re.search('^[^^]', unquoted_name)) or prof_data['attachment'] or prof_data['profile_keyword']:
         name = 'profile %s%s' % (name, attachment)
 
+    flags = ''
     if write_flags and prof_data['flags']:
-        data.append('%s%s flags=(%s) {' % (pre, name, prof_data['flags']))
-    else:
-        data.append('%s%s {' % (pre, name))
+        flags = ' flags=(%s)' % prof_data['flags']
+
+    data.append('%s%s%s {%s' % (pre, name, flags, comment))
 
     return data
 
