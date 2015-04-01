@@ -13,9 +13,9 @@ import unittest
 import os
 import shutil
 import tempfile
-from common_test import write_file
+from common_test import read_file, write_file
 
-from apparmor.aa import check_for_apparmor, get_profile_flags, is_skippable_file, parse_profile_start, serialize_parse_profile_start
+from apparmor.aa import check_for_apparmor, get_profile_flags, set_profile_flags, is_skippable_file, parse_profile_start, serialize_parse_profile_start
 from apparmor.common import AppArmorException, AppArmorBug
 
 class AaTestWithTempdir(unittest.TestCase):
@@ -103,6 +103,121 @@ class AaTest_get_profile_flags(AaTestWithTempdir):
     def test_get_flags_other_profile(self):
         with self.assertRaises(AppArmorException):
             self._test_get_flags('/no-such-profile flags=(complain)', 'complain')
+
+class AaTest_set_profile_flags(AaTestWithTempdir):
+    def _test_set_flags(self, profile, old_flags, new_flags, whitespace='', comment='', more_rules='',
+                        expected_flags='@-@-@', check_new_flags=True, profile_name='/foo'):
+        if old_flags:
+            old_flags = ' %s' % old_flags
+
+        if expected_flags == '@-@-@':
+            expected_flags = new_flags
+
+        if expected_flags:
+            expected_flags = ' flags=(%s)' % (expected_flags)
+        else:
+            expected_flags = ''
+
+        dummy_profile_content = '  #include <abstractions/base>\n  capability chown,\n  /bar r,'
+        prof_template = '%s%s%s {%s\n%s\n%s\n}\n'
+        old_prof = prof_template % (whitespace, profile, old_flags,      comment, more_rules, dummy_profile_content)
+        new_prof = prof_template % (whitespace, profile, expected_flags, comment, more_rules, dummy_profile_content)
+
+        self.file = write_file(self.tmpdir, 'profile', old_prof)
+        set_profile_flags(self.file, profile_name, new_flags)
+        if check_new_flags:
+            real_new_prof = read_file(self.file)
+            self.assertEqual(new_prof, real_new_prof)
+
+    # tests that actually don't change the flags
+    def test_set_flags_nochange_01(self):
+        self._test_set_flags('/foo', '', '')
+    def test_set_flags_nochange_02(self):
+        self._test_set_flags('/foo', '(  complain  )', '  complain  ', whitespace='   ')
+    def test_set_flags_nochange_03(self):
+        self._test_set_flags('/foo', '(complain)', 'complain')
+    def test_set_flags_nochange_04(self):
+        self._test_set_flags('/foo', 'flags=(complain)', 'complain')
+    def test_set_flags_nochange_05(self):
+        self._test_set_flags('/foo', 'flags=(complain,  audit)', 'complain,  audit', whitespace='     ')
+    def test_set_flags_nochange_06(self):
+        self._test_set_flags('/foo', 'flags=(complain,  audit)', 'complain,  audit', whitespace='     ', comment='# a comment')
+    def test_set_flags_nochange_07(self):
+        self._test_set_flags('/foo', 'flags=(complain,  audit)', 'complain,  audit', whitespace='     ', more_rules='  # a comment\n#another  comment')
+    def test_set_flags_nochange_08(self):
+        self._test_set_flags('profile /foo', 'flags=(complain)', 'complain')
+    def test_set_flags_nochange_09(self):
+        self._test_set_flags('profile xy /foo', 'flags=(complain)', 'complain', profile_name='xy /foo') # XXX profile_name should be 'xy'
+    def test_set_flags_nochange_10(self):
+        self._test_set_flags('profile "/foo"', 'flags=(complain)', 'complain') # superfluous quotes are kept
+    def test_set_flags_nochange_11(self):
+        self._test_set_flags('profile "/foo bar"', 'flags=(complain)', 'complain', profile_name='/foo bar')
+    #def test_set_flags_nochange_12(self):
+    # XXX changes the flags for the child profile (which happens to have the same profile name) to 'complain'
+    #    self._test_set_flags('/foo', 'flags=(complain)', 'complain', more_rules='  profile /foo {\n}')
+
+    # tests that change the flags
+    def test_set_flags_01(self):
+        self._test_set_flags('/foo', '', 'audit')
+    def test_set_flags_02(self):
+        self._test_set_flags('/foo', '(  complain  )', 'audit ', whitespace='  ')
+    def test_set_flags_04(self):
+        self._test_set_flags('/foo', '(complain)', 'audit')
+    def test_set_flags_05(self):
+        self._test_set_flags('/foo', 'flags=(complain)', 'audit')
+    def test_set_flags_06(self):
+        self._test_set_flags('/foo', 'flags=(complain,  audit)', None, whitespace='    ')
+    def test_set_flags_07(self):
+        self._test_set_flags('/foo', 'flags=(complain,  audit)', '', expected_flags=None)
+    def test_set_flags_08(self):
+        # XXX this creates an invalid profile with "flags=(  )"
+        # should raise an exception instead
+        self._test_set_flags('/foo', 'flags=(complain,  audit)', '  ')
+    def test_set_flags_09(self):
+        self._test_set_flags('profile /foo', 'flags=(complain)', 'audit')
+    def test_set_flags_10(self):
+        self._test_set_flags('profile xy /foo', 'flags=(complain)', 'audit', profile_name='xy /foo') # XXX profile_name should be just 'xy'
+    def test_set_flags_11(self):
+        self._test_set_flags('profile "/foo bar"', 'flags=(complain)', 'audit', profile_name='/foo bar')
+    def test_set_flags_12(self):
+        self._test_set_flags('profile xy "/foo bar"', 'flags=(complain)', 'audit', profile_name='xy "/foo bar') # profile name should just be 'xy'
+
+
+    # XXX regex_hat_flag in set_profile_flags() is totally broken - it matches for '   ' and '  X ', but doesn't match for ' ^foo {'
+    # oh, it matches on a line like 'dbus' and changes it to 'dbus flags=(...)' if there's no leading whitespace (and no comma)
+    #def test_set_flags_hat_01(self):
+    #    self._test_set_flags('  ^hat', '', 'audit')
+
+
+    # XXX current code/regex doesn't check for empty flags
+    #def test_set_flags_invalid_01(self):
+    #    with self.assertRaises(AppArmorBug):
+    #        self._test_set_flags('/foo', '()', None, check_new_flags=False)
+    #def test_set_flags_invalid_02(self):
+    #    with self.assertRaises(AppArmorBug):
+    #        self._test_set_flags('/foo', 'flags=()', None, check_new_flags=False)
+    #def test_set_flags_invalid_03(self):
+    #    with self.assertRaises(AppArmorException):
+    #        self._test_set_flags('/foo', '(  )', '  ', check_new_flags=False)
+
+    def test_set_flags_other_profile(self):
+        # test behaviour if the file doesn't contain the specified /foo profile
+        orig_prof = '/no-such-profile flags=(complain) {\n}'
+        self.file = write_file(self.tmpdir, 'profile', orig_prof)
+
+        # XXX this silently fails - should it raise an exception instead if it doesn't find the requested profile in the file?
+        set_profile_flags(self.file, '/foo', 'audit')
+
+        # the file should not be changed
+        real_new_prof = read_file(self.file)
+        self.assertEqual(orig_prof, real_new_prof)
+
+    def test_set_flags_file_not_found(self):
+        # XXX this exits silently
+        # the easiest solution would be to drop the
+        #         if os.path.isfile(prof_filename):
+        # check and let open_file_read raise an exception
+        set_profile_flags('%s/file-not-found' % self.tmpdir, '/foo', 'audit')
 
 
 class AaTest_is_skippable_file(unittest.TestCase):

@@ -97,6 +97,13 @@ def write_file(directory, file, contents):
         f.write(contents)
     return path
 
+def read_file(path):
+    '''read and return file contents'''
+    with open(path, 'r') as f:
+        return f.read()
+
+
+
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.test_RegexParser']
     unittest.main()
