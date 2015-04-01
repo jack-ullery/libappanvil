@@ -2663,9 +2663,10 @@ def parse_profile_start(line, file, lineno, profile, hat):
         else:
             hat = profile
 
+    attachment = matches['attachment']
     flags = matches['flags']
 
-    return (profile, hat, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
+    return (profile, hat, attachment, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
 
 def parse_profile_data(data, file, do_include):
     profile_data = hasher()
@@ -2690,7 +2691,7 @@ def parse_profile_data(data, file, do_include):
             lastline = None
         # Starting line of a profile
         if RE_PROFILE_START.search(line):
-            (profile, hat, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
+            (profile, hat, attachment, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
             if pps_set_profile:
                 profile_data[profile][hat]['profile'] = True
             if pps_set_hat_external:
@@ -3731,9 +3732,10 @@ def serialize_parse_profile_start(line, file, lineno, profile, hat, prof_data_pr
         else:
             hat = profile
 
+    attachment = matches['attachment']
     flags = matches['flags']
 
-    return (profile, hat, flags, in_contained_hat, correct)
+    return (profile, hat, attachment, flags, in_contained_hat, correct)
 
 def serialize_profile_from_old_profile(profile_data, name, options):
     data = []
@@ -3842,7 +3844,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
             #data.append(' ')#data.append('read: '+line)
             if RE_PROFILE_START.search(line):
 
-                (profile, hat, flags, in_contained_hat, correct) = serialize_parse_profile_start(
+                (profile, hat, attachment, flags, in_contained_hat, correct) = serialize_parse_profile_start(
                         line, prof_filename, None, profile, hat, write_prof_data[profile][hat]['profile'], write_prof_data[profile][hat]['external'], correct)
 
                 if not write_prof_data[hat]['name'] == profile:

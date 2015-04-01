@@ -270,32 +270,32 @@ class AaTest_parse_profile_start(AATest):
 
     def test_parse_profile_start_01(self):
         result = self._parse('/foo {', None, None)
-        expected = ('/foo', '/foo', None, False, False, False)
+        expected = ('/foo', '/foo', None, None, False, False, False)
         self.assertEqual(result, expected)
 
     def test_parse_profile_start_02(self):
         result = self._parse('/foo (complain) {', None, None)
-        expected = ('/foo', '/foo', 'complain', False, False, False)
+        expected = ('/foo', '/foo', None, 'complain', False, False, False)
         self.assertEqual(result, expected)
 
     def test_parse_profile_start_03(self):
         result = self._parse('profile foo /foo {', None, None) # named profile
-        expected = ('foo /foo', 'foo /foo', None, False, False, False) # XXX yes, that's what happens with the current code :-/
+        expected = ('foo /foo', 'foo /foo', '/foo', None, False, False, False) # XXX yes, that's what happens with the current code :-/
         self.assertEqual(result, expected)
 
     def test_parse_profile_start_04(self):
         result = self._parse('profile /foo {', '/bar', '/bar') # child profile
-        expected = ('/bar', '/foo', None, True, True, False)
+        expected = ('/bar', '/foo', None, None, True, True, False)
         self.assertEqual(result, expected)
 
     def test_parse_profile_start_05(self):
         result = self._parse('/foo//bar {', None, None) # external hat
-        expected = ('/foo', 'bar', None, False, False, True)
+        expected = ('/foo', 'bar', None, None, False, False, True)
         self.assertEqual(result, expected)
 
     def test_parse_profile_start_06(self):
         result = self._parse('profile "/foo" (complain) {', None, None)
-        expected = ('/foo', '/foo', 'complain', False, False, False)
+        expected = ('/foo', '/foo', None, 'complain', False, False, False)
         self.assertEqual(result, expected)
 
 
@@ -346,77 +346,77 @@ class AaTest_serialize_parse_profile_start(AATest):
 
     def test_serialize_parse_profile_start_01(self):
         result = self._parse('/foo {', None, None, False, False)
-        expected = ('/foo', '/foo', None, False, True)
+        expected = ('/foo', '/foo', None, None, False, True)
         self.assertEqual(result, expected)
 
     def test_serialize_parse_profile_start_02(self):
         result = self._parse('/foo (complain) {', None, None, False, False)
-        expected = ('/foo', '/foo', 'complain', False, True)
+        expected = ('/foo', '/foo', None, 'complain', False, True)
         self.assertEqual(result, expected)
 
     def test_serialize_parse_profile_start_03(self):
         result = self._parse('profile foo /foo {', None, None, False, False) # named profile
-        expected = ('foo /foo', 'foo /foo', None, False, True) # XXX yes, that's what happens with the current code :-/
+        expected = ('foo /foo', 'foo /foo', '/foo', None, False, True) # XXX yes, that's what happens with the current code :-/
         self.assertEqual(result, expected)
 
     def test_serialize_parse_profile_start_04(self):
         result = self._parse('profile /foo {', '/bar', '/bar', False, False) # child profile
-        expected = ('/bar', '/foo', None, True, True)
+        expected = ('/bar', '/foo', None, None, True, True)
         self.assertEqual(result, expected)
 
     def test_serialize_parse_profile_start_05(self):
         result = self._parse('/foo//bar {', None, None, False, False) # external hat
-        expected = ('/foo', 'bar', None, False, False) # note correct == False here
+        expected = ('/foo', 'bar', None, None, False, False) # note correct == False here
         self.assertEqual(result, expected)
 
     def test_serialize_parse_profile_start_06(self):
         result = self._parse('profile "/foo" (complain) {', None, None, False, False)
-        expected = ('/foo', '/foo', 'complain', False, True)
+        expected = ('/foo', '/foo', None, 'complain', False, True)
         self.assertEqual(result, expected)
 
     def test_serialize_parse_profile_start_07(self):
         result = self._parse('/foo {', None, None, True, False)
-        expected = ('/foo', '/foo', None, False, True)
+        expected = ('/foo', '/foo', None, None, False, True)
         self.assertEqual(result, expected)
 
     def test_serialize_parse_profile_start_08(self):
         result = self._parse('/foo {', None, None, False, True)
-        expected = ('/foo', '/foo', None, False, True)
+        expected = ('/foo', '/foo', None, None, False, True)
         self.assertEqual(result, expected)
 
     def test_serialize_parse_profile_start_09(self):
         result = self._parse('/foo {', None, None, True, True)
-        expected = ('/foo', '/foo', None, False, True)
+        expected = ('/foo', '/foo', None, None, False, True)
         self.assertEqual(result, expected)
 
     def test_serialize_parse_profile_start_10(self):
         result = self._parse('profile /foo {', '/bar', '/bar', True, False) # child profile
-        expected = ('/bar', '/foo', None, True, True)
+        expected = ('/bar', '/foo', None, None, True, True)
         self.assertEqual(result, expected)
 
     def test_serialize_parse_profile_start_11(self):
         result = self._parse('profile /foo {', '/bar', '/bar', False, True) # child profile
-        expected = ('/bar', '/foo', None, True, True)
+        expected = ('/bar', '/foo', None, None, True, True)
         self.assertEqual(result, expected)
 
     def test_serialize_parse_profile_start_12(self):
         result = self._parse('profile /foo {', '/bar', '/bar', True, True) # child profile
-        expected = ('/bar', '/foo', None, True, True)
+        expected = ('/bar', '/foo', None, None, True, True)
         self.assertEqual(result, expected)
 
     def test_serialize_parse_profile_start_13(self):
         result = self._parse('/foo {', '/bar', '/bar', False, False) # child profile without 'profile' keyword - XXX should this error out?
-        expected = ('/foo', '/foo', None, False, True) # note that in_contained_hat == False and that profile == hat == child profile
+        expected = ('/foo', '/foo', None, None, False, True) # note that in_contained_hat == False and that profile == hat == child profile
         self.assertEqual(result, expected)
 
     def test_serialize_parse_profile_start_14(self):
         result = self._parse('/ext//hat {', '/bar', '/bar', True, True) # external hat inside a profile - XXX should this error out?
-        expected = ('/ext', '/ext', None, False, True) # XXX additionally note that hat == profile, but should be 'hat'
+        expected = ('/ext', '/ext', None, None, False, True) # XXX additionally note that hat == profile, but should be 'hat'
         self.assertEqual(result, expected)
 
     def test_serialize_parse_profile_start_15(self):
         result = self._parse('/ext//hat {', '/bar', '/bar', True, False) # external hat inside a profile - XXX should this error out?
-        expected = ('/ext', 'hat', None, False, False)
+        expected = ('/ext', 'hat', None, None, False, False)
         self.assertEqual(result, expected)
 
 
