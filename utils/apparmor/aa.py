@@ -105,7 +105,7 @@ transitions = hasher()
 # a) rules (as dict): alias, change_profile, include, lvar, rlimit
 # b) rules (as hasher): allow, deny
 # c) one for each rule class
-# d) other: declared, external, flags, name, profile, attachment,
+# d) other: declared, external, flags, name, profile, attachment, initial_comment,
 #           profile_keyword, header_comment (these two are currently only set by set_profile_flags())
 aa = hasher()  # Profiles originally in sd, replace by aa
 original_aa = hasher()
@@ -2638,31 +2638,31 @@ def attach_profile_data(profiles, profile_data):
 def parse_profile_start(line, file, lineno, profile, hat):
     matches = parse_profile_start_line(line, file)
 
-    pps_set_profile = False
-    pps_set_hat_external = False
+    if profile:  # we are inside a profile, so we expect a child profile
+        if not matches['profile_keyword']:
+            raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: missing "profile" keyword.') % {
+                    'profile': profile, 'file': file, 'line': lineno + 1 })
+        if profile != hat:
+            # nesting limit reached - a child profile can't contain another child profile
+            raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: a child profile inside another child profile is not allowed.') % {
+                    'profile': profile, 'file': file, 'line': lineno + 1 })
 
-    if profile:
-        #print(profile, hat)
-        if profile != hat or not matches['profile_keyword']:
-            raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line: %(line)s.') % { 'profile': profile, 'file': file, 'line': lineno + 1 })
-    # Keep track of the start of a profile
-    if profile and profile == hat and matches['profile_keyword']:
-        # local profile
         hat = matches['profile']
         in_contained_hat = True
         pps_set_profile = True
-    else:
+        pps_set_hat_external = False
+
+    else:  # stand-alone profile
         profile = matches['profile']
-        #print(profile)
         if len(profile.split('//')) >= 2:
             profile, hat = profile.split('//')[:2]
-        else:
-            hat = None
-        in_contained_hat = False
-        if hat:
             pps_set_hat_external = True
         else:
             hat = profile
+            pps_set_hat_external = False
+
+        in_contained_hat = False
+        pps_set_profile = False
 
     attachment = matches['attachment']
     flags = matches['flags']
