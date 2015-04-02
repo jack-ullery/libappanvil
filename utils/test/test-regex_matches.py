@@ -12,12 +12,37 @@
 import apparmor.aa as aa
 import unittest
 from common_test import AATest, setup_all_tests
+from apparmor.common import AppArmorBug
 
-from apparmor.regex import strip_quotes
+from apparmor.regex import strip_quotes, parse_profile_start_line, RE_PROFILE_START_2
+
 
 class AARegexTest(AATest):
     def _run_test(self, params, expected):
         return regex_test(self, params, expected)
+
+class AANamedRegexTest(AATest):
+    def _run_test(self, line, expected):
+        '''Run a line through self.regex.search() and verify the result
+
+        Keyword arguments:
+        line -- the line to search
+        expected -- False if the search isn't expected to match or, if the search
+                    is expected to match, a tuple of expected match groups.
+        '''
+        matches = self.regex.search(line)
+        if not expected:
+            self.assertFalse(matches)
+            return
+
+        self.assertTrue(matches)
+
+        for exp in expected:
+            match = matches.group(exp)
+            if match:
+                match = match
+            self.assertEqual(match, expected[exp], 'Group %s mismatch in rule %s' % (exp,line))
+
 
 
 class AARegexHasComma(AATest):
@@ -366,6 +391,79 @@ class AARegexUnix(AARegexTest):
         ('unixlike', False),
         ('deny unixlike,', False),
     ]
+
+class AANamedRegexProfileStart_2(AANamedRegexTest):
+    '''Tests for RE_PROFILE_START_2'''
+
+    def setUp(self):
+        self.regex = RE_PROFILE_START_2
+
+    tests = [
+        ('/bin/foo ', False), # no '{'
+        ('/bin/foo /bin/bar', False), # missing 'profile' keyword
+        ('profile {', False), # no attachment
+        ('   profile foo bar /foo {', False), # missing quotes around "foo bar"
+
+        ('   /foo {',                     { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': None,       'comment': None }),
+        ('   "/foo" {',                   { 'plainprofile': '"/foo"',  'namedprofile': None,          'attachment': None,     'flags': None,       'comment': None }),
+        ('   profile /foo {',             { 'plainprofile': None,      'namedprofile': '/foo',        'attachment': None,     'flags': None,       'comment': None }),
+        ('   profile "/foo" {',           { 'plainprofile': None,      'namedprofile': '"/foo"',      'attachment': None,     'flags': None,       'comment': None }),
+        ('   profile foo /foo {',         { 'plainprofile': None,      'namedprofile': 'foo',         'attachment': '/foo',   'flags': None,       'comment': None }),
+        ('   profile foo /foo (audit) {', { 'plainprofile': None,      'namedprofile': 'foo',         'attachment': '/foo',   'flags': 'audit',    'comment': None }),
+        ('   profile "foo" "/foo" {',     { 'plainprofile': None,      'namedprofile': '"foo"',       'attachment': '"/foo"', 'flags': None,       'comment': None }),
+        ('   profile "foo bar" /foo {',   { 'plainprofile': None,      'namedprofile': '"foo bar"',   'attachment': '/foo',   'flags': None,       'comment': None }),
+        ('   /foo (complain) {',          { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': 'complain', 'comment': None }),
+        ('   /foo flags=(complain) {',    { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': 'complain', 'comment': None }),
+        ('   /foo (complain) { # x',      { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': 'complain', 'comment': '# x'}),
+
+        ('   /foo {',                     { 'plainprofile': '/foo',     'namedprofile': None,   'leadingspace': '   ' }),
+        ('/foo {',                        { 'plainprofile': '/foo',     'namedprofile': None,   'leadingspace': ''    }),
+        ('   profile foo {',              { 'plainprofile': None,       'namedprofile': 'foo',  'leadingspace': '   ' }),
+        ('profile foo {',                 { 'plainprofile': None,       'namedprofile': 'foo',  'leadingspace': ''    }),
+    ]
+
+
+class Test_parse_profile_start_line(AATest):
+    tests = [
+        ('   /foo {',                     { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': None,       'comment': None }),
+        ('   "/foo" {',                   { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': None,       'comment': None }),
+        ('   profile /foo {',             { 'profile': '/foo',    'profile_keyword': True,  'plainprofile': None,   'namedprofile': '/foo', 'attachment': None,   'flags': None,       'comment': None }),
+        ('   profile "/foo" {',           { 'profile': '/foo',    'profile_keyword': True,  'plainprofile': None,   'namedprofile': '/foo', 'attachment': None,   'flags': None,       'comment': None }),
+        ('   profile foo /foo {',         { 'profile': 'foo /foo','profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo',  'attachment': '/foo', 'flags': None,       'comment': None }), # XXX
+        ('   profile foo /foo (audit) {', { 'profile': 'foo /foo','profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo',  'attachment': '/foo', 'flags': 'audit',    'comment': None }), # XXX
+        ('   profile "foo" "/foo" {',     { 'profile': 'foo /foo','profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo',  'attachment': '/foo', 'flags': None,       'comment': None }), # XXX
+        ('   profile "foo bar" /foo {',   { 'profile': 'foo bar /foo', 'profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo bar',     'attachment': '/foo',   'flags': None,       'comment': None }), # XXX
+        # XXX lines marked with XXX include the "broken" behaviour for 'profile' - they need to be changed when attachment is handled correctly
+        ('   /foo (complain) {',          { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': 'complain', 'comment': None }),
+        ('   /foo flags=(complain) {',    { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': 'complain', 'comment': None }),
+        ('   /foo (complain) { # x',      { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': 'complain', 'comment': '# x'}),
+
+        ('   /foo {',                     { 'profile': '/foo',    'plainprofile': '/foo', 'namedprofile': None,  'leadingspace': '   ' }),
+        ('/foo {',                        { 'profile': '/foo',    'plainprofile': '/foo', 'namedprofile': None,  'leadingspace': None  }),
+        ('   profile foo {',              { 'profile': 'foo',     'plainprofile': None,   'namedprofile': 'foo', 'leadingspace': '   ' }),
+        ('profile foo {',                 { 'profile': 'foo',     'plainprofile': None,   'namedprofile': 'foo', 'leadingspace': None  }),
+    ]
+
+    def _run_test(self, line, expected):
+        matches = parse_profile_start_line(line, 'somefile')
+
+        self.assertTrue(matches)
+
+        for exp in expected:
+            self.assertEqual(matches[exp], expected[exp], 'Group %s mismatch in rule %s' % (exp,line))
+
+class TestInvalid_parse_profile_start_line(AATest):
+    tests = [
+        ('/bin/foo ', False), # no '{'
+        ('/bin/foo /bin/bar', False), # missing 'profile' keyword
+        ('profile {', False), # no attachment
+        ('   profile foo bar /foo {', False), # missing quotes around "foo bar"
+    ]
+
+    def _run_test(self, line, expected):
+        with self.assertRaises(AppArmorBug):
+            parse_profile_start_line(line, 'somefile')
+
 
 class TestStripQuotes(AATest):
     def test_strip_quotes_01(self):
