@@ -13,7 +13,7 @@
 #
 # ----------------------------------------------------------------------
 # No old version logs, only 2.6 + supported
-from __future__ import with_statement
+from __future__ import division, with_statement
 import inspect
 import os
 import re
