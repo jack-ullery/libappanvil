@@ -263,17 +263,11 @@ class ReadLog:
             else:
                 self.debug_logger.debug('add_event_to_tree: dropped exec event in %s' % e['profile'])
 
-        elif ( e['operation'].startswith('file_') or
+        elif ( e['operation'].startswith('file_') or e['operation'].startswith('inode_') or
             e['operation'] in ['open', 'truncate', 'mkdir', 'mknod', 'chmod', 'rename_src',
                                 'rename_dest', 'unlink', 'rmdir', 'symlink_create', 'link',
                                 'sysctl', 'getattr', 'setattr', 'xattr'] ):
             #print(e['operation'], e['name'])
-            self.add_to_tree(e['pid'], e['parent'], 'path',
-                             [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-        elif e['operation'] == 'capable':
-            self.add_to_tree(e['pid'], e['parent'], 'capability',
-                             [profile, hat, prog, aamode, e['name'], ''])
-        elif 'inode_' in e['operation']:
             is_domain_change = False
             if e['operation'] == 'inode_permission' and (e['denied_mask'] & AA_MAY_EXEC) and aamode == 'PERMITTING':
                 following = self.peek_at_next_log_entry()
@@ -289,6 +283,10 @@ class ReadLog:
             else:
                 self.add_to_tree(e['pid'], e['parent'], 'path',
                                  [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
+
+        elif e['operation'] == 'capable':
+            self.add_to_tree(e['pid'], e['parent'], 'capability',
+                             [profile, hat, prog, aamode, e['name'], ''])
 
         elif e['operation'] == 'clone':
             parent, child = e['pid'], e['task']
