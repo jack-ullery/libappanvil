@@ -264,7 +264,7 @@ class ReadLog:
                 self.debug_logger.debug('add_event_to_tree: dropped exec event in %s' % e['profile'])
 
         elif ( e['operation'].startswith('file_') or
-            e['operation'] in ['open', 'truncate', 'mkdir', 'mknod', 'rename_src',
+            e['operation'] in ['open', 'truncate', 'mkdir', 'mknod', 'chmod', 'rename_src',
                                 'rename_dest', 'unlink', 'rmdir', 'symlink_create', 'link',
                                 'sysctl', 'getattr', 'setattr', 'xattr'] ):
             #print(e['operation'], e['name'])
