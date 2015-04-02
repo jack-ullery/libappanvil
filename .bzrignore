@@ -165,4 +165,4 @@ tests/regression/apparmor/unix_fd_server
 tests/regression/apparmor/unlink
 tests/regression/apparmor/xattrs
 tests/regression/apparmor/coredump
-./utils/apparmor/__pycache__
+**/__pycache__/
