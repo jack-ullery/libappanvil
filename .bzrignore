@@ -18,7 +18,6 @@ parser/*.8
 parser/*.7.html
 parser/*.5.html
 parser/*.8.html
-parser/common
 parser/apparmor_parser
 parser/libapparmor_re/regexp.cc
 parser/techdoc.aux
@@ -94,10 +93,6 @@ libraries/libapparmor/testsuite/libaalogparse.test/Makefile
 libraries/libapparmor/testsuite/libaalogparse.test/Makefile.in
 libraries/libapparmor/testsuite/test_multi/out
 changehat/mod_apparmor/.libs
-changehat/mod_apparmor/common
-changehat/pam_apparmor/common
-changehat/tomcat_apparmor/common
-utils/common
 utils/*.8
 utils/*.8.html
 utils/*.5
