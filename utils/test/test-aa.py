@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2014 Christian Boltz
+#    Copyright (C) 2014-2015 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -154,7 +154,9 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
         self._test_set_flags('profile xy /foo', 'flags=(complain)', 'complain', profile_name='xy /foo') # XXX profile_name should be 'xy'
     def test_set_flags_nochange_10(self):
         self._test_set_flags('profile "/foo bar"', 'flags=(complain)', 'complain', profile_name='/foo bar')
-    #def test_set_flags_nochange_11(self):
+    def test_set_flags_nochange_11(self):
+        self._test_set_flags('/foo', '(complain)', 'complain', profile_name=None)
+    #def test_set_flags_nochange_12(self):
     # XXX changes the flags for the child profile (which happens to have the same profile name) to 'complain'
     #    self._test_set_flags('/foo', 'flags=(complain)', 'complain', more_rules='  profile /foo {\n}')
 
@@ -172,9 +174,7 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
     def test_set_flags_07(self):
         self._test_set_flags('/foo', 'flags=(complain,  audit)', '', expected_flags=None)
     def test_set_flags_08(self):
-        # XXX this creates an invalid profile with "flags=(  )"
-        # should raise an exception instead
-        self._test_set_flags('/foo', 'flags=(complain,  audit)', '  ')
+        self._test_set_flags('/foo', '(  complain  )', 'audit ', whitespace='  ', profile_name=None)
     def test_set_flags_09(self):
         self._test_set_flags('profile /foo', 'flags=(complain)', 'audit')
     def test_set_flags_10(self):
@@ -199,15 +199,30 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
             self._test_set_flags('/foo', 'flags=()', None, check_new_flags=False)
     def test_set_flags_invalid_03(self):
         with self.assertRaises(AppArmorException):
-            self._test_set_flags('/foo', '(  )', '  ', check_new_flags=False)
+            self._test_set_flags('/foo', '(  )', '', check_new_flags=False)
+    def test_set_flags_invalid_04(self):
+        with self.assertRaises(AppArmorBug):
+            self._test_set_flags('/foo', 'flags=(complain,  audit)', '  ', check_new_flags=False) # whitespace-only newflags
 
     def test_set_flags_other_profile(self):
         # test behaviour if the file doesn't contain the specified /foo profile
         orig_prof = '/no-such-profile flags=(complain) {\n}'
         self.file = write_file(self.tmpdir, 'profile', orig_prof)
 
-        # XXX this silently fails - should it raise an exception instead if it doesn't find the requested profile in the file?
-        set_profile_flags(self.file, '/foo', 'audit')
+        with self.assertRaises(AppArmorBug):
+            set_profile_flags(self.file, '/foo', 'audit')
+
+        # the file should not be changed
+        real_new_prof = read_file(self.file)
+        self.assertEqual(orig_prof, real_new_prof)
+
+    def test_set_flags_no_profile_found(self):
+        # test behaviour if the file doesn't contain any profile
+        orig_prof = '# /comment flags=(complain) {\n# }'
+        self.file = write_file(self.tmpdir, 'profile', orig_prof)
+
+        with self.assertRaises(AppArmorBug):
+            set_profile_flags(self.file, None, 'audit')
 
         # the file should not be changed
         real_new_prof = read_file(self.file)

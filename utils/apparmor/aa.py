@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2015 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -31,7 +31,7 @@ import apparmor.severity
 
 from copy import deepcopy
 
-from apparmor.common import (AppArmorException, open_file_read, valid_path, hasher,
+from apparmor.common import (AppArmorException, AppArmorBug, open_file_read, valid_path, hasher,
                              open_file_write, convert_regexp, DebugLogger)
 
 import apparmor.ui as aaui
@@ -653,6 +653,12 @@ def set_profile_flags(prof_filename, program, newflags):
     #       so that code calling this function can make sure to only report success if there was a match
     # TODO: use RE_PROFILE_HAT_DEF for matching the hat (regex_hat_flag is totally broken!)
     #regex_hat_flag = re.compile('^([a-z]*)\s+([A-Z]*)\s*(#.*)?$')
+
+    found = False
+
+    if newflags and newflags.strip() == '':
+        raise AppArmorBug('New flags for %s contain only whitespace' % prof_filename)
+
     with open_file_read(prof_filename) as f_in:
         temp_file = tempfile.NamedTemporaryFile('w', prefix=prof_filename, suffix='~', delete=False, dir=profile_dir)
         shutil.copymode(prof_filename, temp_file.name)
@@ -664,6 +670,7 @@ def set_profile_flags(prof_filename, program, newflags):
                     profile = matches['profile']
 
                     if profile == program or program is None:
+                        found = True
                         header_data = {
                             'attachment': matches['attachment'] or '',
                             'flags': newflags,
@@ -682,6 +689,12 @@ def set_profile_flags(prof_filename, program, newflags):
                 #            line = '%s {%s\n' % (hat, comment)
                 f_out.write(line)
     os.rename(temp_file.name, prof_filename)
+
+    if not found:
+        if program is None:
+            raise AppArmorBug("%(file)s doesn't contain a valid profile (syntax error?)" % {'file': prof_filename})
+        else:
+            raise AppArmorBug("%(file)s doesn't contain a valid profile for %(profile)s (syntax error?)" % {'file': prof_filename, 'profile': program})
 
 def profile_exists(program):
     """Returns True if profile exists, False otherwise"""
