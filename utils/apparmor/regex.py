@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2015 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -26,7 +26,6 @@ RE_OWNER                = '(?P<owner>owner\s+)?'  # optionally: <owner>
 RE_EOL                  = '\s*(?P<comment>#.*?)?\s*$'  # optional whitespace, optional <comment>, optional whitespace, end of the line
 RE_COMMA_EOL            = '\s*,' + RE_EOL # optional whitespace, comma + RE_EOL
 
-RE_PROFILE_START        = re.compile('^\s*("?(/.+?)"??|(profile\s+"?(.+?)"??))\s+((flags=)?\((.+)\)\s+)?\{' + RE_EOL)
 RE_PROFILE_END          = re.compile('^\s*\}' + RE_EOL)
 RE_PROFILE_CAP          = re.compile(RE_AUDIT_DENY + 'capability(?P<capability>(\s+\S+)+)?' + RE_COMMA_EOL)
 RE_PROFILE_LINK         = re.compile(RE_AUDIT_DENY + 'link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)' + RE_COMMA_EOL)
@@ -62,7 +61,7 @@ RE_HAS_COMMENT_SPLIT = re.compile('^(?P<not_comment>' + __re_no_or_quoted_hash +
 
 
 
-RE_PROFILE_START_2        = re.compile(
+RE_PROFILE_START          = re.compile(
     '^(?P<leadingspace>\s*)' +
     '(' +
         '(?P<plainprofile>(/\S+|"[^"]+"))' + # just a path
@@ -73,7 +72,7 @@ RE_PROFILE_START_2        = re.compile(
     RE_EOL)
 
 def parse_profile_start_line(line, filename):
-    matches = RE_PROFILE_START_2.search(line)
+    matches = RE_PROFILE_START.search(line)
 
     if not matches:
         raise AppArmorBug('The given line from file %(filename)s is not the start of a profile: %(line)s' % { 'filename': filename, 'line': line } )

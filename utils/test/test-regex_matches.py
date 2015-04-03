@@ -14,7 +14,7 @@ import unittest
 from common_test import AATest, setup_all_tests
 from apparmor.common import AppArmorBug
 
-from apparmor.regex import strip_quotes, parse_profile_start_line, RE_PROFILE_START_2
+from apparmor.regex import strip_quotes, parse_profile_start_line, RE_PROFILE_START
 
 
 class AARegexTest(AATest):
@@ -393,10 +393,10 @@ class AARegexUnix(AARegexTest):
     ]
 
 class AANamedRegexProfileStart_2(AANamedRegexTest):
-    '''Tests for RE_PROFILE_START_2'''
+    '''Tests for RE_PROFILE_START'''
 
     def setUp(self):
-        self.regex = RE_PROFILE_START_2
+        self.regex = RE_PROFILE_START
 
     tests = [
         ('/bin/foo ', False), # no '{'

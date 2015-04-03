@@ -92,10 +92,10 @@ class AaTest_get_profile_flags(AaTestWithTempdir):
         self._test_get_flags('/foo flags=(complain,  audit)', 'complain,  audit')
 
     def test_get_flags_invalid_01(self):
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(AppArmorException):
             self._test_get_flags('/foo ()', None)
     def test_get_flags_invalid_02(self):
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(AppArmorException):
             self._test_get_flags('/foo flags=()', None)
     def test_get_flags_invalid_03(self):
         with self.assertRaises(AppArmorException):
