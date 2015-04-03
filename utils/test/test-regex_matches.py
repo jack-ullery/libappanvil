@@ -429,11 +429,10 @@ class Test_parse_profile_start_line(AATest):
         ('   "/foo" {',                   { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': None,       'comment': None }),
         ('   profile /foo {',             { 'profile': '/foo',    'profile_keyword': True,  'plainprofile': None,   'namedprofile': '/foo', 'attachment': None,   'flags': None,       'comment': None }),
         ('   profile "/foo" {',           { 'profile': '/foo',    'profile_keyword': True,  'plainprofile': None,   'namedprofile': '/foo', 'attachment': None,   'flags': None,       'comment': None }),
-        ('   profile foo /foo {',         { 'profile': 'foo /foo','profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo',  'attachment': '/foo', 'flags': None,       'comment': None }), # XXX
-        ('   profile foo /foo (audit) {', { 'profile': 'foo /foo','profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo',  'attachment': '/foo', 'flags': 'audit',    'comment': None }), # XXX
-        ('   profile "foo" "/foo" {',     { 'profile': 'foo /foo','profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo',  'attachment': '/foo', 'flags': None,       'comment': None }), # XXX
-        ('   profile "foo bar" /foo {',   { 'profile': 'foo bar /foo', 'profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo bar',     'attachment': '/foo',   'flags': None,       'comment': None }), # XXX
-        # XXX lines marked with XXX include the "broken" behaviour for 'profile' - they need to be changed when attachment is handled correctly
+        ('   profile foo /foo {',         { 'profile': 'foo',     'profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo',  'attachment': '/foo', 'flags': None,       'comment': None }),
+        ('   profile foo /foo (audit) {', { 'profile': 'foo',     'profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo',  'attachment': '/foo', 'flags': 'audit',    'comment': None }),
+        ('   profile "foo" "/foo" {',     { 'profile': 'foo',     'profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo',  'attachment': '/foo', 'flags': None,       'comment': None }),
+        ('   profile "foo bar" /foo {',   { 'profile': 'foo bar', 'profile_keyword': True,  'plainprofile': None, 'namedprofile': 'foo bar','attachment': '/foo', 'flags': None,    'comment': None }),
         ('   /foo (complain) {',          { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': 'complain', 'comment': None }),
         ('   /foo flags=(complain) {',    { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': 'complain', 'comment': None }),
         ('   /foo (complain) { # x',      { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': 'complain', 'comment': '# x'}),

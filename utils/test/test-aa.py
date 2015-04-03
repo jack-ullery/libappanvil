@@ -151,7 +151,7 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
     def test_set_flags_nochange_08(self):
         self._test_set_flags('profile /foo', 'flags=(complain)', 'complain')
     def test_set_flags_nochange_09(self):
-        self._test_set_flags('profile xy /foo', 'flags=(complain)', 'complain', profile_name='xy /foo') # XXX profile_name should be 'xy'
+        self._test_set_flags('profile xy /foo', 'flags=(complain)', 'complain', profile_name='xy')
     def test_set_flags_nochange_10(self):
         self._test_set_flags('profile "/foo bar"', 'flags=(complain)', 'complain', profile_name='/foo bar')
     def test_set_flags_nochange_11(self):
@@ -292,7 +292,7 @@ class AaTest_parse_profile_start(AATest):
 
     def test_parse_profile_start_03(self):
         result = self._parse('profile foo /foo {', None, None) # named profile
-        expected = ('foo /foo', 'foo /foo', '/foo', None, False, False, False) # XXX yes, that's what happens with the current code :-/
+        expected = ('foo', 'foo', '/foo', None, False, False, False)
         self.assertEqual(result, expected)
 
     def test_parse_profile_start_04(self):
@@ -376,7 +376,7 @@ class AaTest_serialize_parse_profile_start(AATest):
 
     def test_serialize_parse_profile_start_03(self):
         result = self._parse('profile foo /foo {', None, None, False, False) # named profile
-        expected = ('foo /foo', 'foo /foo', '/foo', None, False, True) # XXX yes, that's what happens with the current code :-/
+        expected = ('foo', 'foo', '/foo', None, False, True)
         self.assertEqual(result, expected)
 
     def test_serialize_parse_profile_start_04(self):

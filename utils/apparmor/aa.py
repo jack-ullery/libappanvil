@@ -2696,6 +2696,8 @@ def parse_profile_data(data, file, do_include):
         # Starting line of a profile
         if RE_PROFILE_START.search(line):
             (profile, hat, attachment, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
+            if attachment:
+                profile_data[profile][hat]['attachment'] = attachment
             if pps_set_profile:
                 profile_data[profile][hat]['profile'] = True
             if pps_set_hat_external:

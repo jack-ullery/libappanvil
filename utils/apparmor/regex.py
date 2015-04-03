@@ -100,10 +100,6 @@ def parse_profile_start_line(line, filename):
         result['profile'] = result['namedprofile']
         result['profile_keyword'] = True
 
-    if result['attachment']:
-        # XXX keep the broken behaviour until proper handling for attachment is implemented
-        result['profile'] = "%s %s" % (result['profile'], result['attachment'])
-
     return result
 
 
