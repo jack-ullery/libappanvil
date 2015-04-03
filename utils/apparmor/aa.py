@@ -3724,27 +3724,10 @@ def serialize_profile(profile_data, name, options):
     return string + '\n'
 
 def serialize_parse_profile_start(line, file, lineno, profile, hat, prof_data_profile, prof_data_external, correct):
-    matches = parse_profile_start_line(line, file)
+    (profile, hat, attachment, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
 
-    if profile and profile == hat and matches['profile_keyword']:
-        hat = matches['profile']
-        in_contained_hat = True
-        if prof_data_profile:
-            pass
-    else:
-        profile = matches['profile']
-        if len(profile.split('//')) >= 2:
-            profile, hat = profile.split('//')[:2]
-        else:
-            hat = None
-        in_contained_hat = False
-        if hat and not prof_data_external:
-            correct = False
-        else:
-            hat = profile
-
-    attachment = matches['attachment']
-    flags = matches['flags']
+    if hat and profile != hat and '%s//%s'%(profile, hat) in line and not prof_data_external:
+        correct = False
 
     return (profile, hat, attachment, flags, in_contained_hat, correct)
 

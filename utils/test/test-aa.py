@@ -454,30 +454,27 @@ class AaTest_serialize_parse_profile_start(AATest):
         expected = ('/bar', '/foo', None, None, True, True)
         self.assertEqual(result, expected)
 
-    def test_serialize_parse_profile_start_13(self):
-        result = self._parse('/foo {', '/bar', '/bar', False, False) # child profile without 'profile' keyword - XXX should this error out?
-        expected = ('/foo', '/foo', None, None, False, True) # note that in_contained_hat == False and that profile == hat == child profile
-        self.assertEqual(result, expected)
+class AaTestInvalid_serialize_parse_profile_start(AATest):
+    tests = [
+        # line              profile     hat     p_d_profile p_d_external   expected
+        (['/foo {',         '/bar',     '/bar', False,      False       ], AppArmorException), # child profile without 'profile' keyword
+        (['profile /foo {', '/bar',     '/xy',  False,      False       ], AppArmorException), # already inside a child profile - nesting level reached
+        (['/ext//hat {',    '/bar',     '/bar', True,       True        ], AppArmorException), # external hat inside a profile
+        (['/ext//hat {',    '/bar',     '/bar', True,       False       ], AppArmorException), # external hat inside a profile
+        (['xy',             '/bar',     '/bar', False,      False       ], AppArmorBug      ), # not a profile start
+    ]
 
-    def test_serialize_parse_profile_start_14(self):
-        result = self._parse('/ext//hat {', '/bar', '/bar', True, True) # external hat inside a profile - XXX should this error out?
-        expected = ('/ext', '/ext', None, None, False, True) # XXX additionally note that hat == profile, but should be 'hat'
-        self.assertEqual(result, expected)
+    def _run_test(self, params, expected):
+        line = params[0]
+        profile = params[1]
+        hat = params[2]
+        prof_data_profile = params[3]
+        prof_data_external = params[4]
 
-    def test_serialize_parse_profile_start_15(self):
-        result = self._parse('/ext//hat {', '/bar', '/bar', True, False) # external hat inside a profile - XXX should this error out?
-        expected = ('/ext', 'hat', None, None, False, False)
-        self.assertEqual(result, expected)
+        with self.assertRaises(expected):
+            # 'correct' is always True in the code that uses serialize_parse_profile_start() (set some lines above the function call)
+            serialize_parse_profile_start(line, 'somefile', 1, profile, hat, prof_data_profile, prof_data_external, True)
 
-
-    def test_serialize_parse_profile_start_invalid_01(self):
-        with self.assertRaises(AppArmorBug):
-            self._parse('xy', '/bar', '/bar', False, False) # not a profile start
-
-    # XXX not catched as error. See also test_serialize_parse_profile_start_13() - maybe this is wanted behaviour here?
-    #def test_serialize_parse_profile_start_invalid_02(self):
-    #    with self.assertRaises(AppArmorException):
-    #        self._parse('/foo {', '/bar', '/bar', False, False) # child profile without profile keyword
 
 if __name__ == '__main__':
     setup_all_tests()
