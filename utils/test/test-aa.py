@@ -119,6 +119,9 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
         else:
             expected_flags = ''
 
+        if comment:
+            comment = ' %s' % comment
+
         dummy_profile_content = '  #include <abstractions/base>\n  capability chown,\n  /bar r,'
         prof_template = '%s%s%s {%s\n%s\n%s\n}\n'
         old_prof = prof_template % (whitespace, profile, old_flags,      comment, more_rules, dummy_profile_content)
@@ -150,10 +153,8 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
     def test_set_flags_nochange_09(self):
         self._test_set_flags('profile xy /foo', 'flags=(complain)', 'complain', profile_name='xy /foo') # XXX profile_name should be 'xy'
     def test_set_flags_nochange_10(self):
-        self._test_set_flags('profile "/foo"', 'flags=(complain)', 'complain') # superfluous quotes are kept
-    def test_set_flags_nochange_11(self):
         self._test_set_flags('profile "/foo bar"', 'flags=(complain)', 'complain', profile_name='/foo bar')
-    #def test_set_flags_nochange_12(self):
+    #def test_set_flags_nochange_11(self):
     # XXX changes the flags for the child profile (which happens to have the same profile name) to 'complain'
     #    self._test_set_flags('/foo', 'flags=(complain)', 'complain', more_rules='  profile /foo {\n}')
 
@@ -177,11 +178,11 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
     def test_set_flags_09(self):
         self._test_set_flags('profile /foo', 'flags=(complain)', 'audit')
     def test_set_flags_10(self):
-        self._test_set_flags('profile xy /foo', 'flags=(complain)', 'audit', profile_name='xy /foo') # XXX profile_name should be just 'xy'
+        self._test_set_flags('profile xy /foo', 'flags=(complain)', 'audit', profile_name='xy')
     def test_set_flags_11(self):
         self._test_set_flags('profile "/foo bar"', 'flags=(complain)', 'audit', profile_name='/foo bar')
     def test_set_flags_12(self):
-        self._test_set_flags('profile xy "/foo bar"', 'flags=(complain)', 'audit', profile_name='xy "/foo bar') # profile name should just be 'xy'
+        self._test_set_flags('profile xy "/foo bar"', 'flags=(complain)', 'audit', profile_name='xy')
 
 
     # XXX regex_hat_flag in set_profile_flags() is totally broken - it matches for '   ' and '  X ', but doesn't match for ' ^foo {'
@@ -190,16 +191,15 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
     #    self._test_set_flags('  ^hat', '', 'audit')
 
 
-    # XXX current code/regex doesn't check for empty flags
-    #def test_set_flags_invalid_01(self):
-    #    with self.assertRaises(AppArmorBug):
-    #        self._test_set_flags('/foo', '()', None, check_new_flags=False)
-    #def test_set_flags_invalid_02(self):
-    #    with self.assertRaises(AppArmorBug):
-    #        self._test_set_flags('/foo', 'flags=()', None, check_new_flags=False)
-    #def test_set_flags_invalid_03(self):
-    #    with self.assertRaises(AppArmorException):
-    #        self._test_set_flags('/foo', '(  )', '  ', check_new_flags=False)
+    def test_set_flags_invalid_01(self):
+        with self.assertRaises(AppArmorBug):
+            self._test_set_flags('/foo', '()', None, check_new_flags=False)
+    def test_set_flags_invalid_02(self):
+        with self.assertRaises(AppArmorBug):
+            self._test_set_flags('/foo', 'flags=()', None, check_new_flags=False)
+    def test_set_flags_invalid_03(self):
+        with self.assertRaises(AppArmorException):
+            self._test_set_flags('/foo', '(  )', '  ', check_new_flags=False)
 
     def test_set_flags_other_profile(self):
         # test behaviour if the file doesn't contain the specified /foo profile
@@ -214,11 +214,8 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
         self.assertEqual(orig_prof, real_new_prof)
 
     def test_set_flags_file_not_found(self):
-        # XXX this exits silently
-        # the easiest solution would be to drop the
-        #         if os.path.isfile(prof_filename):
-        # check and let open_file_read raise an exception
-        set_profile_flags('%s/file-not-found' % self.tmpdir, '/foo', 'audit')
+        with self.assertRaises(IOError):
+            set_profile_flags('%s/file-not-found' % self.tmpdir, '/foo', 'audit')
 
 
 class AaTest_is_skippable_file(AATest):
