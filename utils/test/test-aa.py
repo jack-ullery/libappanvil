@@ -16,7 +16,7 @@ import shutil
 import tempfile
 from common_test import read_file, write_file
 
-from apparmor.aa import check_for_apparmor, get_profile_flags, set_profile_flags, is_skippable_file, parse_profile_start, write_header, serialize_parse_profile_start
+from apparmor.aa import check_for_apparmor, get_profile_flags, set_profile_flags, is_skippable_file, is_skippable_dir, parse_profile_start, write_header, serialize_parse_profile_start
 from apparmor.common import AppArmorException, AppArmorBug
 
 class AaTestWithTempdir(AATest):
@@ -274,6 +274,36 @@ class AaTest_is_skippable_file(AATest):
         self.assertTrue(is_skippable_file('/etc/apparmor.d/'))  # directory without filename
     def test_skippable_13(self):
         self.assertTrue(is_skippable_file('README'))
+
+
+class AaTest_is_skippable_dir(AATest):
+    tests = [
+        ('disable',                     True),
+        ('cache',                       True),
+        ('lxc',                         True),
+        ('force-complain',              True),
+        ('/etc/apparmor.d/cache',       True),
+        ('/etc/apparmor.d/lxc/',        True),
+
+        ('dont_disable',                False),
+        ('/etc/apparmor.d/cache_foo',   False),
+        ('abstractions',                False),
+        ('apache2.d',                   False),
+        ('/etc/apparmor.d/apache2.d',   False),
+        ('local',                       False),
+        ('/etc/apparmor.d/local/',      False),
+        ('tunables',                    False),
+        ('/etc/apparmor.d/tunables',    False),
+        ('/etc/apparmor.d/tunables/multiarch.d',            False),
+        ('/etc/apparmor.d/tunables/xdg-user-dirs.d',        False),
+        ('/etc/apparmor.d/tunables/home.d',                 False),
+        ('/etc/apparmor.d/abstractions',                    False),
+        ('/etc/apparmor.d/abstractions/ubuntu-browsers.d',  False),
+        ('/etc/apparmor.d/abstractions/apparmor_api',       False),
+    ]
+
+    def _run_test(self, params, expected):
+        self.assertEqual(is_skippable_dir(params), expected)
 
 class AaTest_parse_profile_start(AATest):
     def _parse(self, line, profile, hat):
