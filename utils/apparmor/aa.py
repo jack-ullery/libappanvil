@@ -3400,12 +3400,12 @@ def write_net_rules(prof_data, depth, allow):
             for fam in sorted(prof_data[allow]['netdomain']['rule'].keys()):
                 if prof_data[allow]['netdomain']['rule'][fam] is True:
                     if prof_data[allow]['netdomain']['audit'][fam]:
-                        audit = 'audit'
+                        audit = 'audit '
                     data.append('%s%s%snetwork %s,' % (pre, audit, allowstr, fam))
                 else:
                     for typ in sorted(prof_data[allow]['netdomain']['rule'][fam].keys()):
                         if prof_data[allow]['netdomain']['audit'][fam].get(typ, False):
-                            audit = 'audit'
+                            audit = 'audit '
                         data.append('%s%s%snetwork %s %s,' % (pre, audit, allowstr, fam, typ))
         if prof_data[allow].get('netdomain', False):
             data.append('')
