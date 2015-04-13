@@ -77,6 +77,9 @@ class BaseRule(object):
         if check_allow_deny and self.deny != other_rule.deny:
             return False
 
+        if other_rule.deny and not self.deny:
+            return False
+
         if check_audit and other_rule.audit != self.audit:
             return False
 

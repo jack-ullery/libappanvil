@@ -579,6 +579,12 @@ class CapabilityRulesCoveredTest(unittest.TestCase):
         self.assertFalse(self.ruleset.is_covered(CapabilityRule.parse('audit deny capability chgrp,')))
     def test_ruleset_is_covered_21(self):
         self.assertFalse(self.ruleset.is_covered(CapabilityRule.parse('audit capability chgrp,')))
+    def test_ruleset_is_covered_22(self):
+        self.assertFalse(self.ruleset.is_covered(CapabilityRule.parse('capability chgrp,')))
+    def test_ruleset_is_covered_23(self):
+        self.assertTrue(self.ruleset.is_covered(CapabilityRule.parse('capability chgrp,'), check_allow_deny=False))
+    def test_ruleset_is_covered_24(self):
+        self.assertFalse(self.ruleset.is_covered(CapabilityRule.parse('deny capability chown,'), check_allow_deny=False))
 
 # XXX - disabling these until we decide whether or not checking whether
 # a log is covered by rules should be a separate entry point, possibly
