@@ -3241,13 +3241,12 @@ def parse_unix_rule(line):
 
 def separate_vars(vs):
     """Returns a list of all the values for a variable"""
-    data = []
+    data = set()
 
-    #data = [i.strip('"') for i in vs.split()]
     RE_VARS = re.compile('\s*((\".+?\")|([^\"]\S+))\s*(.*)$')
     while RE_VARS.search(vs):
         matches = RE_VARS.search(vs).groups()
-        data.append(strip_quotes(matches[0]))
+        data.add(strip_quotes(matches[0]))
         vs = matches[3]
 
     return data
@@ -3259,17 +3258,19 @@ def is_active_profile(pname):
         return False
 
 def store_list_var(var, list_var, value, var_operation, filename):
-    """Store(add new variable or add values to variable) the variables encountered in the given list_var"""
+    """Store(add new variable or add values to variable) the variables encountered in the given list_var
+       - the 'var' parameter will be modified
+       - 'list_var' is the variable name, for example '@{foo}'
+        """
     vlist = separate_vars(value)
     if var_operation == '=':
         if not var.get(list_var, False):
             var[list_var] = set(vlist)
         else:
-            #print('Ignored: New definition for variable for:',list_var,'=', value, 'operation was:',var_operation,'old value=', var[list_var])
             raise AppArmorException(_('Redefining existing variable %(variable)s: %(value)s in %(file)s') % { 'variable': list_var, 'value': value, 'file': filename })
     elif var_operation == '+=':
         if var.get(list_var, False):
-            var[list_var] = set(var[list_var] + vlist)
+            var[list_var] |= vlist
         else:
             raise AppArmorException(_('Values added to a non-existing variable %(variable)s: %(value)s in %(file)s') % { 'variable': list_var, 'value': value, 'file': filename })
     else:

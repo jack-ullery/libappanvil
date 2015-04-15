@@ -16,7 +16,7 @@ import shutil
 import tempfile
 from common_test import read_file, write_file
 
-from apparmor.aa import check_for_apparmor, get_profile_flags, set_profile_flags, is_skippable_file, is_skippable_dir, parse_profile_start, write_header, serialize_parse_profile_start
+from apparmor.aa import check_for_apparmor, get_profile_flags, set_profile_flags, is_skippable_file, is_skippable_dir, parse_profile_start, separate_vars, store_list_var, write_header, serialize_parse_profile_start
 from apparmor.common import AppArmorException, AppArmorBug
 
 class AaTestWithTempdir(AATest):
@@ -348,6 +348,66 @@ class AaTest_parse_profile_start(AATest):
     def test_parse_profile_start_invalid_02(self):
         with self.assertRaises(AppArmorBug):
             self._parse('xy', '/bar', '/bar') # not a profile start
+
+class AaTest_separate_vars(AATest):
+    tests = [
+        (''                             , set()                      ),
+        ('       '                      , set()                      ),
+        ('  foo bar'                    , {'foo', 'bar'             }),
+        ('foo "  '                      , {'foo'                    }), # XXX " is ignored
+        (' " foo '                      , {' "', 'foo'              }), # XXX really?
+        ('  foo bar   '                 , {'foo', 'bar'             }),
+        ('  foo bar   # comment'        , {'foo', 'bar', 'comment'  }), # XXX should comments be stripped?
+        ('foo'                          , {'foo'                    }),
+        ('"foo" "bar baz"'              , {'foo', 'bar baz'         }),
+        ('foo "bar baz" xy'             , {'foo', 'bar baz', 'xy'   }),
+        ('foo "bar baz '                , {'foo', 'bar', 'baz'      }), # half-quoted
+        ('  " foo" bar'                 , {' foo', 'bar'            }),
+    ]
+
+    def _run_test(self, params, expected):
+        result = separate_vars(params)
+        self.assertEqual(result, expected)
+
+
+class AaTest_store_list_var(AATest):
+    tests = [
+        #  old var                        value        operation   expected (False for exception)
+        ([ {}                           , 'foo'         , '='   ], {'foo'}                      ), # set
+        ([ {}                           , 'foo bar'     , '='   ], {'foo', 'bar'}               ), # set multi
+        ([ {'@{var}': {'foo'}}          , 'bar'         , '='   ], False                        ), # redefine var
+        ([ {}                           , 'bar'         , '+='  ], False                        ), # add to undefined var
+        ([ {'@{var}': {'foo'}}          , 'bar'         , '+='  ], {'foo', 'bar'}               ), # add
+        ([ {'@{var}': {'foo'}}          , 'bar baz'     , '+='  ], {'foo', 'bar', 'baz'}        ), # add multi
+        ([ {'@{var}': {'foo', 'xy'}}    , 'bar baz'     , '+='  ], {'foo', 'xy', 'bar', 'baz'}  ), # add multi to multi
+        ([ {}                           , 'foo'         , '-='  ], False                        ), # unknown operation
+    ]
+
+    def _run_test(self, params, expected):
+        var         = params[0]
+        value       = params[1]
+        operation   = params[2]
+
+        if not expected:
+            with self.assertRaises(AppArmorException):
+                store_list_var(var, '@{var}', value, operation, 'somefile')
+            return
+
+        # dumy value that must not be changed
+        var['@{foo}'] = {'one', 'two'}
+
+        exp_var = {
+            '@{foo}':   {'one', 'two'},
+            '@{var}':   expected,
+        }
+
+        store_list_var(var, '@{var}', value, operation, 'somefile')
+
+        self.assertEqual(var.keys(), exp_var.keys())
+
+        for key in exp_var:
+            self.assertEqual(var[key], exp_var[key])
+
 
 class AaTest_write_header(AATest):
     tests = [
