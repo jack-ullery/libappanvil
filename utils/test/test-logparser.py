@@ -26,7 +26,7 @@ class TestParseEvent(unittest.TestCase):
         self.assertEqual(parsed_event['name'], '/home/www/foo.bar.in/httpdocs/apparmor/images/test/image 1.jpg')
         self.assertEqual(parsed_event['profile'], '/usr/sbin/httpd2-prefork//vhost_foo')
         self.assertEqual(parsed_event['aamode'], 'PERMITTING')
-        self.assertEqual(parsed_event['request_mask'], set(['w', 'a', '::w', '::a']))
+        self.assertEqual(parsed_event['request_mask'], 'wc')
 
         self.assertIsNotNone(ReadLog.RE_LOG_v2_6_audit.search(event))
         self.assertIsNone(ReadLog.RE_LOG_v2_6_syslog.search(event))
@@ -37,7 +37,7 @@ class TestParseEvent(unittest.TestCase):
         self.assertEqual(parsed_event['name'], '/home/foo/.bash_history')
         self.assertEqual(parsed_event['profile'], 'foo bar')
         self.assertEqual(parsed_event['aamode'], 'PERMITTING')
-        self.assertEqual(parsed_event['request_mask'], set(['r', 'w', 'a','::r' , '::w', '::a']))
+        self.assertEqual(parsed_event['request_mask'], 'rw')
 
         self.assertIsNotNone(ReadLog.RE_LOG_v2_6_audit.search(event))
         self.assertIsNone(ReadLog.RE_LOG_v2_6_syslog.search(event))
@@ -49,7 +49,7 @@ class TestParseEvent(unittest.TestCase):
         self.assertEqual(parsed_event['name'], '/dev/tty')
         self.assertEqual(parsed_event['profile'], '/home/cb/linuxtag/apparmor/scripts/hello')
         self.assertEqual(parsed_event['aamode'], 'PERMITTING')
-        self.assertEqual(parsed_event['request_mask'], set(['r', 'w', 'a', '::r', '::w', '::a']))
+        self.assertEqual(parsed_event['request_mask'], 'rw')
 
         self.assertIsNone(ReadLog.RE_LOG_v2_6_audit.search(event))
         self.assertIsNotNone(ReadLog.RE_LOG_v2_6_syslog.search(event))
@@ -61,7 +61,7 @@ class TestParseEvent(unittest.TestCase):
         self.assertEqual(parsed_event['name'], '/usr/bin/')
         self.assertEqual(parsed_event['profile'], '/home/simi/bin/aa-test')
         self.assertEqual(parsed_event['aamode'], 'PERMITTING')
-        self.assertEqual(parsed_event['request_mask'], set(['r', '::r']))
+        self.assertEqual(parsed_event['request_mask'], 'r')
 
         self.assertIsNone(ReadLog.RE_LOG_v2_6_audit.search(event))
         self.assertIsNotNone(ReadLog.RE_LOG_v2_6_syslog.search(event))
@@ -75,7 +75,7 @@ class TestParseEvent(unittest.TestCase):
             'aamode': 'ERROR',   # aamode for disconnected paths overridden aamode in parse_event()
             'active_hat': None,
             'attr': None,
-            'denied_mask': {'r', '::r'},
+            'denied_mask': 'r',
             'error_code': 13,
             'info': 'Failed name lookup - disconnected path',
             'magic_token': 0,
@@ -85,7 +85,7 @@ class TestParseEvent(unittest.TestCase):
             'parent': 0,
             'pid': 25333,
             'profile': '/sbin/klogd',
-            'request_mask': {'r', '::r'},
+            'request_mask': 'r',
             'resource': 'Failed name lookup - disconnected path',
             'task': 0,
             'time': 1424425690

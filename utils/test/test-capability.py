@@ -102,8 +102,8 @@ class CapabilityTest(unittest.TestCase):
         parsed_event = parser.parse_event(event)
 
         self.assertEqual(parsed_event, {
-            'request_mask': set(),
-            'denied_mask': set(),
+            'request_mask': None,
+            'denied_mask': None,
             'error_code': 0,
             'magic_token': 0,
             'parent': 0,
