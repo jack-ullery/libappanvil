@@ -4129,14 +4129,17 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 else:
                     tmpmode = str_to_mode(mode)
 
-                if not write_prof_data[hat][allow]['path'][path].get('mode', set()) & tmpmode:
+                if not write_prof_data[hat][allow]['path'].get(path):
                     correct = False
+                else:
+                    if not write_prof_data[hat][allow]['path'][path].get('mode', set()) & tmpmode:
+                        correct = False
 
-                if nt_name and not write_prof_data[hat][allow]['path'][path].get('to', False) == nt_name:
-                    correct = False
+                    if nt_name and not write_prof_data[hat][allow]['path'][path].get('to', False) == nt_name:
+                        correct = False
 
-                if audit and not write_prof_data[hat][allow]['path'][path].get('audit', set()) & tmpmode:
-                    correct = False
+                    if audit and not write_prof_data[hat][allow]['path'][path].get('audit', set()) & tmpmode:
+                        correct = False
 
                 if correct:
                     if not segments['path'] and True in segments.values():
