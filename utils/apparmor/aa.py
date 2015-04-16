@@ -4053,7 +4053,11 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 var_operation = matches[1]
                 value = strip_quotes(matches[2])
                 var_set = hasher()
-                if profile:
+                if var_operation == '+=':
+                    correct = False  # adding proper support for "add to variable" needs big changes
+                    # (like storing a variable's "history" - where it was initially defined and what got added where)
+                    # so just skip any comparison and assume a non-match
+                elif profile:
                     store_list_var(var_set, list_var, value, var_operation, prof_filename)
                     if not var_set[list_var] == write_prof_data['lvar'].get(list_var, False):
                         correct = False
