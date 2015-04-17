@@ -114,7 +114,7 @@ class CapabilityRule(BaseRule):
         '''compare if rule-specific variables are equal'''
 
         if not type(rule_obj) == CapabilityRule:
-            raise AppArmorBug('Passes non-capability rule: %s' % str(rule_obj))
+            raise AppArmorBug('Passed non-capability rule: %s' % str(rule_obj))
 
         if (self.capability != rule_obj.capability
                 or self.all_caps != rule_obj.all_caps):
