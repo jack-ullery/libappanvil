@@ -10,7 +10,7 @@
 # ------------------------------------------------------------------
 
 import unittest
-from common_test import AATest, setup_all_tests
+from common_test import AATest, setup_all_loops
 
 class TestFoo(AATest):
     tests = [
@@ -40,6 +40,6 @@ class TestBaz(AATest):
 
 
 
+setup_all_loops(__name__)
 if __name__ == '__main__':
-    setup_all_tests()
     unittest.main(verbosity=2)

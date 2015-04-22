@@ -51,10 +51,9 @@ class AAParseTest(unittest.TestCase):
             'parse object %s returned "%s", expected "%s"' \
             %(self.parse_function.__doc__, parsed.serialize(), rule))
 
-
-def setup_all_tests():
+def setup_all_loops(module_name):
     '''call setup_tests_loop() for each class in module_name'''
-    for name, obj in inspect.getmembers(sys.modules['__main__']):
+    for name, obj in inspect.getmembers(sys.modules[module_name]):
         if inspect.isclass(obj):
             if issubclass(obj, unittest.TestCase):
                 setup_tests_loop(obj)

@@ -11,7 +11,7 @@
 
 import apparmor.aa as aa
 import unittest
-from common_test import AATest, setup_all_tests
+from common_test import AATest, setup_all_loops
 from apparmor.common import AppArmorBug
 
 from apparmor.regex import strip_quotes, parse_profile_start_line, RE_PROFILE_START
@@ -19,7 +19,7 @@ from apparmor.regex import strip_quotes, parse_profile_start_line, RE_PROFILE_ST
 
 class AARegexTest(AATest):
     def _run_test(self, params, expected):
-        return regex_test(self, params, expected)
+        return _regex_test(self, params, expected)
 
 class AANamedRegexTest(AATest):
     def _run_test(self, line, expected):
@@ -173,7 +173,7 @@ def setup_split_comment_testcases():
         setattr(AARegexSplitComment, 'test_split_comment_%d' % (i), stub_test)
 
 
-def regex_test(self, line, expected):
+def _regex_test(self, line, expected):
     '''Run a line through self.regex.search() and verify the result
 
     Keyword arguments:
@@ -484,10 +484,10 @@ class TestStripQuotes(AATest):
 
 
 
+setup_all_loops(__name__)
 if __name__ == '__main__':
     # these two are not converted to a tests[] loop yet
     setup_has_comma_testcases()
     setup_split_comment_testcases()
 
-    setup_all_tests()
     unittest.main(verbosity=2)
