@@ -13,7 +13,9 @@ import unittest
 from common_test import AATest, setup_all_loops
 
 from apparmor.common import AppArmorBug
-from apparmor.rule import BaseRule
+from apparmor.rule import BaseRule, parse_modifiers
+
+import re
 
 class TestBaserule(AATest):
     def test_abstract__parse(self):
@@ -29,6 +31,14 @@ class TestBaserule(AATest):
         obj = BaseRule()
         with self.assertRaises(AppArmorBug):
             obj.is_covered_localvars(None)
+
+    def test_parse_modifiers_invalid(self):
+        regex = re.compile('^\s*(?P<audit>audit\s+)?(?P<allow>allow\s+|deny\s+|invalid\s+)?')
+        matches = regex.search('audit invalid ')
+
+        with self.assertRaises(AppArmorBug):
+            parse_modifiers(matches)
+
 
 
 setup_all_loops(__name__)

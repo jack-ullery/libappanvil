@@ -16,11 +16,9 @@
 import unittest
 
 from apparmor.rule.capability import CapabilityRule, CapabilityRuleset
-from apparmor.rule import BaseRule, parse_modifiers
+from apparmor.rule import BaseRule
 from apparmor.common import AppArmorException, AppArmorBug, hasher
 from apparmor.logparser import ReadLog
-
-import re
 
 # --- tests for single CapabilityRule --- #
 
@@ -229,13 +227,6 @@ class InvalidCapabilityTest(unittest.TestCase):
 
     def test_invalid_cap_non_CapabilityRule(self):
         self._check_invalid_rawrule('network,')  # not a capability rule
-
-    def test_parse_modifiers_invalid(self):
-        regex = re.compile('^\s*(?P<audit>audit\s+)?(?P<allow>allow\s+|deny\s+|invalid\s+)?')
-        matches = regex.search('audit invalid ')
-
-        with self.assertRaises(AppArmorBug):
-            parse_modifiers(matches)
 
     def test_empty_cap_set(self):
         obj = CapabilityRule('chown')
