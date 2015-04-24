@@ -230,15 +230,39 @@ class BaseRuleset(object):
 
     def delete_duplicates(self, include_rules):
         '''Delete duplicate rules.
-           include_rules must be a *_rules object'''
-        deleted = []
-        if include_rules:  # avoid breakage until we have a proper function to ensure all profiles contain all *_rules objects
+           include_rules must be a *_rules object or None'''
+
+        deleted = 0
+
+        # delete rules that are covered by include files
+        if include_rules:
             for rule in self.rules:
                 if include_rules.is_covered(rule, True, True):
                     self.delete(rule)
-                    deleted.append(rule)
+                    deleted += 1
 
-        return len(deleted)
+        # de-duplicate rules inside the profile
+        deleted += self.delete_in_profile_duplicates()
+        self.rules.reverse()
+        deleted += self.delete_in_profile_duplicates()  # search again in reverse order - this will find the remaining duplicates
+        self.rules.reverse()  # restore original order for raw output
+
+        return deleted
+
+    def delete_in_profile_duplicates(self):
+        '''Delete duplicate rules inside a profile'''
+
+        deleted = 0
+        oldrules = self.rules
+        self.rules = []
+
+        for rule in oldrules:
+            if not self.is_covered(rule, True, False):
+                self.rules.append(rule)
+            else:
+                deleted += 1
+
+        return deleted
 
     def get_glob_ext(self, path_or_rule):
         '''returns the next possible glob with extension (for file rules only).

@@ -855,5 +855,118 @@ class CapabilityDeleteTest(unittest.TestCase):
         self.assertEqual(expected_clean, self.ruleset.get_clean(1))
 
 
+    def _check_test_delete_duplicates_in_profile(self, rules, expected_raw, expected_clean, expected_deleted):
+        obj = CapabilityRuleset()
+
+        for rule in rules:
+            obj.add(CapabilityRule.parse(rule))
+
+        deleted = obj.delete_duplicates(None)
+
+        self.assertEqual(expected_raw, obj.get_raw(1))
+        self.assertEqual(expected_clean, obj.get_clean(1))
+        self.assertEqual(deleted, expected_deleted)
+
+
+    def test_delete_duplicates_in_profile_01(self):
+        rules = [
+            'audit capability chown,',
+            'audit capability,',
+            'capability dac_override,',
+        ]
+
+        expected_raw = [
+            '  audit capability,',
+            '',
+        ]
+
+        expected_clean = [
+            '  audit capability,',
+            '',
+        ]
+
+        expected_deleted = 2
+
+        self._check_test_delete_duplicates_in_profile(rules, expected_raw, expected_clean, expected_deleted)
+
+    def test_delete_duplicates_in_profile_02(self):
+        rules = [
+            'audit capability chown,',
+            'audit capability,',
+            'audit capability dac_override,',
+            'capability ,',
+            'audit capability ,',
+        ]
+
+        expected_raw = [
+            '  audit capability,',
+            '',
+        ]
+
+        expected_clean = [
+            '  audit capability,',
+            '',
+        ]
+
+        expected_deleted = 4
+
+        self._check_test_delete_duplicates_in_profile(rules, expected_raw, expected_clean, expected_deleted)
+
+    def test_delete_duplicates_in_profile_03(self):
+        rules = [
+            'audit capability chown,',
+            'capability dac_override,',
+            'deny capability dac_override,',
+            'capability dac_override,',
+            'audit capability chown,',
+            'deny capability chown,',
+            'audit deny capability chown,',
+            'capability,',
+            'audit capability,',
+        ]
+
+        expected_raw = [
+            '  deny capability dac_override,',
+            '  audit deny capability chown,',
+            '  audit capability,',
+            '',
+        ]
+
+        expected_clean = [
+            '  audit deny capability chown,',
+            '  deny capability dac_override,',
+            '',
+            '  audit capability,',
+            '',
+        ]
+
+        expected_deleted = 6
+
+        self._check_test_delete_duplicates_in_profile(rules, expected_raw, expected_clean, expected_deleted)
+
+    def test_delete_duplicates_in_profile_04(self):
+        rules = [
+            'audit capability chown,',
+            'deny capability chown,',
+        ]
+
+        expected_raw = [
+            '  audit capability chown,',
+            '  deny capability chown,',
+            '',
+        ]
+
+        expected_clean = [
+            '  deny capability chown,',
+            '',
+            '  audit capability chown,',
+            '',
+        ]
+
+        expected_deleted = 0
+
+        self._check_test_delete_duplicates_in_profile(rules, expected_raw, expected_clean, expected_deleted)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
