@@ -11,14 +11,14 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-13 00:11-0700\n"
-"PO-Revision-Date: 2013-11-15 03:44+0000\n"
-"Last-Translator: Antonio Cardoso Martins <digiplan.pt@gmail.com>\n"
+"PO-Revision-Date: 2015-04-24 17:01+0000\n"
+"Last-Translator: Bruno Ramalhete <bram.512@gmail.com>\n"
 "Language-Team: Portuguese <opensuse-pt@opensuse.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2015-03-11 05:08+0000\n"
-"X-Generator: Launchpad (build 17389)\n"
+"X-Launchpad-Export-Date: 2015-04-25 05:07+0000\n"
+"X-Generator: Launchpad (build 17430)\n"
 "Language: pt\n"
 
 #: ../parser_include.c:113 ../parser_include.c:111
@@ -54,7 +54,7 @@ msgstr "Memória esgotada\n"
 
 #: ../parser_interface.c:78 ../parser_interface.c:81 ../parser_interface.c:58
 msgid "Couldn't copy profile: Bad memory address\n"
-msgstr ""
+msgstr "Não pode copiar o perfil: Mau endereço de memória\n"
 
 #: ../parser_interface.c:81 ../parser_interface.c:84 ../parser_interface.c:61
 msgid "Profile doesn't conform to protocol\n"
@@ -78,12 +78,12 @@ msgstr "O perfil não existe\n"
 
 #: ../parser_interface.c:96 ../parser_interface.c:99 ../parser_interface.c:76
 msgid "Permission denied; attempted to load a profile while confined?\n"
-msgstr ""
+msgstr "Permissão negada; tentar carregar um perfil enquando confinado?\n"
 
 #: ../parser_interface.c:99 ../parser_interface.c:102 ../parser_interface.c:79
 #, c-format
 msgid "Unknown error (%d): %s\n"
-msgstr ""
+msgstr "Erro desconhecido (%d): %s\n"
 
 #: ../parser_interface.c:116 ../parser_interface.c:119
 #: ../parser_interface.c:96
@@ -113,7 +113,7 @@ msgstr "%s: Não é possível escrever em stdout\n"
 #: ../parser_interface.c:115
 #, c-format
 msgid "%s: Unable to write to output file\n"
-msgstr ""
+msgstr "%s: Incapaz de escrever no ficheiro de saída\n"
 
 #: ../parser_interface.c:138 ../parser_interface.c:162
 #: ../parser_interface.c:141 ../parser_interface.c:165
@@ -150,11 +150,11 @@ msgstr ""
 #: ../parser_interface.c:446
 #, c-format
 msgid "profile %s network rules not enforced\n"
-msgstr ""
+msgstr "regras de perfil %s na rede não impostas\n"
 
 #: ../parser_interface.c:666
 msgid "Unknown pattern type\n"
-msgstr ""
+msgstr "Tipo de padrão desconhecido\n"
 
 #: ../parser_interface.c:750 ../parser_interface.c:902
 #: ../parser_interface.c:743 ../parser_interface.c:894
@@ -195,7 +195,7 @@ msgstr "%s: Não é possível escrever a entrada completa de perfil\n"
 #: ../parser_interface.c:593
 #, c-format
 msgid "%s: Unable to write entire profile entry to cache\n"
-msgstr ""
+msgstr "%s: Incapaz de escrever a entrada inteira de perfil na cache\n"
 
 #: parser_lex.l:100 parser_lex.l:163 parser_lex.l:169
 #, c-format
@@ -205,22 +205,22 @@ msgstr ""
 #: parser_lex.l:104 parser_lex.l:167 parser_lex.l:173
 #, c-format
 msgid "fstat failed for '%s'"
-msgstr ""
+msgstr "fstat falhou para '%s'"
 
 #: parser_lex.l:121
 #, c-format
 msgid "opendir failed '%s'"
-msgstr ""
+msgstr "opendir falhou '%s'"
 
 #: parser_lex.l:152
 #, c-format
 msgid "stat failed for '%s'"
-msgstr ""
+msgstr "stat falhou para '%s'"
 
 #: parser_lex.l:155 parser_lex.l:133 parser_lex.l:139
 #, c-format
 msgid "Could not open '%s' in '%s'"
-msgstr ""
+msgstr "Não pode abrir '%s' em '%s'"
 
 #: parser_lex.l:284 parser_lex.l:322 parser_lex.l:362 parser_lex.l:399
 #: parser_lex.l:469 parser_lex.l:655 parser_lex.l:586 parser_lex.l:638
