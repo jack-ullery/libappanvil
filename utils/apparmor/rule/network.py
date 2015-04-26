@@ -98,10 +98,14 @@ class NetworkRule(BaseRule):
             raise AppArmorBug('Passed unknown object to NetworkRule: %s' % str(type_or_protocol))
 
     @classmethod
+    def _match(cls, raw_rule):
+        return RE_PROFILE_NETWORK.search(raw_rule)
+
+    @classmethod
     def _parse(cls, raw_rule):
         '''parse raw_rule and return NetworkRule'''
 
-        matches = RE_PROFILE_NETWORK.search(raw_rule)
+        matches = cls._match(raw_rule)
         if not matches:
             raise AppArmorException(_("Invalid network rule '%s'") % raw_rule)
 

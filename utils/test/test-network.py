@@ -49,6 +49,7 @@ class NetworkTestParse(NetworkTest):
     ]
 
     def _run_test(self, rawrule, expected):
+        self.assertTrue(NetworkRule.match(rawrule))
         obj = NetworkRule.parse(rawrule)
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
@@ -63,6 +64,7 @@ class NetworkTestParseInvalid(NetworkTest):
     ]
 
     def _run_test(self, rawrule, expected):
+        self.assertTrue(NetworkRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
             NetworkRule.parse(rawrule)
 
@@ -152,6 +154,7 @@ class InvalidNetworkInit(AATest):
 class InvalidNetworkTest(AATest):
     def _check_invalid_rawrule(self, rawrule):
         obj = None
+        self.assertFalse(NetworkRule.match(rawrule))
         with self.assertRaises(AppArmorException):
             obj = NetworkRule(NetworkRule.parse(rawrule))
 
@@ -180,6 +183,7 @@ class InvalidNetworkTest(AATest):
 
 class WriteNetworkTestAATest(AATest):
     def _run_test(self, rawrule, expected):
+        self.assertTrue(NetworkRule.match(rawrule))
         obj = NetworkRule.parse(rawrule)
         clean = obj.get_clean()
         raw = obj.get_raw()
@@ -209,6 +213,8 @@ class NetworkCoveredTest(AATest):
     def _run_test(self, param, expected):
         obj = NetworkRule.parse(self.rule)
         check_obj = NetworkRule.parse(param)
+
+        self.assertTrue(NetworkRule.match(param))
 
         self.assertEqual(obj.is_equal(check_obj), expected[0], 'Mismatch in is_equal, expected %s' % expected[0])
         self.assertEqual(obj.is_equal(check_obj, True), expected[1], 'Mismatch in is_equal/strict, expected %s' % expected[1])

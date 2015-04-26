@@ -26,6 +26,8 @@ class BaseRule(object):
     # type specific rules should inherit from this class.
     # Methods that subclasses need to implement:
     #   __init__
+    #   _match(cls, raw_rule) (as a class method)
+    #     - parses a raw rule and returns a regex match object
     #   _parse(cls, raw_rule) (as a class method)
     #     - parses a raw rule and returns an object of the Rule subclass
     #   get_clean(depth)
@@ -49,7 +51,25 @@ class BaseRule(object):
         self.raw_rule = None
 
     @classmethod
+    def match(cls, raw_rule):
+        '''return True if raw_rule matches the class (main) regex, False otherwise
+           Note: This function just provides an answer to "is this your job?".
+                 It does not guarantee that the rule is completely valid.'''
+
+        if cls._match(raw_rule):
+            return True
+        else:
+            return False
+
+    # @abstractmethod  FIXME - uncomment when python3 only
+    @classmethod
+    def _match(cls, raw_rule):
+        '''parse raw_rule and return regex match object'''
+        raise AppArmorBug("'%s' needs to implement _match(), but didn't" % (str(cls)))
+
+    @classmethod
     def parse(cls, raw_rule):
+        '''parse raw_rule and return a rule object'''
         rule = cls._parse(raw_rule)
         rule.raw_rule = raw_rule.strip()
         return rule

@@ -61,10 +61,14 @@ class CapabilityRule(BaseRule):
                     raise AppArmorBug('Passed empty capability to CapabilityRule: %s' % str(cap_list))
 
     @classmethod
+    def _match(cls, raw_rule):
+        return RE_PROFILE_CAP.search(raw_rule)
+
+    @classmethod
     def _parse(cls, raw_rule):
         '''parse raw_rule and return CapabilityRule'''
 
-        matches = RE_PROFILE_CAP.search(raw_rule)
+        matches = cls._match(raw_rule)
         if not matches:
             raise AppArmorException(_("Invalid capability rule '%s'") % raw_rule)
 

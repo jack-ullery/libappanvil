@@ -30,6 +30,7 @@ class CapabilityTest(unittest.TestCase):
 
         obj = CapabilityRule.parse(rawrule)
 
+        self.assertTrue(CapabilityRule.match(rawrule))
         self.assertEqual(rawrule.strip(), obj.raw_rule)
 
         self._compare_obj(obj, expected)
@@ -220,6 +221,7 @@ class InvalidCapabilityTest(unittest.TestCase):
         with self.assertRaises(AppArmorException):
             obj = CapabilityRule(CapabilityRule.parse(rawrule))
 
+        self.assertFalse(CapabilityRule.match(rawrule))
         self.assertIsNone(obj, 'CapbilityRule handed back an object unexpectedly')
 
     def test_invalid_cap_missing_comma(self):
@@ -269,6 +271,7 @@ class WriteCapabilityTest(unittest.TestCase):
         clean = obj.get_clean()
         raw = obj.get_raw()
 
+        self.assertTrue(CapabilityRule.match(rawrule))
         self.assertEqual(cleanrule.strip(), clean, 'unexpected clean rule')
         self.assertEqual(rawrule.strip(), raw, 'unexpected raw rule')
 
@@ -294,12 +297,15 @@ class CapabilityCoveredTest(unittest.TestCase):
         self.maxDiff = None
 
     def _is_covered(self, obj, rule_to_test):
+        self.assertTrue(CapabilityRule.match(rule_to_test))
         return obj.is_covered(CapabilityRule.parse(rule_to_test))
 
     def _is_covered_exact(self, obj, rule_to_test):
+        self.assertTrue(CapabilityRule.match(rule_to_test))
         return obj.is_covered(CapabilityRule.parse(rule_to_test), True, True)
 
     def _is_equal(self, obj, rule_to_test, strict):
+        self.assertTrue(CapabilityRule.match(rule_to_test))
         return obj.is_equal(CapabilityRule.parse(rule_to_test), strict)
 
     def test_covered_single(self):

@@ -22,6 +22,18 @@ class TestBaserule(AATest):
         with self.assertRaises(AppArmorBug):
             BaseRule._parse('foo')
 
+    def test_abstract__parse_2(self):
+        with self.assertRaises(AppArmorBug):
+            BaseRule.parse('foo')
+
+    def test_abstract__match(self):
+        with self.assertRaises(AppArmorBug):
+            BaseRule._match('foo')
+
+    def test_abstract__match2(self):
+        with self.assertRaises(AppArmorBug):
+            BaseRule.match('foo')
+
     def test_is_equal_localvars(self):
         obj = BaseRule()
         with self.assertRaises(AppArmorBug):
