@@ -67,6 +67,8 @@ class CleanProf(object):
             #Clean the duplicates of caps in other profile
             if not self.same_file:
                 deleted += self.other.aa[program][hat]['capability'].delete_duplicates(self.profile.aa[program][hat]['capability'])
+            else:
+                deleted += self.other.aa[program][hat]['capability'].delete_duplicates(None)
 
             #Clean the duplicates of path in other profile
             deleted += delete_path_duplicates(self.profile.aa[program][hat], self.other.aa[program][hat], 'allow', self.same_file)
