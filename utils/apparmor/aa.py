@@ -40,11 +40,11 @@ from apparmor.aamode import (str_to_mode, mode_to_str, contains, split_mode,
                              mode_to_str_user, mode_contains, AA_OTHER,
                              flatten_mode, owner_flatten_mode)
 
-from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_CAP, RE_PROFILE_LINK,
+from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
                             RE_PROFILE_CHANGE_PROFILE, RE_PROFILE_ALIAS, RE_PROFILE_RLIMIT,
                             RE_PROFILE_BOOLEAN, RE_PROFILE_VARIABLE, RE_PROFILE_CONDITIONAL,
                             RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
-                            RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY, RE_PROFILE_NETWORK,
+                            RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY,
                             RE_PROFILE_CHANGE_HAT,
                             RE_PROFILE_HAT_DEF, RE_PROFILE_DBUS, RE_PROFILE_MOUNT,
                             RE_PROFILE_SIGNAL, RE_PROFILE_PTRACE, RE_PROFILE_PIVOT_ROOT,
@@ -2701,7 +2701,7 @@ def parse_profile_data(data, file, do_include):
 
             initial_comment = ''
 
-        elif RE_PROFILE_CAP.search(line):
+        elif CapabilityRule.match(line):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected capability entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
@@ -2915,7 +2915,7 @@ def parse_profile_data(data, file, do_include):
                 if not include.get(include_name, False):
                     load_include(include_name)
 
-        elif RE_PROFILE_NETWORK.search(line):
+        elif NetworkRule.match(line):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected network entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
@@ -3830,7 +3830,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 else:
                     profile = None
 
-            elif RE_PROFILE_CAP.search(line):
+            elif CapabilityRule.match(line):
                 cap = CapabilityRule.parse(line)
                 if write_prof_data[hat]['capability'].is_covered(cap, True, True):
                     if not segments['capability'] and True in segments.values():
@@ -4069,7 +4069,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                         write_filelist['include'].pop(include_name)
                         data.append(line)
 
-            elif RE_PROFILE_NETWORK.search(line):
+            elif NetworkRule.match(line):
                 network_obj = NetworkRule.parse(line)
                 if write_prof_data[hat]['network'].is_covered(network_obj, True, True):
                     if not segments['network'] and True in segments.values():

@@ -14,7 +14,7 @@ import unittest
 from common_test import AATest, setup_all_loops
 from apparmor.common import AppArmorBug
 
-from apparmor.regex import strip_quotes, parse_profile_start_line, RE_PROFILE_START
+from apparmor.regex import strip_quotes, parse_profile_start_line, RE_PROFILE_START, RE_PROFILE_CAP
 
 
 class AARegexTest(AATest):
@@ -204,7 +204,7 @@ class AARegexCapability(AARegexTest):
     '''Tests for RE_PROFILE_CAP'''
 
     def setUp(self):
-        self.regex = aa.RE_PROFILE_CAP
+        self.regex = RE_PROFILE_CAP
 
     tests = [
         ('   capability net_raw,', (None, None, 'net_raw', 'net_raw', None)),
