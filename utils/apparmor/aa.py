@@ -45,7 +45,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_CAP, RE
                             RE_PROFILE_BOOLEAN, RE_PROFILE_VARIABLE, RE_PROFILE_CONDITIONAL,
                             RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
                             RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY, RE_PROFILE_NETWORK,
-                            RE_NETWORK_FAMILY_TYPE, RE_NETWORK_FAMILY, RE_PROFILE_CHANGE_HAT,
+                            RE_PROFILE_CHANGE_HAT,
                             RE_PROFILE_HAT_DEF, RE_PROFILE_DBUS, RE_PROFILE_MOUNT,
                             RE_PROFILE_SIGNAL, RE_PROFILE_PTRACE, RE_PROFILE_PIVOT_ROOT,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
@@ -54,6 +54,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_CAP, RE
 import apparmor.rules as aarules
 
 from apparmor.rule.capability import CapabilityRuleset, CapabilityRule
+from apparmor.rule.network    import NetworkRuleset,    NetworkRule
 from apparmor.rule import parse_modifiers
 
 from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
@@ -1450,8 +1451,6 @@ def handle_children(profile, hat, root):
                                 if stub_profile[hat][hat].get('include', False):
                                     aa[profile][hat]['include'] = stub_profile[hat][hat]['include']
 
-                                aa[profile][hat]['allow']['netdomain'] = hasher()
-
                                 file_name = aa[profile][profile]['filename']
                                 filelist[file_name]['profiles'][profile][hat] = True
 
@@ -1958,11 +1957,12 @@ def ask_the_questions():
                 for family in sorted(log_dict[aamode][profile][hat]['netdomain'].keys()):
                     # severity handling for net toggles goes here
                     for sock_type in sorted(log_dict[aamode][profile][hat]['netdomain'][family].keys()):
-                        if profile_known_network(aa[profile][hat], family, sock_type):
+                        network_obj = NetworkRule(family, sock_type)
+                        if is_known_rule(aa[profile][hat], 'network', network_obj):
                             continue
                         default_option = 1
                         options = []
-                        newincludes = match_net_includes(aa[profile][hat], family, sock_type)
+                        newincludes = match_includes(aa[profile][hat], 'network', network_obj)
                         q = aaui.PromptQuestion()
                         if newincludes:
                             options += list(map(lambda s: '#include <%s>' % s, sorted(set(newincludes))))
@@ -2031,8 +2031,7 @@ def ask_the_questions():
                                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                 else:
-                                    aa[profile][hat]['allow']['netdomain']['audit'][family][sock_type] = audit_toggle
-                                    aa[profile][hat]['allow']['netdomain']['rule'][family][sock_type] = True
+                                    aa[profile][hat]['network'].add(NetworkRule(family, sock_type, audit=audit_toggle))
 
                                     changed[profile] = True
 
@@ -2040,7 +2039,7 @@ def ask_the_questions():
 
                             elif ans == 'CMD_DENY':
                                 done = True
-                                aa[profile][hat]['deny']['netdomain']['rule'][family][sock_type] = True
+                                aa[profile][hat]['network'].add(NetworkRule(family, sock_type, audit=audit_toggle, deny=True))
                                 changed[profile] = True
                                 aaui.UI_Info(_('Denying network access %(family)s %(type)s to profile') % { 'family': family, 'type': sock_type })
 
@@ -2103,31 +2102,6 @@ def glob_path_withext(newpath):
             newpath = re.sub('/[^/]+(\.[^/]+)$', '/*' + match.groups()[0], newpath)
     return newpath
 
-def delete_net_duplicates(netrules, incnetrules):
-    deleted = 0
-    hasher_obj = hasher()
-    copy_netrules = deepcopy(netrules)
-    if incnetrules and netrules:
-        incnetglob = False
-        # Delete matching rules from abstractions
-        if incnetrules.get('all', False):
-            incnetglob = True
-        for fam in copy_netrules['rule'].keys():
-            if incnetglob or (type(incnetrules['rule'][fam]) != type(hasher_obj) and incnetrules['rule'][fam]):
-                if type(netrules['rule'][fam]) == type(hasher_obj):
-                    deleted += len(netrules['rule'][fam].keys())
-                else:
-                    deleted += 1
-                netrules['rule'].pop(fam)
-            elif type(netrules['rule'][fam]) != type(hasher_obj) and netrules['rule'][fam]:
-                continue
-            else:
-                for socket_type in copy_netrules['rule'][fam].keys():
-                    if incnetrules['rule'][fam].get(socket_type, False):
-                        netrules['rule'][fam].pop(socket_type)
-                        deleted += 1
-    return deleted
-
 def delete_path_duplicates(profile, incname, allow):
     deleted = []
     for entry in profile[allow]['path'].keys():
@@ -2150,20 +2124,14 @@ def delete_duplicates(profile, incname):
     # only a subset allow rules may actually be denied
 
     if include.get(incname, False):
-        deleted += delete_net_duplicates(profile['allow']['netdomain'], include[incname][incname]['allow']['netdomain'])
-
-        deleted += delete_net_duplicates(profile['deny']['netdomain'], include[incname][incname]['deny']['netdomain'])
-
+        deleted += profile['network'].delete_duplicates(include[incname][incname]['network'])
         deleted += profile['capability'].delete_duplicates(include[incname][incname]['capability'])
 
         deleted += delete_path_duplicates(profile, incname, 'allow')
         deleted += delete_path_duplicates(profile, incname, 'deny')
 
     elif filelist.get(incname, False):
-        deleted += delete_net_duplicates(profile['allow']['netdomain'], filelist[incname][incname]['allow']['netdomain'])
-
-        deleted += delete_net_duplicates(profile['deny']['netdomain'], filelist[incname][incname]['deny']['netdomain'])
-
+        deleted += profile['network'].delete_duplicates(filelist[incname][incname]['network'])
         deleted += profile['capability'].delete_duplicates(filelist[incname][incname]['capability'])
 
         deleted += delete_path_duplicates(profile, incname, 'allow')
@@ -2172,25 +2140,10 @@ def delete_duplicates(profile, incname):
     return deleted
 
 def match_net_include(incname, family, type):
-    includelist = [incname]
-    checked = []
-    name = None
-    if includelist:
-        name = includelist.pop(0)
-    while name:
-        checked.append(name)
-        if netrules_access_check(include[name][name]['allow']['netdomain'], family, type):
-            return True
+    # still used by aa-mergeprof
+    network_obj = NetworkRule(family, type)
+    return match_includes(incname, 'network', network_obj)
 
-        if include[name][name]['include'].keys() and name not in checked:
-            includelist += include[name][name]['include'].keys()
-
-        if len(includelist):
-            name = includelist.pop(0)
-        else:
-            name = False
-
-    return False
 
 def match_cap_includes(profile, capability):
     # still used by aa-mergeprof
@@ -2537,7 +2490,7 @@ def collapse_log():
                 nd = prelog[aamode][profile][hat]['netdomain']
                 for family in nd.keys():
                     for sock_type in nd[family].keys():
-                        if not profile_known_network(aa[profile][hat], family, sock_type):
+                        if not is_known_rule(aa[profile][hat], 'network', NetworkRule(family, sock_type)):
                             log_dict[aamode][profile][hat]['netdomain'][family][sock_type] = True
 
 
@@ -2713,7 +2666,7 @@ def parse_profile_data(data, file, do_include):
 
             profile_data[profile][hat]['flags'] = flags
 
-            profile_data[profile][hat]['allow']['netdomain'] = hasher()
+            profile_data[profile][hat]['network'] = NetworkRuleset()
             profile_data[profile][hat]['allow']['path'] = hasher()
             profile_data[profile][hat]['allow']['dbus'] = list()
             profile_data[profile][hat]['allow']['mount'] = list()
@@ -2963,34 +2916,14 @@ def parse_profile_data(data, file, do_include):
                     load_include(include_name)
 
         elif RE_PROFILE_NETWORK.search(line):
-            matches = RE_PROFILE_NETWORK.search(line).groups()
-
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected network entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            audit = False
-            if matches[0]:
-                audit = True
-            allow = 'allow'
-            if matches[1] and matches[1].strip() == 'deny':
-                allow = 'deny'
-            network = matches[2]
+            # init rule class (if not done yet)
+            if not profile_data[profile][hat].get('network', False):
+                profile_data[profile][hat]['network'] = NetworkRuleset()
 
-            if RE_NETWORK_FAMILY_TYPE.search(network):
-                nmatch = RE_NETWORK_FAMILY_TYPE.search(network).groups()
-                fam, typ = nmatch[:2]
-                ##Simply ignore any type subrules if family has True (seperately for allow and deny)
-                ##This will lead to those type specific rules being lost when written
-                #if type(profile_data[profile][hat][allow]['netdomain']['rule'].get(fam, False)) == dict:
-                profile_data[profile][hat][allow]['netdomain']['rule'][fam][typ] = 1
-                profile_data[profile][hat][allow]['netdomain']['audit'][fam][typ] = audit
-            elif RE_NETWORK_FAMILY.search(network):
-                fam = RE_NETWORK_FAMILY.search(network).groups()[0]
-                profile_data[profile][hat][allow]['netdomain']['rule'][fam] = True
-                profile_data[profile][hat][allow]['netdomain']['audit'][fam] = audit
-            else:
-                profile_data[profile][hat][allow]['netdomain']['rule']['all'] = True
-                profile_data[profile][hat][allow]['netdomain']['audit']['all'] = audit  # True
+            profile_data[profile][hat]['network'].add(NetworkRule.parse(line))
 
         elif RE_PROFILE_DBUS.search(line):
             matches = RE_PROFILE_DBUS.search(line).groups()
@@ -3387,39 +3320,10 @@ def write_capabilities(prof_data, depth):
         data = prof_data['capability'].get_clean(depth)
     return data
 
-def write_net_rules(prof_data, depth, allow):
-    pre = '  ' * depth
-    data = []
-    allowstr = set_allow_str(allow)
-    audit = ''
-    if prof_data[allow].get('netdomain', False):
-        if prof_data[allow]['netdomain'].get('rule', False) == 'all':
-            if prof_data[allow]['netdomain']['audit'].get('all', False):
-                audit = 'audit '
-            data.append('%s%snetwork,' % (pre, audit))
-        else:
-            for fam in sorted(prof_data[allow]['netdomain']['rule'].keys()):
-                audit = ''
-                if prof_data[allow]['netdomain']['rule'][fam] is True:
-                    if prof_data[allow]['netdomain']['audit'][fam]:
-                        audit = 'audit '
-                    if fam == 'all':
-                        data.append('%s%s%snetwork,' % (pre, audit, allowstr))
-                    else:
-                        data.append('%s%s%snetwork %s,' % (pre, audit, allowstr, fam))
-                else:
-                    for typ in sorted(prof_data[allow]['netdomain']['rule'][fam].keys()):
-                        if prof_data[allow]['netdomain']['audit'][fam].get(typ, False):
-                            audit = 'audit '
-                        data.append('%s%s%snetwork %s %s,' % (pre, audit, allowstr, fam, typ))
-        if prof_data[allow].get('netdomain', False):
-            data.append('')
-
-    return data
-
 def write_netdomain(prof_data, depth):
-    data = write_net_rules(prof_data, depth, 'deny')
-    data += write_net_rules(prof_data, depth, 'allow')
+    data = []
+    if prof_data.get('network', False):
+        data = prof_data['network'].get_clean(depth)
     return data
 
 def write_dbus_rules(prof_data, depth, allow):
@@ -3777,7 +3681,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                          'include': write_includes,
                          'rlimit': write_rlimits,
                          'capability': write_capabilities,
-                         'netdomain': write_netdomain,
+                         'network': write_netdomain,
                          'dbus': write_dbus,
                          'mount': write_mount,
                          'signal': write_signal,
@@ -3792,7 +3696,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                                 'include',
                                 'rlimit',
                                 'capability',
-                                'netdomain',
+                                'network',
                                 'dbus',
                                 'mount',
                                 'signal',
@@ -3808,7 +3712,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     'include': False,
                     'rlimit': False,
                     'capability': False,
-                    'netdomain': False,
+                    'network': False,
                     'dbus': False,
                     'mount': True, # not handled otherwise yet
                     'signal': True, # not handled otherwise yet
@@ -4166,44 +4070,13 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                         data.append(line)
 
             elif RE_PROFILE_NETWORK.search(line):
-                matches = RE_PROFILE_NETWORK.search(line).groups()
-                audit = False
-                if matches[0]:
-                    audit = True
-                allow = 'allow'
-                if matches[1] and matches[1].strip() == 'deny':
-                    allow = 'deny'
-                network = matches[2]
-                if RE_NETWORK_FAMILY_TYPE.search(network):
-                    nmatch = RE_NETWORK_FAMILY_TYPE.search(network).groups()
-                    fam, typ = nmatch[:2]
-                    if write_prof_data[hat][allow]['netdomain']['rule'][fam][typ] and write_prof_data[hat][allow]['netdomain']['audit'][fam][typ] == audit:
-                        write_prof_data[hat][allow]['netdomain']['rule'][fam].pop(typ)
-                        write_prof_data[hat][allow]['netdomain']['audit'][fam].pop(typ)
-                        data.append(line)
-                    else:
-                        correct = False
-
-                elif RE_NETWORK_FAMILY.search(network):
-                    fam = RE_NETWORK_FAMILY.search(network).groups()[0]
-                    if write_prof_data[hat][allow]['netdomain']['rule'][fam] and write_prof_data[hat][allow]['netdomain']['audit'][fam] == audit:
-                        write_prof_data[hat][allow]['netdomain']['rule'].pop(fam)
-                        write_prof_data[hat][allow]['netdomain']['audit'].pop(fam)
-                        data.append(line)
-                    else:
-                        correct = False
-                else:
-                    if write_prof_data[hat][allow]['netdomain']['rule']['all'] and write_prof_data[hat][allow]['netdomain']['audit']['all'] == audit:
-                        write_prof_data[hat][allow]['netdomain']['rule'].pop('all')
-                        write_prof_data[hat][allow]['netdomain']['audit'].pop('all')
-                        data.append(line)
-                    else:
-                        correct = False
-
-                if correct:
-                    if not segments['netdomain'] and True in segments.values():
+                network_obj = NetworkRule.parse(line)
+                if write_prof_data[hat]['network'].is_covered(network_obj, True, True):
+                    if not segments['network'] and True in segments.values():
                         data += write_prior_segments(write_prof_data[name], segments, line)
-                    segments['netdomain'] = True
+                    segments['network'] = True
+                    write_prof_data[hat]['network'].delete(network_obj)
+                    data.append(line)
 
             elif RE_PROFILE_CHANGE_HAT.search(line):
                 matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
@@ -4328,41 +4201,6 @@ def is_known_rule(profile, rule_type, rule_obj):
                 return True
 
     return False
-
-def profile_known_network(profile, family, sock_type):
-    if netrules_access_check(profile['deny']['netdomain'], family, sock_type):
-        return -1
-    if netrules_access_check(profile['allow']['netdomain'], family, sock_type):
-        return 1
-
-    for incname in profile['include'].keys():
-        if netrules_access_check(include[incname][incname]['deny']['netdomain'], family, sock_type):
-            return -1
-        if netrules_access_check(include[incname][incname]['allow']['netdomain'], family, sock_type):
-            return 1
-
-    return 0
-
-def netrules_access_check(netrules, family, sock_type):
-    if not netrules:
-        return 0
-    all_net = False
-    all_net_family = False
-    net_family_sock = False
-    if netrules['rule'].get('all', False):
-        all_net = True
-    if netrules['rule'].get(family, False) is True:
-        all_net_family = True
-    if (netrules['rule'].get(family, False) and
-            type(netrules['rule'][family]) == type(hasher()) and
-            sock_type in netrules['rule'][family].keys() and
-            netrules['rule'][family][sock_type]):
-        net_family_sock = True
-
-    if all_net or all_net_family or net_family_sock:
-        return True
-    else:
-        return False
 
 def reload_base(bin_path):
     if not check_for_apparmor():

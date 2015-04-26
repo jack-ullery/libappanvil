@@ -64,19 +64,17 @@ class CleanProf(object):
                     apparmor.aa.load_include(inc)
                 deleted += apparmor.aa.delete_duplicates(self.other.aa[program][hat], inc)
 
-            #Clean the duplicates of caps in other profile
+            #Clean duplicate rules in other profile
             if not self.same_file:
                 deleted += self.other.aa[program][hat]['capability'].delete_duplicates(self.profile.aa[program][hat]['capability'])
+                deleted += self.other.aa[program][hat]['network'].delete_duplicates(self.profile.aa[program][hat]['network'])
             else:
                 deleted += self.other.aa[program][hat]['capability'].delete_duplicates(None)
+                deleted += self.other.aa[program][hat]['network'].delete_duplicates(None)
 
             #Clean the duplicates of path in other profile
             deleted += delete_path_duplicates(self.profile.aa[program][hat], self.other.aa[program][hat], 'allow', self.same_file)
             deleted += delete_path_duplicates(self.profile.aa[program][hat], self.other.aa[program][hat], 'deny', self.same_file)
-
-            #Clean the duplicates of net rules in other profile
-            deleted += delete_net_duplicates(self.profile.aa[program][hat]['allow']['netdomain'], self.other.aa[program][hat]['allow']['netdomain'], self.same_file)
-            deleted += delete_net_duplicates(self.profile.aa[program][hat]['deny']['netdomain'], self.other.aa[program][hat]['deny']['netdomain'], self.same_file)
 
             return deleted
 
@@ -110,33 +108,3 @@ def delete_path_duplicates(profile, profile_other, allow, same_profile=True):
 
     return len(deleted)
 
-def delete_net_duplicates(netrules, netrules_other, same_profile=True):
-    deleted = 0
-    hasher_obj = apparmor.aa.hasher()
-    if netrules_other and netrules:
-        netglob = False
-        # Delete matching rules
-        if netrules.get('all', False):
-            netglob = True
-        # Iterate over a copy of the rules in the other profile
-        for fam in list(netrules_other['rule'].keys()):
-            if netglob or (type(netrules['rule'][fam]) != type(hasher_obj) and netrules['rule'][fam]):
-                if not same_profile:
-                    if type(netrules_other['rule'][fam]) == type(hasher_obj):
-                        deleted += len(netrules_other['rule'][fam].keys())
-                    else:
-                        deleted += 1
-                    netrules_other['rule'].pop(fam)
-            elif type(netrules_other['rule'][fam]) != type(hasher_obj) and netrules_other['rule'][fam]:
-                if type(netrules['rule'][fam]) != type(hasher_obj) and netrules['rule'][fam]:
-                    if not same_profile:
-                        netrules_other['rule'].pop(fam)
-                        deleted += 1
-            else:
-                for sock_type in list(netrules_other['rule'][fam].keys()):
-                    if netrules['rule'].get(fam, False):
-                        if netrules['rule'][fam].get(sock_type, False):
-                            if not same_profile:
-                                netrules_other['rule'][fam].pop(sock_type)
-                                deleted += 1
-    return deleted
