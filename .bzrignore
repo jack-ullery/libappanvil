@@ -24,6 +24,7 @@ parser/techdoc.aux
 parser/techdoc.log
 parser/techdoc.pdf
 parser/techdoc.toc
+profiles/apparmor.d/local/*.*
 libraries/libapparmor/Makefile
 libraries/libapparmor/Makefile.in
 libraries/libapparmor/aclocal.m4
