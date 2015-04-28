@@ -39,6 +39,14 @@ class Test(unittest.TestCase):
 
 
 class AATest(unittest.TestCase):
+    def setUp(self):
+        self.maxDiff = None
+        self.AASetup()
+
+    def AASetup(self):
+        '''override this function if a test needs additional setup steps (instead of overriding setUp())'''
+        pass
+
     tests = []
 
 class AAParseTest(unittest.TestCase):

@@ -203,7 +203,7 @@ def _regex_test(self, line, expected):
 class AARegexCapability(AARegexTest):
     '''Tests for RE_PROFILE_CAP'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = RE_PROFILE_CAP
 
     tests = [
@@ -218,7 +218,7 @@ class AARegexCapability(AARegexTest):
 class AARegexPath(AARegexTest):
     '''Tests for RE_PROFILE_PATH_ENTRY'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_PATH_ENTRY
 
     tests = [
@@ -237,7 +237,7 @@ class AARegexPath(AARegexTest):
 class AARegexBareFile(AARegexTest):
     '''Tests for RE_PROFILE_BARE_FILE_ENTRY'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_BARE_FILE_ENTRY
 
     tests = [
@@ -255,7 +255,7 @@ class AARegexBareFile(AARegexTest):
 class AARegexDbus(AARegexTest):
     '''Tests for RE_PROFILE_DBUS'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_DBUS
 
     tests = [
@@ -271,7 +271,7 @@ class AARegexDbus(AARegexTest):
 class AARegexMount(AARegexTest):
     '''Tests for RE_PROFILE_MOUNT'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_MOUNT
 
     tests = [
@@ -295,7 +295,7 @@ class AARegexMount(AARegexTest):
 class AARegexSignal(AARegexTest):
     '''Tests for RE_PROFILE_SIGNAL'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_SIGNAL
 
     tests = [
@@ -321,7 +321,7 @@ class AARegexSignal(AARegexTest):
 class AARegexPtrace(AARegexTest):
     '''Tests for RE_PROFILE_PTRACE'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_PTRACE
 
     tests = [
@@ -343,7 +343,7 @@ class AARegexPtrace(AARegexTest):
 class AARegexPivotRoot(AARegexTest):
     '''Tests for RE_PROFILE_PIVOT_ROOT'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_PIVOT_ROOT
 
     tests = [
@@ -370,7 +370,7 @@ class AARegexPivotRoot(AARegexTest):
 class AARegexUnix(AARegexTest):
     '''Tests for RE_PROFILE_UNIX'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_UNIX
 
     tests = [
@@ -395,7 +395,7 @@ class AARegexUnix(AARegexTest):
 class AANamedRegexProfileStart_2(AANamedRegexTest):
     '''Tests for RE_PROFILE_START'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = RE_PROFILE_START
 
     tests = [

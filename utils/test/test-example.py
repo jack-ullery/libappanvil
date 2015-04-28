@@ -35,6 +35,10 @@ class TestBar(AATest):
         self.assertEqual(1, 1)
 
 class TestBaz(AATest):
+    def AASetup(self):
+        # called by setUp() - use AASetup() to avoid the need for using super(...)
+        pass
+
     def test_Baz_only_one_test(self):
         self.assertEqual("baz", "baz")
 
