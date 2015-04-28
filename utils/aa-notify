@@ -262,7 +262,9 @@ sub parse_message {
     # ignore all but status and denied messages
     my $type = LibAppArmor::aa_log_record::swig_event_get($test);
 
-    $type == $LibAppArmor::AA_RECORD_DENIED or goto err;
+    if ($type != $LibAppArmor::AA_RECORD_DENIED and $type != $LibAppArmor::AA_RECORD_ALLOWED) {
+        goto err;
+    }
 
     my $profile = LibAppArmor::aa_log_record::swig_profile_get($test);
     my $operation = LibAppArmor::aa_log_record::swig_operation_get($test);
