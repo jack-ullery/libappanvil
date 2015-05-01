@@ -98,7 +98,7 @@ dbus_rule::dbus_rule(int mode_p, struct cond_entry *conds,
 	if (mode_p) {
 		mode = mode_p;
 		if (mode & ~AA_VALID_DBUS_PERMS)
-			yyerror("mode contains unknown dbus accesss\n");
+			yyerror("mode contains unknown dbus access\n");
 		else if (message_rule && (mode & AA_DBUS_BIND))
 			yyerror("dbus \"bind\" access cannot be used with message rule conditionals\n");
 		else if (service_rule && (mode & (AA_DBUS_SEND | AA_DBUS_RECEIVE)))
