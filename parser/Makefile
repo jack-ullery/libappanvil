@@ -140,7 +140,7 @@ po/${NAME}.pot: ${SRCS} ${HDRS}
 	$(MAKE) -C po ${NAME}.pot NAME=${NAME} SOURCES="${SRCS} ${HDRS}"
 
 techdoc.pdf: techdoc.tex
-	timestamp=$(shell date "+%Y%m%d%H%M%S+02'00'" -r $< );\
+	timestamp=$(shell date --utc "+%Y%m%d%H%M%S%z" -r $< );\
 	while pdflatex "\def\fixedpdfdate{$$timestamp}\input $<" ${BUILD_OUTPUT} || exit 1 ; \
 		grep -q "Label(s) may have changed" techdoc.log; \
 	do :; done
