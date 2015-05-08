@@ -26,6 +26,9 @@ RE_OWNER                = '(?P<owner>owner\s+)?'  # optionally: <owner>
 RE_EOL                  = '\s*(?P<comment>#.*?)?\s*$'  # optional whitespace, optional <comment>, optional whitespace, end of the line
 RE_COMMA_EOL            = '\s*,' + RE_EOL # optional whitespace, comma + RE_EOL
 
+RE_PROFILE_NAME         = '(?P<%s>(\S+|"[^"]+"))'    # string without spaces, or quoted string. %s is the match group name
+RE_PROFILE_PATH         = '(?P<%s>(/\S+|"/[^"]+"))'  # filename (starting with '/') without spaces, or quoted filename. %s is the match group name
+
 RE_PROFILE_END          = re.compile('^\s*\}' + RE_EOL)
 RE_PROFILE_CAP          = re.compile(RE_AUDIT_DENY + 'capability(?P<capability>(\s+\S+)+)?' + RE_COMMA_EOL)
 RE_PROFILE_LINK         = re.compile(RE_AUDIT_DENY + 'link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)' + RE_COMMA_EOL)
@@ -62,9 +65,9 @@ RE_HAS_COMMENT_SPLIT = re.compile('^(?P<not_comment>' + __re_no_or_quoted_hash +
 RE_PROFILE_START          = re.compile(
     '^(?P<leadingspace>\s*)' +
     '(' +
-        '(?P<plainprofile>(/\S+|"[^"]+"))' + # just a path
+        RE_PROFILE_PATH % 'plainprofile' + # just a path
         '|' + # or
-        '(' + 'profile' + '\s+(?P<namedprofile>(\S+|"[^"]+"))' + '(\s+(?P<attachment>(/\S+|"/[^"]+")))?' + ')' + # 'profile', profile name, optionally attachment
+        '(' + 'profile' + '\s+' + RE_PROFILE_NAME % 'namedprofile' + '(\s+' + RE_PROFILE_PATH % 'attachment' + ')?' + ')' + # 'profile', profile name, optionally attachment
     ')' +
     '\s+((flags=)?\((?P<flags>.+)\)\s+)?\{' +
     RE_EOL)

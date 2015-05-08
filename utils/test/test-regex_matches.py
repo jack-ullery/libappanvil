@@ -403,6 +403,8 @@ class AANamedRegexProfileStart_2(AANamedRegexTest):
         ('/bin/foo /bin/bar', False), # missing 'profile' keyword
         ('profile {', False), # no attachment
         ('   profile foo bar /foo {', False), # missing quotes around "foo bar"
+        ('bin/foo {', False), # not starting with '/'
+        ('"bin/foo" {', False), # not starting with '/', quoted version
 
         ('   /foo {',                     { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': None,       'comment': None }),
         ('   "/foo" {',                   { 'plainprofile': '"/foo"',  'namedprofile': None,          'attachment': None,     'flags': None,       'comment': None }),
