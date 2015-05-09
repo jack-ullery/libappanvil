@@ -55,7 +55,7 @@ import apparmor.rules as aarules
 
 from apparmor.rule.capability import CapabilityRuleset, CapabilityRule
 from apparmor.rule.network    import NetworkRuleset,    NetworkRule
-from apparmor.rule import parse_modifiers
+from apparmor.rule import parse_modifiers, quote_if_needed
 
 from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
 
@@ -3209,12 +3209,6 @@ def store_list_var(var, list_var, value, var_operation, filename):
     else:
         raise AppArmorException(_('Unknown variable operation %(operation)s for variable %(variable)s in %(file)s') % { 'operation': var_operation, 'variable': list_var, 'file': filename })
 
-
-def quote_if_needed(data):
-    # quote data if it contains whitespace
-    if ' ' in data:
-        data = '"' + data + '"'
-    return data
 
 def escape(escape):
     escape = strip_quotes(escape)

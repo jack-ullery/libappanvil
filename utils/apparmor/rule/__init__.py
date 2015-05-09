@@ -316,3 +316,10 @@ def parse_modifiers(matches):
         comment = ' %s' % matches.group('comment')
 
     return (audit, deny, allow_keyword, comment)
+
+def quote_if_needed(data):
+    '''quote data if it contains whitespace'''
+    if ' ' in data:
+        data = '"' + data + '"'
+    return data
+
