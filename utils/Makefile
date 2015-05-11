@@ -69,8 +69,8 @@ clean: pod_clean
 	$(MAKE) -C vim clean
 	$(MAKE) -C test clean
 	rm -rf staging/ build/
-	rm -f apparmor/*.pyc
-	rm -rf apparmor/__pycache__/
+	rm -f apparmor/*.pyc apparmor/rule/*.pyc
+	rm -rf apparmor/__pycache__/ apparmor/rule/__pycache__/
 
 # ${CAPABILITIES} is defined in common/Make.rules
 .PHONY: check_severity_db
