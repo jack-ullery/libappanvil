@@ -125,7 +125,6 @@ struct network {
 
 int net_find_type_val(const char *type);
 const char *net_find_type_name(int type);
-int net_find_af_val(const char *af);
 const char *net_find_af_name(unsigned int af);
 const struct network_tuple *net_find_mapping(const struct network_tuple *map,
 					     const char *family,

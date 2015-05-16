@@ -32,9 +32,6 @@ class aa_tools:
 
         if tool_name in ['audit']:
             self.remove = args.remove
-        elif tool_name == 'disable':
-            self.disabledir = apparmor.profile_dir + '/disable'
-            self.check_disable_dir()
         elif tool_name == 'autodep':
             self.force = args.force
             self.aa_mountpoint = apparmor.check_for_apparmor()
@@ -49,10 +46,6 @@ class aa_tools:
 
         if not user_perm(apparmor.profile_dir):
             raise apparmor.AppArmorException("Cannot write to profile directory: %s" % (apparmor.profile_dir))
-
-    def check_disable_dir(self):
-        if not os.path.isdir(self.disabledir):
-            raise apparmor.AppArmorException("Can't find AppArmor disable directory %s" % self.disabledir)
 
     def get_next_to_profile(self):
         '''Iterator function to walk the list of arguments passed'''
@@ -89,11 +82,12 @@ class aa_tools:
             yield (program, profile)
 
     def act(self):
+        # used by aa-cleanprof
+        apparmor.read_profiles()
+
         for (program, profile) in self.get_next_to_profile():
             if program is None:
                 program = profile
-
-            apparmor.read_profiles()
 
             if not program or not(os.path.exists(program) or apparmor.profile_exists(program)):
                 if program and not program.startswith('/'):
@@ -116,10 +110,7 @@ class aa_tools:
                         # One simply does not walk in here!
                         raise apparmor.AppArmorException('Unknown tool: %s' % self.name)
 
-                    cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '-R', filename])
-
-                    if cmd_info[0] != 0:
-                        raise apparmor.AppArmorException(cmd_info[1])
+                    self.reload_profile(profile)
 
             else:
                 if '/' not in program:
@@ -129,6 +120,8 @@ class aa_tools:
                     sys.exit(1)
 
     def cmd_disable(self):
+        apparmor.read_profiles()
+
         for (program, profile) in self.get_next_to_profile():
 
             output_name = profile if program is None else program
@@ -140,17 +133,13 @@ class aa_tools:
             aaui.UI_Info(_('Disabling %s.') % output_name)
             self.disable_profile(profile)
 
-            # FIXME: this should be a profile_remove function/method
-            # FIXME: should ensure profile is loaded before unloading
-            cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '-R', profile])
-
-            if cmd_info[0] != 0:
-                raise apparmor.AppArmorException(cmd_info[1])
+            self.unload_profile(profile)
 
     def cmd_enforce(self):
+        apparmor.read_profiles()
+
         for (program, profile) in self.get_next_to_profile():
 
-            apparmor.read_profiles()
             output_name = profile if program is None else program
 
             if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
@@ -159,16 +148,13 @@ class aa_tools:
 
             apparmor.set_enforce(profile, program)
 
-            # FIXME: this should be a profile_reload function/method
-            cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '-r', profile])
-
-            if cmd_info[0] != 0:
-                raise apparmor.AppArmorException(cmd_info[1])
+            self.reload_profile(profile)
 
     def cmd_complain(self):
+        apparmor.read_profiles()
+
         for (program, profile) in self.get_next_to_profile():
 
-            apparmor.read_profiles()
             output_name = profile if program is None else program
 
             if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
@@ -177,16 +163,13 @@ class aa_tools:
 
             apparmor.set_complain(profile, program)
 
-            # FIXME: this should be a profile_reload function/method
-            cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '-r', profile])
-
-            if cmd_info[0] != 0:
-                raise apparmor.AppArmorException(cmd_info[1])
+            self.reload_profile(profile)
 
     def cmd_audit(self):
+        apparmor.read_profiles()
+
         for (program, profile) in self.get_next_to_profile():
 
-            apparmor.read_profiles()
             output_name = profile if program is None else program
 
             if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
@@ -200,19 +183,15 @@ class aa_tools:
                 aaui.UI_Info(_('Removing audit mode from %s.') % output_name)
             apparmor.change_profile_flags(profile, program, 'audit', not self.remove)
 
-            # FIXME: this should be a profile_reload function/method
-            cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '-r', profile])
-
-            if cmd_info[0] != 0:
-                raise apparmor.AppArmorException(cmd_info[1])
+            self.reload_profile(profile)
 
     def cmd_autodep(self):
+        apparmor.read_profiles()
+
         for (program, profile) in self.get_next_to_profile():
             if not program:
                 aaui.UI_Info(_('Please pass an application to generate a profile for, not a profile itself - skipping %s.') % profile)
                 continue
-
-            apparmor.read_profiles()
 
             apparmor.check_qualifiers(program)
 
@@ -263,3 +242,16 @@ class aa_tools:
 
     def disable_profile(self, filename):
         apparmor.create_symlink('disable', filename)
+
+    def unload_profile(self, profile):
+        # FIXME: should ensure profile is loaded before unloading
+        cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '--base', apparmor.profile_dir, '-R', profile])
+
+        if cmd_info[0] != 0:
+            raise apparmor.AppArmorException(cmd_info[1])
+
+    def reload_profile(self, profile):
+        cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '--base', apparmor.profile_dir, '-r', profile])
+
+        if cmd_info[0] != 0:
+            raise apparmor.AppArmorException(cmd_info[1])

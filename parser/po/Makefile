@@ -12,9 +12,8 @@ all:
 
 DISABLED_LANGS=
 
-include ../common/Make-po.rules
-../common/Make-po.rules:
-	make -C .. common/Make.rules
+COMMONDIR=../../common
+include $(COMMONDIR)/Make-po.rules
 
 XGETTEXT_ARGS+=--language=C --keyword=_ $(shell if [ -f ${NAME}.pot ] ; then echo -n -j ; fi)
 

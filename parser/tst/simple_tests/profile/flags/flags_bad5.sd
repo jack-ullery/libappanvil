@@ -9,22 +9,3 @@
   /does/not/exist r,
 }
 
-/does/not/exist2 (audit,debug) {
-  /usr/X11R6/lib/lib*so* r,
-  /does/not/exist2 r,
-}
-
-/does/not/exist3 (debug,complain) {
-  /usr/X11R6/lib/lib*so* r,
-  /does/not/exist5 r,
-}
-
-/does/not/exist4 (audit,complain) {
-  /usr/X11R6/lib/lib*so* r,
-  /does/not/exist7 r,
-
-  ^debug (debug) {
-    /var/log/debug rwl,
-  }
-}
-

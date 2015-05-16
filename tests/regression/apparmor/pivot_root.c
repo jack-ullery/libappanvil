@@ -31,7 +31,7 @@
 struct clone_arg {
 	const char *put_old;
 	const char *new_root;
-	const char *expected_con;
+	const char *expected_label;
 };
 
 static int _pivot_root(const char *new_root, const char *put_old)
@@ -44,12 +44,12 @@ static int _pivot_root(const char *new_root, const char *put_old)
 #endif
 }
 
-static int pivot_and_verify_con(void *arg)
+static int pivot_and_verify_label(void *arg)
 {
 	const char *put_old = ((struct clone_arg *)arg)->put_old;
 	const char *new_root = ((struct clone_arg *)arg)->new_root;
-	const char *expected_con = ((struct clone_arg *)arg)->expected_con;
-	char *con;
+	const char *expected_label = ((struct clone_arg *)arg)->expected_label;
+	char *label;
 	int rc;
 
 	rc = chdir(new_root);
@@ -64,19 +64,19 @@ static int pivot_and_verify_con(void *arg)
 		exit(101);
 	}
 
-	rc = aa_getcon(&con, NULL);
+	rc = aa_getcon(&label, NULL);
 	if (rc < 0) {
 		perror("FAIL - aa_getcon");
 		exit(102);
 	}
 
-	if (strcmp(expected_con, con)) {
-		fprintf(stderr, "FAIL - expected_con (%s) != con (%s)\n",
-			expected_con, con);
+	if (strcmp(expected_label, label)) {
+		fprintf(stderr, "FAIL - expected_label (%s) != label (%s)\n",
+			expected_label, label);
 		exit(103);
 	}
 
-	free(con);
+	free(label);
 	exit(0);
 }
 
@@ -86,10 +86,10 @@ static pid_t _clone(int (*fn)(void *), void *arg)
         void *stack = alloca(stack_size);
 
 #ifdef __ia64__
-        return __clone2(pivot_and_verify_con, stack,  stack_size,
+        return __clone2(pivot_and_verify_label, stack,  stack_size,
 			CLONE_NEWNS | SIGCHLD, arg);
 #else
-        return    clone(pivot_and_verify_con, stack + stack_size,
+        return    clone(pivot_and_verify_label, stack + stack_size,
 			CLONE_NEWNS | SIGCHLD, arg);
 #endif
 }
@@ -102,22 +102,22 @@ int main(int argc, char **argv)
 
 	if (argc != 4) {
 		fprintf(stderr,
-			"FAIL - usage: %s <PUT_OLD> <NEW_ROOT> <PROFILE>\n\n"
+			"FAIL - usage: %s <PUT_OLD> <NEW_ROOT> <LABEL>\n\n"
 			"  <PUT_OLD>\t\tThe put_old param of pivot_root()\n"
 			"  <NEW_ROOT>\t\tThe new_root param of pivot_root()\n"
-			"  <PROFILE>\t\tThe expected AA context after pivoting\n\n"
+			"  <LABEL>\t\tThe expected AA label after pivoting\n\n"
 			"This program clones itself in a new mount namespace, \n"
 			"does a pivot and then calls aa_getcon(). The test fails \n"
-			"if <PROFILE> does not match the context returned by \n"
+			"if <LABEL> does not match the label returned by \n"
 			"aa_getcon().\n", argv[0]);
 		exit(1);
 	}
 
 	arg.put_old      = argv[1];
 	arg.new_root     = argv[2];
-	arg.expected_con = argv[3];
+	arg.expected_label = argv[3];
 
-	child = _clone(pivot_and_verify_con, &arg);
+	child = _clone(pivot_and_verify_label, &arg);
 	if (child < 0) {
 		perror("FAIL - clone");
 		exit(2);

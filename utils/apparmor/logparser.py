@@ -1,5 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
+#    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -25,7 +26,7 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 class ReadLog:
-    RE_LOG_v2_6_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?type=\d+\s+audit\([\d\.\:]+\):\s+apparmor=')
+    RE_LOG_v2_6_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?(audit:\s+)?type=\d+\s+audit\([\d\.\:]+\):\s+apparmor=')
     RE_LOG_v2_6_audit = re.compile('type=AVC\s+(msg=)?audit\([\d\.\:]+\):\s+apparmor=')
     # Used by netdomain to identify the operation types
     # New socket names
@@ -111,34 +112,15 @@ class ReadLog:
         ev['pid'] = event.pid
         ev['task'] = event.task
         ev['info'] = event.info
-        dmask = event.denied_mask
-        rmask = event.requested_mask
+        ev['error_code'] = event.error_code
+        ev['denied_mask'] = event.denied_mask
+        ev['request_mask'] = event.requested_mask
         ev['magic_token'] = event.magic_token
         if ev['operation'] and self.op_type(ev['operation']) == 'net':
             ev['family'] = event.net_family
             ev['protocol'] = event.net_protocol
             ev['sock_type'] = event.net_sock_type
         LibAppArmor.free_record(event)
-        # Map c (create) to a and d (delete) to w, logprof doesn't support c and d
-        if rmask:
-            rmask = rmask.replace('c', 'a')
-            rmask = rmask.replace('d', 'w')
-            if not validate_log_mode(hide_log_mode(rmask)):
-                raise AppArmorException(_('Log contains unknown mode %s') % rmask)
-        if dmask:
-            dmask = dmask.replace('c', 'a')
-            dmask = dmask.replace('d', 'w')
-            if not validate_log_mode(hide_log_mode(dmask)):
-                raise AppArmorException(_('Log contains unknown mode %s') % dmask)
-        #print('parse_event:', ev['profile'], dmask, ev['name2'])
-        mask, name = log_str_to_mode(ev['profile'], dmask, ev['name2'])
-
-        ev['denied_mask'] = mask
-        ev['name2'] = name
-
-        mask, name = log_str_to_mode(ev['profile'], rmask, ev['name2'])
-        ev['request_mask'] = mask
-        ev['name2'] = name
 
         if not ev['time']:
             ev['time'] = int(time.time())
@@ -161,6 +143,11 @@ class ReadLog:
                 ev['aamode'] = mode_convertor[ev['aamode']]
             except KeyError:
                 ev['aamode'] = None
+
+        # "translate" disconnected paths to errors, which means the event will be ignored.
+        # XXX Ideally we should propose to add the attach_disconnected flag to the profile
+        if ev['error_code'] == 13 and ev['info'] == 'Failed name lookup - disconnected path':
+            ev['aamode'] = 'ERROR'
 
         if ev['aamode']:
             #debug_logger.debug(ev)
@@ -248,6 +235,10 @@ class ReadLog:
         if profile != 'null-complain-profile' and not self.profile_exists(profile):
             return None
         if e['operation'] == 'exec':
+            # convert rmask and dmask to mode arrays
+            e['denied_mask'],  e['name2'] = log_str_to_mode(e['profile'], e['denied_mask'], e['name2'])
+            e['request_mask'], e['name2'] = log_str_to_mode(e['profile'], e['request_mask'], e['name2'])
+
             if e.get('info', False) and e['info'] == 'mandatory profile missing':
                 self.add_to_tree(e['pid'], e['parent'], 'exec',
                                  [profile, hat, aamode, 'PERMITTING', e['denied_mask'], e['name'], e['name2']])
@@ -257,21 +248,29 @@ class ReadLog:
             else:
                 self.debug_logger.debug('add_event_to_tree: dropped exec event in %s' % e['profile'])
 
-        elif 'file_' in e['operation']:
-            self.add_to_tree(e['pid'], e['parent'], 'path',
-                             [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-        elif e['operation'] in ['open', 'truncate', 'mkdir', 'mknod', 'rename_src',
-                                'rename_dest', 'unlink', 'rmdir', 'symlink_create', 'link']:
-            #print(e['operation'], e['name'])
-            self.add_to_tree(e['pid'], e['parent'], 'path',
-                             [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-        elif e['operation'] == 'capable':
-            self.add_to_tree(e['pid'], e['parent'], 'capability',
-                             [profile, hat, prog, aamode, e['name'], ''])
-        elif e['operation'] == 'setattr' or 'xattr' in e['operation']:
-            self.add_to_tree(e['pid'], e['parent'], 'path',
-                             [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-        elif 'inode_' in e['operation']:
+        elif ( e['operation'].startswith('file_') or e['operation'].startswith('inode_') or
+            e['operation'] in ['open', 'truncate', 'mkdir', 'mknod', 'chmod', 'rename_src',
+                                'rename_dest', 'unlink', 'rmdir', 'symlink_create', 'link',
+                                'sysctl', 'getattr', 'setattr', 'xattr'] ):
+
+            # Map c (create) to a and d (delete) to w (logging is more detailed than the profile language)
+            rmask = e['request_mask']
+            rmask = rmask.replace('c', 'a')
+            rmask = rmask.replace('d', 'w')
+            if not validate_log_mode(hide_log_mode(rmask)):
+                raise AppArmorException(_('Log contains unknown mode %s') % rmask)
+
+            dmask = e['denied_mask']
+            dmask = dmask.replace('c', 'a')
+            dmask = dmask.replace('d', 'w')
+            if not validate_log_mode(hide_log_mode(dmask)):
+                raise AppArmorException(_('Log contains unknown mode %s') % dmask)
+
+            # convert rmask and dmask to mode arrays
+            e['denied_mask'],  e['name2'] = log_str_to_mode(e['profile'], dmask, e['name2'])
+            e['request_mask'], e['name2'] = log_str_to_mode(e['profile'], rmask, e['name2'])
+
+            # check if this is an exec event
             is_domain_change = False
             if e['operation'] == 'inode_permission' and (e['denied_mask'] & AA_MAY_EXEC) and aamode == 'PERMITTING':
                 following = self.peek_at_next_log_entry()
@@ -288,9 +287,9 @@ class ReadLog:
                 self.add_to_tree(e['pid'], e['parent'], 'path',
                                  [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
 
-        elif e['operation'] == 'sysctl':
-            self.add_to_tree(e['pid'], e['parent'], 'path',
-                             [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
+        elif e['operation'] == 'capable':
+            self.add_to_tree(e['pid'], e['parent'], 'capability',
+                             [profile, hat, prog, aamode, e['name'], ''])
 
         elif e['operation'] == 'clone':
             parent, child = e['pid'], e['task']

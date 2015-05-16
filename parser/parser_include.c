@@ -45,6 +45,8 @@
 #include <unistd.h>
 #include <errno.h>
 #include <dirent.h>
+
+#include "lib.h"
 #include "parser.h"
 #include "parser_include.h"
 
@@ -176,7 +178,7 @@ int add_search_dir(const char *dir)
    SUBDOMAIN_PATH=/etc/subdomain.d/include */
 void parse_default_paths(void)
 {
-	FILE *f;
+	autofclose FILE *f;
 	char buf[1024];
 	char *t, *s;
 	int saved_npath = npath;
@@ -202,7 +204,6 @@ void parse_default_paths(void)
 			} while (s != NULL);
 		}
 	}
-	fclose(f);
 
 	/* if subdomain.conf doesn't set a base search dir set it to this */
 out:

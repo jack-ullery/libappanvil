@@ -26,6 +26,7 @@
 
   @{HOME} r, # ???
   /usr/lib/dovecot/imap mr,
+  /{,var/}run/dovecot/auth-master rw,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.lib.dovecot.imap>

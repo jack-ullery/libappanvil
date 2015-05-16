@@ -17,13 +17,7 @@ NAME 		= tomcat_apparmor
 all:
 COMMONDIR=../../../common/
 
-include common/Make.rules
-
-COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
-ifeq ($(COMMONDIR_EXISTS), true)
-common/Make.rules: $(COMMONDIR)/Make.rules
-	ln -sf $(COMMONDIR) .
-endif
+include $(COMMONDIR)/Make.rules
 
 LIB		= lib
 CATALINA_HOME 	= /usr/share/tomcat55
@@ -34,7 +28,6 @@ all:
 
 clean:
 	ant clean
-	rm -f tomcat_apparmor.spec ${NAME}-*.tar.gz Make.rules
 
-install: $(SPECFILE)
+install:
 	 ant  -Dversion=$(VERSION) -Drelease=$(MAN_RELEASE) -Dcatalina_home=${CATALINA_HOME} -Dinstall_lib=${LIB} install_jar install_jni

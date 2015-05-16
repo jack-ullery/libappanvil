@@ -41,7 +41,7 @@ def sysctl_write(path, value):
         f_out.write(str(value))
 
 def last_audit_entry_time():
-    out = subprocess.check_output(['tail', '-1', apparmor.filename])
+    out = subprocess.check_output(['tail', '-1', apparmor.logfile])
     logmark = None
     out = out.decode('ascii')
     if re.search('^.*msg\=audit\((\d+\.\d+\:\d+).*\).*$', out):
@@ -61,16 +61,8 @@ args = parser.parse_args()
 
 profiling = args.program
 profiledir = args.dir
-filename = args.file
 
-
-if filename:
-    if not os.path.exists(filename):
-        raise apparmor.AppArmorException(_('The logfile %s does not exist. Please check the path') % filename)
-    elif os.path.isdir(filename):
-        raise apparmor.AppArmorException(_('%s is a directory. Please specify a file as logfile') % filename)
-    else:
-        apparmor.filename = filename
+apparmor.set_logfile(args.file)
 
 aa_mountpoint = apparmor.check_for_apparmor()
 if not aa_mountpoint:

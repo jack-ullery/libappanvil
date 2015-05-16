@@ -30,6 +30,8 @@
 #include <libintl.h>
 #define _(s) gettext(s)
 
+#include <sys/apparmor.h>
+
 #include "immunix.h"
 #include "libapparmor_re/apparmor_re.h"
 #include "libapparmor_re/aare_rules.h"
@@ -41,6 +43,8 @@ using namespace std;
 #include <set>
 class Profile;
 class rule_t;
+
+#define MODULE_NAME "apparmor"
 
 /* Global variable to pass token to lexer.  Will be replaced by parameter
  * when lexer and parser are made reentrant
@@ -172,7 +176,7 @@ extern int preprocess_only;
 
 
 #ifdef DEBUG
-#define PDEBUG(fmt, args...) printf("parser: " fmt, ## args)
+#define PDEBUG(fmt, args...) fprintf(stderr, "parser: " fmt, ## args)
 #else
 #define PDEBUG(fmt, args...)	/* Do nothing */
 #endif
@@ -306,7 +310,6 @@ extern int option;
 extern int current_lineno;
 extern dfaflags_t dfaflags;
 extern const char *progname;
-extern char *subdomainbase;
 extern char *profilename;
 extern char *profile_ns;
 extern char *current_filename;
@@ -316,9 +319,21 @@ extern void pwarn(const char *fmt, ...) __attribute__((__format__(__printf__, 1,
 
 /* from parser_main (cannot be used in tst builds) */
 extern int force_complain;
-extern struct timespec mru_tstamp;
-extern void update_mru_tstamp(FILE *file);
 extern void display_version(void);
+extern int show_cache;
+extern int skip_cache;
+extern int skip_read_cache;
+extern int write_cache;
+extern int cond_clear_cache;
+extern int force_clear_cache;
+extern int create_cache_dir;
+extern int preprocess_only;
+extern int skip_mode_force;
+extern int abort_on_error;
+extern int skip_bad_cache_rebuild;
+extern int mru_skip_cache;
+extern int debug_cache;
+extern struct timespec mru_tstamp;
 
 /* provided by parser_lex.l (cannot be used in tst builds) */
 extern FILE *yyin;
@@ -334,7 +349,9 @@ extern const char *basedir;
 #define default_match_pattern "[^\\000]*"
 #define anyone_match_pattern "[^\\000]+"
 
-extern pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
+#define glob_default	0
+#define glob_null	1
+extern pattern_t convert_aaregex_to_pcre(const char *aare, int anchor, int glob,
 					 std::string& pcre, int *first_re_pos);
 extern int build_list_val_expr(std::string& buffer, struct value_list *list);
 extern int convert_entry(std::string& buffer, char *entry);
@@ -411,7 +428,8 @@ extern void free_aliases(void);
 extern int profile_merge_rules(Profile *prof);
 
 /* parser_interface.c */
-extern int load_profile(int option, Profile *prof);
+extern int load_profile(int option, aa_kernel_interface *kernel_interface,
+			Profile *prof, int cache_fd);
 extern void sd_serialize_profile(std::ostringstream &buf, Profile *prof,
 				int flatten);
 extern int sd_load_buffer(int option, char *buffer, int size);
@@ -432,9 +450,12 @@ extern int process_profile_policydb(Profile *prof);
 extern int post_merge_rules(void);
 extern int merge_hat_rules(Profile *prof);
 extern Profile *merge_policy(Profile *a, Profile *b);
-extern int load_policy(int option);
+extern int load_policy(int option, aa_kernel_interface *kernel_interface,
+		       int cache_fd);
 extern int load_hats(std::ostringstream &buf, Profile *prof);
-extern int load_flattened_hats(Profile *prof, int option);
+extern int load_flattened_hats(Profile *prof, int option,
+			       aa_kernel_interface *kernel_interface,
+			       int cache_fd);
 extern void dump_policy_hats(Profile *prof);
 extern void dump_policy_names(void);
 void dump_policy(void);

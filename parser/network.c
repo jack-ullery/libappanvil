@@ -25,6 +25,7 @@
 #include <sstream>
 #include <map>
 
+#include "lib.h"
 #include "parser.h"
 #include "profile.h"
 #include "parser_yacc.h"
@@ -154,7 +155,8 @@ static struct network_tuple network_mappings[] = {
 static size_t kernel_af_max(void) {
 	char buffer[32];
 	int major;
-	int fd, res;
+	autoclose int fd = -1;
+	int res;
 
 	if (!net_af_max_override) {
 		return 0;
@@ -168,7 +170,6 @@ static size_t kernel_af_max(void) {
 		/* fall back to default provided during build */
 		return 0;
 	res = read(fd, &buffer, sizeof(buffer) - 1);
-	close(fd);
 	if (res <= 0)
 		return 0;
 	buffer[res] = '\0';
@@ -321,31 +322,19 @@ struct aa_network_entry *network_entry(const char *family, const char *type,
 
 #define ALL_TYPES 0x43e
 
-/* another case of C++ not supporting non-trivial designated initializers */
-#undef AA_GEN_NET_ENT
-#define AA_GEN_NET_ENT(name, AF) name, /* [AF] = name, */
-
-static const char *network_families[] = {
-#include "af_names.h"
-};
-
-int net_find_af_val(const char *af)
-{
-	int i;
-	for (i = 0; network_families[i]; i++) {
-		if (strcmp(network_families[i], af) == 0)
-			return i;
-	}
-
-	return -1;
-}
-
 const char *net_find_af_name(unsigned int af)
 {
+	size_t i;
+
 	if (af < 0 || af > get_af_max())
 		return NULL;
 
-	return network_families[af];
+	for (i = 0; i < sizeof(network_mappings) / sizeof(*network_mappings); i++) {
+		if (network_mappings[i].family == af)
+			return network_mappings[i].family_name;
+	}
+
+	return NULL;
 }
 
 void __debug_network(unsigned int *array, const char *name)
@@ -375,7 +364,7 @@ void __debug_network(unsigned int *array, const char *name)
 
 	for (i = 0; i < af_max; i++) {
 		if (array[i]) {
-			const char *fam = network_families[i];
+			const char *fam = net_find_af_name(i);
 			if (fam)
 				printf("%s ", fam);
 			else

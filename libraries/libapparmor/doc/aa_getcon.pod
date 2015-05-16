@@ -34,27 +34,38 @@ B<#include E<lt>sys/apparmor.hE<gt>>
 
 B<int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len, char **mode);>
 
-B<int aa_getprocattr(pid_t tid, const char *attr, char **con, char **mode);>
+B<int aa_getprocattr(pid_t tid, const char *attr, char **label, char **mode);>
 
-B<int aa_gettaskcon(pid_t target, char **con, char **mode);>
+B<int aa_gettaskcon(pid_t target, char **label, char **mode);>
 
-B<int aa_getcon(char **con, char **mode);>
+B<int aa_getcon(char **label, char **mode);>
 
 B<int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode);>
 
-B<int aa_getpeercon(int fd, char **con, char **mode);>
+B<int aa_getpeercon(int fd, char **label, char **mode);>
 
 Link with B<-lapparmor> when compiling.
 
 =head1 DESCRIPTION
 
 The aa_getcon function gets the current AppArmor confinement context for the
-current task.  The confinement context is usually just the name of the AppArmor
-profile restricting the task, but it may include the profile namespace or in
-some cases a set of profile names (known as a stack of profiles).  The returned
-string *con should be freed using free(), but the returned string *mode should
-not be freed. The *con and *mode strings come from a single buffer allocation
-and are separated by a NUL character.
+current task. The confinement context consists of a label and a mode. The label
+is usually just the name of the AppArmor profile restricting the task, but it
+may include the profile namespace or in some cases a set of profile names
+(known as a stack of profiles). The mode is a string that describes how the
+kernel is enforcing the policy defined in the profile. Profiles loaded in
+"enforce" mode will result in enforcement of the policy defined in the profile
+as well as reporting policy violation attempts. Profiles in "complain" mode
+will not enforce policy but instead report policy violation attempts.
+
+Some examples of possible returned *label strings are "unconfined", "/sbin/dhclient",
+and "Firefox". The string can consist of any non-NUL characters but it will be
+NUL-terminated. The *label string must be freed using free().
+
+The possible *mode strings are "enforce" and "complain". Additionally, *mode may
+be NULL when *label is "unconfined". B<The *mode string must not be freed>. The
+*label and *mode strings come from a single buffer allocation and are separated
+by a NUL character.
 
 The aa_gettaskcon function is like the aa_getcon function except it will work
 for any arbitrary task in the system.

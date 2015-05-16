@@ -4,7 +4,7 @@
 
 #define SD_ID_MAGIC     0x8c235e38
 
-inline int do_open (char * file)
+static inline int do_open (char * file)
 {
 	int fd, rc;
 	char buf[128];

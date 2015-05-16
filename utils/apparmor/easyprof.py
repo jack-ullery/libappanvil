@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2011-2013 Canonical Ltd.
+#    Copyright (C) 2011-2015 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -312,15 +312,26 @@ class AppArmorEasyProfile:
 	    # the templates directory to the parent of the template so we don't
             # have to require --template-dir with absolute paths.
             self.dirs['templates'] = os.path.abspath(os.path.dirname(opt.template))
+
+        if opt.include_templates_dir and \
+           os.path.isdir(opt.include_templates_dir):
+            self.dirs['templates_include'] = os.path.abspath(opt.include_templates_dir)
+
         if opt.policy_groups_dir and os.path.isdir(opt.policy_groups_dir):
             self.dirs['policygroups'] = os.path.abspath(opt.policy_groups_dir)
 
+        if opt.include_policy_groups_dir and \
+           os.path.isdir(opt.include_policy_groups_dir):
+            self.dirs['policygroups_include'] = os.path.abspath(opt.include_policy_groups_dir)
 
         self.policy_version = None
         self.policy_vendor = None
         if (opt.policy_version and not opt.policy_vendor) or \
            (opt.policy_vendor and not opt.policy_version):
             raise AppArmorException("Must specify both policy version and vendor")
+
+        # If specified --policy-version and --policy-vendor, use
+        #  templates_dir/policy_vendor/policy_version
         if opt.policy_version and opt.policy_vendor:
             self.policy_vendor = opt.policy_vendor
             self.policy_version = str(opt.policy_version)
@@ -361,10 +372,21 @@ class AppArmorEasyProfile:
         for f in get_directory_contents(self.dirs['templates']):
             if os.path.isfile(f):
                 self.templates.append(f)
+
+        if 'templates_include' in self.dirs:
+            for f in get_directory_contents(self.dirs['templates_include']):
+                if os.path.isfile(f) and f not in self.templates:
+                    self.templates.append(f)
+
         self.policy_groups = []
         for f in get_directory_contents(self.dirs['policygroups']):
             if os.path.isfile(f):
                 self.policy_groups.append(f)
+
+        if 'policygroups_include' in self.dirs:
+            for f in get_directory_contents(self.dirs['policygroups_include']):
+                if os.path.isfile(f) and f not in self.policy_groups:
+                    self.policy_groups.append(f)
 
     def _get_defaults(self):
         '''Read in defaults from configuration'''
@@ -411,13 +433,25 @@ class AppArmorEasyProfile:
         elif template.startswith('/') and not allow_abs_path:
             raise AppArmorException("Cannot use an absolute path template '%s'" % template)
 
+        # If have an abs path, just use it
         if template.startswith('/'):
+            if not os.path.exists(template):
+                raise AppArmorException('%s does not exist' % (template))
             self.template = template
-        else:
-            self.template = os.path.join(self.dirs['templates'], template)
+            return
 
-        if not os.path.exists(self.template):
-            raise AppArmorException('%s does not exist' % (self.template))
+        # Find the template since we don't have an abs path
+        sys_t = os.path.join(self.dirs['templates'], template)
+        inc_t = None
+        if 'templates_include' in self.dirs:
+            inc_t = os.path.join(self.dirs['templates_include'], template)
+
+        if os.path.exists(sys_t):
+            self.template = sys_t
+        elif inc_t is not None and os.path.exists(inc_t):
+            self.template = inc_t
+        else:
+            raise AppArmorException('%s does not exist' % (template))
 
     def get_templates(self):
         '''Get list of all available templates by filename'''
@@ -427,7 +461,16 @@ class AppArmorEasyProfile:
         '''Get contents of specific policygroup'''
         p = policygroup
         if not p.startswith('/'):
-            p = os.path.join(self.dirs['policygroups'], p)
+            sys_p = os.path.join(self.dirs['policygroups'], p)
+            inc_p = None
+            if 'policygroups_include' in self.dirs:
+                inc_p = os.path.join(self.dirs['policygroups_include'], p)
+
+            if os.path.exists(sys_p):
+                p = sys_p
+            elif inc_p is not None and os.path.exists(inc_p):
+                p = inc_p
+
         if self.policy_groups == None or not p in self.policy_groups:
             raise AppArmorException("Policy group '%s' does not exist" % p)
         return open(p).read()
@@ -437,11 +480,25 @@ class AppArmorEasyProfile:
         self.policy_groups = []
         if policygroups != None:
             for p in policygroups.split(','):
-                if not p.startswith('/'):
-                    p = os.path.join(self.dirs['policygroups'], p)
-                if not os.path.exists(p):
+                # If have abs path, just use it
+                if p.startswith('/'):
+                    if not os.path.exists(p):
+                        raise AppArmorException('%s does not exist' % (p))
+                    self.policy_groups.append(p)
+                    continue
+
+                # Find the policy group since we don't have and abs path
+                sys_p = os.path.join(self.dirs['policygroups'], p)
+                inc_p = None
+                if 'policygroups_include' in self.dirs:
+                    inc_p = os.path.join(self.dirs['policygroups_include'], p)
+
+                if os.path.exists(sys_p):
+                    self.policy_groups.append(sys_p)
+                elif inc_p is not None and os.path.exists(inc_p):
+                    self.policy_groups.append(inc_p)
+                else:
                     raise AppArmorException('%s does not exist' % (p))
-                self.policy_groups.append(p)
 
     def get_policy_groups(self):
         '''Get list of all policy groups by filename'''
@@ -777,6 +834,10 @@ def add_parser_policy_args(parser):
                       dest="templates_dir",
                       help="Use non-default templates directory",
                       metavar="DIR")
+    parser.add_option("--include-templates-dir",
+                      dest="include_templates_dir",
+                      help="Also search DIR for templates",
+                      metavar="DIR")
     parser.add_option("-p", "--policy-groups",
                       action="callback",
                       callback=check_for_manifest_arg,
@@ -786,6 +847,10 @@ def add_parser_policy_args(parser):
     parser.add_option("--policy-groups-dir",
                       dest="policy_groups_dir",
                       help="Use non-default policy-groups directory",
+                      metavar="DIR")
+    parser.add_option("--include-policy-groups-dir",
+                      dest="include_policy_groups_dir",
+                      help="Also search DIR for policy groups",
                       metavar="DIR")
     parser.add_option("--policy-version",
                       action="callback",

@@ -16,15 +16,8 @@
 NAME=pam_apparmor
 all:
 COMMONDIR=../../common/
-MAKE_RULES=common/Make.rules
 
-include ${MAKE_RULES}
-
-COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
-ifeq ($(COMMONDIR_EXISTS), true)
-common/Make.rules: $(COMMONDIR)/Make.rules
-	ln -sf $(COMMONDIR) .
-endif
+include $(COMMONDIR)/Make.rules
 
 ifdef USE_SYSTEM
   LIBAPPARMOR = $(shell if pkg-config --exists libapparmor ; then \
@@ -87,7 +80,5 @@ install: $(NAME).so
 	install -m 555 $(NAME).so $(SECDIR)/
 	
 .PHONY: clean
-clean: ${MAKE_RULES}
+clean:
 	rm -f core core.* *.so *.o *.s *.a *~
-	rm -f ${NAME}-*.tar.gz Make.rules
-

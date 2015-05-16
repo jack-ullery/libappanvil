@@ -90,10 +90,10 @@ def sub_str_to_mode(string):
     mode = set()
 
     for mode_char in string:
-        if mode_char not in MODE_MAP_SET:
-            break
-        if MODE_HASH.get(mode_char, False):
+        if mode_char in MODE_MAP_SET and MODE_HASH.get(mode_char, False):
             mode |= MODE_HASH[mode_char]
+        else:
+            raise AppArmorBug("Mode string '%s' contains invalid char '%s'" % (string, mode_char))
 
     return mode
 

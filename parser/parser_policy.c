@@ -27,6 +27,7 @@
 #include <search.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/apparmor.h>
 
 #include "parser.h"
 #include "profile.h"
@@ -34,8 +35,10 @@
 
 /* #define DEBUG */
 #ifdef DEBUG
-#define PDEBUG(fmt, args...) printf("Lexer: " fmt, ## args)
+#undef PDEBUG
+#define PDEBUG(fmt, args...) fprintf(stderr, "Lexer: " fmt, ## args)
 #else
+#undef PDEBUG
 #define PDEBUG(fmt, args...)	/* Do nothing */
 #endif
 #define NPDEBUG(fmt, args...)	/* Do nothing */
@@ -218,12 +221,13 @@ static int profile_add_hat_rules(Profile *prof)
 	return 0;
 }
 
-int load_policy_list(ProfileList &list, int option)
+int load_policy_list(ProfileList &list, int option,
+		     aa_kernel_interface *kernel_interface, int cache_fd)
 {
 	int res = 0;
 
 	for (ProfileList::iterator i = list.begin(); i != list.end(); i++) {
-		res = load_profile(option, *i);
+		res = load_profile(option, kernel_interface, *i, cache_fd);
 		if (res != 0)
 			break;
 	}
@@ -231,14 +235,16 @@ int load_policy_list(ProfileList &list, int option)
 	return res;
 }
 
-int load_flattened_hats(Profile *prof, int option)
+int load_flattened_hats(Profile *prof, int option,
+			aa_kernel_interface *kernel_interface, int cache_fd)
 {
-	return load_policy_list(prof->hat_table, option);
+	return load_policy_list(prof->hat_table, option, kernel_interface,
+				cache_fd);
 }
 
-int load_policy(int option)
+int load_policy(int option, aa_kernel_interface *kernel_interface, int cache_fd)
 {
-	return load_policy_list(policy_list, option);
+	return load_policy_list(policy_list, option, kernel_interface, cache_fd);
 }
 
 int load_hats(std::ostringstream &buf, Profile *prof)

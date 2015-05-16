@@ -19,9 +19,8 @@ all:
 # the lang is explicitly added to DISABLED_LANGS; e.g. DISABLED_LANGS=en es
 
 DISABLED_LANGS=
+COMMONDIR=../../common
 
-include ../common/Make-po.rules
-../common/Make-po.rules:
-	make -C .. common/Make.rules
+include $(COMMONDIR)/Make-po.rules
 
 XGETTEXT_ARGS+=--language=perl --language=python

@@ -17,13 +17,7 @@ NAME:=apache2-mod_apparmor
 all:
 COMMONDIR=../../common/
 
-include common/Make.rules
-
-COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
-ifeq ($(COMMONDIR_EXISTS), true)
-common/Make.rules: $(COMMONDIR)/Make.rules
-	ln -sf $(COMMONDIR) .
-endif
+include $(COMMONDIR)/Make.rules
 
 TARGET:=mod_apparmor.so
 MANPAGES=mod_apparmor.8
@@ -92,9 +86,9 @@ install: ${TARGET} ${MANPAGES}
 	make install_manpages DESTDIR=${DESTDIR}
 
 .PHONY: clean
-clean: _clean
+clean: pod_clean
 	rm -rf .libs
-	rm -f *.la *.lo *.so *.o *.slo Make.rules
+	rm -f *.la *.lo *.so *.o *.slo
 
 .PHONY: check
 check: check_pod_files

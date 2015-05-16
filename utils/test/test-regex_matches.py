@@ -11,9 +11,41 @@
 
 import apparmor.aa as aa
 import unittest
+from common_test import AATest, setup_all_loops
+from apparmor.common import AppArmorBug
+
+from apparmor.regex import strip_quotes, parse_profile_start_line, RE_PROFILE_START, RE_PROFILE_CAP
 
 
-class AARegexHasComma(unittest.TestCase):
+class AARegexTest(AATest):
+    def _run_test(self, params, expected):
+        return _regex_test(self, params, expected)
+
+class AANamedRegexTest(AATest):
+    def _run_test(self, line, expected):
+        '''Run a line through self.regex.search() and verify the result
+
+        Keyword arguments:
+        line -- the line to search
+        expected -- False if the search isn't expected to match or, if the search
+                    is expected to match, a tuple of expected match groups.
+        '''
+        matches = self.regex.search(line)
+        if not expected:
+            self.assertFalse(matches)
+            return
+
+        self.assertTrue(matches)
+
+        for exp in expected:
+            match = matches.group(exp)
+            if match:
+                match = match
+            self.assertEqual(match, expected[exp], 'Group %s mismatch in rule %s' % (exp,line))
+
+
+
+class AARegexHasComma(AATest):
     '''Tests for apparmor.aa.RE_RULE_HAS_COMMA'''
 
     def _check(self, line, expected=True):
@@ -93,7 +125,7 @@ def setup_has_comma_testcases():
         setattr(AARegexHasComma, 'test_comma_%d' % (i), stub_test_comma)
         setattr(AARegexHasComma, 'test_no_comma_%d' % (i), stub_test_no_comma)
 
-class AARegexSplitComment(unittest.TestCase):
+class AARegexSplitComment(AATest):
     '''Tests for RE_HAS_COMMENT_SPLIT'''
 
     def _check(self, line, expected, comment=None, not_comment=None):
@@ -141,7 +173,7 @@ def setup_split_comment_testcases():
         setattr(AARegexSplitComment, 'test_split_comment_%d' % (i), stub_test)
 
 
-def regex_test(self, line, expected):
+def _regex_test(self, line, expected):
     '''Run a line through self.regex.search() and verify the result
 
     Keyword arguments:
@@ -165,27 +197,14 @@ def regex_test(self, line, expected):
         self.assertEqual(group, expected[i], 'Group %d mismatch in rule %s' % (i,line))
 
 
-def setup_regex_tests(test_class):
-    '''Create tests in test_class using test_class.tests and regex_tests()
-
-    test_class.tests should be tuples of (line, expected_results) where
-    expected_results is False if test_class.regex.search(line) should not
-    match. If the search should match, expected_results should be a tuple of
-    the expected groups, with all of the strings stripped.
-    '''
-    for (i, (line, expected)) in enumerate(test_class.tests):
-        def stub_test(self, line=line, expected=expected):
-            regex_test(self, line, expected)
-
-        stub_test.__doc__ = "test '%s'" % (line)
-        setattr(test_class, 'test_%d' % (i), stub_test)
 
 
-class AARegexCapability(unittest.TestCase):
+
+class AARegexCapability(AARegexTest):
     '''Tests for RE_PROFILE_CAP'''
 
-    def setUp(self):
-        self.regex = aa.RE_PROFILE_CAP
+    def AASetup(self):
+        self.regex = RE_PROFILE_CAP
 
     tests = [
         ('   capability net_raw,', (None, None, 'net_raw', 'net_raw', None)),
@@ -196,10 +215,10 @@ class AARegexCapability(unittest.TestCase):
     ]
 
 
-class AARegexPath(unittest.TestCase):
+class AARegexPath(AARegexTest):
     '''Tests for RE_PROFILE_PATH_ENTRY'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_PATH_ENTRY
 
     tests = [
@@ -215,10 +234,10 @@ class AARegexPath(unittest.TestCase):
     ]
 
 
-class AARegexBareFile(unittest.TestCase):
+class AARegexBareFile(AARegexTest):
     '''Tests for RE_PROFILE_BARE_FILE_ENTRY'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_BARE_FILE_ENTRY
 
     tests = [
@@ -233,10 +252,10 @@ class AARegexBareFile(unittest.TestCase):
     ]
 
 
-class AARegexDbus(unittest.TestCase):
+class AARegexDbus(AARegexTest):
     '''Tests for RE_PROFILE_DBUS'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_DBUS
 
     tests = [
@@ -249,10 +268,10 @@ class AARegexDbus(unittest.TestCase):
         ('   audit dbusdriver,', False),
     ]
 
-class AARegexMount(unittest.TestCase):
+class AARegexMount(AARegexTest):
     '''Tests for RE_PROFILE_MOUNT'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_MOUNT
 
     tests = [
@@ -273,10 +292,10 @@ class AARegexMount(unittest.TestCase):
 
 
 
-class AARegexSignal(unittest.TestCase):
+class AARegexSignal(AARegexTest):
     '''Tests for RE_PROFILE_SIGNAL'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_SIGNAL
 
     tests = [
@@ -299,10 +318,10 @@ class AARegexSignal(unittest.TestCase):
     ]
 
 
-class AARegexPtrace(unittest.TestCase):
+class AARegexPtrace(AARegexTest):
     '''Tests for RE_PROFILE_PTRACE'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_PTRACE
 
     tests = [
@@ -321,10 +340,10 @@ class AARegexPtrace(unittest.TestCase):
     ]
 
 
-class AARegexPivotRoot(unittest.TestCase):
+class AARegexPivotRoot(AARegexTest):
     '''Tests for RE_PROFILE_PIVOT_ROOT'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_PIVOT_ROOT
 
     tests = [
@@ -348,10 +367,10 @@ class AARegexPivotRoot(unittest.TestCase):
         ('pivot_rootbeer /new, # comment', False),
     ]
 
-class AARegexUnix(unittest.TestCase):
+class AARegexUnix(AARegexTest):
     '''Tests for RE_PROFILE_UNIX'''
 
-    def setUp(self):
+    def AASetup(self):
         self.regex = aa.RE_PROFILE_UNIX
 
     tests = [
@@ -373,22 +392,104 @@ class AARegexUnix(unittest.TestCase):
         ('deny unixlike,', False),
     ]
 
-if __name__ == '__main__':
-    verbosity = 2
+class AANamedRegexProfileStart_2(AANamedRegexTest):
+    '''Tests for RE_PROFILE_START'''
 
+    def AASetup(self):
+        self.regex = RE_PROFILE_START
+
+    tests = [
+        ('/bin/foo ', False), # no '{'
+        ('/bin/foo /bin/bar', False), # missing 'profile' keyword
+        ('profile {', False), # no attachment
+        ('   profile foo bar /foo {', False), # missing quotes around "foo bar"
+        ('bin/foo {', False), # not starting with '/'
+        ('"bin/foo" {', False), # not starting with '/', quoted version
+
+        ('   /foo {',                     { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': None,       'comment': None }),
+        ('   "/foo" {',                   { 'plainprofile': '"/foo"',  'namedprofile': None,          'attachment': None,     'flags': None,       'comment': None }),
+        ('   profile /foo {',             { 'plainprofile': None,      'namedprofile': '/foo',        'attachment': None,     'flags': None,       'comment': None }),
+        ('   profile "/foo" {',           { 'plainprofile': None,      'namedprofile': '"/foo"',      'attachment': None,     'flags': None,       'comment': None }),
+        ('   profile foo /foo {',         { 'plainprofile': None,      'namedprofile': 'foo',         'attachment': '/foo',   'flags': None,       'comment': None }),
+        ('   profile foo /foo (audit) {', { 'plainprofile': None,      'namedprofile': 'foo',         'attachment': '/foo',   'flags': 'audit',    'comment': None }),
+        ('   profile "foo" "/foo" {',     { 'plainprofile': None,      'namedprofile': '"foo"',       'attachment': '"/foo"', 'flags': None,       'comment': None }),
+        ('   profile "foo bar" /foo {',   { 'plainprofile': None,      'namedprofile': '"foo bar"',   'attachment': '/foo',   'flags': None,       'comment': None }),
+        ('   /foo (complain) {',          { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': 'complain', 'comment': None }),
+        ('   /foo flags=(complain) {',    { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': 'complain', 'comment': None }),
+        ('   /foo (complain) { # x',      { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': 'complain', 'comment': '# x'}),
+
+        ('   /foo {',                     { 'plainprofile': '/foo',     'namedprofile': None,   'leadingspace': '   ' }),
+        ('/foo {',                        { 'plainprofile': '/foo',     'namedprofile': None,   'leadingspace': ''    }),
+        ('   profile foo {',              { 'plainprofile': None,       'namedprofile': 'foo',  'leadingspace': '   ' }),
+        ('profile foo {',                 { 'plainprofile': None,       'namedprofile': 'foo',  'leadingspace': ''    }),
+    ]
+
+
+class Test_parse_profile_start_line(AATest):
+    tests = [
+        ('   /foo {',                     { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': None,       'comment': None }),
+        ('   "/foo" {',                   { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': None,       'comment': None }),
+        ('   profile /foo {',             { 'profile': '/foo',    'profile_keyword': True,  'plainprofile': None,   'namedprofile': '/foo', 'attachment': None,   'flags': None,       'comment': None }),
+        ('   profile "/foo" {',           { 'profile': '/foo',    'profile_keyword': True,  'plainprofile': None,   'namedprofile': '/foo', 'attachment': None,   'flags': None,       'comment': None }),
+        ('   profile foo /foo {',         { 'profile': 'foo',     'profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo',  'attachment': '/foo', 'flags': None,       'comment': None }),
+        ('   profile foo /foo (audit) {', { 'profile': 'foo',     'profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo',  'attachment': '/foo', 'flags': 'audit',    'comment': None }),
+        ('   profile "foo" "/foo" {',     { 'profile': 'foo',     'profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo',  'attachment': '/foo', 'flags': None,       'comment': None }),
+        ('   profile "foo bar" /foo {',   { 'profile': 'foo bar', 'profile_keyword': True,  'plainprofile': None, 'namedprofile': 'foo bar','attachment': '/foo', 'flags': None,    'comment': None }),
+        ('   /foo (complain) {',          { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': 'complain', 'comment': None }),
+        ('   /foo flags=(complain) {',    { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': 'complain', 'comment': None }),
+        ('   /foo (complain) { # x',      { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': 'complain', 'comment': '# x'}),
+
+        ('   /foo {',                     { 'profile': '/foo',    'plainprofile': '/foo', 'namedprofile': None,  'leadingspace': '   ' }),
+        ('/foo {',                        { 'profile': '/foo',    'plainprofile': '/foo', 'namedprofile': None,  'leadingspace': None  }),
+        ('   profile foo {',              { 'profile': 'foo',     'plainprofile': None,   'namedprofile': 'foo', 'leadingspace': '   ' }),
+        ('profile foo {',                 { 'profile': 'foo',     'plainprofile': None,   'namedprofile': 'foo', 'leadingspace': None  }),
+    ]
+
+    def _run_test(self, line, expected):
+        matches = parse_profile_start_line(line, 'somefile')
+
+        self.assertTrue(matches)
+
+        for exp in expected:
+            self.assertEqual(matches[exp], expected[exp], 'Group %s mismatch in rule %s' % (exp,line))
+
+class TestInvalid_parse_profile_start_line(AATest):
+    tests = [
+        ('/bin/foo ', False), # no '{'
+        ('/bin/foo /bin/bar', False), # missing 'profile' keyword
+        ('profile {', False), # no attachment
+        ('   profile foo bar /foo {', False), # missing quotes around "foo bar"
+    ]
+
+    def _run_test(self, line, expected):
+        with self.assertRaises(AppArmorBug):
+            parse_profile_start_line(line, 'somefile')
+
+
+class TestStripQuotes(AATest):
+    def test_strip_quotes_01(self):
+        self.assertEqual('foo', strip_quotes('foo'))
+    def test_strip_quotes_02(self):
+        self.assertEqual('foo', strip_quotes('"foo"'))
+    def test_strip_quotes_03(self):
+        self.assertEqual('"foo', strip_quotes('"foo'))
+    def test_strip_quotes_04(self):
+        self.assertEqual('foo"', strip_quotes('foo"'))
+    def test_strip_quotes_05(self):
+        self.assertEqual('', strip_quotes('""'))
+    def test_strip_quotes_06(self):
+        self.assertEqual('foo"bar', strip_quotes('foo"bar'))
+    def test_strip_quotes_07(self):
+        self.assertEqual('foo"bar', strip_quotes('"foo"bar"'))
+    def test_strip_quotes_08(self):
+        self.assertEqual('"""foo"bar"""', strip_quotes('""""foo"bar""""'))
+
+
+
+setup_all_loops(__name__)
+if __name__ == '__main__':
+    # these two are not converted to a tests[] loop yet
     setup_has_comma_testcases()
     setup_split_comment_testcases()
 
-    test_suite = unittest.TestSuite()
-    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexHasComma))
-    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexSplitComment))
-
-    for tests in (AARegexCapability, AARegexPath, AARegexBareFile,
-                  AARegexDbus, AARegexMount, AARegexUnix,
-                  AARegexSignal, AARegexPtrace, AARegexPivotRoot):
-        setup_regex_tests(tests)
-        test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(tests))
-
-    result = unittest.TextTestRunner(verbosity=verbosity).run(test_suite)
-    if not result.wasSuccessful():
-        exit(1)
+    unittest.main(verbosity=2)

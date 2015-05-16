@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2015 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -13,7 +13,7 @@
 #
 # ----------------------------------------------------------------------
 # No old version logs, only 2.6 + supported
-from __future__ import with_statement
+from __future__ import division, with_statement
 import inspect
 import os
 import re
@@ -31,7 +31,7 @@ import apparmor.severity
 
 from copy import deepcopy
 
-from apparmor.common import (AppArmorException, open_file_read, valid_path, hasher,
+from apparmor.common import (AppArmorException, AppArmorBug, open_file_read, valid_path, hasher,
                              open_file_write, convert_regexp, DebugLogger)
 
 import apparmor.ui as aaui
@@ -40,17 +40,22 @@ from apparmor.aamode import (str_to_mode, mode_to_str, contains, split_mode,
                              mode_to_str_user, mode_contains, AA_OTHER,
                              flatten_mode, owner_flatten_mode)
 
-from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_CAP, RE_PROFILE_LINK,
+from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
                             RE_PROFILE_CHANGE_PROFILE, RE_PROFILE_ALIAS, RE_PROFILE_RLIMIT,
                             RE_PROFILE_BOOLEAN, RE_PROFILE_VARIABLE, RE_PROFILE_CONDITIONAL,
                             RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
-                            RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY, RE_PROFILE_NETWORK,
-                            RE_NETWORK_FAMILY_TYPE, RE_NETWORK_FAMILY, RE_PROFILE_CHANGE_HAT,
+                            RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY,
+                            RE_PROFILE_CHANGE_HAT,
                             RE_PROFILE_HAT_DEF, RE_PROFILE_DBUS, RE_PROFILE_MOUNT,
                             RE_PROFILE_SIGNAL, RE_PROFILE_PTRACE, RE_PROFILE_PIVOT_ROOT,
-                            RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT )
+                            RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
+                            strip_quotes, parse_profile_start_line )
 
 import apparmor.rules as aarules
+
+from apparmor.rule.capability import CapabilityRuleset, CapabilityRule
+from apparmor.rule.network    import NetworkRuleset,    NetworkRule
+from apparmor.rule import parse_modifiers, quote_if_needed
 
 from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
 
@@ -69,7 +74,7 @@ unimplemented_warning = False
 sev_db = None
 # The file to read log messages from
 ### Was our
-filename = None
+logfile = None
 
 cfg = None
 repo_cfg = None
@@ -89,13 +94,20 @@ seen_events = 0  # was our
 # To store the globs entered by users so they can be provided again
 user_globs = []
 
-# The key for representing bare rules such as "capability," or "file,"
+# The key for representing bare "file," rules
 ALL = '\0ALL'
 
 ## Variables used under logprof
 ### Were our
 t = hasher()  # dict()
 transitions = hasher()
+
+# keys used in aa[profile][hat]:
+# a) rules (as dict): alias, change_profile, include, lvar, rlimit
+# b) rules (as hasher): allow, deny
+# c) one for each rule class
+# d) other: declared, external, flags, name, profile, attachment, initial_comment,
+#           profile_keyword, header_comment (these two are currently only set by set_profile_flags())
 aa = hasher()  # Profiles originally in sd, replace by aa
 original_aa = hasher()
 extras = hasher()  # Inactive profiles from extras
@@ -603,9 +615,9 @@ def get_profile_flags(filename, program):
     with open_file_read(filename) as f_in:
         for line in f_in:
             if RE_PROFILE_START.search(line):
-                matches = RE_PROFILE_START.search(line).groups()
-                profile = matches[1] or matches[3]
-                flags = matches[6]
+                matches = parse_profile_start_line(line, filename)
+                profile = matches['profile']
+                flags = matches['flags']
                 if profile == program or program is None:
                     return flags
 
@@ -638,49 +650,52 @@ def change_profile_flags(filename, program, flag, set_flag):
 
 def set_profile_flags(prof_filename, program, newflags):
     """Reads the old profile file and updates the flags accordingly"""
-    regex_bin_flag = re.compile('^(\s*)("?(/.+?)"??|(profile\s+"?(.+?)"??))\s+((flags=)?\((.*)\)\s+)?\{\s*(#.*)?$')
-    # TODO: use RE_PROFILE_START (only difference: doesn't have a match group for the leading space)
-    # TODO: also use the global regex for matching the hat
     # TODO: count the number of matching lines (separated by profile and hat?) and return it
     #       so that code calling this function can make sure to only report success if there was a match
-    regex_hat_flag = re.compile('^([a-z]*)\s+([A-Z]*)\s*(#.*)?$')
-    if os.path.isfile(prof_filename):
-        with open_file_read(prof_filename) as f_in:
-            temp_file = tempfile.NamedTemporaryFile('w', prefix=prof_filename, suffix='~', delete=False, dir=profile_dir)
-            shutil.copymode(prof_filename, temp_file.name)
-            with open_file_write(temp_file.name) as f_out:
-                for line in f_in:
-                    comment = ''
-                    if '#' in line:
-                        comment = '#' + line.split('#', 1)[1].rstrip()
-                    match = regex_bin_flag.search(line)
-                    if not line.strip() or line.strip().startswith('#'):
-                        pass
-                    elif match:
-                        matches = match.groups()
-                        space = matches[0]
-                        profile = matches[1]  # profile name including quotes and "profile" keyword
-                        if matches[2]:
-                            binary = matches[2]
-                        else:
-                            binary = matches[4]
-                        flag = matches[6] or 'flags='
-                        flags = matches[7]
-                        if binary == program or program is None:
-                            if newflags:
-                                line = '%s%s %s(%s) {%s\n' % (space, profile, flag, newflags, comment)
-                            else:
-                                line = '%s%s {%s\n' % (space, profile, comment)
-                    else:
-                        match = regex_hat_flag.search(line)
-                        if match:
-                            hat, flags = match.groups()[:2]
-                            if newflags:
-                                line = '%s flags=(%s) {%s\n' % (hat, newflags, comment)
-                            else:
-                                line = '%s {%s\n' % (hat, comment)
-                    f_out.write(line)
-        os.rename(temp_file.name, prof_filename)
+    # TODO: use RE_PROFILE_HAT_DEF for matching the hat (regex_hat_flag is totally broken!)
+    #regex_hat_flag = re.compile('^([a-z]*)\s+([A-Z]*)\s*(#.*)?$')
+
+    found = False
+
+    if newflags and newflags.strip() == '':
+        raise AppArmorBug('New flags for %s contain only whitespace' % prof_filename)
+
+    with open_file_read(prof_filename) as f_in:
+        temp_file = tempfile.NamedTemporaryFile('w', prefix=prof_filename, suffix='~', delete=False, dir=profile_dir)
+        shutil.copymode(prof_filename, temp_file.name)
+        with open_file_write(temp_file.name) as f_out:
+            for line in f_in:
+                if RE_PROFILE_START.search(line):
+                    matches = parse_profile_start_line(line, prof_filename)
+                    space = matches['leadingspace'] or ''
+                    profile = matches['profile']
+
+                    if profile == program or program is None:
+                        found = True
+                        header_data = {
+                            'attachment': matches['attachment'] or '',
+                            'flags': newflags,
+                            'profile_keyword': matches['profile_keyword'],
+                            'header_comment': matches['comment'] or '',
+                        }
+                        line = write_header(header_data, len(space)/2, profile, False, True)
+                        line = '%s\n' % line[0]
+                #else:
+                #    match = regex_hat_flag.search(line)
+                #    if match:
+                #        hat, flags = match.groups()[:2]
+                #        if newflags:
+                #            line = '%s flags=(%s) {%s\n' % (hat, newflags, comment)
+                #        else:
+                #            line = '%s {%s\n' % (hat, comment)
+                f_out.write(line)
+    os.rename(temp_file.name, prof_filename)
+
+    if not found:
+        if program is None:
+            raise AppArmorBug("%(file)s doesn't contain a valid profile (syntax error?)" % {'file': prof_filename})
+        else:
+            raise AppArmorBug("%(file)s doesn't contain a valid profile for %(profile)s (syntax error?)" % {'file': prof_filename, 'profile': program})
 
 def profile_exists(program):
     """Returns True if profile exists, False otherwise"""
@@ -1436,8 +1451,6 @@ def handle_children(profile, hat, root):
                                 if stub_profile[hat][hat].get('include', False):
                                     aa[profile][hat]['include'] = stub_profile[hat][hat]['include']
 
-                                aa[profile][hat]['allow']['netdomain'] = hasher()
-
                                 file_name = aa[profile][profile]['filename']
                                 filelist[file_name]['profiles'][profile][hat] = True
 
@@ -1546,13 +1559,14 @@ def ask_the_questions():
             for hat in hats:
                 for capability in sorted(log_dict[aamode][profile][hat]['capability'].keys()):
                     # skip if capability already in profile
-                    if profile_known_capability(aa[profile][hat], capability):
+                    capability_obj = CapabilityRule(capability)
+                    if is_known_rule(aa[profile][hat], 'capability', capability_obj):
                         continue
                     # Load variables? Don't think so.
                     severity = sev_db.rank('CAP_%s' % capability)
                     default_option = 1
                     options = []
-                    newincludes = match_cap_includes(aa[profile][hat], capability)
+                    newincludes = match_includes(aa[profile][hat], 'capability', capability_obj)
                     q = aaui.PromptQuestion()
 
                     if newincludes:
@@ -1625,16 +1639,18 @@ def ask_the_questions():
                                 if deleted:
                                     aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
-                            aa[profile][hat]['allow']['capability'][capability]['set'] = True
-                            aa[profile][hat]['allow']['capability'][capability]['audit'] = audit_toggle
+                            else:
+                                capability_obj = CapabilityRule(capability, audit=audit)
+                                aa[profile][hat]['capability'].add(capability_obj)
+                                aaui.UI_Info(_('Adding capability %s to profile.') % capability)
 
                             changed[profile] = True
 
-                            aaui.UI_Info(_('Adding capability %s to profile.') % capability)
                             done = True
 
                         elif ans == 'CMD_DENY':
-                            aa[profile][hat]['deny']['capability'][capability]['set'] = True
+                            capability_obj = CapabilityRule(capability, audit=audit, deny=True)
+                            aa[profile][hat]['capability'].add(capability_obj)
                             changed[profile] = True
 
                             aaui.UI_Info(_('Denying capability %s to profile.') % capability)
@@ -1689,14 +1705,6 @@ def ask_the_questions():
                         mode = mode - apparmor.aamode.ALL_AA_EXEC_TYPE
                         if not allow_mode & apparmor.aamode.AA_MAY_EXEC:
                             mode |= str_to_mode('ix')
-
-                    # m is not implied by ix
-
-                    ### If we get an mmap request, check if we already have it in allow_mode
-                    ##if mode & AA_EXEC_MMAP:
-                    ##    # ix implies m, so we don't need to add m if ix is present
-                    ##    if contains(allow_mode, 'ix'):
-                    ##        mode = mode - AA_EXEC_MMAP
 
                     if not mode:
                         continue
@@ -1949,11 +1957,12 @@ def ask_the_questions():
                 for family in sorted(log_dict[aamode][profile][hat]['netdomain'].keys()):
                     # severity handling for net toggles goes here
                     for sock_type in sorted(log_dict[aamode][profile][hat]['netdomain'][family].keys()):
-                        if profile_known_network(aa[profile][hat], family, sock_type):
+                        network_obj = NetworkRule(family, sock_type)
+                        if is_known_rule(aa[profile][hat], 'network', network_obj):
                             continue
                         default_option = 1
                         options = []
-                        newincludes = match_net_includes(aa[profile][hat], family, sock_type)
+                        newincludes = match_includes(aa[profile][hat], 'network', network_obj)
                         q = aaui.PromptQuestion()
                         if newincludes:
                             options += list(map(lambda s: '#include <%s>' % s, sorted(set(newincludes))))
@@ -2022,8 +2031,7 @@ def ask_the_questions():
                                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                 else:
-                                    aa[profile][hat]['allow']['netdomain']['audit'][family][sock_type] = audit_toggle
-                                    aa[profile][hat]['allow']['netdomain']['rule'][family][sock_type] = True
+                                    aa[profile][hat]['network'].add(NetworkRule(family, sock_type, audit=audit_toggle))
 
                                     changed[profile] = True
 
@@ -2031,7 +2039,7 @@ def ask_the_questions():
 
                             elif ans == 'CMD_DENY':
                                 done = True
-                                aa[profile][hat]['deny']['netdomain']['rule'][family][sock_type] = True
+                                aa[profile][hat]['network'].add(NetworkRule(family, sock_type, audit=audit_toggle, deny=True))
                                 changed[profile] = True
                                 aaui.UI_Info(_('Denying network access %(family)s %(type)s to profile') % { 'family': family, 'type': sock_type })
 
@@ -2094,45 +2102,6 @@ def glob_path_withext(newpath):
             newpath = re.sub('/[^/]+(\.[^/]+)$', '/*' + match.groups()[0], newpath)
     return newpath
 
-def delete_net_duplicates(netrules, incnetrules):
-    deleted = 0
-    hasher_obj = hasher()
-    copy_netrules = deepcopy(netrules)
-    if incnetrules and netrules:
-        incnetglob = False
-        # Delete matching rules from abstractions
-        if incnetrules.get('all', False):
-            incnetglob = True
-        for fam in copy_netrules['rule'].keys():
-            if incnetglob or (type(incnetrules['rule'][fam]) != type(hasher_obj) and incnetrules['rule'][fam]):
-                if type(netrules['rule'][fam]) == type(hasher_obj):
-                    deleted += len(netrules['rule'][fam].keys())
-                else:
-                    deleted += 1
-                netrules['rule'].pop(fam)
-            elif type(netrules['rule'][fam]) != type(hasher_obj) and netrules['rule'][fam]:
-                continue
-            else:
-                for socket_type in copy_netrules['rule'][fam].keys():
-                    if incnetrules['rule'][fam].get(socket_type, False):
-                        netrules['rule'][fam].pop(socket_type)
-                        deleted += 1
-    return deleted
-
-def delete_cap_duplicates(profilecaps, inccaps):
-    deleted = []
-    if profilecaps and inccaps:
-        for capname in profilecaps.keys():
-            # XXX The presence of a bare capability rule ("capability,") should
-            #     cause more specific capability rules
-            #     ("capability audit_control,") to be deleted
-            if inccaps[capname].get('set', False) == 1:
-                deleted.append(capname)
-        for capname in deleted:
-            profilecaps.pop(capname)
-
-    return len(deleted)
-
 def delete_path_duplicates(profile, incname, allow):
     deleted = []
     for entry in profile[allow]['path'].keys():
@@ -2155,25 +2124,15 @@ def delete_duplicates(profile, incname):
     # only a subset allow rules may actually be denied
 
     if include.get(incname, False):
-        deleted += delete_net_duplicates(profile['allow']['netdomain'], include[incname][incname]['allow']['netdomain'])
-
-        deleted += delete_net_duplicates(profile['deny']['netdomain'], include[incname][incname]['deny']['netdomain'])
-
-        deleted += delete_cap_duplicates(profile['allow']['capability'], include[incname][incname]['allow']['capability'])
-
-        deleted += delete_cap_duplicates(profile['deny']['capability'], include[incname][incname]['deny']['capability'])
+        deleted += profile['network'].delete_duplicates(include[incname][incname]['network'])
+        deleted += profile['capability'].delete_duplicates(include[incname][incname]['capability'])
 
         deleted += delete_path_duplicates(profile, incname, 'allow')
         deleted += delete_path_duplicates(profile, incname, 'deny')
 
     elif filelist.get(incname, False):
-        deleted += delete_net_duplicates(profile['allow']['netdomain'], filelist[incname][incname]['allow']['netdomain'])
-
-        deleted += delete_net_duplicates(profile['deny']['netdomain'], filelist[incname][incname]['deny']['netdomain'])
-
-        deleted += delete_cap_duplicates(profile['allow']['capability'], filelist[incname][incname]['allow']['capability'])
-
-        deleted += delete_cap_duplicates(profile['deny']['capability'], filelist[incname][incname]['deny']['capability'])
+        deleted += profile['network'].delete_duplicates(filelist[incname][incname]['network'])
+        deleted += profile['capability'].delete_duplicates(filelist[incname][incname]['capability'])
 
         deleted += delete_path_duplicates(profile, incname, 'allow')
         deleted += delete_path_duplicates(profile, incname, 'deny')
@@ -2181,30 +2140,21 @@ def delete_duplicates(profile, incname):
     return deleted
 
 def match_net_include(incname, family, type):
-    includelist = [incname]
-    checked = []
-    name = None
-    if includelist:
-        name = includelist.pop(0)
-    while name:
-        checked.append(name)
-        if netrules_access_check(include[name][name]['allow']['netdomain'], family, type):
-            return True
+    # still used by aa-mergeprof
+    network_obj = NetworkRule(family, type)
+    return match_includes(incname, 'network', network_obj)
 
-        if include[name][name]['include'].keys() and name not in checked:
-            includelist += include[name][name]['include'].keys()
 
-        if len(includelist):
-            name = includelist.pop(0)
-        else:
-            name = False
+def match_cap_includes(profile, capability):
+    # still used by aa-mergeprof
+    capability_obj = CapabilityRule(capability)
+    return match_includes(profile, 'capability', capability_obj)
 
-    return False
-
-def match_cap_includes(profile, cap):
+def match_includes(profile, rule_type, rule_obj):
     newincludes = []
     for incname in include.keys():
-        if valid_include(profile, incname) and include[incname][incname]['allow']['capability'][cap].get('set', False) == 1:
+        # XXX type check should go away once we init all profiles correctly
+        if valid_include(profile, incname) and include[incname][incname].get(rule_type, False) and include[incname][incname][rule_type].is_covered(rule_obj):
             newincludes.append(incname)
 
     return newincludes
@@ -2241,6 +2191,24 @@ def match_net_includes(profile, family, nettype):
 
     return newincludes
 
+def set_logfile(filename):
+    ''' set logfile to a) the specified filename or b) if not given, the first existing logfile from logprof.conf'''
+
+    global logfile
+
+    if filename:
+        logfile = filename
+    else:
+        logfile = conf.find_first_file(cfg['settings']['logfiles']) or '/var/log/syslog'
+
+    if not os.path.exists(logfile):
+        if filename:
+            raise AppArmorException(_('The logfile %s does not exist. Please check the path') % logfile)
+        else:
+            raise AppArmorException('Can\'t find system log "%s".' % (logfile))
+    elif os.path.isdir(logfile):
+        raise AppArmorException(_('%s is a directory. Please specify a file as logfile') % logfile)
+
 def do_logprof_pass(logmark='', passno=0, pid=pid):
     # set up variables for this pass
 #    t = hasher()
@@ -2258,7 +2226,7 @@ def do_logprof_pass(logmark='', passno=0, pid=pid):
 #    skip = hasher()  # XXX global?
 #    filelist = hasher()
 
-    aaui.UI_Info(_('Reading log entries from %s.') % filename)
+    aaui.UI_Info(_('Reading log entries from %s.') % logfile)
 
     if not passno:
         aaui.UI_Info(_('Updating AppArmor profiles in %s.') % profile_dir)
@@ -2272,7 +2240,8 @@ def do_logprof_pass(logmark='', passno=0, pid=pid):
     ##    repo_cfg = read_config('repository.conf')
     ##    if not repo_cfg['repository'].get('enabled', False) or repo_cfg['repository]['enabled'] not in ['yes', 'no']:
     ##    UI_ask_to_enable_repo()
-    log_reader = apparmor.logparser.ReadLog(pid, filename, existing_profiles, profile_dir, log)
+
+    log_reader = apparmor.logparser.ReadLog(pid, logfile, existing_profiles, profile_dir, log)
     log = log_reader.read_log(logmark)
     #read_log(logmark)
 
@@ -2512,15 +2481,16 @@ def collapse_log():
 
                         log_dict[aamode][profile][hat]['path'][path] = mode
 
-                for capability in prelog[aamode][profile][hat]['capability'].keys():
+                for cap in prelog[aamode][profile][hat]['capability'].keys():
                     # If capability not already in profile
-                    if not aa[profile][hat]['allow']['capability'][capability].get('set', False):
-                        log_dict[aamode][profile][hat]['capability'][capability] = True
+                    # XXX remove first check when we have proper profile initialisation
+                    if aa[profile][hat].get('capability', False) and not aa[profile][hat]['capability'].is_covered(CapabilityRule(cap)):
+                        log_dict[aamode][profile][hat]['capability'][cap] = True
 
                 nd = prelog[aamode][profile][hat]['netdomain']
                 for family in nd.keys():
                     for sock_type in nd[family].keys():
-                        if not profile_known_network(aa[profile][hat], family, sock_type):
+                        if not is_known_rule(aa[profile][hat], 'network', NetworkRule(family, sock_type)):
                             log_dict[aamode][profile][hat]['netdomain'][family][sock_type] = True
 
 
@@ -2546,27 +2516,27 @@ def validate_profile_mode(mode, allow, nt_name=None):
         else:
             return False
 
-# rpm backup files, dotfiles, emacs backup files should not be processed
-# The skippable files type needs be synced with apparmor initscript
+
 def is_skippable_file(path):
-    """Returns True if filename matches something to be skipped"""
-    if (re.search('(^|/)\.[^/]*$', path) or re.search('\.rpm(save|new)$', path)
-            or re.search('\.dpkg-(old|new)$', path) or re.search('\.swp$', path)
-            or path[-1] == '~' or path == 'README'):
+    """Returns True if filename matches something to be skipped (rpm or dpkg backup files, hidden files etc.)
+        The list of skippable files needs to be synced with apparmor initscript and libapparmor _aa_is_blacklisted()
+        path: filename (with or without directory)"""
+
+    basename = os.path.basename(path)
+
+    if not basename or basename[0] == '.' or basename == 'README':
         return True
 
-def is_skippable_dir(path):
-    if re.search('(disable|cache|force-complain|lxc)', path):
+    skippable_suffix = ('.dpkg-new', '.dpkg-old', '.dpkg-dist', '.dpkg-bak', '.rpmnew', '.rpmsave', '.orig', '.rej', '~')
+    if basename.endswith(skippable_suffix):
         return True
+
     return False
 
-def check_include_syntax(errors):
-    # To-Do
-    pass
-
-def check_profile_syntax(errors):
-    # To-Do
-    pass
+def is_skippable_dir(path):
+    if re.search('^(.*/)?(disable|cache|force-complain|lxc)/?$', path):
+        return True
+    return False
 
 def read_profiles():
     try:
@@ -2620,6 +2590,41 @@ def attach_profile_data(profiles, profile_data):
     for p in profile_data.keys():
         profiles[p] = deepcopy(profile_data[p])
 
+
+def parse_profile_start(line, file, lineno, profile, hat):
+    matches = parse_profile_start_line(line, file)
+
+    if profile:  # we are inside a profile, so we expect a child profile
+        if not matches['profile_keyword']:
+            raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: missing "profile" keyword.') % {
+                    'profile': profile, 'file': file, 'line': lineno + 1 })
+        if profile != hat:
+            # nesting limit reached - a child profile can't contain another child profile
+            raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: a child profile inside another child profile is not allowed.') % {
+                    'profile': profile, 'file': file, 'line': lineno + 1 })
+
+        hat = matches['profile']
+        in_contained_hat = True
+        pps_set_profile = True
+        pps_set_hat_external = False
+
+    else:  # stand-alone profile
+        profile = matches['profile']
+        if len(profile.split('//')) >= 2:
+            profile, hat = profile.split('//')[:2]
+            pps_set_hat_external = True
+        else:
+            hat = profile
+            pps_set_hat_external = False
+
+        in_contained_hat = False
+        pps_set_profile = False
+
+    attachment = matches['attachment']
+    flags = matches['flags']
+
+    return (profile, hat, attachment, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
+
 def parse_profile_data(data, file, do_include):
     profile_data = hasher()
     profile = None
@@ -2643,41 +2648,17 @@ def parse_profile_data(data, file, do_include):
             lastline = None
         # Starting line of a profile
         if RE_PROFILE_START.search(line):
-            matches = RE_PROFILE_START.search(line).groups()
-
-            if profile:
-                #print(profile, hat)
-                if profile != hat or not matches[3]:
-                    raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line: %(line)s.') % { 'profile': profile, 'file': file, 'line': lineno + 1 })
-            # Keep track of the start of a profile
-            if profile and profile == hat and matches[3]:
-                # local profile
-                hat = matches[3]
-                in_contained_hat = True
+            (profile, hat, attachment, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
+            if attachment:
+                profile_data[profile][hat]['attachment'] = attachment
+            if pps_set_profile:
                 profile_data[profile][hat]['profile'] = True
-            else:
-                if matches[1]:
-                    profile = matches[1]
-                else:
-                    profile = matches[3]
-                #print(profile)
-                if len(profile.split('//')) >= 2:
-                    profile, hat = profile.split('//')[:2]
-                else:
-                    hat = None
-                in_contained_hat = False
-                if hat:
-                    profile_data[profile][hat]['external'] = True
-                else:
-                    hat = profile
+            if pps_set_hat_external:
+                profile_data[profile][hat]['external'] = True
+
             # Profile stored
             existing_profiles[profile] = file
 
-            flags = matches[6]
-
-            profile = strip_quotes(profile)
-            if hat:
-                hat = strip_quotes(hat)
             # save profile name and filename
             profile_data[profile][hat]['name'] = profile
             profile_data[profile][hat]['filename'] = file
@@ -2685,7 +2666,7 @@ def parse_profile_data(data, file, do_include):
 
             profile_data[profile][hat]['flags'] = flags
 
-            profile_data[profile][hat]['allow']['netdomain'] = hasher()
+            profile_data[profile][hat]['network'] = NetworkRuleset()
             profile_data[profile][hat]['allow']['path'] = hasher()
             profile_data[profile][hat]['allow']['dbus'] = list()
             profile_data[profile][hat]['allow']['mount'] = list()
@@ -2702,6 +2683,10 @@ def parse_profile_data(data, file, do_include):
                 profile_data[profile][profile]['repo']['url'] = repo_data['url']
                 profile_data[profile][profile]['repo']['user'] = repo_data['user']
 
+            # init rule classes (if not done yet)
+            if not profile_data[profile][hat].get('capability', False):
+                profile_data[profile][hat]['capability'] = CapabilityRuleset()
+
         elif RE_PROFILE_END.search(line):
             # If profile ends and we're not in one
             if not profile:
@@ -2716,22 +2701,15 @@ def parse_profile_data(data, file, do_include):
 
             initial_comment = ''
 
-        elif RE_PROFILE_CAP.search(line):
-            matches = RE_PROFILE_CAP.search(line)
-
+        elif CapabilityRule.match(line):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected capability entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            audit, allow, allow_keyword, comment = parse_audit_allow(matches)
-            # TODO: honor allow_keyword and comment
+            # init rule class (if not done yet)
+            if not profile_data[profile][hat].get('capability', False):
+                profile_data[profile][hat]['capability'] = CapabilityRuleset()
 
-            capability = ALL
-            if matches.group('capability'):
-                capability = matches.group('capability').strip()
-                # TODO: can contain more than one capability- split it?
-
-            profile_data[profile][hat][allow]['capability'][capability]['set'] = True
-            profile_data[profile][hat][allow]['capability'][capability]['audit'] = audit
+            profile_data[profile][hat]['capability'].add(CapabilityRule.parse(line))
 
         elif RE_PROFILE_LINK.search(line):
             matches = RE_PROFILE_LINK.search(line).groups()
@@ -2840,7 +2818,7 @@ def parse_profile_data(data, file, do_include):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected bare file rule found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            audit, allow, allow_keyword, comment = parse_audit_allow(matches)
+            audit, allow, allow_keyword, comment = parse_modifiers(matches)
             # TODO: honor allow_keyword and comment
 
             mode = apparmor.aamode.AA_BARE_FILE_MODE
@@ -2878,7 +2856,7 @@ def parse_profile_data(data, file, do_include):
 
             path = strip_quotes(matches[4].strip())
             mode = matches[5]
-            nt_name = matches[6]
+            nt_name = matches[7]
             if nt_name:
                 nt_name = nt_name.strip()
 
@@ -2937,35 +2915,15 @@ def parse_profile_data(data, file, do_include):
                 if not include.get(include_name, False):
                     load_include(include_name)
 
-        elif RE_PROFILE_NETWORK.search(line):
-            matches = RE_PROFILE_NETWORK.search(line).groups()
-
+        elif NetworkRule.match(line):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected network entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            audit = False
-            if matches[0]:
-                audit = True
-            allow = 'allow'
-            if matches[1] and matches[1].strip() == 'deny':
-                allow = 'deny'
-            network = matches[2]
+            # init rule class (if not done yet)
+            if not profile_data[profile][hat].get('network', False):
+                profile_data[profile][hat]['network'] = NetworkRuleset()
 
-            if RE_NETWORK_FAMILY_TYPE.search(network):
-                nmatch = RE_NETWORK_FAMILY_TYPE.search(network).groups()
-                fam, typ = nmatch[:2]
-                ##Simply ignore any type subrules if family has True (seperately for allow and deny)
-                ##This will lead to those type specific rules being lost when written
-                #if type(profile_data[profile][hat][allow]['netdomain']['rule'].get(fam, False)) == dict:
-                profile_data[profile][hat][allow]['netdomain']['rule'][fam][typ] = 1
-                profile_data[profile][hat][allow]['netdomain']['audit'][fam][typ] = audit
-            elif RE_NETWORK_FAMILY.search(network):
-                fam = RE_NETWORK_FAMILY.search(network).groups()[0]
-                profile_data[profile][hat][allow]['netdomain']['rule'][fam] = True
-                profile_data[profile][hat][allow]['netdomain']['audit'][fam] = audit
-            else:
-                profile_data[profile][hat][allow]['netdomain']['rule']['all'] = True
-                profile_data[profile][hat][allow]['netdomain']['audit']['all'] = audit  # True
+            profile_data[profile][hat]['network'].add(NetworkRule.parse(line))
 
         elif RE_PROFILE_DBUS.search(line):
             matches = RE_PROFILE_DBUS.search(line).groups()
@@ -3179,26 +3137,6 @@ def parse_profile_data(data, file, do_include):
 
     return profile_data
 
-def parse_audit_allow(matches):
-    audit = False
-    if matches.group('audit'):
-        audit = True
-
-    allow = 'allow'
-    allow_keyword = False
-    if matches.group('allow'):
-        allow = matches.group('allow').strip()
-        allow_keyword = True
-        if allow != 'allow' and allow != 'deny':  # should never happen
-            raise AppArmorException(_("Invalid allow/deny keyword %s" % allow))
-
-    comment = ''
-    if matches.group('comment'):
-        # include a space so that we don't need to add it everywhere when writing the rule
-        comment = ' %s' % matches.group('comment')
-
-    return (audit, allow, allow_keyword, comment)
-
 # RE_DBUS_ENTRY = re.compile('^dbus\s*()?,\s*$')
 #   use stuff like '(?P<action>(send|write|w|receive|read|r|rw))'
 
@@ -3236,13 +3174,12 @@ def parse_unix_rule(line):
 
 def separate_vars(vs):
     """Returns a list of all the values for a variable"""
-    data = []
+    data = set()
 
-    #data = [i.strip('"') for i in vs.split()]
     RE_VARS = re.compile('\s*((\".+?\")|([^\"]\S+))\s*(.*)$')
     while RE_VARS.search(vs):
         matches = RE_VARS.search(vs).groups()
-        data.append(strip_quotes(matches[0]))
+        data.add(strip_quotes(matches[0]))
         vs = matches[3]
 
     return data
@@ -3254,34 +3191,24 @@ def is_active_profile(pname):
         return False
 
 def store_list_var(var, list_var, value, var_operation, filename):
-    """Store(add new variable or add values to variable) the variables encountered in the given list_var"""
+    """Store(add new variable or add values to variable) the variables encountered in the given list_var
+       - the 'var' parameter will be modified
+       - 'list_var' is the variable name, for example '@{foo}'
+        """
     vlist = separate_vars(value)
     if var_operation == '=':
         if not var.get(list_var, False):
             var[list_var] = set(vlist)
         else:
-            #print('Ignored: New definition for variable for:',list_var,'=', value, 'operation was:',var_operation,'old value=', var[list_var])
             raise AppArmorException(_('Redefining existing variable %(variable)s: %(value)s in %(file)s') % { 'variable': list_var, 'value': value, 'file': filename })
     elif var_operation == '+=':
         if var.get(list_var, False):
-            var[list_var] = set(var[list_var] + vlist)
+            var[list_var] |= vlist
         else:
             raise AppArmorException(_('Values added to a non-existing variable %(variable)s: %(value)s in %(file)s') % { 'variable': list_var, 'value': value, 'file': filename })
     else:
         raise AppArmorException(_('Unknown variable operation %(operation)s for variable %(variable)s in %(file)s') % { 'operation': var_operation, 'variable': list_var, 'file': filename })
 
-
-def strip_quotes(data):
-    if data[0] + data[-1] == '""':
-        return data[1:-1]
-    else:
-        return data
-
-def quote_if_needed(data):
-    # quote data if it contains whitespace
-    if ' ' in data:
-        data = '"' + data + '"'
-    return data
 
 def escape(escape):
     escape = strip_quotes(escape)
@@ -3291,17 +3218,27 @@ def escape(escape):
     return escape
 
 def write_header(prof_data, depth, name, embedded_hat, write_flags):
-    pre = '  ' * depth
+    pre = ' ' * int(depth * 2)
     data = []
+    unquoted_name = name
     name = quote_if_needed(name)
 
-    if (not embedded_hat and re.search('^[^/]|^"[^/]', name)) or (embedded_hat and re.search('^[^^]', name)):
-        name = 'profile %s' % name
+    attachment = ''
+    if prof_data['attachment']:
+        attachment = ' %s' % quote_if_needed(prof_data['attachment'])
 
+    comment = ''
+    if prof_data['header_comment']:
+        comment = ' %s' % prof_data['header_comment']
+
+    if (not embedded_hat and re.search('^[^/]', unquoted_name)) or (embedded_hat and re.search('^[^^]', unquoted_name)) or prof_data['attachment'] or prof_data['profile_keyword']:
+        name = 'profile %s%s' % (name, attachment)
+
+    flags = ''
     if write_flags and prof_data['flags']:
-        data.append('%s%s flags=(%s) {' % (pre, name, prof_data['flags']))
-    else:
-        data.append('%s%s {' % (pre, name))
+        flags = ' flags=(%s)' % prof_data['flags']
+
+    data.append('%s%s%s {%s' % (pre, name, flags, comment))
 
     return data
 
@@ -3371,60 +3308,16 @@ def var_transform(ref):
 def write_list_vars(prof_data, depth):
     return write_pair(prof_data, depth, '', 'lvar', '', ' = ', '', var_transform)
 
-def write_cap_rules(prof_data, depth, allow):
-    pre = '  ' * depth
-    data = []
-    allowstr = set_allow_str(allow)
-
-    if prof_data[allow].get('capability', False):
-        for cap in sorted(prof_data[allow]['capability'].keys()):
-            audit = ''
-            if prof_data[allow]['capability'][cap].get('audit', False):
-                audit = 'audit '
-            if prof_data[allow]['capability'][cap].get('set', False):
-                if cap == ALL:
-                    data.append('%s%s%scapability,' % (pre, audit, allowstr))
-                else:
-                    data.append('%s%s%scapability %s,' % (pre, audit, allowstr, cap))
-        data.append('')
-
-    return data
-
 def write_capabilities(prof_data, depth):
-    #data = write_single(prof_data, depth, '', 'set_capability', 'set capability ', ',')
-    data = write_cap_rules(prof_data, depth, 'deny')
-    data += write_cap_rules(prof_data, depth, 'allow')
-    return data
-
-def write_net_rules(prof_data, depth, allow):
-    pre = '  ' * depth
     data = []
-    allowstr = set_allow_str(allow)
-    audit = ''
-    if prof_data[allow].get('netdomain', False):
-        if prof_data[allow]['netdomain'].get('rule', False) == 'all':
-            if prof_data[allow]['netdomain']['audit'].get('all', False):
-                audit = 'audit '
-            data.append('%s%snetwork,' % (pre, audit))
-        else:
-            for fam in sorted(prof_data[allow]['netdomain']['rule'].keys()):
-                if prof_data[allow]['netdomain']['rule'][fam] is True:
-                    if prof_data[allow]['netdomain']['audit'][fam]:
-                        audit = 'audit'
-                    data.append('%s%s%snetwork %s' % (pre, audit, allowstr, fam))
-                else:
-                    for typ in sorted(prof_data[allow]['netdomain']['rule'][fam].keys()):
-                        if prof_data[allow]['netdomain']['audit'][fam].get(typ, False):
-                            audit = 'audit'
-                        data.append('%s%s%snetwork %s %s,' % (pre, audit, allowstr, fam, typ))
-        if prof_data[allow].get('netdomain', False):
-            data.append('')
-
+    if prof_data.get('capability', False):
+        data = prof_data['capability'].get_clean(depth)
     return data
 
 def write_netdomain(prof_data, depth):
-    data = write_net_rules(prof_data, depth, 'deny')
-    data += write_net_rules(prof_data, depth, 'allow')
+    data = []
+    if prof_data.get('network', False):
+        data = prof_data['network'].get_clean(depth)
     return data
 
 def write_dbus_rules(prof_data, depth, allow):
@@ -3733,6 +3626,14 @@ def serialize_profile(profile_data, name, options):
 
     return string + '\n'
 
+def serialize_parse_profile_start(line, file, lineno, profile, hat, prof_data_profile, prof_data_external, correct):
+    (profile, hat, attachment, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
+
+    if hat and profile != hat and '%s//%s'%(profile, hat) in line and not prof_data_external:
+        correct = False
+
+    return (profile, hat, attachment, flags, in_contained_hat, correct)
+
 def serialize_profile_from_old_profile(profile_data, name, options):
     data = []
     string = ''
@@ -3774,7 +3675,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                          'include': write_includes,
                          'rlimit': write_rlimits,
                          'capability': write_capabilities,
-                         'netdomain': write_netdomain,
+                         'network': write_netdomain,
                          'dbus': write_dbus,
                          'mount': write_mount,
                          'signal': write_signal,
@@ -3789,7 +3690,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                                 'include',
                                 'rlimit',
                                 'capability',
-                                'netdomain',
+                                'network',
                                 'dbus',
                                 'mount',
                                 'signal',
@@ -3805,7 +3706,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     'include': False,
                     'rlimit': False,
                     'capability': False,
-                    'netdomain': False,
+                    'network': False,
                     'dbus': False,
                     'mount': True, # not handled otherwise yet
                     'signal': True, # not handled otherwise yet
@@ -3823,10 +3724,14 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 depth = len(line) - len(line.lstrip())
                 data += write_methods[segs](prof_data, int(depth / 2))
                 segments[segs] = False
+                # delete rules from prof_data to avoid duplication (they are in data now)
                 if prof_data['allow'].get(segs, False):
                     prof_data['allow'].pop(segs)
                 if prof_data['deny'].get(segs, False):
                     prof_data['deny'].pop(segs)
+                if prof_data.get(segs, False):
+                    t = type(prof_data[segs])
+                    prof_data[segs] = t()
             return data
 
         #data.append('reading prof')
@@ -3835,31 +3740,9 @@ def serialize_profile_from_old_profile(profile_data, name, options):
             line = line.rstrip('\n')
             #data.append(' ')#data.append('read: '+line)
             if RE_PROFILE_START.search(line):
-                matches = RE_PROFILE_START.search(line).groups()
-                if profile and profile == hat and matches[3]:
-                    hat = matches[3]
-                    in_contained_hat = True
-                    if write_prof_data[profile][hat]['profile']:
-                        pass
-                else:
-                    if matches[1]:
-                        profile = matches[1]
-                    else:
-                        profile = matches[3]
-                    if len(profile.split('//')) >= 2:
-                        profile, hat = profile.split('//')[:2]
-                    else:
-                        hat = None
-                    in_contained_hat = False
-                    if hat and not write_prof_data[profile][hat]['external']:
-                        correct = False
-                    else:
-                        hat = profile
 
-                flags = matches[6]
-                profile = strip_quotes(profile)
-                if hat:
-                    hat = strip_quotes(hat)
+                (profile, hat, attachment, flags, in_contained_hat, correct) = serialize_parse_profile_start(
+                        line, prof_filename, None, profile, hat, write_prof_data[profile][hat]['profile'], write_prof_data[profile][hat]['external'], correct)
 
                 if not write_prof_data[hat]['name'] == profile:
                     correct = False
@@ -3887,16 +3770,20 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 if profile:
                     depth = int(len(line) - len(line.lstrip()) / 2) + 1
 
-                    # first write sections that were modified (and remove them from write_prof_data)
+                    # first write sections that were modified
                     #for segs in write_methods.keys():
                     for segs in default_write_order:
                         if segments[segs]:
                             data += write_methods[segs](write_prof_data[name], depth)
                             segments[segs] = False
+                            # delete rules from write_prof_data to avoid duplication (they are in data now)
                             if write_prof_data[name]['allow'].get(segs, False):
                                 write_prof_data[name]['allow'].pop(segs)
                             if write_prof_data[name]['deny'].get(segs, False):
                                 write_prof_data[name]['deny'].pop(segs)
+                            if write_prof_data[name].get(segs, False):
+                                t = type(write_prof_data[name][segs])
+                                write_prof_data[name][segs] = t()
 
                     # then write everything else
                     for segs in default_write_order:
@@ -3937,35 +3824,14 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 else:
                     profile = None
 
-            elif RE_PROFILE_CAP.search(line):
-                matches = RE_PROFILE_CAP.search(line).groups()
-                audit = False
-                if matches[0]:
-                    audit = matches[0]
-
-                allow = 'allow'
-                if matches[1] and matches[1].strip() == 'deny':
-                    allow = 'deny'
-
-                capability = ALL
-                if matches[2]:
-                    capability = matches[2].strip()
-
-                if not write_prof_data[hat][allow]['capability'][capability].get('set', False):
-                    correct = False
-                if not write_prof_data[hat][allow]['capability'][capability].get(audit, False) == audit:
-                    correct = False
-
-                if correct:
+            elif CapabilityRule.match(line):
+                cap = CapabilityRule.parse(line)
+                if write_prof_data[hat]['capability'].is_covered(cap, True, True):
                     if not segments['capability'] and True in segments.values():
                         data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['capability'] = True
-                    write_prof_data[hat][allow]['capability'].pop(capability)
+                    write_prof_data[hat]['capability'].delete(cap)
                     data.append(line)
-
-                    #write_prof_data[hat][allow]['capability'][capability].pop(audit)
-
-                    #Remove this line
                 else:
                     # To-Do
                     pass
@@ -4085,7 +3951,11 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 var_operation = matches[1]
                 value = strip_quotes(matches[2])
                 var_set = hasher()
-                if profile:
+                if var_operation == '+=':
+                    correct = False  # adding proper support for "add to variable" needs big changes
+                    # (like storing a variable's "history" - where it was initially defined and what got added where)
+                    # so just skip any comparison and assume a non-match
+                elif profile:
                     store_list_var(var_set, list_var, value, var_operation, prof_filename)
                     if not var_set[list_var] == write_prof_data['lvar'].get(list_var, False):
                         correct = False
@@ -4147,7 +4017,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 path = strip_quotes(matches[4].strip())
                 mode = matches[5]
-                nt_name = matches[6]
+                nt_name = matches[7]
                 if nt_name:
                     nt_name = nt_name.strip()
 
@@ -4157,14 +4027,17 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 else:
                     tmpmode = str_to_mode(mode)
 
-                if not write_prof_data[hat][allow]['path'][path].get('mode', set()) & tmpmode:
+                if not write_prof_data[hat][allow]['path'].get(path):
                     correct = False
+                else:
+                    if not write_prof_data[hat][allow]['path'][path].get('mode', set()) & tmpmode:
+                        correct = False
 
-                if nt_name and not write_prof_data[hat][allow]['path'][path].get('to', False) == nt_name:
-                    correct = False
+                    if nt_name and not write_prof_data[hat][allow]['path'][path].get('to', False) == nt_name:
+                        correct = False
 
-                if audit and not write_prof_data[hat][allow]['path'][path].get('audit', set()) & tmpmode:
-                    correct = False
+                    if audit and not write_prof_data[hat][allow]['path'][path].get('audit', set()) & tmpmode:
+                        correct = False
 
                 if correct:
                     if not segments['path'] and True in segments.values():
@@ -4190,45 +4063,14 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                         write_filelist['include'].pop(include_name)
                         data.append(line)
 
-            elif RE_PROFILE_NETWORK.search(line):
-                matches = RE_PROFILE_NETWORK.search(line).groups()
-                audit = False
-                if matches[0]:
-                    audit = True
-                allow = 'allow'
-                if matches[1] and matches[1].strip() == 'deny':
-                    allow = 'deny'
-                network = matches[2]
-                if RE_NETWORK_FAMILY_TYPE.search(network):
-                    nmatch = RE_NETWORK_FAMILY_TYPE.search(network).groups()
-                    fam, typ = nmatch[:2]
-                    if write_prof_data[hat][allow]['netdomain']['rule'][fam][typ] and write_prof_data[hat][allow]['netdomain']['audit'][fam][typ] == audit:
-                        write_prof_data[hat][allow]['netdomain']['rule'][fam].pop(typ)
-                        write_prof_data[hat][allow]['netdomain']['audit'][fam].pop(typ)
-                        data.append(line)
-                    else:
-                        correct = False
-
-                elif RE_NETWORK_FAMILY.search(network):
-                    fam = RE_NETWORK_FAMILY.search(network).groups()[0]
-                    if write_prof_data[hat][allow]['netdomain']['rule'][fam] and write_prof_data[hat][allow]['netdomain']['audit'][fam] == audit:
-                        write_prof_data[hat][allow]['netdomain']['rule'].pop(fam)
-                        write_prof_data[hat][allow]['netdomain']['audit'].pop(fam)
-                        data.append(line)
-                    else:
-                        correct = False
-                else:
-                    if write_prof_data[hat][allow]['netdomain']['rule']['all'] and write_prof_data[hat][allow]['netdomain']['audit']['all'] == audit:
-                        write_prof_data[hat][allow]['netdomain']['rule'].pop('all')
-                        write_prof_data[hat][allow]['netdomain']['audit'].pop('all')
-                        data.append(line)
-                    else:
-                        correct = False
-
-                if correct:
-                    if not segments['netdomain'] and True in segments.values():
+            elif NetworkRule.match(line):
+                network_obj = NetworkRule.parse(line)
+                if write_prof_data[hat]['network'].is_covered(network_obj, True, True):
+                    if not segments['network'] and True in segments.values():
                         data += write_prior_segments(write_prof_data[name], segments, line)
-                    segments['netdomain'] = True
+                    segments['network'] = True
+                    write_prof_data[hat]['network'].delete(network_obj)
+                    data.append(line)
 
             elif RE_PROFILE_CHANGE_HAT.search(line):
                 matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
@@ -4341,55 +4183,18 @@ def profile_known_exec(profile, typ, exec_target):
 
     return 0
 
-def profile_known_capability(profile, capname):
-    if profile['deny']['capability'][capname].get('set', False):
-        return -1
-
-    if profile['allow']['capability'][capname].get('set', False):
-        return 1
-
-    for incname in profile['include'].keys():
-        if include[incname][incname]['deny']['capability'][capname].get('set', False):
-            return -1
-        if include[incname][incname]['allow']['capability'][capname].get('set', False):
-            return 1
-
-    return 0
-
-def profile_known_network(profile, family, sock_type):
-    if netrules_access_check(profile['deny']['netdomain'], family, sock_type):
-        return -1
-    if netrules_access_check(profile['allow']['netdomain'], family, sock_type):
-        return 1
+def is_known_rule(profile, rule_type, rule_obj):
+    # XXX get rid of get() checks after we have a proper function to initialize a profile
+    if profile.get(rule_type, False):
+        if profile[rule_type].is_covered(rule_obj, False):
+            return True
 
     for incname in profile['include'].keys():
-        if netrules_access_check(include[incname][incname]['deny']['netdomain'], family, sock_type):
-            return -1
-        if netrules_access_check(include[incname][incname]['allow']['netdomain'], family, sock_type):
-            return 1
+        if include[incname][incname].get(rule_type, False):
+            if include[incname][incname][rule_type].is_covered(rule_obj, False):
+                return True
 
-    return 0
-
-def netrules_access_check(netrules, family, sock_type):
-    if not netrules:
-        return 0
-    all_net = False
-    all_net_family = False
-    net_family_sock = False
-    if netrules['rule'].get('all', False):
-        all_net = True
-    if netrules['rule'].get(family, False) is True:
-        all_net_family = True
-    if (netrules['rule'].get(family, False) and
-            type(netrules['rule'][family]) == type(hasher()) and
-            sock_type in netrules['rule'][family].keys() and
-            netrules['rule'][family][sock_type]):
-        net_family_sock = True
-
-    if all_net or all_net_family or net_family_sock:
-        return True
-    else:
-        return False
+    return False
 
 def reload_base(bin_path):
     if not check_for_apparmor():
@@ -4435,6 +4240,8 @@ def load_include(incname):
         #If the include is a directory means include all subfiles
         elif os.path.isdir(profile_dir + '/' + incfile):
             load_includeslist += list(map(lambda x: incfile + '/' + x, os.listdir(profile_dir + '/' + incfile)))
+        else:
+            raise AppArmorException("Include file %s not found" % (profile_dir + '/' + incfile) )
 
     return 0
 
@@ -4635,10 +4442,6 @@ extra_profile_dir = conf.find_first_dir(cfg['settings']['inactive_profiledir']) 
 parser = conf.find_first_file(cfg['settings']['parser']) or '/sbin/apparmor_parser'
 if not os.path.isfile(parser) or not os.access(parser, os.EX_OK):
     raise AppArmorException('Can\'t find apparmor_parser')
-
-filename = conf.find_first_file(cfg['settings']['logfiles']) or '/var/log/syslog'
-if not os.path.isfile(filename):
-    raise AppArmorException('Can\'t find system log "%s".' % (filename))
 
 ldd = conf.find_first_file(cfg['settings']['ldd']) or '/usr/bin/ldd'
 if not os.path.isfile(ldd) or not os.access(ldd, os.EX_OK):

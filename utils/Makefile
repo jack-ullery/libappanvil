@@ -18,13 +18,7 @@ NAME 		= apparmor-utils
 all:
 COMMONDIR=../common/
 
-include common/Make.rules
-
-COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
-ifeq ($(COMMONDIR_EXISTS), true)
-common/Make.rules: $(COMMONDIR)/Make.rules
-	ln -sf $(COMMONDIR) .
-endif
+include $(COMMONDIR)/Make.rules
 
 PERLTOOLS = aa-exec aa-notify
 PYTOOLS = aa-easyprof aa-genprof aa-logprof aa-cleanprof aa-mergeprof \
@@ -69,16 +63,14 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 ifndef VERBOSE
 .SILENT: clean
 endif
-clean: _clean
+clean: pod_clean
 	rm -f core core.* *.o *.s *.a *~
-	rm -f Make.rules
 	$(MAKE) -C po clean
 	$(MAKE) -C vim clean
 	$(MAKE) -C test clean
 	rm -rf staging/ build/
-	rm -f apparmor/*.pyc
-	rm -rf apparmor/__pycache__/
-	rm -f common
+	rm -f apparmor/*.pyc apparmor/rule/*.pyc
+	rm -rf apparmor/__pycache__/ apparmor/rule/__pycache__/
 
 # ${CAPABILITIES} is defined in common/Make.rules
 .PHONY: check_severity_db

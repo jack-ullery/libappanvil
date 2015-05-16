@@ -54,16 +54,24 @@ B<COMMENT> = '#' I<TEXT>
 
 B<TEXT> = any characters
 
-B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<DBUS RULE> | I<UNIX RULE> I<FILE RULE> | 'change_profile -E<gt> ' I<PROGRAMCHILD> ) ... ] '}'
+B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | I<CAPABILITY RULE> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<DBUS RULE> | I<UNIX RULE> | I<FILE RULE> | I<LINK RULE> | I<CHANGE_PROFILE RULE> | I<RLIMIT RULE>) ... ] '}'
 
 B<SUBPROFILE> = [ I<COMMENT> ... ] ( I<PROGRAMHAT> | 'profile ' I<PROGRAMCHILD> ) '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
+
+B<ACCESS TYPE> = ( 'allow' | 'deny' )
+
+B<QUALIFIERS> = [ 'audit' ] [ I<ACCESS TYPE> ]
+
+B<CAPABILITY RULE> = [ I<QUALIFIERS> ] 'capability' [ I<CAPABILITY LIST> ]
+
+B<CAPABILITY LIST> = ( I<CAPABILITY> )+
 
 B<CAPABILITY> = (lowercase capability name without 'CAP_' prefix; see
 capabilities(7))
 
-B<NETWORK RULE> = 'network' [ [ I<DOMAIN> ] [ I<TYPE> ] [ I<PROTOCOL> ] ] ','
+B<NETWORK RULE> = [ I<QUALIFIERS> 'network' [ [ I<DOMAIN> [ I<TYPE> | I<PROTOCOL> ] ] | [ I<PROTOCOL> ] ] ','
 
-B<DOMAIN> = ( 'inet' | 'ax25' | 'ipx' | 'appletalk' | 'netrom' | 'bridge' | 'atmpvc' | 'x25' | 'inet6' | 'rose' | 'netbeui' | 'security' | 'key' | 'packet' | 'ash' | 'econet' | 'atmsvc' | 'sna' | 'irda' | 'pppox' | 'wanpipe' | 'bluetooth' | 'netlink' ) ','
+B<DOMAIN> = ( 'inet' | 'ax25' | 'ipx' | 'appletalk' | 'netrom' | 'bridge' | 'atmpvc' | 'x25' | 'inet6' | 'rose' | 'netbeui' | 'security' | 'key' | 'packet' | 'ash' | 'econet' | 'atmsvc' | 'sna' | 'irda' | 'pppox' | 'wanpipe' | 'bluetooth' | 'netlink' | 'unix' | 'rds' | 'llc' | 'can' | 'tipc' | 'iucv' | 'rxrpc' | 'isdn' | 'phonet' | 'ieee802154' | 'caif' | 'alg' | 'nfc' | 'vsock' ) ','
 
 B<TYPE> = ( 'stream' | 'dgram' | 'seqpacket' |  'rdm' | 'raw' | 'packet' )
 
@@ -77,11 +85,11 @@ B<PROGRAMCHILD> = I<SUBPROFILE> name
 
 B<MOUNT RULE> = ( I<MOUNT> | I<REMOUNT> | I<UMOUNT> )
 
-B<MOUNT> = [ 'audit' ] [ 'deny' ] 'mount' [ I<MOUNT CONDITIONS> ] [ I<SOURCE FILEGLOB> ] [ -E<gt> [ I<MOUNTPOINT FILEGLOB> ]
+B<MOUNT> = [ I<QUALIFIERS> ] 'mount' [ I<MOUNT CONDITIONS> ] [ I<SOURCE FILEGLOB> ] [ -E<gt> [ I<MOUNTPOINT FILEGLOB> ]
 
-B<REMOUNT> = [ 'audit' ] [ 'deny' ] 'remount' [ I<MOUNT CONDITIONS> ] I<MOUNTPOINT FILEGLOB>
+B<REMOUNT> = [ I<QUALIFIERS> ] 'remount' [ I<MOUNT CONDITIONS> ] I<MOUNTPOINT FILEGLOB>
 
-B<UMOUNT> = [ 'audit' ] [ 'deny' ] 'umount' [ I<MOUNT CONDITIONS> ] I<MOUNTPOINT FILEGLOB>
+B<UMOUNT> = [ I<QUALIFIERS> ] 'umount' [ I<MOUNT CONDITIONS> ] I<MOUNTPOINT FILEGLOB>
 
 B<MOUNT CONDITIONS> = [ ( 'fstype' | 'vfstype' ) ( '=' | 'in' ) I<MOUNT FSTYPE EXPRESSION> ] [ 'options' ( '=' | 'in' ) I<MOUNT FLAGS EXPRESSION> ]
 
@@ -93,13 +101,19 @@ B<MOUNT FLAGS EXPRESSION> = ( I<MOUNT FLAGS LIST> | I<MOUNT EXPRESSION> )
 
 B<MOUNT FLAGS LIST> = Comma separated list of I<MOUNT FLAGS>.
 
-B<MOUNT FLAGS> = ( 'ro' | 'rw' | 'nosuid' | 'suid' | 'nodev' | 'dev' | 'noexec' | 'exec' | 'sync' | 'async' | 'remount' | 'mand' | 'nomand' | 'dirsync' | 'nodirsync' | 'noatime' | 'atime' | 'nodiratime' | 'diratime' | 'bind' | 'move' | 'rec' | 'verbose' | 'silent' | 'load' | 'acl' | 'noacl' | 'unbindable' | 'private' | 'slave' | 'shared' | 'relative' | 'norelative' | 'iversion' | 'noiversion' | 'strictatime' | 'nouser' | 'user' )
+B<MOUNT FLAGS> = ( 'ro' | 'rw' | 'nosuid' | 'suid' | 'nodev' | 'dev' | 'noexec' | 'exec' | 'sync' | 'async' | 'remount' | 'mand' | 'nomand' | 'dirsync' | 'noatime' | 'atime' | 'nodiratime' | 'diratime' | 'bind' | 'rbind' | 'move' | 'verbose' | 'silent' | 'loud' | 'acl' | 'noacl' | 'unbindable' | 'runbindable' | 'private' | 'rprivate' | 'slave' | 'rslave' | 'shared' | 'rshared' | 'relatime' | 'norelatime' | 'iversion' | 'noiversion' | 'strictatime' | 'nouser' | 'user' )
 
 B<MOUNT EXPRESSION> = ( I<ALPHANUMERIC> | I<AARE> ) ...
 
-B<PIVOT ROOT RULE> = [ 'audit' ] [ 'deny' ] pivot_root [ oldroot=I<OLD PUT FILEGLOB> ] [ I<NEW ROOT FILEGLOB> ] [ -E<gt> I<PROGRAMCHILD> ]
+B<PIVOT ROOT RULE> = [ I<QUALIFIERS> ] pivot_root [ oldroot=I<OLD PUT FILEGLOB> ] [ I<NEW ROOT FILEGLOB> ] [ -E<gt> I<PROGRAMCHILD> ]
 
-B<PTRACE_RULE> = [ 'audit' ] [ 'deny' ] 'ptrace' [ I<PTRACE ACCESS PERMISSIONS> ] [ I<PTRACE PEER> ]
+B<SOURCE FILEGLOB> = I<FILEGLOB>
+
+B<MOUNTPOINT FILEGLOB> = I<FILEGLOB>
+
+B<OLD PUT FILEGLOB> = I<FILEGLOB>
+
+B<PTRACE_RULE> = [ I<QUALIFIERS> ] 'ptrace' [ I<PTRACE ACCESS PERMISSIONS> ] [ I<PTRACE PEER> ]
 
 B<PTRACE ACCESS PERMISSIONS> = I<PTRACE ACCESS> | I<PTRACE ACCESS LIST>
 
@@ -109,7 +123,7 @@ B<PTRACE ACCESS> = ( 'r' | 'w' | 'rw' | 'read' | 'readby' | 'trace' | 'tracedby'
 
 B<PTRACE PEER> = 'peer' '=' I<AARE>
 
-B<SIGNAL_RULE> = [ 'audit' ] [ 'deny' ] 'signal' [ I<SIGNAL ACCESS PERMISSIONS> ] [ I<SIGNAL SET> ] [ I<SIGNAL PEER> ]
+B<SIGNAL_RULE> = [ I<QUALIFIERS> ] 'signal' [ I<SIGNAL ACCESS PERMISSIONS> ] [ I<SIGNAL SET> ] [ I<SIGNAL PEER> ]
 
 B<SIGNAL ACCESS PERMISSIONS> = I<SIGNAL ACCESS> | I<SIGNAL ACCESS LIST>
 
@@ -127,13 +141,13 @@ B<SIGNAL PEER> = 'peer' '=' I<AARE>
 
 B<DBUS RULE> = ( I<DBUS MESSAGE RULE> | I<DBUS SERVICE RULE> | I<DBUS EAVESDROP RULE> | I<DBUS COMBINED RULE> )
 
-B<DBUS MESSAGE RULE> = [ 'audit' ] [ 'deny' ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ] [ I<DBUS PATH> ] [ I<DBUS INTERFACE> ] [ I<DBUS MEMBER> ] [ I<DBUS PEER> ]
+B<DBUS MESSAGE RULE> = [ I<QUALIFIERS> ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ] [ I<DBUS PATH> ] [ I<DBUS INTERFACE> ] [ I<DBUS MEMBER> ] [ I<DBUS PEER> ]
 
-B<DBUS SERVICE RULE> = [ 'audit' ] [ 'deny' ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ] [ I<DBUS NAME> ]
+B<DBUS SERVICE RULE> = [ I<QUALIFIERS> ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ] [ I<DBUS NAME> ]
 
-B<DBUS EAVESDROP RULE> = [ 'audit' ] [ 'deny' ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ]
+B<DBUS EAVESDROP RULE> = [ I<QUALIFIERS> ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ]
 
-B<DBUS COMBINED RULE> = [ 'audit' ] [ 'deny' ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ]
+B<DBUS COMBINED RULE> = [ I<QUALIFIERS> ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ]
 
 B<DBUS ACCESS EXPRESSION> = ( I<DBUS ACCESS> | '(' I<DBUS ACCESS LIST> ')' )
 
@@ -157,9 +171,7 @@ B<DBUS ACCESS> = ( 'send' | 'receive' | 'bind' | 'eavesdrop' )  (some accesses a
 
 B<AARE> = B<?*[]{}^> (see below for meanings)
 
-B<UNIX RILE> = [ I<UNIX QUALIFIERS> ] 'unix' [ I<UNIX ACCESS EXPR> ] [ I<UNIX RULE CONDS> ] [ I<UNIX LOCAL EXPR> ] [ I<UNIX PEER EXPR> ]
-
-B<UNIX QUALIFIERS> = [ 'audit' ] [ 'allow' | 'deny' ]
+B<UNIX RULE> = [ I<QUALIFIERS> ] 'unix' [ I<UNIX ACCESS EXPR> ] [ I<UNIX RULE CONDS> ] [ I<UNIX LOCAL EXPR> ] [ I<UNIX PEER EXPR> ]
 
 B<UNIX ACCESS EXPR> = ( I<UNIX ACCESS> | I<UNIX ACCESS LIST> )
 
@@ -189,13 +201,33 @@ B<UNIX ATTR COND> 'attr' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
 B<UNIX OPT COND> 'opt' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
-B<FILE RULE> = I<RULE QUALIFIER> ( '"' I<FILEGLOB> '"' | I<FILEGLOB> ) I<ACCESS> ','
+B<RLIMIT RULE> = 'set' 'rlimit' [I<RLIMIT> 'E<lt>=' I<RLIMIT VALUE> ] ','
 
-B<RULE QUALIFIER> = [ 'audit' ] [ 'deny' ] [ 'owner' ]
+B<RLIMIT> = ( 'cpu' | 'fsize' | 'data' | 'stack' | 'core' | 'rss' | 'nofile' | 'ofile' | 'as' | 'nproc' | 'memlock' | 'locks' | 'sigpending' | 'msgqueue' | 'nice' | 'rtprio' | 'rttime' )
 
-B<FILEGLOB> = (must start with '/' (after variable expansion), B<AARE> have special meanings; see below. May include I<VARIABLE>. Rules with embedded spaces or tabs must be quoted. Rules must end with '/' to apply to directories.)
+B<RLIMIT VALUE> = ( I<RLIMIT SIZE> | I<RLIMIT NUMBER> | I <RLIMIT NICE> )
 
-B<ACCESS> = ( 'r' | 'w' | 'l' | 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'cx -E<gt> ' I<PROGRAMCHILD> | 'Cx -E<gt> ' I<PROGRAMCHILD> | 'm' ) [ I<ACCESS> ... ]  (not all combinations are allowed; see below.)
+B<RLIMIT SIZE> = I<NUMBER> ( 'K' | 'M' | 'G' ) Only applies to RLIMIT of 'fsize', 'data', 'stack', 'core', 'rss', 'as', 'memlock', 'msgqueue'.
+
+B<RLIMIT NUMBER> = number from 0 to max rlimit value. Only applies ot RLIMIT of 'nofile', 'locks', 'sigpending', 'nproc', 'rtprio', 'cpu'
+
+B<RLIMIT NICE> = a number between -20 and 19. Only applies to RLIMIT of 'nice'
+
+B<FILE RULE> = [ I<QUALIFIERS> ] [ 'owner' ] ( 'file' | [ 'file' ] ( I<FILEGLOB> I<ACCESS>  | I<ACCESS> I<FILEGLOB> ) [ -E<gt> <EXEC TARGET> ] ) ','
+
+B<FILEGLOB> = ( I<QUOTED FILEGLOB> | I<UNQUOTED FILEGLOB> )
+
+B<QUOTED FILEGLOB> = '"' I<UNQUOTED FILEGLOB> '"'
+
+B<UNQUOTED FILEGLOB> = (must start with '/' (after variable expansion), B<AARE> have special meanings; see below. May include I<VARIABLE>. Rules with embedded spaces or tabs must be quoted. Rules must end with '/' to apply to directories.)
+
+B<ACCESS> = ( 'r' | 'w' | 'a' | 'l' | 'k' | 'm' | I<EXEC TRANSITION> )+  (not all combinations are allowed; see below.)
+
+B<EXEC TRANSITION> =  ( 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'cx' | 'Cx' | 'pix' | 'Pix' | 'cix' | 'Cix' | 'pux' | 'PUx' | 'cux' | 'CUx' )
+
+B<EXEC TARGET> = name  (requires I<EXEC TRANSITION> specified)
+
+B<LINK RULE> = I<QUALIFIERS> [ 'owner' ] 'link' [ 'subset' ] <FILEGLOB> ( 'to' | '-E<gt>' ) <FILEGLOB> ','
 
 B<VARIABLE> = '@{' I<ALPHA> [ ( I<ALPHANUMERIC> | '_' ) ... ] '}'
 
@@ -206,6 +238,10 @@ B<ALIAS RULE> = I<ABS PATH> '-E<gt>' I<REWRITTEN ABS PATH> ','
 B<ALPHA> = ('a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
 B<ALPHANUMERIC> = ('0', '1', '2', ... '9', 'a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
+
+B<CHANGE_PROFILE RULE> = 'change_profile' [ I<EXEC COND> ] [ -E<gt> I<PROGRAMCHILD> ]
+
+B<EXEC COND> = I<FILEGLOB>
 
 =back
 
@@ -270,6 +306,38 @@ modes:
 
 - inherit execute
 
+=item B<pix>
+
+- discrete profile execute with inherit fallback
+
+=item B<Pix>
+
+- discrete profile execute with inherit fallback -- scrub the environment
+
+=item B<cix>
+
+- transition to subprofile on execute with inherit fallback
+
+=item B<Cix>
+
+- transition to subprofile on execute with inherit fallback -- scrub the environment
+
+=item B<pux>
+
+- discrete profile execute with fallback to unconfined
+
+=item B<PUx>
+
+- discrete profile execute with fallback to unconfined -- scrub the environment
+
+=item B<cux>
+
+- transition to subprofile on execute with fallback to unconfined
+
+=item B<Cux>
+
+- transition to subprofile on execute with fallback to unconfined -- scrub the environment
+
 =item B<m>
 
 - allow PROT_EXEC with mmap(2) calls
@@ -329,7 +397,7 @@ over the callee.  Use this mode only if the child absolutely must be
 run unconfined and LD_PRELOAD must be used. Any profile using this mode
 provides negligible security. Use at your own risk.
 
-Incompatible with 'Ux', 'px', 'Px', 'cx', 'Cx', 'ix'.
+Incompatible with other exec transition modes.
 
 =item B<Ux - unconfined execute -- scrub the environment>
 
@@ -343,7 +411,7 @@ designated child processes to be run without any AppArmor protection.
 Use this mode only if the child absolutely must be run unconfined. Use
 at your own risk.
 
-Incompatible with 'ux', 'px', 'Px', 'cx', 'Cx', 'ix'.
+Incompatible with other exec transition modes.
 
 =item B<px - Discrete Profile execute mode>
 
@@ -355,7 +423,7 @@ B<WARNING> 'px' does not scrub the environment of variables such as
 LD_PRELOAD; as a result, the calling domain may have an undue amount of
 influence over the callee.
 
-Incompatible with 'Ux', 'ux', 'Px', 'cx', 'Cx', 'ix'.
+Incompatible with other exec transition modes.
 
 =item B<Px - Discrete Profile execute mode -- scrub the environment>
 
@@ -364,7 +432,7 @@ will invoke the Linux Kernel's B<unsafe_exec> routines to scrub
 the environment, similar to setuid programs. (See ld.so(8) for some
 information on setuid/setgid environment scrubbing.)
 
-Incompatible with 'Ux', 'ux', 'px', 'cx', 'Cx', 'ix'.
+Incompatible with other exec transition modes.
 
 =item B<cx - Transition to Subprofile execute mode>
 
@@ -376,7 +444,7 @@ B<WARNING> 'cx' does not scrub the environment of variables such as
 LD_PRELOAD; as a result, the calling domain may have an undue amount of
 influence over the callee.
 
-Incompatible with 'Ux', 'ux', 'px', 'Px', 'Cx', 'ix'.
+Incompatible with other exec transition modes.
 
 =item B<Cx - Transition to Subprofile execute mode -- scrub the environment>
 
@@ -385,7 +453,7 @@ will invoke the Linux Kernel's B<unsafe_exec> routines to scrub
 the environment, similar to setuid programs. (See ld.so(8) for some
 information on setuid/setgid environment scrubbing.)
 
-Incompatible with 'Ux', 'ux', 'px', 'Px', 'cx', 'ix'.
+Incompatible with other exec transition modes.
 
 =item B<ix - Inherit execute mode>
 
@@ -399,7 +467,51 @@ profile, or losing the permissions of the current profile. There is no
 version to scrub the environment because 'ix' executions don't change
 privileges.
 
-Incompatible with 'Ux', 'ux', 'Px', 'px', 'cx', 'Cx'. Implies 'm'.
+Incompatible with other exec transition modes.
+
+=item B<Profile transition with inheritance fallback execute mode>
+
+These modes attempt to perform a domain transition as specified by
+the matching permission (shown below) and if that transition fails
+to find the matching profile the domain transition proceeds using
+the 'ix' transition mode.
+
+  'Pix' == 'Px' with fallback to 'ix'
+  'pix' == 'px' with fallback to 'ix'
+  'Cix' == 'Cx' with fallback to 'ix'
+  'cix' == 'cx' with fallback to 'ix'
+
+Incompatible with other exec transition modes.
+
+=item B<Profile transition with unconfined fallback execute mode>
+
+These modes attempt to perform a domain transition as specified by
+the matching permission (shown below) and if that transition fails
+to find the matching profile the domain transition proceeds using
+the 'ux' transition mode if 'pux', 'cux' or the 'Ux' transition mode
+if 'PUx', 'CUx' is used.
+
+  'PUx' == 'Px' with fallback to 'Ux'
+  'pux' == 'px' with fallback to 'ux'
+  'CUx' == 'Cx' with fallback to 'Ux'
+  'cux' == 'cx' with fallback to 'ux'
+
+Incompatible with other exec transition modes.
+
+=item B<Directed profile transitions>
+
+The directed ('px', 'Px', 'pix', 'Pix', 'pux', 'PUx') profile and
+subprofile ('cx', 'Cx', 'cix', 'Cix', 'cux', 'CUx') transitions normally
+determine the profile to transition to from the executable name. It
+is however possible to specify the name of the profile that the transition
+should use.
+
+The name of the profile to transition to is specified using the '->'
+followed by the name of the profile to transition to. Eg.
+
+  /bin/** px -> profile,
+
+Incompatible with other exec transition modes.
 
 =item B<m - Allow executable mapping>
 
@@ -416,16 +528,67 @@ B<LD_LIBRARY_PATH>, given to ld.so(8).
 
 Allows the program to be able to create a link with this name.  When a
 link is created, the new link B<MUST> have a subset of permissions as
-the original file (with the exception that
-the destination does not have to have link access.) If there is an 'x' rule
-on the new link, it must match the original file exactly.
+the original file (with the exception that the destination does not have
+to have link access.) If there is an 'x' rule on the new link, it must
+match the original file exactly.
 
 =item B<k - lock mode>
 
 Allows the program to be able lock a file with this name.  This permission
 covers both advisory and mandatory locking.
 
+=item B<leading OR trailing access permissions>
+
+File rules can be specified with the access permission either leading
+or trailing the file glob. Eg.
+
+  rw /**,		# leading permissions
+
+  /** rw,		# trailing permissions
+
+When a leading permissions is used further rule options and context
+may be allowed, Eg.
+  l /foo -> /bar,	# lead 'l' link permission is equivalent to link rules
+
 =back
+
+=head2 Link rules
+
+Link rules allow specifying permission to form a hard link as a link
+target pair.  If the subset condition is specified then the permissions
+to access the link file must be a subset of the profiles permissions
+to access the target file. If there is an 'x' rule on the new link, it
+must match the original file exactly.
+
+Eg.
+
+  /file1  r,
+  /file2  rwk,
+  /link*  rw,
+  link subset /link* -> /**,
+
+  The link rule allows linking of /link to both /file1 or /file2 by
+  name however because the /link file has 'rw' permissions it is not
+  allowed to link to /file1 because that would grant an access path
+  to /file1 with more permissions than the 'r' permissions the profile
+  specifies.
+
+  A link of /link to /file2 would be allowed because the 'rw' permissions
+  of /link are a subset of the 'rwk' permissions for /file1.
+
+The link rule is equivalent to specifying the 'l' link permission as
+a leading permission with no other file access permissions. When this
+is done the link rule options can be specified.
+
+The following link rule is equivalent to the 'l' permission file rule
+  link /foo -> bar,
+  l /foo -> /bar,
+
+File rules that specify the 'l' permission and don't specify the extend
+link permissions map to link rules as follows.
+  /foo l,
+  l /foo,
+  link subset /foo -> /**,
 
 =head2 Comments
 
@@ -954,6 +1117,69 @@ the much wider permission rule of
 
    network unix,
 
+=head2 change_profile rules
+
+AppArmor supports self directed profile transitions via the change_profile
+api. Change_profile rules control which permissions for which profiles
+a confined task can transition to.  The profile name can contain apparmor
+pattern matching to specify different profiles.
+
+  change_profile -> **,
+
+The change_profile api allows the transition to be delayed until when
+a task executes another application. If an exec rule transition is
+specified for the application and the change_profile api is used to
+make a transition at exec time, the transition specified by the
+change_profile api takes precedence.
+
+The Change_profile permission can restrict which profiles can be transitioned
+to based off of the executable name by specifying the exec condition.
+
+  change_profile /bin/bash -> new_profile,
+
+The restricting of the transition profile to a given executable at exec
+time is only useful when then current task is allowed to make dynamic
+decisions about what confinement should be, but the decision set needs
+to be controlled. A list of profiles or multiple rules can be used to
+specify the profiles in the set. Eg.
+
+  change_profile /bin/bash -> {new_profile1,new_profile2,new_profile3},
+
+An exec rule can be used to specify a transition for the executable, if
+the transition should be allowed even if the change_profile api has not
+been used to select a transition for those available in the change_profile
+rule set.  Eg.
+
+  /bin/bash Px -> new_profile1,
+  change_profile /bin/bash -> {new_profile1,new_profile2,new_profile3},
+
+=head2 rlimit rules
+
+AppArmor can set and control the resource limits associated with a
+profile as described in the setrlimit(2) man page.
+
+The AppArmor rlimit controls allow setting of limits and restricting
+changes of them and these actions can be audited. Enforcement of the
+set limits is handled by the standard kernel enforcement mechanism
+for rlimits and will not result in an audited apparmor message if
+the limit is enforced.
+
+If a profile does not have an rlimit rule associated with a given
+rlimit then the rlimit is left alone and regular access, including
+changing the limit, is allowed. However if the profile sets an rlimit
+then the current limit is checked and if greater than the limit specified
+in the rule it will be changed to the specified limit.
+
+AppArmor rlimit rules control the hard limit of an application and
+ensure that if the hard limit is lowered that the soft limit does not
+exceed the hard limit value.
+
+Eg.
+
+  set rlimit data <= 100M,
+  set rlimit nproc <= 10,
+  set rlimit nice <= 5,
+
 =head2 Variables
 
 AppArmor's policy language allows embedding variables into file rules
@@ -1191,10 +1417,6 @@ Includes read access to libraries, configuration files, X authentication
 files, and the X socket.
 
 =back
-
-The abstractions stored in F</etc/apparmor.d/program-chunks/> are
-intended for use by specific program suites, and are not generally
-useful.
 
 Some of the abstractions rely on variables that are set in files in the
 F</etc/apparmor.d/tunables/> directory. These variables are currently

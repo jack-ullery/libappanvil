@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2011-2013 Canonical Ltd.
+#    Copyright (C) 2011-2015 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -112,7 +112,8 @@ class T(unittest.TestCase):
 
         # Copy everything into place
         for d in ['easyprof/policygroups', 'easyprof/templates']:
-            shutil.copytree(os.path.join(topdir, d), os.path.join(self.tmpdir, os.path.basename(d)))
+            shutil.copytree(os.path.join(topdir, d),
+                            os.path.join(self.tmpdir, os.path.basename(d)))
 
         # Create a test template
         self.test_template = "test-template"
@@ -166,6 +167,17 @@ TEMPLATES_DIR="%s/templates"
             self.full_args.append('-d')
 
         (self.options, self.args) = easyprof.parse_args(self.full_args + [self.binary])
+
+        # Now create some differently prefixed files in the include-dir
+        self.test_include_dir = os.path.join(self.tmpdir, 'include-dir')
+        os.mkdir(self.test_include_dir)
+        os.mkdir(os.path.join(self.test_include_dir, "templates"))
+        os.mkdir(os.path.join(self.test_include_dir, "policygroups"))
+        for d in ['policygroups', 'templates']:
+            for f in easyprof.get_directory_contents(os.path.join(
+                                                     self.tmpdir, d)):
+                shutil.copy(f, os.path.join(self.test_include_dir, d,
+                                            "inc_%s" % os.path.basename(f)))
 
     def tearDown(self):
         '''Teardown for tests'''
@@ -505,6 +517,53 @@ POLICYGROUPS_DIR="%s/templates"
             self.assertTrue(os.path.exists(path), "Could not find '%s'" % path)
             open(path).read()
 
+    def test_templates_list_include(self):
+        '''Test templates (list with --include-templates-dir)'''
+        args = self.full_args
+        args.append('--list-templates')
+        (self.options, self.args) = easyprof.parse_args(args)
+
+        easyp = easyprof.AppArmorEasyProfile(None, self.options)
+        orig_templates = easyp.get_templates()
+
+        args = self.full_args
+        args.append('--list-templates')
+        args.append('--include-templates-dir=%s' %
+                    os.path.join(self.test_include_dir, 'templates'))
+        (self.options, self.args) = easyprof.parse_args(args)
+
+        easyp = easyprof.AppArmorEasyProfile(None, self.options)
+        inc_templates = easyp.get_templates()
+        self.assertTrue(len(inc_templates) == len(orig_templates) * 2,
+                        "templates missing: %s" % inc_templates)
+
+        for i in inc_templates:
+            self.assertTrue(os.path.exists(i), "Could not find '%s'" % i)
+
+    def test_templates_show_include(self):
+        '''Test templates (show with --include-templates-dir)'''
+        files = []
+        for f in glob.glob("%s/templates/*" % self.test_include_dir):
+            files.append(f)
+
+        for f in files:
+            args = self.full_args
+            args += ['--show-template',
+                     '--template', f,
+                     '--include-templates-dir=%s' %
+                     os.path.join(self.test_include_dir, 'templates')]
+            (self.options, self.args) = easyprof.parse_args(args)
+            easyp = easyprof.AppArmorEasyProfile(None, self.options)
+
+            path = os.path.join(easyp.dirs['templates_include'], f)
+            self.assertTrue(os.path.exists(path), "Could not find '%s'" % path)
+            open(path).read()
+
+            bn = os.path.basename(f)
+            # setup() copies everything in the include prefixed with inc_
+            self.assertTrue(bn.startswith('inc_'),
+                            "'%s' does not start with 'inc_'" % bn)
+
 #
 # Policygroups tests
 #
@@ -515,7 +574,7 @@ POLICYGROUPS_DIR="%s/templates"
         (self.options, self.args) = easyprof.parse_args(args)
 
         easyp = easyprof.AppArmorEasyProfile(None, self.options)
-        for i in easyp.get_templates():
+        for i in easyp.get_policy_groups():
             self.assertTrue(os.path.exists(i), "Could not find '%s'" % i)
 
     def test_policygroups_show(self):
@@ -526,13 +585,61 @@ POLICYGROUPS_DIR="%s/templates"
 
         for f in files:
             args = self.full_args
-            args += ['--show-template', '--template', f]
+            args += ['--show-policy-group',
+                     '--policy-groups', os.path.basename(f)]
             (self.options, self.args) = easyprof.parse_args(args)
             easyp = easyprof.AppArmorEasyProfile(None, self.options)
 
             path = os.path.join(easyp.dirs['policygroups'], f)
             self.assertTrue(os.path.exists(path), "Could not find '%s'" % path)
             open(path).read()
+
+    def test_policygroups_list_include(self):
+        '''Test policygroups (list with --include-policy-groups-dir)'''
+        args = self.full_args
+        args.append('--list-policy-groups')
+        (self.options, self.args) = easyprof.parse_args(args)
+
+        easyp = easyprof.AppArmorEasyProfile(None, self.options)
+        orig_policy_groups = easyp.get_policy_groups()
+
+        args = self.full_args
+        args.append('--list-policy-groups')
+        args.append('--include-policy-groups-dir=%s' %
+                    os.path.join(self.test_include_dir, 'policygroups'))
+        (self.options, self.args) = easyprof.parse_args(args)
+
+        easyp = easyprof.AppArmorEasyProfile(None, self.options)
+        inc_policy_groups = easyp.get_policy_groups()
+        self.assertTrue(len(inc_policy_groups) == len(orig_policy_groups) * 2,
+                        "policy_groups missing: %s" % inc_policy_groups)
+
+        for i in inc_policy_groups:
+            self.assertTrue(os.path.exists(i), "Could not find '%s'" % i)
+
+    def test_policygroups_show_include(self):
+        '''Test policygroups (show with --include-policy-groups-dir)'''
+        files = []
+        for f in glob.glob("%s/policygroups/*" % self.test_include_dir):
+            files.append(f)
+
+        for f in files:
+            args = self.full_args
+            args += ['--show-policy-group',
+                     '--policy-groups', os.path.basename(f),
+                     '--include-policy-groups-dir=%s' %
+                     os.path.join(self.test_include_dir, 'policygroups')]
+            (self.options, self.args) = easyprof.parse_args(args)
+            easyp = easyprof.AppArmorEasyProfile(None, self.options)
+
+            path = os.path.join(easyp.dirs['policygroups_include'], f)
+            self.assertTrue(os.path.exists(path), "Could not find '%s'" % path)
+            open(path).read()
+
+            bn = os.path.basename(f)
+            # setup() copies everything in the include prefixed with inc_
+            self.assertTrue(bn.startswith('inc_'),
+                            "'%s' does not start with 'inc_'" % bn)
 
 #
 # Manifest file argument tests

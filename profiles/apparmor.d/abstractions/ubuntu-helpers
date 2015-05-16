@@ -59,6 +59,9 @@ profile sanitized_helper {
   # permissions for /usr/share, but for now just do this. (LP: #972367)
   /usr/share/software-center/* Pixr,
 
+  # Allow exec of texlive font build scripts (LP: #1010909)
+  /usr/share/texlive/texmf{,-dist}/web2c/{,**/}* Pixr,
+
   # While the chromium and chrome sandboxes are setuid root, they only link
   # in limited libraries so glibc's secure execution should be enough to not
   # require the santized_helper (ie, LD_PRELOAD will only use standard system

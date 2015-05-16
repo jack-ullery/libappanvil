@@ -29,6 +29,7 @@
 
 /* #define DEBUG */
 
+#include "lib.h"
 #include "parser.h"
 #include "profile.h"
 #include "libapparmor_re/apparmor_re.h"
@@ -83,9 +84,27 @@ static void filter_slashes(char *path)
 	*dptr = 0;
 }
 
+static error_type append_glob(std::string &pcre, int glob,
+			      const char *default_glob, const char *null_glob)
+{
+	switch (glob) {
+	case glob_default:
+		pcre.append(default_glob);
+		break;
+	case glob_null:
+		pcre.append(null_glob);
+		break;
+	default:
+		PERROR(_("%s: Invalid glob type %d\n"), progname, glob);
+		return e_parse_error;
+		break;
+	}
+	return e_no_error;
+}
+
 /* converts the apparmor regex in aare and appends pcre regex output
  * to pcre string */
-pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
+pattern_t convert_aaregex_to_pcre(const char *aare, int anchor, int glob,
 				  std::string& pcre, int *first_re_pos)
 {
 #define update_re_pos(X) if (!(*first_re_pos)) { *first_re_pos = (X); }
@@ -170,9 +189,8 @@ pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 					const char *s = sptr;
 					while (*s == '*')
 						s++;
-					if (*s == '/' || !*s) {
-						pcre.append("[^/\\x00]");
-					}
+					if (*s == '/' || !*s)
+						error = append_glob(pcre, glob, "[^/\\x00]", "[^/]");
 				}
 				if (*(sptr + 1) == '*') {
 					/* is this the first regex form we
@@ -188,13 +206,12 @@ pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 					} else {
 						ptype = ePatternRegex;
 					}
-
-					pcre.append("[^\\x00]*");
+					error = append_glob(pcre, glob, "[^\\x00]*", ".*");
 					sptr++;
 				} else {
 					update_re_pos(sptr - aare);
 					ptype = ePatternRegex;
-					pcre.append("[^/\\x00]*");
+					error = append_glob(pcre, glob, "[^/\\x00]*", "[^/]*");
 				}	/* *(sptr+1) == '*' */
 			}	/* bEscape */
 
@@ -342,12 +359,26 @@ pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 
 		default:
 			if (bEscape) {
-				/* quoting mark used for something that
-				 * does not need to be quoted; give a warning */
-				pwarn("Character %c was quoted unnecessarily, "
-				      "dropped preceding quote ('\\') character\n", *sptr);
-			}
-			pcre.append(1, *sptr);
+				const char *pos = sptr;
+				int c;
+				if ((c = str_escseq(&pos, "")) != -1) {
+					/* valid escape we don't want to
+					 * interpret here */
+					pcre.append("\\");
+					pcre.append(sptr, pos - sptr);
+					sptr += (pos - sptr) - 1;
+				} else {
+					/* quoting mark used for something that
+					 * does not need to be quoted; give a
+					 * warning */
+					pwarn("Character %c was quoted "
+					      "unnecessarily, dropped preceding"
+					      " quote ('\\') character\n",
+					      *sptr);
+					pcre.append(1, *sptr);
+				}
+			} else
+				pcre.append(1, *sptr);
 			break;
 		}	/* switch (*sptr) */
 
@@ -412,7 +443,7 @@ static int process_profile_name_xmatch(Profile *prof)
 		name = prof->attachment;
 	else
 		name = local_name(prof->name);
-	ptype = convert_aaregex_to_pcre(name, 0, tbuf,
+	ptype = convert_aaregex_to_pcre(name, 0, glob_default, tbuf,
 					&prof->xmatch_len);
 	if (ptype == ePatternBasic)
 		prof->xmatch_len = strlen(name);
@@ -440,8 +471,8 @@ static int process_profile_name_xmatch(Profile *prof)
 				int len;
 				tbuf.clear();
 				ptype = convert_aaregex_to_pcre(alt->name, 0,
-								tbuf,
-								&len);
+								glob_default,
+								tbuf, &len);
 				if (ptype == ePatternBasic)
 					len = strlen(alt->name);
 				if (len < prof->xmatch_len)
@@ -473,7 +504,7 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 
 	if (entry->mode & ~AA_CHANGE_PROFILE)
 		filter_slashes(entry->name);
-	ptype = convert_aaregex_to_pcre(entry->name, 0, tbuf, &pos);
+	ptype = convert_aaregex_to_pcre(entry->name, 0, glob_default, tbuf, &pos);
 	if (ptype == ePatternInvalid)
 		return FALSE;
 
@@ -491,9 +522,14 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 	 * out by a deny rule, as both pieces of the link pair must
 	 * match.  audit info for the link is carried on the second
 	 * entry of the pair
+	 *
+	 * So if a deny rule only record it if there are permissions other
+	 * than link in the entry.
+	 * TODO: split link and change_profile entries earlier
 	 */
-	if (entry->deny && (entry->mode & AA_LINK_BITS)) {
-		if (!dfarules->add_rule(tbuf.c_str(), entry->deny,
+	if (entry->deny) {
+		if ((entry->mode & ~(AA_LINK_BITS | AA_CHANGE_PROFILE)) &&
+		    !dfarules->add_rule(tbuf.c_str(), entry->deny,
 					entry->mode & ~AA_LINK_BITS,
 					entry->audit & ~AA_LINK_BITS, dfaflags))
 			return FALSE;
@@ -511,7 +547,7 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 		int pos;
 		vec[0] = tbuf.c_str();
 		if (entry->link_name) {
-			ptype = convert_aaregex_to_pcre(entry->link_name, 0, lbuf, &pos);
+			ptype = convert_aaregex_to_pcre(entry->link_name, 0, glob_default, lbuf, &pos);
 			if (ptype == ePatternInvalid)
 				return FALSE;
 			if (entry->subset)
@@ -534,7 +570,7 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 
 		if (entry->ns) {
 			int pos;
-			ptype = convert_aaregex_to_pcre(entry->ns, 0, lbuf, &pos);
+			ptype = convert_aaregex_to_pcre(entry->ns, 0, glob_default, lbuf, &pos);
 			vec[index++] = lbuf.c_str();
 		}
 		vec[index++] = tbuf.c_str();
@@ -616,13 +652,13 @@ int build_list_val_expr(std::string& buffer, struct value_list *list)
 
 	buffer.append("(");
 
-	ptype = convert_aaregex_to_pcre(list->value, 0, buffer, &pos);
+	ptype = convert_aaregex_to_pcre(list->value, 0, glob_default, buffer, &pos);
 	if (ptype == ePatternInvalid)
 		goto fail;
 
 	list_for_each(list->next, ent) {
 		buffer.append("|");
-		ptype = convert_aaregex_to_pcre(ent->value, 0, buffer, &pos);
+		ptype = convert_aaregex_to_pcre(ent->value, 0, glob_default, buffer, &pos);
 		if (ptype == ePatternInvalid)
 			goto fail;
 	}
@@ -639,7 +675,7 @@ int convert_entry(std::string& buffer, char *entry)
 	int pos;
 
 	if (entry) {
-		ptype = convert_aaregex_to_pcre(entry, 0, buffer, &pos);
+		ptype = convert_aaregex_to_pcre(entry, 0, glob_default, buffer, &pos);
 		if (ptype == ePatternInvalid)
 			return FALSE;
 	} else {
@@ -790,7 +826,7 @@ static int test_filter_slashes(void)
 	return rc;
 }
 
-#define MY_REGEX_TEST(input, expected_str, expected_type)						\
+#define MY_REGEX_EXT_TEST(glob, input, expected_str, expected_type)	\
 	do {												\
 		std::string tbuf;									\
 		std::string tbuf2 = "testprefix";							\
@@ -799,7 +835,7 @@ static int test_filter_slashes(void)
 		pattern_t ptype;									\
 		int pos;										\
 													\
-		ptype = convert_aaregex_to_pcre((input), 0, tbuf, &pos);				\
+		ptype = convert_aaregex_to_pcre((input), 0, glob, tbuf, &pos); \
 		asprintf(&output_string, "simple regex conversion for '%s'\texpected = '%s'\tresult = '%s'", \
 				(input), (expected_str), tbuf.c_str());					\
 		MY_TEST(strcmp(tbuf.c_str(), (expected_str)) == 0, output_string);			\
@@ -808,13 +844,17 @@ static int test_filter_slashes(void)
 		/* ensure convert_aaregex_to_pcre appends only to passed ref string */			\
 		expected_str2 = tbuf2;									\
 		expected_str2.append((expected_str));							\
-		ptype = convert_aaregex_to_pcre((input), 0, tbuf2, &pos);				\
-		asprintf(&output_string, "simple regex conversion for '%s'\texpected = '%s'\tresult = '%s'", \
+		ptype = convert_aaregex_to_pcre((input), 0, glob, tbuf2, &pos); \
+		asprintf(&output_string, "simple regex conversion %sfor '%s'\texpected = '%s'\tresult = '%s'", \
+			 glob == glob_null ? "with null allowed in glob " : "",\
 				(input), expected_str2.c_str(), tbuf2.c_str());				\
 		MY_TEST((tbuf2 == expected_str2), output_string);					\
 		free(output_string);									\
 	}												\
 	while (0)
+
+#define MY_REGEX_TEST(input, expected_str, expected_type) MY_REGEX_EXT_TEST(glob_default, input, expected_str, expected_type)
+
 
 #define MY_REGEX_FAIL_TEST(input)						\
 	do {												\
@@ -822,7 +862,7 @@ static int test_filter_slashes(void)
 		pattern_t ptype;									\
 		int pos;										\
 													\
-		ptype = convert_aaregex_to_pcre((input), 0, tbuf, &pos);				\
+		ptype = convert_aaregex_to_pcre((input), 0, glob_default, tbuf, &pos); \
 		MY_TEST(ptype == ePatternInvalid, "simple regex conversion invalid type check for '" input "'"); \
 	}												\
 	while (0)
@@ -927,6 +967,9 @@ static int test_aaregex_to_pcre(void)
 	MY_REGEX_TEST("\\\\|", "\\\\\\|", ePatternBasic);
 	MY_REGEX_TEST("\\\\(", "\\\\\\(", ePatternBasic);
 	MY_REGEX_TEST("\\\\)", "\\\\\\)", ePatternBasic);
+	MY_REGEX_TEST("\\000", "\\000", ePatternBasic);
+	MY_REGEX_TEST("\\x00", "\\x00", ePatternBasic);
+	MY_REGEX_TEST("\\d000", "\\d000", ePatternBasic);
 
 	/* more complicated character class tests */
 	/*   -- embedded alternations */
@@ -939,6 +982,27 @@ static int test_aaregex_to_pcre(void)
 	MY_REGEX_TEST("b[\\{a,b\\}]t", "b[\\{a,b\\}]t", ePatternRegex);
 	MY_REGEX_TEST("{alpha,b[\\{a,b\\}]t,gamma}", "(alpha|b[\\{a,b\\}]t|gamma)", ePatternRegex);
 	MY_REGEX_TEST("{alpha,b[\\{a\\,b\\}]t,gamma}", "(alpha|b[\\{a\\,b\\}]t|gamma)", ePatternRegex);
+
+	/* test different globbing behavior conversion */
+	MY_REGEX_EXT_TEST(glob_default, "/foo/**", "/foo/[^/\\x00][^\\x00]*", ePatternTailGlob);
+	MY_REGEX_EXT_TEST(glob_null, "/foo/**", "/foo/[^/].*", ePatternTailGlob);
+	MY_REGEX_EXT_TEST(glob_default, "/foo/f**", "/foo/f[^\\x00]*", ePatternTailGlob);
+	MY_REGEX_EXT_TEST(glob_null, "/foo/f**", "/foo/f.*", ePatternTailGlob);
+
+	MY_REGEX_EXT_TEST(glob_default, "/foo/*", "/foo/[^/\\x00][^/\\x00]*", ePatternRegex);
+	MY_REGEX_EXT_TEST(glob_null, "/foo/*", "/foo/[^/][^/]*", ePatternRegex);
+	MY_REGEX_EXT_TEST(glob_default, "/foo/f*", "/foo/f[^/\\x00]*", ePatternRegex);
+	MY_REGEX_EXT_TEST(glob_null, "/foo/f*", "/foo/f[^/]*", ePatternRegex);
+
+	MY_REGEX_EXT_TEST(glob_default, "/foo/**.ext", "/foo/[^\\x00]*\\.ext", ePatternRegex);
+	MY_REGEX_EXT_TEST(glob_null, "/foo/**.ext", "/foo/.*\\.ext", ePatternRegex);
+	MY_REGEX_EXT_TEST(glob_default, "/foo/f**.ext", "/foo/f[^\\x00]*\\.ext", ePatternRegex);
+	MY_REGEX_EXT_TEST(glob_null, "/foo/f**.ext", "/foo/f.*\\.ext", ePatternRegex);
+
+	MY_REGEX_EXT_TEST(glob_default, "/foo/*.ext", "/foo/[^/\\x00]*\\.ext", ePatternRegex);
+	MY_REGEX_EXT_TEST(glob_null, "/foo/*.ext", "/foo/[^/]*\\.ext", ePatternRegex);
+	MY_REGEX_EXT_TEST(glob_default, "/foo/f*.ext", "/foo/f[^/\\x00]*\\.ext", ePatternRegex);
+	MY_REGEX_EXT_TEST(glob_null, "/foo/f*.ext", "/foo/f[^/]*\\.ext", ePatternRegex);
 
 	return rc;
 }

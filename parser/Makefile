@@ -18,13 +18,7 @@ NAME=apparmor-parser
 all:
 COMMONDIR=../common/
 
-include common/Make.rules
-
-COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
-ifeq ($(COMMONDIR_EXISTS), true)
-common/Make.rules: $(COMMONDIR)/Make.rules
-	ln -sf $(COMMONDIR) .
-endif
+include $(COMMONDIR)/Make.rules
 
 DESTDIR=/
 APPARMOR_BIN_PREFIX=${DESTDIR}/lib/apparmor
@@ -81,9 +75,10 @@ SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
        parser_yacc.c parser_regex.c parser_variable.c parser_policy.c \
        parser_alias.c common_optarg.c lib.c network.c \
        mount.cc dbus.cc profile.cc rule.cc signal.cc ptrace.cc \
-       af_rule.cc af_unix.cc
+       af_rule.cc af_unix.cc policy_cache.c
 HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h \
-       rule.h common_optarg.h signal.h ptrace.h network.h af_rule.h af_unix.h
+       rule.h common_optarg.h signal.h ptrace.h network.h af_rule.h af_unix.h \
+       policy_cache.h
 TOOLS = apparmor_parser
 
 OBJECTS = $(patsubst %.cc, %.o, $(SRCS:.c=.o))
@@ -120,9 +115,11 @@ TEST_OBJECTS = $(filter-out \
 			parser_lex.o \
 			parser_yacc.o \
 			common_optarg.o \
-			parser_main.o, ${OBJECTS}) \
+			parser_main.o \
+			policy_cache.o, ${OBJECTS}) \
                $(AAREOBJECTS)
 TEST_LDFLAGS = $(AARE_LDFLAGS)
+TEST_LDLIBS = $(AALIB)
 
 ifdef V
   VERBOSE = 1
@@ -143,7 +140,7 @@ po/${NAME}.pot: ${SRCS} ${HDRS}
 	$(MAKE) -C po ${NAME}.pot NAME=${NAME} SOURCES="${SRCS} ${HDRS}"
 
 techdoc.pdf: techdoc.tex
-	timestamp=$(shell date "+%Y%m%d%H%M%S+02'00'" -r $< );\
+	timestamp=$(shell date --utc "+%Y%m%d%H%M%S%z" -r $< );\
 	while pdflatex "\def\fixedpdfdate{$$timestamp}\input $<" ${BUILD_OUTPUT} || exit 1 ; \
 		grep -q "Label(s) may have changed" techdoc.log; \
 	do :; done
@@ -192,7 +189,7 @@ apparmor_parser: $(OBJECTS) $(AAREOBJECTS) $(LIBAPPARMOR_A)
 parser_yacc.c parser_yacc.h: parser_yacc.y parser.h profile.h
 	$(YACC) $(YFLAGS) -o parser_yacc.c parser_yacc.y
 
-parser_lex.c: parser_lex.l parser_yacc.h parser.h profile.h mount.h dbus.h
+parser_lex.c: parser_lex.l parser_yacc.h parser.h profile.h mount.h dbus.h policy_cache.h
 	$(LEX) ${LEXFLAGS} -o$@ $<
 
 parser_lex.o: parser_lex.c parser.h parser_yacc.h
@@ -204,7 +201,7 @@ parser_misc.o: parser_misc.c parser.h parser_yacc.h profile.h cap_names.h $(APPA
 parser_yacc.o: parser_yacc.c parser_yacc.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_main.o: parser_main.c parser.h parser_version.h libapparmor_re/apparmor_re.h $(APPARMOR_H)
+parser_main.o: parser_main.c parser.h parser_version.h policy_cache.h libapparmor_re/apparmor_re.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_interface.o: parser_interface.c parser.h profile.h libapparmor_re/apparmor_re.h
@@ -238,6 +235,9 @@ mount.o: mount.cc mount.h parser.h immunix.h rule.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 common_optarg.o: common_optarg.c common_optarg.h parser.h libapparmor_re/apparmor_re.h
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
+
+policy_cache.o: policy_cache.c policy_cache.h parser.h lib.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 lib.o: lib.c lib.h parser.h
@@ -285,9 +285,9 @@ cap_names.h: /usr/include/linux/capability.h
 	echo "$(CAPABILITIES)" | LC_ALL=C sed -n -e "s/[ \\t]\\?CAP_\\([A-Z0-9_]\\+\\)/\{\"\\L\\1\", \\UCAP_\\1\},\\n/pg" > $@
 
 tst_lib: lib.c parser.h $(filter-out lib.o, ${TEST_OBJECTS})
-	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS)
+	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS) $(TEST_LDLIBS)
 tst_%: parser_%.c parser.h $(filter-out parser_%.o, ${TEST_OBJECTS})
-	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS)
+	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS) $(TEST_LDLIBS)
 
 .SILENT: check
 .PHONY: check
@@ -334,6 +334,27 @@ install-debian:
 install-unknown:
 
 INSTALLDEPS=arch
+
+ifndef DISTRO
+DISTRO=$(shell if [ -f /etc/slackware-version ] ; then \
+	         echo slackware ; \
+	       elif [ -f /etc/debian_version ] ; then \
+	         echo debian ;\
+	       elif which rpm > /dev/null ; then \
+	         if [ "$(rpm --eval '0%{?suse_version}')" != "0" ] ; then \
+	             echo suse ;\
+	         elif [ "$(rpm --eval '%{_host_vendor}')" = redhat ] ; then \
+	            echo rhel4 ;\
+	         elif [ "$(rpm --eval '0%{?fedora}')" != "0" ] ; then \
+	            echo rhel4 ;\
+	         else \
+	            echo unknown ;\
+	         fi ;\
+	       else \
+	          echo unknown ;\
+	       fi)
+endif
+
 ifdef DISTRO
 INSTALLDEPS+=install-$(DISTRO)
 endif
@@ -357,9 +378,11 @@ install-indep:
 	$(MAKE) -C po install NAME=${NAME} DESTDIR=${DESTDIR}
 	$(MAKE) install_manpages DESTDIR=${DESTDIR}
 
+ifndef VERBOSE
 .SILENT: clean
+endif
 .PHONY: clean
-clean: _clean
+clean: pod_clean
 	rm -f core core.* *.o *.s *.a *~ *.gcda *.gcno
 	rm -f gmon.out
 	rm -f $(TOOLS) $(TESTS)
@@ -373,9 +396,4 @@ clean: _clean
 	$(MAKE) -s -C $(AAREDIR) clean
 	$(MAKE) -s -C po clean
 	$(MAKE) -s -C tst clean
-	rm -f common
 
-.SILENT: dist_clean
-dist_clean:
-	@$(MAKE) clean
-	@rm -f $(LEX_C_FILES) $(YACC_C_FILES)

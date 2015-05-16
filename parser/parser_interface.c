@@ -27,7 +27,9 @@
 
 #include <string>
 #include <sstream>
+#include <sys/apparmor.h>
 
+#include "lib.h"
 #include "parser.h"
 #include "profile.h"
 #include "libapparmor_re/apparmor_re.h"
@@ -40,7 +42,8 @@
 #define SD_STR_LEN (sizeof(u16))
 
 
-int __sd_serialize_profile(int option, Profile *prof);
+int __sd_serialize_profile(int option, aa_kernel_interface *kernel_interface,
+			   Profile *prof, int cache_fd);
 
 static void print_error(int error)
 {
@@ -81,13 +84,14 @@ static void print_error(int error)
 	}
 }
 
-int load_profile(int option, Profile *prof)
+int load_profile(int option, aa_kernel_interface *kernel_interface,
+		 Profile *prof, int cache_fd)
 {
 	int retval = 0;
 	int error = 0;
 
 	PDEBUG("Serializing policy for %s.\n", prof->name);
-	retval = __sd_serialize_profile(option, prof);
+	retval = __sd_serialize_profile(option, kernel_interface, prof, cache_fd);
 
 	if (retval < 0) {
 		error = retval;	/* yeah, we'll just report the last error */
@@ -374,13 +378,11 @@ void sd_serialize_profile(std::ostringstream &buf, Profile *profile,
 	sd_write_struct(buf, "profile");
 	if (flattened) {
 		assert(profile->parent);
-		char *name = (char *) malloc(3 + strlen(profile->name) +
-				    strlen(profile->parent->name));
+		autofree char *name = (char *) malloc(3 + strlen(profile->name) + strlen(profile->parent->name));
 		if (!name)
 			return;
 		sprintf(name, "%s//%s", profile->parent->name, profile->name);
 		sd_write_string(buf, name, NULL);
-		free(name);
 	} else {
 		sd_write_string(buf, profile->name, NULL);
 	}
@@ -468,45 +470,42 @@ void sd_serialize_top_profile(std::ostringstream &buf, Profile *profile)
 	sd_write_name(buf, "version");
 	sd_write_uint32(buf, version);
 
-	if (profile_ns) {
-		sd_write_string(buf, profile_ns, "namespace");
-	} else if (profile->ns) {
+	if (profile->ns) {
 		sd_write_string(buf, profile->ns, "namespace");
 	}
 
 	sd_serialize_profile(buf, profile, profile->parent ? 1 : 0);
 }
 
-int cache_fd = -1;
-int __sd_serialize_profile(int option, Profile *prof)
+int __sd_serialize_profile(int option, aa_kernel_interface *kernel_interface,
+			   Profile *prof, int cache_fd)
 {
-	int fd = -1;
-	int error = -ENOMEM, size, wsize;
+	autoclose int fd = -1;
+	int error, size, wsize;
 	std::ostringstream work_area;
-	char *filename = NULL;
 
 	switch (option) {
 	case OPTION_ADD:
-		if (asprintf(&filename, "%s/.load", subdomainbase) == -1)
-			goto exit;
-		if (kernel_load) fd = open(filename, O_WRONLY);
-		break;
 	case OPTION_REPLACE:
-		if (asprintf(&filename, "%s/.replace", subdomainbase) == -1)
-			goto exit;
-		if (kernel_load) fd = open(filename, O_WRONLY);
-		break;
 	case OPTION_REMOVE:
-		if (asprintf(&filename, "%s/.remove", subdomainbase) == -1)
-			goto exit;
-		if (kernel_load) fd = open(filename, O_WRONLY);
 		break;
 	case OPTION_STDOUT:
-		filename = strdup("stdout");
 		fd = dup(1);
+		if (fd < 0) {
+			error = -errno;
+			PERROR(_("Unable to open stdout - %s\n"),
+			       strerror(errno));
+			goto exit;
+		}
 		break;
 	case OPTION_OFILE:
 		fd = dup(fileno(ofile));
+		if (fd < 0) {
+			error = -errno;
+			PERROR(_("Unable to open output file - %s\n"),
+			       strerror(errno));
+			goto exit;
+		}
 		break;
 	default:
 		error = -EINVAL;
@@ -514,78 +513,37 @@ int __sd_serialize_profile(int option, Profile *prof)
 		break;
 	}
 
-	if (fd < 0 && (kernel_load || option == OPTION_OFILE || option == OPTION_STDOUT)) {
-		PERROR(_("Unable to open %s - %s\n"), filename,
-		       strerror(errno));
-		error = -errno;
-		goto exit;
-	}
-
 	error = 0;
 
-	free(filename);
-
 	if (option == OPTION_REMOVE) {
-		char *name, *ns = NULL;
-		int len = 0;
-
-		if (profile_ns) {
-			len += strlen(profile_ns) + 2;
-			ns = profile_ns;
-		} else if (prof->ns) {
-			len += strlen(prof->ns) + 2;
-			ns = prof->ns;
-		}
-		if (prof->parent) {
-			name = (char *) malloc(strlen(prof->name) + 3 +
-				      strlen(prof->parent->name) + len);
-			if (!name) {
-				PERROR(_("Memory Allocation Error: Unable to remove ^%s\n"), prof->name);
-				error = -errno;
-				goto exit;
-			}
-			if (ns)
-				sprintf(name, ":%s:%s//%s", ns,
-					prof->parent->name, prof->name);
-			else
-				sprintf(name, "%s//%s", prof->parent->name,
-					prof->name);
-		} else if (ns) {
-			name = (char *) malloc(len + strlen(prof->name) + 1);
-			if (!name) {
-				PERROR(_("Memory Allocation Error: Unable to remove %s:%s."), ns, prof->name);
-				error = -errno;
-				goto exit;
-			}
-			sprintf(name, ":%s:%s", ns, prof->name);
-		} else {
-			name = prof->name;
-		}
-		size = strlen(name) + 1;
 		if (kernel_load) {
-			wsize = write(fd, name, size);
-			if (wsize < 0)
+			if (aa_kernel_interface_remove_policy(kernel_interface,
+							      prof->fqname().c_str()) == -1)
 				error = -errno;
 		}
-		if (prof->parent || ns)
-			free(name);
 	} else {
+		std::string tmp;
+
 		sd_serialize_top_profile(work_area, prof);
 
+		tmp = work_area.str();
 		size = (long) work_area.tellp();
-		if (kernel_load || option == OPTION_STDOUT || option == OPTION_OFILE) {
-			std::string tmp = work_area.str();
-			wsize = write(fd, tmp.c_str(), size);
-			if (wsize < 0) {
+		if (kernel_load) {
+			if (option == OPTION_ADD &&
+			    aa_kernel_interface_load_policy(kernel_interface,
+							    tmp.c_str(), size) == -1) {
 				error = -errno;
-			} else if (wsize < size) {
-				PERROR(_("%s: Unable to write entire profile entry\n"),
-				       progname);
-				error = -EIO;
+			} else if (option == OPTION_REPLACE &&
+				   aa_kernel_interface_replace_policy(kernel_interface,
+								      tmp.c_str(), size) == -1) {
+				error = -errno;
 			}
+		} else if ((option == OPTION_STDOUT || option == OPTION_OFILE) &&
+			   aa_kernel_interface_write_policy(fd, tmp.c_str(), size) == -1) {
+			error = -errno;
 		}
+
 		if (cache_fd != -1) {
-			std::string tmp = work_area.str();
 			wsize = write(cache_fd, tmp.c_str(), size);
 			if (wsize < 0) {
 				error = -errno;
@@ -597,11 +555,8 @@ int __sd_serialize_profile(int option, Profile *prof)
 		}
 	}
 
-	if (fd != -1)
-		close(fd);
-
 	if (!prof->hat_table.empty() && option != OPTION_REMOVE) {
-		if (load_flattened_hats(prof, option) == 0)
+		if (load_flattened_hats(prof, option, kernel_interface, cache_fd) == 0)
 			return 0;
 	}
 
@@ -610,91 +565,3 @@ exit:
 	return error;
 }
 
-/* bleah the kernel should just loop and do multiple load, but to support
- * older systems we need to do this
- */
-#define PROFILE_HEADER_SIZE
-static char header_version[] = "\x04\x08\x00version";
-
-static char *next_profile_buffer(char *buffer, int size)
-{
-	char *b = buffer;
-
-	for (; size - sizeof(header_version); b++, size--) {
-		if (memcmp(b, header_version, sizeof(header_version)) == 0) {
-			return b;
-		}
-	}
-	return NULL;
-}
-
-static int write_buffer(int fd, char *buffer, int size, bool set)
-{
-	const char *err_str = set ? "profile set" : "profile";
-	int wsize = write(fd, buffer, size);
-	if (wsize < 0) {
-		PERROR(_("%s: Unable to write %s\n"), progname, err_str);
-		return -errno;
-	} else if (wsize < size) {
-		PERROR(_("%s: Unable to write %s\n"), progname, err_str);
-		return -EPROTO;
-	}
-	return 0;
-}
-
-int sd_load_buffer(int option, char *buffer, int size)
-{
-	int fd = -1;
-	int error, bsize;
-	char *filename = NULL;
-
-	/* TODO: push backup into caller */
-	if (!kernel_load)
-		return 0;
-
-	switch (option) {
-	case OPTION_ADD:
-		if (asprintf(&filename, "%s/.load", subdomainbase) == -1)
-			return -ENOMEM;
-		break;
-	case OPTION_REPLACE:
-		if (asprintf(&filename, "%s/.replace", subdomainbase) == -1)
-			return -ENOMEM;
-		break;
-	default:
-		return -EINVAL;
-	}
-
-	fd = open(filename, O_WRONLY);
-	if (fd < 0) {
-		PERROR(_("Unable to open %s - %s\n"), filename,
-		       strerror(errno));
-		error = -errno;
-		goto out;
-	}
-
-	if (kernel_supports_setload) {
-		error = write_buffer(fd, buffer, size, true);
-	} else {
-		char *b, *next;
-
-		error = 0;	/* in case there are no profiles */
-		for (b = buffer; b; b = next, size -= bsize) {
-			next = next_profile_buffer(b + sizeof(header_version),
-						   size);
-			if (next)
-				bsize = next - b;
-			else
-				bsize = size;
-			error = write_buffer(fd, b, bsize, false);
-			if (error)
-				break;
-		}
-	}
-	close(fd);
-
-out:
-	free(filename);
-
-	return error;
-}

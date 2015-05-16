@@ -28,17 +28,9 @@ parser.add_argument('-m', '--mark', type=str, help=_('mark in the log to start p
 args = parser.parse_args()
 
 profiledir = args.dir
-filename = args.file
 logmark = args.mark or ''
 
-
-if filename:
-    if not os.path.exists(filename):
-        raise apparmor.AppArmorException(_('The logfile %s does not exist. Please check the path') % filename)
-    elif os.path.isdir(filename):
-        raise apparmor.AppArmorException(_('%s is a directory. Please specify a file as logfile') % filename)
-    else:
-        apparmor.filename = filename
+apparmor.set_logfile(args.file)
 
 aa_mountpoint = apparmor.check_for_apparmor()
 if not aa_mountpoint:

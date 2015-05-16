@@ -259,16 +259,24 @@ static struct mnt_keyword_table mnt_opts_table[] = {
 	{"R",			MS_RBIND, 0},
 	{"verbose",		MS_VERBOSE, 0},
 	{"silent",		MS_SILENT, 0},
-	{"load",		0, MS_SILENT},
+	{"loud",		0, MS_SILENT},
 	{"acl",			MS_ACL, 0},
 	{"noacl",		0, MS_ACL},
+	{"unbindable",		MS_UNBINDABLE, 0},
 	{"make-unbindable",	MS_UNBINDABLE, 0},
+	{"runbindable",		MS_RUNBINDABLE, 0},
 	{"make-runbindable",	MS_RUNBINDABLE, 0},
+	{"private",		MS_PRIVATE, 0},
 	{"make-private",	MS_PRIVATE, 0},
+	{"rprivate",		MS_RPRIVATE, 0},
 	{"make-rprivate",	MS_RPRIVATE, 0},
+	{"slave",		MS_SLAVE, 0},
 	{"make-slave",		MS_SLAVE, 0},
+	{"rslave",		MS_RSLAVE, 0},
 	{"make-rslave",		MS_RSLAVE, 0},
+	{"shared",		MS_SHARED, 0},
 	{"make-shared",		MS_SHARED, 0},
+	{"rshared",		MS_RSHARED, 0},
 	{"make-rshared",	MS_RSHARED, 0},
 
 	{"relatime",		MS_RELATIME, 0},
@@ -435,6 +443,10 @@ mnt_rule::mnt_rule(struct cond_entry *src_conds, char *device_p,
 		PERROR("  unsupported mount conditions\n");
 		exit(1);
 	}
+	if (opts) {
+		PERROR("  unsupported mount options\n");
+		exit(1);
+	}
 }
 
 ostream &mnt_rule::dump(ostream &os)
@@ -542,7 +554,7 @@ static int build_mnt_opts(std::string& buffer, struct value_list *opts)
 	}
 
 	list_for_each(opts, ent) {
-		ptype = convert_aaregex_to_pcre(ent->value, 0, buffer, &pos);
+		ptype = convert_aaregex_to_pcre(ent->value, 0, glob_default, buffer, &pos);
 		if (ptype == ePatternInvalid)
 			return FALSE;
 
@@ -822,7 +834,7 @@ int mnt_rule::gen_policy_re(Profile &prof)
 	return RULE_OK;
 
 fail:
-	PERROR("Enocoding of mount rule failed\n");
+	PERROR("Encoding of mount rule failed\n");
 	return RULE_ERROR;
 }
 

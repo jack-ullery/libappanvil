@@ -40,18 +40,17 @@
 #include <sys/apparmor.h>
 
 #include "lib.h"
+#include "features.h"
 #include "parser.h"
 #include "parser_version.h"
 #include "parser_include.h"
 #include "common_optarg.h"
+#include "policy_cache.h"
 #include "libapparmor_re/apparmor_re.h"
 
-#define MODULE_NAME "apparmor"
 #define OLD_MODULE_NAME "subdomain"
 #define PROC_MODULES "/proc/modules"
-#define DEFAULT_APPARMORFS "/sys/kernel/security/" MODULE_NAME
 #define MATCH_FILE "/sys/kernel/security/" MODULE_NAME "/matching"
-#define FEATURES_FILE "/sys/kernel/security/" MODULE_NAME "/features"
 #define MOUNTED_FS "/proc/mounts"
 #define AADFA "pattern=aadfa"
 
@@ -71,20 +70,19 @@ int skip_read_cache = 0;
 int write_cache = 0;
 int cond_clear_cache = 1;		/* only applies if write is set */
 int force_clear_cache = 0;		/* force clearing regargless of state */
-int create_cache_dir = 0;		/* create the cache dir if missing? */
+int create_cache_dir = 0;		/* DEPRECATED in favor of write_cache */
 int preprocess_only = 0;
 int skip_mode_force = 0;
 int abort_on_error = 0;			/* stop processing profiles if error */
 int skip_bad_cache_rebuild = 0;
+int mru_skip_cache = 1;
+int debug_cache = 0;
 struct timespec mru_tstamp;
 
-#define FEATURES_STRING_SIZE 8192
-char *features_string = NULL;
-char *cacheloc = NULL;
+static char *apparmorfs = NULL;
+static char *cacheloc = NULL;
 
-/* per-profile settings */
-
-static int load_features(const char *name);
+static aa_features *features = NULL;
 
 /* Make sure to update BOTH the short and long_options */
 static const char *short_options = "adf:h::rRVvI:b:BCD:NSm:M:qQn:XKTWkL:O:po:";
@@ -128,6 +126,7 @@ struct option long_options[] = {
 	{"abort-on-error",	0, 0, 132},	/* no short option */
 	{"skip-bad-cache-rebuild",	0, 0, 133},	/* no short option */
 	{"warn",		1, 0, 134},	/* no short option */
+	{"debug-cache",		0, 0, 135},	/* no short option */
 	{NULL, 0, 0, 0},
 };
 
@@ -166,7 +165,7 @@ static void display_usage(const char *command)
 	       "-W, --write-cache	Save cached profile (force with -T)\n"
 	       "    --skip-bad-cache	Don't clear cache if out of sync\n"
 	       "    --purge-cache	Clear cache regardless of its state\n"
-	       "    --create-cache-dir	Create the cache dir if missing\n"
+	       "    --debug-cache       Debug cache file checks\n"
 	       "-L, --cache-loc n	Set the location of the profile cache\n"
 	       "-q, --quiet		Don't emit warnings\n"
 	       "-v, --verbose		Show profile names as they load\n"
@@ -363,7 +362,7 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'f':
-		subdomainbase = strndup(optarg, PATH_MAX);
+		apparmorfs = strndup(optarg, PATH_MAX);
 		break;
 	case 'D':
 		skip_read_cache = 1;
@@ -391,11 +390,17 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'm':
-		features_string = strdup(optarg);
+		if (aa_features_new_from_string(&features,
+						optarg, strlen(optarg))) {
+			fprintf(stderr,
+				"Failed to parse features string: %m\n");
+			exit(1);
+		}
 		break;
 	case 'M':
-		if (load_features(optarg) == -1) {
-			fprintf(stderr, "Failed to load features from '%s'\n",
+		if (aa_features_new(&features, optarg)) {
+			fprintf(stderr,
+				"Failed to load features from '%s': %m\n",
 				optarg);
 			exit(1);
 		}
@@ -463,6 +468,9 @@ static int process_arg(int c, char *optarg)
 			exit(1);
 		}
 		break;
+	case 135:
+		debug_cache = 1;
+		break;
 	default:
 		display_usage(progname);
 		exit(1);
@@ -497,7 +505,7 @@ static int process_args(int argc, char *argv[])
 static int process_config_file(const char *name)
 {
 	char *optarg;
-	FILE *f;
+	autofclose FILE *f = NULL;
 	int c, o;
 
 	f = fopen(name, "r");
@@ -506,25 +514,7 @@ static int process_config_file(const char *name)
 
 	while ((c = getopt_long_file(f, long_options, &optarg, &o)) != -1)
 		process_arg(c, optarg);
-	fclose(f);
 	return 1;
-}
-
-
-int find_subdomainfs_mountpoint(void)
-{
-	if (aa_find_mountpoint(&subdomainbase) == -1) {
-		struct stat buf;
-		if (stat(DEFAULT_APPARMORFS, &buf) == -1) {
-		PERROR(_("Warning: unable to find a suitable fs in %s, is it "
-			 "mounted?\nUse --subdomainfs to override.\n"),
-		       MOUNTED_FS);
-		} else {
-			subdomainbase = strdup(DEFAULT_APPARMORFS);
-		}
-	}
-
-	return (subdomainbase == NULL);
 }
 
 int have_enough_privilege(void)
@@ -550,269 +540,114 @@ int have_enough_privilege(void)
 	return 0;
 }
 
-char *snprintf_buffer(char *buf, char *pos, ssize_t size, const char *fmt, ...)
-{
-	va_list args;
-	int i, remaining = size - (pos - buf);
-
-	va_start(args, fmt);
-	i = vsnprintf(pos, remaining, fmt, args);
-	va_end(args);
-
-	if (i >= size) {
-		PERROR(_("Feature buffer full."));
-		exit(1);
-	}
-
-	return pos + i;
-}
-
-struct features_struct {
-	char **buffer;
-	int size;
-	char *pos;
-};
-
-static int features_dir_cb(DIR *dir, const char *name, struct stat *st,
-			   void *data)
-{
-	struct features_struct *fst = (struct features_struct *) data;
-
-	/* skip dot files and files with no name */
-	if (*name == '.' || !strlen(name))
-		return 0;
-
-	fst->pos = snprintf_buffer(*fst->buffer, fst->pos, fst->size, "%s {", name);
-
-	if (S_ISREG(st->st_mode)) {
-		int len, file;
-		int remaining = fst->size - (fst->pos - *fst->buffer);
-		if (!(file = openat(dirfd(dir), name, O_RDONLY))) {
-			PDEBUG("Could not open '%s'", name);
-			return -1;
-		}
-		PDEBUG("Opened features \"%s\"\n", name);
-		if (st->st_size > remaining) {
-			PDEBUG("Feature buffer full.");
-			return -1;
-		}
-
-		do {
-			len = read(file, fst->pos, remaining);
-			if (len > 0) {
-				remaining -= len;
-				fst->pos += len;
-				*fst->pos = 0;
-			}
-		} while (len > 0);
-		if (len < 0) {
-			PDEBUG("Error reading feature file '%s'\n", name);
-			return -1;
-		}
-		close(file);
-	} else if (S_ISDIR(st->st_mode)) {
-		if (dirat_for_each(dir, name, fst, features_dir_cb))
-			return -1;
-	}
-
-	fst->pos = snprintf_buffer(*fst->buffer, fst->pos, fst->size, "}\n");
-
-	return 0;
-}
-
-static char *handle_features_dir(const char *filename, char **buffer, int size,
-				 char *pos)
-{
-	struct features_struct fst = { buffer, size, pos };
-
-	if (dirat_for_each(NULL, filename, &fst, features_dir_cb)) {
-		PDEBUG("Failed evaluating %s\n", filename);
-		exit(1);
-	}
-
-	return fst.pos;
-}
-
-static char *load_features_file(const char *name) {
-	char *buffer;
-	FILE *f = NULL;
-	size_t size;
-
-	f = fopen(name, "r");
-	if (!f)
-		return NULL;
-
-	buffer = (char *) malloc(FEATURES_STRING_SIZE);
-	if (!buffer)
-		goto fail;
-
-	size = fread(buffer, 1, FEATURES_STRING_SIZE - 1, f);
-	if (!size || ferror(f))
-		goto fail;
-	buffer[size] = 0;
-
-	fclose(f);
-	return buffer;
-
-fail:
-	int save = errno;
-	free(buffer);
-	if (f)
-		fclose(f);
-	errno = save;
-	return NULL;
-}
-
-static int load_features(const char *name)
-{
-	struct stat stat_file;
-
-	if (stat(name, &stat_file) == -1)
-		return -1;
-
-	if (S_ISDIR(stat_file.st_mode)) {
-		/* if we have a features directory default to */
-		features_string = (char *) malloc(FEATURES_STRING_SIZE);
-		handle_features_dir(name, &features_string, FEATURES_STRING_SIZE, features_string);
-	} else {
-		features_string = load_features_file(name);
-		if (!features_string)
-			return -1;
-	}
-
-	return 0;
-}
-
 static void set_features_by_match_file(void)
 {
-	FILE *ms = fopen(MATCH_FILE, "r");
+	autofclose FILE *ms = fopen(MATCH_FILE, "r");
 	if (ms) {
-		char *match_string = (char *) malloc(1000);
+		autofree char *match_string = (char *) malloc(1000);
 		if (!match_string)
 			goto no_match;
-		if (!fgets(match_string, 1000, ms)) {
-			free(match_string);
+		if (!fgets(match_string, 1000, ms))
 			goto no_match;
-		}
 		if (strstr(match_string, " perms=c"))
 			perms_create = 1;
-		free(match_string);
 		kernel_supports_network = 1;
-		goto out;
+		return;
 	}
 no_match:
 	perms_create = 1;
-
-out:
-	if (ms)
-		fclose(ms);
 }
 
-static void set_supported_features(void) {
-
+static void set_supported_features(void)
+{
 	/* has process_args() already assigned a match string? */
-	if (!features_string) {
-		if (load_features(FEATURES_FILE) == -1) {
-			set_features_by_match_file();
-			return;
-		}
+	if (!features && aa_features_new_from_kernel(&features) == -1) {
+		set_features_by_match_file();
+		return;
 	}
 
 	perms_create = 1;
+	kernel_supports_policydb = aa_features_supports(features, "file");
+	kernel_supports_network = aa_features_supports(features, "network");
+	kernel_supports_unix = aa_features_supports(features,
+						    "network/af_unix");
+	kernel_supports_mount = aa_features_supports(features, "mount");
+	kernel_supports_dbus = aa_features_supports(features, "dbus");
+	kernel_supports_signal = aa_features_supports(features, "signal");
+	kernel_supports_ptrace = aa_features_supports(features, "ptrace");
+	kernel_supports_setload = aa_features_supports(features,
+						       "policy/set_load");
+	kernel_supports_diff_encode = aa_features_supports(features,
+							   "policy/diff_encode");
 
-	/* TODO: make this real parsing and config setting */
-	if (strstr(features_string, "file {"))	/* pre policydb is file= */
-		kernel_supports_policydb = 1;
-	if (strstr(features_string, "v6"))
-		kernel_abi_version = 6;
-	if (strstr(features_string, "v7"))
+	if (aa_features_supports(features, "policy/versions/v7"))
 		kernel_abi_version = 7;
-	if (strstr(features_string, "set_load"))
-		kernel_supports_setload = 1;
-	if (strstr(features_string, "network"))
-		kernel_supports_network = 1;
-	if (strstr(features_string, "af_unix"))
-		kernel_supports_unix = 1;
-	if (strstr(features_string, "mount"))
-		kernel_supports_mount = 1;
-	if (strstr(features_string, "dbus"))
-		kernel_supports_dbus = 1;
-	if (strstr(features_string, "signal"))
-		kernel_supports_signal = 1;
-	if (strstr(features_string, "ptrace {"))
-		kernel_supports_ptrace = 1;
-	if (strstr(features_string, "diff_encode"))
-		kernel_supports_diff_encode = 1;
-	else if (dfaflags & DFA_CONTROL_DIFF_ENCODE)
+	else if (aa_features_supports(features, "policy/versions/v6"))
+		kernel_abi_version = 6;
+
+	if (!kernel_supports_diff_encode)
 		/* clear diff_encode because it is not supported */
 		dfaflags &= ~DFA_CONTROL_DIFF_ENCODE;
 }
 
-int process_binary(int option, const char *profilename)
+int process_binary(int option, aa_kernel_interface *kernel_interface,
+		   const char *profilename)
 {
-	char *buffer = NULL;
-	int retval = 0, size = 0, asize = 0, rsize;
-	int chunksize = 1 << 14;
-	int fd;
+	const char *printed_name;
+	int retval;
 
-	if (profilename) {
-		fd = open(profilename, O_RDONLY);
-		if (fd == -1) {
-			retval = errno;
-			PERROR(_("Error: Could not read binary profile or cache file %s: %s.\n"),
-			       profilename, strerror(errno));
-			return retval;
-		}
-	} else {
-		fd = dup(0);
-	}
+	printed_name = profilename ? profilename : "stdin";
 
-	do {
-		if (asize - size == 0) {
-		  buffer = (char *) realloc(buffer, chunksize);
-			asize = chunksize;
-			chunksize <<= 1;
-			if (!buffer) {
-				PERROR(_("Memory allocation error."));
-				return ENOMEM;
+	if (kernel_load) {
+		if (option == OPTION_ADD) {
+			retval = profilename ?
+				 aa_kernel_interface_load_policy_from_file(kernel_interface, profilename) :
+				 aa_kernel_interface_load_policy_from_fd(kernel_interface, 0);
+			if (retval == -1) {
+				retval = errno;
+				PERROR(_("Error: Could not load profile %s: %s\n"),
+				       printed_name, strerror(retval));
+				return retval;
 			}
+		} else if (option == OPTION_REPLACE) {
+			retval = profilename ?
+				 aa_kernel_interface_replace_policy_from_file(kernel_interface, profilename) :
+				 aa_kernel_interface_replace_policy_from_fd(kernel_interface, 0);
+			if (retval == -1) {
+				retval = errno;
+				PERROR(_("Error: Could not replace profile %s: %s\n"),
+				       printed_name, strerror(retval));
+				return retval;
+			}
+		} else {
+			PERROR(_("Error: Invalid load option specified: %d\n"),
+			       option);
+			return EINVAL;
 		}
-
-		rsize = read(fd, buffer + size, asize - size);
-		if (rsize)
-			size += rsize;
-	} while (rsize > 0);
-
-	close(fd);
-
-	if (rsize == 0)
-		retval = sd_load_buffer(option, buffer, size);
-	else
-		retval = rsize;
-
-	free(buffer);
+	}
 
 	if (conf_verbose) {
 		switch (option) {
 		case OPTION_ADD:
 			printf(_("Cached load succeeded for \"%s\".\n"),
-			       profilename ? profilename : "stdin");
+			       printed_name);
 			break;
 		case OPTION_REPLACE:
 			printf(_("Cached reload succeeded for \"%s\".\n"),
-			       profilename ? profilename : "stdin");
+			       printed_name);
 			break;
 		default:
 			break;
 		}
 	}
 
-	return retval;
+	return 0;
 }
 
 void reset_parser(const char *filename)
 {
 	memset(&mru_tstamp, 0, sizeof(mru_tstamp));
+	mru_skip_cache = 1;
 	free_aliases();
 	free_symtabs();
 	free_policies();
@@ -825,7 +660,7 @@ int test_for_dir_mode(const char *basename, const char *linkdir)
 	int rc = 0;
 
 	if (!skip_mode_force) {
-		char *target = NULL;
+		autofree char *target = NULL;
 		if (asprintf(&target, "%s/%s/%s", basedir, linkdir, basename) < 0) {
 			perror("asprintf");
 			exit(1);
@@ -833,64 +668,18 @@ int test_for_dir_mode(const char *basename, const char *linkdir)
 
 		if (access(target, R_OK) == 0)
 			rc = 1;
-
-		free(target);
 	}
 
 	return rc;
 }
 
-#define le16_to_cpu(x) ((uint16_t)(le16toh (*(uint16_t *) x)))
-
-const char header_string[] = "\004\010\000version\000\002";
-#define HEADER_STRING_SIZE 12
-static bool valid_cached_file_version(const char *cachename)
+int process_profile(int option, aa_kernel_interface *kernel_interface,
+		    const char *profilename, const char *cachedir)
 {
-	char buffer[16];
-	FILE *f;
-	if (!(f = fopen(cachename, "r"))) {
-		PERROR(_("Error: Could not read cache file '%s', skipping...\n"), cachename);
-		return false;
-	}
-	size_t res = fread(buffer, 1, 16, f);
-	fclose(f);
-	if (res < 16)
-		return false;
-
-	/* 12 byte header that is always the same and then 4 byte version # */
-	if (memcmp(buffer, header_string, HEADER_STRING_SIZE) != 0)
-		return false;
-
-	uint32_t version = cpu_to_le32(ENCODE_VERSION(force_complain,
-						      policy_version,
-						      parser_abi_version,
-						      kernel_abi_version));
-	if (memcmp(buffer + 12, &version, 4) != 0)
-		return false;
-
-	return true;
-}
-
-/* returns true if time is more recent than mru_tstamp */
-#define mru_t_cmp(a) \
-(((a).tv_sec == (mru_tstamp).tv_sec) ? \
-  (a).tv_nsec > (mru_tstamp).tv_nsec : (a).tv_sec > (mru_tstamp).tv_sec)
-
-void update_mru_tstamp(FILE *file)
-{
-	struct stat stat_file;
-	if (fstat(fileno(file), &stat_file))
-		return;
-	if (mru_t_cmp(stat_file.st_mtim))
-		mru_tstamp = stat_file.st_mtim;
-}
-
-int process_profile(int option, const char *profilename)
-{
-	struct stat stat_bin;
 	int retval = 0;
-	char * cachename = NULL;
-	char * cachetemp = NULL;
+	autofree const char *cachename = NULL;
+	autofree const char *cachetmpname = NULL;
+	autoclose int cachetmp = -1;
 	const char *basename = NULL;
 
 	/* per-profile states */
@@ -902,10 +691,11 @@ int process_profile(int option, const char *profilename)
 			       profilename, strerror(errno));
 			return errno;
 		}
-	}
-	else {
+	} else {
 		pwarn("%s: cannot use or update cache, disable, or force-complain via stdin\n", progname);
 	}
+
+	reset_parser(profilename);
 
 	if (profilename && option != OPTION_REMOVE) {
 		/* make decisions about disabled or complain-mode profiles */
@@ -926,17 +716,17 @@ int process_profile(int option, const char *profilename)
  			force_complain = 1;
  		}
 
-		/* TODO: add primary cache check.
-		 * If .file for cached binary exists get the list of profile
-		 * names and check their time stamps.
-		 */
-		/* TODO: primary cache miss/hit messages */
+		/* setup cachename and tstamp */
+		if (!force_complain && !skip_cache) {
+			cachename = cache_filename(cachedir, basename);
+			valid_read_cache(cachename);
+		}
+
 	}
 
-	reset_parser(profilename);
 	if (yyin) {
 		yyrestart(yyin);
-		update_mru_tstamp(yyin);
+		update_mru_tstamp(yyin, profilename ? profilename : "stdin");
 	}
 
 	retval = yyparse();
@@ -948,44 +738,21 @@ int process_profile(int option, const char *profilename)
 	 * TODO: Add support for caching profiles in an alternate namespace
 	 * TODO: Add support for embedded namespace defines if they aren't
 	 *       removed from the language.
+	 * TODO: test profile->ns NOT profile_ns (must be after parse)
 	 */
 	if (profile_ns)
 		skip_cache = 1;
 
-	/* Do secondary test to see if cached binary profile is good,
-	 * instead of checking against a presupplied list of files
-	 * use the timestamps from the files that were parsed.
-	 * Parsing the profile is slower that doing primary cache check
-	 * its still faster than doing full compilation
-	 */
-	if ((profilename && option != OPTION_REMOVE) && !force_complain &&
-	    !skip_cache) {
-		if (asprintf(&cachename, "%s/%s", cacheloc, basename)<0) {
-			PERROR(_("Memory allocation error."));
-			return ENOMEM;
-		}
+	if (cachename) {
 		/* Load a binary cache if it exists and is newest */
-		if (!skip_read_cache &&
-		    stat(cachename, &stat_bin) == 0 &&
-		    stat_bin.st_size > 0 && (mru_t_cmp(stat_bin.st_mtim)) &&
-		    valid_cached_file_version(cachename)) {
-			if (show_cache)
-				PERROR("Cache hit: %s\n", cachename);
-			retval = process_binary(option, cachename);
+		if (cache_hit(cachename)) {
+			retval = process_binary(option, kernel_interface,
+						cachename);
 			if (!retval || skip_bad_cache_rebuild)
-				goto out;
+				return retval;
 		}
-		if (write_cache) {
-			/* Otherwise, set up to save a cached copy */
-			if (asprintf(&cachetemp, "%s-XXXXXX", cachename)<0) {
-				perror("asprintf");
-				return ENOMEM;
-			}
-			if ( (cache_fd = mkstemp(cachetemp)) < 0) {
-				perror("mkstemp");
-				return ENOMEM;
-			}
-		}
+
+		cachetmp = setup_cache_tmp(&cachetmpname, cachename);
 	}
 
 	if (show_cache)
@@ -1021,186 +788,80 @@ int process_profile(int option, const char *profilename)
 		goto out;
 	}
 
-	retval = load_policy(option);
-
-out:
-	if (cachetemp) {
-		/* Only install the generate cache file if it parsed correctly
-                   and did not have write/close errors */
-		int useable_cache = (cache_fd != -1 && retval == 0);
-		if (cache_fd != -1) {
-			if (close(cache_fd))
-				useable_cache = 0;
-			cache_fd = -1;
+	/* cache file generated by load_policy */
+	retval = load_policy(option, kernel_interface, cachetmp);
+	if (retval == 0 && write_cache) {
+		if (cachetmp == -1) {
+			unlink(cachetmpname);
+			PERROR("Warning failed to create cache: %s\n",
+			       basename);
+		} else {
+			install_cache(cachetmpname, cachename);
 		}
-
-		if (useable_cache) {
-			if (rename(cachetemp, cachename) < 0) {
-				pwarn("Warning failed to write cache: %s\n", cachename);
-				unlink(cachetemp);
-			}
-			else if (show_cache)
-				PERROR("Wrote cache: %s\n", cachename);
-		}
-		else {
-			unlink(cachetemp);
-			PERROR("Warning failed to create cache: %s\n", basename);
-		}
-		free(cachetemp);
 	}
-	if (cachename)
-		free(cachename);
+out:
+
 	return retval;
 }
 
-/* data - name of parent dir */
+struct dir_cb_data {
+	aa_kernel_interface *kernel_interface;
+	const char *dirname;	/* name of the parent dir */
+	const char *cachedir;	/* path to the cache sub directory */
+};
+
+/* data - pointer to a dir_cb_data */
 static int profile_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 			  void *data)
 {
 	int rc = 0;
 
 	if (!S_ISDIR(st->st_mode) && !is_blacklisted(name, NULL)) {
-		const char *dirname = (const char *)data;
-		char *path;
-		if (asprintf(&path, "%s/%s", dirname, name) < 0)
+		struct dir_cb_data *cb_data = (struct dir_cb_data *)data;
+		autofree char *path = NULL;
+		if (asprintf(&path, "%s/%s", cb_data->dirname, name) < 0)
 			PERROR(_("Out of memory"));
-		rc = process_profile(option, path);
-		free(path);
+		rc = process_profile(option, cb_data->kernel_interface, path,
+				     cb_data->cachedir);
 	}
 	return rc;
 }
 
-/* data - name of parent dir */
+/* data - pointer to a dir_cb_data */
 static int binary_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 			 void *data)
 {
 	int rc = 0;
 
 	if (!S_ISDIR(st->st_mode) && !is_blacklisted(name, NULL)) {
-		const char *dirname = (const char *)data;
-		char *path;
-		if (asprintf(&path, "%s/%s", dirname, name) < 0)
+		struct dir_cb_data *cb_data = (struct dir_cb_data *)data;
+		autofree char *path = NULL;
+		if (asprintf(&path, "%s/%s", cb_data->dirname, name) < 0)
 			PERROR(_("Out of memory"));
-		rc = process_binary(option, path);
-		free(path);
+		rc = process_binary(option, cb_data->kernel_interface, path);
 	}
 	return rc;
 }
 
-static int clear_cache_cb(DIR *dir, const char *path, struct stat *st,
-			  void *data unused)
-{
-	/* remove regular files */
-	if (S_ISREG(st->st_mode))
-		return unlinkat(dirfd(dir), path, 0);
-
-	/* do nothing with other file types */
-	return 0;
-}
-
-static int clear_cache_files(const char *path)
-{
-	return dirat_for_each(NULL, path, NULL, clear_cache_cb);
-}
-
-static int create_cache(const char *cachedir, const char *path,
-			const char *features)
-{
-	struct stat stat_file;
-	FILE * f = NULL;
-
-	if (clear_cache_files(cacheloc) != 0)
-		goto error;
-
-create_file:
-	f = fopen(path, "w");
-	if (f) {
-		if (fwrite(features, strlen(features), 1, f) != 1 )
-			goto error;
-
-		fclose(f);
-
-
-		return 0;
-	}
-
-error:
-	/* does the dir exist? */
-	if (stat(cachedir, &stat_file) == -1 && create_cache_dir) {
-		if (mkdir(cachedir, 0700) == 0)
-			goto create_file;
-		if (show_cache)
-			PERROR(_("Can't create cache directory: %s\n"), cachedir);
-	} else if (!S_ISDIR(stat_file.st_mode)) {
-		if (show_cache)
-			PERROR(_("File in cache directory location: %s\n"), cachedir);
-	} else {
-		if (show_cache)
-			PERROR(_("Can't update cache directory: %s\n"), cachedir);
-	}
-
-	if (show_cache)
-		PERROR("Cache write disabled: cannot create %s\n", path);
-	write_cache = 0;
-
-	return -1;
-}
-
 static void setup_flags(void)
 {
-	char *cache_features_path = NULL;
-	char *cache_flags = NULL;
-
 	/* Get the match string to determine type of regex support needed */
 	set_supported_features();
 
 	/* Gracefully handle AppArmor kernel without compatibility patch */
-	if (!features_string) {
-		PERROR("Cache read/write disabled: %s interface file missing. "
-			"(Kernel needs AppArmor 2.4 compatibility patch.)\n",
-			FEATURES_FILE);
+	if (!features) {
+		PERROR("Cache read/write disabled: interface file missing. "
+			"(Kernel needs AppArmor 2.4 compatibility patch.)\n");
 		write_cache = 0;
 		skip_read_cache = 1;
 		return;
 	}
-
-
-	/*
-         * Deal with cache directory versioning:
-         *  - If cache/.features is missing, create it if --write-cache.
-         *  - If cache/.features exists, and does not match features_string,
-         *    force cache reading/writing off.
-         */
-	if (asprintf(&cache_features_path, "%s/.features", cacheloc) == -1) {
-		PERROR(_("Memory allocation error."));
-		exit(1);
-	}
-
-	cache_flags = load_features_file(cache_features_path);
-	if (cache_flags) {
-		if (strcmp(features_string, cache_flags) != 0) {
-			if (write_cache && cond_clear_cache) {
-				if (create_cache(cacheloc, cache_features_path,
-						 features_string))
-					skip_read_cache = 1;
-			} else {
-				if (show_cache)
-					PERROR("Cache read/write disabled: %s does not match %s\n", FEATURES_FILE, cache_features_path);
-				write_cache = 0;
-				skip_read_cache = 1;
-			}
-		}
-		free(cache_flags);
-		cache_flags = NULL;
-	} else if (write_cache) {
-		create_cache(cacheloc, cache_features_path, features_string);
-	}
-
-	free(cache_features_path);
 }
 
 int main(int argc, char *argv[])
 {
+	aa_kernel_interface *kernel_interface = NULL;
+	aa_policy_cache *policy_cache;
 	int retval, last_error;
 	int i;
 	int optind;
@@ -1223,26 +884,65 @@ int main(int argc, char *argv[])
 		return retval;
 	}
 
-	/* create the cacheloc once and use it everywhere */
-	if (!cacheloc) {
-		if (asprintf(&cacheloc, "%s/cache", basedir) == -1) {
-			PERROR(_("Memory allocation error."));
-			exit(1);
-		}
-	}
-
-	if (force_clear_cache) 
-		exit(clear_cache_files(cacheloc));
-
-	/* Check to make sure there is an interface to load policy */
-	if (!(UNPRIVILEGED_OPS) && (subdomainbase == NULL) &&
-	    (retval = find_subdomainfs_mountpoint())) {
-		return retval;
-	}
-
 	if (!binary_input) parse_default_paths();
 
 	setup_flags();
+
+	if (!(UNPRIVILEGED_OPS) &&
+	    aa_kernel_interface_new(&kernel_interface, features, apparmorfs) == -1) {
+		PERROR(_("Warning: unable to find a suitable fs in %s, is it "
+		       "mounted?\nUse --subdomainfs to override.\n"),
+		       MOUNTED_FS);
+		return 1;
+	}
+
+	if ((!skip_cache && (write_cache || !skip_read_cache)) ||
+	    force_clear_cache) {
+		if (!cacheloc && asprintf(&cacheloc, "%s/cache", basedir) == -1) {
+			PERROR(_("Memory allocation error."));
+			return 1;
+		}
+
+		if (force_clear_cache) {
+			if (aa_policy_cache_remove(cacheloc)) {
+				PERROR(_("Failed to clear cache files (%s): %s\n"),
+				       cacheloc, strerror(errno));
+				return 1;
+			}
+
+			return 0;
+		}
+
+		if (create_cache_dir)
+			pwarn(_("The --create-cache-dir option is deprecated. Please use --write-cache.\n"));
+
+		retval = aa_policy_cache_new(&policy_cache, features, cacheloc,
+					     write_cache);
+		if (retval) {
+			if (errno != ENOENT) {
+				PERROR(_("Failed setting up policy cache (%s): %s\n"),
+				       cacheloc, strerror(errno));
+				return 1;
+			}
+
+			write_cache = 0;
+			skip_read_cache = 0;
+		} else if (!aa_policy_cache_is_valid(policy_cache)) {
+			if (write_cache && cond_clear_cache &&
+			    aa_policy_cache_create(policy_cache)) {
+				if (show_cache)
+					PERROR("Cache write disabled: Cannot create cache '%s': %m\n",
+					       cacheloc);
+				write_cache = 0;
+				skip_read_cache = 1;
+			} else if (!write_cache || !cond_clear_cache) {
+				if (show_cache)
+					PERROR("Cache read/write disabled: Policy cache is invalid\n");
+				write_cache = 0;
+				skip_read_cache = 1;
+			}
+		}
+	}
 
 	retval = last_error = 0;
 	for (i = optind; i <= argc; i++) {
@@ -1267,15 +967,22 @@ int main(int argc, char *argv[])
 		if (profilename && S_ISDIR(stat_file.st_mode)) {
 			int (*cb)(DIR *dir, const char *name, struct stat *st,
 				  void *data);
+			struct dir_cb_data cb_data;
+
+			cb_data.dirname = profilename;
+			cb_data.cachedir = cacheloc;
 			cb = binary_input ? binary_dir_cb : profile_dir_cb;
-			if ((retval = dirat_for_each(NULL, profilename, profilename, cb))) {
+			if ((retval = dirat_for_each(NULL, profilename,
+						     &cb_data, cb))) {
 				PDEBUG("Failed loading profiles from %s\n",
 				       profilename);
 			}
 		} else if (binary_input) {
-			retval = process_binary(option, profilename);
+			retval = process_binary(option, kernel_interface,
+						profilename);
 		} else {
-			retval = process_profile(option, profilename);
+			retval = process_profile(option, kernel_interface,
+						 profilename, cacheloc);
 		}
 
 		if (profilename) free(profilename);

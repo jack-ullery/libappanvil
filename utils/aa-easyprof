@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2011-2013 Canonical Ltd.
+#    Copyright (C) 2011-2015 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -68,16 +68,38 @@ if __name__ == "__main__":
             apparmor.easyprof.print_basefilenames(easyp.get_templates())
             sys.exit(0)
         elif options.template and options.show_template:
-            files = [os.path.join(easyp.dirs['templates'], options.template)]
-            apparmor.easyprof.print_files(files)
+            sys_t = os.path.join(easyp.dirs['templates'], options.template)
+            inc_t = None
+            if options.include_templates_dir:
+                inc_t = os.path.join(easyp.dirs['templates_include'],
+                                     options.template)
+
+            if os.path.exists(sys_t):
+                apparmor.easyprof.print_files([sys_t])
+            elif os.path.exists(inc_t):
+                apparmor.easyprof.print_files([inc_t])
+            else:
+                error("Could not find '%s'" % options.template)
             sys.exit(0)
         elif options.list_policy_groups:
             apparmor.easyprof.print_basefilenames(easyp.get_policy_groups())
             sys.exit(0)
         elif options.policy_groups and options.show_policy_group:
+            files = []
             for g in options.policy_groups.split(','):
-                files = [os.path.join(easyp.dirs['policygroups'], g)]
-                apparmor.easyprof.print_files(files)
+                sys_g = os.path.join(easyp.dirs['policygroups'], g)
+                inc_g = None
+                if options.include_policy_groups_dir:
+                    inc_g = os.path.join(easyp.dirs['policygroups_include'], g)
+
+                if os.path.exists(sys_g):
+                    files.append(sys_g)
+                elif os.path.exists(inc_g):
+                    files.append(inc_g)
+                else:
+                    error("Could not find '%s'" % g)
+
+            apparmor.easyprof.print_files(files)
             sys.exit(0)
         elif binary == None and not options.profile_name and \
              not options.manifest:
