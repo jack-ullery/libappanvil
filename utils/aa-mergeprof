@@ -18,6 +18,7 @@ import os
 
 import apparmor.aa
 import apparmor.aamode
+from apparmor.common import AppArmorException
 import apparmor.severity
 import apparmor.cleanprofile as cleanprofile
 import apparmor.ui as aaui
@@ -43,7 +44,7 @@ profiledir = args.dir
 if profiledir:
     apparmor.aa.profile_dir = apparmor.aa.get_full_path(profiledir)
     if not os.path.isdir(apparmor.aa.profile_dir):
-        raise apparmor.AppArmorException(_("%s is not a directory.") %profiledir)
+        raise AppArmorException(_("%s is not a directory.") %profiledir)
 
 def reset_aa():
     apparmor.aa.aa = apparmor.aa.hasher()
@@ -229,7 +230,7 @@ class Merge(object):
                             return o
                             pass#self.user.aa[profile][hat][allow][path][mode] = (old_mode | new_mode) - (new_mode & conflict_x)
                         else:
-                            raise apparmor.aa.AppArmorException(_('Unknown selection'))
+                            raise AppArmorException(_('Unknown selection'))
                         done = True
 
     def ask_the_questions(self, other, profile):
