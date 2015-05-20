@@ -40,9 +40,9 @@ terminated. The enforcement mode is also NUL terminated and the parenthesis
 surrounding the mode are removed. If @mode is non-NULL, it will point to the
 first character in the enforcement mode string on success.
 
-The Linux kernel's /proc/<PID>/attr/current interface appends a trailing
-newline character to AppArmor contexts that are read from that file. If @con
-contains a single trailing newline character, it will be stripped by
+The Linux kernel's /proc/E<lt>PIDE<gt>/attr/current interface appends a
+trailing newline character to AppArmor contexts that are read from that file.
+If @con contains a single trailing newline character, it will be stripped by
 aa_splitcon() prior to all other processing.
 
 =head1 RETURN VALUE
