@@ -154,7 +154,7 @@ static char *procattr_path(pid_t pid, const char *attr)
 /**
  * parse_confinement_mode - get the mode from the confinement context
  * @con: the confinement context
- * @size: size of the confinement context
+ * @size: size of the confinement context (not including the NUL terminator)
  *
  * Modifies con to NUL-terminate the label string and the mode string.
  *
@@ -164,14 +164,14 @@ static char *procattr_path(pid_t pid, const char *attr)
 static char *parse_confinement_mode(char *con, int size)
 {
 	if (strcmp(con, "unconfined") != 0 &&
-	    size > 4 && con[size - 2] == ')') {
-		int pos = size - 3;
+	    size > 3 && con[size - 1] == ')') {
+		int pos = size - 2;
 
 		while (pos > 0 && !(con[pos] == ' ' && con[pos + 1] == '('))
 			pos--;
 		if (pos > 0) {
 			con[pos] = 0; /* overwrite ' ' */
-			con[size - 2] = 0; /* overwrite trailing ) */
+			con[size - 1] = 0; /* overwrite trailing ) */
 			return &con[pos + 2]; /* skip '(' */
 		}
 	}
@@ -236,18 +236,21 @@ int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len,
 		errno = saved;
 		goto out;
 	} else if (size > 0 && buf[size - 1] != 0) {
+		char *nul;
+
 		/* check for null termination */
 		if (buf[size - 1] == '\n') {
-			buf[size - 1] = 0;
+			nul = &buf[size - 1];
 		} else if (len == 0) {
 			errno = ERANGE;
 			goto out2;
 		} else {
-			buf[size] = 0;
+			nul = &buf[size];
 			size++;
 		}
 
-		mode_str = parse_confinement_mode(buf, size);
+		*nul = 0;
+		mode_str = parse_confinement_mode(buf, nul - buf);
 		if (mode)
 			*mode = mode_str;
 	}
@@ -614,7 +617,7 @@ int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode)
 		}
 	}
 
-	mode_str = parse_confinement_mode(buf, optlen);
+	mode_str = parse_confinement_mode(buf, optlen - 1);
 	if (mode)
 		*mode = mode_str;
 
