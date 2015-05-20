@@ -168,18 +168,29 @@ static bool parse_unconfined(char *con, int size)
 }
 
 /**
- * parse_confinement_mode - get the mode from the confinement context
+ * splitcon - split the confinement context into a label and mode
  * @con: the confinement context
  * @size: size of the confinement context (not including the NUL terminator)
+ * @mode: if non-NULL and a mode is present, will point to mode string in @con
+ *  on success
  *
- * Modifies con to NUL-terminate the label string and the mode string.
+ * Modifies the @con string to split it into separate label and mode strings.
+ * The @mode argument is optional. If @mode is NULL, @con will still be split
+ * between the label and mode (if present) but @mode will not be set.
  *
- * Returns: a pointer to the NUL-terminated mode inside the confinement context
- * or NULL if the mode was not found
+ * Returns: a pointer to the label string or NULL on error
  */
-static char *parse_confinement_mode(char *con, int size)
+static char *splitcon(char *con, int size, char **mode)
 {
-	if (!parse_unconfined(con, size) && size > 3 && con[size - 1] == ')') {
+	char *label = NULL;
+	char *mode_str = NULL;
+
+	if (parse_unconfined(con, size)) {
+		label = con;
+		goto out;
+	}
+
+	if (size > 3 && con[size - 1] == ')') {
 		int pos = size - 2;
 
 		while (pos > 0 && !(con[pos] == ' ' && con[pos + 1] == '('))
@@ -187,10 +198,14 @@ static char *parse_confinement_mode(char *con, int size)
 		if (pos > 0) {
 			con[pos] = 0; /* overwrite ' ' */
 			con[size - 1] = 0; /* overwrite trailing ) */
-			return &con[pos + 2]; /* skip '(' */
+			mode_str = &con[pos + 2]; /* skip '(' */
+			label = con;
 		}
 	}
-	return NULL;
+out:
+	if (mode)
+		*mode = mode_str;
+	return label;
 }
 
 /**
@@ -209,7 +224,6 @@ int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len,
 	int rc = -1;
 	int fd, ret;
 	char *tmp = NULL;
-	char *mode_str;
 	int size = 0;
 
 	if (!buf || len <= 0) {
@@ -265,9 +279,10 @@ int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len,
 		}
 
 		*nul = 0;
-		mode_str = parse_confinement_mode(buf, nul - buf);
-		if (mode)
-			*mode = mode_str;
+		if (splitcon(buf, nul - buf, mode) != buf) {
+			errno = EINVAL;
+			goto out2;
+		}
 	}
 	rc = size;
 
@@ -606,7 +621,6 @@ int aa_getcon(char **label, char **mode)
 int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode)
 {
 	socklen_t optlen = *len;
-	char *mode_str;
 	int rc;
 
 	if (optlen <= 0 || buf == NULL) {
@@ -632,9 +646,11 @@ int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode)
 		}
 	}
 
-	mode_str = parse_confinement_mode(buf, optlen - 1);
-	if (mode)
-		*mode = mode_str;
+	if (splitcon(buf, optlen - 1, mode) != buf) {
+		rc = -1;
+		errno = EINVAL;
+		goto out;
+	}
 
 	rc = optlen;
 out:
