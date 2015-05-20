@@ -40,6 +40,11 @@ terminated. The enforcement mode is also NUL terminated and the parenthesis
 surrounding the mode are removed. If @mode is non-NULL, it will point to the
 first character in the enforcement mode string on success.
 
+The Linux kernel's /proc/<PID>/attr/current interface appends a trailing
+newline character to AppArmor contexts that are read from that file. If @con
+contains a single trailing newline character, it will be stripped by
+aa_splitcon() prior to all other processing.
+
 =head1 RETURN VALUE
 
 Returns a pointer to the first character in the label string. NULL is returned
@@ -50,7 +55,9 @@ on error.
  Context                        Label               Mode 
  -----------------------------  ------------------  -------
  unconfined                     unconfined          NULL
+ unconfined\n                   unconfined          NULL
  /bin/ping (enforce)            /bin/ping           enforce
+ /bin/ping (enforce)\n          /bin/ping           enforce
  /usr/sbin/rsyslogd (complain)  /usr/sbin/rsyslogd  complain
 
 =head1 BUGS

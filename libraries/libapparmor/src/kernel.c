@@ -171,19 +171,31 @@ static bool parse_unconfined(char *con, int size)
  * splitcon - split the confinement context into a label and mode
  * @con: the confinement context
  * @size: size of the confinement context (not including the NUL terminator)
+ * @strip_newline: true if a trailing newline character should be stripped
  * @mode: if non-NULL and a mode is present, will point to mode string in @con
  *  on success
  *
  * Modifies the @con string to split it into separate label and mode strings.
- * The @mode argument is optional. If @mode is NULL, @con will still be split
- * between the label and mode (if present) but @mode will not be set.
+ * If @strip_newline is true and @con contains a single trailing newline, it
+ * will be stripped on success (it will not be stripped on error). The @mode
+ * argument is optional. If @mode is NULL, @con will still be split between the
+ * label and mode (if present) but @mode will not be set.
  *
  * Returns: a pointer to the label string or NULL on error
  */
-static char *splitcon(char *con, int size, char **mode)
+static char *splitcon(char *con, int size, bool strip_newline, char **mode)
 {
 	char *label = NULL;
 	char *mode_str = NULL;
+	char *newline = NULL;
+
+	if (size == 0)
+		goto out;
+
+	if (strip_newline && con[size - 1] == '\n') {
+		newline = &con[size - 1];
+		size--;
+	}
 
 	if (parse_unconfined(con, size)) {
 		label = con;
@@ -203,6 +215,8 @@ static char *splitcon(char *con, int size, char **mode)
 		}
 	}
 out:
+	if (label && strip_newline && newline)
+		*newline = 0; /* overwrite '\n', if requested, on success */
 	if (mode)
 		*mode = mode_str;
 	return label;
@@ -214,15 +228,16 @@ out:
  * @mode: if non-NULL and a mode is present, will point to mode string in @con
  *  on success
  *
- * Modifies the @con string to split it into separate label and mode strings.
- * The @mode argument is optional. If @mode is NULL, @con will still be split
+ * Modifies the @con string to split it into separate label and mode strings. A
+ * single trailing newline character will be stripped from @con, if found. The
+ * @mode argument is optional. If @mode is NULL, @con will still be split
  * between the label and mode (if present) but @mode will not be set.
  *
  * Returns: a pointer to the label string or NULL on error
  */
 char *aa_splitcon(char *con, char **mode)
 {
-	return splitcon(con, strlen(con), mode);
+	return splitcon(con, strlen(con), true, mode);
 }
 
 /**
@@ -282,21 +297,18 @@ int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len,
 		errno = saved;
 		goto out;
 	} else if (size > 0 && buf[size - 1] != 0) {
-		char *nul;
-
 		/* check for null termination */
-		if (buf[size - 1] == '\n') {
-			nul = &buf[size - 1];
-		} else if (len == 0) {
-			errno = ERANGE;
-			goto out2;
-		} else {
-			nul = &buf[size];
-			size++;
+		if (buf[size - 1] != '\n') {
+			if (len == 0) {
+				errno = ERANGE;
+				goto out2;
+			} else {
+				buf[size] = 0;
+				size++;
+			}
 		}
 
-		*nul = 0;
-		if (splitcon(buf, nul - buf, mode) != buf) {
+		if (splitcon(buf, size, true, mode) != buf) {
 			errno = EINVAL;
 			goto out2;
 		}
@@ -663,7 +675,7 @@ int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode)
 		}
 	}
 
-	if (splitcon(buf, optlen - 1, mode) != buf) {
+	if (splitcon(buf, optlen - 1, false, mode) != buf) {
 		rc = -1;
 		errno = EINVAL;
 		goto out;
