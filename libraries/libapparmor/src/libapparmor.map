@@ -80,6 +80,7 @@ APPARMOR_2.10 {
         aa_policy_cache_create;
         aa_policy_cache_remove;
         aa_policy_cache_replace_all;
+        aa_splitcon;
   local:
         *;
 } APPARMOR_2.9;

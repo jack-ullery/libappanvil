@@ -209,6 +209,23 @@ out:
 }
 
 /**
+ * aa_splitcon - split the confinement context into a label and mode
+ * @con: the confinement context
+ * @mode: if non-NULL and a mode is present, will point to mode string in @con
+ *  on success
+ *
+ * Modifies the @con string to split it into separate label and mode strings.
+ * The @mode argument is optional. If @mode is NULL, @con will still be split
+ * between the label and mode (if present) but @mode will not be set.
+ *
+ * Returns: a pointer to the label string or NULL on error
+ */
+char *aa_splitcon(char *con, char **mode)
+{
+	return splitcon(con, strlen(con), mode);
+}
+
+/**
  * aa_getprocattr_raw - get the contents of @attr for @tid into @buf
  * @tid: tid of task to query
  * @attr: which /proc/<tid>/attr/<attr> to query

@@ -58,6 +58,7 @@ extern int aa_change_onexec(const char *profile);
 extern int aa_change_hatv(const char *subprofiles[], unsigned long token);
 extern int (aa_change_hat_vargs)(unsigned long token, int count, ...);
 
+extern char *aa_splitcon(char *con, char **mode);
 /* Protypes for introspecting task confinement
  * Please see the aa_getcon(2) manpage for information
  */
