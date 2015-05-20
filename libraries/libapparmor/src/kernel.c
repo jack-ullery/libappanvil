@@ -43,6 +43,9 @@
 #define default_symbol_version(real, name, version) \
 		__asm__ (".symver " #real "," #name "@@" #version)
 
+#define UNCONFINED		"unconfined"
+#define UNCONFINED_SIZE		strlen(UNCONFINED)
+
 /**
  * aa_find_mountpoint - find where the apparmor interface filesystem is mounted
  * @mnt: returns buffer with the mountpoint string
@@ -152,6 +155,19 @@ static char *procattr_path(pid_t pid, const char *attr)
 }
 
 /**
+ * parse_unconfined - check for the unconfined label
+ * @con: the confinement context
+ * @size: size of the confinement context (not including the NUL terminator)
+ *
+ * Returns: True if the con is the unconfined label or false otherwise
+ */
+static bool parse_unconfined(char *con, int size)
+{
+	return size == UNCONFINED_SIZE &&
+	       strncmp(con, UNCONFINED, UNCONFINED_SIZE) == 0;
+}
+
+/**
  * parse_confinement_mode - get the mode from the confinement context
  * @con: the confinement context
  * @size: size of the confinement context (not including the NUL terminator)
@@ -163,8 +179,7 @@ static char *procattr_path(pid_t pid, const char *attr)
  */
 static char *parse_confinement_mode(char *con, int size)
 {
-	if (strcmp(con, "unconfined") != 0 &&
-	    size > 3 && con[size - 1] == ')') {
+	if (!parse_unconfined(con, size) && size > 3 && con[size - 1] == ')') {
 		int pos = size - 2;
 
 		while (pos > 0 && !(con[pos] == ' ' && con[pos + 1] == '('))
