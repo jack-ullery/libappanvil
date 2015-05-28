@@ -652,8 +652,9 @@ def set_profile_flags(prof_filename, program, newflags):
     """Reads the old profile file and updates the flags accordingly"""
     # TODO: count the number of matching lines (separated by profile and hat?) and return it
     #       so that code calling this function can make sure to only report success if there was a match
-    # TODO: use RE_PROFILE_HAT_DEF for matching the hat (regex_hat_flag is totally broken!)
-    #regex_hat_flag = re.compile('^([a-z]*)\s+([A-Z]*)\s*(#.*)?$')
+    # TODO: existing (unrelated) flags of hats and child profiles are overwritten - ideally, we should
+    #       keep them and only add or remove a given flag
+    # TODO: change child profile flags even if program is specified
 
     found = False
 
@@ -680,14 +681,19 @@ def set_profile_flags(prof_filename, program, newflags):
                         }
                         line = write_header(header_data, len(space)/2, profile, False, True)
                         line = '%s\n' % line[0]
-                #else:
-                #    match = regex_hat_flag.search(line)
-                #    if match:
-                #        hat, flags = match.groups()[:2]
-                #        if newflags:
-                #            line = '%s flags=(%s) {%s\n' % (hat, newflags, comment)
-                #        else:
-                #            line = '%s {%s\n' % (hat, comment)
+                elif RE_PROFILE_HAT_DEF.search(line):
+                    matches = RE_PROFILE_HAT_DEF.search(line)
+                    space = matches.group('leadingspace') or ''
+                    hat_keyword = matches.group('hat_keyword')
+                    hat = matches.group('hat')
+                    comment = matches.group('comment') or ''
+                    if comment:
+                        comment = ' %s' % comment
+
+                    if newflags:
+                        line = '%s%s%s flags=(%s) {%s\n' % (space, hat_keyword, hat, newflags, comment)
+                    else:
+                        line = '%s%s%s {%s\n' % (space, hat_keyword, hat, comment)
                 f_out.write(line)
     os.rename(temp_file.name, prof_filename)
 
