@@ -72,6 +72,16 @@ RE_PROFILE_START          = re.compile(
     '\s+((flags=)?\((?P<flags>.+)\)\s+)?\{' +
     RE_EOL)
 
+
+RE_PROFILE_CHANGE_PROFILE_2 = re.compile(
+    RE_AUDIT_DENY +
+    'change_profile' +
+    '(\s+' + RE_PROFILE_PATH % 'execcond' + ')?' +  # optionally exec condition
+    '(\s+->\s*' + RE_PROFILE_NAME % 'targetprofile' + ')?' +  # optionally '->' target profile
+    RE_COMMA_EOL)
+
+
+
 def parse_profile_start_line(line, filename):
     matches = RE_PROFILE_START.search(line)
 
