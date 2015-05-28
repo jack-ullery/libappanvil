@@ -41,7 +41,7 @@ from apparmor.aamode import (str_to_mode, mode_to_str, contains, split_mode,
                              flatten_mode, owner_flatten_mode)
 
 from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
-                            RE_PROFILE_CHANGE_PROFILE, RE_PROFILE_ALIAS, RE_PROFILE_RLIMIT,
+                            RE_PROFILE_ALIAS, RE_PROFILE_RLIMIT,
                             RE_PROFILE_BOOLEAN, RE_PROFILE_VARIABLE, RE_PROFILE_CONDITIONAL,
                             RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
                             RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY,
@@ -54,6 +54,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
 import apparmor.rules as aarules
 
 from apparmor.rule.capability import CapabilityRuleset, CapabilityRule
+from apparmor.rule.change_profile import ChangeProfileRuleset, ChangeProfileRule
 from apparmor.rule.network    import NetworkRuleset,    NetworkRule
 from apparmor.rule import parse_modifiers, quote_if_needed
 
@@ -2132,6 +2133,7 @@ def delete_duplicates(profile, incname):
     if include.get(incname, False):
         deleted += profile['network'].delete_duplicates(include[incname][incname]['network'])
         deleted += profile['capability'].delete_duplicates(include[incname][incname]['capability'])
+        deleted += profile['change_profile'].delete_duplicates(include[incname][incname]['change_profile'])
 
         deleted += delete_path_duplicates(profile, incname, 'allow')
         deleted += delete_path_duplicates(profile, incname, 'deny')
@@ -2139,6 +2141,7 @@ def delete_duplicates(profile, incname):
     elif filelist.get(incname, False):
         deleted += profile['network'].delete_duplicates(filelist[incname][incname]['network'])
         deleted += profile['capability'].delete_duplicates(filelist[incname][incname]['capability'])
+        deleted += profile['change_profile'].delete_duplicates(filelist[incname][incname]['change_profile'])
 
         deleted += delete_path_duplicates(profile, incname, 'allow')
         deleted += delete_path_duplicates(profile, incname, 'deny')
@@ -2673,6 +2676,7 @@ def parse_profile_data(data, file, do_include):
             profile_data[profile][hat]['flags'] = flags
 
             profile_data[profile][hat]['network'] = NetworkRuleset()
+            profile_data[profile][hat]['change_profile'] = ChangeProfileRuleset()
             profile_data[profile][hat]['allow']['path'] = hasher()
             profile_data[profile][hat]['allow']['dbus'] = list()
             profile_data[profile][hat]['allow']['mount'] = list()
@@ -2745,14 +2749,11 @@ def parse_profile_data(data, file, do_include):
             else:
                 profile_data[profile][hat][allow]['link'][link]['audit'] = set()
 
-        elif RE_PROFILE_CHANGE_PROFILE.search(line):
-            matches = RE_PROFILE_CHANGE_PROFILE.search(line).groups()
-
+        elif ChangeProfileRule.match(line):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected change profile entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            cp = strip_quotes(matches[0])
-            profile_data[profile][hat]['change_profile'][cp] = True
+            profile_data[profile][hat]['change_profile'].add(ChangeProfileRule.parse(line))
 
         elif RE_PROFILE_ALIAS.search(line):
             matches = RE_PROFILE_ALIAS.search(line).groups()
@@ -3297,7 +3298,10 @@ def write_includes(prof_data, depth):
     return write_single(prof_data, depth, '', 'include', '#include <', '>')
 
 def write_change_profile(prof_data, depth):
-    return write_single(prof_data, depth, '', 'change_profile', 'change_profile -> ', ',')
+    data = []
+    if prof_data.get('change_profile', False):
+        data = prof_data['change_profile'].get_clean(depth)
+    return data
 
 def write_alias(prof_data, depth):
     return write_pair(prof_data, depth, '', 'alias', 'alias ', ' -> ', ',', quote_if_needed)
@@ -3872,22 +3876,14 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     # To-Do
                     pass
 
-            elif RE_PROFILE_CHANGE_PROFILE.search(line):
-                matches = RE_PROFILE_CHANGE_PROFILE.search(line).groups()
-                cp = strip_quotes(matches[0])
-
-                if not write_prof_data[hat]['change_profile'][cp] is True:
-                    correct = False
-
-                if correct:
+            elif ChangeProfileRule.match(line):
+                change_profile_obj = ChangeProfileRule.parse(line)
+                if write_prof_data[hat]['change_profile'].is_covered(change_profile_obj, True, True):
                     if not segments['change_profile'] and True in segments.values():
                         data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['change_profile'] = True
-                    write_prof_data[hat]['change_profile'].pop(cp)
+                    write_prof_data[hat]['change_profile'].delete(change_profile_obj)
                     data.append(line)
-                else:
-                    #To-Do
-                    pass
 
             elif RE_PROFILE_ALIAS.search(line):
                 matches = RE_PROFILE_ALIAS.search(line).groups()
