@@ -2053,6 +2053,23 @@ def ask_the_questions():
                             else:
                                 done = False
 
+def available_buttons(rule_obj):
+    buttons = []
+
+    if not rule_obj.deny:
+        buttons += ['CMD_ALLOW']
+
+    buttons += ['CMD_DENY', 'CMD_IGNORE_ENTRY']
+
+    if rule_obj.audit:
+        buttons += ['CMD_AUDIT_OFF']
+    else:
+        buttons += ['CMD_AUDIT_NEW']
+
+    buttons += ['CMD_ABORT', 'CMD_FINISHED']
+
+    return buttons
+
 def add_to_options(options, newpath):
     if newpath not in options:
         options.append(newpath)

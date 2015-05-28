@@ -17,6 +17,7 @@ import re
 import os
 
 import apparmor.aa
+from apparmor.aa import available_buttons
 import apparmor.aamode
 from apparmor.common import AppArmorException
 import apparmor.severity
@@ -714,37 +715,45 @@ class Merge(object):
                             elif re.search('\d', ans):
                                 default_option = ans
 
-            #
-            for allow in ['allow', 'deny']:
-                for family in sorted(other.aa[profile][hat][allow]['netdomain']['rule'].keys()):
-                    # severity handling for net toggles goes here
+            if 1 == 1: # avoid whitespace change
+                if other.aa[profile][hat].get('network', False): # needed until we have proper profile initialization
+                    for net_obj in other.aa[profile][hat]['network'].rules:
+                        # severity handling for net toggles goes here
 
-                    for sock_type in sorted(other.aa[profile][hat][allow]['netdomain']['rule'][family].keys()):
-                        #if apparmor.aa.profile_known_network(self.user.aa[profile][hat], family, sock_type):
-                        #    continue
-                        # disabled for now because it crashes, for details and impact see
-                        # https://bugs.launchpad.net/apparmor/+bug/1382241
+                        if apparmor.aa.is_known_rule(self.user.aa[profile][hat], 'network', net_obj):
+                            continue
+
+                        if net_obj.all_domains:
+                            family = 'ALL'
+                        else:
+                            family = net_obj.domain
+
+                        if net_obj.all_type_or_protocols:
+                            sock_type = 'ALL'
+                        else:
+                            sock_type = net_obj.type_or_protocol
 
                         default_option = 1
                         options = []
-                        newincludes = apparmor.aa.match_net_includes(self.user.aa[profile][hat], family, sock_type)
+                        newincludes = apparmor.aa.match_includes(self.user.aa[profile][hat], 'network', net_obj)
                         q = aaui.PromptQuestion()
                         if newincludes:
                             options += list(map(lambda s: '#include <%s>'%s, sorted(set(newincludes))))
                         if True:#options:
-                            options.append('network %s %s' % (family, sock_type))
+                            options.append(net_obj.get_clean())
                             q.options = options
                             q.selected = default_option - 1
 
+                        audit = ''
+                        if net_obj.audit:
+                            audit = 'audit '
+
                         q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
-                        q.headers += [_('Network Family'), family]
+                        q.headers += [_('Network Family'), audit + family]
                         q.headers += [_('Socket Type'), sock_type]
 
-                        audit_toggle = 0
-                        q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
-                                          'CMD_ABORT', 'CMD_FINISHED']
-
-                        q.default = 'CMD_ALLOW'
+                        q.functions = available_buttons(net_obj)
+                        q.default = q.functions[0]
 
                         done = False
                         while not done:
@@ -757,15 +766,19 @@ class Merge(object):
                                 return
 
                             if ans.startswith('CMD_AUDIT'):
-                                audit_toggle = not audit_toggle
-                                audit = ''
-                                if audit_toggle:
-                                    audit = 'audit'
-                                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_OFF',
-                                                      'CMD_ABORT', 'CMD_FINISHED']
+                                if ans == 'CMD_AUDIT_NEW':
+                                    net_obj.audit = True
+                                    net_obj.raw_rule = None
+                                    audit = 'audit '
                                 else:
-                                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
-                                                      'CMD_ABORT', 'CMD_FINISHED']
+                                    net_obj.audit = False
+                                    net_obj.raw_rule = None
+                                    audit = ''
+
+                                q.functions = available_buttons(net_obj)
+                                options[len(options) - 1] = net_obj.get_clean()
+                                q.options = options
+
                                 q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
                                 q.headers += [_('Network Family'), audit + family]
                                 q.headers += [_('Socket Type'), sock_type]
@@ -788,8 +801,7 @@ class Merge(object):
                                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                 else:
-                                    self.user.aa[profile][hat]['allow']['netdomain']['audit'][family][sock_type] = audit_toggle
-                                    self.user.aa[profile][hat]['allow']['netdomain']['rule'][family][sock_type] = True
+                                    self.user.aa[profile][hat]['network'].add(net_obj)
 
                                     apparmor.aa.changed[profile] = True
 
@@ -797,7 +809,9 @@ class Merge(object):
 
                             elif ans == 'CMD_DENY':
                                 done = True
-                                self.user.aa[profile][hat]['deny']['netdomain']['rule'][family][sock_type] = True
+                                net_obj.deny = True
+                                net_obj.raw_rule = None
+                                self.user.aa[profile][hat]['network'].add(net_obj)
                                 apparmor.aa.changed[profile] = True
                                 aaui.UI_Info(_('Denying network access %(family)s %(type)s to profile') % { 'family': family, 'type': sock_type })
 
