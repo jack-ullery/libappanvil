@@ -12,6 +12,53 @@
 #define OPT_TYPE_DBUS		"--dbus="
 #define OPT_TYPE_DBUS_LEN	strlen(OPT_TYPE_DBUS)
 
+#define OPT_TYPE_FILE		"--file="
+#define OPT_TYPE_FILE_LEN	strlen(OPT_TYPE_FILE)
+
+#ifndef AA_CLASS_FILE
+#define AA_CLASS_FILE		2
+#endif
+
+#ifndef AA_MAY_EXEC
+#define AA_MAY_EXEC		(1 << 0)
+#endif
+
+#ifndef AA_MAY_WRITE
+#define AA_MAY_WRITE		(1 << 1)
+#endif
+
+#ifndef AA_MAY_READ
+#define AA_MAY_READ		(1 << 2)
+#endif
+
+#ifndef AA_MAY_APPEND
+#define AA_MAY_APPEND		(1 << 3)
+#endif
+
+#ifndef AA_MAY_LINK
+#define AA_MAY_LINK		(1 << 4)
+#endif
+
+#ifndef AA_MAY_LOCK
+#define AA_MAY_LOCK		(1 << 5)
+#endif
+
+#ifndef AA_EXEC_MMAP
+#define AA_EXEC_MMAP		(1 << 6)
+#endif
+
+#ifndef AA_EXEC_PUX
+#define AA_EXEC_PUX		(1 << 7)
+#endif
+
+#ifndef AA_EXEC_UNSAFE
+#define AA_EXEC_UNSAFE		(1 << 8)
+#endif
+
+#ifndef AA_EXEC_INHERIT
+#define AA_EXEC_INHERIT		(1 << 9)
+#endif
+
 static char *progname = NULL;
 
 void usage(void)
@@ -26,9 +73,11 @@ void usage(void)
 	fprintf(stderr, "  LABEL\t\tThe AppArmor label to use in the query\n");
 	fprintf(stderr, "  CLASS\t\tThe rule class and may consist of:\n");
 	fprintf(stderr, "\t\t  dbus\n");
+	fprintf(stderr, "\t\t  file\n");
 	fprintf(stderr, "  PERMS\t\tA comma separated list of permissions. Possibilities\n");
 	fprintf(stderr, "\t\tfor the supported rule classes are:\n");
 	fprintf(stderr, "\t\t  dbus: send,receive,bind\n");
+	fprintf(stderr, "\t\t  file: exec,write,read,append,link,lock,exec_mmap,exec_pux,exec_unsafe,exec_inherit\n");
 	fprintf(stderr, "\t\tAdditionaly, PERMS can be empty to indicate an empty mask\n");
 	exit(1);
 }
@@ -72,6 +121,45 @@ static int parse_dbus_perms(uint32_t *mask, char *perms)
 			*mask |= AA_DBUS_RECEIVE;
 		else if (!strcmp(perm, "bind"))
 			*mask |= AA_DBUS_BIND;
+		else {
+			fprintf(stderr, "FAIL: unknown perm: %s\n", perm);
+			return 1;
+		}
+
+		perm = strtok(NULL, ",");
+	}
+
+	return 0;
+}
+
+static int parse_file_perms(uint32_t *mask, char *perms)
+{
+	char *perm;
+
+	*mask = 0;
+
+	perm = strtok(perms, ",");
+	while (perm) {
+		if (!strcmp(perm, "exec"))
+			*mask |= AA_MAY_EXEC;
+		else if (!strcmp(perm, "write"))
+			*mask |= AA_MAY_WRITE;
+		else if (!strcmp(perm, "read"))
+			*mask |= AA_MAY_READ;
+		else if (!strcmp(perm, "append"))
+			*mask |= AA_MAY_APPEND;
+		else if (!strcmp(perm, "link"))
+			*mask |= AA_MAY_LINK;
+		else if (!strcmp(perm, "lock"))
+			*mask |= AA_MAY_LOCK;
+		else if (!strcmp(perm, "exec_mmap"))
+			*mask |= AA_EXEC_MMAP;
+		else if (!strcmp(perm, "exec_pux"))
+			*mask |= AA_EXEC_PUX;
+		else if (!strcmp(perm, "exec_unsafe"))
+			*mask |= AA_EXEC_UNSAFE;
+		else if (!strcmp(perm, "exec_inherit"))
+			*mask |= AA_EXEC_INHERIT;
 		else {
 			fprintf(stderr, "FAIL: unknown perm: %s\n", perm);
 			return 1;
@@ -147,6 +235,11 @@ int main(int argc, char **argv)
 	if (!strncmp(class_str, OPT_TYPE_DBUS, OPT_TYPE_DBUS_LEN)) {
 		class = AA_CLASS_DBUS;
 		rc = parse_dbus_perms(&mask, class_str + OPT_TYPE_DBUS_LEN);
+		if (rc)
+			usage();
+	} else if (!strncmp(class_str, OPT_TYPE_FILE, OPT_TYPE_FILE_LEN)) {
+		class = AA_CLASS_FILE;
+		rc = parse_file_perms(&mask, class_str + OPT_TYPE_FILE_LEN);
 		if (rc)
 			usage();
 	} else {
