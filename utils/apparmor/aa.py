@@ -2154,11 +2154,6 @@ def match_net_include(incname, family, type):
     return match_includes(incname, 'network', network_obj)
 
 
-def match_cap_includes(profile, capability):
-    # still used by aa-mergeprof
-    capability_obj = CapabilityRule(capability)
-    return match_includes(profile, 'capability', capability_obj)
-
 def match_includes(profile, rule_type, rule_obj):
     newincludes = []
     for incname in include.keys():

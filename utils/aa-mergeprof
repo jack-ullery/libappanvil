@@ -309,32 +309,51 @@ class Merge(object):
                     return
 
             #Add the capabilities
-            for allow in ['allow', 'deny']:
-                if other.aa[profile][hat].get(allow, False):
-                    continue
-                for capability in sorted(other.aa[profile][hat][allow]['capability'].keys()):
-                    severity = sev_db.rank('CAP_%s' % capability)
+            if other.aa[profile][hat].get('capability', False): # needed until we have proper profile initialization
+                for cap_obj in other.aa[profile][hat]['capability'].rules:
+
+                    if apparmor.aa.is_known_rule(self.user.aa[profile][hat], 'capability', cap_obj):
+                        continue
+
+                    if cap_obj.all_caps:
+                        severity = 10
+                        cap_txt = 'ALL'
+                    else:
+                        cap_txt = ' '.join(cap_obj.capability)
+                        severity = 0
+                        for cap in cap_obj.capability:
+                            severity = max(severity, sev_db.rank('CAP_%s' % cap))
+
+                    if cap_obj.deny:
+                        cap_txt = 'deny %s' % cap_txt
+
+                    if cap_obj.audit:
+                        cap_txt = 'audit %s' % cap_txt
+
                     default_option = 1
                     options = []
-                    newincludes = apparmor.aa.match_cap_includes(self.user.aa[profile][hat], capability)
+                    newincludes = apparmor.aa.match_includes(self.user.aa[profile][hat], 'capability', cap_obj)
                     q = aaui.PromptQuestion()
                     if newincludes:
                         options += list(map(lambda inc: '#include <%s>' %inc, sorted(set(newincludes))))
 
                     if options:
-                        options.append('capability %s' % capability)
+                        options.append(cap_obj.get_clean())
                         q.options = options
                         q.selected = default_option - 1
 
                     q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
-                    q.headers += [_('Capability'), capability]
+                    q.headers += [_('Capability'), cap_txt]
                     q.headers += [_('Severity'), severity]
 
                     audit_toggle = 0
 
-                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
+                    q.functions = []
+                    if not cap_obj.deny:
+                        q.functions += ['CMD_ALLOW']
+                    q.functions += ['CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
 
-                    q.default = 'CMD_ALLOW'
+                    q.default = q.functions[0]
 
                     done = False
                     while not done:
@@ -362,19 +381,20 @@ class Merge(object):
                                 if deleted:
                                     aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
-                            self.user.aa[profile][hat]['allow']['capability'][capability]['set'] = True
-                            self.user.aa[profile][hat]['allow']['capability'][capability]['audit'] = other.aa[profile][hat]['allow']['capability'][capability]['audit']
+                            self.user.aa[profile][hat]['capability'].add(cap_obj)
 
                             apparmor.aa.changed[profile] = True
 
-                            aaui.UI_Info(_('Adding capability %s to profile.'), capability)
+                            aaui.UI_Info(_('Adding %s to profile.') % cap_obj.get_clean())
                             done = True
 
                         elif ans == 'CMD_DENY':
-                            self.user.aa[profile][hat]['deny']['capability'][capability]['set'] = True
+                            cap_obj.deny = True
+                            cap_obj.raw_rule = None  # reset raw rule after manually modifying cap_obj
+                            self.user.aa[profile][hat]['capability'].add(cap_obj)
                             apparmor.aa.changed[profile] = True
 
-                            aaui.UI_Info(_('Denying capability %s to profile.') % capability)
+                            aaui.UI_Info(_('Adding %s to profile.') % cap_obj.get_clean())
                             done = True
                         else:
                             done = False
