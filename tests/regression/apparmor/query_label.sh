@@ -209,3 +209,35 @@ perms dbus send
 querytest "QUERY dbus (svc send)" fail $dbus_svc_query
 perms dbus receive
 querytest "QUERY dbus (svc receive)" fail $dbus_svc_query
+
+genqueryprofile "file,"
+expect allow
+perms file exec,write,read,append,link,lock
+querytest "QUERY file (all base perms #1)" pass /anything
+querytest "QUERY file (all base perms #2)" pass /everything
+
+genqueryprofile "/etc/passwd r,"
+expect allow
+perms file read
+querytest "QUERY file (passwd)" pass /etc/passwd
+querytest "QUERY file (passwd bad path #1)" fail /etc/pass
+querytest "QUERY file (passwd bad path #2)" fail /etc/passwdXXX
+querytest "QUERY file (passwd bad path #3)" fail /etc/passwd/XXX
+perms file write
+querytest "QUERY file (passwd bad perms #1)" fail /etc/passwd
+perms file read,write
+querytest "QUERY file (passwd bad perms #2)" fail /etc/passwd
+
+genqueryprofile "/tmp/ rw,"
+expect allow
+perms file read,write
+querytest "QUERY file (/tmp/)" pass /tmp/
+querytest "QUERY file (/tmp/ bad path)" fail /tmp
+querytest "QUERY file (/tmp/ bad path)" fail /tmp/tmp/
+perms file read
+querytest "QUERY file (/tmp/ read only)" pass /tmp/
+perms file write
+querytest "QUERY file (/tmp/ write only)" pass /tmp/
+expect audit
+perms file read,write
+querytest "QUERY file (/tmp/ wrong dir)" pass /etc/
