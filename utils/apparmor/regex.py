@@ -32,7 +32,6 @@ RE_PROFILE_PATH         = '(?P<%s>(/\S+|"/[^"]+"))'  # filename (starting with '
 RE_PROFILE_END          = re.compile('^\s*\}' + RE_EOL)
 RE_PROFILE_CAP          = re.compile(RE_AUDIT_DENY + 'capability(?P<capability>(\s+\S+)+)?' + RE_COMMA_EOL)
 RE_PROFILE_LINK         = re.compile(RE_AUDIT_DENY + 'link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)' + RE_COMMA_EOL)
-RE_PROFILE_CHANGE_PROFILE = re.compile('^\s*change_profile\s+->\s*("??.+?"??)' + RE_COMMA_EOL)
 RE_PROFILE_ALIAS        = re.compile('^\s*alias\s+("??.+?"??)\s+->\s*("??.+?"??)' + RE_COMMA_EOL)
 RE_PROFILE_RLIMIT       = re.compile('^\s*set\s+rlimit\s+(.+)\s+(<=)?\s*(.+)' + RE_COMMA_EOL)
 RE_PROFILE_BOOLEAN      = re.compile('^\s*(\$\{?\w*\}?)\s*=\s*(true|false)\s*,?' + RE_EOL, flags=re.IGNORECASE)
@@ -73,7 +72,7 @@ RE_PROFILE_START          = re.compile(
     RE_EOL)
 
 
-RE_PROFILE_CHANGE_PROFILE_2 = re.compile(
+RE_PROFILE_CHANGE_PROFILE = re.compile(
     RE_AUDIT_DENY +
     'change_profile' +
     '(\s+' + RE_PROFILE_PATH % 'execcond' + ')?' +  # optionally exec condition

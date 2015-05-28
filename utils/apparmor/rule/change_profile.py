@@ -14,7 +14,7 @@
 #
 # ----------------------------------------------------------------------
 
-from apparmor.regex import RE_PROFILE_CHANGE_PROFILE_2, strip_quotes
+from apparmor.regex import RE_PROFILE_CHANGE_PROFILE, strip_quotes
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers, quote_if_needed
 
@@ -73,7 +73,7 @@ class ChangeProfileRule(BaseRule):
 
     @classmethod
     def _match(cls, raw_rule):
-        return RE_PROFILE_CHANGE_PROFILE_2.search(raw_rule)
+        return RE_PROFILE_CHANGE_PROFILE.search(raw_rule)
 
     @classmethod
     def _parse(cls, raw_rule):
