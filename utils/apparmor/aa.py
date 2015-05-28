@@ -2165,12 +2165,6 @@ def delete_duplicates(profile, incname):
 
     return deleted
 
-def match_net_include(incname, family, type):
-    # still used by aa-mergeprof
-    network_obj = NetworkRule(family, type)
-    return match_includes(incname, 'network', network_obj)
-
-
 def match_includes(profile, rule_type, rule_obj):
     newincludes = []
     for incname in include.keys():
@@ -2202,15 +2196,6 @@ def valid_include(profile, incname):
         return True
 
     return False
-
-def match_net_includes(profile, family, nettype):
-    newincludes = []
-    for incname in include.keys():
-
-        if valid_include(profile, incname) and match_net_include(incname, family, nettype):
-            newincludes.append(incname)
-
-    return newincludes
 
 def set_logfile(filename):
     ''' set logfile to a) the specified filename or b) if not given, the first existing logfile from logprof.conf'''
