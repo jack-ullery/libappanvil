@@ -23,7 +23,8 @@ settest query_label
 
 expect=""
 perms=""
-label="--label=$test"
+qprof="/profile/to/query"
+label="--label=$qprof"
 
 dbus_send="--dbus=send"
 dbus_receive="--dbus=receive"
@@ -35,13 +36,16 @@ dbus_none="--dbus="
 dbus_msg_query="session com.foo.bar /usr/bin/bar /com/foo/bar com.foo.bar Method"
 dbus_svc_query="session com.foo.baz"
 
-# Generate a profile for $test, granting all file access and anything specified
-# in $@
+# Generate a profile for $test, granting all file accesses, and $qprof,
+# granting anything specified in $@.
 genqueryprofile()
 {
 	genprofile --stdin <<EOF
 $test {
   file,
+}
+
+$qprof {
   $@
 }
 EOF
