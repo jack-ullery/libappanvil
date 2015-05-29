@@ -373,7 +373,6 @@ class Merge(object):
                                 selection = options[selected]
                             match = apparmor.aa.re_match_include(selection)
                             if match:
-                                deleted = False
                                 inc = match
                                 deleted = apparmor.aa.delete_duplicates(self.user.aa[profile][hat], inc)
                                 self.user.aa[profile][hat]['include'][inc] = True
@@ -615,7 +614,6 @@ class Merge(object):
                                 match = apparmor.aa.re_match_include(path)
                                 if match:
                                     inc = match
-                                    deleted = 0
                                     deleted = apparmor.aa.delete_duplicates(self.user.aa[profile][hat], inc)
                                     self.user.aa[profile][hat]['include'][inc] =  True
                                     apparmor.aa.changed[profile] =  True
@@ -789,7 +787,6 @@ class Merge(object):
                                 done = True
                                 if apparmor.aa.re_match_include(selection): #re.search('#include\s+<.+>$', selection):
                                     inc =  apparmor.aa.re_match_include(selection) #re.search('#include\s+<(.+)>$', selection).groups()[0]
-                                    deleted =  0
                                     deleted = apparmor.aa.delete_duplicates(self.user.aa[profile][hat], inc)
 
                                     self.user.aa[profile][hat]['include'][inc] = True
