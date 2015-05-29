@@ -310,36 +310,37 @@ class Merge(object):
                     return
 
             #Add the capabilities
-            if other.aa[profile][hat].get('capability', False): # needed until we have proper profile initialization
-                for cap_obj in other.aa[profile][hat]['capability'].rules:
+            ruletype = 'capability'
+            if other.aa[profile][hat].get(ruletype, False): # needed until we have proper profile initialization
+                for rule_obj in other.aa[profile][hat][ruletype].rules:
 
-                    if apparmor.aa.is_known_rule(self.user.aa[profile][hat], 'capability', cap_obj):
+                    if apparmor.aa.is_known_rule(self.user.aa[profile][hat], ruletype, rule_obj):
                         continue
 
-                    if cap_obj.all_caps:
+                    if rule_obj.all_caps:
                         severity = 10
                         cap_txt = 'ALL'
                     else:
-                        cap_txt = ' '.join(cap_obj.capability)
+                        cap_txt = ' '.join(rule_obj.capability)
                         severity = 0
-                        for cap in cap_obj.capability:
+                        for cap in rule_obj.capability:
                             severity = max(severity, sev_db.rank('CAP_%s' % cap))
 
-                    if cap_obj.deny:
+                    if rule_obj.deny:
                         cap_txt = 'deny %s' % cap_txt
 
-                    if cap_obj.audit:
+                    if rule_obj.audit:
                         cap_txt = 'audit %s' % cap_txt
 
                     default_option = 1
                     options = []
-                    newincludes = apparmor.aa.match_includes(self.user.aa[profile][hat], 'capability', cap_obj)
+                    newincludes = apparmor.aa.match_includes(self.user.aa[profile][hat], ruletype, rule_obj)
                     q = aaui.PromptQuestion()
                     if newincludes:
                         options += list(map(lambda inc: '#include <%s>' %inc, sorted(set(newincludes))))
 
                     if options:
-                        options.append(cap_obj.get_clean())
+                        options.append(rule_obj.get_clean())
                         q.options = options
                         q.selected = default_option - 1
 
@@ -350,7 +351,7 @@ class Merge(object):
                     audit_toggle = 0
 
                     q.functions = []
-                    if not cap_obj.deny:
+                    if not rule_obj.deny:
                         q.functions += ['CMD_ALLOW']
                     q.functions += ['CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
 
@@ -381,20 +382,20 @@ class Merge(object):
                                 if deleted:
                                     aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
-                            self.user.aa[profile][hat]['capability'].add(cap_obj)
+                            self.user.aa[profile][hat][ruletype].add(rule_obj)
 
                             apparmor.aa.changed[profile] = True
 
-                            aaui.UI_Info(_('Adding %s to profile.') % cap_obj.get_clean())
+                            aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
                             done = True
 
                         elif ans == 'CMD_DENY':
-                            cap_obj.deny = True
-                            cap_obj.raw_rule = None  # reset raw rule after manually modifying cap_obj
-                            self.user.aa[profile][hat]['capability'].add(cap_obj)
+                            rule_obj.deny = True
+                            rule_obj.raw_rule = None  # reset raw rule after manually modifying rule_obj
+                            self.user.aa[profile][hat][ruletype].add(rule_obj)
                             apparmor.aa.changed[profile] = True
 
-                            aaui.UI_Info(_('Adding %s to profile.') % cap_obj.get_clean())
+                            aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
                             done = True
                         else:
                             done = False
@@ -714,43 +715,44 @@ class Merge(object):
                                 default_option = ans
 
             if 1 == 1: # avoid whitespace change
-                if other.aa[profile][hat].get('network', False): # needed until we have proper profile initialization
-                    for net_obj in other.aa[profile][hat]['network'].rules:
+                ruletype = 'network'
+                if other.aa[profile][hat].get(ruletype, False): # needed until we have proper profile initialization
+                    for rule_obj in other.aa[profile][hat][ruletype].rules:
                         # severity handling for net toggles goes here
 
-                        if apparmor.aa.is_known_rule(self.user.aa[profile][hat], 'network', net_obj):
+                        if apparmor.aa.is_known_rule(self.user.aa[profile][hat], ruletype, rule_obj):
                             continue
 
-                        if net_obj.all_domains:
+                        if rule_obj.all_domains:
                             family = 'ALL'
                         else:
-                            family = net_obj.domain
+                            family = rule_obj.domain
 
-                        if net_obj.all_type_or_protocols:
+                        if rule_obj.all_type_or_protocols:
                             sock_type = 'ALL'
                         else:
-                            sock_type = net_obj.type_or_protocol
+                            sock_type = rule_obj.type_or_protocol
 
                         default_option = 1
                         options = []
-                        newincludes = apparmor.aa.match_includes(self.user.aa[profile][hat], 'network', net_obj)
+                        newincludes = apparmor.aa.match_includes(self.user.aa[profile][hat], ruletype, rule_obj)
                         q = aaui.PromptQuestion()
                         if newincludes:
                             options += list(map(lambda s: '#include <%s>'%s, sorted(set(newincludes))))
                         if True:#options:
-                            options.append(net_obj.get_clean())
+                            options.append(rule_obj.get_clean())
                             q.options = options
                             q.selected = default_option - 1
 
                         audit = ''
-                        if net_obj.audit:
+                        if rule_obj.audit:
                             audit = 'audit '
 
                         q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
                         q.headers += [_('Network Family'), audit + family]
                         q.headers += [_('Socket Type'), sock_type]
 
-                        q.functions = available_buttons(net_obj)
+                        q.functions = available_buttons(rule_obj)
                         q.default = q.functions[0]
 
                         done = False
@@ -765,16 +767,16 @@ class Merge(object):
 
                             if ans.startswith('CMD_AUDIT'):
                                 if ans == 'CMD_AUDIT_NEW':
-                                    net_obj.audit = True
-                                    net_obj.raw_rule = None
+                                    rule_obj.audit = True
+                                    rule_obj.raw_rule = None
                                     audit = 'audit '
                                 else:
-                                    net_obj.audit = False
-                                    net_obj.raw_rule = None
+                                    rule_obj.audit = False
+                                    rule_obj.raw_rule = None
                                     audit = ''
 
-                                q.functions = available_buttons(net_obj)
-                                options[len(options) - 1] = net_obj.get_clean()
+                                q.functions = available_buttons(rule_obj)
+                                options[len(options) - 1] = rule_obj.get_clean()
                                 q.options = options
 
                                 q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
@@ -798,7 +800,7 @@ class Merge(object):
                                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                 else:
-                                    self.user.aa[profile][hat]['network'].add(net_obj)
+                                    self.user.aa[profile][hat][ruletype].add(rule_obj)
 
                                     apparmor.aa.changed[profile] = True
 
@@ -806,9 +808,9 @@ class Merge(object):
 
                             elif ans == 'CMD_DENY':
                                 done = True
-                                net_obj.deny = True
-                                net_obj.raw_rule = None
-                                self.user.aa[profile][hat]['network'].add(net_obj)
+                                rule_obj.deny = True
+                                rule_obj.raw_rule = None
+                                self.user.aa[profile][hat][ruletype].add(rule_obj)
                                 apparmor.aa.changed[profile] = True
                                 aaui.UI_Info(_('Denying network access %(family)s %(type)s to profile') % { 'family': family, 'type': sock_type })
 
