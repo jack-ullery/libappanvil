@@ -11,21 +11,14 @@
 
 import unittest
 from common_test import AATest, setup_all_loops
-import os
-import shutil
-import tempfile
 from common_test import read_file, write_file
 
 from apparmor.aa import check_for_apparmor, get_profile_flags, set_profile_flags, is_skippable_file, is_skippable_dir, parse_profile_start, separate_vars, store_list_var, write_header, serialize_parse_profile_start
 from apparmor.common import AppArmorException, AppArmorBug
 
 class AaTestWithTempdir(AATest):
-    def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='aa-py-')
-
-    def tearDown(self):
-        if os.path.exists(self.tmpdir):
-            shutil.rmtree(self.tmpdir)
+    def AASetup(self):
+        self.createTmpdir()
 
 
 class AaTest_check_for_apparmor(AaTestWithTempdir):

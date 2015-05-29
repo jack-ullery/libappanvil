@@ -39,6 +39,10 @@ class TestBaz(AATest):
         # called by setUp() - use AASetup() to avoid the need for using super(...)
         pass
 
+    def AATeardown(self):
+        # called by tearDown() - use AATeardown() to avoid the need for using super(...)
+        pass
+
     def test_Baz_only_one_test(self):
         self.assertEqual("baz", "baz")
 
