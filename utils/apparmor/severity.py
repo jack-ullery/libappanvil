@@ -143,16 +143,17 @@ class Severity(object):
     def handle_variable_rank(self, resource, mode):
         """Returns the max possible rank for file resources containing variables"""
         regex_variable = re.compile('@{([^{.]*)}')
-        rank = None
         matches = regex_variable.search(resource)
         if matches:
+            rank = self.severity['DEFAULT_RANK']
             variable = '@{%s}' % matches.groups()[0]
             #variables = regex_variable.findall(resource)
             for replacement in self.severity['VARIABLES'][variable]:
                 resource_replaced = self.variable_replace(variable, replacement, resource)
                 rank_new = self.handle_variable_rank(resource_replaced, mode)
-                #rank_new = self.handle_variable_rank(resource.replace('@{'+variable+'}', replacement), mode)
-                if rank is None or rank_new > rank:
+                if rank == self.severity['DEFAULT_RANK']:
+                    rank = rank_new
+                elif rank_new != self.severity['DEFAULT_RANK'] and rank_new > rank:
                     rank = rank_new
             return rank
         else:

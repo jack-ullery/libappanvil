@@ -23,30 +23,30 @@ from apparmor.common import AppArmorException
 class SeverityBaseTest(AATest):
 
     def AASetup(self):
-        self.sev_db = severity.Severity('severity.db')
+        self.sev_db = severity.Severity('severity.db', 'unknown')
 
     def _simple_severity_test(self, path, expected_rank):
         rank = self.sev_db.rank(path)
         self.assertEqual(rank, expected_rank,
-                         'expected rank %d, got %d' % (expected_rank, rank))
+                         'expected rank %s, got %s' % (expected_rank, rank))
 
     def _simple_severity_w_perm(self, path, perm, expected_rank):
         rank = self.sev_db.rank(path, perm)
         self.assertEqual(rank, expected_rank,
-                         'expected rank %d, got %d' % (expected_rank, rank))
+                         'expected rank %s, got %s' % (expected_rank, rank))
 
 class SeverityTest(SeverityBaseTest):
     tests = [
         (['/usr/bin/whatis',    'x'     ],  5),
-        (['/etc',               'x'     ],  10),
+        (['/etc',               'x'     ],  'unknown'),
         (['/dev/doublehit',     'x'     ],  0),
         (['/dev/doublehit',     'rx'    ],  4),
         (['/dev/doublehit',     'rwx'   ],  8),
         (['/dev/tty10',         'rwx'   ],  9),
         (['/var/adm/foo/**',    'rx'    ],  3),
         (['/etc/apparmor/**',   'r'     ],  6),
-        (['/etc/**',            'r'     ],  10),
-        (['/usr/foo@bar',       'r'     ],  10),  ## filename containing @
+        (['/etc/**',            'r'     ],  'unknown'),
+        (['/usr/foo@bar',       'r'     ],  'unknown'),  ## filename containing @
         (['/home/foo@bar',      'rw'    ],  6),  ## filename containing @
     ]
 
@@ -62,8 +62,8 @@ class SeverityTestCap(SeverityBaseTest):
         ('KILL', 8),
         ('SETPCAP', 9),
         ('setpcap', 9),
-        ('UNKNOWN', 10),
-        ('K*', 10),
+        ('UNKNOWN', 'unknown'),
+        ('K*', 'unknown'),
     ]
 
     def _run_test(self, params, expected):
@@ -71,7 +71,7 @@ class SeverityTestCap(SeverityBaseTest):
         self._simple_severity_test(cap_with_prefix, expected)
 
         rank = self.sev_db.rank_capability(params)
-        self.assertEqual(rank, expected, 'expected rank %d, got %d' % (expected, rank))
+        self.assertEqual(rank, expected, 'expected rank %s, got %s' % (expected, rank))
 
 
 class SeverityVarsTest(SeverityBaseTest):
@@ -87,6 +87,7 @@ class SeverityVarsTest(SeverityBaseTest):
 @{pid}={[1-9],[1-9][0-9],[1-9][0-9][0-9],[1-9][0-9][0-9][0-9],[1-9][0-9][0-9][0-9][0-9],[1-9][0-9][0-9][0-9][0-9][0-9]}
 @{tid}=@{pid}
 @{pids}=@{pid}
+@{somepaths}=/home/foo/downloads @{HOMEDIRS}/foo/.ssh/
 '''
 
     def _init_tunables(self, content=''):
@@ -102,9 +103,10 @@ class SeverityVarsTest(SeverityBaseTest):
 
     tests = [
         (['@{PROC}/sys/vm/overcommit_memory',           'r'],    6),
-        (['@{HOME}/sys/@{PROC}/overcommit_memory',      'r'],    10),
-        (['/overco@{multiarch}mmit_memory',             'r'],    10),
+        (['@{HOME}/sys/@{PROC}/overcommit_memory',      'r'],    4),
+        (['/overco@{multiarch}mmit_memory',             'r'],    'unknown'),
         (['@{PROC}/sys/@{TFTP_DIR}/overcommit_memory',  'r'],    6),
+        (['@{somepaths}/somefile',                      'r'],    7),
     ]
 
     def _run_test(self, params, expected):
