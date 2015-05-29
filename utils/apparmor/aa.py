@@ -2655,6 +2655,11 @@ def parse_profile_data(data, file, do_include):
         # Starting line of a profile
         if RE_PROFILE_START.search(line):
             (profile, hat, attachment, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
+
+            if profile_data[profile].get(hat, False):
+                raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
+                    { 'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat) })
+
             if attachment:
                 profile_data[profile][hat]['attachment'] = attachment
             if pps_set_profile:

@@ -13,7 +13,8 @@ import unittest
 from common_test import AATest, setup_all_loops
 from common_test import read_file, write_file
 
-from apparmor.aa import check_for_apparmor, get_profile_flags, set_profile_flags, is_skippable_file, is_skippable_dir, parse_profile_start, separate_vars, store_list_var, write_header, serialize_parse_profile_start
+from apparmor.aa import (check_for_apparmor, get_profile_flags, set_profile_flags, is_skippable_file, is_skippable_dir,
+     parse_profile_start, parse_profile_data, separate_vars, store_list_var, write_header, serialize_parse_profile_start)
 from apparmor.common import AppArmorException, AppArmorBug
 
 class AaTestWithTempdir(AATest):
@@ -380,6 +381,21 @@ class AaTest_parse_profile_start(AATest):
     def test_parse_profile_start_invalid_02(self):
         with self.assertRaises(AppArmorBug):
             self._parse('xy', '/bar', '/bar') # not a profile start
+
+class AaTest_parse_profile_data(AATest):
+    def test_parse_empty_profile_01(self):
+        prof = parse_profile_data('/foo {\n}\n'.split(), 'somefile', False)
+
+        self.assertEqual(list(prof.keys()), ['/foo'])
+        self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
+        self.assertEqual(prof['/foo']['/foo']['name'], '/foo')
+        self.assertEqual(prof['/foo']['/foo']['filename'], 'somefile')
+        self.assertEqual(prof['/foo']['/foo']['flags'], None)
+
+    def test_parse_empty_profile_02(self):
+        with self.assertRaises(AppArmorException):
+            # file contains two profiles with the same name
+            parse_profile_data('profile /foo {\n}\nprofile /foo {\n}\n'.split(), 'somefile', False)
 
 class AaTest_separate_vars(AATest):
     tests = [
