@@ -77,7 +77,7 @@ class Severity(object):
 
     def rank_capability(self, resource):
         """Returns the severity of for the capability resource, default value if no match"""
-        cap = resource.upper()
+        cap = 'CAP_%s' % resource.upper()
         if cap in self.severity['CAPABILITIES'].keys():
             return self.severity['CAPABILITIES'][cap]
         # raise ValueError("unexpected capability rank input: %s"%resource)
@@ -136,7 +136,7 @@ class Severity(object):
         elif resource[0] == '/':    # file resource
             return self.handle_file(resource, mode)
         elif resource[0:4] == 'CAP_':    # capability resource
-            return self.rank_capability(resource)
+            return self.rank_capability(resource[4:])
         else:
             raise AppArmorException("Unexpected rank input: %s" % resource)
 
