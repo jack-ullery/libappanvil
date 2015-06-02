@@ -169,6 +169,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %%
 
 log_message: audit_type
+	| dmesg_type
 	| syslog_type
 	| audit_dispatch
 	;
@@ -197,6 +198,10 @@ other_audit: TOK_TYPE_OTHER audit_msg TOK_MSG_REST
 		ret_record->event = AA_RECORD_INVALID;
 		ret_record->info = $3;
 	}
+	;
+
+dmesg_type: TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id key_list
+	{ ret_record->version = AA_RECORD_SYNTAX_V2; }
 	;
 
 syslog_type:
