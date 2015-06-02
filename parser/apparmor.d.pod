@@ -80,13 +80,15 @@ B<LINE RULES> = ( I<COMMENT> | I<INCLUDE> ) [ '\r' ] '\n'
 
 B<COMMA RULES> = ( I<CAPABILITY RULE> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<UNIX RULE> | I<FILE RULE> | I<LINK RULE> | I<CHANGE_PROFILE RULE> | I<RLIMIT RULE> | I<ALIAS RULE> | I<DBUS RULE> )
 
-B<BLOCK RULES> = ( I<SUBPROFILE> | I<HAT> )
+B<BLOCK RULES> = ( I<SUBPROFILE> | I<HAT> | I<QUALIFIER BLOCK> )
 
 B<SUBPROFILE> = 'profile' I<PROFILE NAME> [ I<ATTACHMENT SPECIFICATION> ] [ <PROFILE FLAG CONDS> ] '{' ( I<RULES> )* '}'
 
 B<HAT> = ('hat' | '^') I<HATNAME> [ <PROFILE FLAG CONDS> ] '{' ( I<RULES> )* '}'
 
 B<HATNAME> = ( must start with alphanumeric character. see aa_change_hat(2) for a description of how this "hat" is used. IF '^' is used to start a hat then there is no space between the '^' and I<HATNAME>)
+
+B<QUALIFIER BLOCK> = I<QUALIFIERS> I<BLOCK>
 
 B<ACCESS TYPE> = ( 'allow' | 'deny' )
 
@@ -1325,6 +1327,12 @@ Rule qualifiers can modify the rule and/or permissions within the rule.
 
 =over 4
 
+=item B<allow>
+
+Specifies that permissions requests that match the rule are allowed. This
+is the default value for rules and does not need to be specified. Conflicts
+with the I<deny> qualifier.
+
 =item B<audit>
 
 Specifies that permissions requests that match the rule should be recorded
@@ -1333,12 +1341,23 @@ to the audit log.
 =item B<deny>
 
 Specifies that permissions requests that match the rule should be denied
-without logging. Can be combined with 'audit' to enable logging.
+without logging. Can be combined with 'audit' to enable logging. Conflicts
+with the I<allow> qualifier.
 
 =item B<owner>
 
 Specifies that the task must have the same euid/fsuid as the object being
 referenced by the permission check.
+
+=head3 Qualifier Blocks
+
+Rule Qualifiers can be applied to multiple rules at a time by grouping the
+rules into a rule block.
+
+  audit {
+     /foo r,
+     network,
+  }
 
 =back
 
