@@ -15,7 +15,7 @@ pwd=`cd $pwd ; /bin/pwd`
 bin=$pwd
 
 . $bin/prologue.inc
-requires_features network
+requires_kernel_features network
 
 port=34567
 ip="127.0.0.1"

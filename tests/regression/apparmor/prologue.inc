@@ -22,7 +22,7 @@
 # For this file, functions are first, entry point code is at end, see "MAIN"
 
 #use $() to retreive the failure message or "true" if success
-have_features()
+kernel_features()
 {
 	if [ ! -e "/sys/kernel/security/apparmor/features/" ] ; then
 		echo "Kernel feature masks not supported."
@@ -40,9 +40,9 @@ have_features()
 	return 0;
 }
 
-requires_features()
+requires_kernel_features()
 {
-	local res=$(have_features $@)
+	local res=$(kernel_features $@)
 	if [ "$res" != "true" ] ; then
 		echo "$res. Skipping tests ..."
 		exit 0

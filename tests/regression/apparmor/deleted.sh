@@ -65,7 +65,7 @@ okperm=rwl
 badperm=wl
 af_unix=""
 
-if [ "$(have_features network/af_unix)" == "true" -a "$(parser_supports 'unix,')" == "true" ]; then
+if [ "$(kernel_features network/af_unix)" == "true" -a "$(parser_supports 'unix,')" == "true" ]; then
 	af_unix="unix:create"
 fi
 

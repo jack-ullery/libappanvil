@@ -97,7 +97,7 @@ for TEST in ${TESTS} ; do
 
 	# no capabilities allowed
 	genprofile ${my_entries}
-	if [ "${TEST}" == "syscall_ptrace" -a "$(have_features ptrace)" == "true" ] ; then
+	if [ "${TEST}" == "syscall_ptrace" -a "$(kernel_features ptrace)" == "true" ] ; then
 	    # ptrace between profiles confining tasks of same pid is controlled by the ptrace rule
 	    # capability + ptrace rule needed between pids
 	    runchecktest "${TEST} -- no caps" pass ${my_arg}
@@ -113,7 +113,7 @@ for TEST in ${TESTS} ; do
 	for cap in ${CAPABILITIES} ; do
 		if [ "X$(eval echo \${${TEST}_${cap}})" == "XTRUE" ] ; then
 			expected_result=pass
-		elif [ "${TEST}" == "syscall_ptrace" -a "$(have_features ptrace)" == "true" ]; then
+		elif [ "${TEST}" == "syscall_ptrace" -a "$(kernel_features ptrace)" == "true" ]; then
 			expected_result=pass
 		else
 			expected_result=fail
@@ -126,7 +126,7 @@ for TEST in ${TESTS} ; do
 	# a subprofile.
 	settest ${testwrapper}
 	genprofile hat:$bin/${TEST} addimage:${bin}/${TEST} ${my_entries}
-	if [ "${TEST}" == "syscall_ptrace" -a "$(have_features ptrace)" == "true" ] ; then
+	if [ "${TEST}" == "syscall_ptrace" -a "$(kernel_features ptrace)" == "true" ] ; then
 	    # ptrace between profiles confining tasks of same pid is controlled by the ptrace rule
 	    # capability + ptrace rule needed between pids
 	    runchecktest "${TEST} changehat -- no caps" pass $bin/${TEST} ${my_arg}
@@ -141,7 +141,7 @@ for TEST in ${TESTS} ; do
 	for cap in ${CAPABILITIES} ; do
 		if [ "X$(eval echo \${${TEST}_${cap}})" == "XTRUE" ] ; then
 			expected_result=pass
-		elif [ "${TEST}" == "syscall_ptrace" -a "$(have_features ptrace)" == "true" ]; then
+		elif [ "${TEST}" == "syscall_ptrace" -a "$(kernel_features ptrace)" == "true" ]; then
 			expected_result=pass
 		else
 			expected_result=fail
