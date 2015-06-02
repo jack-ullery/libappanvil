@@ -27,7 +27,7 @@ okperm=rw
 badperm=w
 af_unix=""
 
-if [ "$(have_features network/af_unix)" == "true" ]; then
+if [ "$(have_features network/af_unix)" == "true" -a "$(parser_supports 'unix,')" == "true" ]; then
 	af_unix="unix:create"
 fi
 
@@ -137,7 +137,7 @@ runchecktest "fd passing; confined -> confined (no perm)" fail $file $socket $fd
 sleep 1
 rm -f ${socket}
 
-if [ "$(have_features policy/versions/v6)" == "true" ] ; then
+if [ "$(have_features policy/versions/v6)" == "true" -a "$(parser_supports 'unix,')" == "true" ] ; then
     # FAIL - confined client, no access to the socket file
 
     genprofile $file:$okperm $af_unix $socket:rw $fd_client:px -- image=$fd_client $file:$okperm $af_unix 

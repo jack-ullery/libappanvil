@@ -106,8 +106,8 @@ do_test "unconfined, bad context" fail "$put_old" "$new_root" "$bad"
 genprofile
 do_test "no perms" fail "$put_old" "$new_root" "$test"
 
-if [ "$(have_features mount)" != "true" ] ; then
-	# pivot_root mediation isn't supported by this kernel, so verify that
+if [ "$(have_features mount)" != "true" -o "$(parser_supports 'mount,')" != "true" ] ; then
+	# pivot_root mediation isn't supported by this kernel/parser, so verify that
 	# capability sys_admin is sufficient and skip the remaining tests
 	genprofile $cur $cap
 	do_test "cap" pass "$put_old" "$new_root" "$test"

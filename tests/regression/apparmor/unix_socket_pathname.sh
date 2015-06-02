@@ -52,7 +52,7 @@ fi
 # af_unix support requires 'unix getattr' to call getsockname()
 af_unix_okserver=
 af_unix_okclient=
-if [ "$(have_features network/af_unix)" == "true" ] ; then
+if [ "$(have_features network/af_unix)" == "true" -a "$(parser_supports 'unix,')" == "true" ] ; then
 	af_unix_okserver="create,setopt"
 	af_unix_okclient="create,getopt,setopt,getattr"
 fi

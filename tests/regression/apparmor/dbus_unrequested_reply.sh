@@ -18,6 +18,7 @@ bin=$pwd
 
 . $bin/prologue.inc
 requires_features dbus
+requires_parser_support "dbus,"
 . $bin/dbus.inc
 
 service="--$bus --name=$dest $path $iface"

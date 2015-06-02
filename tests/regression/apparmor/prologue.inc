@@ -58,6 +58,30 @@ requires_query_interface()
 	fi
 }
 
+parser_supports()
+{
+	for R in $@ ; do
+		echo "/test { $R }" | $subdomain ${parser_args} -qQT 2>/dev/null 1>/dev/null
+		if [ $? -ne 0 ] ; then
+			echo "Compiler does not support rule '$R'"
+			return 1;
+		fi
+	done
+
+	echo "true"
+	return 0;
+}
+
+requires_parser_support()
+{
+	local res=$(parser_supports $@)
+	if [ "$res" != "true" ] ; then
+		echo "$res. Skipping tests ..."
+		exit 0
+	fi
+}
+
+
 fatalerror()
 {
 	# global _fatal

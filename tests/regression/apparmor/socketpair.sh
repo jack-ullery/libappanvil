@@ -34,7 +34,7 @@ af_unix_create=""
 af_unix_create_label=""
 af_unix_inherit=""
 
-if [ "$(have_features network/af_unix)" == "true" ]; then
+if [ "$(have_features network/af_unix)" == "true" -a "$(parser_supports 'unix,')" == "true" ]; then
 	# AppArmor requires that the process inheriting the sock file
 	# descriptors have send,receive perms in its profile
 	af_unix_create="unix:(create,getopt)"

@@ -30,6 +30,7 @@ bin=$pwd
 . $bin/unix_socket.inc
 requires_features policy/versions/v7
 requires_features network/af_unix
+requires_parser_support "unix,"
 
 settest unix_socket
 
