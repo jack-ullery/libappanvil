@@ -1569,8 +1569,8 @@ def ask_the_questions():
                     capability_obj = CapabilityRule(capability)
                     if is_known_rule(aa[profile][hat], 'capability', capability_obj):
                         continue
-                    # Load variables? Don't think so.
-                    severity = sev_db.rank('CAP_%s' % capability)
+                    # Load variables into sev_db? Not needed/used for capabilities.
+                    severity = capability_obj.severity(sev_db)
                     default_option = 1
                     options = []
                     newincludes = match_includes(aa[profile][hat], 'capability', capability_obj)

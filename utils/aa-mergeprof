@@ -318,13 +318,9 @@ class Merge(object):
                         continue
 
                     if rule_obj.all_caps:
-                        severity = 10
                         cap_txt = 'ALL'
                     else:
                         cap_txt = ' '.join(rule_obj.capability)
-                        severity = 0
-                        for cap in rule_obj.capability:
-                            severity = max(severity, sev_db.rank('CAP_%s' % cap))
 
                     if rule_obj.deny:
                         cap_txt = 'deny %s' % cap_txt
@@ -346,7 +342,10 @@ class Merge(object):
 
                     q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
                     q.headers += [_('Capability'), cap_txt]
-                    q.headers += [_('Severity'), severity]
+
+                    severity = rule_obj.severity(sev_db)
+                    if severity != sev_db.NOT_IMPLEMENTED:
+                        q.headers += [_('Severity'), severity]
 
                     audit_toggle = 0
 
