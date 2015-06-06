@@ -492,6 +492,8 @@ static int process_profile_name_xmatch(Profile *prof)
 	return TRUE;
 }
 
+static int warn_change_profile = 1;
+
 static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 {
 	std::string tbuf;
@@ -565,6 +567,14 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 		std::string lbuf;
 		int index = 1;
 
+		if ((warnflags & WARN_RULE_DOWNGRADED) && entry->audit && warn_change_profile) {
+			/* don't have profile name here, so until this code
+			 * gets refactored just throw out a generic warning
+			 */
+			fprintf(stderr, "Warning kernel does not support audit modifier for change_profile rule.\n");
+			warn_change_profile = 0;
+		}
+
 		/* allow change_profile for all execs */
 		vec[0] = "/[^\\x00]*";
 
@@ -576,12 +586,12 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 		vec[index++] = tbuf.c_str();
 
 		/* regular change_profile rule */
-		if (!dfarules->add_rule_vec(0, AA_CHANGE_PROFILE | AA_ONEXEC, 0, index - 1, &vec[1], dfaflags))
+		if (!dfarules->add_rule_vec(entry->deny, AA_CHANGE_PROFILE | AA_ONEXEC, 0, index - 1, &vec[1], dfaflags))
 			return FALSE;
 		/* onexec rules - both rules are needed for onexec */
-		if (!dfarules->add_rule_vec(0, AA_ONEXEC, 0, 1, vec, dfaflags))
+		if (!dfarules->add_rule_vec(entry->deny, AA_ONEXEC, 0, 1, vec, dfaflags))
 			return FALSE;
-		if (!dfarules->add_rule_vec(0, AA_ONEXEC, 0, index, vec, dfaflags))
+		if (!dfarules->add_rule_vec(entry->deny, AA_ONEXEC, 0, index, vec, dfaflags))
 			return FALSE;
 	}
 	return TRUE;
