@@ -514,9 +514,9 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 	 * dfa states like it does for pcre
 	 */
 	if ((entry->mode >> AA_OTHER_SHIFT) & AA_EXEC_INHERIT)
-		entry->mode |= AA_EXEC_MMAP << AA_OTHER_SHIFT;
+		entry->mode |= AA_OLD_EXEC_MMAP << AA_OTHER_SHIFT;
 	if ((entry->mode >> AA_USER_SHIFT) & AA_EXEC_INHERIT)
-		entry->mode |= AA_EXEC_MMAP << AA_USER_SHIFT;
+		entry->mode |= AA_OLD_EXEC_MMAP << AA_USER_SHIFT;
 
 	/* the link bit on the first pair entry should not get masked
 	 * out by a deny rule, as both pieces of the link pair must
