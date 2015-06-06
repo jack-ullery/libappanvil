@@ -109,7 +109,7 @@ void valid_read_cache(const char *cachename)
 		if (stat(cachename, &stat_bin) == 0 &&
 		    stat_bin.st_size > 0) {
 			if (valid_cached_file_version(cachename))
-				set_mru_tstamp(stat_bin.st_ctim);
+				set_mru_tstamp(stat_bin.st_mtim);
 			else if (!cond_clear_cache)
 				write_cache = 0;
 		} else {
