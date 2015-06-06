@@ -636,23 +636,23 @@ class Merge(object):
                         q = aaui.PromptQuestion()
                         if newincludes:
                             options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
-                        if True:#options:
-                            options.append(rule_obj.get_clean())
-                            q.options = options
-                            q.selected = default_option - 1
 
-                        q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
-                        q.headers += rule_obj.logprof_header()
-
-                        severity = rule_obj.severity(sev_db)
-                        if severity != sev_db.NOT_IMPLEMENTED:
-                            q.headers += [_('Severity'), severity]
-
-                        q.functions = available_buttons(rule_obj)
-                        q.default = q.functions[0]
+                        options.append(rule_obj.get_clean())
+                        q.options = options
+                        q.selected = default_option - 1
 
                         done = False
                         while not done:
+                            q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
+                            q.headers += rule_obj.logprof_header()
+
+                            severity = rule_obj.severity(sev_db)
+                            if severity != sev_db.NOT_IMPLEMENTED:
+                                q.headers += [_('Severity'), severity]
+
+                            q.functions = available_buttons(rule_obj)
+                            q.default = q.functions[0]
+
                             ans, selected = q.promptUser()
                             if ans == 'CMD_IGNORE_ENTRY':
                                 done = True
@@ -669,12 +669,8 @@ class Merge(object):
                                     rule_obj.audit = False
                                     rule_obj.raw_rule = None
 
-                                q.functions = available_buttons(rule_obj)
                                 options[len(options) - 1] = rule_obj.get_clean()
                                 q.options = options
-
-                                q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
-                                q.headers += rule_obj.logprof_header()
 
                             elif ans == 'CMD_ALLOW':
                                 done = True
