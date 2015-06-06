@@ -23,6 +23,7 @@ _ = init_translation()
 parser = argparse.ArgumentParser(description=_('Switch the given program to complain mode'))
 parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))
 parser.add_argument('program', type=str, nargs='+', help=_('name of program'))
+parser.add_argument('--no-reload', dest='do_reload', action='store_false', default=True, help=_('Do not reload the profile after modifying it'))
 args = parser.parse_args()
 
 tool = apparmor.tools.aa_tools('complain', args)

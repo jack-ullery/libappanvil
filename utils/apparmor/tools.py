@@ -29,6 +29,7 @@ class aa_tools:
         self.profiling = args.program
         self.check_profile_dir()
         self.silent = None
+        self.do_reload = args.do_reload
 
         if tool_name in ['audit']:
             self.remove = args.remove
@@ -244,6 +245,9 @@ class aa_tools:
         apparmor.create_symlink('disable', filename)
 
     def unload_profile(self, profile):
+        if not self.do_reload:
+            return
+
         # FIXME: should ensure profile is loaded before unloading
         cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '--base', apparmor.profile_dir, '-R', profile])
 
@@ -251,6 +255,9 @@ class aa_tools:
             raise apparmor.AppArmorException(cmd_info[1])
 
     def reload_profile(self, profile):
+        if not self.do_reload:
+            return
+
         cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '--base', apparmor.profile_dir, '-r', profile])
 
         if cmd_info[0] != 0:
