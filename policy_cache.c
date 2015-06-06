@@ -25,6 +25,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/time.h>
+#include <utime.h>
 
 #include "lib.h"
 #include "parser.h"
@@ -70,22 +72,27 @@ bool valid_cached_file_version(const char *cachename)
 }
 
 
-void set_mru_tstamp(struct timespec t)
+void set_cache_tstamp(struct timespec t)
 {
 	mru_skip_cache = 0;
-	mru_tstamp = t;
+	cache_tstamp = t;
 }
 
 void update_mru_tstamp(FILE *file, const char *name)
 {
 	struct stat stat_file;
-	if (fstat(fileno(file), &stat_file) || (mru_tstamp.tv_sec == 0 && mru_tstamp.tv_nsec == 0))
+	if (fstat(fileno(file), &stat_file))
 		return;
-	if (mru_t_cmp(stat_file.st_mtim)) {
+	if (tstamp_cmp(mru_policy_tstamp, stat_file.st_mtim) < 0)
+		/* keep track of the most recent policy tstamp */
+		mru_policy_tstamp = stat_file.st_mtim;
+	if (tstamp_is_null(cache_tstamp))
+		return;
+	if (tstamp_cmp(stat_file.st_mtim, cache_tstamp) > 0) {
 		if (debug_cache)
 			pwarn("%s: file '%s' is newer than cache file\n", progname, name);
 		mru_skip_cache = 1;
-       }
+	}
 }
 
 char *cache_filename(const char *cachedir, const char *basename)
@@ -109,7 +116,7 @@ void valid_read_cache(const char *cachename)
 		if (stat(cachename, &stat_bin) == 0 &&
 		    stat_bin.st_size > 0) {
 			if (valid_cached_file_version(cachename))
-				set_mru_tstamp(stat_bin.st_mtim);
+				set_cache_tstamp(stat_bin.st_mtim);
 			else if (!cond_clear_cache)
 				write_cache = 0;
 		} else {
@@ -159,6 +166,12 @@ void install_cache(const char *cachetmpname, const char *cachename)
 	/* Only install the generate cache file if it parsed correctly
 	   and did not have write/close errors */
 	if (cachetmpname) {
+		struct timeval t;
+		/* set the mtime of the cache file to the most newest mtime
+		 * of policy files used to generate it
+		 */
+		TIMESPEC_TO_TIMEVAL(&t, &mru_policy_tstamp);
+		utimes(cachetmpname, &t);
 		if (rename(cachetmpname, cachename) < 0) {
 			pwarn("Warning failed to write cache: %s\n", cachename);
 			unlink(cachetmpname);

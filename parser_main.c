@@ -77,7 +77,7 @@ int abort_on_error = 0;			/* stop processing profiles if error */
 int skip_bad_cache_rebuild = 0;
 int mru_skip_cache = 1;
 int debug_cache = 0;
-struct timespec mru_tstamp;
+struct timespec cache_tstamp, mru_policy_tstamp;
 
 static char *apparmorfs = NULL;
 static char *cacheloc = NULL;
@@ -646,7 +646,8 @@ int process_binary(int option, aa_kernel_interface *kernel_interface,
 
 void reset_parser(const char *filename)
 {
-	memset(&mru_tstamp, 0, sizeof(mru_tstamp));
+	memset(&mru_policy_tstamp, 0, sizeof(mru_policy_tstamp));
+	memset(&cache_tstamp, 0, sizeof(cache_tstamp));
 	mru_skip_cache = 1;
 	free_aliases();
 	free_symtabs();
