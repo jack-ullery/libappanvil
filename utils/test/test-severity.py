@@ -64,6 +64,7 @@ class SeverityTestCap(SeverityBaseTest):
         ('setpcap', 9),
         ('UNKNOWN', 'unknown'),
         ('K*', 'unknown'),
+        ('__ALL__', 10),
     ]
 
     def _run_test(self, params, expected):

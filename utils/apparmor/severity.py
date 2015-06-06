@@ -79,6 +79,8 @@ class Severity(object):
     def rank_capability(self, resource):
         """Returns the severity of for the capability resource, default value if no match"""
         cap = 'CAP_%s' % resource.upper()
+        if resource == '__ALL__':
+            return max(self.severity['CAPABILITIES'].values())
         if cap in self.severity['CAPABILITIES'].keys():
             return self.severity['CAPABILITIES'][cap]
         # raise ValueError("unexpected capability rank input: %s"%resource)

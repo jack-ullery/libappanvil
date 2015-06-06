@@ -18,6 +18,7 @@ from common_test import AATest, setup_all_loops
 
 from apparmor.rule.capability import CapabilityRule, CapabilityRuleset
 from apparmor.rule import BaseRule
+import apparmor.severity as severity
 from apparmor.common import AppArmorException, AppArmorBug, hasher
 from apparmor.logparser import ReadLog
 
@@ -418,6 +419,20 @@ class CapabilityCoveredTest(AATest):
         self.assertFalse(self._is_covered(obj, 'capability ptrace,'))
         self.assertFalse(self._is_covered(obj2, 'capability sys_admin,'))
         self.assertTrue(self._is_covered(obj2, 'capability ptrace,'))
+
+class CapabiliySeverityTest(AATest):
+    tests = [
+        ('fsetid',                      9),
+        ('dac_read_search',             7),
+        (['fsetid', 'dac_read_search'], 9),
+        (CapabilityRule.ALL,            10),
+        ('foo',                         'unknown'),
+    ]
+    def _run_test(self, params, expected):
+        sev_db = severity.Severity('severity.db', 'unknown')
+        obj = CapabilityRule(params)
+        rank = obj.severity(sev_db)
+        self.assertEqual(rank, expected)
 
 # --- tests for CapabilityRuleset --- #
 
