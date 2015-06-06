@@ -57,7 +57,7 @@ class aa_tools:
 
             program = None
             profile = None
-            if os.path.exists(p):
+            if os.path.exists(p) or p.startswith('/'):
                 fq_path = apparmor.get_full_path(p).strip()
                 if os.path.commonprefix([apparmor.profile_dir, fq_path]) == apparmor.profile_dir:
                     program = None
