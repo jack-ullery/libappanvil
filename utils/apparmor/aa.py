@@ -1541,6 +1541,7 @@ def order_globs(globs, path):
 def ask_the_questions():
     found = 0
     global seen_events
+    log_obj = hasher()
     for aamode in sorted(log_dict.keys()):
         # Describe the type of changes
         if aamode == 'PERMITTING':
@@ -1564,106 +1565,107 @@ def ask_the_questions():
                 hats = [profile] + hats
 
             for hat in hats:
+                if not log_obj[profile][hat].get('capability', False):
+                    log_obj[profile][hat]['capability'] = CapabilityRuleset()
+
                 for capability in sorted(log_dict[aamode][profile][hat]['capability'].keys()):
-                    # skip if capability already in profile
-                    capability_obj = CapabilityRule(capability)
-                    if is_known_rule(aa[profile][hat], 'capability', capability_obj):
-                        continue
-                    # Load variables into sev_db? Not needed/used for capabilities.
-                    severity = capability_obj.severity(sev_db)
-                    default_option = 1
-                    options = []
-                    newincludes = match_includes(aa[profile][hat], 'capability', capability_obj)
-                    q = aaui.PromptQuestion()
+                    capability_obj = CapabilityRule(capability, log_event=aamode)
+                    log_obj[profile][hat]['capability'].add(capability_obj)
 
-                    if newincludes:
-                        options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
+                for ruletype in ['capability']:
+                    # XXX aa-mergeprof also has this code - if you change it, keep aa-mergeprof in sync!
+                    for rule_obj in log_obj[profile][hat][ruletype].rules:
 
-                    if options:
-                        options.append('capability %s' % capability)
+                        if rule_obj.log_event != aamode:  # XXX does it really make sense to handle enforce and complain mode changes in different rounds?
+                            continue
+
+                        if is_known_rule(aa[profile][hat], ruletype, rule_obj):
+                            continue
+
+                        default_option = 1
+                        options = []
+                        newincludes = match_includes(aa[profile][hat], ruletype, rule_obj)
+                        q = aaui.PromptQuestion()
+                        if newincludes:
+                            options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
+
+                        options.append(rule_obj.get_clean())
                         q.options = options
                         q.selected = default_option - 1
 
-                    q.headers = [_('Profile'), combine_name(profile, hat)]
-                    q.headers += [_('Capability'), capability]
-                    q.headers += [_('Severity'), severity]
+                        seen_events += 1
 
-                    audit_toggle = 0
-                    audit = ''
+                        done = False
+                        while not done:
+                            q.headers = [_('Profile'), combine_name(profile, hat)]
+                            q.headers += rule_obj.logprof_header()
 
-                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
-                                      'CMD_ABORT', 'CMD_FINISHED']
+                            # Load variables into sev_db? Not needed/used for capabilities.
+                            severity = rule_obj.severity(sev_db)
+                            if severity != sev_db.NOT_IMPLEMENTED:
+                                q.headers += [_('Severity'), severity]
 
-                    # In complain mode: events default to allow
-                    # In enforce mode: events default to deny
-                    q.default = 'CMD_DENY'
-                    if aamode == 'PERMITTING':
-                        q.default = 'CMD_ALLOW'
+                            q.functions = available_buttons(rule_obj)
 
-                    seen_events += 1
+                            # In complain mode: events default to allow
+                            # In enforce mode: events default to deny
+                            # XXX does this behaviour really make sense, except for "historical reasons"[tm]?
+                            q.default = 'CMD_DENY'
+                            if rule_obj.log_event == 'PERMITTING':
+                                q.default = 'CMD_ALLOW'
 
-                    done = False
-                    while not done:
-                        ans, selected = q.promptUser()
+                            ans, selected = q.promptUser()
+                            if ans == 'CMD_IGNORE_ENTRY':
+                                done = True
+                                break
 
-                        if ans == 'CMD_FINISHED':
-                            save_profiles()
-                            return
+                            elif ans == 'CMD_FINISHED':
+                                return
 
-                        # Ignore the log entry
-                        if ans == 'CMD_IGNORE_ENTRY':
-                            done = True
-                            break
+                            elif ans.startswith('CMD_AUDIT'):
+                                if ans == 'CMD_AUDIT_NEW':
+                                    rule_obj.audit = True
+                                    rule_obj.raw_rule = None
+                                else:
+                                    rule_obj.audit = False
+                                    rule_obj.raw_rule = None
 
-                        if ans.startswith('CMD_AUDIT'):
-                            audit_toggle = not audit_toggle
-                            if audit_toggle:
-                                audit = 'audit '
-                                audit_cmd = 'CMD_AUDIT_OFF'
-                            else:
-                                audit = ''
-                                audit_cmd = 'CMD_AUDIT_NEW'
+                                options[len(options) - 1] = rule_obj.get_clean()
+                                q.options = options
 
-                            q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', audit_cmd,
-                                              'CMD_ABORT', 'CMD_FINISHED', ]
+                            elif ans == 'CMD_ALLOW':
+                                done = True
+                                changed[profile] = True
 
-                            q.headers = [_('Profile'), combine_name(profile, hat),
-                                            _('Capability'), audit + capability,
-                                            _('Severity'), severity]
-
-                        if ans == 'CMD_ALLOW':
-                            selection = ''
-                            if options:
                                 selection = options[selected]
-                            match = re_match_include(selection)
-                            if match:
-                                deleted = False
-                                inc = match  # .groups()[0]
-                                deleted = delete_duplicates(aa[profile][hat], inc)
-                                aa[profile][hat]['include'][inc] = True
 
-                                aaui.UI_Info(_('Adding %s to profile.') % selection)
-                                if deleted:
-                                    aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
+                                inc = re_match_include(selection)
+                                if inc:
+                                    deleted = delete_duplicates(aa[profile][hat], inc)
+
+                                    aa[profile][hat]['include'][inc] = True
+
+                                    aaui.UI_Info(_('Adding %s to profile.') % selection)
+                                    if deleted:
+                                        aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
+
+                                else:
+                                    aa[profile][hat][ruletype].add(rule_obj)
+
+                                    aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
+
+                            elif ans == 'CMD_DENY':
+                                done = True
+                                changed[profile] = True
+
+                                rule_obj.deny = True
+                                rule_obj.raw_rule = None  # reset raw rule after manually modifying rule_obj
+                                aa[profile][hat][ruletype].add(rule_obj)
+                                aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
 
                             else:
-                                capability_obj = CapabilityRule(capability, audit=audit)
-                                aa[profile][hat]['capability'].add(capability_obj)
-                                aaui.UI_Info(_('Adding capability %s to profile.') % capability)
-
-                            changed[profile] = True
-
-                            done = True
-
-                        elif ans == 'CMD_DENY':
-                            capability_obj = CapabilityRule(capability, audit=audit, deny=True)
-                            aa[profile][hat]['capability'].add(capability_obj)
-                            changed[profile] = True
-
-                            aaui.UI_Info(_('Denying capability %s to profile.') % capability)
-                            done = True
-                        else:
-                            done = False
+                                done = False
+                    # END of code (mostly) shared with aa-mergeprof
 
                 # Process all the path entries.
                 for path in sorted(log_dict[aamode][profile][hat]['path'].keys()):
