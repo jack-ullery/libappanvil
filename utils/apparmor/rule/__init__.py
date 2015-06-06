@@ -135,6 +135,14 @@ class BaseRule(object):
         '''compare if rule-specific variables are equal'''
         raise AppArmorBug("'%s' needs to implement is_equal_localvars(), but didn't" % (str(self)))
 
+    def severity(self, sev_db):
+        '''return severity of this rule, which can be:
+           - a number between 0 and 10, where 0 means harmless and 10 means critical,
+           - "unknown" (to be exact: the value specified for "unknown" as set when loading the severity database), or
+           - sev_db.NOT_IMPLEMENTED if no severity check is implemented for this rule type.
+           sev_db must be an apparmor.severity.Severity object.'''
+        return sev_db.NOT_IMPLEMENTED
+
     def modifiers_str(self):
         '''return the allow/deny and audit keyword as string, including whitespace'''
 

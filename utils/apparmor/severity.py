@@ -20,6 +20,7 @@ class Severity(object):
     def __init__(self, dbname=None, default_rank=10):
         """Initialises the class object"""
         self.PROF_DIR = '/etc/apparmor.d'  # The profile directory
+        self.NOT_IMPLEMENTED = '_-*not*implemented*-_'  # used for rule types that don't have severity ratings
         self.severity = dict()
         self.severity['DATABASENAME'] = dbname
         self.severity['CAPABILITIES'] = {}

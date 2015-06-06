@@ -14,6 +14,7 @@ from common_test import AATest, setup_all_loops
 
 from apparmor.common import AppArmorBug
 from apparmor.rule import BaseRule, parse_modifiers
+import apparmor.severity as severity
 
 import re
 
@@ -51,6 +52,11 @@ class TestBaserule(AATest):
         with self.assertRaises(AppArmorBug):
             parse_modifiers(matches)
 
+    def test_default_severity(self):
+        sev_db = severity.Severity('severity.db', 'unknown')
+        obj = BaseRule()
+        rank = obj.severity(sev_db)
+        self.assertEqual(rank, sev_db.NOT_IMPLEMENTED)
 
 
 setup_all_loops(__name__)
