@@ -1120,7 +1120,7 @@ file_rule_tail: opt_unsafe id_or_var file_mode id_or_var
 		yyerror(_("missing an end of line character? (entry: %s)"), $2);
 	};
 
-link_rule: TOK_LINK opt_subset_flag TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
+link_rule: TOK_LINK opt_subset_flag id_or_var TOK_ARROW id_or_var TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		PDEBUG("Matched: link tok_id (%s) -> (%s)\n", $3, $5);
