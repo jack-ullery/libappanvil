@@ -309,91 +309,6 @@ class Merge(object):
                 elif ans == 'CMD_FINISHED':
                     return
 
-            #Add the capabilities
-            ruletype = 'capability'
-            if other.aa[profile][hat].get(ruletype, False): # needed until we have proper profile initialization
-                for rule_obj in other.aa[profile][hat][ruletype].rules:
-
-                    if apparmor.aa.is_known_rule(self.user.aa[profile][hat], ruletype, rule_obj):
-                        continue
-
-                    default_option = 1
-                    options = []
-                    newincludes = apparmor.aa.match_includes(self.user.aa[profile][hat], ruletype, rule_obj)
-                    q = aaui.PromptQuestion()
-                    if newincludes:
-                        options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
-
-                    options.append(rule_obj.get_clean())
-                    q.options = options
-                    q.selected = default_option - 1
-
-                    q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
-                    q.headers += rule_obj.logprof_header()
-
-                    severity = rule_obj.severity(sev_db)
-                    if severity != sev_db.NOT_IMPLEMENTED:
-                        q.headers += [_('Severity'), severity]
-
-                    q.functions = available_buttons(rule_obj)
-                    q.default = q.functions[0]
-
-                    done = False
-                    while not done:
-                        ans, selected = q.promptUser()
-                        if ans == 'CMD_IGNORE_ENTRY':
-                            done = True
-                            break
-
-                        elif ans == 'CMD_FINISHED':
-                            return
-
-                        elif ans.startswith('CMD_AUDIT'):
-                            if ans == 'CMD_AUDIT_NEW':
-                                rule_obj.audit = True
-                                rule_obj.raw_rule = None
-                            else:
-                                rule_obj.audit = False
-                                rule_obj.raw_rule = None
-
-                            q.functions = available_buttons(rule_obj)
-                            options[len(options) - 1] = rule_obj.get_clean()
-                            q.options = options
-
-                            q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
-                            q.headers += rule_obj.logprof_header()
-
-                        elif ans == 'CMD_ALLOW':
-                            done = True
-                            apparmor.aa.changed[profile] = True
-
-                            selection = options[selected]
-
-                            inc = apparmor.aa.re_match_include(selection)
-                            if inc:
-                                deleted = apparmor.aa.delete_duplicates(self.user.aa[profile][hat], inc)
-                                self.user.aa[profile][hat]['include'][inc] = True
-
-                                aaui.UI_Info(_('Adding %s to profile.') % selection)
-                                if deleted:
-                                    aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
-
-                            else:
-                                self.user.aa[profile][hat][ruletype].add(rule_obj)
-
-                            aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
-
-                        elif ans == 'CMD_DENY':
-                            done = True
-                            apparmor.aa.changed[profile] = True
-
-                            rule_obj.deny = True
-                            rule_obj.raw_rule = None  # reset raw rule after manually modifying rule_obj
-                            self.user.aa[profile][hat][ruletype].add(rule_obj)
-                            aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
-                        else:
-                            done = False
-
             # Process all the path entries.
             for allow in ['allow', 'deny']:
                 for path in sorted(other.aa[profile][hat][allow]['path'].keys()):
@@ -708,8 +623,7 @@ class Merge(object):
                             elif re.search('\d', ans):
                                 default_option = ans
 
-            if 1 == 1: # avoid whitespace change
-                ruletype = 'network'
+            for ruletype in ['capability', 'network']:
                 if other.aa[profile][hat].get(ruletype, False): # needed until we have proper profile initialization
                     for rule_obj in other.aa[profile][hat][ruletype].rules:
 
