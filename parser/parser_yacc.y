@@ -1481,6 +1481,20 @@ file_mode: TOK_MODE
 		free($1);
 	}
 
+change_profile: TOK_CHANGE_PROFILE TOK_END_OF_RULE
+	{
+		struct cod_entry *entry;
+		char *rule = strdup("**");
+		if (!rule)
+			yyerror(_("Memory allocation error."));
+		PDEBUG("Matched change_profile,\n");
+		entry = new_entry(NULL, rule, AA_CHANGE_PROFILE, NULL);
+		if (!entry)
+			yyerror(_("Memory allocation error."));
+		PDEBUG("change_profile,\n");
+		$$ = entry;
+	};
+
 change_profile:	TOK_CHANGE_PROFILE TOK_ARROW TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
