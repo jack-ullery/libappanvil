@@ -17,7 +17,7 @@ import re
 import os
 
 import apparmor.aa
-from apparmor.aa import available_buttons
+from apparmor.aa import available_buttons, combine_name, delete_duplicates, is_known_rule, match_includes, re_match_include
 import apparmor.aamode
 from apparmor.common import AppArmorException
 import apparmor.severity
@@ -627,12 +627,12 @@ class Merge(object):
                 if other.aa[profile][hat].get(ruletype, False): # needed until we have proper profile initialization
                     for rule_obj in other.aa[profile][hat][ruletype].rules:
 
-                        if apparmor.aa.is_known_rule(self.user.aa[profile][hat], ruletype, rule_obj):
+                        if is_known_rule(self.user.aa[profile][hat], ruletype, rule_obj):
                             continue
 
                         default_option = 1
                         options = []
-                        newincludes = apparmor.aa.match_includes(self.user.aa[profile][hat], ruletype, rule_obj)
+                        newincludes = match_includes(self.user.aa[profile][hat], ruletype, rule_obj)
                         q = aaui.PromptQuestion()
                         if newincludes:
                             options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
@@ -643,9 +643,10 @@ class Merge(object):
 
                         done = False
                         while not done:
-                            q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
+                            q.headers = [_('Profile'), combine_name(profile, hat)]
                             q.headers += rule_obj.logprof_header()
 
+                            # Load variables into sev_db? Not needed/used for capabilities and network rules.
                             severity = rule_obj.severity(sev_db)
                             if severity != sev_db.NOT_IMPLEMENTED:
                                 q.headers += [_('Severity'), severity]
@@ -678,9 +679,9 @@ class Merge(object):
 
                                 selection = options[selected]
 
-                                inc = apparmor.aa.re_match_include(selection)
+                                inc = re_match_include(selection)
                                 if inc:
-                                    deleted = apparmor.aa.delete_duplicates(self.user.aa[profile][hat], inc)
+                                    deleted = delete_duplicates(self.user.aa[profile][hat], inc)
 
                                     self.user.aa[profile][hat]['include'][inc] = True
 
