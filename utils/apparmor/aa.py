@@ -284,6 +284,7 @@ def set_complain(filename, program):
     aaui.UI_Info(_('Setting %s to complain mode.') % (filename if program is None else program))
     # a force-complain symlink is more packaging-friendly, but breaks caching
     # create_symlink('force-complain', filename)
+    delete_symlink('disable', filename)
     change_profile_flags(filename, program, 'complain', True)
 
 def set_enforce(filename, program):
