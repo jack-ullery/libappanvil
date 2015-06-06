@@ -27,9 +27,30 @@ __BEGIN_DECLS
 /*
  * Class of public mediation types in the AppArmor policy db
  */
-
+#define AA_CLASS_FILE		2
 #define AA_CLASS_DBUS		32
 
+
+/* Permission flags for the AA_CLASS_FILE mediation class */
+#define AA_MAY_EXEC			(1 << 0)
+#define AA_MAY_WRITE			(1 << 1)
+#define AA_MAY_READ			(1 << 2)
+#define AA_MAY_APPEND			(1 << 3)
+#define AA_MAY_CREATE			(1 << 4)
+#define AA_MAY_DELETE			(1 << 5)
+#define AA_MAY_OPEN			(1 << 6)
+#define AA_MAY_RENAME			(1 << 7)
+#define AA_MAY_SETATTR			(1 << 8)
+#define AA_MAY_GETATTR			(1 << 9)
+#define AA_MAY_SETCRED			(1 << 10)
+#define AA_MAY_GETCRED			(1 << 11)
+#define AA_MAY_CHMOD			(1 << 12)
+#define AA_MAY_CHOWN			(1 << 13)
+#define AA_MAY_LOCK			0x8000
+#define AA_EXEC_MMAP			0x10000
+#define AA_MAY_LINK			0x40000
+#define AA_MAY_ONEXEC			0x20000000
+#define AA_MAY_CHANGE_PROFILE		0x40000000
 
 /* Permission flags for the AA_CLASS_DBUS mediation class */
 #define AA_DBUS_SEND			(1 << 1)
@@ -80,6 +101,11 @@ extern int aa_getpeercon(int fd, char **label, char **mode);
 
 extern int aa_query_label(uint32_t mask, char *query, size_t size, int *allow,
 			  int *audit);
+extern int aa_query_file_path_len(uint32_t mask, const char *label,
+				  size_t label_len, const char *path,
+				  size_t path_len, int *allowed, int *audited);
+extern int aa_query_file_path(uint32_t mask, const char *label,
+			      const char *path, int *allowed, int *audited);
 
 #define __macroarg_counter(Y...) __macroarg_count1 ( , ##Y)
 #define __macroarg_count1(Y...) __macroarg_count2 (Y, 16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)

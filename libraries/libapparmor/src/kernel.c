@@ -32,6 +32,7 @@
 #include <pthread.h>
 
 #include <sys/apparmor.h>
+#include "private.h"
 
 /* some non-Linux systems do not define a static value */
 #ifndef PATH_MAX
@@ -849,3 +850,58 @@ int query_label(uint32_t mask, char *query, size_t size, int *allowed,
 extern typeof((query_label)) __aa_query_label __attribute__((alias ("query_label")));
 symbol_version(__aa_query_label, aa_query_label, APPARMOR_1.1);
 default_symbol_version(query_label, aa_query_label, APPARMOR_2.9);
+
+
+/**
+ * aa_query_file_path_len - query access permissions for a file @path
+ * @mask: permission bits to query
+ * @label: apparmor label
+ * @label_len: length of @label (does not include any terminating nul byte)
+ * @path: file path to query permissions for
+ * @path_len: length of @path (does not include any terminating nul byte)
+ * @allowed: upon successful return, will be 1 if query is allowed and 0 if not
+ * @audited: upon successful return, will be 1 if query should be audited and 0
+ *           if not
+ *
+ * Returns: 0 on success else -1 and sets errno. If -1 is returned and errno is
+ *          ENOENT, the subject label in the query string is unknown to the
+ *          kernel.
+ */
+int aa_query_file_path_len(uint32_t mask, const char *label, size_t label_len,
+			   const char *path, size_t path_len, int *allowed,
+			   int *audited)
+{
+	autofree char *query = NULL;
+
+	/* + 1 for null separator */
+	size_t size = AA_QUERY_CMD_LABEL_SIZE + label_len + 1 + path_len;
+	query = malloc(size + 1);
+	if (!query)
+		return -1;
+	memcpy(query + AA_QUERY_CMD_LABEL_SIZE, label, label_len);
+	/* null separator */
+	query[AA_QUERY_CMD_LABEL_SIZE + label_len] = 0;
+	query[AA_QUERY_CMD_LABEL_SIZE + label_len + 1] = AA_CLASS_FILE;
+	memcpy(query + AA_QUERY_CMD_LABEL_SIZE + label_len + 2, path, path_len);
+	return aa_query_label(mask, query, size , allowed, audited);
+}
+
+/**
+ * aa_query_file_path - query access permissions for a file @path
+ * @mask: permission bits to query
+ * @label: apparmor label
+ * @path: file path to query permissions for
+ * @allowed: upon successful return, will be 1 if query is allowed and 0 if not
+ * @audited: upon successful return, will be 1 if query should be audited and 0
+ *           if not
+ *
+ * Returns: 0 on success else -1 and sets errno. If -1 is returned and errno is
+ *          ENOENT, the subject label in the query string is unknown to the
+ *          kernel.
+ */
+int aa_query_file_path(uint32_t mask, const char *label, const char *path,
+		       int *allowed, int *audited)
+{
+	return aa_query_file_path_len(mask, label, strlen(label), path,
+				      strlen(path), allowed, audited);
+}
