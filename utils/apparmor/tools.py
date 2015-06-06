@@ -184,6 +184,11 @@ class aa_tools:
                 aaui.UI_Info(_('Removing audit mode from %s.') % output_name)
             apparmor.change_profile_flags(profile, program, 'audit', not self.remove)
 
+            disable_link = '%s/disable/%s' % (apparmor.profile_dir, os.path.basename(profile))
+
+            if os.path.exists(disable_link):
+                aaui.UI_Info(_('\nWarning: the profile %s is disabled. Use aa-enforce or aa-complain to enable it.') % os.path.basename(profile))
+
             self.reload_profile(profile)
 
     def cmd_autodep(self):
