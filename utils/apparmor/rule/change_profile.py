@@ -160,6 +160,21 @@ class ChangeProfileRule(BaseRule):
 
         return True
 
+    def logprof_header_localvars(self):
+        if self.all_execconds:
+            execcond_txt = _('ALL')
+        else:
+            execcond_txt = self.execcond
+
+        if self.all_targetprofiles:
+            targetprofiles_txt = _('ALL')
+        else:
+            targetprofiles_txt = self.targetprofile
+
+        return [
+            _('Exec Condition'), execcond_txt,
+            _('Target Profile'), targetprofiles_txt,
+        ]
 
 class ChangeProfileRuleset(BaseRuleset):
     '''Class to handle and store a collection of change_profile rules'''

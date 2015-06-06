@@ -21,6 +21,8 @@ from apparmor.rule.change_profile import ChangeProfileRule, ChangeProfileRuleset
 from apparmor.rule import BaseRule
 from apparmor.common import AppArmorException, AppArmorBug
 from apparmor.logparser import ReadLog
+from apparmor.translations import init_translation
+_ = init_translation()
 
 exp = namedtuple('exp', ['audit', 'allow_keyword', 'deny', 'comment',
         'execcond', 'all_execconds', 'targetprofile', 'all_targetprofiles'])
@@ -352,6 +354,22 @@ class ChangeProfileCoveredTest_Invalid(AATest):
 
         with self.assertRaises(AppArmorBug):
             obj.is_equal(testobj)
+
+class ChangeProfileLogprofHeaderTest(AATest):
+    tests = [
+        ('change_profile,',                         [                               _('Exec Condition'), _('ALL'),  _('Target Profile'), _('ALL'),   ]),
+        ('change_profile -> /bin/ping,',            [                               _('Exec Condition'), _('ALL'),  _('Target Profile'), '/bin/ping',]),
+        ('change_profile /bar -> /bin/bar,',        [                               _('Exec Condition'), '/bar',    _('Target Profile'), '/bin/bar', ]),
+        ('change_profile /foo,',                    [                               _('Exec Condition'), '/foo',    _('Target Profile'), _('ALL'),   ]),
+        ('audit change_profile -> /bin/ping,',      [_('Qualifier'), 'audit',       _('Exec Condition'), _('ALL'),  _('Target Profile'), '/bin/ping',]),
+        ('deny change_profile /bar -> /bin/bar,',   [_('Qualifier'), 'deny',        _('Exec Condition'), '/bar',    _('Target Profile'), '/bin/bar', ]),
+        ('allow change_profile /foo,',              [_('Qualifier'), 'allow',       _('Exec Condition'), '/foo',    _('Target Profile'), _('ALL'),   ]),
+        ('audit deny change_profile,',              [_('Qualifier'), 'audit deny',  _('Exec Condition'), _('ALL'),  _('Target Profile'), _('ALL'),   ]),
+    ]
+
+    def _run_test(self, params, expected):
+        obj = ChangeProfileRule._parse(params)
+        self.assertEqual(obj.logprof_header(), expected)
 
 # --- tests for ChangeProfileRuleset --- #
 
