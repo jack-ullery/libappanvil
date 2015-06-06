@@ -623,7 +623,7 @@ class Merge(object):
                             elif re.search('\d', ans):
                                 default_option = ans
 
-            for ruletype in ['capability', 'network']:
+            for ruletype in ['capability', 'network', 'change_profile']:
                 if other.aa[profile][hat].get(ruletype, False): # needed until we have proper profile initialization
                     for rule_obj in other.aa[profile][hat][ruletype].rules:
 
