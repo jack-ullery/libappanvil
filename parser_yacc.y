@@ -785,13 +785,23 @@ rules:  rules opt_prefix unix_rule
 		$$ = $1;
 	}
 
-rules:	rules change_profile
+rules:	rules opt_prefix change_profile
 	{
 		PDEBUG("matched: rules change_profile\n");
-		PDEBUG("rules change_profile: (%s)\n", $2->name);
-		if (!$2)
+		PDEBUG("rules change_profile: (%s)\n", $3->name);
+		if (!$3)
 			yyerror(_("Assert: `change_profile' returned NULL."));
-		add_entry_to_policy($1, $2);
+		if ($2.owner)
+			yyerror(_("owner prefix not allowed on unix rules"));
+		if ($2.deny && $2.audit) {
+			$3->deny = 1;
+		} else if ($2.deny) {
+			$3->deny = 1;
+			$3->audit = $3->mode;
+		} else if ($2.audit) {
+			$3->audit = $3->mode;
+		}
+		add_entry_to_policy($1, $3);
 		$$ = $1;
 	};
 
