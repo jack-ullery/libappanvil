@@ -905,3 +905,78 @@ int aa_query_file_path(uint32_t mask, const char *label, const char *path,
 	return aa_query_file_path_len(mask, label, strlen(label), path,
 				      strlen(path), allowed, audited);
 }
+
+/**
+ * aa_query_link_path_len - query access permissions for a hard link @link
+ * @label: apparmor label
+ * @label_len: length of @label (does not include any terminating nul byte)
+ * @target: file path that hard link will point to
+ * @target_len: length of @target (does not include any terminating nul byte)
+ * @link: file path of hard link
+ * @link_len: length of @link (does not include any terminating nul byte)
+ * @allowed: upon successful return, will be 1 if query is allowed and 0 if not
+ * @audited: upon successful return, will be 1 if query should be audited and 0
+ *           if not
+ *
+ * Returns: 0 on success else -1 and sets errno. If -1 is returned and errno is
+ *          ENOENT, the subject label in the query string is unknown to the
+ *          kernel.
+ */
+int aa_query_link_path_len(const char *label, size_t label_len,
+			   const char *target, size_t target_len,
+			   const char *link, size_t link_len,
+			   int *allowed, int *audited)
+{
+	autofree char *query = NULL;
+	int rc;
+
+	/* + 1 for null separators */
+	size_t size = AA_QUERY_CMD_LABEL_SIZE + label_len + 1 + target_len +
+		1 + link_len;
+	size_t pos = AA_QUERY_CMD_LABEL_SIZE;
+
+	query = malloc(size);
+	if (!query)
+		return -1;
+	memcpy(query + pos, label, label_len);
+	/* null separator */
+	pos += label_len;
+	query[pos] = 0;
+	query[++pos] = AA_CLASS_FILE;
+	memcpy(query + pos + 1, link, link_len);
+	/* The kernel does the query in two parts we could similate this
+	 * doing the following, however as long as policy is compiled
+	 * correctly this isn't requied, and it requires and extra round
+	 * trip to the kernel and adds a race on policy replacement between
+	 * the two queries.
+	 *
+	rc = aa_query_label(AA_MAY_LINK, query, size, allowed, audited);
+	if (rc || !*allowed)
+		return rc;
+	*/
+	pos += 1 + link_len;
+	query[pos] = 0;
+	memcpy(query + pos + 1, target, target_len);
+	return aa_query_label(AA_MAY_LINK, query, size, allowed, audited);
+}
+
+/**
+ * aa_query_link_path - query access permissions for a hard link @link
+ * @label: apparmor label
+ * @target: file path that hard link will point to
+ * @link: file path of hard link
+ * @allowed: upon successful return, will be 1 if query is allowed and 0 if not
+ * @audited: upon successful return, will be 1 if query should be audited and 0
+ *           if not
+ *
+ * Returns: 0 on success else -1 and sets errno. If -1 is returned and errno is
+ *          ENOENT, the subject label in the query string is unknown to the
+ *          kernel.
+ */
+int aa_query_link_path(const char *label, const char *target, const char *link,
+		       int *allowed, int *audited)
+{
+	return aa_query_link_path_len(label, strlen(label), target,
+				      strlen(target), link, strlen(link),
+				      allowed, audited);
+}

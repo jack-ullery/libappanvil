@@ -38,6 +38,14 @@ B<int aa_query_file_path_len((uint32_t mask, const char *label,
 		size_t label_len, const char *path, size_t path_len,
 		int *allowed, int *audited);>
 
+B<int aa_query_link_path_len(const char *label, size_t label_len,
+			     const char *target, size_t target_len,
+			     const char *link, size_t link_len,
+			     int *allowed, int *audited);>
+
+B<int aa_query_link_path(const char *label, const char *target,
+			 const char *link, int *allowed, int *audited);>
+
 
 Link with B<-lapparmor> when compiling.
 
@@ -67,6 +75,12 @@ returned by I<aa_splitcon> with I<label_len> being the length of the I<label>.
 The I<path> is any valid filesystem path to query permissions for. For the
 B<aa_query_file_path_len> variant the I<path_len> parameter specifies the
 number of bytes in the I<path> to use as part of the query.
+
+The B<aa_query_link_path> and B<aa_query_link_path_len> functions are helper
+functions that assemble a properly formatted link path query for the
+B<aa_query_label> function. The I<link_len> and I<target_len> parameters
+specify the number of bytes in the I<link> and I<target> to use as part of
+the query.
 
 =head1 RETURN VALUE
 

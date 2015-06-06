@@ -56,6 +56,8 @@ APPARMOR_2.10 {
   global:
         aa_query_file_path;
         aa_query_file_path_len;
+        aa_query_link_path;
+        aa_query_link_path_len;
         aa_features_new;
         aa_features_new_from_string;
         aa_features_new_from_kernel;

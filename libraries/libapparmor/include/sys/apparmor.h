@@ -106,6 +106,12 @@ extern int aa_query_file_path_len(uint32_t mask, const char *label,
 				  size_t path_len, int *allowed, int *audited);
 extern int aa_query_file_path(uint32_t mask, const char *label,
 			      const char *path, int *allowed, int *audited);
+extern int aa_query_link_path_len(const char *label, size_t label_len,
+				  const char *target, size_t target_len,
+				  const char *link, size_t link_len,
+				  int *allowed, int *audited);
+extern int aa_query_link_path(const char *label, const char *target,
+			      const char *link, int *allowed, int *audited);
 
 #define __macroarg_counter(Y...) __macroarg_count1 ( , ##Y)
 #define __macroarg_count1(Y...) __macroarg_count2 (Y, 16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
