@@ -2009,10 +2009,10 @@ def ask_the_questions():
                                 audit = ''
                                 if audit_toggle:
                                     audit = 'audit'
-                                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_OFF',
+                                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_OFF',
                                                       'CMD_ABORT', 'CMD_FINISHED']
                                 else:
-                                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
+                                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
                                                       'CMD_ABORT', 'CMD_FINISHED']
                                 q.headers = [_('Profile'), combine_name(profile, hat)]
                                 q.headers += [_('Network Family'), audit + family]
