@@ -1572,7 +1572,15 @@ def ask_the_questions():
                     capability_obj = CapabilityRule(capability, log_event=aamode)
                     log_obj[profile][hat]['capability'].add(capability_obj)
 
-                for ruletype in ['capability']:
+                if not log_obj[profile][hat].get('network', False):
+                    log_obj[profile][hat]['network'] = NetworkRuleset()
+
+                for family in sorted(log_dict[aamode][profile][hat]['netdomain'].keys()):
+                    for sock_type in sorted(log_dict[aamode][profile][hat]['netdomain'][family].keys()):
+                        network_obj = NetworkRule(family, sock_type, log_event=aamode)
+                        log_obj[profile][hat]['network'].add(network_obj)
+
+                for ruletype in ['capability', 'network']:
                     # XXX aa-mergeprof also has this code - if you change it, keep aa-mergeprof in sync!
                     for rule_obj in log_obj[profile][hat][ruletype].rules:
 
@@ -1600,7 +1608,7 @@ def ask_the_questions():
                             q.headers = [_('Profile'), combine_name(profile, hat)]
                             q.headers += rule_obj.logprof_header()
 
-                            # Load variables into sev_db? Not needed/used for capabilities.
+                            # Load variables into sev_db? Not needed/used for capabilities and network rules.
                             severity = rule_obj.severity(sev_db)
                             if severity != sev_db.NOT_IMPLEMENTED:
                                 q.headers += [_('Severity'), severity]
@@ -1961,99 +1969,6 @@ def ask_the_questions():
 
                             elif re.search('\d', ans):
                                 default_option = ans
-
-                #
-                for family in sorted(log_dict[aamode][profile][hat]['netdomain'].keys()):
-                    # severity handling for net toggles goes here
-                    for sock_type in sorted(log_dict[aamode][profile][hat]['netdomain'][family].keys()):
-                        network_obj = NetworkRule(family, sock_type)
-                        if is_known_rule(aa[profile][hat], 'network', network_obj):
-                            continue
-                        default_option = 1
-                        options = []
-                        newincludes = match_includes(aa[profile][hat], 'network', network_obj)
-                        q = aaui.PromptQuestion()
-                        if newincludes:
-                            options += list(map(lambda s: '#include <%s>' % s, sorted(set(newincludes))))
-                        if options:
-                            options.append('network %s %s' % (family, sock_type))
-                            q.options = options
-                            q.selected = default_option - 1
-
-                        q.headers = [_('Profile'), combine_name(profile, hat)]
-                        q.headers += [_('Network Family'), family]
-                        q.headers += [_('Socket Type'), sock_type]
-
-                        audit_toggle = 0
-                        q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
-                                          'CMD_ABORT', 'CMD_FINISHED']
-                        q.default = 'CMD_DENY'
-
-                        if aamode == 'PERMITTING':
-                            q.default = 'CMD_ALLOW'
-
-                        seen_events += 1
-
-                        done = False
-                        while not done:
-                            ans, selected = q.promptUser()
-
-                            if ans == 'CMD_FINISHED':
-                                save_profiles()
-                                return
-
-                            if ans == 'CMD_IGNORE_ENTRY':
-                                done = True
-                                break
-
-                            if ans.startswith('CMD_AUDIT'):
-                                audit_toggle = not audit_toggle
-                                audit = ''
-                                if audit_toggle:
-                                    audit = 'audit'
-                                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_OFF',
-                                                      'CMD_ABORT', 'CMD_FINISHED']
-                                else:
-                                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
-                                                      'CMD_ABORT', 'CMD_FINISHED']
-                                q.headers = [_('Profile'), combine_name(profile, hat)]
-                                q.headers += [_('Network Family'), audit + family]
-                                q.headers += [_('Socket Type'), sock_type]
-
-                            elif ans == 'CMD_ALLOW':
-                                if options:
-                                    selection = options[selected]
-                                else:
-                                    selection = 'network %s %s' % (family, sock_type)
-                                done = True
-                                if re_match_include(selection):  # re.search('#include\s+<.+>$', selection):
-                                    inc = re_match_include(selection)  # re.search('#include\s+<(.+)>$', selection).groups()[0]
-                                    deleted = 0
-                                    deleted = delete_duplicates(aa[profile][hat], inc)
-
-                                    aa[profile][hat]['include'][inc] = True
-
-                                    changed[profile] = True
-
-                                    aaui.UI_Info(_('Adding %s to profile') % selection)
-                                    if deleted:
-                                        aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
-
-                                else:
-                                    aa[profile][hat]['network'].add(NetworkRule(family, sock_type, audit=audit_toggle))
-
-                                    changed[profile] = True
-
-                                    aaui.UI_Info(_('Adding network access %(family)s %(type)s to profile.') % { 'family': family, 'type': sock_type })
-
-                            elif ans == 'CMD_DENY':
-                                done = True
-                                aa[profile][hat]['network'].add(NetworkRule(family, sock_type, audit=audit_toggle, deny=True))
-                                changed[profile] = True
-                                aaui.UI_Info(_('Denying network access %(family)s %(type)s to profile') % { 'family': family, 'type': sock_type })
-
-                            else:
-                                done = False
 
 def available_buttons(rule_obj):
     buttons = []
