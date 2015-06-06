@@ -17,14 +17,14 @@ import shutil
 import subprocess
 import sys
 import unittest
-import filecmp
 
 import apparmor.aa as apparmor
+from common_test import read_file
 
 # Path for the program
-test_path = '/usr/sbin/ntpd'
+test_path = '/usr/sbin/winbindd'
 # Path for the target file containing profile
-local_profilename = './profiles/usr.sbin.ntpd'
+local_profilename = './profiles/usr.sbin.winbindd'
 
 python_interpreter = 'python'
 if sys.version_info >= (3, 0):
@@ -125,7 +125,10 @@ class Test(unittest.TestCase):
         #Strip off the first line (#modified line)
         subprocess.check_output('sed -i 1d ./profiles/%s'%(input_file), shell=True)
 
-        self.assertEqual(filecmp.cmp('./profiles/%s'%input_file, './%s'%output_file, False), True, 'Failed to cleanup profile properly')
+        exp_content = read_file('./%s' % output_file)
+        real_content = read_file('./profiles/%s' % input_file)
+        self.maxDiff = None
+        self.assertEqual(exp_content, real_content, 'Failed to cleanup profile properly')
 
 
 def clean_profile_dir():
