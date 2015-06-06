@@ -4124,6 +4124,7 @@ def reload_base(bin_path):
 
     prof_filename = get_profile_filename(bin_path)
 
+    # XXX use reload_profile() from tools.py instead (and don't hide output in /dev/null)
     subprocess.call("cat '%s' | %s -I%s -r >/dev/null 2>&1" % (prof_filename, parser, profile_dir), shell=True)
 
 def reload(bin_path):

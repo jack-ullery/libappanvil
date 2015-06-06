@@ -232,14 +232,14 @@ class aa_tools:
                     ans, arg = q.promptUser()
                     if ans == 'CMD_SAVE_CHANGES':
                         apparmor.write_profile_ui_feedback(program)
-                        apparmor.reload_base(program)
+                        self.reload_profile(filename)
                     elif ans == 'CMD_VIEW_CHANGES':
                         #oldprofile = apparmor.serialize_profile(apparmor.original_aa[program], program, '')
                         newprofile = apparmor.serialize_profile(apparmor.aa[program], program, '')
                         apparmor.display_changes_with_comments(filename, newprofile)
             else:
                 apparmor.write_profile_ui_feedback(program)
-                apparmor.reload_base(program)
+                self.reload_profile(filename)
         else:
             raise apparmor.AppArmorException(_('The profile for %s does not exists. Nothing to clean.') % program)
 
