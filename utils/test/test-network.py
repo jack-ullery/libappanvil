@@ -21,6 +21,8 @@ from apparmor.rule.network import NetworkRule, NetworkRuleset
 from apparmor.rule import BaseRule
 from apparmor.common import AppArmorException, AppArmorBug
 from apparmor.logparser import ReadLog
+from apparmor.translations import init_translation
+_ = init_translation()
 
 exp = namedtuple('exp', ['audit', 'allow_keyword', 'deny', 'comment',
         'domain', 'all_domains', 'type_or_protocol', 'all_type_or_protocols'])
@@ -335,6 +337,21 @@ class NetworkCoveredTest_Invalid(AATest):
 
         with self.assertRaises(AppArmorBug):
             obj.is_equal(testobj)
+
+class NetworkLogprofHeaderTest(AATest):
+    tests = [
+        ('network,',                    [                               _('Network Family'), _('ALL'),     _('Socket Type'), _('ALL'),     ]),
+        ('network inet,',               [                               _('Network Family'), 'inet',       _('Socket Type'), _('ALL'),     ]),
+        ('network inet stream,',        [                               _('Network Family'), 'inet',       _('Socket Type'), 'stream',     ]),
+        ('deny network,',               [_('Qualifier'), 'deny',        _('Network Family'), _('ALL'),     _('Socket Type'), _('ALL'),     ]),
+        ('allow network inet,',         [_('Qualifier'), 'allow',       _('Network Family'), 'inet',       _('Socket Type'), _('ALL'),     ]),
+        ('audit network inet stream,',  [_('Qualifier'), 'audit',       _('Network Family'), 'inet',       _('Socket Type'), 'stream',     ]),
+        ('audit deny network inet,',    [_('Qualifier'), 'audit deny',  _('Network Family'), 'inet',       _('Socket Type'), _('ALL'),     ]),
+    ]
+
+    def _run_test(self, params, expected):
+        obj = NetworkRule._parse(params)
+        self.assertEqual(obj.logprof_header(), expected)
 
 ## --- tests for NetworkRuleset --- #
 

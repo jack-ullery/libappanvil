@@ -329,22 +329,7 @@ class Merge(object):
                     q.selected = default_option - 1
 
                     q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
-                    qualifier = ''
-                    if rule_obj.deny:
-                        qualifier = 'deny %s' % qualifier
-
-                    if rule_obj.audit:
-                        qualifier = 'audit %s' % qualifier
-
-                    if qualifier:
-                        q.headers += [_('Qualifier'), qualifier]
-
-                    if rule_obj.all_caps:
-                        cap_txt = 'ALL'
-                    else:
-                        cap_txt = ' '.join(rule_obj.capability)
-
-                    q.headers += [_('Capability'), cap_txt]
+                    q.headers += rule_obj.logprof_header()
 
                     severity = rule_obj.severity(sev_db)
                     if severity != sev_db.NOT_IMPLEMENTED:
@@ -376,7 +361,7 @@ class Merge(object):
                             q.options = options
 
                             q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
-                            q.headers += [_('Capability'), cap_txt]
+                            q.headers += rule_obj.logprof_header()
 
                         elif ans == 'CMD_ALLOW':
                             done = True
@@ -743,29 +728,7 @@ class Merge(object):
                             q.selected = default_option - 1
 
                         q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
-
-                        qualifier = ''
-                        if rule_obj.deny:
-                            qualifier = 'deny %s' % qualifier
-
-                        if rule_obj.audit:
-                            qualifier = 'audit %s' % qualifier
-
-                        if qualifier:
-                            q.headers += [_('Qualifier'), qualifier]
-
-                        if rule_obj.all_domains:
-                            family = 'ALL'
-                        else:
-                            family = rule_obj.domain
-
-                        if rule_obj.all_type_or_protocols:
-                            sock_type = 'ALL'
-                        else:
-                            sock_type = rule_obj.type_or_protocol
-
-                        q.headers += [_('Network Family'), family]
-                        q.headers += [_('Socket Type'), sock_type]
+                        q.headers += rule_obj.logprof_header()
 
                         severity = rule_obj.severity(sev_db)
                         if severity != sev_db.NOT_IMPLEMENTED:
@@ -797,8 +760,7 @@ class Merge(object):
                                 q.options = options
 
                                 q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
-                                q.headers += [_('Network Family'), family]
-                                q.headers += [_('Socket Type'), sock_type]
+                                q.headers += rule_obj.logprof_header()
 
                             elif ans == 'CMD_ALLOW':
                                 done = True

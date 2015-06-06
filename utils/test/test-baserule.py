@@ -58,6 +58,11 @@ class TestBaserule(AATest):
         rank = obj.severity(sev_db)
         self.assertEqual(rank, sev_db.NOT_IMPLEMENTED)
 
+    def test_logprof_header_localvars(self):
+        obj = BaseRule()
+        with self.assertRaises(AppArmorBug):
+            obj.logprof_header_localvars()
+
 
 setup_all_loops(__name__)
 if __name__ == '__main__':

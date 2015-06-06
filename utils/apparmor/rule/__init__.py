@@ -143,6 +143,34 @@ class BaseRule(object):
            sev_db must be an apparmor.severity.Severity object.'''
         return sev_db.NOT_IMPLEMENTED
 
+    def logprof_header(self):
+        '''return the headers (human-readable version of the rule) to display in aa-logprof for this rule object
+           returns {'label1': 'value1', 'label2': 'value2'} '''
+
+        headers = []
+        qualifier = []
+
+        if self.audit:
+            qualifier += ['audit']
+
+        if self.deny:
+            qualifier += ['deny']
+        elif self.allow_keyword:
+            qualifier += ['allow']
+
+        if qualifier:
+            headers += [_('Qualifier'), ' '.join(qualifier)]
+
+        headers += self.logprof_header_localvars()
+
+        return headers
+
+    # @abstractmethod  FIXME - uncomment when python3 only
+    def logprof_header_localvars(self):
+        '''return the headers (human-readable version of the rule) to display in aa-logprof for this rule object
+           returns {'label1': 'value1', 'label2': 'value2'} '''
+        raise AppArmorBug("'%s' needs to implement logprof_header(), but didn't" % (str(self)))
+
     def modifiers_str(self):
         '''return the allow/deny and audit keyword as string, including whitespace'''
 

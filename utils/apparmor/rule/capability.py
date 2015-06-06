@@ -141,6 +141,17 @@ class CapabilityRule(BaseRule):
 
         return severity
 
+    def logprof_header_localvars(self):
+        if self.all_caps:
+            cap_txt = _('ALL')
+        else:
+            cap_txt = ' '.join(sorted(self.capability))
+
+        return [
+            _('Capability'), cap_txt,
+        ]
+
+
 class CapabilityRuleset(BaseRuleset):
     '''Class to handle and store a collection of capability rules'''
 

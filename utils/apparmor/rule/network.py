@@ -199,6 +199,22 @@ class NetworkRule(BaseRule):
 
         return True
 
+    def logprof_header_localvars(self):
+        if self.all_domains:
+            family = _('ALL')
+        else:
+            family = self.domain
+
+        if self.all_type_or_protocols:
+            sock_type = _('ALL')
+        else:
+            sock_type = self.type_or_protocol
+
+        return [
+            _('Network Family'), family,
+            _('Socket Type'),    sock_type,
+        ]
+
 
 class NetworkRuleset(BaseRuleset):
     '''Class to handle and store a collection of network rules'''

@@ -21,6 +21,8 @@ from apparmor.rule import BaseRule
 import apparmor.severity as severity
 from apparmor.common import AppArmorException, AppArmorBug, hasher
 from apparmor.logparser import ReadLog
+from apparmor.translations import init_translation
+_ = init_translation()
 
 # --- tests for single CapabilityRule --- #
 
@@ -433,6 +435,21 @@ class CapabiliySeverityTest(AATest):
         obj = CapabilityRule(params)
         rank = obj.severity(sev_db)
         self.assertEqual(rank, expected)
+
+class CapabilityLogprofHeaderTest(AATest):
+    tests = [
+        ('capability,',                         [                               _('Capability'), _('ALL'),         ]),
+        ('capability chown,',                   [                               _('Capability'), 'chown',          ]),
+        ('capability chown fsetid,',            [                               _('Capability'), 'chown fsetid',   ]),
+        ('audit capability,',                   [_('Qualifier'), 'audit',       _('Capability'), _('ALL'),         ]),
+        ('deny capability chown,',              [_('Qualifier'), 'deny',        _('Capability'), 'chown',          ]),
+        ('allow capability chown fsetid,',      [_('Qualifier'), 'allow',       _('Capability'), 'chown fsetid',   ]),
+        ('audit deny capability,',              [_('Qualifier'), 'audit deny',  _('Capability'), _('ALL'),         ]),
+    ]
+
+    def _run_test(self, params, expected):
+        obj = CapabilityRule._parse(params)
+        self.assertEqual(obj.logprof_header(), expected)
 
 # --- tests for CapabilityRuleset --- #
 
