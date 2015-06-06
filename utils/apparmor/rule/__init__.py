@@ -326,6 +326,14 @@ class BaseRuleset(object):
         raise AppArmorBug("get_glob_ext is not available for this rule type!")
 
 
+def parse_comment(matches):
+    '''returns the comment (with a leading space) from the matches object'''
+    comment = ''
+    if matches.group('comment'):
+        # include a space so that we don't need to add it everywhere when writing the rule
+        comment = ' %s' % matches.group('comment')
+    return comment
+
 def parse_modifiers(matches):
     '''returns audit, deny, allow_keyword and comment from the matches object
        - audit, deny and allow_keyword are True/False
@@ -346,10 +354,7 @@ def parse_modifiers(matches):
         else:
             raise AppArmorBug("Invalid allow/deny keyword %s" % allowstr)
 
-    comment = ''
-    if matches.group('comment'):
-        # include a space so that we don't need to add it everywhere when writing the rule
-        comment = ' %s' % matches.group('comment')
+    comment = parse_comment(matches)
 
     return (audit, deny, allow_keyword, comment)
 
