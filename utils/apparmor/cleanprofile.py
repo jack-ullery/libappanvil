@@ -11,8 +11,6 @@
 #    GNU General Public License for more details.
 #
 # ----------------------------------------------------------------------
-import re
-
 import apparmor.aa as apparmor
 
 class Prof(object):
@@ -92,7 +90,7 @@ def delete_path_duplicates(profile, profile_other, allow, same_profile=True):
                     if not same_profile:
                         deleted.append(entry)
                 continue
-            if re.search('#?\s*include', rule) or re.search('#?\s*include', entry):
+            if apparmor.re_match_include(rule) or apparmor.re_match_include(entry):
                 continue
             # Check if the rule implies entry
             if apparmor.matchliteral(rule, entry):
