@@ -48,7 +48,7 @@ class CleanProf(object):
         #Process every hat in the profile individually
         file_includes = list(self.profile.filelist[self.profile.filename]['include'].keys())
         deleted = 0
-        for hat in self.profile.aa[program].keys():
+        for hat in sorted(self.profile.aa[program].keys()):
             #The combined list of includes from profile and the file
             includes = list(self.profile.aa[program][hat]['include'].keys()) + file_includes
 
@@ -76,7 +76,7 @@ class CleanProf(object):
             deleted += delete_path_duplicates(self.profile.aa[program][hat], self.other.aa[program][hat], 'allow', self.same_file)
             deleted += delete_path_duplicates(self.profile.aa[program][hat], self.other.aa[program][hat], 'deny', self.same_file)
 
-            return deleted
+        return deleted
 
 def delete_path_duplicates(profile, profile_other, allow, same_profile=True):
     deleted = []
