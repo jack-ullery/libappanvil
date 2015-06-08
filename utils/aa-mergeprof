@@ -235,6 +235,9 @@ class Merge(object):
                         done = True
 
     def ask_the_questions(self, other, profile):
+        aa = self.user.aa  # keep references so that the code in this function can use the short name
+        changed = apparmor.aa.changed  # (and be more in sync with aa.py ask_the_questions())
+
         if other == 'other':
             other = self.other
         else:
@@ -281,7 +284,7 @@ class Merge(object):
 
             options = []
             for inc in other.aa[profile][hat]['include'].keys():
-                if not inc in self.user.aa[profile][hat]['include'].keys():
+                if not inc in aa[profile][hat]['include'].keys():
                     options.append('#include <%s>' %inc)
 
             default_option = 1
@@ -300,8 +303,8 @@ class Merge(object):
                 elif ans == 'CMD_ALLOW':
                     selection = options[selected]
                     inc = apparmor.aa.re_match_include(selection)
-                    deleted = apparmor.aa.delete_duplicates(self.user.aa[profile][hat], inc)
-                    self.user.aa[profile][hat]['include'][inc] = True
+                    deleted = apparmor.aa.delete_duplicates(aa[profile][hat], inc)
+                    aa[profile][hat]['include'][inc] = True
                     options.pop(selected)
                     aaui.UI_Info(_('Adding %s to the file.') % selection)
                     if deleted:
@@ -315,10 +318,10 @@ class Merge(object):
                     #print(path, other.aa[profile][hat][allow]['path'][path])
                     mode = other.aa[profile][hat][allow]['path'][path]['mode']
 
-                    if self.user.aa[profile][hat][allow]['path'].get(path, False):
-                        mode = self.conflict_mode(profile, hat, allow, path, 'mode', other.aa[profile][hat][allow]['path'][path]['mode'], self.user.aa[profile][hat][allow]['path'][path]['mode'])
-                        self.conflict_mode(profile, hat, allow, path, 'audit', other.aa[profile][hat][allow]['path'][path]['audit'], self.user.aa[profile][hat][allow]['path'][path]['audit'])
-                        apparmor.aa.changed[profile] = True
+                    if aa[profile][hat][allow]['path'].get(path, False):
+                        mode = self.conflict_mode(profile, hat, allow, path, 'mode', other.aa[profile][hat][allow]['path'][path]['mode'], aa[profile][hat][allow]['path'][path]['mode'])
+                        self.conflict_mode(profile, hat, allow, path, 'audit', other.aa[profile][hat][allow]['path'][path]['audit'], aa[profile][hat][allow]['path'][path]['audit'])
+                        changed[profile] = True
                         continue
                     # Lookup modes from profile
                     allow_mode = set()
@@ -326,25 +329,25 @@ class Merge(object):
                     deny_mode = set()
                     deny_audit = set()
 
-                    fmode, famode, fm = apparmor.aa.rematchfrag(self.user.aa[profile][hat], 'allow', path)
+                    fmode, famode, fm = apparmor.aa.rematchfrag(aa[profile][hat], 'allow', path)
                     if fmode:
                         allow_mode |= fmode
                     if famode:
                         allow_audit |= famode
 
-                    cm, cam, m = apparmor.aa.rematchfrag(self.user.aa[profile][hat], 'deny', path)
+                    cm, cam, m = apparmor.aa.rematchfrag(aa[profile][hat], 'deny', path)
                     if cm:
                         deny_mode |= cm
                     if cam:
                         deny_audit |= cam
 
-                    imode, iamode, im = apparmor.aa.match_prof_incs_to_path(self.user.aa[profile][hat], 'allow', path)
+                    imode, iamode, im = apparmor.aa.match_prof_incs_to_path(aa[profile][hat], 'allow', path)
                     if imode:
                         allow_mode |= imode
                     if iamode:
                         allow_audit |= iamode
 
-                    cm, cam, m = apparmor.aa.match_prof_incs_to_path(self.user.aa[profile][hat], 'deny', path)
+                    cm, cam, m = apparmor.aa.match_prof_incs_to_path(aa[profile][hat], 'deny', path)
                     if cm:
                         deny_mode |= cm
                     if cam:
@@ -385,7 +388,7 @@ class Merge(object):
                         for incname in apparmor.aa.include.keys():
                             include_valid = False
                             # If already present skip
-                            if self.user.aa[profile][hat][incname]:
+                            if aa[profile][hat][incname]:
                                 continue
                             if incname.startswith(apparmor.aa.profile_dir):
                                 incname = incname.replace(apparmor.aa.profile_dir+'/', '', 1)
@@ -435,7 +438,7 @@ class Merge(object):
                             owner_toggle = apparmor.aa.cfg['settings']['default_owner_prompt']
                         done = False
                         while not done:
-                            q =  aaui.PromptQuestion()
+                            q = aaui.PromptQuestion()
                             q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat),
                                             _('Path'), path]
 
@@ -524,26 +527,26 @@ class Merge(object):
                                 match = apparmor.aa.re_match_include(path)
                                 if match:
                                     inc = match
-                                    deleted = apparmor.aa.delete_duplicates(self.user.aa[profile][hat], inc)
-                                    self.user.aa[profile][hat]['include'][inc] =  True
-                                    apparmor.aa.changed[profile] =  True
+                                    deleted = apparmor.aa.delete_duplicates(aa[profile][hat], inc)
+                                    aa[profile][hat]['include'][inc] = True
+                                    changed[profile] = True
                                     aaui.UI_Info(_('Adding %s to profile.') % path)
                                     if deleted:
                                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                 else:
-                                    if self.user.aa[profile][hat]['allow']['path'][path].get('mode', False):
-                                        mode |= self.user.aa[profile][hat]['allow']['path'][path]['mode']
+                                    if aa[profile][hat]['allow']['path'][path].get('mode', False):
+                                        mode |= aa[profile][hat]['allow']['path'][path]['mode']
                                     deleted = []
-                                    for entry in self.user.aa[profile][hat]['allow']['path'].keys():
+                                    for entry in aa[profile][hat]['allow']['path'].keys():
                                         if path == entry:
                                             continue
 
                                         if apparmor.aa.matchregexp(path, entry):
-                                            if apparmor.aa.mode_contains(mode, self.user.aa[profile][hat]['allow']['path'][entry]['mode']):
+                                            if apparmor.aa.mode_contains(mode, aa[profile][hat]['allow']['path'][entry]['mode']):
                                                 deleted.append(entry)
                                     for entry in deleted:
-                                        self.user.aa[profile][hat]['allow']['path'].pop(entry)
+                                        aa[profile][hat]['allow']['path'].pop(entry)
                                     deleted = len(deleted)
 
                                     if owner_toggle == 0:
@@ -555,19 +558,19 @@ class Merge(object):
                                     elif owner_toggle == 3:
                                         mode = apparmor.aa.owner_flatten_mode(mode)
 
-                                    if not self.user.aa[profile][hat]['allow'].get(path, False):
-                                        self.user.aa[profile][hat]['allow']['path'][path]['mode'] = self.user.aa[profile][hat]['allow']['path'][path].get('mode', set()) | mode
+                                    if not aa[profile][hat]['allow'].get(path, False):
+                                        aa[profile][hat]['allow']['path'][path]['mode'] = aa[profile][hat]['allow']['path'][path].get('mode', set()) | mode
 
 
                                     tmpmode = set()
                                     if audit_toggle == 1:
-                                        tmpmode = mode- allow_mode
+                                        tmpmode = mode - allow_mode
                                     elif audit_toggle == 2:
                                         tmpmode = mode
 
-                                    self.user.aa[profile][hat]['allow']['path'][path]['audit'] = self.user.aa[profile][hat]['allow']['path'][path].get('audit', set()) | tmpmode
+                                    aa[profile][hat]['allow']['path'][path]['audit'] = aa[profile][hat]['allow']['path'][path].get('audit', set()) | tmpmode
 
-                                    apparmor.aa.changed[profile] = True
+                                    changed[profile] = True
 
                                     aaui.UI_Info(_('Adding %(path)s %(mode)s to profile') % { 'path': path, 'mode': apparmor.aa.mode_to_str_user(mode) })
                                     if deleted:
@@ -576,11 +579,11 @@ class Merge(object):
                             elif ans == 'CMD_DENY':
                                 path = options[selected].strip()
                                 # Add new entry?
-                                self.user.aa[profile][hat]['deny']['path'][path]['mode'] = self.user.aa[profile][hat]['deny']['path'][path].get('mode', set()) | (mode - allow_mode)
+                                aa[profile][hat]['deny']['path'][path]['mode'] = aa[profile][hat]['deny']['path'][path].get('mode', set()) | (mode - allow_mode)
 
-                                self.user.aa[profile][hat]['deny']['path'][path]['audit'] = self.user.aa[profile][hat]['deny']['path'][path].get('audit', set())
+                                aa[profile][hat]['deny']['path'][path]['audit'] = aa[profile][hat]['deny']['path'][path].get('audit', set())
 
-                                apparmor.aa.changed[profile] = True
+                                changed[profile] = True
 
                                 done = True
 
@@ -627,12 +630,12 @@ class Merge(object):
                 if other.aa[profile][hat].get(ruletype, False): # needed until we have proper profile initialization
                     for rule_obj in other.aa[profile][hat][ruletype].rules:
 
-                        if is_known_rule(self.user.aa[profile][hat], ruletype, rule_obj):
+                        if is_known_rule(aa[profile][hat], ruletype, rule_obj):
                             continue
 
                         default_option = 1
                         options = []
-                        newincludes = match_includes(self.user.aa[profile][hat], ruletype, rule_obj)
+                        newincludes = match_includes(aa[profile][hat], ruletype, rule_obj)
                         q = aaui.PromptQuestion()
                         if newincludes:
                             options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
@@ -675,32 +678,32 @@ class Merge(object):
 
                             elif ans == 'CMD_ALLOW':
                                 done = True
-                                apparmor.aa.changed[profile] = True
+                                changed[profile] = True
 
                                 selection = options[selected]
 
                                 inc = re_match_include(selection)
                                 if inc:
-                                    deleted = delete_duplicates(self.user.aa[profile][hat], inc)
+                                    deleted = delete_duplicates(aa[profile][hat], inc)
 
-                                    self.user.aa[profile][hat]['include'][inc] = True
+                                    aa[profile][hat]['include'][inc] = True
 
                                     aaui.UI_Info(_('Adding %s to profile.') % selection)
                                     if deleted:
                                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                 else:
-                                    self.user.aa[profile][hat][ruletype].add(rule_obj)
+                                    aa[profile][hat][ruletype].add(rule_obj)
 
                                     aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
 
                             elif ans == 'CMD_DENY':
                                 done = True
-                                apparmor.aa.changed[profile] = True
+                                changed[profile] = True
 
                                 rule_obj.deny = True
                                 rule_obj.raw_rule = None  # reset raw rule after manually modifying rule_obj
-                                self.user.aa[profile][hat][ruletype].add(rule_obj)
+                                aa[profile][hat][ruletype].add(rule_obj)
                                 aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
 
                             else:
