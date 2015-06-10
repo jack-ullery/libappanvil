@@ -50,7 +50,7 @@ CFLAGS = -g -pg -fprofile-arcs -ftest-coverage
 endif
 endif #CFLAGS
 
-EXTRA_CXXFLAGS = ${CFLAGS} ${CXX_WARNINGS} -std=gnu++0x -D_GNU_SOURCE
+EXTRA_CXXFLAGS = ${CFLAGS} ${CPPFLAGS} ${CXX_WARNINGS} -std=gnu++0x -D_GNU_SOURCE
 EXTRA_CFLAGS = ${EXTRA_CXXFLAGS} ${CPP_WARNINGS}
 
 #LEXLIB	:= -lfl
