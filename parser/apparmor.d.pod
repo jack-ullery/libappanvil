@@ -111,7 +111,7 @@ B<PROTOCOL> = ( 'tcp' | 'udp' | 'icmp' )
 
 B<MOUNT RULE> = ( I<MOUNT> | I<REMOUNT> | I<UMOUNT> )
 
-B<MOUNT> = [ I<QUALIFIERS> ] 'mount' [ I<MOUNT CONDITIONS> ] [ I<SOURCE FILEGLOB> ] [ -E<gt> [ I<MOUNTPOINT FILEGLOB> ]
+B<MOUNT> = [ I<QUALIFIERS> ] 'mount' [ I<MOUNT CONDITIONS> ] [ I<SOURCE FILEGLOB> ] [ '-E<gt>' [ I<MOUNTPOINT FILEGLOB> ]
 
 B<REMOUNT> = [ I<QUALIFIERS> ] 'remount' [ I<MOUNT CONDITIONS> ] I<MOUNTPOINT FILEGLOB>
 
@@ -131,7 +131,7 @@ B<MOUNT FLAGS> = ( 'ro' | 'rw' | 'nosuid' | 'suid' | 'nodev' | 'dev' | 'noexec' 
 
 B<MOUNT EXPRESSION> = ( I<ALPHANUMERIC> | I<AARE> ) ...
 
-B<PIVOT ROOT RULE> = [ I<QUALIFIERS> ] pivot_root [ oldroot=I<OLD PUT FILEGLOB> ] [ I<NEW ROOT FILEGLOB> ] [ -E<gt> I<PROFILE NAME> ]
+B<PIVOT ROOT RULE> = [ I<QUALIFIERS> ] pivot_root [ oldroot=I<OLD PUT FILEGLOB> ] [ I<NEW ROOT FILEGLOB> ] [ '-E<gt>' I<PROFILE NAME> ]
 
 B<SOURCE FILEGLOB> = I<FILEGLOB>
 
@@ -239,7 +239,7 @@ B<RLIMIT NUMBER> = number from 0 to max rlimit value. Only applies ot RLIMIT of 
 
 B<RLIMIT NICE> = a number between -20 and 19. Only applies to RLIMIT of 'nice'
 
-B<FILE RULE> = [ I<QUALIFIERS> ] [ 'owner' ] ( 'file' | [ 'file' ] ( I<FILEGLOB> I<ACCESS>  | I<ACCESS> I<FILEGLOB> ) [ -E<gt> I<EXEC TARGET> ] )
+B<FILE RULE> = [ I<QUALIFIERS> ] [ 'owner' ] ( 'file' | [ 'file' ] ( I<FILEGLOB> I<ACCESS>  | I<ACCESS> I<FILEGLOB> ) [ '-E<gt>' I<EXEC TARGET> ] )
 
 B<FILEGLOB> = ( I<QUOTED FILEGLOB> | I<UNQUOTED FILEGLOB> )
 
@@ -265,7 +265,7 @@ B<ALPHA> = ('a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
 B<ALPHANUMERIC> = ('0', '1', '2', ... '9', 'a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
-B<CHANGE_PROFILE RULE> = 'change_profile' [ I<EXEC COND> ] [ -E<gt> I<PROFILE NAME> ]
+B<CHANGE_PROFILE RULE> = 'change_profile' [ I<EXEC COND> ] [ '-E<gt>' I<PROFILE NAME> ]
 
 B<EXEC COND> = I<FILEGLOB>
 
@@ -360,7 +360,7 @@ modes:
 
 - transition to subprofile on execute with fallback to unconfined
 
-=item B<Cux>
+=item B<CUx>
 
 - transition to subprofile on execute with fallback to unconfined -- scrub the environment
 
