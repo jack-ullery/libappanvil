@@ -259,6 +259,7 @@ void add_local_entry(Profile *prof);
 %type <boolean> opt_flags
 %type <boolean> opt_perm_mode
 %type <id>	opt_ns
+%type <id>	ns_id
 %type <id>	opt_id
 %type <prefix>  opt_prefix
 %type <fmode>	dbus_perm
@@ -298,8 +299,10 @@ opt_profile_flag: { /* nothing */ $$ = 0; }
 	| TOK_PROFILE { $$ = 1; }
 	| hat_start { $$ = 2; }
 
+ns_id: TOK_COLON id_or_var TOK_COLON { $$ = $2; }
+
 opt_ns: { /* nothing */ $$ = NULL; }
-	| TOK_COLON TOK_ID TOK_COLON { $$ = $2; }
+	| ns_id { $$ = $1; }
 
 opt_id: { /* nothing */ $$ = NULL; }
 	| TOK_ID { $$ = $1; }
@@ -1054,11 +1057,11 @@ opt_named_transition:
 		$$.ns = NULL;
 		$$.name = $2;
 	}
-	| TOK_ARROW TOK_COLON id_or_var TOK_COLON id_or_var
+	| TOK_ARROW ns_id id_or_var
 	{
 		$$.present = 1;
-		$$.ns = $3;
-		$$.name = $5;
+		$$.ns = $2;
+		$$.name = $3;
 	};
 
 rule: file_rule { $$ = $1; }
@@ -1524,11 +1527,11 @@ change_profile:	change_profile_head TOK_ARROW TOK_ID TOK_END_OF_RULE
 		$$ = entry;
 	};
 
-change_profile:	change_profile_head TOK_ARROW TOK_COLON TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
+change_profile:	change_profile_head TOK_ARROW ns_id TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
-		PDEBUG("Matched change_profile: tok_id (%s:%s)\n", $4, $6);
-		entry = new_entry($4, $6, AA_CHANGE_PROFILE, $1);
+		PDEBUG("Matched change_profile: tok_id (%s:%s)\n", $3, $4);
+		entry = new_entry($3, $4, AA_CHANGE_PROFILE, $1);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("change_profile.entry: (%s)\n", entry->name);
