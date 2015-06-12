@@ -443,7 +443,7 @@ LT_EQUAL	<=
 
 	({IDS}|{QUOTED_ID}) {
 		yylval.id = processid(yytext, yyleng);
-		POP_AND_RETURN(TOK_ID);
+		RETURN_TOKEN(TOK_ID);
 	}
 }
 

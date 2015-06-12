@@ -100,7 +100,10 @@ struct cond_entry_list {
 struct cod_entry {
 	char *ns;
 	char *name;
-	char *link_name;
+	union {
+		char *link_name;
+		char *onexec;
+	};
 	char *nt_name;
 	Profile *prof;		 	/* Special profile defined
 					 * just for this executable */

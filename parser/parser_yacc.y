@@ -1491,36 +1491,42 @@ file_mode: TOK_MODE
 		free($1);
 	}
 
-change_profile: TOK_CHANGE_PROFILE TOK_END_OF_RULE
+change_profile: TOK_CHANGE_PROFILE opt_id TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		char *rule = strdup("**");
 		if (!rule)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("Matched change_profile,\n");
-		entry = new_entry(NULL, rule, AA_CHANGE_PROFILE, NULL);
+		if ($2 && !($2[0] == '/' || strncmp($2, "@{", 2) == 0))
+			yyerror(_("Exec condition must begin with '/'."));
+		entry = new_entry(NULL, rule, AA_CHANGE_PROFILE, $2);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("change_profile,\n");
 		$$ = entry;
 	};
 
-change_profile:	TOK_CHANGE_PROFILE TOK_ARROW TOK_ID TOK_END_OF_RULE
+change_profile:	TOK_CHANGE_PROFILE opt_id TOK_ARROW TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
-		PDEBUG("Matched change_profile: tok_id (%s)\n", $3);
-		entry = new_entry(NULL, $3, AA_CHANGE_PROFILE, NULL);
+		PDEBUG("Matched change_profile: tok_id (%s)\n", $4);
+		if ($2 && !($2[0] == '/' || strncmp($2, "@{", 2) == 0))
+			yyerror(_("Exec condition must begin with '/'."));
+		entry = new_entry(NULL, $4, AA_CHANGE_PROFILE, $2);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("change_profile.entry: (%s)\n", entry->name);
 		$$ = entry;
 	};
 
-change_profile:	TOK_CHANGE_PROFILE TOK_ARROW TOK_COLON TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
+change_profile:	TOK_CHANGE_PROFILE opt_id TOK_ARROW TOK_COLON TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
-		PDEBUG("Matched change_profile: tok_id (%s:%s)\n", $4, $6);
-		entry = new_entry($4, $6, AA_CHANGE_PROFILE, NULL);
+		PDEBUG("Matched change_profile: tok_id (%s:%s)\n", $5, $7);
+		if ($2 && !($2[0] == '/' || strncmp($2, "@{", 2) == 0))
+			yyerror(_("Exec condition must begin with '/'."));
+		entry = new_entry($5, $7, AA_CHANGE_PROFILE, $2);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("change_profile.entry: (%s)\n", entry->name);
