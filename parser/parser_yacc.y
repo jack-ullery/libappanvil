@@ -1516,28 +1516,16 @@ change_profile: change_profile_head TOK_END_OF_RULE
 		$$ = entry;
 	};
 
-change_profile:	change_profile_head TOK_ARROW TOK_ID TOK_END_OF_RULE
+change_profile:	change_profile_head TOK_ARROW opt_ns TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
-		PDEBUG("Matched change_profile: tok_id (%s)\n", $3);
-		entry = new_entry(NULL, $3, AA_CHANGE_PROFILE, $1);
-		if (!entry)
-			yyerror(_("Memory allocation error."));
-		PDEBUG("change_profile.entry: (%s)\n", entry->name);
-		$$ = entry;
-	};
-
-change_profile:	change_profile_head TOK_ARROW ns_id TOK_ID TOK_END_OF_RULE
-	{
-		struct cod_entry *entry;
-		PDEBUG("Matched change_profile: tok_id (%s:%s)\n", $3, $4);
+		PDEBUG("Matched change_profile: tok_id (:%s://%s)\n", $3 ? $3 : "", $4);
 		entry = new_entry($3, $4, AA_CHANGE_PROFILE, $1);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("change_profile.entry: (%s)\n", entry->name);
 		$$ = entry;
 	};
-
 
 capability:	TOK_CAPABILITY caps TOK_END_OF_RULE
 	{
