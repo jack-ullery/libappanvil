@@ -460,7 +460,9 @@ verify_binary_equality "Deny of ungranted perm" \
 
 verify_binary_equality "change_profile == change_profile -> **" \
 		       "/t { change_profile, }" \
-		       "/t { change_profile -> **, }"
+		       "/t { change_profile -> **, }" \
+		       "/t { change_profile /**, }" \
+		       "/t { change_profile /** -> **, }"
 
 if [ $fails -ne 0 -o $errors -ne 0 ]
 then
