@@ -532,8 +532,9 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 	if (entry->deny) {
 		if ((entry->mode & ~(AA_LINK_BITS | AA_CHANGE_PROFILE)) &&
 		    !dfarules->add_rule(tbuf.c_str(), entry->deny,
-					entry->mode & ~AA_LINK_BITS,
-					entry->audit & ~AA_LINK_BITS, dfaflags))
+					entry->mode & ~(AA_LINK_BITS | AA_CHANGE_PROFILE),
+					entry->audit & ~(AA_LINK_BITS | AA_CHANGE_PROFILE),
+					dfaflags))
 			return FALSE;
 	} else if (entry->mode & ~AA_CHANGE_PROFILE) {
 		if (!dfarules->add_rule(tbuf.c_str(), entry->deny, entry->mode,
