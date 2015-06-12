@@ -564,7 +564,7 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 	}
 	if (entry->mode & AA_CHANGE_PROFILE) {
 		const char *vec[3];
-		std::string lbuf;
+		std::string lbuf, xbuf;
 		int index = 1;
 
 		if ((warnflags & WARN_RULE_DOWNGRADED) && entry->audit && warn_change_profile) {
@@ -575,8 +575,14 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 			warn_change_profile = 0;
 		}
 
-		/* allow change_profile for all execs */
-		vec[0] = "/[^\\x00]*";
+		if (entry->onexec) {
+			ptype = convert_aaregex_to_pcre(entry->onexec, 0, glob_default, xbuf, &pos);
+			if (ptype == ePatternInvalid)
+				return FALSE;
+			vec[0] = xbuf.c_str();
+		} else
+			/* allow change_profile for all execs */
+			vec[0] = "/[^\\x00]*";
 
 		if (entry->ns) {
 			int pos;
