@@ -583,7 +583,7 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 			vec[0] = xbuf.c_str();
 		} else
 			/* allow change_profile for all execs */
-			vec[0] = "/[^\\x00]*";
+			vec[0] = "/[^/\\x00][^\\x00]*";
 
 		if (entry->ns) {
 			int pos;
