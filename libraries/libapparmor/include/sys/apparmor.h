@@ -138,14 +138,15 @@ extern int aa_query_link_path(const char *label, const char *target,
 	(aa_change_hat_vargs)(T, __macroarg_counter(X), X)
 
 typedef struct aa_features aa_features;
-int aa_features_new(aa_features **features, const char *path);
+int aa_features_new(aa_features **features, int dirfd, const char *path);
 int aa_features_new_from_string(aa_features **features,
 				const char *string, size_t size);
 int aa_features_new_from_kernel(aa_features **features);
 aa_features *aa_features_ref(aa_features *features);
 void aa_features_unref(aa_features *features);
 
-int aa_features_write_to_file(aa_features *features, const char *path);
+int aa_features_write_to_file(aa_features *features,
+			      int dirfd, const char *path);
 bool aa_features_is_equal(aa_features *features1, aa_features *features2);
 bool aa_features_supports(aa_features *features, const char *str);
 

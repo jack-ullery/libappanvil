@@ -56,7 +56,7 @@ static int create_cache(aa_policy_cache *policy_cache, aa_features *features)
 		goto error;
 
 create_file:
-	if (aa_features_write_to_file(features,
+	if (aa_features_write_to_file(features, -1,
 				      policy_cache->features_path) == -1)
 		goto error;
 
@@ -87,7 +87,7 @@ static int init_cache_features(aa_policy_cache *policy_cache,
 {
 	bool call_create_cache = false;
 
-	if (aa_features_new(&policy_cache->features,
+	if (aa_features_new(&policy_cache->features, -1,
 			    policy_cache->features_path)) {
 		policy_cache->features = NULL;
 		if (!create || errno != ENOENT)

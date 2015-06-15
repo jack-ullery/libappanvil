@@ -359,12 +359,13 @@ static bool walk_one(const char **str, const struct component *component,
  * aa_features_new - create a new features based on a path
  * @features: will point to the address of an allocated and initialized
  *            aa_features object upon success
+ * @dirfd: directory file descriptor or AT_FDCWD (see openat(2))
  * @path: path to a features file or directory
  *
  * Returns: 0 on success, -1 on error with errno set and *@features pointing to
  *          NULL
  */
-int aa_features_new(aa_features **features, const char *path)
+int aa_features_new(aa_features **features, int dirfd, const char *path)
 {
 	struct stat stat_file;
 	aa_features *f;
@@ -372,7 +373,7 @@ int aa_features_new(aa_features **features, const char *path)
 
 	*features = NULL;
 
-	if (stat(path, &stat_file) == -1)
+	if (fstatat(dirfd, path, &stat_file, 0) == -1)
 		return -1;
 
 	f = calloc(1, sizeof(*f));
@@ -383,8 +384,8 @@ int aa_features_new(aa_features **features, const char *path)
 	aa_features_ref(f);
 
 	retval = S_ISDIR(stat_file.st_mode) ?
-		 load_features_dir(AT_FDCWD, path, f->string, STRING_SIZE) :
-		 load_features_file(AT_FDCWD, path, f->string, STRING_SIZE);
+		 load_features_dir(dirfd, path, f->string, STRING_SIZE) :
+		 load_features_file(dirfd, path, f->string, STRING_SIZE);
 	if (retval == -1) {
 		int save = errno;
 
@@ -443,7 +444,7 @@ int aa_features_new_from_string(aa_features **features,
  */
 int aa_features_new_from_kernel(aa_features **features)
 {
-	return aa_features_new(features, FEATURES_FILE);
+	return aa_features_new(features, -1, FEATURES_FILE);
 }
 
 /**
@@ -471,19 +472,22 @@ void aa_features_unref(aa_features *features)
 /**
  * aa_features_write_to_file - write a string representation to a file
  * @features: the features
+ * @dirfd: directory file descriptor or AT_FDCWD (see openat(2))
  * @path: the path to write to
  *
  * Returns: 0 on success, -1 on error with errno set
  */
-int aa_features_write_to_file(aa_features *features, const char *path)
+int aa_features_write_to_file(aa_features *features,
+			      int dirfd, const char *path)
 {
 	autoclose int fd = -1;
 	size_t size;
 	ssize_t retval;
 	char *string;
 
-	fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC | O_CLOEXEC,
-		  S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	fd = openat(dirfd, path,
+		    O_WRONLY | O_CREAT | O_TRUNC | O_SYNC | O_CLOEXEC,
+		    S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	if (fd == -1)
 		return -1;
 
