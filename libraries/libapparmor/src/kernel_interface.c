@@ -198,7 +198,9 @@ static int write_policy_file_to_iface(aa_kernel_interface *kernel_interface,
  * aa_kernel_interface_new - create a new kernel_interface from an optional path
  * @kernel_interface: will point to the address of an allocated and initialized
  *                    aa_kernel_interface object upon success
- * @kernel_features: features representing the currently running kernel
+ * @kernel_features: features representing the currently running kernel (can be
+ *                   NULL and the features of the currently running kernel will
+ *                   be used)
  * @apparmorfs: path to the apparmor directory of the mounted securityfs (can
  *              be NULL and the path will be auto discovered)
  *
@@ -223,9 +225,17 @@ int aa_kernel_interface_new(aa_kernel_interface **kernel_interface,
 	aa_kernel_interface_ref(ki);
 	ki->dirfd = -1;
 
-	ki->supports_setload = kernel_features ?
-			       aa_features_supports(kernel_features, set_load) :
-			       false;
+	if (kernel_features) {
+		aa_features_ref(kernel_features);
+	} else if (aa_features_new_from_kernel(&kernel_features) == -1) {
+		int save = errno;
+
+		aa_kernel_interface_unref(ki);
+		errno = save;
+		return -1;
+	}
+	ki->supports_setload = aa_features_supports(kernel_features, set_load);
+	aa_features_unref(kernel_features);
 
 	if (!apparmorfs) {
 		if (find_iface_dir(&alloced_apparmorfs) == -1) {

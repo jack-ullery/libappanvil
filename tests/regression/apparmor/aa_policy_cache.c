@@ -74,16 +74,10 @@ out:
 
 static int test_remove_policy(const char *name)
 {
-	aa_features *features = NULL;
 	aa_kernel_interface *kernel_interface = NULL;
 	int rc = 1;
 
-	if (aa_features_new_from_kernel(&features)) {
-		perror("FAIL - aa_features_new_from_kernel");
-		goto out;
-	}
-
-	if (aa_kernel_interface_new(&kernel_interface, features, NULL)) {
+	if (aa_kernel_interface_new(&kernel_interface, NULL, NULL)) {
 		perror("FAIL - aa_kernel_interface_new");
 		goto out;
 	}
@@ -96,7 +90,6 @@ static int test_remove_policy(const char *name)
 	rc = 0;
 out:
 	aa_kernel_interface_unref(kernel_interface);
-	aa_features_unref(features);
 	return rc;
 }
 
