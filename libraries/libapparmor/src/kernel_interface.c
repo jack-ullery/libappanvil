@@ -196,7 +196,7 @@ static int write_policy_file_to_iface(aa_kernel_interface *kernel_interface,
 }
 
 /**
- * aa_kernel_interface_new - create a new kernel_interface from an optional path
+ * aa_kernel_interface_new - create a new aa_kernel_interface object from an optional path
  * @kernel_interface: will point to the address of an allocated and initialized
  *                    aa_kernel_interface object upon success
  * @kernel_features: features representing the currently running kernel (can be
@@ -266,7 +266,7 @@ int aa_kernel_interface_new(aa_kernel_interface **kernel_interface,
 }
 
 /**
- * aa_kernel_interface_ref - increments the ref count of a kernel_interface
+ * aa_kernel_interface_ref - increments the ref count of an aa_kernel_interface object
  * @kernel_interface: the kernel_interface
  *
  * Returns: the kernel_interface
@@ -278,7 +278,7 @@ aa_kernel_interface *aa_kernel_interface_ref(aa_kernel_interface *kernel_interfa
 }
 
 /**
- * aa_kernel_interface_unref - decrements the ref count and frees the kernel_interface when 0
+ * aa_kernel_interface_unref - decrements the ref count and frees the aa_kernel_interface object when 0
  * @kernel_interface: the kernel_interface (can be NULL)
  */
 void aa_kernel_interface_unref(aa_kernel_interface *kernel_interface)
@@ -291,7 +291,7 @@ void aa_kernel_interface_unref(aa_kernel_interface *kernel_interface)
 }
 
 /**
- * aa_kernel_interface_load_policy - load a policy into the kernel
+ * aa_kernel_interface_load_policy - load a policy from a buffer into the kernel
  * @kernel_interface: valid aa_kernel_interface
  * @buffer: a buffer containing a policy
  * @size: the size of the buffer
@@ -306,7 +306,7 @@ int aa_kernel_interface_load_policy(aa_kernel_interface *kernel_interface,
 }
 
 /**
- * aa_kernel_interface_load_policy_from_file - load a policy into the kernel
+ * aa_kernel_interface_load_policy_from_file - load a policy from a file into the kernel
  * @kernel_interface: valid aa_kernel_interface
  * @path: path to a policy binary
  *
@@ -320,7 +320,7 @@ int aa_kernel_interface_load_policy_from_file(aa_kernel_interface *kernel_interf
 }
 
 /**
- * aa_kernel_interface_load_policy_from_fd - load a policy into the kernel
+ * aa_kernel_interface_load_policy_from_fd - load a policy from a file descriptor into the kernel
  * @kernel_interface: valid aa_kernel_interface
  * @fd: a pre-opened, readable file descriptor at the correct offset
  *
@@ -334,7 +334,7 @@ int aa_kernel_interface_load_policy_from_fd(aa_kernel_interface *kernel_interfac
 }
 
 /**
- * aa_kernel_interface_replace_policy - replace a policy in the kernel
+ * aa_kernel_interface_replace_policy - replace a policy in the kernel with a policy from a buffer
  * @kernel_interface: valid aa_kernel_interface
  * @buffer: a buffer containing a policy
  * @size: the size of the buffer
@@ -350,7 +350,7 @@ int aa_kernel_interface_replace_policy(aa_kernel_interface *kernel_interface,
 }
 
 /**
- * aa_kernel_interface_replace_policy_from_file - replace a policy in the kernel
+ * aa_kernel_interface_replace_policy_from_file - replace a policy in the kernel with a policy from a file
  * @kernel_interface: valid aa_kernel_interface
  * @path: path to a policy binary
  *
@@ -364,7 +364,7 @@ int aa_kernel_interface_replace_policy_from_file(aa_kernel_interface *kernel_int
 }
 
 /**
- * aa_kernel_interface_replace_policy_from_fd - replace a policy in the kernel
+ * aa_kernel_interface_replace_policy_from_fd - replace a policy in the kernel with a policy from a file descriptor
  * @kernel_interface: valid aa_kernel_interface
  * @fd: a pre-opened, readable file descriptor at the correct offset
  *
