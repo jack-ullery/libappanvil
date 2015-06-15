@@ -397,7 +397,7 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'M':
-		if (aa_features_new(&features, optarg)) {
+		if (aa_features_new(&features, AT_FDCWD, optarg)) {
 			fprintf(stderr,
 				"Failed to load features from '%s': %m\n",
 				optarg);
