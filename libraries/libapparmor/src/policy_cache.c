@@ -78,7 +78,7 @@ static int init_cache_features(aa_policy_cache *policy_cache,
 	} else if (!aa_features_is_equal(policy_cache->features,
 					 kernel_features)) {
 		if (!create) {
-			errno = ENOENT;
+			errno = EEXIST;
 			return -1;
 		}
 
@@ -166,8 +166,10 @@ open:
 			if (mkdirat(dirfd, path, 0700) == 0)
 				goto open;
 			PERROR("Can't create cache directory '%s': %m\n", path);
-		} else {
+		} else if (create) {
 			PERROR("Can't update cache directory '%s': %m\n", path);
+		} else {
+			PDEBUG("Cache directory '%s' does not exist\n", path);
 		}
 
 		save = errno;
