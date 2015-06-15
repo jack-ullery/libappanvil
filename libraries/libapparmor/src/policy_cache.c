@@ -142,7 +142,7 @@ static int replace_all_cb(DIR *dir unused, const char *name, struct stat *st,
  * aa_policy_cache_new - create a new policy_cache from a path
  * @policy_cache: will point to the address of an allocated and initialized
  *                aa_policy_cache_new object upon success
- * @kernel_features: features representing the currently running kernel
+ * @kernel_features: features representing a kernel
  * @path: path to the policy cache
  * @max_caches: The maximum number of policy caches, one for each unique set of
  *              kernel features, before older caches are auto-reaped. 0 means
