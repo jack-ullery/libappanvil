@@ -906,7 +906,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (force_clear_cache) {
-			if (aa_policy_cache_remove(cacheloc)) {
+			if (aa_policy_cache_remove(AT_FDCWD, cacheloc)) {
 				PERROR(_("Failed to clear cache files (%s): %s\n"),
 				       cacheloc, strerror(errno));
 				return 1;
@@ -918,8 +918,8 @@ int main(int argc, char *argv[])
 		if (create_cache_dir)
 			pwarn(_("The --create-cache-dir option is deprecated. Please use --write-cache.\n"));
 
-		retval = aa_policy_cache_new(&policy_cache, features, cacheloc,
-					     max_caches);
+		retval = aa_policy_cache_new(&policy_cache, features,
+					     AT_FDCWD, cacheloc, max_caches);
 		if (retval) {
 			if (errno != ENOENT) {
 				PERROR(_("Failed setting up policy cache (%s): %s\n"),
