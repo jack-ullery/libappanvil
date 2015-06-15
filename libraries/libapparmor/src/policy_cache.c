@@ -113,7 +113,7 @@ static int replace_all_cb(int dirfd unused, const char *name, struct stat *st,
 }
 
 /**
- * aa_policy_cache_new - create a new policy_cache from a path
+ * aa_policy_cache_new - create a new aa_policy_cache object from a path
  * @policy_cache: will point to the address of an allocated and initialized
  *                aa_policy_cache_new object upon success
  * @kernel_features: features representing a kernel (may be NULL if you want to
@@ -201,7 +201,7 @@ open:
 }
 
 /**
- * aa_policy_cache_ref - increments the ref count of a policy_cache
+ * aa_policy_cache_ref - increments the ref count of an aa_policy_cache object
  * @policy_cache: the policy_cache
  *
  * Returns: the policy_cache
@@ -213,7 +213,7 @@ aa_policy_cache *aa_policy_cache_ref(aa_policy_cache *policy_cache)
 }
 
 /**
- * aa_policy_cache_unref - decrements the ref count and frees the policy_cache when 0
+ * aa_policy_cache_unref - decrements the ref count and frees the aa_policy_cache object when 0
  * @policy_cache: the policy_cache (can be NULL)
  */
 void aa_policy_cache_unref(aa_policy_cache *policy_cache)
