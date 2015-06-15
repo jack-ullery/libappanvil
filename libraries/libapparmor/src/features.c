@@ -175,13 +175,13 @@ static int features_dir_cb(int dirfd, const char *name, struct stat *st,
 	return 0;
 }
 
-static int handle_features_dir(const char *filename, char *buffer, int size,
-			       char *pos)
+static int load_features_dir(int dirfd, const char *path,
+			     char *buffer, int size)
 {
-	struct features_struct fst = { buffer, size, pos };
+	struct features_struct fst = { buffer, size, buffer };
 
-	if (_aa_dirat_for_each(AT_FDCWD, filename, &fst, features_dir_cb)) {
-		PDEBUG("Failed evaluating %s\n", filename);
+	if (_aa_dirat_for_each(dirfd, path, &fst, features_dir_cb)) {
+		PDEBUG("Failed evaluating %s\n", path);
 		return -1;
 	}
 
@@ -383,7 +383,7 @@ int aa_features_new(aa_features **features, const char *path)
 	aa_features_ref(f);
 
 	retval = S_ISDIR(stat_file.st_mode) ?
-		 handle_features_dir(path, f->string, STRING_SIZE, f->string) :
+		 load_features_dir(AT_FDCWD, path, f->string, STRING_SIZE) :
 		 load_features_file(AT_FDCWD, path, f->string, STRING_SIZE);
 	if (retval == -1) {
 		int save = errno;
