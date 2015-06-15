@@ -28,12 +28,13 @@
 
 #include "private.h"
 
+#define CACHE_FEATURES_FILE	".features"
+
 struct aa_policy_cache {
 	unsigned int ref_count;
 	aa_features *features;
 	aa_features *kernel_features;
-	char *path;
-	char *features_path;
+	int dirfd;
 };
 
 static int clear_cache_cb(int dirfd, const char *path, struct stat *st,
@@ -49,37 +50,16 @@ static int clear_cache_cb(int dirfd, const char *path, struct stat *st,
 
 static int create_cache(aa_policy_cache *policy_cache, aa_features *features)
 {
-	struct stat stat_file;
-	autofclose FILE * f = NULL;
+	if (aa_policy_cache_remove(policy_cache->dirfd, "."))
+		return -1;
 
-	if (aa_policy_cache_remove(policy_cache->path))
-		goto error;
-
-create_file:
-	if (aa_features_write_to_file(features, -1,
-				      policy_cache->features_path) == -1)
-		goto error;
+	if (aa_features_write_to_file(features, policy_cache->dirfd,
+				      CACHE_FEATURES_FILE) == -1)
+		return -1;
 
 	aa_features_unref(policy_cache->features);
 	policy_cache->features = aa_features_ref(features);
 	return 0;
-
-error:
-	/* does the dir exist? */
-	if (stat(policy_cache->path, &stat_file) == -1) {
-		if (mkdir(policy_cache->path, 0700) == 0)
-			goto create_file;
-		PERROR("Can't create cache directory: %s\n",
-		       policy_cache->path);
-	} else if (!S_ISDIR(stat_file.st_mode)) {
-		PERROR("File in cache directory location: %s\n",
-		       policy_cache->path);
-	} else {
-		PERROR("Can't update cache directory: %s\n",
-		       policy_cache->path);
-	}
-
-	return -1;
 }
 
 static int init_cache_features(aa_policy_cache *policy_cache,
@@ -87,8 +67,8 @@ static int init_cache_features(aa_policy_cache *policy_cache,
 {
 	bool call_create_cache = false;
 
-	if (aa_features_new(&policy_cache->features, -1,
-			    policy_cache->features_path)) {
+	if (aa_features_new(&policy_cache->features, policy_cache->dirfd,
+			    CACHE_FEATURES_FILE)) {
 		policy_cache->features = NULL;
 		if (!create || errno != ENOENT)
 			return -1;
@@ -122,17 +102,11 @@ static int replace_all_cb(int dirfd unused, const char *name, struct stat *st,
 
 	if (!S_ISDIR(st->st_mode) && !_aa_is_blacklisted(name, NULL)) {
 		struct replace_all_cb_data *data;
-		autofree char *path = NULL;
 
 		data = (struct replace_all_cb_data *) cb_data;
-		if (asprintf(&path, "%s/%s",
-			     data->policy_cache->path, name) < 0) {
-			path = NULL;
-			errno = ENOMEM;
-			return -1;
-		}
 		retval = aa_kernel_interface_replace_policy_from_file(data->kernel_interface,
-								      -1, path);
+								      data->policy_cache->dirfd,
+								      name);
 	}
 
 	return retval;
@@ -144,6 +118,7 @@ static int replace_all_cb(int dirfd unused, const char *name, struct stat *st,
  *                aa_policy_cache_new object upon success
  * @kernel_features: features representing a kernel (may be NULL if you want to
  *                   use the features of the currently running kernel)
+ * @dirfd: directory file descriptor or AT_FDCWD (see openat(2))
  * @path: path to the policy cache
  * @max_caches: The maximum number of policy caches, one for each unique set of
  *              kernel features, before older caches are auto-reaped. 0 means
@@ -155,8 +130,8 @@ static int replace_all_cb(int dirfd unused, const char *name, struct stat *st,
  *          pointing to NULL
  */
 int aa_policy_cache_new(aa_policy_cache **policy_cache,
-			aa_features *kernel_features, const char *path,
-			uint16_t max_caches)
+			aa_features *kernel_features,
+			int dirfd, const char *path, uint16_t max_caches)
 {
 	aa_policy_cache *pc;
 	bool create = max_caches > 0;
@@ -178,19 +153,26 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 		errno = ENOMEM;
 		return -1;
 	}
+	pc->dirfd = -1;
 	aa_policy_cache_ref(pc);
 
-	pc->path = strdup(path);
-	if (!pc->path) {
-		aa_policy_cache_unref(pc);
-		errno = ENOMEM;
-		return -1;
-	}
+open:
+	pc->dirfd = openat(dirfd, path, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
+	if (pc->dirfd < 0) {
+		int save;
 
-	if (asprintf(&pc->features_path, "%s/.features", pc->path) == -1) {
-		pc->features_path = NULL;
+		/* does the dir exist? */
+		if (create && errno == ENOENT) {
+			if (mkdirat(dirfd, path, 0700) == 0)
+				goto open;
+			PERROR("Can't create cache directory '%s': %m\n", path);
+		} else {
+			PERROR("Can't update cache directory '%s': %m\n", path);
+		}
+
+		save = errno;
 		aa_policy_cache_unref(pc);
-		errno = ENOMEM;
+		errno = save;
 		return -1;
 	}
 
@@ -239,21 +221,22 @@ void aa_policy_cache_unref(aa_policy_cache *policy_cache)
 	if (policy_cache && atomic_dec_and_test(&policy_cache->ref_count)) {
 		aa_features_unref(policy_cache->features);
 		aa_features_unref(policy_cache->kernel_features);
-		free(policy_cache->features_path);
-		free(policy_cache->path);
+		if (policy_cache->dirfd != -1)
+			close(policy_cache->dirfd);
 		free(policy_cache);
 	}
 }
 
 /**
  * aa_policy_cache_remove - removes all policy cache files under a path
+ * @dirfd: directory file descriptor or AT_FDCWD (see openat(2))
  * @path: the path to a policy cache directory
  *
  * Returns: 0 on success, -1 on error with errno set
  */
-int aa_policy_cache_remove(const char *path)
+int aa_policy_cache_remove(int dirfd, const char *path)
 {
-	return _aa_dirat_for_each(AT_FDCWD, path, NULL, clear_cache_cb);
+	return _aa_dirat_for_each(dirfd, path, NULL, clear_cache_cb);
 }
 
 /**
@@ -283,7 +266,7 @@ int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
 
 	cb_data.policy_cache = policy_cache;
 	cb_data.kernel_interface = kernel_interface;
-	retval = _aa_dirat_for_each(AT_FDCWD, policy_cache->path, &cb_data,
+	retval = _aa_dirat_for_each(policy_cache->dirfd, ".", &cb_data,
 				    replace_all_cb);
 
 	aa_kernel_interface_unref(kernel_interface);

@@ -47,7 +47,8 @@ static int test_new(const char *path, uint16_t max_caches)
 	aa_policy_cache *policy_cache = NULL;
 	int rc = 1;
 
-	if (aa_policy_cache_new(&policy_cache, NULL, path, max_caches)) {
+	if (aa_policy_cache_new(&policy_cache, NULL,
+				AT_FDCWD, path, max_caches)) {
 		perror("FAIL - aa_policy_cache_new");
 		goto out;
 	}
@@ -62,7 +63,7 @@ static int test_remove(const char *path)
 {
 	int rc = 1;
 
-	if (aa_policy_cache_remove(path)) {
+	if (aa_policy_cache_remove(AT_FDCWD, path)) {
 		perror("FAIL - aa_policy_cache_remove");
 		goto out;
 	}
@@ -98,7 +99,8 @@ static int test_replace_all(const char *path, uint16_t max_caches)
 	aa_policy_cache *policy_cache = NULL;
 	int rc = 1;
 
-	if (aa_policy_cache_new(&policy_cache, NULL, path, max_caches)) {
+	if (aa_policy_cache_new(&policy_cache, NULL,
+				AT_FDCWD, path, max_caches)) {
 		perror("FAIL - aa_policy_cache_new");
 		goto out;
 	}

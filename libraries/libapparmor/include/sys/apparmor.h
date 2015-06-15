@@ -175,12 +175,12 @@ int aa_kernel_interface_write_policy(int fd, const char *buffer, size_t size);
 
 typedef struct aa_policy_cache aa_policy_cache;
 int aa_policy_cache_new(aa_policy_cache **policy_cache,
-			aa_features *kernel_features, const char *path,
-			uint16_t max_caches);
+			aa_features *kernel_features,
+			int dirfd, const char *path, uint16_t max_caches);
 aa_policy_cache *aa_policy_cache_ref(aa_policy_cache *policy_cache);
 void aa_policy_cache_unref(aa_policy_cache *policy_cache);
 
-int aa_policy_cache_remove(const char *path);
+int aa_policy_cache_remove(int dirfd, const char *path);
 int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
 				aa_kernel_interface *kernel_interface);
 
