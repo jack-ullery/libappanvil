@@ -249,6 +249,8 @@ int aa_policy_cache_remove(const char *path)
  * aa_policy_cache_replace_all - performs a kernel policy replacement of all cached policies
  * @policy_cache: the policy_cache
  * @kernel_interface: the kernel interface to use when doing the replacement
+ *                    (may be NULL if the currently running kernel features
+ *                    were used when calling aa_policy_cache_new())
  *
  * Returns: 0 on success, -1 on error with errno set and features pointing to
  *          NULL
