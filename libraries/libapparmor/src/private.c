@@ -170,25 +170,31 @@ int _aa_asprintf(char **strp, const char *fmt, ...)
 	return rc;
 }
 
+static int dot_or_dot_dot_filter(const struct dirent *ent)
+{
+	if (strcmp(ent->d_name, ".") == 0 ||
+	    strcmp(ent->d_name, "..") == 0)
+		return 0;
+
+	return 1;
+}
+
 /**
  * _aa_dirat_for_each: iterate over a directory calling cb for each entry
- * @dir: already opened directory (MAY BE NULL)
- * @name: name of the directory (MAY BE NULL)
+ * @dirfd: already opened directory
+ * @name: name of the directory (NOT NULL)
  * @data: data pointer to pass to the callback fn (MAY BE NULL)
  * @cb: the callback to pass entry too (NOT NULL)
  *
  * Iterate over the entries in a directory calling cb for each entry.
- * The directory to iterate is determined by a combination of @dir and
+ * The directory to iterate is determined by a combination of @dirfd and
  * @name.
  *
- * IF @name is a relative path it is determine relative to at @dir if it
- * is specified, else it the lookup is done relative to the current
- * working directory.
+ * See the openat section of the open(2) man page for details on valid @dirfd
+ * and @name combinations. This function does accept AT_FDCWD as @dirfd if
+ * @name should be considered relative to the current working directory.
  *
- * If @name is not specified then @dir is used as the directory to iterate
- * over.
- *
- * It is an error if both @name and @dir are null
+ * Pass "." for @name if @dirfd is the directory to iterate over.
  *
  * The cb function is called with the DIR in use and the name of the
  * file in that directory.  If the file is to be opened it should
@@ -196,88 +202,52 @@ int _aa_asprintf(char **strp, const char *fmt, ...)
  *
  * Returns: 0 on success, else -1 and errno is set to the error code
  */
-int _aa_dirat_for_each(DIR *dir, const char *name, void *data,
-		       int (* cb)(DIR *, const char *, struct stat *, void *))
+int _aa_dirat_for_each(int dirfd, const char *name, void *data,
+		       int (* cb)(int, const char *, struct stat *, void *))
 {
-	autofree struct dirent *dirent = NULL;
-	DIR *d = NULL;
-	int error;
+	autofree struct dirent **namelist = NULL;
+	autoclose int cb_dirfd = -1;
+	int i, num_dirs, rc;
 
-	if (!cb || (!dir && !name)) {
+	if (!cb || !name) {
 		errno = EINVAL;
 		return -1;
 	}
 
-	if (dir && (!name || *name != '/')) {
-		dirent = (struct dirent *)
-			malloc(offsetof(struct dirent, d_name) +
-			       fpathconf(dirfd(dir), _PC_NAME_MAX) + 1);
-	} else {
-		dirent = (struct dirent *)
-			malloc(offsetof(struct dirent, d_name) +
-			       pathconf(name, _PC_NAME_MAX) + 1);
-	}
-	if (!dirent) {
-		errno = ENOMEM;
-		PDEBUG("could not alloc dirent: %m\n");
+	cb_dirfd = openat(dirfd, name, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
+	if (cb_dirfd == -1) {
+		PDEBUG("could not open directory '%s': %m\n", name);
 		return -1;
 	}
 
-	if (name) {
-		if (dir && *name != '/') {
-			int fd = openat(dirfd(dir), name, O_RDONLY);
-			if (fd == -1)
-				goto fail;
-			d = fdopendir(fd);
-		} else {
-			d = opendir(name);
-		}
-		PDEBUG("Open dir '%s': %s\n", name, d ? "succeeded" : "failed");
-		if (!(d))
-			goto fail;
-	} else { /* dir && !name */
-		PDEBUG("Recieved cache directory\n");
-		d = dir;
+	num_dirs = scandirat(cb_dirfd, ".", &namelist,
+			     dot_or_dot_dot_filter, NULL);
+	if (num_dirs == -1) {
+		PDEBUG("scandirat of directory '%s' failed: %m\n", name);
+		return -1;
 	}
 
-	for (;;) {
-		struct dirent *ent;
+	for (rc = 0, i = 0; i < num_dirs; i++) {
+		/* Must cycle through all dirs so that each one is autofreed */
+		autofree struct dirent *dir = namelist[i];
 		struct stat my_stat;
 
-		error = readdir_r(d, dirent, &ent);
-		if (error) {
-			errno = error; /* readdir_r directly returns an errno */
-			PDEBUG("readdir_r failed: %m\n");
-			goto fail;
-		} else if (!ent) {
-			break;
-		}
-
-		if (strcmp(ent->d_name, ".") == 0 ||
-		    strcmp(ent->d_name, "..") == 0)
+		if (rc)
 			continue;
 
-		if (fstatat(dirfd(d), ent->d_name, &my_stat, 0)) {
-			PDEBUG("stat failed for '%s': %m\n", name);
-			goto fail;
+		if (fstatat(cb_dirfd, dir->d_name, &my_stat, 0)) {
+			PDEBUG("stat failed for '%s': %m\n", dir->d_name);
+			rc = -1;
+			continue;
 		}
 
-		if (cb(d, ent->d_name, &my_stat, data)) {
-			PDEBUG("dir_for_each callback failed\n");
-			goto fail;
+		if (cb(cb_dirfd, dir->d_name, &my_stat, data)) {
+			PDEBUG("dir_for_each callback failed for '%s'\n",
+			       dir->d_name);
+			rc = -1;
+			continue;
 		}
 	}
 
-	if (d != dir)
-		closedir(d);
-
-	return 0;
-
-fail:
-	error = errno;
-	if (d && d != dir)
-		closedir(d);
-	errno = error;
-
-	return -1;
+	return rc;
 }

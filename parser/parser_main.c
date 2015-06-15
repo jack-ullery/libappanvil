@@ -28,7 +28,6 @@
 #include <getopt.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <dirent.h>
 
 /* enable the following line to get voluminous debug info */
 /* #define DEBUG */
@@ -812,7 +811,7 @@ struct dir_cb_data {
 };
 
 /* data - pointer to a dir_cb_data */
-static int profile_dir_cb(DIR *dir unused, const char *name, struct stat *st,
+static int profile_dir_cb(int dirfd unused, const char *name, struct stat *st,
 			  void *data)
 {
 	int rc = 0;
@@ -829,7 +828,7 @@ static int profile_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 }
 
 /* data - pointer to a dir_cb_data */
-static int binary_dir_cb(DIR *dir unused, const char *name, struct stat *st,
+static int binary_dir_cb(int dirfd unused, const char *name, struct stat *st,
 			 void *data)
 {
 	int rc = 0;
@@ -962,14 +961,14 @@ int main(int argc, char *argv[])
 		}
 
 		if (profilename && S_ISDIR(stat_file.st_mode)) {
-			int (*cb)(DIR *dir, const char *name, struct stat *st,
+			int (*cb)(int dirfd, const char *name, struct stat *st,
 				  void *data);
 			struct dir_cb_data cb_data;
 
 			cb_data.dirname = profilename;
 			cb_data.cachedir = cacheloc;
 			cb = binary_input ? binary_dir_cb : profile_dir_cb;
-			if ((retval = dirat_for_each(NULL, profilename,
+			if ((retval = dirat_for_each(AT_FDCWD, profilename,
 						     &cb_data, cb))) {
 				PDEBUG("Failed loading profiles from %s\n",
 				       profilename);

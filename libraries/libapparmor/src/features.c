@@ -80,7 +80,7 @@ static int features_snprintf(struct features_struct *fst, const char *fmt, ...)
 	return 0;
 }
 
-static int features_dir_cb(DIR *dir, const char *name, struct stat *st,
+static int features_dir_cb(int dirfd, const char *name, struct stat *st,
 			   void *data)
 {
 	struct features_struct *fst = (struct features_struct *) data;
@@ -97,7 +97,7 @@ static int features_dir_cb(DIR *dir, const char *name, struct stat *st,
 		int len;
 		int remaining = fst->size - (fst->pos - fst->buffer);
 
-		file = openat(dirfd(dir), name, O_RDONLY);
+		file = openat(dirfd, name, O_RDONLY);
 		if (file == -1) {
 			PDEBUG("Could not open '%s'", name);
 			return -1;
@@ -122,7 +122,7 @@ static int features_dir_cb(DIR *dir, const char *name, struct stat *st,
 			return -1;
 		}
 	} else if (S_ISDIR(st->st_mode)) {
-		if (_aa_dirat_for_each(dir, name, fst, features_dir_cb))
+		if (_aa_dirat_for_each(dirfd, name, fst, features_dir_cb))
 			return -1;
 	}
 
@@ -137,7 +137,7 @@ static int handle_features_dir(const char *filename, char *buffer, int size,
 {
 	struct features_struct fst = { buffer, size, pos };
 
-	if (_aa_dirat_for_each(NULL, filename, &fst, features_dir_cb)) {
+	if (_aa_dirat_for_each(AT_FDCWD, filename, &fst, features_dir_cb)) {
 		PDEBUG("Failed evaluating %s\n", filename);
 		return -1;
 	}

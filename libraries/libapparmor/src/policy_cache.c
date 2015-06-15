@@ -16,8 +16,8 @@
  *   Ltd.
  */
 
-#include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,12 +36,12 @@ struct aa_policy_cache {
 	char *features_path;
 };
 
-static int clear_cache_cb(DIR *dir, const char *path, struct stat *st,
+static int clear_cache_cb(int dirfd, const char *path, struct stat *st,
 			  void *data unused)
 {
 	/* remove regular files */
 	if (S_ISREG(st->st_mode))
-		return unlinkat(dirfd(dir), path, 0);
+		return unlinkat(dirfd, path, 0);
 
 	/* do nothing with other file types */
 	return 0;
@@ -115,7 +115,7 @@ struct replace_all_cb_data {
 	aa_kernel_interface *kernel_interface;
 };
 
-static int replace_all_cb(DIR *dir unused, const char *name, struct stat *st,
+static int replace_all_cb(int dirfd unused, const char *name, struct stat *st,
 			 void *cb_data)
 {
 	int retval = 0;
@@ -253,7 +253,7 @@ void aa_policy_cache_unref(aa_policy_cache *policy_cache)
  */
 int aa_policy_cache_remove(const char *path)
 {
-	return _aa_dirat_for_each(NULL, path, NULL, clear_cache_cb);
+	return _aa_dirat_for_each(AT_FDCWD, path, NULL, clear_cache_cb);
 }
 
 /**
@@ -283,7 +283,7 @@ int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
 
 	cb_data.policy_cache = policy_cache;
 	cb_data.kernel_interface = kernel_interface;
-	retval = _aa_dirat_for_each(NULL, policy_cache->path, &cb_data,
+	retval = _aa_dirat_for_each(AT_FDCWD, policy_cache->path, &cb_data,
 				    replace_all_cb);
 
 	aa_kernel_interface_unref(kernel_interface);

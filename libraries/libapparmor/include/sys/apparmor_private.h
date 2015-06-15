@@ -17,7 +17,6 @@
 #ifndef _SYS_APPARMOR_PRIVATE_H
 #define _SYS_APPARMOR_PRIVATE_H	1
 
-#include <dirent.h>
 #include <stdio.h>
 #include <sys/stat.h>
 
@@ -31,8 +30,8 @@ void _aa_autofclose(FILE **f);
 
 int _aa_asprintf(char **strp, const char *fmt, ...);
 
-int _aa_dirat_for_each(DIR *dir, const char *name, void *data,
-		       int (* cb)(DIR *, const char *, struct stat *, void *));
+int _aa_dirat_for_each(int dirfd, const char *name, void *data,
+		       int (* cb)(int, const char *, struct stat *, void *));
 
 __END_DECLS
 
