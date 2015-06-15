@@ -85,16 +85,29 @@ error:
 static int init_cache_features(aa_policy_cache *policy_cache,
 			       aa_features *kernel_features, bool create)
 {
+	bool call_create_cache = false;
+
 	if (aa_features_new(&policy_cache->features,
 			    policy_cache->features_path)) {
 		policy_cache->features = NULL;
 		if (!create || errno != ENOENT)
 			return -1;
 
-		return create_cache(policy_cache, kernel_features);
+		/* The cache directory needs to be created */
+		call_create_cache = true;
+	} else if (!aa_features_is_equal(policy_cache->features,
+					 kernel_features)) {
+		if (!create) {
+			errno = ENOENT;
+			return -1;
+		}
+
+		/* The cache directory needs to be refreshed */
+		call_create_cache = true;
 	}
 
-	return 0;
+	return call_create_cache ?
+		create_cache(policy_cache, kernel_features) : 0;
 }
 
 struct replace_all_cb_data {
@@ -131,21 +144,31 @@ static int replace_all_cb(DIR *dir unused, const char *name, struct stat *st,
  *                aa_policy_cache_new object upon success
  * @kernel_features: features representing the currently running kernel
  * @path: path to the policy cache
- * @create: true if the cache should be created if it doesn't already exist
+ * @max_caches: The maximum number of policy caches, one for each unique set of
+ *              kernel features, before older caches are auto-reaped. 0 means
+ *              that no new caches should be created (existing, valid caches
+ *              will be used) and auto-reaping is disabled. UINT16_MAX means
+ *              that a cache can be created and auto-reaping is disabled.
  *
  * Returns: 0 on success, -1 on error with errno set and *@policy_cache
  *          pointing to NULL
  */
 int aa_policy_cache_new(aa_policy_cache **policy_cache,
 			aa_features *kernel_features, const char *path,
-			bool create)
+			uint16_t max_caches)
 {
 	aa_policy_cache *pc;
+	bool create = max_caches > 0;
 
 	*policy_cache = NULL;
 
 	if (!path) {
 		errno = EINVAL;
+		return -1;
+	}
+
+	if (max_caches > 1) {
+		errno = ENOTSUP;
 		return -1;
 	}
 
@@ -209,31 +232,6 @@ void aa_policy_cache_unref(aa_policy_cache *policy_cache)
 		free(policy_cache->path);
 		free(policy_cache);
 	}
-}
-
-/**
- * aa_policy_cache_is_valid - checks if the policy_cache is valid for the currently running kernel
- * @policy_cache: the policy_cache
- *
- * Returns: true if the policy_cache is valid for the currently running kernel,
- *          false if not
- */
-bool aa_policy_cache_is_valid(aa_policy_cache *policy_cache)
-{
-	return aa_features_is_equal(policy_cache->features,
-				    policy_cache->kernel_features);
-}
-
-/**
- * aa_policy_cache_create - creates a valid policy_cache for the currently running kernel
- * @policy_cache: the policy_cache
- *
- * Returns: 0 on success, -1 on error with errno set and features pointing to
- *          NULL
- */
-int aa_policy_cache_create(aa_policy_cache *policy_cache)
-{
-	return create_cache(policy_cache, policy_cache->kernel_features);
 }
 
 /**

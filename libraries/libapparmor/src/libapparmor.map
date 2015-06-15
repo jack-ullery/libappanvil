@@ -80,8 +80,6 @@ APPARMOR_2.10 {
         aa_policy_cache_new;
         aa_policy_cache_ref;
         aa_policy_cache_unref;
-        aa_policy_cache_is_valid;
-        aa_policy_cache_create;
         aa_policy_cache_remove;
         aa_policy_cache_replace_all;
         aa_splitcon;

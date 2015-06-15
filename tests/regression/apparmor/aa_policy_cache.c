@@ -16,36 +16,33 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <sys/apparmor.h>
 
-#define OPT_CREATE		"create"
-#define OPT_IS_VALID		"is-valid"
 #define OPT_NEW			"new"
-#define OPT_NEW_CREATE		"new-create"
 #define OPT_REMOVE		"remove"
 #define OPT_REMOVE_POLICY	"remove-policy"
 #define OPT_REPLACE_ALL		"replace-all"
+#define OPT_FLAG_MAX_CACHES	"--max-caches"
 
 static void usage(const char *prog)
 {
 	fprintf(stderr,
-		"FAIL - usage: %s %s <PATH>\n"
-		"              %s %s <PATH>\n"
-		"              %s %s <PATH>\n"
-		"              %s %s <PATH>\n"
+		"FAIL - usage: %s %s [%s N] <PATH>\n"
 		"              %s %s <PATH>\n"
 		"              %s %s <PROFILE_NAME>\n"
-		"              %s %s <PATH>\n",
-		prog, OPT_CREATE, prog, OPT_IS_VALID, prog, OPT_NEW,
-		prog, OPT_NEW_CREATE, prog, OPT_REMOVE, prog, OPT_REMOVE_POLICY,
-		prog, OPT_REPLACE_ALL);
+		"              %s %s [%s N] <PATH>\n",
+		prog, OPT_NEW, OPT_FLAG_MAX_CACHES,
+		prog, OPT_REMOVE,
+		prog, OPT_REMOVE_POLICY,
+		prog, OPT_REPLACE_ALL, OPT_FLAG_MAX_CACHES);
 }
 
-static int test_create(const char *path)
+static int test_new(const char *path, uint16_t max_caches)
 {
 	aa_features *features = NULL;
 	aa_policy_cache *policy_cache = NULL;
@@ -56,64 +53,7 @@ static int test_create(const char *path)
 		goto out;
 	}
 
-	if (aa_policy_cache_new(&policy_cache, features, path, false)) {
-		perror("FAIL - aa_policy_cache_new");
-		goto out;
-	}
-
-	if (aa_policy_cache_create(policy_cache)) {
-		perror("FAIL - aa_policy_cache_create");
-		goto out;
-	}
-
-	rc = 0;
-out:
-	aa_features_unref(features);
-	aa_policy_cache_unref(policy_cache);
-	return rc;
-}
-
-static int test_is_valid(const char *path)
-{
-	aa_features *features = NULL;
-	aa_policy_cache *policy_cache = NULL;
-	int rc = 1;
-
-	if (aa_features_new_from_kernel(&features)) {
-		perror("FAIL - aa_features_new_from_kernel");
-		goto out;
-	}
-
-	if (aa_policy_cache_new(&policy_cache, features, path, false)) {
-		perror("FAIL - aa_policy_cache_new");
-		goto out;
-	}
-
-	if (!aa_policy_cache_is_valid(policy_cache)) {
-		errno = EINVAL;
-		perror("FAIL - aa_policy_cache_is_valid");
-		goto out;
-	}
-
-	rc = 0;
-out:
-	aa_features_unref(features);
-	aa_policy_cache_unref(policy_cache);
-	return rc;
-}
-
-static int test_new(const char *path, bool create)
-{
-	aa_features *features = NULL;
-	aa_policy_cache *policy_cache = NULL;
-	int rc = 1;
-
-	if (aa_features_new_from_kernel(&features)) {
-		perror("FAIL - aa_features_new_from_kernel");
-		goto out;
-	}
-
-	if (aa_policy_cache_new(&policy_cache, features, path, create)) {
+	if (aa_policy_cache_new(&policy_cache, features, path, max_caches)) {
 		perror("FAIL - aa_policy_cache_new");
 		goto out;
 	}
@@ -167,7 +107,7 @@ out:
 	return rc;
 }
 
-static int test_replace_all(const char *path)
+static int test_replace_all(const char *path, uint16_t max_caches)
 {
 	aa_features *features = NULL;
 	aa_policy_cache *policy_cache = NULL;
@@ -178,7 +118,7 @@ static int test_replace_all(const char *path)
 		goto out;
 	}
 
-	if (aa_policy_cache_new(&policy_cache, features, path, false)) {
+	if (aa_policy_cache_new(&policy_cache, features, path, max_caches)) {
 		perror("FAIL - aa_policy_cache_new");
 		goto out;
 	}
@@ -197,27 +137,45 @@ out:
 
 int main(int argc, char **argv)
 {
+	uint16_t max_caches = 0;
+	const char *str = NULL;
 	int rc = 1;
 
-	if (argc != 3) {
+	if (!(argc == 3 || argc == 5)) {
 		usage(argv[0]);
 		exit(1);
 	}
 
-	if (strcmp(argv[1], OPT_CREATE) == 0) {
-		rc = test_create(argv[2]);
-	} else if (strcmp(argv[1], OPT_IS_VALID) == 0) {
-		rc = test_is_valid(argv[2]);
-	} else if (strcmp(argv[1], OPT_NEW) == 0) {
-		rc = test_new(argv[2], false);
-	} else if (strcmp(argv[1], OPT_NEW_CREATE) == 0) {
-		rc = test_new(argv[2], true);
-	} else if (strcmp(argv[1], OPT_REMOVE) == 0) {
-		rc = test_remove(argv[2]);
-	} else if (strcmp(argv[1], OPT_REMOVE_POLICY) == 0) {
-		rc = test_remove_policy(argv[2]);
+	str = argv[argc - 1];
+
+	if (argc == 5) {
+		unsigned long tmp;
+
+		errno = 0;
+		tmp = strtoul(argv[3], NULL, 10);
+		if ((errno == ERANGE && tmp == ULONG_MAX) ||
+		    (errno && tmp == 0)) {
+			perror("FAIL - strtoul");
+			exit(1);
+		}
+
+		if (tmp > UINT16_MAX) {
+			fprintf(stderr, "FAIL - %lu larger than UINT16_MAX\n",
+				tmp);
+			exit(1);
+		}
+
+		max_caches = tmp;
+	}
+
+	if (strcmp(argv[1], OPT_NEW) == 0) {
+		rc = test_new(str, max_caches);
+	} else if (strcmp(argv[1], OPT_REMOVE) == 0 && argc == 3) {
+		rc = test_remove(str);
+	} else if (strcmp(argv[1], OPT_REMOVE_POLICY) == 0 && argc == 3) {
+		rc = test_remove_policy(str);
 	} else if (strcmp(argv[1], OPT_REPLACE_ALL) == 0) {
-		rc = test_replace_all(argv[2]);
+		rc = test_replace_all(str, max_caches);
 	} else {
 		usage(argv[0]);
 	}
