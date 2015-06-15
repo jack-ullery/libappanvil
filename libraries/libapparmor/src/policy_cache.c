@@ -142,7 +142,8 @@ static int replace_all_cb(DIR *dir unused, const char *name, struct stat *st,
  * aa_policy_cache_new - create a new policy_cache from a path
  * @policy_cache: will point to the address of an allocated and initialized
  *                aa_policy_cache_new object upon success
- * @kernel_features: features representing a kernel
+ * @kernel_features: features representing a kernel (may be NULL if you want to
+ *                   use the features of the currently running kernel)
  * @path: path to the policy cache
  * @max_caches: The maximum number of policy caches, one for each unique set of
  *              kernel features, before older caches are auto-reaped. 0 means
@@ -193,6 +194,17 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 		return -1;
 	}
 
+	if (kernel_features) {
+		aa_features_ref(kernel_features);
+	} else if (aa_features_new_from_kernel(&kernel_features) == -1) {
+		int save = errno;
+
+		aa_policy_cache_unref(pc);
+		errno = save;
+		return -1;
+	}
+	pc->kernel_features = kernel_features;
+
 	if (init_cache_features(pc, kernel_features, create)) {
 		int save = errno;
 
@@ -201,7 +213,6 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 		return -1;
 	}
 
-	pc->kernel_features = aa_features_ref(kernel_features);
 	*policy_cache = pc;
 
 	return 0;
@@ -226,8 +237,8 @@ aa_policy_cache *aa_policy_cache_ref(aa_policy_cache *policy_cache)
 void aa_policy_cache_unref(aa_policy_cache *policy_cache)
 {
 	if (policy_cache && atomic_dec_and_test(&policy_cache->ref_count)) {
-		aa_features_unref(policy_cache->kernel_features);
 		aa_features_unref(policy_cache->features);
+		aa_features_unref(policy_cache->kernel_features);
 		free(policy_cache->features_path);
 		free(policy_cache->path);
 		free(policy_cache);

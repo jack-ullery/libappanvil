@@ -44,23 +44,16 @@ static void usage(const char *prog)
 
 static int test_new(const char *path, uint16_t max_caches)
 {
-	aa_features *features = NULL;
 	aa_policy_cache *policy_cache = NULL;
 	int rc = 1;
 
-	if (aa_features_new_from_kernel(&features)) {
-		perror("FAIL - aa_features_new_from_kernel");
-		goto out;
-	}
-
-	if (aa_policy_cache_new(&policy_cache, features, path, max_caches)) {
+	if (aa_policy_cache_new(&policy_cache, NULL, path, max_caches)) {
 		perror("FAIL - aa_policy_cache_new");
 		goto out;
 	}
 
 	rc = 0;
 out:
-	aa_features_unref(features);
 	aa_policy_cache_unref(policy_cache);
 	return rc;
 }
@@ -109,16 +102,10 @@ out:
 
 static int test_replace_all(const char *path, uint16_t max_caches)
 {
-	aa_features *features = NULL;
 	aa_policy_cache *policy_cache = NULL;
 	int rc = 1;
 
-	if (aa_features_new_from_kernel(&features)) {
-		perror("FAIL - aa_features_new_from_kernel");
-		goto out;
-	}
-
-	if (aa_policy_cache_new(&policy_cache, features, path, max_caches)) {
+	if (aa_policy_cache_new(&policy_cache, NULL, path, max_caches)) {
 		perror("FAIL - aa_policy_cache_new");
 		goto out;
 	}
@@ -130,7 +117,6 @@ static int test_replace_all(const char *path, uint16_t max_caches)
 
 	rc = 0;
 out:
-	aa_features_unref(features);
 	aa_policy_cache_unref(policy_cache);
 	return rc;
 }
