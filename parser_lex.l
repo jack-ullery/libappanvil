@@ -32,7 +32,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <dirent.h>
 
 #include <unordered_map>
 #include <string>
@@ -120,7 +119,7 @@ struct cb_struct {
 	const char *filename;
 };
 
-static int include_dir_cb(DIR *dir unused, const char *name, struct stat *st,
+static int include_dir_cb(int dirfd unused, const char *name, struct stat *st,
 			  void *data)
 {
 	struct cb_struct *d = (struct cb_struct *) data;
@@ -179,7 +178,7 @@ void include_filename(char *filename, int search)
 		struct cb_struct data = { fullpath, filename };
 		fclose(include_file);
 		include_file = NULL;
-		if (dirat_for_each(NULL, fullpath, &data, include_dir_cb)) {
+		if (dirat_for_each(AT_FDCWD, fullpath, &data, include_dir_cb)) {
 			yyerror(_("Could not process include directory"
 				  " '%s' in '%s'"), fullpath, filename);;
 		}
