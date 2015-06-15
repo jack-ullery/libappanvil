@@ -80,6 +80,69 @@ static int features_snprintf(struct features_struct *fst, const char *fmt, ...)
 	return 0;
 }
 
+/* load_features_file - opens and reads a file into @buffer and then NUL-terminates @buffer
+ * @dirfd: a directory file descriptory or AT_FDCWD (see openat(2))
+ * @path: name of the file
+ * @buffer: the buffer to read the features file into (will be NUL-terminated on success)
+ * @size: the size of @buffer
+ *
+ * Returns: The number of bytes copied into @buffer on success (not counting
+ * the NUL-terminator), else -1 and errno is set. Note that @size must be
+ * larger than the size of the file or -1 will be returned with errno set to
+ * ENOBUFS indicating that @buffer was not large enough to contain all of the
+ * file contents.
+ */
+static int load_features_file(int dirfd, const char *path,
+			      char *buffer, size_t size)
+{
+	autoclose int file = -1;
+	char *pos = buffer;
+	ssize_t len;
+
+	file = openat(dirfd, path, O_RDONLY);
+	if (file < 0) {
+		PDEBUG("Could not open '%s'\n", path);
+		return -1;
+	}
+	PDEBUG("Opened features \"%s\"\n", path);
+
+	if (!size) {
+		errno = ENOBUFS;
+		return -1;
+	}
+
+	/* Save room for a NUL-terminator at the end of @buffer */
+	size--;
+
+	do {
+		len = read(file, pos, size);
+		if (len > 0) {
+			size -= len;
+			pos += len;
+		}
+	} while (len > 0 && size);
+
+	/**
+	 * Possible error conditions:
+	 *  - len == -1: read failed and errno is already set so return -1
+	 *  - len  >  0: read() never returned 0 (EOF) meaning that @buffer was
+	 *  		 too small to contain all of the file contents so set
+	 *  		 errno to ENOBUFS and return -1
+	 */
+	if (len) {
+		if (len > 0)
+			errno = ENOBUFS;
+
+		PDEBUG("Error reading features file '%s': %m\n", path);
+		return -1;
+	}
+
+	/* NUL-terminate @buffer */
+	*pos = 0;
+
+	return pos - buffer;
+}
+
 static int features_dir_cb(int dirfd, const char *name, struct stat *st,
 			   void *data)
 {
@@ -93,34 +156,14 @@ static int features_dir_cb(int dirfd, const char *name, struct stat *st,
 		return -1;
 
 	if (S_ISREG(st->st_mode)) {
-		autoclose int file = -1;
 		int len;
 		int remaining = fst->size - (fst->pos - fst->buffer);
 
-		file = openat(dirfd, name, O_RDONLY);
-		if (file == -1) {
-			PDEBUG("Could not open '%s'", name);
+		len = load_features_file(dirfd, name, fst->pos, remaining);
+		if (len < 0)
 			return -1;
-		}
-		PDEBUG("Opened features \"%s\"\n", name);
-		if (st->st_size > remaining) {
-			PDEBUG("Feature buffer full.");
-			errno = ENOBUFS;
-			return -1;
-		}
 
-		do {
-			len = read(file, fst->pos, remaining);
-			if (len > 0) {
-				remaining -= len;
-				fst->pos += len;
-				*fst->pos = 0;
-			}
-		} while (len > 0);
-		if (len < 0) {
-			PDEBUG("Error reading feature file '%s'\n", name);
-			return -1;
-		}
+		fst->pos += len;
 	} else if (S_ISDIR(st->st_mode)) {
 		if (_aa_dirat_for_each(dirfd, name, fst, features_dir_cb))
 			return -1;
@@ -141,27 +184,6 @@ static int handle_features_dir(const char *filename, char *buffer, int size,
 		PDEBUG("Failed evaluating %s\n", filename);
 		return -1;
 	}
-
-	return 0;
-}
-
-static int load_features_file(const char *name, char *buffer, size_t size)
-{
-	autofclose FILE *f = NULL;
-	size_t end;
-
-	f = fopen(name, "r");
-	if (!f)
-		return -1;
-
-	errno = 0;
-	end = fread(buffer, 1, size - 1, f);
-	if (ferror(f)) {
-		if (!errno)
-			errno = EIO;
-		return -1;
-	}
-	buffer[end] = 0;
 
 	return 0;
 }
@@ -362,8 +384,8 @@ int aa_features_new(aa_features **features, const char *path)
 
 	retval = S_ISDIR(stat_file.st_mode) ?
 		 handle_features_dir(path, f->string, STRING_SIZE, f->string) :
-		 load_features_file(path, f->string, STRING_SIZE);
-	if (retval) {
+		 load_features_file(AT_FDCWD, path, f->string, STRING_SIZE);
+	if (retval == -1) {
 		int save = errno;
 
 		aa_features_unref(f);
