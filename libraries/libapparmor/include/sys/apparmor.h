@@ -138,51 +138,56 @@ extern int aa_query_link_path(const char *label, const char *target,
 	(aa_change_hat_vargs)(T, __macroarg_counter(X), X)
 
 typedef struct aa_features aa_features;
-int aa_features_new(aa_features **features, int dirfd, const char *path);
-int aa_features_new_from_string(aa_features **features,
-				const char *string, size_t size);
-int aa_features_new_from_kernel(aa_features **features);
-aa_features *aa_features_ref(aa_features *features);
-void aa_features_unref(aa_features *features);
+extern int aa_features_new(aa_features **features, int dirfd, const char *path);
+extern int aa_features_new_from_string(aa_features **features,
+				       const char *string, size_t size);
+extern int aa_features_new_from_kernel(aa_features **features);
+extern aa_features *aa_features_ref(aa_features *features);
+extern void aa_features_unref(aa_features *features);
 
-int aa_features_write_to_file(aa_features *features,
-			      int dirfd, const char *path);
-bool aa_features_is_equal(aa_features *features1, aa_features *features2);
-bool aa_features_supports(aa_features *features, const char *str);
+extern int aa_features_write_to_file(aa_features *features,
+				     int dirfd, const char *path);
+extern bool aa_features_is_equal(aa_features *features1,
+				 aa_features *features2);
+extern bool aa_features_supports(aa_features *features, const char *str);
 
 typedef struct aa_kernel_interface aa_kernel_interface;
-int aa_kernel_interface_new(aa_kernel_interface **kernel_interface,
+extern int aa_kernel_interface_new(aa_kernel_interface **kernel_interface,
 			    aa_features *kernel_features,
 			    const char *apparmorfs);
-aa_kernel_interface *aa_kernel_interface_ref(aa_kernel_interface *kernel_interface);
-void aa_kernel_interface_unref(aa_kernel_interface *kernel_interface);
+extern aa_kernel_interface *aa_kernel_interface_ref(aa_kernel_interface *kernel_interface);
+extern void aa_kernel_interface_unref(aa_kernel_interface *kernel_interface);
 
-int aa_kernel_interface_load_policy(aa_kernel_interface *kernel_interface,
-				    const char *buffer, size_t size);
-int aa_kernel_interface_load_policy_from_file(aa_kernel_interface *kernel_interface,
-					      int dirfd, const char *path);
-int aa_kernel_interface_load_policy_from_fd(aa_kernel_interface *kernel_interface,
-					    int fd);
-int aa_kernel_interface_replace_policy(aa_kernel_interface *kernel_interface,
-				       const char *buffer, size_t size);
-int aa_kernel_interface_replace_policy_from_file(aa_kernel_interface *kernel_interface,
-						 int dirfd, const char *path);
-int aa_kernel_interface_replace_policy_from_fd(aa_kernel_interface *kernel_interface,
-					       int fd);
-int aa_kernel_interface_remove_policy(aa_kernel_interface *kernel_interface,
-				      const char *fqname);
-int aa_kernel_interface_write_policy(int fd, const char *buffer, size_t size);
+extern int aa_kernel_interface_load_policy(aa_kernel_interface *kernel_interface,
+					   const char *buffer, size_t size);
+extern int aa_kernel_interface_load_policy_from_file(aa_kernel_interface *kernel_interface,
+						     int dirfd,
+						     const char *path);
+extern int aa_kernel_interface_load_policy_from_fd(aa_kernel_interface *kernel_interface,
+						   int fd);
+extern int aa_kernel_interface_replace_policy(aa_kernel_interface *kernel_interface,
+					      const char *buffer, size_t size);
+extern int aa_kernel_interface_replace_policy_from_file(aa_kernel_interface *kernel_interface,
+							int dirfd,
+							const char *path);
+extern int aa_kernel_interface_replace_policy_from_fd(aa_kernel_interface *kernel_interface,
+						      int fd);
+extern int aa_kernel_interface_remove_policy(aa_kernel_interface *kernel_interface,
+					     const char *fqname);
+extern int aa_kernel_interface_write_policy(int fd, const char *buffer,
+					    size_t size);
 
 typedef struct aa_policy_cache aa_policy_cache;
-int aa_policy_cache_new(aa_policy_cache **policy_cache,
-			aa_features *kernel_features,
-			int dirfd, const char *path, uint16_t max_caches);
-aa_policy_cache *aa_policy_cache_ref(aa_policy_cache *policy_cache);
-void aa_policy_cache_unref(aa_policy_cache *policy_cache);
+extern int aa_policy_cache_new(aa_policy_cache **policy_cache,
+			       aa_features *kernel_features,
+			       int dirfd, const char *path,
+			       uint16_t max_caches);
+extern aa_policy_cache *aa_policy_cache_ref(aa_policy_cache *policy_cache);
+extern void aa_policy_cache_unref(aa_policy_cache *policy_cache);
 
-int aa_policy_cache_remove(int dirfd, const char *path);
-int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
-				aa_kernel_interface *kernel_interface);
+extern int aa_policy_cache_remove(int dirfd, const char *path);
+extern int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
+				       aa_kernel_interface *kernel_interface);
 
 __END_DECLS
 
