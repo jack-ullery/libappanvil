@@ -160,13 +160,13 @@ void aa_kernel_interface_unref(aa_kernel_interface *kernel_interface);
 int aa_kernel_interface_load_policy(aa_kernel_interface *kernel_interface,
 				    const char *buffer, size_t size);
 int aa_kernel_interface_load_policy_from_file(aa_kernel_interface *kernel_interface,
-					      const char *path);
+					      int dirfd, const char *path);
 int aa_kernel_interface_load_policy_from_fd(aa_kernel_interface *kernel_interface,
 					    int fd);
 int aa_kernel_interface_replace_policy(aa_kernel_interface *kernel_interface,
 				       const char *buffer, size_t size);
 int aa_kernel_interface_replace_policy_from_file(aa_kernel_interface *kernel_interface,
-						 const char *path);
+						 int dirfd, const char *path);
 int aa_kernel_interface_replace_policy_from_fd(aa_kernel_interface *kernel_interface,
 					       int fd);
 int aa_kernel_interface_remove_policy(aa_kernel_interface *kernel_interface,

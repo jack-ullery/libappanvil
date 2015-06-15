@@ -183,11 +183,12 @@ static int write_policy_fd_to_iface(aa_kernel_interface *kernel_interface,
 }
 
 static int write_policy_file_to_iface(aa_kernel_interface *kernel_interface,
-				      const char *iface_file, const char *path)
+				      const char *iface_file,
+				      int dirfd, const char *path)
 {
 	autoclose int fd;
 
-	fd = open(path, O_RDONLY);
+	fd = openat(dirfd, path, O_RDONLY);
 	if (fd == -1)
 		return -1;
 
@@ -312,10 +313,10 @@ int aa_kernel_interface_load_policy(aa_kernel_interface *kernel_interface,
  * Returns: 0 on success, -1 on error with errno set
  */
 int aa_kernel_interface_load_policy_from_file(aa_kernel_interface *kernel_interface,
-					      const char *path)
+					      int dirfd, const char *path)
 {
 	return write_policy_file_to_iface(kernel_interface, AA_IFACE_FILE_LOAD,
-					  path);
+					  dirfd, path);
 }
 
 /**
@@ -356,10 +357,10 @@ int aa_kernel_interface_replace_policy(aa_kernel_interface *kernel_interface,
  * Returns: 0 on success, -1 on error with errno set
  */
 int aa_kernel_interface_replace_policy_from_file(aa_kernel_interface *kernel_interface,
-						 const char *path)
+						 int dirfd, const char *path)
 {
 	return write_policy_file_to_iface(kernel_interface,
-					  AA_IFACE_FILE_REPLACE, path);
+					  AA_IFACE_FILE_REPLACE, dirfd, path);
 }
 
 /**

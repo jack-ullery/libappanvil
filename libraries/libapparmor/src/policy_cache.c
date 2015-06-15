@@ -132,7 +132,7 @@ static int replace_all_cb(int dirfd unused, const char *name, struct stat *st,
 			return -1;
 		}
 		retval = aa_kernel_interface_replace_policy_from_file(data->kernel_interface,
-								      path);
+								      -1, path);
 	}
 
 	return retval;

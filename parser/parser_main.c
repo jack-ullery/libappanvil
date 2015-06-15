@@ -600,7 +600,7 @@ int process_binary(int option, aa_kernel_interface *kernel_interface,
 	if (kernel_load) {
 		if (option == OPTION_ADD) {
 			retval = profilename ?
-				 aa_kernel_interface_load_policy_from_file(kernel_interface, profilename) :
+				 aa_kernel_interface_load_policy_from_file(kernel_interface, AT_FDCWD, profilename) :
 				 aa_kernel_interface_load_policy_from_fd(kernel_interface, 0);
 			if (retval == -1) {
 				retval = errno;
@@ -610,7 +610,7 @@ int process_binary(int option, aa_kernel_interface *kernel_interface,
 			}
 		} else if (option == OPTION_REPLACE) {
 			retval = profilename ?
-				 aa_kernel_interface_replace_policy_from_file(kernel_interface, profilename) :
+				 aa_kernel_interface_replace_policy_from_file(kernel_interface, AT_FDCWD, profilename) :
 				 aa_kernel_interface_replace_policy_from_fd(kernel_interface, 0);
 			if (retval == -1) {
 				retval = errno;
