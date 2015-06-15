@@ -356,7 +356,7 @@ static bool walk_one(const char **str, const struct component *component,
 }
 
 /**
- * aa_features_new - create a new features based on a path
+ * aa_features_new - create a new aa_features object based on a path
  * @features: will point to the address of an allocated and initialized
  *            aa_features object upon success
  * @dirfd: directory file descriptor or AT_FDCWD (see openat(2))
@@ -400,7 +400,7 @@ int aa_features_new(aa_features **features, int dirfd, const char *path)
 }
 
 /**
- * aa_features_new_from_string - create a new features based on a string
+ * aa_features_new_from_string - create a new aa_features object based on a string
  * @features: will point to the address of an allocated and initialized
  *            aa_features object upon success
  * @string: a NUL-terminated string representation of features
@@ -435,7 +435,7 @@ int aa_features_new_from_string(aa_features **features,
 }
 
 /**
- * aa_features_new_from_kernel - create a new features based on the current kernel
+ * aa_features_new_from_kernel - create a new aa_features object based on the current kernel
  * @features: will point to the address of an allocated and initialized
  *            aa_features object upon success
  *
@@ -448,7 +448,7 @@ int aa_features_new_from_kernel(aa_features **features)
 }
 
 /**
- * aa_features_ref - increments the ref count of a features
+ * aa_features_ref - increments the ref count of an aa_features object
  * @features: the features
  *
  * Returns: the features
@@ -460,7 +460,7 @@ aa_features *aa_features_ref(aa_features *features)
 }
 
 /**
- * aa_features_unref - decrements the ref count and frees the features when 0
+ * aa_features_unref - decrements the ref count and frees the aa_features object when 0
  * @features: the features (can be NULL)
  */
 void aa_features_unref(aa_features *features)
@@ -470,7 +470,7 @@ void aa_features_unref(aa_features *features)
 }
 
 /**
- * aa_features_write_to_file - write a string representation to a file
+ * aa_features_write_to_file - write a string representation of an aa_features object to a file
  * @features: the features
  * @dirfd: directory file descriptor or AT_FDCWD (see openat(2))
  * @path: the path to write to
@@ -506,7 +506,7 @@ int aa_features_write_to_file(aa_features *features,
 }
 
 /**
- * aa_features_is_equal - equality test for two features
+ * aa_features_is_equal - equality test for two aa_features objects
  * @features1: the first features (can be NULL)
  * @features2: the second features (can be NULL)
  *
@@ -519,7 +519,7 @@ bool aa_features_is_equal(aa_features *features1, aa_features *features2)
 }
 
 /**
- * aa_features_supports - provides features support status
+ * aa_features_supports - provides aa_features object support status
  * @features: the features
  * @str: the string representation of a feature to check
  *

@@ -5,7 +5,7 @@ PODCHECKER = podchecker
 
 if ENABLE_MAN_PAGES
 
-man_MANS = aa_change_hat.2 aa_change_profile.2 aa_getcon.2 aa_find_mountpoint.2 aa_splitcon.3 aa_query_label.2
+man_MANS = aa_change_hat.2 aa_change_profile.2 aa_getcon.2 aa_find_mountpoint.2 aa_splitcon.3 aa_query_label.2 aa_features.3
 
 PODS = $(subst .2,.pod,$(man_MANS)) $(subst .3,.pod,$(man_MANS))
 
