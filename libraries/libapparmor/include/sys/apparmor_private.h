@@ -22,7 +22,7 @@
 
 __BEGIN_DECLS
 
-int _aa_is_blacklisted(const char *name, const char *path);
+int _aa_is_blacklisted(const char *name);
 
 void _aa_autofree(void *p);
 void _aa_autoclose(int *fd);

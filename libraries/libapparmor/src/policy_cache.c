@@ -100,7 +100,7 @@ static int replace_all_cb(int dirfd unused, const char *name, struct stat *st,
 {
 	int retval = 0;
 
-	if (!S_ISDIR(st->st_mode) && !_aa_is_blacklisted(name, NULL)) {
+	if (!S_ISDIR(st->st_mode) && !_aa_is_blacklisted(name)) {
 		struct replace_all_cb_data *data;
 
 		data = (struct replace_all_cb_data *) cb_data;

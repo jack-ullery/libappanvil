@@ -107,7 +107,7 @@ bool atomic_dec_and_test(unsigned int *v)
 	return __sync_sub_and_fetch(v, 1) == 0;
 }
 
-int _aa_is_blacklisted(const char *name, const char *path)
+int _aa_is_blacklisted(const char *name)
 {
 	size_t name_len = strlen(name);
 	struct ignored_suffix_t *suffix;

@@ -58,6 +58,6 @@ extern int aa_query_link_path(const char *label, const char *target,
 
 /* apparmor_private.h */
 
-extern int _aa_is_blacklisted(const char *name, const char *path);
+extern int _aa_is_blacklisted(const char *name);
 
 %exception;
