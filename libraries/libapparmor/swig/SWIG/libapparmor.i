@@ -3,6 +3,7 @@
 %{
 #include <aalogparse.h>
 #include <sys/apparmor.h>
+#include <sys/apparmor_private.h>
 
 %}
 
@@ -19,9 +20,12 @@
 }
 #endif
 
-/* swig doesn't like the macro magic we do in apparmor.h so the fn prototypes
- * are manually inserted here
+/**
+ * swig doesn't like the macro magic we do in apparmor.h and apparmor_private.h
+ * so the fn prototypes are manually inserted here
  */
+
+/* apparmor.h */
 
 extern int aa_is_enabled(void);
 extern int aa_find_mountpoint(char **mnt);
@@ -51,5 +55,9 @@ extern int aa_query_link_path_len(const char *label, size_t label_len,
 				  int *allowed, int *audited);
 extern int aa_query_link_path(const char *label, const char *target,
 			      const char *link, int *allowed, int *audited);
+
+/* apparmor_private.h */
+
+extern int _aa_is_blacklisted(const char *name, const char *path);
 
 %exception;
