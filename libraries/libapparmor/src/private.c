@@ -109,14 +109,13 @@ bool atomic_dec_and_test(unsigned int *v)
 
 int _aa_is_blacklisted(const char *name, const char *path)
 {
-	int name_len;
+	size_t name_len = strlen(name);
 	struct ignored_suffix_t *suffix;
 
 	/* skip dot files and files with no name */
-	if (!strlen(name) || *name == '.')
+	if (!name_len || *name == '.')
 		return 1;
 
-	name_len = strlen(name);
 	/* skip blacklisted suffixes */
 	for (suffix = ignored_suffixes; suffix->text; suffix++) {
 		char *found;
