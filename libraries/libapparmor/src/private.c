@@ -113,7 +113,7 @@ int _aa_is_blacklisted(const char *name, const char *path)
 	struct ignored_suffix_t *suffix;
 
 	/* skip dot files and files with no name */
-	if (*name == '.' || !strlen(name))
+	if (!strlen(name) || *name == '.')
 		return 1;
 
 	name_len = strlen(name);
