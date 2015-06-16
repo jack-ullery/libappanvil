@@ -53,7 +53,7 @@
 
 int is_blacklisted(const char *name, const char *path)
 {
-	int retval = _aa_is_blacklisted(name, path);
+	int retval = _aa_is_blacklisted(name);
 
 	if (retval == -1)
 		PERROR("Ignoring: '%s'\n", path ? path : name);
