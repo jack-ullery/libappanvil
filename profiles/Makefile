@@ -93,6 +93,6 @@ check-parser:
 	done
 
 .PHONY: check-logprof
-check-logprof:
+check-logprof: local
 	@echo "*** Checking profiles from ${PROFILES_SOURCE} against logprof"
 	$(Q)${LOGPROF} -d ${PROFILES_SOURCE} -f /dev/null || exit 1
