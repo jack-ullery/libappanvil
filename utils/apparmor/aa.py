@@ -2083,20 +2083,18 @@ def delete_duplicates(profile, incname):
     # Allow rules covered by denied rules shouldn't be deleted
     # only a subset allow rules may actually be denied
 
+    ruletypes = ['capability', 'change_profile', 'network', 'rlimit']
+
     if include.get(incname, False):
-        deleted += profile['network'].delete_duplicates(include[incname][incname]['network'])
-        deleted += profile['capability'].delete_duplicates(include[incname][incname]['capability'])
-        deleted += profile['change_profile'].delete_duplicates(include[incname][incname]['change_profile'])
-        deleted += profile['rlimit'].delete_duplicates(include[incname][incname]['rlimit'])
+        for rule_type in ruletypes:
+            deleted += profile[rule_type].delete_duplicates(include[incname][incname][rule_type])
 
         deleted += delete_path_duplicates(profile, incname, 'allow')
         deleted += delete_path_duplicates(profile, incname, 'deny')
 
     elif filelist.get(incname, False):
-        deleted += profile['network'].delete_duplicates(filelist[incname][incname]['network'])
-        deleted += profile['capability'].delete_duplicates(filelist[incname][incname]['capability'])
-        deleted += profile['change_profile'].delete_duplicates(filelist[incname][incname]['change_profile'])
-        deleted += profile['rlimit'].delete_duplicates(filelist[incname][incname]['rlimit'])
+        for rule_type in ruletypes:
+            deleted += profile[rule_type].delete_duplicates(filelist[incname][incname][rule_type])
 
         deleted += delete_path_duplicates(profile, incname, 'allow')
         deleted += delete_path_duplicates(profile, incname, 'deny')
