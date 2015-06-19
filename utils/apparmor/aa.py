@@ -2994,11 +2994,8 @@ def parse_profile_data(data, file, do_include):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected change hat declaration found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            hat = matches[0]
-            hat = strip_quotes(hat)
-
-            if not profile_data[profile][hat].get('declared', False):
-                profile_data[profile][hat]['declared'] = True
+            aaui.UI_Important(_('Ignoring no longer supported change hat declaration "^%(hat)s," found in file: %(file)s line: %(line)s') % {
+                    'hat': matches[0], 'file': file, 'line': lineno + 1 })
 
         elif RE_PROFILE_HAT_DEF.search(line):
             # An embedded hat syntax definition starts
