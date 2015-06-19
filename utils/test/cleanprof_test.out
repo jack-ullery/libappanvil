@@ -9,6 +9,13 @@
   /home/*/** r,
   /home/foo/** w,
 
+
+  ^foo {
+    capability dac_override,
+
+    /etc/fstab r,
+
+  }
 }
 /usr/bin/other/cleanprof/test/profile {
   /home/*/** rw,

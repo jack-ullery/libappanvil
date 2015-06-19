@@ -108,7 +108,7 @@ transitions = hasher()
 # a) rules (as dict): alias, include, lvar
 # b) rules (as hasher): allow, deny
 # c) one for each rule class
-# d) other: declared, external, flags, name, profile, attachment, initial_comment,
+# d) other: external, flags, name, profile, attachment, initial_comment,
 #           profile_keyword, header_comment (these two are currently only set by set_profile_flags())
 aa = hasher()  # Profiles originally in sd, replace by aa
 original_aa = hasher()
@@ -1442,7 +1442,6 @@ def handle_children(profile, hat, root):
                                 ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
                             if ynans == 'y':
                                 hat = exec_target
-                                aa[profile][hat]['declared'] = False
                                 aa[profile][hat]['profile'] = True
 
                                 if profile != hat:
@@ -3009,7 +3008,6 @@ def parse_profile_data(data, file, do_include):
             flags = matches.group('flags')
 
             profile_data[profile][hat]['flags'] = flags
-            profile_data[profile][hat]['declared'] = False
             #profile_data[profile][hat]['allow']['path'] = hasher()
             #profile_data[profile][hat]['allow']['netdomain'] = hasher()
 
@@ -3475,15 +3473,11 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
     data += write_rules(profile_data[name], depth + 1)
 
     pre2 = '  ' * (depth + 1)
-    # External hat declarations
-    for hat in list(filter(lambda x: x != name, sorted(profile_data.keys()))):
-        if profile_data[hat].get('declared', False):
-            data.append('%s^%s,' % (pre2, hat))
 
     if not inhat:
         # Embedded hats
         for hat in list(filter(lambda x: x != name, sorted(profile_data.keys()))):
-            if not profile_data[hat]['external'] and not profile_data[hat]['declared']:
+            if not profile_data[hat]['external']:
                 data.append('')
                 if profile_data[hat]['profile']:
                     data += list(map(str, write_header(profile_data[hat], depth + 1, hat, True, write_flags)))
@@ -3732,7 +3726,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     depth = int((len(line) - len(line.lstrip())) / 2)
                     pre2 = '  ' * (depth + 1)
                     for hat in list(filter(lambda x: x != name, sorted(profile_data.keys()))):
-                        if not profile_data[hat]['external'] and not profile_data[hat]['declared']:
+                        if not profile_data[hat]['external']:
                             data.append('')
                             if profile_data[hat]['profile']:
                                 data += list(map(str, write_header(profile_data[hat], depth + 1, hat, True, include_flags)))
@@ -3992,16 +3986,9 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     data.append(line)
 
             elif RE_PROFILE_CHANGE_HAT.search(line):
-                matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
-                hat = matches[0]
-                hat = strip_quotes(hat)
-                if not write_prof_data[hat]['declared']:
-                    correct = False
-                if correct:
-                    data.append(line)
-                else:
-                    #To-Do
-                    pass
+                # "^hat," declarations are no longer supported, ignore them and don't write out the line
+                # (parse_profile_data() already prints a warning about that)
+                pass
             elif RE_PROFILE_HAT_DEF.search(line):
                 matches = RE_PROFILE_HAT_DEF.search(line)
                 in_contained_hat = True
@@ -4010,8 +3997,6 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 flags = matches.group('flags')
 
                 if not write_prof_data[hat]['flags'] == flags:
-                    correct = False
-                if not write_prof_data[hat]['declared'] is False:
                     correct = False
                 if not write_filelist['profile'][profile][hat]:
                     correct = False
