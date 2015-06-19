@@ -41,7 +41,7 @@ from apparmor.aamode import (str_to_mode, mode_to_str, contains, split_mode,
                              flatten_mode, owner_flatten_mode)
 
 from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
-                            RE_PROFILE_ALIAS, RE_PROFILE_RLIMIT,
+                            RE_PROFILE_ALIAS,
                             RE_PROFILE_BOOLEAN, RE_PROFILE_VARIABLE, RE_PROFILE_CONDITIONAL,
                             RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
                             RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY,
@@ -56,6 +56,7 @@ import apparmor.rules as aarules
 from apparmor.rule.capability import CapabilityRuleset, CapabilityRule
 from apparmor.rule.change_profile import ChangeProfileRuleset, ChangeProfileRule
 from apparmor.rule.network    import NetworkRuleset,    NetworkRule
+from apparmor.rule.rlimit     import RlimitRuleset,    RlimitRule
 from apparmor.rule import parse_modifiers, quote_if_needed
 
 from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
@@ -104,7 +105,7 @@ t = hasher()  # dict()
 transitions = hasher()
 
 # keys used in aa[profile][hat]:
-# a) rules (as dict): alias, change_profile, include, lvar, rlimit
+# a) rules (as dict): alias, include, lvar
 # b) rules (as hasher): allow, deny
 # c) one for each rule class
 # d) other: declared, external, flags, name, profile, attachment, initial_comment,
@@ -2069,6 +2070,7 @@ def delete_duplicates(profile, incname):
         deleted += profile['network'].delete_duplicates(include[incname][incname]['network'])
         deleted += profile['capability'].delete_duplicates(include[incname][incname]['capability'])
         deleted += profile['change_profile'].delete_duplicates(include[incname][incname]['change_profile'])
+        deleted += profile['rlimit'].delete_duplicates(include[incname][incname]['rlimit'])
 
         deleted += delete_path_duplicates(profile, incname, 'allow')
         deleted += delete_path_duplicates(profile, incname, 'deny')
@@ -2077,6 +2079,7 @@ def delete_duplicates(profile, incname):
         deleted += profile['network'].delete_duplicates(filelist[incname][incname]['network'])
         deleted += profile['capability'].delete_duplicates(filelist[incname][incname]['capability'])
         deleted += profile['change_profile'].delete_duplicates(filelist[incname][incname]['change_profile'])
+        deleted += profile['rlimit'].delete_duplicates(filelist[incname][incname]['rlimit'])
 
         deleted += delete_path_duplicates(profile, incname, 'allow')
         deleted += delete_path_duplicates(profile, incname, 'deny')
@@ -2597,6 +2600,7 @@ def parse_profile_data(data, file, do_include):
 
             profile_data[profile][hat]['network'] = NetworkRuleset()
             profile_data[profile][hat]['change_profile'] = ChangeProfileRuleset()
+            profile_data[profile][hat]['rlimit'] = RlimitRuleset()
             profile_data[profile][hat]['allow']['path'] = hasher()
             profile_data[profile][hat]['allow']['dbus'] = list()
             profile_data[profile][hat]['allow']['mount'] = list()
@@ -2688,16 +2692,15 @@ def parse_profile_data(data, file, do_include):
                     filelist[file] = hasher()
                 filelist[file]['alias'][from_name] = to_name
 
-        elif RE_PROFILE_RLIMIT.search(line):
-            matches = RE_PROFILE_RLIMIT.search(line).groups()
-
+        elif RlimitRule.match(line):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected rlimit entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            from_name = matches[0]
-            to_name = matches[2]
+            # init rule class (if not done yet)
+            if not profile_data[profile][hat].get('rlimit', False):
+                profile_data[profile][hat]['rlimit'] = RlimitRuleset()
 
-            profile_data[profile][hat]['rlimit'][from_name] = to_name
+            profile_data[profile][hat]['rlimit'].add(RlimitRule.parse(line))
 
         elif RE_PROFILE_BOOLEAN.search(line):
             matches = RE_PROFILE_BOOLEAN.search(line)
@@ -3227,7 +3230,10 @@ def write_alias(prof_data, depth):
     return write_pair(prof_data, depth, '', 'alias', 'alias ', ' -> ', ',', quote_if_needed)
 
 def write_rlimits(prof_data, depth):
-    return write_pair(prof_data, depth, '', 'rlimit', 'set rlimit ', ' <= ', ',', quote_if_needed)
+    data = []
+    if prof_data.get('rlimit', False):
+        data = prof_data['rlimit'].get_clean(depth)
+    return data
 
 def var_transform(ref):
     data = []
@@ -3831,20 +3837,14 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     #To-Do
                     pass
 
-            elif RE_PROFILE_RLIMIT.search(line):
-                matches = RE_PROFILE_RLIMIT.search(line).groups()
+            elif RlimitRule.match(line):
+                rlimit_obj = RlimitRule.parse(line)
 
-                from_name = matches[0]
-                to_name = matches[2]
-
-                if not write_prof_data[hat]['rlimit'][from_name] == to_name:
-                    correct = False
-
-                if correct:
+                if write_prof_data[hat]['rlimit'].is_covered(rlimit_obj, True, True):
                     if not segments['rlimit'] and True in segments.values():
                         data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['rlimit'] = True
-                    write_prof_data[hat]['rlimit'].pop(from_name)
+                    write_prof_data[hat]['rlimit'].delete(rlimit_obj)
                     data.append(line)
                 else:
                     #To-Do
