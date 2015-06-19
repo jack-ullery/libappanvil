@@ -15,6 +15,7 @@ from __future__ import with_statement
 import os
 import re
 from apparmor.common import AppArmorException, open_file_read, warn, convert_regexp  # , msg, error, debug
+from apparmor.regex import re_match_include
 
 class Severity(object):
     def __init__(self, dbname=None, default_rank=10):
@@ -179,16 +180,14 @@ class Severity(object):
 
     def load_variables(self, prof_path):
         """Loads the variables for the given profile"""
-        regex_include = re.compile('^#?include\s*<(\S*)>')
         if os.path.isfile(prof_path):
             with open_file_read(prof_path) as f_in:
                 for line in f_in:
                     line = line.strip()
                     # If any includes, load variables from them first
-                    match = regex_include.search(line)
+                    match = re_match_include(line)
                     if match:
-                        new_path = match.groups()[0]
-                        new_path = self.PROF_DIR + '/' + new_path
+                        new_path = self.PROF_DIR + '/' + match
                         self.load_variables(new_path)
                     else:
                         # Remove any comments
