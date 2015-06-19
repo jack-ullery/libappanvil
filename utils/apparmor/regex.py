@@ -112,6 +112,21 @@ def parse_profile_start_line(line, filename):
     return result
 
 
+RE_INCLUDE = re.compile('^\s*#?include\s*<(?P<magicpath>.*)>' + RE_EOL)
+
+def re_match_include(line):
+    """Matches the path for include and returns the include path"""
+    matches = RE_INCLUDE.search(line)
+
+    if not matches:
+        return None
+
+    if not matches.group('magicpath').strip():
+        raise AppArmorException(_('Syntax error: #include rule with empty filename'))
+
+    return matches.group('magicpath')
+
+
 def strip_quotes(data):
     if data[0] + data[-1] == '""':
         return data[1:-1]

@@ -12,6 +12,7 @@
 #
 # ----------------------------------------------------------------------
 import apparmor.aa as apparmor
+from apparmor.regex import re_match_include
 
 class Prof(object):
     def __init__(self, filename):
@@ -90,7 +91,7 @@ def delete_path_duplicates(profile, profile_other, allow, same_profile=True):
                     if not same_profile:
                         deleted.append(entry)
                 continue
-            if apparmor.re_match_include(rule) or apparmor.re_match_include(entry):
+            if re_match_include(rule) or re_match_include(entry):
                 continue
             # Check if the rule implies entry
             if apparmor.matchliteral(rule, entry):

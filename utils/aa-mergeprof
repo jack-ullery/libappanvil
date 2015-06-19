@@ -17,9 +17,10 @@ import re
 import os
 
 import apparmor.aa
-from apparmor.aa import available_buttons, combine_name, delete_duplicates, is_known_rule, match_includes, re_match_include
+from apparmor.aa import available_buttons, combine_name, delete_duplicates, is_known_rule, match_includes
 import apparmor.aamode
 from apparmor.common import AppArmorException
+from apparmor.regex import re_match_include
 import apparmor.severity
 import apparmor.cleanprofile as cleanprofile
 import apparmor.ui as aaui
@@ -267,7 +268,7 @@ class Merge(object):
                 done = True
             elif ans == 'CMD_ALLOW':
                 selection = options[selected]
-                inc = apparmor.aa.re_match_include(selection)
+                inc = re_match_include(selection)
                 self.user.filelist[self.user.filename]['include'][inc] = True
                 options.pop(selected)
                 aaui.UI_Info(_('Adding %s to the file.') % selection)
@@ -302,7 +303,7 @@ class Merge(object):
                     done = True
                 elif ans == 'CMD_ALLOW':
                     selection = options[selected]
-                    inc = apparmor.aa.re_match_include(selection)
+                    inc = re_match_include(selection)
                     deleted = apparmor.aa.delete_duplicates(aa[profile][hat], inc)
                     aa[profile][hat]['include'][inc] = True
                     options.pop(selected)
@@ -524,7 +525,7 @@ class Merge(object):
                             elif ans == 'CMD_ALLOW':
                                 path = options[selected]
                                 done = True
-                                match = apparmor.aa.re_match_include(path)
+                                match = re_match_include(path)
                                 if match:
                                     inc = match
                                     deleted = apparmor.aa.delete_duplicates(aa[profile][hat], inc)
@@ -589,7 +590,7 @@ class Merge(object):
 
                             elif ans == 'CMD_NEW':
                                 arg = options[selected]
-                                if not apparmor.aa.re_match_include(arg):
+                                if not re_match_include(arg):
                                     ans = aaui.UI_GetString(_('Enter new path: '), arg)
 #                                         if ans:
 #                                             if not matchliteral(ans, path):
@@ -603,7 +604,7 @@ class Merge(object):
 
                             elif ans == 'CMD_GLOB':
                                 newpath = options[selected].strip()
-                                if not apparmor.aa.re_match_include(newpath):
+                                if not re_match_include(newpath):
                                     newpath = apparmor.aa.glob_path(newpath)
 
                                     if newpath not in options:
@@ -614,7 +615,7 @@ class Merge(object):
 
                             elif ans == 'CMD_GLOBEXT':
                                 newpath = options[selected].strip()
-                                if not apparmor.aa.re_match_include(newpath):
+                                if not re_match_include(newpath):
                                     newpath = apparmor.aa.glob_path_withext(newpath)
 
                                     if newpath not in options:

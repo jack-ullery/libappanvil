@@ -49,7 +49,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
                             RE_PROFILE_HAT_DEF, RE_PROFILE_DBUS, RE_PROFILE_MOUNT,
                             RE_PROFILE_SIGNAL, RE_PROFILE_PTRACE, RE_PROFILE_PIVOT_ROOT,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
-                            strip_quotes, parse_profile_start_line )
+                            strip_quotes, parse_profile_start_line, re_match_include )
 
 import apparmor.rules as aarules
 
@@ -2111,15 +2111,6 @@ def match_includes(profile, rule_type, rule_obj):
             newincludes.append(incname)
 
     return newincludes
-
-def re_match_include(path):
-    """Matches the path for include and returns the include path"""
-    regex_include = re.compile('^\s*#?include\s*<(.*)>\s*(#.*)?$')
-    match = regex_include.search(path)
-    if match:
-        return match.groups()[0]
-    else:
-        return None
 
 def valid_include(profile, incname):
     if profile and profile['include'].get(incname, False):
