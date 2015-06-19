@@ -104,12 +104,6 @@ ALL = '\0ALL'
 t = hasher()  # dict()
 transitions = hasher()
 
-# keys used in aa[profile][hat]:
-# a) rules (as dict): alias, include, lvar
-# b) rules (as hasher): allow, deny
-# c) one for each rule class
-# d) other: external, flags, name, profile, attachment, initial_comment,
-#           profile_keyword, header_comment (these two are currently only set by set_profile_flags())
 aa = hasher()  # Profiles originally in sd, replace by aa
 original_aa = hasher()
 extras = hasher()  # Inactive profiles from extras
@@ -408,8 +402,35 @@ def get_inactive_profile(local_profile):
         return {local_profile: extras[local_profile]}
     return dict()
 
+def profile_storage():
+    # keys used in aa[profile][hat]:
+    # a) rules (as dict): alias, include, lvar
+    # b) rules (as hasher): allow, deny
+    # c) one for each rule class
+    # d) other: external, flags, name, profile, attachment, initial_comment,
+    #           profile_keyword, header_comment (these two are currently only set by set_profile_flags())
+
+    # Note that this function doesn't explicitely init all those keys (yet).
+    # It will be extended over time, with the final goal to get rid of hasher().
+
+    profile = hasher()
+
+    profile['capability']       = CapabilityRuleset()
+    profile['change_profile']   = ChangeProfileRuleset()
+    profile['network']          = NetworkRuleset()
+    profile['rlimit']           = RlimitRuleset()
+
+    profile['allow']['path'] = hasher()
+    profile['allow']['dbus'] = list()
+    profile['allow']['mount'] = list()
+    profile['allow']['signal'] = list()
+    profile['allow']['ptrace'] = list()
+    profile['allow']['pivot_root'] = list()
+
+    return profile
+
 def create_new_profile(localfile, is_stub=False):
-    local_profile = hasher()
+    local_profile = profile_storage()
     local_profile[localfile]['flags'] = 'complain'
     local_profile[localfile]['include']['abstractions/base'] = 1
 
@@ -1442,6 +1463,7 @@ def handle_children(profile, hat, root):
                                 ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
                             if ynans == 'y':
                                 hat = exec_target
+                                # XXX do we need to init the profile here?
                                 aa[profile][hat]['profile'] = True
 
                                 if profile != hat:
@@ -1566,15 +1588,11 @@ def ask_the_questions():
                 hats = [profile] + hats
 
             for hat in hats:
-                if not log_obj[profile][hat].get('capability', False):
-                    log_obj[profile][hat]['capability'] = CapabilityRuleset()
+                log_obj[profile][hat] = profile_storage()
 
                 for capability in sorted(log_dict[aamode][profile][hat]['capability'].keys()):
                     capability_obj = CapabilityRule(capability, log_event=aamode)
                     log_obj[profile][hat]['capability'].add(capability_obj)
-
-                if not log_obj[profile][hat].get('network', False):
-                    log_obj[profile][hat]['network'] = NetworkRuleset()
 
                 for family in sorted(log_dict[aamode][profile][hat]['netdomain'].keys()):
                     for sock_type in sorted(log_dict[aamode][profile][hat]['netdomain'][family].keys()):
@@ -2564,6 +2582,8 @@ def parse_profile_data(data, file, do_include):
     if do_include:
         profile = file
         hat = file
+        profile_data[profile][hat] = profile_storage()
+
     for lineno, line in enumerate(data):
         line = line.strip()
         if not line:
@@ -2579,6 +2599,8 @@ def parse_profile_data(data, file, do_include):
             if profile_data[profile].get(hat, False):
                 raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
                     { 'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat) })
+
+            profile_data[profile][hat] = profile_storage()
 
             if attachment:
                 profile_data[profile][hat]['attachment'] = attachment
@@ -2597,15 +2619,6 @@ def parse_profile_data(data, file, do_include):
 
             profile_data[profile][hat]['flags'] = flags
 
-            profile_data[profile][hat]['network'] = NetworkRuleset()
-            profile_data[profile][hat]['change_profile'] = ChangeProfileRuleset()
-            profile_data[profile][hat]['rlimit'] = RlimitRuleset()
-            profile_data[profile][hat]['allow']['path'] = hasher()
-            profile_data[profile][hat]['allow']['dbus'] = list()
-            profile_data[profile][hat]['allow']['mount'] = list()
-            profile_data[profile][hat]['allow']['signal'] = list()
-            profile_data[profile][hat]['allow']['ptrace'] = list()
-            profile_data[profile][hat]['allow']['pivot_root'] = list()
             # Save the initial comment
             if initial_comment:
                 profile_data[profile][hat]['initial_comment'] = initial_comment
@@ -2615,10 +2628,6 @@ def parse_profile_data(data, file, do_include):
             if repo_data:
                 profile_data[profile][profile]['repo']['url'] = repo_data['url']
                 profile_data[profile][profile]['repo']['user'] = repo_data['user']
-
-            # init rule classes (if not done yet)
-            if not profile_data[profile][hat].get('capability', False):
-                profile_data[profile][hat]['capability'] = CapabilityRuleset()
 
         elif RE_PROFILE_END.search(line):
             # If profile ends and we're not in one
@@ -2637,10 +2646,6 @@ def parse_profile_data(data, file, do_include):
         elif CapabilityRule.match(line):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected capability entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            # init rule class (if not done yet)
-            if not profile_data[profile][hat].get('capability', False):
-                profile_data[profile][hat]['capability'] = CapabilityRuleset()
 
             profile_data[profile][hat]['capability'].add(CapabilityRule.parse(line))
 
@@ -2694,10 +2699,6 @@ def parse_profile_data(data, file, do_include):
         elif RlimitRule.match(line):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected rlimit entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            # init rule class (if not done yet)
-            if not profile_data[profile][hat].get('rlimit', False):
-                profile_data[profile][hat]['rlimit'] = RlimitRuleset()
 
             profile_data[profile][hat]['rlimit'].add(RlimitRule.parse(line))
 
@@ -3005,11 +3006,15 @@ def parse_profile_data(data, file, do_include):
             in_contained_hat = True
             hat = matches.group('hat')
             hat = strip_quotes(hat)
+
+            # if hat is already known, the filelist check some lines below will error out.
+            # nevertheless, just to be sure, don't overwrite existing profile_data.
+            if not profile_data[profile].get(hat, False):
+                profile_data[profile][hat] = profile_storage()
+
             flags = matches.group('flags')
 
             profile_data[profile][hat]['flags'] = flags
-            #profile_data[profile][hat]['allow']['path'] = hasher()
-            #profile_data[profile][hat]['allow']['netdomain'] = hasher()
 
             if initial_comment:
                 profile_data[profile][hat]['initial_comment'] = initial_comment
@@ -3054,7 +3059,7 @@ def parse_profile_data(data, file, do_include):
                 if re.search(hatglob, parsed_prof):
                     for hat in cfg['required_hats'][hatglob].split():
                         if not profile_data[parsed_prof].get(hat, False):
-                            profile_data[parsed_prof][hat] = hasher()
+                            profile_data[parsed_prof][hat] = profile_storage()
 
     # End of file reached but we're stuck in a profile
     if profile and not do_include:
