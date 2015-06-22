@@ -10,7 +10,7 @@
 #
 # ------------------------------------------------------------------
 
-import re, os, sys
+import re, os, sys, errno
 
 def cmd_enabled():
     '''Returns error code if AppArmor is not enabled'''
@@ -85,13 +85,20 @@ def get_profiles():
         sys.exit(3)
 
     apparmor_profiles = os.path.join(apparmorfs, "profiles")
-    if not os.access(apparmor_profiles, os.R_OK):
-        errormsg("You do not have enough privilege to read the profile set.")
+    try:
+        f = open(apparmor_profiles)
+    except IOError as e:
+        if e.errno == errno.EACCES:
+            errormsg("You do not have enough privilege to read the profile set.")
+        else:
+            errormsg("Could not open %s: %s" % (apparmor_profiles, os.strerror(e.errno)))
         sys.exit(4)
 
-    for p in open(apparmor_profiles).readlines():
+    for p in f.readlines():
         match = re.search("^([^\(]+)\s+\((\w+)\)$", p)
         profiles[match.group(1)] = match.group(2)
+
+    f.close()
 
     return profiles
 
