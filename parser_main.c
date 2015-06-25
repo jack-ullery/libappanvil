@@ -651,7 +651,6 @@ void reset_parser(const char *filename)
 	free_aliases();
 	free_symtabs();
 	free_policies();
-	reset_regex();
 	reset_include_stack(filename);
 }
 

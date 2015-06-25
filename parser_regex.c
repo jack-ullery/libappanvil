@@ -779,8 +779,6 @@ int process_profile_policydb(Profile *prof)
 		prof->policy.rules = NULL;
 	}
 
-	aare_reset_matchflags();
-
 	error = 0;
 
 out:
@@ -788,11 +786,6 @@ out:
 	prof->policy.rules = NULL;
 
 	return error;
-}
-
-void reset_regex(void)
-{
-	aare_reset_matchflags();
 }
 
 #ifdef UNIT_TEST
