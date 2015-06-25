@@ -136,12 +136,26 @@ void *aare_rules::create_dfa(size_t *size, dfaflags_t flags)
 	 * set nodes */
 	PermExprMap::iterator i = expr_map.begin();
 	if (i != expr_map.end()) {
-		root = new CatNode(i->second, i->first);
+		if (flags & DFA_CONTROL_TREE_SIMPLE) {
+			Node *tmp = simplify_tree(i->second, flags);
+			root = new CatNode(tmp, i->first);
+		} else
+			root = new CatNode(i->second, i->first);
 		for (i++; i != expr_map.end(); i++) {
-			root = new AltNode(root, new CatNode(i->second, i->first));
+			Node *tmp;
+			if (flags & DFA_CONTROL_TREE_SIMPLE) {
+				tmp = simplify_tree(i->second, flags);
+			} else
+				tmp = i->second;
+			root = new AltNode(root, new CatNode(tmp, i->first));
 		}
 	}
 
+	/* dumping of the none simplified tree without -O no-expr-simplify
+	 * is broken because we need to build the tree above first, and
+	 * simplification is woven into the build. Reevaluate how to fix
+	 * this debug dump.
+	 */
 	label_nodes(root);
 	if (flags & DFA_DUMP_TREE) {
 		cerr << "\nDFA: Expression Tree\n";
@@ -150,7 +164,13 @@ void *aare_rules::create_dfa(size_t *size, dfaflags_t flags)
 	}
 
 	if (flags & DFA_CONTROL_TREE_SIMPLE) {
-		root = simplify_tree(root, flags);
+		/* This is old total tree, simplification point
+		 * For now just do simplification up front. It gets most
+		 * of the benefit running on the smaller chains, and is
+		 * overall faster because there are less nodes. Reevaluate
+		 * once tree simplification is rewritten
+		 */
+		//root = simplify_tree(root, flags);
 
 		if (flags & DFA_DUMP_SIMPLE_TREE) {
 			cerr << "\nDFA: Simplified Expression Tree\n";
