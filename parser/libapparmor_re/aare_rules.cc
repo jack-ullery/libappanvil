@@ -35,69 +35,6 @@
 #include "../immunix.h"
 
 
-class UniquePerm {
-public:
-	bool deny;
-	bool exact_match;
-	uint32_t perms;
-	uint32_t audit;
-
-	bool operator<(UniquePerm const &rhs)const
-	{
-		if (deny == rhs.deny) {
-			if (exact_match == rhs.exact_match) {
-				if (perms == rhs.perms)
-					return audit < rhs.audit;
-				return perms < rhs.perms;
-			}
-			return exact_match;
-		}
-		return deny;
-	}
-};
-
-class UniquePermsCache {
-public:
-	typedef map<UniquePerm, Node*> UniquePermMap;
-	typedef UniquePermMap::iterator iterator;
-	UniquePermMap nodes;
-
-	UniquePermsCache(void) { };
-	~UniquePermsCache() { clear(); }
-
-	void clear()
-	{
-		for (iterator i = nodes.begin(); i != nodes.end(); i++) {
-			delete i->second;
-		}
-		nodes.clear();
-	}
-
-	Node *insert(bool deny, uint32_t perms, uint32_t audit,
-		     bool exact_match)
-	{
-		UniquePerm tmp = { deny, exact_match, perms, audit };
-		iterator res = nodes.find(tmp);
-		if (res == nodes.end()) {
-			Node *node;
-			if (deny)
-				node = new DenyMatchFlag(perms, audit);
-			else if (exact_match)
-				node = new ExactMatchFlag(perms, audit);
-			else
-				node = new MatchFlag(perms, audit);
-			pair<iterator, bool> val = nodes.insert(make_pair(tmp, node));
-			if (val.second == false)
-				return val.first->second;
-			return node;
-		}
-		return res->second;
-	}
-};
-
-static UniquePermsCache unique_perms;
-
-
 aare_rules::~aare_rules(void)
 {
 	if (root)
@@ -110,11 +47,6 @@ bool aare_rules::add_rule(const char *rule, int deny, uint32_t perms,
 			  uint32_t audit, dfaflags_t flags)
 {
 	return add_rule_vec(deny, perms, audit, 1, &rule, flags);
-}
-
-void aare_reset_matchflags(void)
-{
-	unique_perms.clear();
 }
 
 void aare_rules::add_to_rules(Node *tree, Node *perms)

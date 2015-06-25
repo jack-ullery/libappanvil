@@ -361,8 +361,6 @@ extern int clear_and_convert_entry(std::string& buffer, char *entry);
 extern int process_regex(Profile *prof);
 extern int post_process_entry(struct cod_entry *entry);
 
-extern void reset_regex(void);
-
 extern int process_policydb(Profile *prof);
 
 extern int process_policy_ents(Profile *prof);
