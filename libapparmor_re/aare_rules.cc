@@ -41,6 +41,7 @@ aare_rules::~aare_rules(void)
 		root->release();
 
 	unique_perms.clear();
+	expr_map.clear();
 }
 
 bool aare_rules::add_rule(const char *rule, int deny, uint32_t perms,
@@ -53,10 +54,11 @@ void aare_rules::add_to_rules(Node *tree, Node *perms)
 {
 	if (reverse)
 		flip_tree(tree);
-	if (root)
-		root = new AltNode(root, new CatNode(tree, perms));
+	Node *base = expr_map[perms];
+	if (base)
+		expr_map[perms] = new AltNode(base, tree);
 	else
-		root = new CatNode(tree, perms);
+		expr_map[perms] = tree;
 }
 
 static Node *cat_with_null_seperator(Node *l, Node *r)
@@ -129,6 +131,16 @@ bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
 void *aare_rules::create_dfa(size_t *size, dfaflags_t flags)
 {
 	char *buffer = NULL;
+
+	/* finish constructing the expr tree from the different permission
+	 * set nodes */
+	PermExprMap::iterator i = expr_map.begin();
+	if (i != expr_map.end()) {
+		root = new CatNode(i->second, i->first);
+		for (i++; i != expr_map.end(); i++) {
+			root = new AltNode(root, new CatNode(i->second, i->first));
+		}
+	}
 
 	label_nodes(root);
 	if (flags & DFA_DUMP_TREE) {

@@ -86,16 +86,18 @@ public:
 	}
 };
 
+typedef std::map<Node *, Node *> PermExprMap;
+
 class aare_rules {
 	Node *root;
 	void add_to_rules(Node *tree, Node *perms);
 	UniquePermsCache unique_perms;
-
-public:
+	PermExprMap expr_map;
+ public:
 	int reverse;
 	int rule_count;
-	aare_rules(): root(NULL), unique_perms(), reverse(0), rule_count(0) { };
-	aare_rules(int reverse): root(NULL), unique_perms(), reverse(reverse), rule_count(0) { };
+	aare_rules(void): root(NULL), unique_perms(), expr_map(), reverse(0), rule_count(0) { };
+	aare_rules(int reverse): root(NULL), unique_perms(), expr_map(), reverse(reverse), rule_count(0) { };
 	~aare_rules();
 
 	bool add_rule(const char *rule, int deny, uint32_t perms,
