@@ -181,6 +181,8 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
         self._test_set_flags('profile "/foo bar"', 'flags=(complain)', 'audit', profile_name='/foo bar')
     def test_set_flags_12(self):
         self._test_set_flags('profile xy "/foo bar"', 'flags=(complain)', 'audit', profile_name='xy')
+    def test_set_flags_13(self):
+        self._test_set_flags('/foo', '(audit)', '')
 
     # test handling of hat flags
     def test_set_flags_with_hat_01(self):
@@ -206,6 +208,12 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
         self._test_set_flags('/foo', '', 'audit',
             more_rules='\n  hat foobar (attach_disconnected) { # comment\n}\n', # XXX attach_disconnected will be lost!
             expected_more_rules='\n  hat foobar flags=(audit) { # comment\n}\n'
+        )
+
+    def test_set_flags_with_hat_05(self):
+        self._test_set_flags('/foo', '(audit)', '',
+            more_rules='\n  hat foobar (attach_disconnected) { # comment\n}\n', # XXX attach_disconnected will be lost!
+            expected_more_rules='\n  hat foobar { # comment\n}\n'
         )
 
     # test handling of child profiles
