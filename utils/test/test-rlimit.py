@@ -74,8 +74,11 @@ class RlimitTestParseInvalid(RlimitTest):
         ('set rlimit,'                      , AppArmorException), # missing parts
         ('set rlimit <= 5,'                 , AppArmorException),
         ('set rlimit cpu <= ,'              , AppArmorException),
+        ('set rlimit cpu <= "",'            , AppArmorBug),       # evil quoting trick
         ('set rlimit foo <= 5,'             , AppArmorException), # unknown rlimit
         ('set rlimit rttime <= 60m,'        , AppArmorException), # 'm' could mean 'ms' or 'minutes'
+        ('set rlimit cpu <= 20ms,'          , AppArmorException), # cpu doesn't support 'ms'...
+        ('set rlimit cpu <= 20us,'          , AppArmorException), # ... or 'us'
         ('set rlimit nice <= 20MB,'         , AppArmorException), # invalid unit for this rlimit type
         ('set rlimit cpu <= 20MB,'          , AppArmorException),
         ('set rlimit data <= 20seconds,'    , AppArmorException),
@@ -136,6 +139,7 @@ class InvalidRlimitInit(AATest):
         ([None  , '1024'           ]    , AppArmorBug), # wrong type for rlimit
         (['as'  , dict()           ]    , AppArmorBug), # wrong type for value
         (['as'  , None             ]    , AppArmorBug), # wrong type for value
+        (['cpu' , '100xy2'         ]    , AppArmorException), # invalid unit
     ]
 
     def _run_test(self, params, expected):
@@ -447,6 +451,7 @@ class RlimitTime_to_intTest(AATest):
         self.obj = RlimitRule('cpu', '1')
 
     tests = [
+        ('30us'     ,       0.00003),
         ('40ms'     ,       0.04),
         ('40'       ,      40),
         ('40seconds',      40),
@@ -459,6 +464,9 @@ class RlimitTime_to_intTest(AATest):
 
     def test_with_ms_as_default(self):
         self.assertEqual(self.obj.time_to_int('40', 'ms'), 0.04)
+
+    def test_with_us_as_default(self):
+        self.assertEqual(self.obj.time_to_int('30', 'us'), 0.00003)
 
     def test_invalid_time_to_int(self):
         with self.assertRaises(AppArmorException):

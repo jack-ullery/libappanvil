@@ -26,7 +26,7 @@ _ = init_translation()
 
 rlimit_size     = ['fsize', 'data', 'stack', 'core', 'rss', 'as', 'memlock', 'msgqueue']  # NUMBER ( 'K' | 'M' | 'G' )
 rlimit_number   = ['ofile', 'nofile', 'locks', 'sigpending', 'nproc', 'rtprio']
-rlimit_time     = ['cpu', 'rttime']  # number + time unit (cpu in seconds+, rttime in ms+)
+rlimit_time     = ['cpu', 'rttime']  # number + time unit (cpu in seconds+, rttime in us+)
 rlimit_nice     = ['nice']  # a number between -20 and 19.
 
 rlimit_all      = rlimit_size + rlimit_number + rlimit_time + rlimit_nice
@@ -92,11 +92,11 @@ class RlimitRule(BaseRule):
                 if unit == 'm' and rlimit == 'rttime':
                     raise AppArmorException('Ambiguous value %s in rlimit %s rule - use "ms" or "minutes"' % (value, rlimit))
                 if unit != '' and not ('seconds'.startswith(unit) or 'minutes'.startswith(unit) or 'hours'.startswith(unit) or
-                        (unit == 'ms' and rlimit == 'rttime') ):
+                        (rlimit == 'rttime' and unit in ['ms', 'us']) ):
                     raise AppArmorException('Invalid unit in rlimit %s %s rule' % (rlimit, value))
 
                 if rlimit == 'rttime':
-                    self.value_as_int = self.time_to_int(value, 'ms')
+                    self.value_as_int = self.time_to_int(value, 'us')
                 else:
                     self.value_as_int = self.time_to_int(value, 'seconds')
 
@@ -181,7 +181,9 @@ class RlimitRule(BaseRule):
         if unit == '':
             unit = default_unit
 
-        if unit == 'ms':
+        if unit == 'us':
+            number = number / 1000000.0
+        elif unit == 'ms':
             number = number / 1000.0
         elif 'seconds'.startswith(unit):
             pass
