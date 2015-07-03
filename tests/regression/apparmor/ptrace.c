@@ -7,7 +7,9 @@
 #include <sys/ptrace.h>
 #include <signal.h>
 #include <sys/user.h>
+#include <sys/uio.h>
 #include <errno.h>
+#include <elf.h>
 
 #define NUM_CHLD_SYSCALLS 10
 
@@ -34,10 +36,50 @@ int interp_status(int status)
 	return rc;
 }
 
+#ifdef PTRACE_GETREGSET
+#  if defined(__x86_64__) || defined(__i386__)
+#    define ARCH_REGS_STRUCT struct user_regs_struct
+#  elif defined(__aarch64__)
+#    define ARCH_REGS_STRUCT struct user_pt_regs
+#  elif defined(__arm__) || defined(__powerpc__) || defined(__powerpc64__)
+#    define ARCH_REGS_STRUCT struct pt_regs
+#  endif
+
+int read_ptrace_registers(pid_t pid)
+{
+	ARCH_REGS_STRUCT regs;
+	struct iovec iov;
+
+	iov.iov_base = &regs;
+	iov.iov_len = sizeof(regs);
+
+	memset(&regs, 0, sizeof(regs));
+	if (ptrace(PTRACE_GETREGSET, pid, NT_PRSTATUS, &iov) == -1) {
+		perror("FAIL:  parent ptrace(PTRACE_GETREGS) failed - ");
+		return errno;
+	}
+
+	return 0;
+}
+#else /* ! PTRACE_GETREGSET so use PTRACE_GETREGS instead */
+int read_ptrace_registers(pid_t pid)
+{
+	struct user regs;
+
+	memset(&regs, 0, sizeof(regs));
+	if (ptrace(PTRACE_GETREGS, pid, NULL, &regs) == -1) {
+		perror("FAIL:  parent ptrace(PTRACE_GETREGS) failed - ");
+		return errno;
+	}
+
+	return 0;
+}
+#endif
+
+
 /* return 0 on success.  Child failure -errorno, parent failure errno */
 int do_parent(pid_t pid, int trace, int num_syscall)
 {
-	struct user regs;
 	int status, i;
 	unsigned int rc;
 
@@ -88,11 +130,9 @@ int do_parent(pid_t pid, int trace, int num_syscall)
 		if (!WIFSTOPPED(status))
 			return interp_status(status);
 	
-		memset(&regs, 0, sizeof(regs));
-		if (ptrace(PTRACE_GETREGS, pid, NULL, &regs) == -1) {
-			perror("FAIL:  parent ptrace(PTRACE_GETREGS) failed - ");
-			return errno;
-		}
+		rc = read_ptrace_registers(pid);
+		if (rc != 0)
+			return rc;
 	}
 
 	if (ptrace(PTRACE_DETACH, pid, NULL, NULL) == -1) {
