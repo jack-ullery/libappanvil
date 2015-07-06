@@ -2692,7 +2692,7 @@ def parse_profile_data(data, file, do_include):
             profile_data[profile][hat]['rlimit'].add(RlimitRule.parse(line))
 
         elif RE_PROFILE_BOOLEAN.search(line):
-            matches = RE_PROFILE_BOOLEAN.search(line)
+            matches = RE_PROFILE_BOOLEAN.search(line).groups()
 
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected boolean definition found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
