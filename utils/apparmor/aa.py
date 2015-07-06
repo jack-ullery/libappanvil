@@ -2422,28 +2422,18 @@ def collapse_log():
                         if not is_known_rule(aa[profile][hat], 'network', NetworkRule(family, sock_type)):
                             log_dict[aamode][profile][hat]['netdomain'][family][sock_type] = True
 
-PROFILE_MODE_RE = re.compile('r|w|l|m|k|a|ix|ux|px|pux|cx|pix|cix|Ux|Px|PUx|Cx|Pix|Cix')
-PROFILE_MODE_NT_RE = re.compile('r|w|l|m|k|a|x|ix|ux|px|pux|cx|pix|cix|Ux|Px|PUx|Cx|Pix|Cix')
-PROFILE_MODE_DENY_RE = re.compile('r|w|l|m|k|a|x')
+PROFILE_MODE_RE      = re.compile('^(r|w|l|m|k|a|ix|ux|px|pux|cx|pix|cix|Ux|Px|PUx|Cx|Pix|Cix)+$')
+PROFILE_MODE_DENY_RE = re.compile('^(r|w|l|m|k|a|x)+$')
 
 def validate_profile_mode(mode, allow, nt_name=None):
     if allow == 'deny':
-        pattern = '^(%s)+$' % PROFILE_MODE_DENY_RE.pattern
-        if re.search(pattern, mode):
-            return True
-        else:
-            return False
-
-    elif nt_name:
-        pattern = '^(%s)+$' % PROFILE_MODE_NT_RE.pattern
-        if re.search(pattern, mode):
+        if PROFILE_MODE_DENY_RE.search(mode):
             return True
         else:
             return False
 
     else:
-        pattern = '^(%s)+$' % PROFILE_MODE_RE.pattern
-        if re.search(pattern, mode):
+        if PROFILE_MODE_RE.search(mode):
             return True
         else:
             return False
