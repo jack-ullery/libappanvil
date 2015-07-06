@@ -12,6 +12,10 @@
 
 import re, os, sys, errno
 
+# setup exception handling
+from apparmor.fail import enable_aa_exception_handler
+enable_aa_exception_handler()
+
 def cmd_enabled():
     '''Returns error code if AppArmor is not enabled'''
     if get_profiles() == {}:

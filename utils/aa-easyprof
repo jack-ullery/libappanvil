@@ -14,6 +14,10 @@ from apparmor.easyprof import AppArmorException, error
 import os
 import sys
 
+# setup exception handling
+from apparmor.fail import enable_aa_exception_handler
+enable_aa_exception_handler()
+
 if __name__ == "__main__":
     def usage():
         '''Return usage information'''

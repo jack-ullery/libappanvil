@@ -25,6 +25,10 @@ import apparmor.severity
 import apparmor.cleanprofile as cleanprofile
 import apparmor.ui as aaui
 
+# setup exception handling
+from apparmor.fail import enable_aa_exception_handler
+enable_aa_exception_handler()
+
 # setup module translations
 from apparmor.translations import init_translation
 _ = init_translation()
