@@ -1,6 +1,6 @@
 #
 #=DESCRIPTION simple rtsig test
-#=EXRESULT=PASS
+#=EXRESULT PASS
 #
 
 /usr/bin/signal-test {
