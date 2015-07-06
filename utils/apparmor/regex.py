@@ -68,7 +68,7 @@ RE_PROFILE_START          = re.compile(
         '|' + # or
         '(' + 'profile' + '\s+' + RE_PROFILE_NAME % 'namedprofile' + '(\s+' + RE_PROFILE_PATH % 'attachment' + ')?' + ')' + # 'profile', profile name, optionally attachment
     ')' +
-    '\s+((flags=)?\((?P<flags>.+)\)\s+)?\{' +
+    '\s+((flags\s*=\s*)?\((?P<flags>.+)\)\s*)?\{' +
     RE_EOL)
 
 
