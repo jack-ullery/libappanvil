@@ -39,12 +39,10 @@ RE_NETWORK_TYPE     = '(' + '|'.join(network_type_keywords) + ')'
 RE_NETWORK_PROTOCOL = '(' + '|'.join(network_protocol_keywords) + ')'
 
 RE_NETWORK_DETAILS  = re.compile(
-    '^\s*(' +
-        '(?P<domain>' + RE_NETWORK_DOMAIN + ')' + # domain and ...
-            '(\s+(?P<type_or_protocol>' + RE_NETWORK_TYPE + '|' + RE_NETWORK_PROTOCOL + '))?' + # ... optional type or protocol
-        '|' + # or
-        '(?P<protocol>' + RE_NETWORK_PROTOCOL + ')' + # protocol only
-    ')\s*$')
+    '^\s*' +
+    '(?P<domain>' + RE_NETWORK_DOMAIN + ')?' +  # optional domain
+    '(\s+(?P<type_or_protocol>' + RE_NETWORK_TYPE + '|' + RE_NETWORK_PROTOCOL + '))?' +  # optional type or protocol
+    '\s*$')
 
 
 class NetworkRule(BaseRule):
@@ -59,10 +57,6 @@ class NetworkRule(BaseRule):
 
     def __init__(self, domain, type_or_protocol, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
-
-        '''
-           NETWORK RULE = 'network' [ [ DOMAIN [ TYPE | PROTOCOL ] ] | [ PROTOCOL ] ] ','
-        '''
 
         super(NetworkRule, self).__init__(audit=audit, deny=deny,
                                              allow_keyword=allow_keyword,
@@ -89,8 +83,6 @@ class NetworkRule(BaseRule):
             if type_or_protocol in network_protocol_keywords:
                 self.type_or_protocol = type_or_protocol
             elif type_or_protocol in network_type_keywords:
-                if self.all_domains:
-                    raise AppArmorException('Passing type %s to NetworkRule without specifying a domain keyword is not allowed' % type_or_protocol)
                 self.type_or_protocol = type_or_protocol
             else:
                 raise AppArmorBug('Passed unknown type_or_protocol to NetworkRule: %s' % type_or_protocol)
@@ -113,7 +105,7 @@ class NetworkRule(BaseRule):
 
         rule_details = ''
         if matches.group('details'):
-            rule_details = matches.group('details').strip()
+            rule_details = matches.group('details')
 
         if rule_details:
             details = RE_NETWORK_DETAILS.search(rule_details)
@@ -127,8 +119,6 @@ class NetworkRule(BaseRule):
 
             if details.group('type_or_protocol'):
                 type_or_protocol = details.group('type_or_protocol')
-            elif details.group('protocol'):
-                type_or_protocol = details.group('protocol')
             else:
                 type_or_protocol = NetworkRule.ALL
         else:

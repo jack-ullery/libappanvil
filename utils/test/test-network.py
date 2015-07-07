@@ -48,6 +48,7 @@ class NetworkTestParse(NetworkTest):
         ('network inet stream,'                 , exp(False, False, False, ''           , 'inet',   False, 'stream' , False)),
         ('deny network inet stream, # comment'  , exp(False, False, True , ' # comment' , 'inet',   False, 'stream' , False)),
         ('audit allow network tcp,'             , exp(True , True , False, ''           , None  ,   True , 'tcp'    , False)),
+        ('network stream,'                      , exp(False, False, False, ''           , None  ,   True , 'stream' , False)),
     ]
 
     def _run_test(self, rawrule, expected):
@@ -58,7 +59,6 @@ class NetworkTestParse(NetworkTest):
 
 class NetworkTestParseInvalid(NetworkTest):
     tests = [
-        ('network stream,'                  , AppArmorException), # domain missing
         ('network foo,'                     , AppArmorException),
         ('network foo bar,'                 , AppArmorException),
         ('network foo tcp,'                 , AppArmorException),
@@ -118,6 +118,7 @@ class NetworkFromInit(NetworkTest):
         (NetworkRule('inet', NetworkRule.ALL)           , exp(False, False, False, ''           , 'inet',   False, None     , True )),
         (NetworkRule(NetworkRule.ALL, NetworkRule.ALL)  , exp(False, False, False, ''           , None  ,   True , None     , True )),
         (NetworkRule(NetworkRule.ALL, 'tcp')            , exp(False, False, False, ''           , None  ,   True , 'tcp'    , False)),
+        (NetworkRule(NetworkRule.ALL, 'stream')         , exp(False, False, False, ''           , None  ,   True , 'stream' , False)),
     ]
 
     def _run_test(self, obj, expected):
@@ -137,7 +138,6 @@ class InvalidNetworkInit(AATest):
         ([None  , 'tcp'            ]    , AppArmorBug), # wrong type for domain
         (['inet', dict()           ]    , AppArmorBug), # wrong type for type_or_protocol
         (['inet', None             ]    , AppArmorBug), # wrong type for type_or_protocol
-        ([NetworkRule.ALL, 'stream']    , AppArmorException), # stream requires a domain
     ]
 
     def _run_test(self, params, expected):
