@@ -2810,15 +2810,9 @@ def parse_profile_data(data, file, do_include):
                 filelist[file]['include'][include_name] = True
             # If include is a directory
             if os.path.isdir(profile_dir + '/' + include_name):
-                for path in os.listdir(profile_dir + '/' + include_name):
-                    path = path.strip()
-                    if is_skippable_file(path):
-                        continue
-                    if os.path.isfile(profile_dir + '/' + include_name + '/' + path):
-                        file_name = include_name + '/' + path
-                        file_name = file_name.replace(profile_dir + '/', '')
-                        if not include.get(file_name, False):
-                            load_include(file_name)
+                for file_name in include_dir_filelist(profile_dir, include_name):
+                    if not include.get(file_name, False):
+                        load_include(file_name)
             else:
                 if not include.get(include_name, False):
                     load_include(include_name)
@@ -4108,6 +4102,20 @@ def get_include_data(filename):
     else:
         raise AppArmorException(_('File Not Found: %s') % filename)
     return data
+
+def include_dir_filelist(profile_dir, include_name):
+    '''returns a list of files in the given profile_dir/include_name directory, except skippable files'''
+    files = []
+    for path in os.listdir(profile_dir + '/' + include_name):
+        path = path.strip()
+        if is_skippable_file(path):
+            continue
+        if os.path.isfile(profile_dir + '/' + include_name + '/' + path):
+            file_name = include_name + '/' + path
+            file_name = file_name.replace(profile_dir + '/', '')
+            files.append(file_name)
+
+    return files
 
 def load_include(incname):
     load_includeslist = [incname]
