@@ -4078,13 +4078,16 @@ def is_known_rule(profile, rule_type, rule_obj):
         incname = includelist.pop(0)
         checked.append(incname)
 
-        if include[incname][incname].get(rule_type, False):
-            if include[incname][incname][rule_type].is_covered(rule_obj, False):
-                return True
+        if os.path.isdir(profile_dir + '/' + incname):
+            includelist += include_dir_filelist(profile_dir, incname)
+        else:
+            if include[incname][incname].get(rule_type, False):
+                if include[incname][incname][rule_type].is_covered(rule_obj, False):
+                    return True
 
-        for childinc in include[incname][incname]['include'].keys():
-            if childinc not in checked:
-                includelist += [childinc]
+            for childinc in include[incname][incname]['include'].keys():
+                if childinc not in checked:
+                    includelist += [childinc]
 
     return False
 
