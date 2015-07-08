@@ -2683,8 +2683,9 @@ def parse_profile_data(data, file, do_include):
         elif RE_PROFILE_BOOLEAN.search(line):
             matches = RE_PROFILE_BOOLEAN.search(line).groups()
 
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected boolean definition found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
+            if profile and not do_include:
+                raise AppArmorException(_('Syntax Error: Unexpected boolean definition found inside profile in file: %(file)s line: %(line)s') % {
+                        'file': file, 'line': lineno + 1 })
 
             bool_var = matches[0]
             value = matches[1]
