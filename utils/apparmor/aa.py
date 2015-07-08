@@ -4071,10 +4071,20 @@ def is_known_rule(profile, rule_type, rule_obj):
         if profile[rule_type].is_covered(rule_obj, False):
             return True
 
-    for incname in profile['include'].keys():
+    includelist = list(profile['include'].keys())
+    checked = []
+
+    while includelist:
+        incname = includelist.pop(0)
+        checked.append(incname)
+
         if include[incname][incname].get(rule_type, False):
             if include[incname][incname][rule_type].is_covered(rule_obj, False):
                 return True
+
+        for childinc in include[incname][incname]['include'].keys():
+            if childinc not in checked:
+                includelist += [childinc]
 
     return False
 
