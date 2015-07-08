@@ -253,6 +253,11 @@ class ReadLog:
                                 'rename_dest', 'unlink', 'rmdir', 'symlink_create', 'link',
                                 'sysctl', 'getattr', 'setattr', 'xattr'] ):
 
+            # for some reason, we get file_perm log events without request_mask, see https://bugs.launchpad.net/apparmor/+bug/1466812/
+            if e['operation'] == 'file_perm' and e['request_mask'] is None:
+                self.debug_logger.debug('UNHANDLED (missing request_mask): %s' % e)
+                return None
+
             # Map c (create) to a and d (delete) to w (logging is more detailed than the profile language)
             rmask = e['request_mask']
             rmask = rmask.replace('c', 'a')
