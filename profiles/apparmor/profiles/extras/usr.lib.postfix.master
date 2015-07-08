@@ -21,7 +21,7 @@
   capability dac_override,
 
   /etc/postfix/master.cf                       r,
-  /{var/spool/postfix/,}pid/master.pid            rw,
+  /{var/spool/postfix/,}pid/master.pid            rwk,
   /{var/spool/postfix/,}private/*                 wl,
   /{var/spool/postfix/,}private/tlsmgr            rwl,
   /{var/spool/postfix/,}public/{cleanup,flush,pickup,qmgr,showq,tlsmgr} rwl,

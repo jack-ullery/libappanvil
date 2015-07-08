@@ -16,7 +16,9 @@ import unittest
 import inspect
 import os
 import re
+import shutil
 import sys
+import tempfile
 
 import apparmor.common
 import apparmor.config
@@ -47,7 +49,26 @@ class AATest(unittest.TestCase):
         '''override this function if a test needs additional setup steps (instead of overriding setUp())'''
         pass
 
+    def tearDown(self):
+        if self.tmpdir and os.path.exists(self.tmpdir):
+            shutil.rmtree(self.tmpdir)
+
+        self.AATeardown()
+
+    def AATeardown(self):
+        '''override this function if a test needs additional teardown steps (instead of overriding tearDown())'''
+        pass
+
+    def createTmpdir(self):
+        self.tmpdir = tempfile.mkdtemp(prefix='aa-test-')
+
+    def writeTmpfile(self, file, contents):
+        if not self.tmpdir:
+            self.createTmpdir()
+        return write_file(self.tmpdir, file, contents)
+
     tests = []
+    tmpdir = None
 
 class AAParseTest(unittest.TestCase):
     parse_function = None

@@ -102,7 +102,7 @@ runchecktest "UMOUNT (confined no perm)" fail umount ${loop_device} ${mount_poin
 remove_mnt
 
 
-if [ "$(have_features mount)" != "true" ] ; then
+if [ "$(kernel_features mount)" != "true" -o "$(parser_supports 'mount,')" != "true" ] ; then
 	genprofile capability:sys_admin
 	runchecktest "MOUNT (confined cap)" pass mount ${loop_device} ${mount_point}
 	remove_mnt

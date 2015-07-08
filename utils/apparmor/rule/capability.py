@@ -126,6 +126,31 @@ class CapabilityRule(BaseRule):
 
         return True
 
+    def severity(self, sev_db):
+        if self.all_caps:
+            severity = sev_db.rank_capability('__ALL__')
+        else:
+            severity = -1
+            for cap in self.capability:
+                sev = sev_db.rank_capability(cap)
+                if isinstance(sev, int):  # type check avoids breakage caused by 'unknown'
+                    severity = max(severity, sev)
+
+        if severity == -1:
+            severity = sev  # effectively 'unknown'
+
+        return severity
+
+    def logprof_header_localvars(self):
+        if self.all_caps:
+            cap_txt = _('ALL')
+        else:
+            cap_txt = ' '.join(sorted(self.capability))
+
+        return [
+            _('Capability'), cap_txt,
+        ]
+
 
 class CapabilityRuleset(BaseRuleset):
     '''Class to handle and store a collection of capability rules'''

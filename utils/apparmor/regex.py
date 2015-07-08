@@ -32,9 +32,8 @@ RE_PROFILE_PATH         = '(?P<%s>(/\S+|"/[^"]+"))'  # filename (starting with '
 RE_PROFILE_END          = re.compile('^\s*\}' + RE_EOL)
 RE_PROFILE_CAP          = re.compile(RE_AUDIT_DENY + 'capability(?P<capability>(\s+\S+)+)?' + RE_COMMA_EOL)
 RE_PROFILE_LINK         = re.compile(RE_AUDIT_DENY + 'link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)' + RE_COMMA_EOL)
-RE_PROFILE_CHANGE_PROFILE = re.compile('^\s*change_profile\s+->\s*("??.+?"??)' + RE_COMMA_EOL)
 RE_PROFILE_ALIAS        = re.compile('^\s*alias\s+("??.+?"??)\s+->\s*("??.+?"??)' + RE_COMMA_EOL)
-RE_PROFILE_RLIMIT       = re.compile('^\s*set\s+rlimit\s+(.+)\s+(<=)?\s*(.+)' + RE_COMMA_EOL)
+RE_PROFILE_RLIMIT       = re.compile('^\s*set\s+rlimit\s+(?P<rlimit>[a-z]+)\s*<=\s*(?P<value>[^ ]+)' + RE_COMMA_EOL)
 RE_PROFILE_BOOLEAN      = re.compile('^\s*(\$\{?\w*\}?)\s*=\s*(true|false)\s*,?' + RE_EOL, flags=re.IGNORECASE)
 RE_PROFILE_VARIABLE     = re.compile('^\s*(@\{?\w+\}?)\s*(\+?=)\s*(@*.+?)\s*,?' + RE_EOL)
 RE_PROFILE_CONDITIONAL  = re.compile('^\s*if\s+(not\s+)?(\$\{?\w*\}?)\s*\{' + RE_EOL)
@@ -44,7 +43,7 @@ RE_PROFILE_BARE_FILE_ENTRY = re.compile(RE_AUDIT_DENY + RE_OWNER + 'file' + RE_C
 RE_PROFILE_PATH_ENTRY   = re.compile(RE_AUDIT_DENY + RE_OWNER + '(file\s+)?([\"@/].*?)\s+(\S+)(\s+->\s*(.*?))?' + RE_COMMA_EOL)
 RE_PROFILE_NETWORK      = re.compile(RE_AUDIT_DENY + 'network(?P<details>\s+.*)?' + RE_COMMA_EOL)
 RE_PROFILE_CHANGE_HAT   = re.compile('^\s*\^(\"??.+?\"??)' + RE_COMMA_EOL)
-RE_PROFILE_HAT_DEF      = re.compile('^\s*(\^|hat\s+)(?P<hat>\"??.+?\"??)\s+((flags=)?\((?P<flags>.+)\)\s+)*\{' + RE_EOL)
+RE_PROFILE_HAT_DEF      = re.compile('^(?P<leadingspace>\s*)(?P<hat_keyword>\^|hat\s+)(?P<hat>\"??.+?\"??)\s+((flags=)?\((?P<flags>.+)\)\s+)*\{' + RE_EOL)
 RE_PROFILE_DBUS         = re.compile(RE_AUDIT_DENY + '(dbus\s*,|dbus\s+[^#]*\s*,)' + RE_EOL)
 RE_PROFILE_MOUNT        = re.compile(RE_AUDIT_DENY + '((mount|remount|umount|unmount)(\s+[^#]*)?\s*,)' + RE_EOL)
 RE_PROFILE_SIGNAL       = re.compile(RE_AUDIT_DENY + '(signal\s*,|signal\s+[^#]*\s*,)' + RE_EOL)
@@ -69,8 +68,18 @@ RE_PROFILE_START          = re.compile(
         '|' + # or
         '(' + 'profile' + '\s+' + RE_PROFILE_NAME % 'namedprofile' + '(\s+' + RE_PROFILE_PATH % 'attachment' + ')?' + ')' + # 'profile', profile name, optionally attachment
     ')' +
-    '\s+((flags=)?\((?P<flags>.+)\)\s+)?\{' +
+    '\s+((flags\s*=\s*)?\((?P<flags>.+)\)\s*)?\{' +
     RE_EOL)
+
+
+RE_PROFILE_CHANGE_PROFILE = re.compile(
+    RE_AUDIT_DENY +
+    'change_profile' +
+    '(\s+' + RE_PROFILE_PATH % 'execcond' + ')?' +  # optionally exec condition
+    '(\s+->\s*' + RE_PROFILE_NAME % 'targetprofile' + ')?' +  # optionally '->' target profile
+    RE_COMMA_EOL)
+
+
 
 def parse_profile_start_line(line, filename):
     matches = RE_PROFILE_START.search(line)
@@ -101,6 +110,21 @@ def parse_profile_start_line(line, filename):
         result['profile_keyword'] = True
 
     return result
+
+
+RE_INCLUDE = re.compile('^\s*#?include\s*<(?P<magicpath>.*)>' + RE_EOL)
+
+def re_match_include(line):
+    """Matches the path for include and returns the include path"""
+    matches = RE_INCLUDE.search(line)
+
+    if not matches:
+        return None
+
+    if not matches.group('magicpath').strip():
+        raise AppArmorException(_('Syntax error: #include rule with empty filename'))
+
+    return matches.group('magicpath')
 
 
 def strip_quotes(data):

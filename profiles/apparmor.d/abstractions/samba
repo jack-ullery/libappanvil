@@ -13,7 +13,7 @@
   /usr/share/samba/*.dat r,
   /usr/share/samba/codepages/{lowcase,upcase,valid}.dat r,
   /var/cache/samba/ w,
-  /var/lib/samba/**.tdb rwk,
+  /var/lib/samba/** rwk,
   /var/log/samba/cores/ rw,
   /var/log/samba/cores/** rw,
   /var/log/samba/log.* w,

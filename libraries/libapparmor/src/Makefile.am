@@ -67,7 +67,11 @@ tst_aalogmisc_LDADD = .libs/libapparmor.a
 tst_features_SOURCES = tst_features.c
 tst_features_LDADD = .libs/libapparmor.a
 
-check_PROGRAMS = tst_aalogmisc tst_features
+tst_kernel_SOURCES = tst_kernel.c
+tst_kernel_LDADD = .libs/libapparmor.a
+tst_kernel_LDFLAGS = -pthread
+
+check_PROGRAMS = tst_aalogmisc tst_features tst_kernel
 TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST = grammar.y scanner.l libapparmor.map libapparmor.pc

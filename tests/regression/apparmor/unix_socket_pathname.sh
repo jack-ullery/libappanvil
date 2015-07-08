@@ -27,7 +27,7 @@ pwd=`cd $pwd ; /bin/pwd`
 bin=$pwd
 
 . $bin/prologue.inc
-requires_features policy/versions/v6
+requires_kernel_features policy/versions/v6
 
 settest unix_socket
 
@@ -41,7 +41,7 @@ message=4a0c83d87aaa7afa2baab5df3ee4df630f0046d5bfb7a3080c550b721f401b3b\
 okserver=w
 badserver1=r
 badserver2=
-if [ "$(have_features policy/versions/v7)" == "true" ] ; then
+if [ "$(kernel_features policy/versions/v7)" == "true" ] ; then
 	okserver=rw
 	badserver2=w
 fi
@@ -52,7 +52,7 @@ fi
 # af_unix support requires 'unix getattr' to call getsockname()
 af_unix_okserver=
 af_unix_okclient=
-if [ "$(have_features network/af_unix)" == "true" ] ; then
+if [ "$(kernel_features network/af_unix)" == "true" -a "$(parser_supports 'unix,')" == "true" ] ; then
 	af_unix_okserver="create,setopt"
 	af_unix_okclient="create,getopt,setopt,getattr"
 fi

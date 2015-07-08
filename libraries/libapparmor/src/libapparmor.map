@@ -54,6 +54,10 @@ APPARMOR_2.9 {
 
 APPARMOR_2.10 {
   global:
+        aa_query_file_path;
+        aa_query_file_path_len;
+        aa_query_link_path;
+        aa_query_link_path_len;
         aa_features_new;
         aa_features_new_from_string;
         aa_features_new_from_kernel;
@@ -76,10 +80,9 @@ APPARMOR_2.10 {
         aa_policy_cache_new;
         aa_policy_cache_ref;
         aa_policy_cache_unref;
-        aa_policy_cache_is_valid;
-        aa_policy_cache_create;
         aa_policy_cache_remove;
         aa_policy_cache_replace_all;
+        aa_splitcon;
   local:
         *;
 } APPARMOR_2.9;

@@ -55,7 +55,7 @@ static int verify_confinement_context(int fd, const char *fd_name,
 				      const char *expected_mode)
 {
 	char *label, *mode;
-	int rc;
+	int expected_rc, rc;
 
 	rc = aa_getpeercon(fd, &label, &mode);
 	if (rc < 0) {
@@ -63,9 +63,6 @@ static int verify_confinement_context(int fd, const char *fd_name,
 			fd_name, fd);
 		return 1;
 	}
-
-	if (!mode)
-		mode = NO_MODE;
 
 	if (strcmp(label, expected_label)) {
 		fprintf(stderr,
@@ -75,11 +72,26 @@ static int verify_confinement_context(int fd, const char *fd_name,
 		goto out;
 	}
 
-	if (strcmp(mode, expected_mode)) {
+	if ((!expected_mode && mode) || (expected_mode && !mode) ||
+	    (expected_mode && mode && strcmp(mode, expected_mode))) {
 		fprintf(stderr,
 			"FAIL - %s: mode \"%s\" != expected_mode \"%s\"\n",
 			fd_name, mode, expected_mode);
 		rc = 3;
+		goto out;
+	}
+
+	expected_rc = strlen(expected_label);
+	if (expected_mode) {
+		/* ' ' + '(' + expected_mode + ')' */
+		expected_rc += 1 + 1 + strlen(expected_mode) + 1;
+	}
+	expected_rc++; /* Trailing NUL terminator */
+
+	if (rc != expected_rc) {
+		fprintf(stderr, "FAIL - %s: rc (%d) != expected_rc (%d)\n",
+			fd_name, rc, expected_rc);
+		rc = 4;
 		goto out;
 	}
 
@@ -163,7 +175,7 @@ int main(int argc, char **argv)
 		exit(2);
 
 	expected_label = argv[1];
-	expected_mode = argv[2];
+	expected_mode = !strcmp(argv[2], NO_MODE) ? NULL : argv[2];
 
 	if (verify_confinement_context(pair[0], "pair[0]",
 				       expected_label, expected_mode)) {

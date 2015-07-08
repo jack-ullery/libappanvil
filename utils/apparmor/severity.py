@@ -15,11 +15,13 @@ from __future__ import with_statement
 import os
 import re
 from apparmor.common import AppArmorException, open_file_read, warn, convert_regexp  # , msg, error, debug
+from apparmor.regex import re_match_include
 
 class Severity(object):
     def __init__(self, dbname=None, default_rank=10):
         """Initialises the class object"""
         self.PROF_DIR = '/etc/apparmor.d'  # The profile directory
+        self.NOT_IMPLEMENTED = '_-*not*implemented*-_'  # used for rule types that don't have severity ratings
         self.severity = dict()
         self.severity['DATABASENAME'] = dbname
         self.severity['CAPABILITIES'] = {}
@@ -75,9 +77,11 @@ class Severity(object):
                 else:
                     raise AppArmorException("Unexpected line in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
 
-    def handle_capability(self, resource):
+    def rank_capability(self, resource):
         """Returns the severity of for the capability resource, default value if no match"""
-        cap = resource.upper()
+        cap = 'CAP_%s' % resource.upper()
+        if resource == '__ALL__':
+            return max(self.severity['CAPABILITIES'].values())
         if cap in self.severity['CAPABILITIES'].keys():
             return self.severity['CAPABILITIES'][cap]
         # raise ValueError("unexpected capability rank input: %s"%resource)
@@ -136,23 +140,24 @@ class Severity(object):
         elif resource[0] == '/':    # file resource
             return self.handle_file(resource, mode)
         elif resource[0:4] == 'CAP_':    # capability resource
-            return self.handle_capability(resource)
+            return self.rank_capability(resource[4:])
         else:
             raise AppArmorException("Unexpected rank input: %s" % resource)
 
     def handle_variable_rank(self, resource, mode):
         """Returns the max possible rank for file resources containing variables"""
         regex_variable = re.compile('@{([^{.]*)}')
-        rank = None
         matches = regex_variable.search(resource)
         if matches:
+            rank = self.severity['DEFAULT_RANK']
             variable = '@{%s}' % matches.groups()[0]
             #variables = regex_variable.findall(resource)
             for replacement in self.severity['VARIABLES'][variable]:
                 resource_replaced = self.variable_replace(variable, replacement, resource)
                 rank_new = self.handle_variable_rank(resource_replaced, mode)
-                #rank_new = self.handle_variable_rank(resource.replace('@{'+variable+'}', replacement), mode)
-                if rank is None or rank_new > rank:
+                if rank == self.severity['DEFAULT_RANK']:
+                    rank = rank_new
+                elif rank_new != self.severity['DEFAULT_RANK'] and rank_new > rank:
                     rank = rank_new
             return rank
         else:
@@ -175,16 +180,14 @@ class Severity(object):
 
     def load_variables(self, prof_path):
         """Loads the variables for the given profile"""
-        regex_include = re.compile('^#?include\s*<(\S*)>')
         if os.path.isfile(prof_path):
             with open_file_read(prof_path) as f_in:
                 for line in f_in:
                     line = line.strip()
                     # If any includes, load variables from them first
-                    match = regex_include.search(line)
+                    match = re_match_include(line)
                     if match:
-                        new_path = match.groups()[0]
-                        new_path = self.PROF_DIR + '/' + new_path
+                        new_path = self.PROF_DIR + '/' + match
                         self.load_variables(new_path)
                     else:
                         # Remove any comments

@@ -14,18 +14,19 @@
 # ----------------------------------------------------------------------
 
 import unittest
+from common_test import AATest, setup_all_loops
 
 from apparmor.rule.capability import CapabilityRule, CapabilityRuleset
 from apparmor.rule import BaseRule
+import apparmor.severity as severity
 from apparmor.common import AppArmorException, AppArmorBug, hasher
 from apparmor.logparser import ReadLog
+from apparmor.translations import init_translation
+_ = init_translation()
 
 # --- tests for single CapabilityRule --- #
 
-class CapabilityTest(unittest.TestCase):
-    def setUp(self):
-        self.maxDiff = None
-
+class CapabilityTest(AATest):
     def _compare_obj_with_rawrule(self, rawrule, expected):
 
         obj = CapabilityRule.parse(rawrule)
@@ -212,10 +213,7 @@ class CapabilityTest(unittest.TestCase):
         })
 
 
-class InvalidCapabilityTest(unittest.TestCase):
-    def setUp(self):
-        self.maxDiff = None
-
+class InvalidCapabilityTest(AATest):
     def _check_invalid_rawrule(self, rawrule):
         obj = None
         with self.assertRaises(AppArmorException):
@@ -262,10 +260,7 @@ class InvalidCapabilityTest(unittest.TestCase):
             CapabilityRule(dict())
 
 
-class WriteCapabilityTest(unittest.TestCase):
-    def setUp(self):
-        self.maxDiff = None
-
+class WriteCapabilityTest(AATest):
     def _check_write_rule(self, rawrule, cleanrule):
         obj = CapabilityRule.parse(rawrule)
         clean = obj.get_clean()
@@ -292,10 +287,7 @@ class WriteCapabilityTest(unittest.TestCase):
         self.assertEqual(expected, obj.get_clean(2), 'unexpected clean rule')
         self.assertEqual(expected, obj.get_raw(2), 'unexpected raw rule')
 
-class CapabilityCoveredTest(unittest.TestCase):
-    def setUp(self):
-        self.maxDiff = None
-
+class CapabilityCoveredTest(AATest):
     def _is_covered(self, obj, rule_to_test):
         self.assertTrue(CapabilityRule.match(rule_to_test))
         return obj.is_covered(CapabilityRule.parse(rule_to_test))
@@ -430,12 +422,38 @@ class CapabilityCoveredTest(unittest.TestCase):
         self.assertFalse(self._is_covered(obj2, 'capability sys_admin,'))
         self.assertTrue(self._is_covered(obj2, 'capability ptrace,'))
 
+class CapabiliySeverityTest(AATest):
+    tests = [
+        ('fsetid',                      9),
+        ('dac_read_search',             7),
+        (['fsetid', 'dac_read_search'], 9),
+        (CapabilityRule.ALL,            10),
+        ('foo',                         'unknown'),
+    ]
+    def _run_test(self, params, expected):
+        sev_db = severity.Severity('severity.db', 'unknown')
+        obj = CapabilityRule(params)
+        rank = obj.severity(sev_db)
+        self.assertEqual(rank, expected)
+
+class CapabilityLogprofHeaderTest(AATest):
+    tests = [
+        ('capability,',                         [                               _('Capability'), _('ALL'),         ]),
+        ('capability chown,',                   [                               _('Capability'), 'chown',          ]),
+        ('capability chown fsetid,',            [                               _('Capability'), 'chown fsetid',   ]),
+        ('audit capability,',                   [_('Qualifier'), 'audit',       _('Capability'), _('ALL'),         ]),
+        ('deny capability chown,',              [_('Qualifier'), 'deny',        _('Capability'), 'chown',          ]),
+        ('allow capability chown fsetid,',      [_('Qualifier'), 'allow',       _('Capability'), 'chown fsetid',   ]),
+        ('audit deny capability,',              [_('Qualifier'), 'audit deny',  _('Capability'), _('ALL'),         ]),
+    ]
+
+    def _run_test(self, params, expected):
+        obj = CapabilityRule._parse(params)
+        self.assertEqual(obj.logprof_header(), expected)
+
 # --- tests for CapabilityRuleset --- #
 
-class CapabilityRulesTest(unittest.TestCase):
-    def setUp(self):
-        self.maxDiff = None
-
+class CapabilityRulesTest(AATest):
     def test_empty_ruleset(self):
         ruleset = CapabilityRuleset()
         ruleset_2 = CapabilityRuleset()
@@ -515,10 +533,8 @@ class CapabilityRulesTest(unittest.TestCase):
         self.assertEqual(expected_clean, ruleset.get_clean(1))
 
 
-class CapabilityRulesCoveredTest(unittest.TestCase):
-    def setUp(self):
-        self.maxDiff = None
-
+class CapabilityRulesCoveredTest(AATest):
+    def AASetup(self):
         self.ruleset = CapabilityRuleset()
         rules = [
             'capability chown,',
@@ -611,9 +627,8 @@ class CapabilityRulesCoveredTest(unittest.TestCase):
 #        parser = ReadLog('', '', '', '', '')
 #        self.assertEqual(True, self.ruleset.is_log_covered(parser.parse_event(event_base%'chgrp'), False))  # ignores allow/deny
 
-class CapabilityGlobTest(unittest.TestCase):
-    def setUp(self):
-        self.maxDiff = None
+class CapabilityGlobTest(AATest):
+    def AASetup(self):
         self.ruleset = CapabilityRuleset()
 
     def test_glob(self):
@@ -623,10 +638,8 @@ class CapabilityGlobTest(unittest.TestCase):
         with self.assertRaises(AppArmorBug):
             self.ruleset.get_glob_ext('capability net_raw,')
 
-class CapabilityDeleteTest(unittest.TestCase):
-    def setUp(self):
-        self.maxDiff = None
-
+class CapabilityDeleteTest(AATest):
+    def AASetup(self):
         self.ruleset = CapabilityRuleset()
         rules = [
             'capability chown,',
@@ -974,5 +987,6 @@ class CapabilityDeleteTest(unittest.TestCase):
         self._check_test_delete_duplicates_in_profile(rules, expected_raw, expected_clean, expected_deleted)
 
 
-if __name__ == "__main__":
+setup_all_loops(__name__)
+if __name__ == '__main__':
     unittest.main(verbosity=2)

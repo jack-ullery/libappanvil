@@ -28,7 +28,6 @@
 #include <getopt.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <dirent.h>
 
 /* enable the following line to get voluminous debug info */
 /* #define DEBUG */
@@ -77,7 +76,7 @@ int abort_on_error = 0;			/* stop processing profiles if error */
 int skip_bad_cache_rebuild = 0;
 int mru_skip_cache = 1;
 int debug_cache = 0;
-struct timespec mru_tstamp;
+struct timespec cache_tstamp, mru_policy_tstamp;
 
 static char *apparmorfs = NULL;
 static char *cacheloc = NULL;
@@ -398,7 +397,7 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'M':
-		if (aa_features_new(&features, optarg)) {
+		if (aa_features_new(&features, AT_FDCWD, optarg)) {
 			fprintf(stderr,
 				"Failed to load features from '%s': %m\n",
 				optarg);
@@ -601,7 +600,7 @@ int process_binary(int option, aa_kernel_interface *kernel_interface,
 	if (kernel_load) {
 		if (option == OPTION_ADD) {
 			retval = profilename ?
-				 aa_kernel_interface_load_policy_from_file(kernel_interface, profilename) :
+				 aa_kernel_interface_load_policy_from_file(kernel_interface, AT_FDCWD, profilename) :
 				 aa_kernel_interface_load_policy_from_fd(kernel_interface, 0);
 			if (retval == -1) {
 				retval = errno;
@@ -611,7 +610,7 @@ int process_binary(int option, aa_kernel_interface *kernel_interface,
 			}
 		} else if (option == OPTION_REPLACE) {
 			retval = profilename ?
-				 aa_kernel_interface_replace_policy_from_file(kernel_interface, profilename) :
+				 aa_kernel_interface_replace_policy_from_file(kernel_interface, AT_FDCWD, profilename) :
 				 aa_kernel_interface_replace_policy_from_fd(kernel_interface, 0);
 			if (retval == -1) {
 				retval = errno;
@@ -646,12 +645,12 @@ int process_binary(int option, aa_kernel_interface *kernel_interface,
 
 void reset_parser(const char *filename)
 {
-	memset(&mru_tstamp, 0, sizeof(mru_tstamp));
+	memset(&mru_policy_tstamp, 0, sizeof(mru_policy_tstamp));
+	memset(&cache_tstamp, 0, sizeof(cache_tstamp));
 	mru_skip_cache = 1;
 	free_aliases();
 	free_symtabs();
 	free_policies();
-	reset_regex();
 	reset_include_stack(filename);
 }
 
@@ -811,7 +810,7 @@ struct dir_cb_data {
 };
 
 /* data - pointer to a dir_cb_data */
-static int profile_dir_cb(DIR *dir unused, const char *name, struct stat *st,
+static int profile_dir_cb(int dirfd unused, const char *name, struct stat *st,
 			  void *data)
 {
 	int rc = 0;
@@ -828,7 +827,7 @@ static int profile_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 }
 
 /* data - pointer to a dir_cb_data */
-static int binary_dir_cb(DIR *dir unused, const char *name, struct stat *st,
+static int binary_dir_cb(int dirfd unused, const char *name, struct stat *st,
 			 void *data)
 {
 	int rc = 0;
@@ -898,13 +897,15 @@ int main(int argc, char *argv[])
 
 	if ((!skip_cache && (write_cache || !skip_read_cache)) ||
 	    force_clear_cache) {
+		uint16_t max_caches = write_cache && cond_clear_cache ? 1 : 0;
+
 		if (!cacheloc && asprintf(&cacheloc, "%s/cache", basedir) == -1) {
 			PERROR(_("Memory allocation error."));
 			return 1;
 		}
 
 		if (force_clear_cache) {
-			if (aa_policy_cache_remove(cacheloc)) {
+			if (aa_policy_cache_remove(AT_FDCWD, cacheloc)) {
 				PERROR(_("Failed to clear cache files (%s): %s\n"),
 				       cacheloc, strerror(errno));
 				return 1;
@@ -916,31 +917,25 @@ int main(int argc, char *argv[])
 		if (create_cache_dir)
 			pwarn(_("The --create-cache-dir option is deprecated. Please use --write-cache.\n"));
 
-		retval = aa_policy_cache_new(&policy_cache, features, cacheloc,
-					     write_cache);
+		retval = aa_policy_cache_new(&policy_cache, features,
+					     AT_FDCWD, cacheloc, max_caches);
 		if (retval) {
-			if (errno != ENOENT) {
+			if (errno != ENOENT && errno != EEXIST) {
 				PERROR(_("Failed setting up policy cache (%s): %s\n"),
 				       cacheloc, strerror(errno));
 				return 1;
 			}
 
-			write_cache = 0;
-			skip_read_cache = 0;
-		} else if (!aa_policy_cache_is_valid(policy_cache)) {
-			if (write_cache && cond_clear_cache &&
-			    aa_policy_cache_create(policy_cache)) {
-				if (show_cache)
+			if (show_cache) {
+				if (max_caches > 0)
 					PERROR("Cache write disabled: Cannot create cache '%s': %m\n",
 					       cacheloc);
-				write_cache = 0;
-				skip_read_cache = 1;
-			} else if (!write_cache || !cond_clear_cache) {
-				if (show_cache)
+				else
 					PERROR("Cache read/write disabled: Policy cache is invalid\n");
-				write_cache = 0;
-				skip_read_cache = 1;
 			}
+
+			write_cache = 0;
+			skip_read_cache = 1;
 		}
 	}
 
@@ -965,14 +960,14 @@ int main(int argc, char *argv[])
 		}
 
 		if (profilename && S_ISDIR(stat_file.st_mode)) {
-			int (*cb)(DIR *dir, const char *name, struct stat *st,
+			int (*cb)(int dirfd, const char *name, struct stat *st,
 				  void *data);
 			struct dir_cb_data cb_data;
 
 			cb_data.dirname = profilename;
 			cb_data.cachedir = cacheloc;
 			cb = binary_input ? binary_dir_cb : profile_dir_cb;
-			if ((retval = dirat_for_each(NULL, profilename,
+			if ((retval = dirat_for_each(AT_FDCWD, profilename,
 						     &cb_data, cb))) {
 				PDEBUG("Failed loading profiles from %s\n",
 				       profilename);

@@ -50,7 +50,7 @@ CFLAGS = -g -pg -fprofile-arcs -ftest-coverage
 endif
 endif #CFLAGS
 
-EXTRA_CXXFLAGS = ${CFLAGS} ${CXX_WARNINGS} -std=gnu++0x -D_GNU_SOURCE
+EXTRA_CXXFLAGS = ${CFLAGS} ${CPPFLAGS} ${CXX_WARNINGS} -std=gnu++0x -D_GNU_SOURCE
 EXTRA_CFLAGS = ${EXTRA_CXXFLAGS} ${CPP_WARNINGS}
 
 #LEXLIB	:= -lfl
@@ -213,7 +213,7 @@ parser_include.o: parser_include.c parser.h parser_include.h
 parser_merge.o: parser_merge.c parser.h profile.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_regex.o: parser_regex.c parser.h profile.h libapparmor_re/apparmor_re.h $(APPARMOR_H)
+parser_regex.o: parser_regex.c parser.h profile.h libapparmor_re/apparmor_re.h libapparmor_re/aare_rules.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_symtab.o: parser_symtab.c parser.h

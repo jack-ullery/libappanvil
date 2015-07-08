@@ -131,7 +131,7 @@ L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 
-apparmor(7), apparmor.d(5), apparmor_parser(8), aa_change_profile(2) and
-L<http://wiki.apparmor.net>.
+apparmor(7), apparmor.d(5), apparmor_parser(8), aa_change_profile(2),
+aa_splitcon(3) and L<http://wiki.apparmor.net>.
 
 =cut

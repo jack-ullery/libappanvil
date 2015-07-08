@@ -12,9 +12,9 @@
 import apparmor.aa as aa
 import unittest
 from common_test import AATest, setup_all_loops
-from apparmor.common import AppArmorBug
+from apparmor.common import AppArmorBug, AppArmorException
 
-from apparmor.regex import strip_quotes, parse_profile_start_line, RE_PROFILE_START, RE_PROFILE_CAP
+from apparmor.regex import strip_quotes, parse_profile_start_line, re_match_include, RE_PROFILE_START, RE_PROFILE_CAP
 
 
 class AARegexTest(AATest):
@@ -464,6 +464,34 @@ class TestInvalid_parse_profile_start_line(AATest):
     def _run_test(self, line, expected):
         with self.assertRaises(AppArmorBug):
             parse_profile_start_line(line, 'somefile')
+
+class Test_re_match_include(AATest):
+    tests = [
+        ('#include <abstractions/base>',            'abstractions/base'         ),
+        ('#include <abstractions/base> # comment',  'abstractions/base'         ),
+        ('#include<abstractions/base>#comment',     'abstractions/base'         ),
+        ('   #include    <abstractions/base>  ',    'abstractions/base'         ),
+        ('include <abstractions/base>',             'abstractions/base'         ), # not supported by parser
+        # ('include foo',                           'foo'                       ), # XXX not supported in tools yet
+        # ('include /foo/bar',                      '/foo/bar'                  ), # XXX not supported in tools yet
+        # ('include "foo"',                         'foo'                       ), # XXX not supported in tools yet
+        # ('include "/foo/bar"',                    '/foo/bar'                  ), # XXX not supported in tools yet
+        (' some #include <abstractions/base>',      None,                       ),
+        ('  /etc/fstab r,',                         None,                       ),
+    ]
+
+    def _run_test(self, params, expected):
+        self.assertEqual(re_match_include(params), expected)
+
+class TestInvalid_re_match_include(AATest):
+    tests = [
+        ('#include <>',                             AppArmorException   ),
+        ('#include <  >',                           AppArmorException   ),
+    ]
+
+    def _run_test(self, params, expected):
+        with self.assertRaises(expected):
+            re_match_include(params)
 
 
 class TestStripQuotes(AATest):

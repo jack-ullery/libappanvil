@@ -11,21 +11,15 @@
 
 import unittest
 from common_test import AATest, setup_all_loops
-import os
-import shutil
-import tempfile
 from common_test import read_file, write_file
 
-from apparmor.aa import check_for_apparmor, get_profile_flags, set_profile_flags, is_skippable_file, is_skippable_dir, parse_profile_start, separate_vars, store_list_var, write_header, serialize_parse_profile_start
+from apparmor.aa import (check_for_apparmor, get_profile_flags, set_profile_flags, is_skippable_file, is_skippable_dir,
+     parse_profile_start, parse_profile_data, separate_vars, store_list_var, write_header, serialize_parse_profile_start)
 from apparmor.common import AppArmorException, AppArmorBug
 
 class AaTestWithTempdir(AATest):
-    def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='aa-py-')
-
-    def tearDown(self):
-        if os.path.exists(self.tmpdir):
-            shutil.rmtree(self.tmpdir)
+    def AASetup(self):
+        self.createTmpdir()
 
 
 class AaTest_check_for_apparmor(AaTestWithTempdir):
@@ -106,7 +100,8 @@ class AaTest_get_profile_flags(AaTestWithTempdir):
             self._test_get_flags('/no-such-profile flags=(complain)', 'complain')
 
 class AaTest_set_profile_flags(AaTestWithTempdir):
-    def _test_set_flags(self, profile, old_flags, new_flags, whitespace='', comment='', more_rules='',
+    def _test_set_flags(self, profile, old_flags, new_flags, whitespace='', comment='',
+                        more_rules='', expected_more_rules='@-@-@',
                         expected_flags='@-@-@', check_new_flags=True, profile_name='/foo'):
         if old_flags:
             old_flags = ' %s' % old_flags
@@ -119,13 +114,16 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
         else:
             expected_flags = ''
 
+        if expected_more_rules == '@-@-@':
+            expected_more_rules = more_rules
+
         if comment:
             comment = ' %s' % comment
 
         dummy_profile_content = '  #include <abstractions/base>\n  capability chown,\n  /bar r,'
         prof_template = '%s%s%s {%s\n%s\n%s\n}\n'
-        old_prof = prof_template % (whitespace, profile, old_flags,      comment, more_rules, dummy_profile_content)
-        new_prof = prof_template % (whitespace, profile, expected_flags, comment, more_rules, dummy_profile_content)
+        old_prof = prof_template % (whitespace, profile, old_flags,      comment, more_rules,          dummy_profile_content)
+        new_prof = prof_template % (whitespace, profile, expected_flags, comment, expected_more_rules, dummy_profile_content)
 
         self.file = write_file(self.tmpdir, 'profile', old_prof)
         set_profile_flags(self.file, profile_name, new_flags)
@@ -183,12 +181,55 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
         self._test_set_flags('profile "/foo bar"', 'flags=(complain)', 'audit', profile_name='/foo bar')
     def test_set_flags_12(self):
         self._test_set_flags('profile xy "/foo bar"', 'flags=(complain)', 'audit', profile_name='xy')
+    def test_set_flags_13(self):
+        self._test_set_flags('/foo', '(audit)', '')
 
+    # test handling of hat flags
+    def test_set_flags_with_hat_01(self):
+        self._test_set_flags('/foo', 'flags=(complain)', 'audit',
+            more_rules='\n  ^foobar {\n}\n',
+            expected_more_rules='\n  ^foobar flags=(audit) {\n}\n'
+        )
 
-    # XXX regex_hat_flag in set_profile_flags() is totally broken - it matches for '   ' and '  X ', but doesn't match for ' ^foo {'
-    # oh, it matches on a line like 'dbus' and changes it to 'dbus flags=(...)' if there's no leading whitespace (and no comma)
-    #def test_set_flags_hat_01(self):
-    #    self._test_set_flags('  ^hat', '', 'audit')
+    def test_set_flags_with_hat_02(self):
+        self._test_set_flags('/foo', 'flags=(complain)', 'audit',
+            profile_name=None,
+            more_rules='\n  ^foobar {\n}\n',
+            expected_more_rules='\n  ^foobar flags=(audit) {\n}\n'
+        )
+
+    def test_set_flags_with_hat_03(self):
+        self._test_set_flags('/foo', 'flags=(complain)', 'audit',
+            more_rules='\n^foobar (attach_disconnected) { # comment\n}\n', # XXX attach_disconnected will be lost!
+            expected_more_rules='\n^foobar flags=(audit) { # comment\n}\n'
+        )
+
+    def test_set_flags_with_hat_04(self):
+        self._test_set_flags('/foo', '', 'audit',
+            more_rules='\n  hat foobar (attach_disconnected) { # comment\n}\n', # XXX attach_disconnected will be lost!
+            expected_more_rules='\n  hat foobar flags=(audit) { # comment\n}\n'
+        )
+
+    def test_set_flags_with_hat_05(self):
+        self._test_set_flags('/foo', '(audit)', '',
+            more_rules='\n  hat foobar (attach_disconnected) { # comment\n}\n', # XXX attach_disconnected will be lost!
+            expected_more_rules='\n  hat foobar { # comment\n}\n'
+        )
+
+    # test handling of child profiles
+    def test_set_flags_with_child_01(self):
+        self._test_set_flags('/foo', 'flags=(complain)', 'audit',
+            profile_name=None,
+            more_rules='\n  profile /bin/bar {\n}\n',
+            expected_more_rules='\n  profile /bin/bar flags=(audit) {\n}\n'
+        )
+
+    #def test_set_flags_with_child_02(self):
+        # XXX child profile flags aren't changed if profile parameter is not None
+        #self._test_set_flags('/foo', 'flags=(complain)', 'audit',
+        #    more_rules='\n  profile /bin/bar {\n}\n',
+        #    expected_more_rules='\n  profile /bin/bar flags=(audit) {\n}\n'
+        #)
 
 
     def test_set_flags_invalid_01(self):
@@ -348,6 +389,21 @@ class AaTest_parse_profile_start(AATest):
     def test_parse_profile_start_invalid_02(self):
         with self.assertRaises(AppArmorBug):
             self._parse('xy', '/bar', '/bar') # not a profile start
+
+class AaTest_parse_profile_data(AATest):
+    def test_parse_empty_profile_01(self):
+        prof = parse_profile_data('/foo {\n}\n'.split(), 'somefile', False)
+
+        self.assertEqual(list(prof.keys()), ['/foo'])
+        self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
+        self.assertEqual(prof['/foo']['/foo']['name'], '/foo')
+        self.assertEqual(prof['/foo']['/foo']['filename'], 'somefile')
+        self.assertEqual(prof['/foo']['/foo']['flags'], None)
+
+    def test_parse_empty_profile_02(self):
+        with self.assertRaises(AppArmorException):
+            # file contains two profiles with the same name
+            parse_profile_data('profile /foo {\n}\nprofile /foo {\n}\n'.split(), 'somefile', False)
 
 class AaTest_separate_vars(AATest):
     tests = [

@@ -7,6 +7,15 @@
 	#Below rule comes from abstractions/base
 	allow /usr/share/X11/locale/**  r,
 	allow /home/*/** r,
+
+    ^foo {
+            /etc/fstab r,
+        capability dac_override,
+        }
+
+    ^foo, # hat declarations are obsolete and will be removed when aa-cleanprof or aa-logprof writes the profile
+
+
 	allow /home/foo/bar r,
 	allow /home/foo/** w,
 }

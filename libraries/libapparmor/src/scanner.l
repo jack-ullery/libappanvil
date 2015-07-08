@@ -355,6 +355,7 @@ yy_flex_debug = 0;
 {syslog_time}		{ yylval->t_str = strdup(yytext); BEGIN(hostname); return(TOK_TIME); }
 
 {audit}			{ yy_push_state(audit_id, yyscanner); return(TOK_AUDIT); }
+{dmesg_timestamp}	{ yylval->t_str = strdup(yytext); return(TOK_DMESG_STAMP); }
 
 .			{ /* ignore any non-matched input */ BEGIN(unknown_message); yyless(0); }
 

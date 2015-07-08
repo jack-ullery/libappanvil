@@ -183,6 +183,12 @@ defined as an absolute paths.
 Set the location of the apparmor security filesystem (default is
 "/sys/kernel/security/apparmor").
 
+=item -M n, --features-file n
+
+Use the features file located at path "n" (default is
+/etc/apparmor.d/cache/.features). If the --cache-loc option is present, the
+".features" file in the specified cache directory is used.
+
 =item -m n, --match-string n
 
 Only use match features "n".

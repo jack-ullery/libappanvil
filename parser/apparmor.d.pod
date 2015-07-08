@@ -44,19 +44,51 @@ to the policy; this behaviour is modelled after cpp(1).
 
 =over 4
 
+B<PROFILE FILE> = ( [ I<PREAMBLE> ] [ I<PROFILE> ] )*
+
+B<PREAMBLE> = ( I<COMMENT> | I<VARIABLE ASSIGNMENT> | I<INCLUDE> )* (variable assignment must come before the profile)
+
 B<INCLUDE> = '#include' ( I<ABS PATH> | I<MAGIC PATH> )
 
 B<ABS PATH> = '"' path '"' (the path is passed to open(2))
 
 B<MAGIC PATH> = 'E<lt>' relative path 'E<gt>' (the path is relative to F</etc/apparmor.d/>)
 
-B<COMMENT> = '#' I<TEXT>
+B<COMMENT> = '#' I<TEXT> [ '\r' ] '\n'
 
 B<TEXT> = any characters
 
-B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | I<CAPABILITY RULE> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<DBUS RULE> | I<UNIX RULE> | I<FILE RULE> | I<LINK RULE> | I<CHANGE_PROFILE RULE> | I<RLIMIT RULE>) ... ] '}'
+B<PROFILE> = ( I<PROFILE HEAD> ) [ I<ATTACHMENT SPECIFICATION> ] [ I<PROFILE FLAG CONDS> ] '{' ( I<RULES> )* '}'
 
-B<SUBPROFILE> = [ I<COMMENT> ... ] ( I<PROGRAMHAT> | 'profile ' I<PROGRAMCHILD> ) '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
+B<PROFILE HEAD> = [ 'profile' ] I<FILEGLOB> | 'profile' I<PROFILE NAME>
+
+B<PROFILE NAME> ( I<UNQUOTED PROFILE NAME> | I<QUOTED PROFILE NAME> )
+
+B<QUOTED PROFILE NAME> = '"' I<UNQUOTED PROFILE NAME> '"'
+
+B<UNQUOTED PROFILE NAME> = (must start with alphanumeric character (after variable expansion), or '/' B<AARE> have special meanings; see below. May include I<VARIABLE>. Rules with embedded spaces or tabs must be quoted.)
+
+B<ATTACHMENT SPECIFICATION> = I<FILEGLOB>
+
+B<PROFILE FLAG CONDS> =  [ 'flags=' ] '(' comma or white space separated list of I<PROFILE FLAGS> ')'
+
+B<PROFILE FLAGS> = 'complain' | 'audit' | 'enforce' | 'mediate_deleted' | 'attach_disconnected' | 'chroot_relative'
+
+B<RULES> = [ ( I<LINE RULES> | I<COMMA RULES> ',' | I<BLOCK RULES> )
+
+B<LINE RULES> = ( I<COMMENT> | I<INCLUDE> ) [ '\r' ] '\n'
+
+B<COMMA RULES> = ( I<CAPABILITY RULE> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<UNIX RULE> | I<FILE RULE> | I<LINK RULE> | I<CHANGE_PROFILE RULE> | I<RLIMIT RULE> | I<ALIAS RULE> | I<DBUS RULE> )
+
+B<BLOCK RULES> = ( I<SUBPROFILE> | I<HAT> | I<QUALIFIER BLOCK> )
+
+B<SUBPROFILE> = 'profile' I<PROFILE NAME> [ I<ATTACHMENT SPECIFICATION> ] [ I<PROFILE FLAG CONDS> ] '{' ( I<RULES> )* '}'
+
+B<HAT> = ('hat' | '^') I<HATNAME> [ I<PROFILE FLAG CONDS> ] '{' ( I<RULES> )* '}'
+
+B<HATNAME> = ( must start with alphanumeric character. see aa_change_hat(2) for a description of how this "hat" is used. IF '^' is used to start a hat then there is no space between the '^' and I<HATNAME>)
+
+B<QUALIFIER BLOCK> = I<QUALIFIERS> I<BLOCK>
 
 B<ACCESS TYPE> = ( 'allow' | 'deny' )
 
@@ -69,7 +101,7 @@ B<CAPABILITY LIST> = ( I<CAPABILITY> )+
 B<CAPABILITY> = (lowercase capability name without 'CAP_' prefix; see
 capabilities(7))
 
-B<NETWORK RULE> = [ I<QUALIFIERS> 'network' [ [ I<DOMAIN> [ I<TYPE> | I<PROTOCOL> ] ] | [ I<PROTOCOL> ] ] ','
+B<NETWORK RULE> = [ I<QUALIFIERS> ] 'network' [ I<DOMAIN> ] [ I<TYPE> | I<PROTOCOL> ]
 
 B<DOMAIN> = ( 'inet' | 'ax25' | 'ipx' | 'appletalk' | 'netrom' | 'bridge' | 'atmpvc' | 'x25' | 'inet6' | 'rose' | 'netbeui' | 'security' | 'key' | 'packet' | 'ash' | 'econet' | 'atmsvc' | 'sna' | 'irda' | 'pppox' | 'wanpipe' | 'bluetooth' | 'netlink' | 'unix' | 'rds' | 'llc' | 'can' | 'tipc' | 'iucv' | 'rxrpc' | 'isdn' | 'phonet' | 'ieee802154' | 'caif' | 'alg' | 'nfc' | 'vsock' ) ','
 
@@ -77,15 +109,9 @@ B<TYPE> = ( 'stream' | 'dgram' | 'seqpacket' |  'rdm' | 'raw' | 'packet' )
 
 B<PROTOCOL> = ( 'tcp' | 'udp' | 'icmp' )
 
-B<PROGRAM> = (non-whitespace characters except for '^', must start with '/'. Embedded spaces or tabs must be quoted.)
-
-B<PROGRAMHAT> = '^'  (non-whitespace characters; see aa_change_hat(2) for a description of how this "hat" is used.)
-
-B<PROGRAMCHILD> = I<SUBPROFILE> name
-
 B<MOUNT RULE> = ( I<MOUNT> | I<REMOUNT> | I<UMOUNT> )
 
-B<MOUNT> = [ I<QUALIFIERS> ] 'mount' [ I<MOUNT CONDITIONS> ] [ I<SOURCE FILEGLOB> ] [ -E<gt> [ I<MOUNTPOINT FILEGLOB> ]
+B<MOUNT> = [ I<QUALIFIERS> ] 'mount' [ I<MOUNT CONDITIONS> ] [ I<SOURCE FILEGLOB> ] [ '-E<gt>' [ I<MOUNTPOINT FILEGLOB> ]
 
 B<REMOUNT> = [ I<QUALIFIERS> ] 'remount' [ I<MOUNT CONDITIONS> ] I<MOUNTPOINT FILEGLOB>
 
@@ -105,7 +131,7 @@ B<MOUNT FLAGS> = ( 'ro' | 'rw' | 'nosuid' | 'suid' | 'nodev' | 'dev' | 'noexec' 
 
 B<MOUNT EXPRESSION> = ( I<ALPHANUMERIC> | I<AARE> ) ...
 
-B<PIVOT ROOT RULE> = [ I<QUALIFIERS> ] pivot_root [ oldroot=I<OLD PUT FILEGLOB> ] [ I<NEW ROOT FILEGLOB> ] [ -E<gt> I<PROGRAMCHILD> ]
+B<PIVOT ROOT RULE> = [ I<QUALIFIERS> ] pivot_root [ oldroot=I<OLD PUT FILEGLOB> ] [ I<NEW ROOT FILEGLOB> ] [ '-E<gt>' I<PROFILE NAME> ]
 
 B<SOURCE FILEGLOB> = I<FILEGLOB>
 
@@ -201,11 +227,11 @@ B<UNIX ATTR COND> 'attr' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
 B<UNIX OPT COND> 'opt' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
-B<RLIMIT RULE> = 'set' 'rlimit' [I<RLIMIT> 'E<lt>=' I<RLIMIT VALUE> ] ','
+B<RLIMIT RULE> = 'set' 'rlimit' [I<RLIMIT> 'E<lt>=' I<RLIMIT VALUE> ]
 
 B<RLIMIT> = ( 'cpu' | 'fsize' | 'data' | 'stack' | 'core' | 'rss' | 'nofile' | 'ofile' | 'as' | 'nproc' | 'memlock' | 'locks' | 'sigpending' | 'msgqueue' | 'nice' | 'rtprio' | 'rttime' )
 
-B<RLIMIT VALUE> = ( I<RLIMIT SIZE> | I<RLIMIT NUMBER> | I <RLIMIT NICE> )
+B<RLIMIT VALUE> = ( I<RLIMIT SIZE> | I<RLIMIT NUMBER> | I<RLIMIT NICE> )
 
 B<RLIMIT SIZE> = I<NUMBER> ( 'K' | 'M' | 'G' ) Only applies to RLIMIT of 'fsize', 'data', 'stack', 'core', 'rss', 'as', 'memlock', 'msgqueue'.
 
@@ -213,7 +239,7 @@ B<RLIMIT NUMBER> = number from 0 to max rlimit value. Only applies ot RLIMIT of 
 
 B<RLIMIT NICE> = a number between -20 and 19. Only applies to RLIMIT of 'nice'
 
-B<FILE RULE> = [ I<QUALIFIERS> ] [ 'owner' ] ( 'file' | [ 'file' ] ( I<FILEGLOB> I<ACCESS>  | I<ACCESS> I<FILEGLOB> ) [ -E<gt> <EXEC TARGET> ] ) ','
+B<FILE RULE> = [ I<QUALIFIERS> ] [ 'owner' ] ( 'file' | [ 'file' ] ( I<FILEGLOB> I<ACCESS>  | I<ACCESS> I<FILEGLOB> ) [ '-E<gt>' I<EXEC TARGET> ] )
 
 B<FILEGLOB> = ( I<QUOTED FILEGLOB> | I<UNQUOTED FILEGLOB> )
 
@@ -227,19 +253,19 @@ B<EXEC TRANSITION> =  ( 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'cx' | 'Cx' | 'pix' |
 
 B<EXEC TARGET> = name  (requires I<EXEC TRANSITION> specified)
 
-B<LINK RULE> = I<QUALIFIERS> [ 'owner' ] 'link' [ 'subset' ] <FILEGLOB> ( 'to' | '-E<gt>' ) <FILEGLOB> ','
+B<LINK RULE> = I<QUALIFIERS> [ 'owner' ] 'link' [ 'subset' ] I<FILEGLOB> ( 'to' | '-E<gt>' ) I<FILEGLOB>
 
 B<VARIABLE> = '@{' I<ALPHA> [ ( I<ALPHANUMERIC> | '_' ) ... ] '}'
 
 B<VARIABLE ASSIGNMENT> = I<VARIABLE> ('=' | '+=') (space separated values)
 
-B<ALIAS RULE> = I<ABS PATH> '-E<gt>' I<REWRITTEN ABS PATH> ','
+B<ALIAS RULE> = I<ABS PATH> '-E<gt>' I<REWRITTEN ABS PATH>
 
 B<ALPHA> = ('a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
 B<ALPHANUMERIC> = ('0', '1', '2', ... '9', 'a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
-B<CHANGE_PROFILE RULE> = 'change_profile' [ I<EXEC COND> ] [ -E<gt> I<PROGRAMCHILD> ]
+B<CHANGE_PROFILE RULE> = 'change_profile' [ I<EXEC COND> ] [ '-E<gt>' I<PROFILE NAME> ]
 
 B<EXEC COND> = I<FILEGLOB>
 
@@ -334,7 +360,7 @@ modes:
 
 - transition to subprofile on execute with fallback to unconfined
 
-=item B<Cux>
+=item B<CUx>
 
 - transition to subprofile on execute with fallback to unconfined -- scrub the environment
 
@@ -506,7 +532,7 @@ determine the profile to transition to from the executable name. It
 is however possible to specify the name of the profile that the transition
 should use.
 
-The name of the profile to transition to is specified using the '->'
+The name of the profile to transition to is specified using the '-E<gt>'
 followed by the name of the profile to transition to. Eg.
 
   /bin/** px -> profile,
@@ -546,8 +572,9 @@ or trailing the file glob. Eg.
 
   /** rw,		# trailing permissions
 
-When a leading permissions is used further rule options and context
+When leading permissions are used further rule options and context
 may be allowed, Eg.
+
   l /foo -> /bar,	# lead 'l' link permission is equivalent to link rules
 
 =back
@@ -567,25 +594,27 @@ Eg.
   /link*  rw,
   link subset /link* -> /**,
 
-  The link rule allows linking of /link to both /file1 or /file2 by
-  name however because the /link file has 'rw' permissions it is not
-  allowed to link to /file1 because that would grant an access path
-  to /file1 with more permissions than the 'r' permissions the profile
-  specifies.
+The link rule allows linking of /link to both /file1 or /file2 by
+name however because the /link file has 'rw' permissions it is not
+allowed to link to /file1 because that would grant an access path
+to /file1 with more permissions than the 'r' permissions the profile
+specifies.
 
-  A link of /link to /file2 would be allowed because the 'rw' permissions
-  of /link are a subset of the 'rwk' permissions for /file1.
+A link of /link to /file2 would be allowed because the 'rw' permissions
+of /link are a subset of the 'rwk' permissions for /file1.
 
 The link rule is equivalent to specifying the 'l' link permission as
 a leading permission with no other file access permissions. When this
 is done the link rule options can be specified.
 
 The following link rule is equivalent to the 'l' permission file rule
+
   link /foo -> bar,
   l /foo -> /bar,
 
 File rules that specify the 'l' permission and don't specify the extend
 link permissions map to link rules as follows.
+
   /foo l,
   l /foo,
   link subset /foo -> /**,
@@ -1301,6 +1330,12 @@ Rule qualifiers can modify the rule and/or permissions within the rule.
 
 =over 4
 
+=item B<allow>
+
+Specifies that permissions requests that match the rule are allowed. This
+is the default value for rules and does not need to be specified. Conflicts
+with the I<deny> qualifier.
+
 =item B<audit>
 
 Specifies that permissions requests that match the rule should be recorded
@@ -1309,7 +1344,8 @@ to the audit log.
 =item B<deny>
 
 Specifies that permissions requests that match the rule should be denied
-without logging. Can be combined with 'audit' to enable logging.
+without logging. Can be combined with 'audit' to enable logging. Conflicts
+with the I<allow> qualifier.
 
 =item B<owner>
 
@@ -1317,6 +1353,16 @@ Specifies that the task must have the same euid/fsuid as the object being
 referenced by the permission check.
 
 =back
+
+=head3 Qualifier Blocks
+
+Rule Qualifiers can be applied to multiple rules at a time by grouping the
+rules into a rule block.
+
+  audit {
+     /foo r,
+     network,
+  }
 
 =head2 #include mechanism
 

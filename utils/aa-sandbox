@@ -14,6 +14,10 @@ from apparmor.common import error
 import optparse
 import sys
 
+# setup exception handling
+from apparmor.fail import enable_aa_exception_handler
+enable_aa_exception_handler()
+
 if __name__ == "__main__":
     argv = sys.argv
     parser = optparse.OptionParser()

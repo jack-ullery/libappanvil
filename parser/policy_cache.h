@@ -19,12 +19,14 @@
 #ifndef __AA_POLICY_CACHE_H
 #define __AA_POLICY_CACHE_H
 
-extern struct timespec mru_tstamp;
+extern struct timespec cache_tstamp, mru_policy_tstamp;
 
 /* returns true if time is more recent than mru_tstamp */
-#define mru_t_cmp(a) \
-(((a).tv_sec == (mru_tstamp).tv_sec) ? \
-  (a).tv_nsec > (mru_tstamp).tv_nsec : (a).tv_sec > (mru_tstamp).tv_sec)
+#define tstamp_cmp(a, b)						\
+  (((a).tv_sec == (b).tv_sec) ?						\
+   ((a).tv_nsec - (b).tv_nsec) :					\
+   ((a).tv_sec - (b).tv_sec))
+#define tstamp_is_null(a) ((a).tv_sec == 0 && (a).tv_nsec == 0)
 
 extern int show_cache;
 extern int skip_cache;
@@ -36,7 +38,7 @@ extern int create_cache_dir;		/* create the cache dir if missing? */
 extern int mru_skip_cache;
 extern int debug_cache;
 
-void set_mru_tstamp(struct timespec t);
+void set_cache_tstamp(struct timespec t);
 void update_mru_tstamp(FILE *file, const char *path);
 bool valid_cached_file_version(const char *cachename);
 char *cache_filename(const char *cachedir, const char *basename);

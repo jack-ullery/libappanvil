@@ -36,7 +36,7 @@ remove_cachedir()
 
 create_empty_cache()
 {
-	$test new-create "$cachedir" > /dev/null
+	$test new --max-caches 1 "$cachedir" > /dev/null
 }
 
 create_cache_files()
@@ -105,28 +105,18 @@ runchecktest "AA_POLICY_CACHE new (no cachedir)" fail new "$cachedir"
 create_cachedir
 runchecktest "AA_POLICY_CACHE new (no .features)" fail new "$cachedir"
 remove_cachedir
-runchecktest "AA_POLICY_CACHE new-create (no cachedir)" pass new-create "$cachedir"
-runchecktest "AA_POLICY_CACHE new-create (existing cache)" pass new-create "$cachedir"
+runchecktest "AA_POLICY_CACHE new create (no cachedir)" pass new --max-caches 1 "$cachedir"
+runchecktest "AA_POLICY_CACHE new create (existing cache)" pass new --max-caches 1 "$cachedir"
 runchecktest "AA_POLICY_CACHE new (existing cache)" pass new "$cachedir"
 
-runchecktest "AA_POLICY_CACHE is-valid (good .features)" pass is-valid "$cachedir"
 install_bad_features_file
-runchecktest "AA_POLICY_CACHE is-valid (bad .features)" fail is-valid "$cachedir"
-remove_cachedir
-runchecktest "AA_POLICY_CACHE is-valid (no cachedir)" fail is-valid "$cachedir"
-
-create_cachedir
-install_bad_features_file
-runchecktest "AA_POLICY_CACHE create (bad .features)" pass create "$cachedir"
-runchecktest "AA_POLICY_CACHE create (good .features)" pass create "$cachedir"
-remove_features_file
-runchecktest "AA_POLICY_CACHE create (no .features)" fail create "$cachedir"
-remove_cachedir
-runchecktest "AA_POLICY_CACHE create (no cachedir)" fail create "$cachedir"
+runchecktest "AA_POLICY_CACHE new (bad .features)" fail new "$cachedir"
+runchecktest "AA_POLICY_CACHE new create (bad .features)" pass new --max-caches 1 "$cachedir"
 
 # Make sure that no test policies are already loaded
 verify_policies_are_not_loaded
 
+remove_cachedir
 runchecktest "AA_POLICY_CACHE replace-all (no cachedir)" fail replace-all "$cachedir"
 create_cachedir
 runchecktest "AA_POLICY_CACHE replace-all (no .features)" fail replace-all "$cachedir"

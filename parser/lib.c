@@ -16,7 +16,6 @@
  *   Ltd.
  */
 
-#include <dirent.h>
 #include <string.h>
 
 #include <sys/stat.h>
@@ -29,10 +28,10 @@
 #include "lib.h"
 #include "parser.h"
 
-int dirat_for_each(DIR *dir, const char *name, void *data,
-		   int (* cb)(DIR *, const char *, struct stat *, void *))
+int dirat_for_each(int dirfd, const char *name, void *data,
+		   int (* cb)(int, const char *, struct stat *, void *))
 {
-	int retval = _aa_dirat_for_each(dir, name, data, cb);
+	int retval = _aa_dirat_for_each(dirfd, name, data, cb);
 
 	if (retval)
 		PDEBUG("dirat_for_each failed: %m\n");

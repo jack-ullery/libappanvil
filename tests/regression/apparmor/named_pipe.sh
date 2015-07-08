@@ -38,7 +38,7 @@ badchild=r
 # Add genprofile params that are common to all hats here
 common=""
 
-if [ "$(have_features signal)" == "true" ] ; then
+if [ "$(kernel_features signal)" == "true" -a "$(parser_supports 'signal,')" == "true" ] ; then
 	# Allow send/receive of all signals
 	common="${common} signal:ALL"
 fi

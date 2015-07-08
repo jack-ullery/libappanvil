@@ -100,7 +100,10 @@ struct cond_entry_list {
 struct cod_entry {
 	char *ns;
 	char *name;
-	char *link_name;
+	union {
+		char *link_name;
+		char *onexec;
+	};
 	char *nt_name;
 	Profile *prof;		 	/* Special profile defined
 					 * just for this executable */
@@ -333,7 +336,6 @@ extern int abort_on_error;
 extern int skip_bad_cache_rebuild;
 extern int mru_skip_cache;
 extern int debug_cache;
-extern struct timespec mru_tstamp;
 
 /* provided by parser_lex.l (cannot be used in tst builds) */
 extern FILE *yyin;
@@ -358,8 +360,6 @@ extern int convert_entry(std::string& buffer, char *entry);
 extern int clear_and_convert_entry(std::string& buffer, char *entry);
 extern int process_regex(Profile *prof);
 extern int post_process_entry(struct cod_entry *entry);
-
-extern void reset_regex(void);
 
 extern int process_policydb(Profile *prof);
 

@@ -183,11 +183,12 @@ static int write_policy_fd_to_iface(aa_kernel_interface *kernel_interface,
 }
 
 static int write_policy_file_to_iface(aa_kernel_interface *kernel_interface,
-				      const char *iface_file, const char *path)
+				      const char *iface_file,
+				      int dirfd, const char *path)
 {
 	autoclose int fd;
 
-	fd = open(path, O_RDONLY);
+	fd = openat(dirfd, path, O_RDONLY);
 	if (fd == -1)
 		return -1;
 
@@ -195,10 +196,12 @@ static int write_policy_file_to_iface(aa_kernel_interface *kernel_interface,
 }
 
 /**
- * aa_kernel_interface_new - create a new kernel_interface from an optional path
+ * aa_kernel_interface_new - create a new aa_kernel_interface object from an optional path
  * @kernel_interface: will point to the address of an allocated and initialized
  *                    aa_kernel_interface object upon success
- * @kernel_features: features representing the currently running kernel
+ * @kernel_features: features representing the currently running kernel (can be
+ *                   NULL and the features of the currently running kernel will
+ *                   be used)
  * @apparmorfs: path to the apparmor directory of the mounted securityfs (can
  *              be NULL and the path will be auto discovered)
  *
@@ -223,9 +226,17 @@ int aa_kernel_interface_new(aa_kernel_interface **kernel_interface,
 	aa_kernel_interface_ref(ki);
 	ki->dirfd = -1;
 
-	ki->supports_setload = kernel_features ?
-			       aa_features_supports(kernel_features, set_load) :
-			       false;
+	if (kernel_features) {
+		aa_features_ref(kernel_features);
+	} else if (aa_features_new_from_kernel(&kernel_features) == -1) {
+		int save = errno;
+
+		aa_kernel_interface_unref(ki);
+		errno = save;
+		return -1;
+	}
+	ki->supports_setload = aa_features_supports(kernel_features, set_load);
+	aa_features_unref(kernel_features);
 
 	if (!apparmorfs) {
 		if (find_iface_dir(&alloced_apparmorfs) == -1) {
@@ -255,7 +266,7 @@ int aa_kernel_interface_new(aa_kernel_interface **kernel_interface,
 }
 
 /**
- * aa_kernel_interface_ref - increments the ref count of a kernel_interface
+ * aa_kernel_interface_ref - increments the ref count of an aa_kernel_interface object
  * @kernel_interface: the kernel_interface
  *
  * Returns: the kernel_interface
@@ -267,7 +278,7 @@ aa_kernel_interface *aa_kernel_interface_ref(aa_kernel_interface *kernel_interfa
 }
 
 /**
- * aa_kernel_interface_unref - decrements the ref count and frees the kernel_interface when 0
+ * aa_kernel_interface_unref - decrements the ref count and frees the aa_kernel_interface object when 0
  * @kernel_interface: the kernel_interface (can be NULL)
  */
 void aa_kernel_interface_unref(aa_kernel_interface *kernel_interface)
@@ -280,7 +291,7 @@ void aa_kernel_interface_unref(aa_kernel_interface *kernel_interface)
 }
 
 /**
- * aa_kernel_interface_load_policy - load a policy into the kernel
+ * aa_kernel_interface_load_policy - load a policy from a buffer into the kernel
  * @kernel_interface: valid aa_kernel_interface
  * @buffer: a buffer containing a policy
  * @size: the size of the buffer
@@ -295,21 +306,21 @@ int aa_kernel_interface_load_policy(aa_kernel_interface *kernel_interface,
 }
 
 /**
- * aa_kernel_interface_load_policy_from_file - load a policy into the kernel
+ * aa_kernel_interface_load_policy_from_file - load a policy from a file into the kernel
  * @kernel_interface: valid aa_kernel_interface
  * @path: path to a policy binary
  *
  * Returns: 0 on success, -1 on error with errno set
  */
 int aa_kernel_interface_load_policy_from_file(aa_kernel_interface *kernel_interface,
-					      const char *path)
+					      int dirfd, const char *path)
 {
 	return write_policy_file_to_iface(kernel_interface, AA_IFACE_FILE_LOAD,
-					  path);
+					  dirfd, path);
 }
 
 /**
- * aa_kernel_interface_load_policy_from_fd - load a policy into the kernel
+ * aa_kernel_interface_load_policy_from_fd - load a policy from a file descriptor into the kernel
  * @kernel_interface: valid aa_kernel_interface
  * @fd: a pre-opened, readable file descriptor at the correct offset
  *
@@ -323,7 +334,7 @@ int aa_kernel_interface_load_policy_from_fd(aa_kernel_interface *kernel_interfac
 }
 
 /**
- * aa_kernel_interface_replace_policy - replace a policy in the kernel
+ * aa_kernel_interface_replace_policy - replace a policy in the kernel with a policy from a buffer
  * @kernel_interface: valid aa_kernel_interface
  * @buffer: a buffer containing a policy
  * @size: the size of the buffer
@@ -339,21 +350,21 @@ int aa_kernel_interface_replace_policy(aa_kernel_interface *kernel_interface,
 }
 
 /**
- * aa_kernel_interface_replace_policy_from_file - replace a policy in the kernel
+ * aa_kernel_interface_replace_policy_from_file - replace a policy in the kernel with a policy from a file
  * @kernel_interface: valid aa_kernel_interface
  * @path: path to a policy binary
  *
  * Returns: 0 on success, -1 on error with errno set
  */
 int aa_kernel_interface_replace_policy_from_file(aa_kernel_interface *kernel_interface,
-						 const char *path)
+						 int dirfd, const char *path)
 {
 	return write_policy_file_to_iface(kernel_interface,
-					  AA_IFACE_FILE_REPLACE, path);
+					  AA_IFACE_FILE_REPLACE, dirfd, path);
 }
 
 /**
- * aa_kernel_interface_replace_policy_from_fd - replace a policy in the kernel
+ * aa_kernel_interface_replace_policy_from_fd - replace a policy in the kernel with a policy from a file descriptor
  * @kernel_interface: valid aa_kernel_interface
  * @fd: a pre-opened, readable file descriptor at the correct offset
  *

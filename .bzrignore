@@ -167,3 +167,4 @@ tests/regression/apparmor/unlink
 tests/regression/apparmor/xattrs
 tests/regression/apparmor/coredump
 **/__pycache__/
+*.orig

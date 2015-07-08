@@ -254,6 +254,11 @@ static int process_variables_in_entries(struct cod_entry *entry_list)
 		error = expand_entry_variables(&entry->name);
 		if (error)
 			return error;
+		if (entry->link_name) {
+			error = expand_entry_variables(&entry->link_name);
+			if (error)
+				return error;
+		}
 	}
 
 	return 0;

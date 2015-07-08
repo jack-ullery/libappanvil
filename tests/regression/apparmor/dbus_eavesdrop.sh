@@ -18,7 +18,8 @@ pwd=`cd $pwd ; /bin/pwd`
 bin=$pwd
 
 . $bin/prologue.inc
-requires_features dbus
+requires_kernel_features dbus
+requires_parser_support "dbus,"
 . $bin/dbus.inc
 
 args="--session"

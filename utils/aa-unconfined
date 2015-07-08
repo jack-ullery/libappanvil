@@ -21,6 +21,10 @@ import apparmor.aa as aa
 import apparmor.ui as ui
 import apparmor.common
 
+# setup exception handling
+from apparmor.fail import enable_aa_exception_handler
+enable_aa_exception_handler()
+
 # setup module translations
 from apparmor.translations import init_translation
 _ = init_translation()

@@ -492,6 +492,8 @@ static int process_profile_name_xmatch(Profile *prof)
 	return TRUE;
 }
 
+static int warn_change_profile = 1;
+
 static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 {
 	std::string tbuf;
@@ -514,9 +516,9 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 	 * dfa states like it does for pcre
 	 */
 	if ((entry->mode >> AA_OTHER_SHIFT) & AA_EXEC_INHERIT)
-		entry->mode |= AA_EXEC_MMAP << AA_OTHER_SHIFT;
+		entry->mode |= AA_OLD_EXEC_MMAP << AA_OTHER_SHIFT;
 	if ((entry->mode >> AA_USER_SHIFT) & AA_EXEC_INHERIT)
-		entry->mode |= AA_EXEC_MMAP << AA_USER_SHIFT;
+		entry->mode |= AA_OLD_EXEC_MMAP << AA_USER_SHIFT;
 
 	/* the link bit on the first pair entry should not get masked
 	 * out by a deny rule, as both pieces of the link pair must
@@ -530,8 +532,9 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 	if (entry->deny) {
 		if ((entry->mode & ~(AA_LINK_BITS | AA_CHANGE_PROFILE)) &&
 		    !dfarules->add_rule(tbuf.c_str(), entry->deny,
-					entry->mode & ~AA_LINK_BITS,
-					entry->audit & ~AA_LINK_BITS, dfaflags))
+					entry->mode & ~(AA_LINK_BITS | AA_CHANGE_PROFILE),
+					entry->audit & ~(AA_LINK_BITS | AA_CHANGE_PROFILE),
+					dfaflags))
 			return FALSE;
 	} else if (entry->mode & ~AA_CHANGE_PROFILE) {
 		if (!dfarules->add_rule(tbuf.c_str(), entry->deny, entry->mode,
@@ -562,11 +565,25 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 	}
 	if (entry->mode & AA_CHANGE_PROFILE) {
 		const char *vec[3];
-		std::string lbuf;
+		std::string lbuf, xbuf;
 		int index = 1;
 
-		/* allow change_profile for all execs */
-		vec[0] = "/[^\\x00]*";
+		if ((warnflags & WARN_RULE_DOWNGRADED) && entry->audit && warn_change_profile) {
+			/* don't have profile name here, so until this code
+			 * gets refactored just throw out a generic warning
+			 */
+			fprintf(stderr, "Warning kernel does not support audit modifier for change_profile rule.\n");
+			warn_change_profile = 0;
+		}
+
+		if (entry->onexec) {
+			ptype = convert_aaregex_to_pcre(entry->onexec, 0, glob_default, xbuf, &pos);
+			if (ptype == ePatternInvalid)
+				return FALSE;
+			vec[0] = xbuf.c_str();
+		} else
+			/* allow change_profile for all execs */
+			vec[0] = "/[^/\\x00][^\\x00]*";
 
 		if (entry->ns) {
 			int pos;
@@ -576,12 +593,12 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 		vec[index++] = tbuf.c_str();
 
 		/* regular change_profile rule */
-		if (!dfarules->add_rule_vec(0, AA_CHANGE_PROFILE | AA_ONEXEC, 0, index - 1, &vec[1], dfaflags))
+		if (!dfarules->add_rule_vec(entry->deny, AA_CHANGE_PROFILE | AA_ONEXEC, 0, index - 1, &vec[1], dfaflags))
 			return FALSE;
 		/* onexec rules - both rules are needed for onexec */
-		if (!dfarules->add_rule_vec(0, AA_ONEXEC, 0, 1, vec, dfaflags))
+		if (!dfarules->add_rule_vec(entry->deny, AA_ONEXEC, 0, 1, vec, dfaflags))
 			return FALSE;
-		if (!dfarules->add_rule_vec(0, AA_ONEXEC, 0, index, vec, dfaflags))
+		if (!dfarules->add_rule_vec(entry->deny, AA_ONEXEC, 0, index, vec, dfaflags))
 			return FALSE;
 	}
 	return TRUE;
@@ -762,8 +779,6 @@ int process_profile_policydb(Profile *prof)
 		prof->policy.rules = NULL;
 	}
 
-	aare_reset_matchflags();
-
 	error = 0;
 
 out:
@@ -771,11 +786,6 @@ out:
 	prof->policy.rules = NULL;
 
 	return error;
-}
-
-void reset_regex(void)
-{
-	aare_reset_matchflags();
 }
 
 #ifdef UNIT_TEST

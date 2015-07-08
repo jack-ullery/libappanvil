@@ -23,7 +23,8 @@ settest query_label
 
 expect=""
 perms=""
-label="--label=$test"
+qprof="/profile/to/query"
+label="--label=$qprof"
 
 dbus_send="--dbus=send"
 dbus_receive="--dbus=receive"
@@ -35,13 +36,16 @@ dbus_none="--dbus="
 dbus_msg_query="session com.foo.bar /usr/bin/bar /com/foo/bar com.foo.bar Method"
 dbus_svc_query="session com.foo.baz"
 
-# Generate a profile for $test, granting all file access and anything specified
-# in $@
+# Generate a profile for $test, granting all file accesses, and $qprof,
+# granting anything specified in $@.
 genqueryprofile()
 {
 	genprofile --stdin <<EOF
 $test {
   file,
+}
+
+$qprof {
   $@
 }
 EOF
@@ -205,3 +209,35 @@ perms dbus send
 querytest "QUERY dbus (svc send)" fail $dbus_svc_query
 perms dbus receive
 querytest "QUERY dbus (svc receive)" fail $dbus_svc_query
+
+genqueryprofile "file,"
+expect allow
+perms file exec,write,read,append,link,lock
+querytest "QUERY file (all base perms #1)" pass /anything
+querytest "QUERY file (all base perms #2)" pass /everything
+
+genqueryprofile "/etc/passwd r,"
+expect allow
+perms file read
+querytest "QUERY file (passwd)" pass /etc/passwd
+querytest "QUERY file (passwd bad path #1)" fail /etc/pass
+querytest "QUERY file (passwd bad path #2)" fail /etc/passwdXXX
+querytest "QUERY file (passwd bad path #3)" fail /etc/passwd/XXX
+perms file write
+querytest "QUERY file (passwd bad perms #1)" fail /etc/passwd
+perms file read,write
+querytest "QUERY file (passwd bad perms #2)" fail /etc/passwd
+
+genqueryprofile "/tmp/ rw,"
+expect allow
+perms file read,write
+querytest "QUERY file (/tmp/)" pass /tmp/
+querytest "QUERY file (/tmp/ bad path)" fail /tmp
+querytest "QUERY file (/tmp/ bad path)" fail /tmp/tmp/
+perms file read
+querytest "QUERY file (/tmp/ read only)" pass /tmp/
+perms file write
+querytest "QUERY file (/tmp/ write only)" pass /tmp/
+expect audit
+perms file read,write
+querytest "QUERY file (/tmp/ wrong dir)" pass /etc/

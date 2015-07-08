@@ -29,6 +29,7 @@ class aa_tools:
         self.profiling = args.program
         self.check_profile_dir()
         self.silent = None
+        self.do_reload = args.do_reload
 
         if tool_name in ['audit']:
             self.remove = args.remove
@@ -56,7 +57,7 @@ class aa_tools:
 
             program = None
             profile = None
-            if os.path.exists(p):
+            if os.path.exists(p) or p.startswith('/'):
                 fq_path = apparmor.get_full_path(p).strip()
                 if os.path.commonprefix([apparmor.profile_dir, fq_path]) == apparmor.profile_dir:
                     program = None
@@ -183,6 +184,11 @@ class aa_tools:
                 aaui.UI_Info(_('Removing audit mode from %s.') % output_name)
             apparmor.change_profile_flags(profile, program, 'audit', not self.remove)
 
+            disable_link = '%s/disable/%s' % (apparmor.profile_dir, os.path.basename(profile))
+
+            if os.path.exists(disable_link):
+                aaui.UI_Info(_('\nWarning: the profile %s is disabled. Use aa-enforce or aa-complain to enable it.') % os.path.basename(profile))
+
             self.reload_profile(profile)
 
     def cmd_autodep(self):
@@ -226,14 +232,14 @@ class aa_tools:
                     ans, arg = q.promptUser()
                     if ans == 'CMD_SAVE_CHANGES':
                         apparmor.write_profile_ui_feedback(program)
-                        apparmor.reload_base(program)
+                        self.reload_profile(filename)
                     elif ans == 'CMD_VIEW_CHANGES':
                         #oldprofile = apparmor.serialize_profile(apparmor.original_aa[program], program, '')
                         newprofile = apparmor.serialize_profile(apparmor.aa[program], program, '')
                         apparmor.display_changes_with_comments(filename, newprofile)
             else:
                 apparmor.write_profile_ui_feedback(program)
-                apparmor.reload_base(program)
+                self.reload_profile(filename)
         else:
             raise apparmor.AppArmorException(_('The profile for %s does not exists. Nothing to clean.') % program)
 
@@ -244,6 +250,9 @@ class aa_tools:
         apparmor.create_symlink('disable', filename)
 
     def unload_profile(self, profile):
+        if not self.do_reload:
+            return
+
         # FIXME: should ensure profile is loaded before unloading
         cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '--base', apparmor.profile_dir, '-R', profile])
 
@@ -251,6 +260,9 @@ class aa_tools:
             raise apparmor.AppArmorException(cmd_info[1])
 
     def reload_profile(self, profile):
+        if not self.do_reload:
+            return
+
         cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '--base', apparmor.profile_dir, '-r', profile])
 
         if cmd_info[0] != 0:

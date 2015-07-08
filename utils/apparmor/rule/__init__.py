@@ -135,6 +135,42 @@ class BaseRule(object):
         '''compare if rule-specific variables are equal'''
         raise AppArmorBug("'%s' needs to implement is_equal_localvars(), but didn't" % (str(self)))
 
+    def severity(self, sev_db):
+        '''return severity of this rule, which can be:
+           - a number between 0 and 10, where 0 means harmless and 10 means critical,
+           - "unknown" (to be exact: the value specified for "unknown" as set when loading the severity database), or
+           - sev_db.NOT_IMPLEMENTED if no severity check is implemented for this rule type.
+           sev_db must be an apparmor.severity.Severity object.'''
+        return sev_db.NOT_IMPLEMENTED
+
+    def logprof_header(self):
+        '''return the headers (human-readable version of the rule) to display in aa-logprof for this rule object
+           returns {'label1': 'value1', 'label2': 'value2'} '''
+
+        headers = []
+        qualifier = []
+
+        if self.audit:
+            qualifier += ['audit']
+
+        if self.deny:
+            qualifier += ['deny']
+        elif self.allow_keyword:
+            qualifier += ['allow']
+
+        if qualifier:
+            headers += [_('Qualifier'), ' '.join(qualifier)]
+
+        headers += self.logprof_header_localvars()
+
+        return headers
+
+    # @abstractmethod  FIXME - uncomment when python3 only
+    def logprof_header_localvars(self):
+        '''return the headers (human-readable version of the rule) to display in aa-logprof for this rule object
+           returns {'label1': 'value1', 'label2': 'value2'} '''
+        raise AppArmorBug("'%s' needs to implement logprof_header(), but didn't" % (str(self)))
+
     def modifiers_str(self):
         '''return the allow/deny and audit keyword as string, including whitespace'''
 
@@ -290,6 +326,14 @@ class BaseRuleset(object):
         raise AppArmorBug("get_glob_ext is not available for this rule type!")
 
 
+def parse_comment(matches):
+    '''returns the comment (with a leading space) from the matches object'''
+    comment = ''
+    if matches.group('comment'):
+        # include a space so that we don't need to add it everywhere when writing the rule
+        comment = ' %s' % matches.group('comment')
+    return comment
+
 def parse_modifiers(matches):
     '''returns audit, deny, allow_keyword and comment from the matches object
        - audit, deny and allow_keyword are True/False
@@ -310,10 +354,7 @@ def parse_modifiers(matches):
         else:
             raise AppArmorBug("Invalid allow/deny keyword %s" % allowstr)
 
-    comment = ''
-    if matches.group('comment'):
-        # include a space so that we don't need to add it everywhere when writing the rule
-        comment = ' %s' % matches.group('comment')
+    comment = parse_comment(matches)
 
     return (audit, deny, allow_keyword, comment)
 

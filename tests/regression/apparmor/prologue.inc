@@ -22,7 +22,7 @@
 # For this file, functions are first, entry point code is at end, see "MAIN"
 
 #use $() to retreive the failure message or "true" if success
-have_features()
+kernel_features()
 {
 	if [ ! -e "/sys/kernel/security/apparmor/features/" ] ; then
 		echo "Kernel feature masks not supported."
@@ -40,9 +40,9 @@ have_features()
 	return 0;
 }
 
-requires_features()
+requires_kernel_features()
 {
-	local res=$(have_features $@)
+	local res=$(kernel_features $@)
 	if [ "$res" != "true" ] ; then
 		echo "$res. Skipping tests ..."
 		exit 0
@@ -57,6 +57,30 @@ requires_query_interface()
 		exit 0
 	fi
 }
+
+parser_supports()
+{
+	for R in $@ ; do
+		echo "/test { $R }" | $subdomain ${parser_args} -qQT 2>/dev/null 1>/dev/null
+		if [ $? -ne 0 ] ; then
+			echo "Compiler does not support rule '$R'"
+			return 1;
+		fi
+	done
+
+	echo "true"
+	return 0;
+}
+
+requires_parser_support()
+{
+	local res=$(parser_supports $@)
+	if [ "$res" != "true" ] ; then
+		echo "$res. Skipping tests ..."
+		exit 0
+	fi
+}
+
 
 fatalerror()
 {

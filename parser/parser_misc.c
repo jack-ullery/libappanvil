@@ -53,7 +53,7 @@
 
 int is_blacklisted(const char *name, const char *path)
 {
-	int retval = _aa_is_blacklisted(name, path);
+	int retval = _aa_is_blacklisted(name);
 
 	if (retval == -1)
 		PERROR("Ignoring: '%s'\n", path ? path : name);
@@ -332,7 +332,7 @@ reeval:
 		case COD_READ_CHAR:
 			if (read_implies_exec) {
 				PDEBUG("Parsing mode: found %s READ imply X\n", mode_desc);
-				mode |= AA_MAY_READ | AA_EXEC_MMAP;
+				mode |= AA_MAY_READ | AA_OLD_EXEC_MMAP;
 			} else {
 				PDEBUG("Parsing mode: found %s READ\n", mode_desc);
 				mode |= AA_MAY_READ;
@@ -355,12 +355,12 @@ reeval:
 
 		case COD_LINK_CHAR:
 			PDEBUG("Parsing mode: found %s LINK\n", mode_desc);
-			mode |= AA_MAY_LINK;
+			mode |= AA_OLD_MAY_LINK;
 			break;
 
 		case COD_LOCK_CHAR:
 			PDEBUG("Parsing mode: found %s LOCK\n", mode_desc);
-			mode |= AA_MAY_LOCK;
+			mode |= AA_OLD_MAY_LOCK;
 			break;
 
 		case COD_INHERIT_CHAR:
@@ -439,7 +439,7 @@ reeval:
 
 		case COD_MMAP_CHAR:
 			PDEBUG("Parsing mode: found %s MMAP\n", mode_desc);
-			mode |= AA_EXEC_MMAP;
+			mode |= AA_OLD_EXEC_MMAP;
 			break;
 
 		case COD_EXEC_CHAR:

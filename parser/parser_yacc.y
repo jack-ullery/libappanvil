@@ -244,6 +244,7 @@ void add_local_entry(Profile *prof);
 %type <flags>	flagval
 %type <cap>	caps
 %type <cap>	capability
+%type <id>	change_profile_head
 %type <user_entry> change_profile
 %type <set_var> TOK_SET_VAR
 %type <bool_var> TOK_BOOL_VAR
@@ -258,6 +259,7 @@ void add_local_entry(Profile *prof);
 %type <boolean> opt_flags
 %type <boolean> opt_perm_mode
 %type <id>	opt_ns
+%type <id>	ns_id
 %type <id>	opt_id
 %type <prefix>  opt_prefix
 %type <fmode>	dbus_perm
@@ -297,8 +299,10 @@ opt_profile_flag: { /* nothing */ $$ = 0; }
 	| TOK_PROFILE { $$ = 1; }
 	| hat_start { $$ = 2; }
 
+ns_id: TOK_COLON id_or_var TOK_COLON { $$ = $2; }
+
 opt_ns: { /* nothing */ $$ = NULL; }
-	| TOK_COLON TOK_ID TOK_COLON { $$ = $2; }
+	| ns_id { $$ = $1; }
 
 opt_id: { /* nothing */ $$ = NULL; }
 	| TOK_ID { $$ = $1; }
@@ -785,13 +789,23 @@ rules:  rules opt_prefix unix_rule
 		$$ = $1;
 	}
 
-rules:	rules change_profile
+rules:	rules opt_prefix change_profile
 	{
 		PDEBUG("matched: rules change_profile\n");
-		PDEBUG("rules change_profile: (%s)\n", $2->name);
-		if (!$2)
+		PDEBUG("rules change_profile: (%s)\n", $3->name);
+		if (!$3)
 			yyerror(_("Assert: `change_profile' returned NULL."));
-		add_entry_to_policy($1, $2);
+		if ($2.owner)
+			yyerror(_("owner prefix not allowed on unix rules"));
+		if ($2.deny && $2.audit) {
+			$3->deny = 1;
+		} else if ($2.deny) {
+			$3->deny = 1;
+			$3->audit = $3->mode;
+		} else if ($2.audit) {
+			$3->audit = $3->mode;
+		}
+		add_entry_to_policy($1, $3);
 		$$ = $1;
 	};
 
@@ -1043,11 +1057,11 @@ opt_named_transition:
 		$$.ns = NULL;
 		$$.name = $2;
 	}
-	| TOK_ARROW TOK_COLON id_or_var TOK_COLON id_or_var
+	| TOK_ARROW ns_id id_or_var
 	{
 		$$.present = 1;
-		$$.ns = $3;
-		$$.name = $5;
+		$$.ns = $2;
+		$$.name = $3;
 	};
 
 rule: file_rule { $$ = $1; }
@@ -1120,7 +1134,7 @@ file_rule_tail: opt_unsafe id_or_var file_mode id_or_var
 		yyerror(_("missing an end of line character? (entry: %s)"), $2);
 	};
 
-link_rule: TOK_LINK opt_subset_flag TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
+link_rule: TOK_LINK opt_subset_flag id_or_var TOK_ARROW id_or_var TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		PDEBUG("Matched: link tok_id (%s) -> (%s)\n", $3, $5);
@@ -1481,28 +1495,37 @@ file_mode: TOK_MODE
 		free($1);
 	}
 
-change_profile:	TOK_CHANGE_PROFILE TOK_ARROW TOK_ID TOK_END_OF_RULE
+change_profile_head: TOK_CHANGE_PROFILE opt_id
+	{
+		if ($2 && !($2[0] == '/' || strncmp($2, "@{", 2) == 0))
+			yyerror(_("Exec condition must begin with '/'."));
+		$$ = $2;
+	}
+
+change_profile: change_profile_head TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
-		PDEBUG("Matched change_profile: tok_id (%s)\n", $3);
-		entry = new_entry(NULL, $3, AA_CHANGE_PROFILE, NULL);
+		char *rule = strdup("**");
+		if (!rule)
+			yyerror(_("Memory allocation error."));
+		PDEBUG("Matched change_profile,\n");
+		entry = new_entry(NULL, rule, AA_CHANGE_PROFILE, $1);
+		if (!entry)
+			yyerror(_("Memory allocation error."));
+		PDEBUG("change_profile,\n");
+		$$ = entry;
+	};
+
+change_profile:	change_profile_head TOK_ARROW opt_ns TOK_ID TOK_END_OF_RULE
+	{
+		struct cod_entry *entry;
+		PDEBUG("Matched change_profile: tok_id (:%s://%s)\n", $3 ? $3 : "", $4);
+		entry = new_entry($3, $4, AA_CHANGE_PROFILE, $1);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("change_profile.entry: (%s)\n", entry->name);
 		$$ = entry;
 	};
-
-change_profile:	TOK_CHANGE_PROFILE TOK_ARROW TOK_COLON TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
-	{
-		struct cod_entry *entry;
-		PDEBUG("Matched change_profile: tok_id (%s:%s)\n", $4, $6);
-		entry = new_entry($4, $6, AA_CHANGE_PROFILE, NULL);
-		if (!entry)
-			yyerror(_("Memory allocation error."));
-		PDEBUG("change_profile.entry: (%s)\n", entry->name);
-		$$ = entry;
-	};
-
 
 capability:	TOK_CAPABILITY caps TOK_END_OF_RULE
 	{

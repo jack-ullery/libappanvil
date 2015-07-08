@@ -32,6 +32,7 @@
 #include <pthread.h>
 
 #include <sys/apparmor.h>
+#include "private.h"
 
 /* some non-Linux systems do not define a static value */
 #ifndef PATH_MAX
@@ -42,6 +43,9 @@
 		__asm__ (".symver " #real "," #name "@" #version)
 #define default_symbol_version(real, name, version) \
 		__asm__ (".symver " #real "," #name "@@" #version)
+
+#define UNCONFINED		"unconfined"
+#define UNCONFINED_SIZE		strlen(UNCONFINED)
 
 /**
  * aa_find_mountpoint - find where the apparmor interface filesystem is mounted
@@ -152,30 +156,89 @@ static char *procattr_path(pid_t pid, const char *attr)
 }
 
 /**
- * parse_confinement_mode - get the mode from the confinement context
+ * parse_unconfined - check for the unconfined label
  * @con: the confinement context
- * @size: size of the confinement context
+ * @size: size of the confinement context (not including the NUL terminator)
  *
- * Modifies con to NUL-terminate the label string and the mode string.
- *
- * Returns: a pointer to the NUL-terminated mode inside the confinement context
- * or NULL if the mode was not found
+ * Returns: True if the con is the unconfined label or false otherwise
  */
-static char *parse_confinement_mode(char *con, int size)
+static bool parse_unconfined(char *con, int size)
 {
-	if (strcmp(con, "unconfined") != 0 &&
-	    size > 4 && con[size - 2] == ')') {
-		int pos = size - 3;
+	return size == UNCONFINED_SIZE &&
+	       strncmp(con, UNCONFINED, UNCONFINED_SIZE) == 0;
+}
+
+/**
+ * splitcon - split the confinement context into a label and mode
+ * @con: the confinement context
+ * @size: size of the confinement context (not including the NUL terminator)
+ * @strip_newline: true if a trailing newline character should be stripped
+ * @mode: if non-NULL and a mode is present, will point to mode string in @con
+ *  on success
+ *
+ * Modifies the @con string to split it into separate label and mode strings.
+ * If @strip_newline is true and @con contains a single trailing newline, it
+ * will be stripped on success (it will not be stripped on error). The @mode
+ * argument is optional. If @mode is NULL, @con will still be split between the
+ * label and mode (if present) but @mode will not be set.
+ *
+ * Returns: a pointer to the label string or NULL on error
+ */
+static char *splitcon(char *con, int size, bool strip_newline, char **mode)
+{
+	char *label = NULL;
+	char *mode_str = NULL;
+	char *newline = NULL;
+
+	if (size == 0)
+		goto out;
+
+	if (strip_newline && con[size - 1] == '\n') {
+		newline = &con[size - 1];
+		size--;
+	}
+
+	if (parse_unconfined(con, size)) {
+		label = con;
+		goto out;
+	}
+
+	if (size > 3 && con[size - 1] == ')') {
+		int pos = size - 2;
 
 		while (pos > 0 && !(con[pos] == ' ' && con[pos + 1] == '('))
 			pos--;
 		if (pos > 0) {
 			con[pos] = 0; /* overwrite ' ' */
-			con[size - 2] = 0; /* overwrite trailing ) */
-			return &con[pos + 2]; /* skip '(' */
+			con[size - 1] = 0; /* overwrite trailing ) */
+			mode_str = &con[pos + 2]; /* skip '(' */
+			label = con;
 		}
 	}
-	return NULL;
+out:
+	if (label && strip_newline && newline)
+		*newline = 0; /* overwrite '\n', if requested, on success */
+	if (mode)
+		*mode = mode_str;
+	return label;
+}
+
+/**
+ * aa_splitcon - split the confinement context into a label and mode
+ * @con: the confinement context
+ * @mode: if non-NULL and a mode is present, will point to mode string in @con
+ *  on success
+ *
+ * Modifies the @con string to split it into separate label and mode strings. A
+ * single trailing newline character will be stripped from @con, if found. The
+ * @mode argument is optional. If @mode is NULL, @con will still be split
+ * between the label and mode (if present) but @mode will not be set.
+ *
+ * Returns: a pointer to the label string or NULL on error
+ */
+char *aa_splitcon(char *con, char **mode)
+{
+	return splitcon(con, strlen(con), true, mode);
 }
 
 /**
@@ -194,7 +257,6 @@ int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len,
 	int rc = -1;
 	int fd, ret;
 	char *tmp = NULL;
-	char *mode_str;
 	int size = 0;
 
 	if (!buf || len <= 0) {
@@ -237,19 +299,20 @@ int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len,
 		goto out;
 	} else if (size > 0 && buf[size - 1] != 0) {
 		/* check for null termination */
-		if (buf[size - 1] == '\n') {
-			buf[size - 1] = 0;
-		} else if (len == 0) {
-			errno = ERANGE;
-			goto out2;
-		} else {
-			buf[size] = 0;
-			size++;
+		if (buf[size - 1] != '\n') {
+			if (len == 0) {
+				errno = ERANGE;
+				goto out2;
+			} else {
+				buf[size] = 0;
+				size++;
+			}
 		}
 
-		mode_str = parse_confinement_mode(buf, size);
-		if (mode)
-			*mode = mode_str;
+		if (splitcon(buf, size, true, mode) != buf) {
+			errno = EINVAL;
+			goto out2;
+		}
 	}
 	rc = size;
 
@@ -588,7 +651,6 @@ int aa_getcon(char **label, char **mode)
 int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode)
 {
 	socklen_t optlen = *len;
-	char *mode_str;
 	int rc;
 
 	if (optlen <= 0 || buf == NULL) {
@@ -614,9 +676,11 @@ int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode)
 		}
 	}
 
-	mode_str = parse_confinement_mode(buf, optlen);
-	if (mode)
-		*mode = mode_str;
+	if (splitcon(buf, optlen - 1, false, mode) != buf) {
+		rc = -1;
+		errno = EINVAL;
+		goto out;
+	}
 
 	rc = optlen;
 out:
@@ -786,3 +850,133 @@ int query_label(uint32_t mask, char *query, size_t size, int *allowed,
 extern typeof((query_label)) __aa_query_label __attribute__((alias ("query_label")));
 symbol_version(__aa_query_label, aa_query_label, APPARMOR_1.1);
 default_symbol_version(query_label, aa_query_label, APPARMOR_2.9);
+
+
+/**
+ * aa_query_file_path_len - query access permissions for a file @path
+ * @mask: permission bits to query
+ * @label: apparmor label
+ * @label_len: length of @label (does not include any terminating nul byte)
+ * @path: file path to query permissions for
+ * @path_len: length of @path (does not include any terminating nul byte)
+ * @allowed: upon successful return, will be 1 if query is allowed and 0 if not
+ * @audited: upon successful return, will be 1 if query should be audited and 0
+ *           if not
+ *
+ * Returns: 0 on success else -1 and sets errno. If -1 is returned and errno is
+ *          ENOENT, the subject label in the query string is unknown to the
+ *          kernel.
+ */
+int aa_query_file_path_len(uint32_t mask, const char *label, size_t label_len,
+			   const char *path, size_t path_len, int *allowed,
+			   int *audited)
+{
+	autofree char *query = NULL;
+
+	/* + 1 for null separator */
+	size_t size = AA_QUERY_CMD_LABEL_SIZE + label_len + 1 + path_len;
+	query = malloc(size + 1);
+	if (!query)
+		return -1;
+	memcpy(query + AA_QUERY_CMD_LABEL_SIZE, label, label_len);
+	/* null separator */
+	query[AA_QUERY_CMD_LABEL_SIZE + label_len] = 0;
+	query[AA_QUERY_CMD_LABEL_SIZE + label_len + 1] = AA_CLASS_FILE;
+	memcpy(query + AA_QUERY_CMD_LABEL_SIZE + label_len + 2, path, path_len);
+	return aa_query_label(mask, query, size , allowed, audited);
+}
+
+/**
+ * aa_query_file_path - query access permissions for a file @path
+ * @mask: permission bits to query
+ * @label: apparmor label
+ * @path: file path to query permissions for
+ * @allowed: upon successful return, will be 1 if query is allowed and 0 if not
+ * @audited: upon successful return, will be 1 if query should be audited and 0
+ *           if not
+ *
+ * Returns: 0 on success else -1 and sets errno. If -1 is returned and errno is
+ *          ENOENT, the subject label in the query string is unknown to the
+ *          kernel.
+ */
+int aa_query_file_path(uint32_t mask, const char *label, const char *path,
+		       int *allowed, int *audited)
+{
+	return aa_query_file_path_len(mask, label, strlen(label), path,
+				      strlen(path), allowed, audited);
+}
+
+/**
+ * aa_query_link_path_len - query access permissions for a hard link @link
+ * @label: apparmor label
+ * @label_len: length of @label (does not include any terminating nul byte)
+ * @target: file path that hard link will point to
+ * @target_len: length of @target (does not include any terminating nul byte)
+ * @link: file path of hard link
+ * @link_len: length of @link (does not include any terminating nul byte)
+ * @allowed: upon successful return, will be 1 if query is allowed and 0 if not
+ * @audited: upon successful return, will be 1 if query should be audited and 0
+ *           if not
+ *
+ * Returns: 0 on success else -1 and sets errno. If -1 is returned and errno is
+ *          ENOENT, the subject label in the query string is unknown to the
+ *          kernel.
+ */
+int aa_query_link_path_len(const char *label, size_t label_len,
+			   const char *target, size_t target_len,
+			   const char *link, size_t link_len,
+			   int *allowed, int *audited)
+{
+	autofree char *query = NULL;
+	int rc;
+
+	/* + 1 for null separators */
+	size_t size = AA_QUERY_CMD_LABEL_SIZE + label_len + 1 + target_len +
+		1 + link_len;
+	size_t pos = AA_QUERY_CMD_LABEL_SIZE;
+
+	query = malloc(size);
+	if (!query)
+		return -1;
+	memcpy(query + pos, label, label_len);
+	/* null separator */
+	pos += label_len;
+	query[pos] = 0;
+	query[++pos] = AA_CLASS_FILE;
+	memcpy(query + pos + 1, link, link_len);
+	/* The kernel does the query in two parts we could similate this
+	 * doing the following, however as long as policy is compiled
+	 * correctly this isn't requied, and it requires and extra round
+	 * trip to the kernel and adds a race on policy replacement between
+	 * the two queries.
+	 *
+	rc = aa_query_label(AA_MAY_LINK, query, size, allowed, audited);
+	if (rc || !*allowed)
+		return rc;
+	*/
+	pos += 1 + link_len;
+	query[pos] = 0;
+	memcpy(query + pos + 1, target, target_len);
+	return aa_query_label(AA_MAY_LINK, query, size, allowed, audited);
+}
+
+/**
+ * aa_query_link_path - query access permissions for a hard link @link
+ * @label: apparmor label
+ * @target: file path that hard link will point to
+ * @link: file path of hard link
+ * @allowed: upon successful return, will be 1 if query is allowed and 0 if not
+ * @audited: upon successful return, will be 1 if query should be audited and 0
+ *           if not
+ *
+ * Returns: 0 on success else -1 and sets errno. If -1 is returned and errno is
+ *          ENOENT, the subject label in the query string is unknown to the
+ *          kernel.
+ */
+int aa_query_link_path(const char *label, const char *target, const char *link,
+		       int *allowed, int *audited)
+{
+	return aa_query_link_path_len(label, strlen(label), target,
+				      strlen(target), link, strlen(link),
+				      allowed, audited);
+}
