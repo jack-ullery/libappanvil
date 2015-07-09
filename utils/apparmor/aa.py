@@ -2992,7 +2992,7 @@ def parse_profile_data(data, file, do_include):
             if initial_comment:
                 profile_data[profile][hat]['initial_comment'] = initial_comment
             initial_comment = ''
-            if filelist[file]['profiles'][profile].get(hat, False):
+            if filelist[file]['profiles'][profile].get(hat, False) and not do_include:
                 raise AppArmorException(_('Error: Multiple definitions for hat %(hat)s in profile %(profile)s.') % { 'hat': hat, 'profile': profile })
             filelist[file]['profiles'][profile][hat] = True
 
