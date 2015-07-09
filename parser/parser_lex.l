@@ -519,7 +519,14 @@ LT_EQUAL	<=
 #include/.*\r?\n	{
 	/* Don't use PUSH() macro here as we don't want #include echoed out.
 	 * It needs to be handled specially
-	 */ 
+	 */
+	yy_push_state(INCLUDE);
+}
+
+include/{WS}	{
+	/* Don't use PUSH() macro here as we don't want #include echoed out.
+	 * It needs to be handled specially
+	 */
 	yy_push_state(INCLUDE);
 }
 
