@@ -867,6 +867,54 @@ void print_cond_entry(struct cond_entry *ent)
 	}
 }
 
+
+struct time_units {
+	const char *str;
+	long long value;
+};
+
+static struct time_units time_units[] = {
+	{ "us", 1LL },
+	{ "microsecond", 1LL },
+	{ "microseconds", 1LL },
+	{ "ms", 1000LL },
+	{ "millisecond", 1000LL },
+	{ "milliseconds", 1000LL },
+	{ "s", 1000LL * 1000LL },
+	{ "sec", SECONDS_P_MS },
+	{ "second", SECONDS_P_MS },
+	{ "seconds", SECONDS_P_MS },
+	{ "min" , 60LL * SECONDS_P_MS },
+	{ "minute", 60LL * SECONDS_P_MS },
+	{ "minutes", 60LL * SECONDS_P_MS },
+	{ "h", 60LL * 60LL * SECONDS_P_MS },
+	{ "hour", 60LL * 60LL * SECONDS_P_MS },
+	{ "hours", 60LL * 60LL * SECONDS_P_MS },
+	{ "d", 24LL * 60LL * 60LL * SECONDS_P_MS },
+	{ "day", 24LL * 60LL * 60LL * SECONDS_P_MS },
+	{ "days", 24LL * 60LL * 60LL * SECONDS_P_MS },
+	{ "week", 7LL * 24LL * 60LL * 60LL * SECONDS_P_MS },
+	{ "weeks", 7LL * 24LL * 60LL * 60LL * SECONDS_P_MS },
+	{ NULL, 0 }
+};
+
+long long convert_time_units(long long value, long long base, const char *units)
+{
+	struct time_units *ent;
+	if (!units)
+		/* default to base if no units */
+		return value;
+
+	for (ent = time_units; ent->str; ent++) {
+		if (strcmp(ent->str, units) == 0) {
+			if (value * ent->value < base)
+				return -1LL;
+			return value * ent->value / base;
+		}
+	}
+	return -2LL;
+}
+
 #ifdef UNIT_TEST
 
 #include "unit_test.h"
@@ -1085,6 +1133,50 @@ int test_processquoted(void)
 	return rc;
 }
 
+#define TIME_TEST(V, B, U, R)					\
+MY_TEST(convert_time_units((V), (B), U) == (R),		\
+	"convert " #V " with base of " #B ", " #U " units")
+
+int test_convert_time_units()
+{
+	int rc = 0;
+
+	TIME_TEST(1LL, 1LL, NULL, 1LL);
+	TIME_TEST(12345LL, 1LL, NULL, 12345LL);
+	TIME_TEST(10LL, 10LL, NULL, 10LL);
+	TIME_TEST(123450LL, 10LL, NULL, 123450LL);
+
+	TIME_TEST(12345LL, 1LL, "us", 12345LL);
+	TIME_TEST(12345LL, 1LL, "microsecond", 12345LL);
+	TIME_TEST(12345LL, 1LL, "microseconds", 12345LL);
+
+	TIME_TEST(12345LL, 1LL, "ms", 12345LL*1000LL);
+	TIME_TEST(12345LL, 1LL, "millisecond", 12345LL*1000LL);
+	TIME_TEST(12345LL, 1LL, "milliseconds", 12345LL*1000LL);
+
+	TIME_TEST(12345LL, 1LL, "s", 12345LL*1000LL*1000LL);
+	TIME_TEST(12345LL, 1LL, "sec", 12345LL*1000LL*1000LL);
+	TIME_TEST(12345LL, 1LL, "second", 12345LL*1000LL*1000LL);
+	TIME_TEST(12345LL, 1LL, "seconds", 12345LL*1000LL*1000LL);
+
+	TIME_TEST(12345LL, 1LL, "min", 12345LL*1000LL*1000LL*60LL);
+	TIME_TEST(12345LL, 1LL, "minute", 12345LL*1000LL*1000LL*60LL);
+	TIME_TEST(12345LL, 1LL, "minutes", 12345LL*1000LL*1000LL*60LL);
+
+	TIME_TEST(12345LL, 1LL, "h", 12345LL*1000LL*1000LL*60LL*60LL);
+	TIME_TEST(12345LL, 1LL, "hour", 12345LL*1000LL*1000LL*60LL*60LL);
+	TIME_TEST(12345LL, 1LL, "hours", 12345LL*1000LL*1000LL*60LL*60LL);
+
+	TIME_TEST(12345LL, 1LL, "d", 12345LL*1000LL*1000LL*60LL*60LL*24LL);
+	TIME_TEST(12345LL, 1LL, "day", 12345LL*1000LL*1000LL*60LL*60LL*24LL);
+	TIME_TEST(12345LL, 1LL, "days", 12345LL*1000LL*1000LL*60LL*60LL*24LL);
+
+	TIME_TEST(12345LL, 1LL, "week", 12345LL*1000LL*1000LL*60LL*60LL*24LL*7LL);
+	TIME_TEST(12345LL, 1LL, "weeks", 12345LL*1000LL*1000LL*60LL*60LL*24LL*7LL);
+
+	return rc;
+}
+
 int main(void)
 {
 	int rc = 0;
@@ -1099,6 +1191,10 @@ int main(void)
 		rc = retval;
 
 	retval = test_processquoted();
+	if (retval != 0)
+		rc = retval;
+
+	retval = test_convert_time_units();
 	if (retval != 0)
 		rc = retval;
 

@@ -231,11 +231,13 @@ B<RLIMIT RULE> = 'set' 'rlimit' [I<RLIMIT> 'E<lt>=' I<RLIMIT VALUE> ]
 
 B<RLIMIT> = ( 'cpu' | 'fsize' | 'data' | 'stack' | 'core' | 'rss' | 'nofile' | 'ofile' | 'as' | 'nproc' | 'memlock' | 'locks' | 'sigpending' | 'msgqueue' | 'nice' | 'rtprio' | 'rttime' )
 
-B<RLIMIT VALUE> = ( I<RLIMIT SIZE> | I<RLIMIT NUMBER> | I<RLIMIT NICE> )
+B<RLIMIT VALUE> = ( I<RLIMIT SIZE> | I<RLIMIT NUMBER> | I<RLIMIT TIME> | I<RLIMIT NICE> )
 
 B<RLIMIT SIZE> = I<NUMBER> ( 'K' | 'M' | 'G' ) Only applies to RLIMIT of 'fsize', 'data', 'stack', 'core', 'rss', 'as', 'memlock', 'msgqueue'.
 
-B<RLIMIT NUMBER> = number from 0 to max rlimit value. Only applies ot RLIMIT of 'nofile', 'locks', 'sigpending', 'nproc', 'rtprio', 'cpu'
+B<RLIMIT NUMBER> = number from 0 to max rlimit value. Only applies ot RLIMIT of 'ofile', 'nofile', 'locks', 'sigpending', 'nproc', 'rtprio'
+
+B<RLIMIT TIME> = I<NUMBER> ( 'us' | 'microsecond' | 'microseconds' | 'ms' | 'millisecond' | 'milliseconds' | 's' | | 'sec' | 'second' | 'seconds' | 'm' | 'min' | 'minute' | 'minutes' | 'h' | 'hour' | 'hours' | 'day' | 'days' | 'week' | 'weeks' ) Only applies to RLIMIT of 'cpu', 'rttime'. RLIMIT 'cpu' only allows units >= 'seconds'.
 
 B<RLIMIT NICE> = a number between -20 and 19. Only applies to RLIMIT of 'nice'
 

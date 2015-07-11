@@ -1,5 +1,5 @@
 #
-#=DESCRIPTION simple cpu rlimit test
+#=DESCRIPTION simple cpu rlimit test, cpu allows default units
 #=EXRESULT PASS
 
 profile rlimit {
