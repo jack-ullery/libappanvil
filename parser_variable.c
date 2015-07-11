@@ -297,7 +297,7 @@ int process_profile_variables(Profile *prof)
 	error = process_variables_in_name(*prof);
 
 	if (!error)
-		error = new_set_var(PROFILE_NAME_VARIABLE, prof->get_name(true).c_str());
+		error = new_set_var(PROFILE_NAME_VARIABLE, prof->get_name(false).c_str());
 
 	if (!error)
 		error = process_variables_in_entries(prof->entries);
