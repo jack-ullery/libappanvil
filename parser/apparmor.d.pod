@@ -237,7 +237,7 @@ B<RLIMIT SIZE> = I<NUMBER> ( 'K' | 'M' | 'G' ) Only applies to RLIMIT of 'fsize'
 
 B<RLIMIT NUMBER> = number from 0 to max rlimit value. Only applies ot RLIMIT of 'ofile', 'nofile', 'locks', 'sigpending', 'nproc', 'rtprio'
 
-B<RLIMIT TIME> = I<NUMBER> ( 'us' | 'microsecond' | 'microseconds' | 'ms' | 'millisecond' | 'milliseconds' | 's' | | 'sec' | 'second' | 'seconds' | 'm' | 'min' | 'minute' | 'minutes' | 'h' | 'hour' | 'hours' | 'day' | 'days' | 'week' | 'weeks' ) Only applies to RLIMIT of 'cpu', 'rttime'. RLIMIT 'cpu' only allows units >= 'seconds'.
+B<RLIMIT TIME> = I<NUMBER> ( 'us' | 'microsecond' | 'microseconds' | 'ms' | 'millisecond' | 'milliseconds' | 's' | 'sec' | 'second' | 'seconds' | 'min' | 'minute' | 'minutes' | 'h' | 'hour' | 'hours' | 'd' | 'day' | 'days' | 'week' | 'weeks' ) Only applies to RLIMIT of 'cpu', 'rttime'. RLIMIT 'cpu' only allows units >= 'seconds'.
 
 B<RLIMIT NICE> = a number between -20 and 19. Only applies to RLIMIT of 'nice'
 
