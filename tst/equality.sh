@@ -510,6 +510,31 @@ verify_binary_equality "@{profile_name} is literal in peer with esc alt sequence
 
 
 
+# verify rlimit data conversions
+verify_binary_equality "set rlimit rttime <= 12 weeks" \
+                       "/t { set rlimit rttime <= 12 weeks, }" \
+                       "/t { set rlimit rttime <= $((12 * 7)) days, }" \
+                       "/t { set rlimit rttime <= $((12 * 7 * 24)) hours, }" \
+                       "/t { set rlimit rttime <= $((12 * 7 * 24 * 60)) minutes, }" \
+                       "/t { set rlimit rttime <= $((12 * 7 * 24 * 60 * 60)) seconds, }" \
+                       "/t { set rlimit rttime <= $((12 * 7 * 24 * 60 * 60 * 1000)) ms, }" \
+                       "/t { set rlimit rttime <= $((12 * 7 * 24 * 60 * 60 * 1000 * 1000)) us, }" \
+                       "/t { set rlimit rttime <= $((12 * 7 * 24 * 60 * 60 * 1000 * 1000)), }"
+
+verify_binary_equality "set rlimit cpu <= 42 weeks" \
+                       "/t { set rlimit cpu <= 42 weeks, }" \
+                       "/t { set rlimit cpu <= $((42 * 7)) days, }" \
+                       "/t { set rlimit cpu <= $((42 * 7 * 24)) hours, }" \
+                       "/t { set rlimit cpu <= $((42 * 7 * 24 * 60)) minutes, }" \
+                       "/t { set rlimit cpu <= $((42 * 7 * 24 * 60 * 60)) seconds, }" \
+                       "/t { set rlimit cpu <= $((42 * 7 * 24 * 60 * 60)), }"
+
+verify_binary_equality "set rlimit memlock <= 2GB" \
+                       "/t { set rlimit memlock <= 2GB, }" \
+                       "/t { set rlimit memlock <= $((2 * 1024)) MB, }" \
+                       "/t { set rlimit memlock <= $((2 * 1024 * 1024)) KB, }" \
+                       "/t { set rlimit memlock <= $((2 * 1024 * 1024 * 1024)) , }" \
+
 if [ $fails -ne 0 -o $errors -ne 0 ]
 then
 	printf "ERRORS: %d\nFAILS: %d\n" $errors $fails 2>&1
