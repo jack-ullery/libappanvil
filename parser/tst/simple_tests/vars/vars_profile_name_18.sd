@@ -4,5 +4,6 @@
 @{FOO}=bar
 
 profile /does/not/exist {
-  ^foo@{FOO} { }
+  ^foo@{FOO} {
+  }
 }
