@@ -464,6 +464,30 @@ verify_binary_equality "change_profile == change_profile -> **" \
 		       "/t { change_profile /**, }" \
 		       "/t { change_profile /** -> **, }"
 
+verify_binary_equality "profile name is hname in rule" \
+	":ns:/hname { signal peer=/hname, }" \
+	":ns:/hname { signal peer=@{profile_name}, }"
+
+verify_binary_inequality "profile name is NOT fq name in rule" \
+	":ns:/hname { signal peer=:ns:/hname, }" \
+	":ns:/hname { signal peer=@{profile_name}, }"
+
+verify_binary_equality "profile name is hname in sub pofile rule" \
+	":ns:/hname { profile child { signal peer=/hname//child, } }" \
+	":ns:/hname { profile child { signal peer=@{profile_name}, } }"
+
+verify_binary_inequality "profile name is NOT fq name in sub profile rule" \
+	":ns:/hname { profile child { signal peer=:ns:/hname//child, } }" \
+	":ns:/hname { profile child { signal peer=@{profile_name}, } }"
+
+verify_binary_equality "profile name is hname in hat rule" \
+	":ns:/hname { ^child { signal peer=/hname//child, } }" \
+	":ns:/hname { ^child { signal peer=@{profile_name}, } }"
+
+verify_binary_inequality "profile name is NOT fq name in hat rule" \
+	":ns:/hname { ^child { signal peer=:ns:/hname//child, } }" \
+	":ns:/hname { ^child { signal peer=@{profile_name}, } }"
+
 if [ $fails -ne 0 -o $errors -ne 0 ]
 then
 	printf "ERRORS: %d\nFAILS: %d\n" $errors $fails 2>&1
