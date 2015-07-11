@@ -78,7 +78,6 @@ mnt_rule *do_mnt_rule(struct cond_entry *src_conds, char *src,
 		      int mode);
 mnt_rule *do_pivot_rule(struct cond_entry *old, char *root,
 			char *transition);
-
 void add_local_entry(Profile *prof);
 
 %}
@@ -854,7 +853,7 @@ rules:	rules cond_rule
 		$$ = merge_policy($1, $2);
 	}
 
-rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE TOK_END_OF_RULE
+rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE opt_id TOK_END_OF_RULE
 	{
 		rlim_t value = RLIM_INFINITY;
 		long long tmp;
@@ -867,11 +866,6 @@ rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE TOK_END_OF_RULE
 		if (strcmp($6, "infinity") == 0) {
 			value = RLIM_INFINITY;
 		} else {
-			const char *seconds = "seconds";
-			const char *milliseconds = "ms";
-			const char *minutes = "minutes";
-			const char *hours = "hours";
-			const char *days = "days";
 			const char *kb = "KB";
 			const char *mb = "MB";
 			const char *gb = "GB";
@@ -881,34 +875,25 @@ rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE TOK_END_OF_RULE
 			case RLIMIT_CPU:
 				if (!end || $6 == end || tmp < 0)
 					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
-				if (*end == '\0' ||
-				    strstr(seconds, end) == seconds) {
-					value = tmp;
-				} else if (strstr(minutes, end) == minutes) {
-					value = tmp * 60;
-				} else if (strstr(hours, end) == hours) {
-					value = tmp * 60 * 60;
-				} else if (strstr(days, end) == days) {
-					value = tmp * 60 * 60 * 24;
-				} else {
+				tmp = convert_time_units(tmp, SECONDS_P_MS, $7);
+				if (tmp == -1LL)
+					yyerror("RLIMIT '%s %s' < minimum value of 1s\n", $4, $6);
+				else if (tmp < 0LL)
 					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
-				}
+				if (!$7)
+					pwarn(_("RLIMIT 'cpu' no units specified using default units of seconds\n"));
+				value = tmp;
 				break;
 			case RLIMIT_RTTIME:
 				/* RTTIME is measured in microseconds */
 				if (!end || $6 == end || tmp < 0)
-					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
-				if (*end == '\0') {
-					value = tmp;
-				} else if (strstr(milliseconds, end) == milliseconds) {
-					value = tmp * 1000;
-				} else if (strstr(seconds, end) == seconds) {
-					value = tmp * 1000 * 1000;
-				} else if (strstr(minutes, end) == minutes) {
-					value = tmp * 1000 * 1000 * 60;
-				} else {
-					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
-				}
+					yyerror("RLIMIT '%s' invalid value %s %s\n", $4, $6, $7 ? $7 : "");
+				tmp = convert_time_units(tmp, 1LL, $7);
+				if (tmp < 0LL)
+					yyerror("RLIMIT '%s' invalid value %s %s\n", $4, $6, $7 ? $7 : "");
+				if (!$7)
+					pwarn(_("RLIMIT 'rttime' no units specified using default units of microseconds\n"));
+				value = tmp;
 				break;
 			case RLIMIT_NOFILE:
 			case RLIMIT_NPROC:
@@ -916,15 +901,15 @@ rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE TOK_END_OF_RULE
 			case RLIMIT_SIGPENDING:
 #ifdef RLIMIT_RTPRIO
 			case RLIMIT_RTPRIO:
-				if (!end || $6 == end || *end != '\0' || tmp < 0)
-					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
+				if (!end || $6 == end || $7 || tmp < 0)
+					yyerror("RLIMIT '%s' invalid value %s %s\n", $4, $6, $7 ? $7 : "");
 				value = tmp;
 				break;
 #endif
 #ifdef RLIMIT_NICE
 			case RLIMIT_NICE:
-				if (!end || $6 == end || *end != '\0')
-					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
+				if (!end || $6 == end || $7)
+					yyerror("RLIMIT '%s' invalid value %s %s\n", $4, $6, $7 ? $7 : "");
 				if (tmp < -20 || tmp > 19)
 					yyerror("RLIMIT '%s' out of range (-20 .. 19) %d\n", $4, tmp);
 				value = tmp + 20;
@@ -939,15 +924,17 @@ rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE TOK_END_OF_RULE
 			case RLIMIT_MEMLOCK:
 			case RLIMIT_MSGQUEUE:
 				if ($6 == end || tmp < 0)
-					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
-				if (strstr(kb, end) == kb) {
+					yyerror("RLIMIT '%s' invalid value %s %s\n", $4, $6, $7 ? $7 : "");
+				if (!$7) {
+					; /* use default of bytes */
+				} else if (strstr(kb, $7) == kb) {
 					tmp *= 1024;
-				} else if (strstr(mb, end) == mb) {
+				} else if (strstr(mb, $7) == mb) {
 					tmp *= 1024*1024;
-				} else if (strstr(gb, end) == gb) {
+				} else if (strstr(gb, $7) == gb) {
 					tmp *= 1024*1024*1024;
-				} else if (*end != '\0') {
-					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
+				} else {
+					yyerror("RLIMIT '%s' invalid value %s %s\n", $4, $6, $7);
 				}
 				value = tmp;
 				break;

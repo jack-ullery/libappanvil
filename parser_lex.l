@@ -447,7 +447,7 @@ LT_EQUAL	<=
 }
 
 <RLIMIT_MODE>{
-	-?{NUMBER}[[:alpha:]]*  {
+	-?{NUMBER} {
 	        yylval.var_val = strdup(yytext);
 		RETURN_TOKEN(TOK_VALUE);
 	}

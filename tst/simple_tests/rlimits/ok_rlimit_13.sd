@@ -1,7 +1,7 @@
 #
-#=DESCRIPTION simple cpu rlimit test
+#=DESCRIPTION simple rttime rlimit allows default units
 #=EXRESULT PASS
 
 profile rlimit {
-  set rlimit cpu <= 12,
+  set rlimit rttime <= 12,
 }
