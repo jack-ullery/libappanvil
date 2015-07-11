@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-13 00:11-0700\n"
-"PO-Revision-Date: 2015-05-31 14:26+0000\n"
-"Last-Translator: Hendrik Knackstedt <Unknown>\n"
+"PO-Revision-Date: 2015-07-09 19:44+0000\n"
+"Last-Translator: Christian Boltz <Unknown>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2015-06-01 05:08+0000\n"
-"X-Generator: Launchpad (build 17532)\n"
+"X-Launchpad-Export-Date: 2015-07-10 05:19+0000\n"
+"X-Generator: Launchpad (build 17608)\n"
 "Language: de\n"
 
 #: ../parser_include.c:113
@@ -75,7 +75,7 @@ msgstr "Profil ist nicht vorhanden\n"
 msgid "Permission denied; attempted to load a profile while confined?\n"
 msgstr ""
 "Zugriff verweigert! Haben Sie versucht ein Profil zu laden während Sie "
-"angebunden waren?\n"
+"eingeschränkt waren?\n"
 
 #: ../parser_interface.c:99 ../parser_interface.c:102
 #, c-format
@@ -179,8 +179,7 @@ msgstr "%s: Profileintrag kann nicht geschrieben werden\n"
 #, c-format
 msgid "%s: Unable to write entire profile entry to cache\n"
 msgstr ""
-"%s: Schreiben des gesamten Profileintrags in den Zwischenspeicher nicht "
-"möglich\n"
+"%s: Schreiben des gesamten Profileintrags in den Puffer nicht möglich\n"
 
 #: parser_lex.l:100 parser_lex.l:163
 #, c-format
@@ -318,8 +317,8 @@ msgstr "Die Parameter »a« und »w« schließen sich gegenseitig aus."
 #: ../parser_misc.c:491 ../parser_misc.c:662
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
 msgstr ""
-"Exec-Qualifizierer 'i' ist ungültig, ein Qualifizierer, mit dem ein Konflikt "
-"besteht, wurde bereits angegeben."
+"Ausführungskennzeichner »i« ist ungültig, ein Kennzeichner, mit dem ein "
+"Konflikt besteht, wurde bereits angegeben."
 
 #: ../parser_misc.c:502 ../parser_misc.c:673
 #, c-format
@@ -327,17 +326,17 @@ msgid ""
 "Unconfined exec qualifier (%c%c) allows some dangerous environment variables "
 "to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
 msgstr ""
-"Nicht angebundener exec-Qualifier (%c%c) ermöglicht es einigen gefährlichen "
-"Umgebungsvariablen, an den unangebundenen Prozess übergeben zu werden; "
-"Einzelheiten mit »man 5 apparmor.d«.\n"
+"Aufgrund uneingeschränkter Exec-Qualifizierer ('%c%c') können einige "
+"gefährliche Umgebungsvariablen an den uneingeschränkten Prozess übergeben "
+"werden. Weitere Details in 'man 5 apparmor.d'.\n"
 
 #: ../parser_misc.c:510 ../parser_misc.c:551 ../parser_misc.c:681
 #: ../parser_misc.c:722
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
 msgstr ""
-"Exec-Qualifier »%c« ungültig, es wurde bereits ein damit in Konflikt "
-"stehender Qualifier angegeben"
+"Ausführungskennzeichner »%c« ist ungültig, ein Kennzeichner, mit dem ein "
+"Konflikt besteht, wurde bereits angegeben."
 
 #: ../parser_misc.c:537 ../parser_misc.c:545 ../parser_misc.c:708
 #: ../parser_misc.c:716
@@ -345,8 +344,8 @@ msgstr ""
 msgid ""
 "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
 msgstr ""
-"Exec-Qualifier »%c%c« ungültig, es wurde bereits ein damit in Konflikt "
-"stehender Qualifier angegeben"
+"Ausführungskennzeichner »%c%c« ist ungültig, ein Kennzeichner, mit dem ein "
+"Konflikt besteht, wurde bereits angegeben."
 
 #: ../parser_misc.c:593 ../parser_misc.c:764
 #, c-format
@@ -356,7 +355,7 @@ msgstr "Intern: Unerwartetes Moduszeichen »%c« in der Eingabe"
 #: ../parser_misc.c:615 ../parser_misc.c:786
 #, c-format
 msgid "Internal error generated invalid perm 0x%llx\n"
-msgstr "Interer Fehler erzeugte ungültige Rechte 0x%llx\n"
+msgstr "Interner Fehler erzeugte ungültige Zugriffsrechte 0x%llx\n"
 
 #: ../parser_misc.c:865 ../parser_symtab.c:561 ../parser_regex.c:626
 #: ../parser_variable.c:229
@@ -430,8 +429,8 @@ msgid ""
 "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', "
 "'p', or 'u'"
 msgstr ""
-"Ungültiger Modus, in Verbotsregeln darf vor »x« keiner der exec-Qualifier "
-"»i«, »p« oder »u« stehen"
+"Ungültiger Modus, in den Verweigernregeln darf vor »x« keiner der "
+"Ausführungskennzeichner »i«, »p« oder »u« stehen"
 
 #: parser_yacc.y:524 parser_yacc.y:556
 msgid ""
@@ -469,7 +468,7 @@ msgstr "In Bedingungssatz verwendete Boolsche-Variable »%s« deaktivieren"
 
 #: parser_yacc.y:882 parser_yacc.y:986
 msgid "unsafe rule missing exec permissions"
-msgstr "Fehlende Exec-Berechtigungen bei unsicherer Regel"
+msgstr "Fehlende Ausführungsrechte bei unsicherer Regel"
 
 #: parser_yacc.y:901 parser_yacc.y:954
 msgid "subset can only be used with link rules."
@@ -478,13 +477,14 @@ msgstr "subset kann nur mit Link-Regeln verwendet werden."
 #: parser_yacc.y:903 parser_yacc.y:956
 msgid "link and exec perms conflict on a file rule using ->"
 msgstr ""
-"Link- und Exec-Berechtigungen stehen in Konflikt mit einer Dateiregel, in "
-"der '->' verwendet wird"
+"Verknüpfungs- und Ausführungsberechtigungen stehen in Konflikt mit einer "
+"Dateiregel, in der »->« verwendet wird"
 
 #: parser_yacc.y:905 parser_yacc.y:958
 msgid "link perms are not allowed on a named profile transition.\n"
 msgstr ""
-"Link-Berechtigungen sind bei einem benannten Profilübergang nicht erlaubt.\n"
+"Verknüpfungsberechtigungen sind bei einem benannten Profilübergang nicht "
+"erlaubt.\n"
 
 #: parser_yacc.y:921 parser_yacc.y:1003
 #, c-format
@@ -498,7 +498,7 @@ msgstr "Ungültiger Netzwerkeintrag."
 #: parser_yacc.y:1039 parser_yacc.y:1048 parser_yacc.y:1254
 #, c-format
 msgid "Invalid capability %s."
-msgstr "Ungültige Capability %s."
+msgstr "Ungültige Fähigkeit %s."
 
 #: parser_yacc.y:1066 parser_yacc.y:1269
 #, c-format
@@ -621,6 +621,7 @@ msgstr ""
 #, c-format
 msgid "Could not process include directory '%s' in '%s'"
 msgstr ""
+"Das enthaltene Verzeichnis »%s« in »%s« kann nicht verarbeitet werden"
 
 #: ../parser_main.c:660
 msgid "Feature buffer full."
@@ -633,65 +634,65 @@ msgstr "Nicht genug Speicher"
 #: ../parser_main.c:1182
 #, c-format
 msgid "Can't create cache directory: %s\n"
-msgstr "Cache-Verzeichnis kann nicht erstellt werden: %s\n"
+msgstr "Pufferverzeichnis kann nicht erstellt werden: %s\n"
 
 #: ../parser_main.c:1185
 #, c-format
 msgid "File in cache directory location: %s\n"
-msgstr ""
+msgstr "Datei im Pufferverzeichnisort: %s\n"
 
 #: ../parser_main.c:1188
 #, c-format
 msgid "Can't update cache directory: %s\n"
-msgstr "Cache-Verzeichnis kann nicht aktualisiert werden: %s\n"
+msgstr "Pufferverzeichnis kann nicht aktualisiert werden: %s\n"
 
 #: ../parser_misc.c:833
 #, c-format
 msgid "Internal: unexpected DBus mode character '%c' in input"
-msgstr ""
+msgstr "Intern: Unerwartetes D-Bus-Moduszeichen »%c« in der Eingabe"
 
 #: ../parser_misc.c:857
 #, c-format
 msgid "Internal error generated invalid DBus perm 0x%x\n"
-msgstr ""
+msgstr "Interner Fehler hat ungültige D-Bus-Zugriffsrechte 0x%x erstellt\n"
 
 #: parser_yacc.y:575
 msgid "deny prefix not allowed"
-msgstr "deny-Prefix nicht erlaubt"
+msgstr "Verweigernpräfix nicht erlaubt"
 
 #: parser_yacc.y:612
 msgid "owner prefix not allowed"
-msgstr "owner-Prefix nicht erlaubt"
+msgstr "Eigentümerpräfix nicht erlaubt"
 
 #: parser_yacc.y:660
 msgid "owner prefix not allow on mount rules"
-msgstr ""
+msgstr "Eigentümerpräfix nicht bei Einhängeregeln erlauben"
 
 #: parser_yacc.y:677
 msgid "owner prefix not allow on dbus rules"
-msgstr ""
+msgstr "Eigentümerpräfix nicht bei D-Bus-Regeln erlauben"
 
 #: parser_yacc.y:704
 msgid "owner prefix not allow on capability rules"
-msgstr ""
+msgstr "Eigentümerpräfix nicht bei Fähigkeitsregeln erlauben"
 
 #: parser_yacc.y:1357
 #, c-format
 msgid "invalid mount conditional %s%s"
-msgstr ""
+msgstr "Ungültige Einhängebedingung %s%s"
 
 #: parser_yacc.y:1374
 msgid "bad mount rule"
-msgstr ""
+msgstr "Ungültige Einhängeregel"
 
 #: parser_yacc.y:1381
 msgid "mount point conditions not currently supported"
-msgstr ""
+msgstr "Einhängepunktbedingungen werden derzeit nicht unterstützt"
 
 #: parser_yacc.y:1398
 #, c-format
 msgid "invalid pivotroot conditional '%s'"
-msgstr ""
+msgstr "Ungültige pivotroot-Bedingung »%s«"
 
 #: ../parser_regex.c:241
 #, c-format
@@ -708,72 +709,80 @@ msgstr ""
 #, c-format
 msgid "ERROR processing policydb rules for profile %s, failed to load\n"
 msgstr ""
+"FEHLER beim Verarbeiten der policydb-Regeln für das Profil %s. Das Laden ist "
+"fehlgeschlagen.\n"
 
 #: ../parser_policy.c:396
 #, c-format
 msgid "ERROR replacing aliases for profile %s, failed to load\n"
 msgstr ""
+"FEHLER beim ersetzen der Aliasse für Profil %s. Das Laden ist "
+"fehlgeschlagen\n"
 
 #: ../parser_interface.c:635 ../parser_interface.c:638
 #, c-format
 msgid "%s: Unable to write %s\n"
-msgstr ""
+msgstr "%s: Nicht in der Lage %s zu schreiben\n"
 
 #: ../parser_main.c:721
 #, c-format
 msgid "Error: Could not read binary profile or cache file %s: %s.\n"
 msgstr ""
+"Fehler: Binär- oder Zwischenspeicherdatei kann nicht gelesen werden %s: %s.\n"
 
 #: ../parser_main.c:811
 #, c-format
 msgid "Error: Could not read cache file '%s', skipping...\n"
 msgstr ""
+"Fehler: Pufferdatei kann nicht gelesen werden »%s« - es wird übersprungen …\n"
 
 #: ../parser_misc.c:575
 #, c-format
 msgid "Internal: unexpected %s mode character '%c' in input"
-msgstr ""
+msgstr "Intern: Unerwartetes %s-Moduszeichen »%c« in der Eingabe"
 
 #: ../parser_misc.c:599
 #, c-format
 msgid "Internal error generated invalid %s perm 0x%x\n"
-msgstr ""
+msgstr "Interner Fehler hat ungültige %s-Zugriffsrechte 0x%x erstellt\n"
 
 #: parser_yacc.y:703
 msgid "owner prefix not allowed on mount rules"
-msgstr ""
+msgstr "Eigentümerpräfix ist nicht bei Einhängeregeln erlaubt"
 
 #: parser_yacc.y:720
 msgid "owner prefix not allowed on dbus rules"
-msgstr ""
+msgstr "Eigentümerpräfix ist nicht bei D-Bus-Regeln erlaubt"
 
 #: parser_yacc.y:736
 msgid "owner prefix not allowed on signal rules"
-msgstr ""
+msgstr "Eigentümerpräfix ist nicht bei Signalregeln erlaubt"
 
 #: parser_yacc.y:752
 msgid "owner prefix not allowed on ptrace rules"
-msgstr ""
+msgstr "Eigentümerpräfix ist nicht bei ptrace-Regeln erlaubt"
 
 #: parser_yacc.y:768
 msgid "owner prefix not allowed on unix rules"
-msgstr ""
+msgstr "Eigentümerpräfix ist nicht bei UNIX-Regeln erlaubt"
 
 #: parser_yacc.y:794
 msgid "owner prefix not allowed on capability rules"
-msgstr ""
+msgstr "Eigentümerpräfix ist nicht bei Fähigkeitsregeln erlaubt"
 
 #: parser_yacc.y:1293
 #, c-format
 msgid "dbus rule: invalid conditional group %s=()"
-msgstr ""
+msgstr "D-Bus-Regel: ungültige Bedingungsgruppe %s=()"
 
 #: parser_yacc.y:1371
 #, c-format
 msgid "unix rule: invalid conditional group %s=()"
-msgstr ""
+msgstr "UNIX-Regel: ungültige Bedingungsgruppe %s=()"
 
 #: ../parser_regex.c:368
 #, c-format
 msgid "%s: Regex error: trailing '\\' escape character\n"
 msgstr ""
+"%s: Fehler im regulären Ausdruck: Schrägstrich »\\« ist ein "
+"Ausschlusszeichen\n"
