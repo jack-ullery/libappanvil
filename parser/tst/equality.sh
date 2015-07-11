@@ -488,6 +488,28 @@ verify_binary_inequality "profile name is NOT fq name in hat rule" \
 	":ns:/hname { ^child { signal peer=:ns:/hname//child, } }" \
 	":ns:/hname { ^child { signal peer=@{profile_name}, } }"
 
+verify_binary_equality "@{profile_name} is literal in peer" \
+	"/{a,b} { signal peer=/\{a,b\}, }" \
+	"/{a,b} { signal peer=@{profile_name}, }"
+
+verify_binary_equality "@{profile_name} is literal in peer with pattern" \
+	"/{a,b} { signal peer={/\{a,b\},c}, }" \
+	"/{a,b} { signal peer={@{profile_name},c}, }"
+
+verify_binary_inequality "@{profile_name} is not pattern in peer" \
+	"/{a,b} { signal peer=/{a,b}, }" \
+	"/{a,b} { signal peer=@{profile_name}, }"
+
+verify_binary_equality "@{profile_name} is literal in peer with esc sequence" \
+	"/\\\\a { signal peer=/\\\\a, }" \
+	"/\\\\a { signal peer=@{profile_name}, }"
+
+verify_binary_equality "@{profile_name} is literal in peer with esc alt sequence" \
+	"/\\{a,b\\},c { signal peer=/\\{a,b\\},c, }" \
+	"/\\{a,b\\},c { signal peer=@{profile_name}, }"
+
+
+
 if [ $fails -ne 0 -o $errors -ne 0 ]
 then
 	printf "ERRORS: %d\nFAILS: %d\n" $errors $fails 2>&1

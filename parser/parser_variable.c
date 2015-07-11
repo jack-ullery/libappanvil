@@ -287,6 +287,24 @@ static int process_variables_in_name(Profile &prof)
 	return error;
 }
 
+static std::string escape_re(std::string str)
+{
+	for (size_t i = 0; i < str.length(); i++) {
+		if (str[i] == '\\') {
+			/* skip \ and follow char. Skipping \ and first
+			 * char is enough for multichar escape sequence
+			 */
+			i++;
+			continue;
+		}
+		if (strchr("{}[]*?", str[i]) != NULL) {
+			str.insert(i++, "\\");
+		}
+	}
+
+	return str;
+}
+
 int process_profile_variables(Profile *prof)
 {
 	int error = 0, rc;
@@ -296,8 +314,12 @@ int process_profile_variables(Profile *prof)
 	 */
 	error = process_variables_in_name(*prof);
 
-	if (!error)
-		error = new_set_var(PROFILE_NAME_VARIABLE, prof->get_name(false).c_str());
+	if (!error) {
+		/* escape profile name elements that could be interpreted
+		 * as regular expressions.
+		 */
+		error = new_set_var(PROFILE_NAME_VARIABLE, escape_re(prof->get_name(false)).c_str());
+	}
 
 	if (!error)
 		error = process_variables_in_entries(prof->entries);
