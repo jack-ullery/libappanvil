@@ -43,10 +43,13 @@ class RlimitTestParse(RlimitTest):
     tests = [
         # rawrule                                    audit  allow  deny   comment         rlimit          value      all/infinity?
         ('set rlimit as <= 2047MB,'            , exp(False, False, False, ''           , 'as'           , '2047MB'      , False)),
+        ('set rlimit as <= 2047 MB,'           , exp(False, False, False, ''           , 'as'           , '2047 MB'     , False)),
         ('set rlimit cpu <= 1024,'             , exp(False, False, False, ''           , 'cpu'          , '1024'        , False)),
         ('set rlimit stack <= 1024GB,'         , exp(False, False, False, ''           , 'stack'        , '1024GB'      , False)),
+        ('set rlimit stack <= 1024 GB,'        , exp(False, False, False, ''           , 'stack'        , '1024 GB'     , False)),
         ('set rlimit rtprio <= 10, # comment'  , exp(False, False, False, ' # comment' , 'rtprio'       , '10'          , False)),
         ('set rlimit core <= 44444KB,'         , exp(False, False, False, ''           , 'core'         , '44444KB'     , False)),
+        ('set rlimit core <= 44444 KB,'        , exp(False, False, False, ''           , 'core'         , '44444 KB'    , False)),
         ('set rlimit rttime <= 60ms,'          , exp(False, False, False, ''           , 'rttime'       , '60ms'        , False)),
         ('set rlimit cpu <= infinity,'         , exp(False, False, False, ''           , 'cpu'          , None          , True )),
         ('set rlimit nofile <= 256,'           , exp(False, False, False, ''           , 'nofile'       , '256'         , False)),
@@ -117,6 +120,7 @@ class RlimitFromInit(RlimitTest):
     tests = [
         # RlimitRule object                                  audit  allow  deny   comment        rlimit         value     all/infinity?
         (RlimitRule('as', '2047MB')                     , exp(False, False, False, ''           , 'as'      ,   '2047MB'    , False)),
+        (RlimitRule('as', '2047 MB')                    , exp(False, False, False, ''           , 'as'      ,   '2047 MB'   , False)),
         (RlimitRule('cpu', '1024')                      , exp(False, False, False, ''           , 'cpu'     ,   '1024'      , False)),
         (RlimitRule('rttime', '60minutes')              , exp(False, False, False, ''           , 'rttime'  ,    '60minutes', False)),
         (RlimitRule('nice', '-10')                      , exp(False, False, False, ''           , 'nice'    ,   '-10'       , False)),
@@ -254,9 +258,11 @@ class RlimitCoveredTest_01(RlimitCoveredTest):
         ('set rlimit cpu <= 150seconds,', [ True    , False         , True      , True      ]),
         ('set rlimit cpu <= 300seconds,', [ False   , False         , False     , False     ]),
         ('set rlimit cpu <= 1minutes,'  , [ False   , False         , True      , True      ]),
-        ('set rlimit cpu <= 1m,'        , [ False   , False         , True      , True      ]),
+        ('set rlimit cpu <= 1min,'      , [ False   , False         , True      , True      ]),
         ('set rlimit cpu <= 3minutes,'  , [ False   , False         , False     , False     ]),
         ('set rlimit cpu <= 1hour,'     , [ False   , False         , False     , False     ]),
+        ('set rlimit cpu <= 2 days,'    , [ False   , False         , False     , False     ]),
+        ('set rlimit cpu <= 1 week,'    , [ False   , False         , False     , False     ]),
     ]
 
 class RlimitCoveredTest_02(RlimitCoveredTest):
@@ -270,7 +276,9 @@ class RlimitCoveredTest_02(RlimitCoveredTest):
         ('set rlimit data <= 4194304,'  , [ True    , False         , True      , True      ]),
         ('set rlimit data <= 4096KB,'   , [ True    , False         , True      , True      ]),
         ('set rlimit data <= 4MB,'      , [ True    , True          , True      , True      ]),
+        ('set rlimit data <= 4 MB,'     , [ True    , False         , True      , True      ]),
         ('set rlimit data <= 6MB,'      , [ False   , False         , False     , False     ]),
+        ('set rlimit data <= 6 MB,'     , [ False   , False         , False     , False     ]),
         ('set rlimit data <= 1GB,'      , [ False   , False         , False     , False     ]),
     ]
 
@@ -418,6 +426,7 @@ class RlimitDeleteTestAATest(AATest):
 class RlimitSplit_unitTest(AATest):
     tests = [
         ('40MB'  , ( 40, 'MB',)),
+        ('40 MB' , ( 40, 'MB',)),
         ('40'  ,   ( 40, '',  )),
     ]
 
@@ -451,16 +460,21 @@ class RlimitTime_to_intTest(AATest):
         self.obj = RlimitRule('cpu', '1')
 
     tests = [
+        ('40'       ,       0.00004),
         ('30us'     ,       0.00003),
         ('40ms'     ,       0.04),
-        ('40'       ,      40),
         ('40seconds',      40),
         ('2minutes' ,    2*60),
         ('2hours'   , 2*60*60),
+        ('1 day'    , 1*60*60*24),
+        ('2 weeks'  , 2*60*60*24*7),
     ]
 
     def _run_test(self, params, expected):
-        self.assertEqual(self.obj.time_to_int(params, 'seconds'), expected)
+        self.assertEqual(self.obj.time_to_int(params, 'us'), expected)
+
+    def test_with_seconds_as_default(self):
+        self.assertEqual(self.obj.time_to_int('40', 'seconds'), 40)
 
     def test_with_ms_as_default(self):
         self.assertEqual(self.obj.time_to_int('40', 'ms'), 0.04)

@@ -31,9 +31,9 @@ rlimit_nice     = ['nice']  # a number between -20 and 19.
 
 rlimit_all      = rlimit_size + rlimit_number + rlimit_time + rlimit_nice
 
-RE_NUMBER_UNIT  = re.compile('^(?P<number>[0-9]+)(?P<unit>[a-zA-Z]*)$')
+RE_NUMBER_UNIT  = re.compile('^(?P<number>[0-9]+)\s*(?P<unit>[a-zA-Z]*)$')
 RE_NUMBER       = re.compile('^[0-9]+$')
-RE_UNIT_SIZE    = re.compile('^[0-9]+([KMG]B?)?$')
+RE_UNIT_SIZE    = re.compile('^[0-9]+\s*([KMG]B?)?$')
 RE_NICE         = re.compile('^(-20|-[01]?[0-9]|[01]?[0-9])$')
 
 
@@ -89,11 +89,6 @@ class RlimitRule(BaseRule):
                 if not RE_NUMBER_UNIT.match(value):
                     raise AppArmorException('Invalid value in rlimit %s %s rule' % (rlimit, value))
                 number, unit = split_unit(value)
-                if unit == 'm' and rlimit == 'rttime':
-                    raise AppArmorException('Ambiguous value %s in rlimit %s rule - use "ms" or "minutes"' % (value, rlimit))
-                if unit != '' and not ('seconds'.startswith(unit) or 'minutes'.startswith(unit) or 'hours'.startswith(unit) or
-                        (rlimit == 'rttime' and unit in ['ms', 'us']) ):
-                    raise AppArmorException('Invalid unit in rlimit %s %s rule' % (rlimit, value))
 
                 if rlimit == 'rttime':
                     self.value_as_int = self.time_to_int(value, 'us')
@@ -181,16 +176,24 @@ class RlimitRule(BaseRule):
         if unit == '':
             unit = default_unit
 
-        if unit == 'us':
+        if unit in ['us', 'microsecond', 'microseconds']:
             number = number / 1000000.0
-        elif unit == 'ms':
+            if default_unit == 'seconds':
+                raise AppArmorException(_('Invalid unit in rlimit cpu %s rule') % value)
+        elif unit in ['ms', 'millisecond', 'milliseconds']:
             number = number / 1000.0
-        elif 'seconds'.startswith(unit):
+            if default_unit == 'seconds':
+                raise AppArmorException(_('Invalid unit in rlimit cpu %s rule') % value)
+        elif unit in ['s', 'sec', 'second', 'seconds']: # manpage doesn't list sec
             pass
-        elif 'minutes'.startswith(unit):
+        elif unit in ['min', 'minute', 'minutes']:
             number = number * 60
-        elif 'hours'.startswith(unit):
+        elif unit in ['h', 'hour', 'hours']:
             number = number * 60 * 60
+        elif unit in ['d', 'day', 'days']: # manpage doesn't list 'd'
+            number = number * 60 * 60 * 24
+        elif unit in ['week', 'weeks']:
+            number = number * 60 * 60 * 24 * 7
         else:
             raise AppArmorException('Unknown unit %s in rlimit %s %s' % (unit, self.rlimit, value))
 
