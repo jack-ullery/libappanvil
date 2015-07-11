@@ -252,6 +252,7 @@ void add_local_entry(Profile *prof);
 %type <val_list> valuelist
 %type <boolean> expr
 %type <id>	id_or_var
+%type <id>	opt_id_or_var
 %type <boolean> opt_subset_flag
 %type <boolean> opt_audit_flag
 %type <boolean> opt_owner_flag
@@ -307,7 +308,10 @@ opt_ns: { /* nothing */ $$ = NULL; }
 opt_id: { /* nothing */ $$ = NULL; }
 	| TOK_ID { $$ = $1; }
 
-profile_base: TOK_ID opt_id flags TOK_OPEN rules TOK_CLOSE
+opt_id_or_var: { /* nothing */ $$ = NULL; }
+	| id_or_var { $$ = $1; }
+
+profile_base: TOK_ID opt_id_or_var flags TOK_OPEN rules TOK_CLOSE
 	{
 		Profile *prof = $5;
 
@@ -317,11 +321,8 @@ profile_base: TOK_ID opt_id flags TOK_OPEN rules TOK_CLOSE
 
 		prof->name = $1;
 		prof->attachment = $2;
-		if ($2 && $2[0] != '/')
-			/* we don't support variables as part of the profile
-			 * name or attachment atm
-			 */
-			yyerror(_("Profile attachment must begin with a '/'."));
+		if ($2 && !($2[0] == '/' || strncmp($2, "@{", 2) == 0))
+			yyerror(_("Profile attachment must begin with a '/' or variable."));
 		prof->flags = $3;
 		if (force_complain && kernel_abi_version == 5)
 			/* newer abis encode force complain as part of the
