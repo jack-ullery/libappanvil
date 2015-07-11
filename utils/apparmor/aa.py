@@ -2422,7 +2422,7 @@ def collapse_log():
                         if not is_known_rule(aa[profile][hat], 'network', NetworkRule(family, sock_type)):
                             log_dict[aamode][profile][hat]['netdomain'][family][sock_type] = True
 
-PROFILE_MODE_RE      = re.compile('^(r|w|l|m|k|a|ix|ux|px|pux|cx|pix|cix|Ux|Px|PUx|Cx|Pix|Cix)+$')
+PROFILE_MODE_RE      = re.compile('^(r|w|l|m|k|a|ix|ux|px|pux|cx|pix|cix|cux|Ux|Px|PUx|Cx|Pix|Cix|CUx)+$')
 PROFILE_MODE_DENY_RE = re.compile('^(r|w|l|m|k|a|x)+$')
 
 def validate_profile_mode(mode, allow, nt_name=None):
