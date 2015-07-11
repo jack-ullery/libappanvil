@@ -1,0 +1,8 @@
+#=DESCRIPTION var in hat name
+#=EXRESULT PASS
+
+@{FOO}=bar
+
+profile /does/not/exist {
+  ^@{FOO} { }
+}

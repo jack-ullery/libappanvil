@@ -1,0 +1,8 @@
+#=DESCRIPTION var in sub profile name
+#=EXRESULT PASS
+
+@{FOO}=bar
+
+profile /does/not/exist {
+  profile @{FOO} { }
+}

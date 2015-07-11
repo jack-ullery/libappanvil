@@ -275,12 +275,29 @@ static int process_variables_in_rules(Profile &prof)
 	return 0;
 }
 
+static int process_variables_in_name(Profile &prof)
+{
+	/* this needs to be done before alias expansion, ie. altnames are
+	 * setup
+	 */
+	int error = expand_entry_variables(&prof.name);
+	if (!error && prof.attachment)
+		error = expand_entry_variables(&prof.attachment);
+
+	return error;
+}
 
 int process_profile_variables(Profile *prof)
 {
 	int error = 0, rc;
 
-	error = new_set_var(PROFILE_NAME_VARIABLE, prof->get_name(true).c_str());
+	/* needs to be before PROFILE_NAME_VARIABLE so that variable will
+	 * have the correct name
+	 */
+	error = process_variables_in_name(*prof);
+
+	if (!error)
+		error = new_set_var(PROFILE_NAME_VARIABLE, prof->get_name(true).c_str());
 
 	if (!error)
 		error = process_variables_in_entries(prof->entries);
