@@ -430,7 +430,8 @@ def profile_storage():
     return profile
 
 def create_new_profile(localfile, is_stub=False):
-    local_profile = profile_storage()
+    local_profile = hasher()
+    local_profile[localfile] = profile_storage()
     local_profile[localfile]['flags'] = 'complain'
     local_profile[localfile]['include']['abstractions/base'] = 1
 
