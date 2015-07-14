@@ -35,28 +35,68 @@
 #define AA_MAY_APPEND		(1 << 3)
 #endif
 
-#ifndef AA_MAY_LINK
-#define AA_MAY_LINK		(1 << 4)
+#ifndef AA_MAY_CREATE
+#define AA_MAY_CREATE		(1 << 4)
+#endif
+
+#ifndef AA_MAY_DELETE
+#define AA_MAY_DELETE		(1 << 5)
+#endif
+
+#ifndef AA_MAY_OPEN
+#define AA_MAY_OPEN		(1 << 6)
+#endif
+
+#ifndef AA_MAY_RENAME
+#define AA_MAY_RENAME		(1 << 7)
+#endif
+
+#ifndef AA_MAY_SETATTR
+#define AA_MAY_SETATTR		(1 << 8)
+#endif
+
+#ifndef AA_MAY_GETATTR
+#define AA_MAY_GETATTR		(1 << 9)
+#endif
+
+#ifndef AA_MAY_SETCRED
+#define AA_MAY_SETCRED		(1 << 10)
+#endif
+
+#ifndef AA_MAY_GETCRED
+#define AA_MAY_GETCRED		(1 << 11)
+#endif
+
+#ifndef AA_MAY_CHMOD
+#define AA_MAY_CHMOD		(1 << 12)
+#endif
+
+#ifndef AA_MAY_CHOWN
+#define AA_MAY_CHOWN		(1 << 13)
 #endif
 
 #ifndef AA_MAY_LOCK
-#define AA_MAY_LOCK		(1 << 5)
+#define AA_MAY_LOCK		0x8000
 #endif
 
 #ifndef AA_EXEC_MMAP
-#define AA_EXEC_MMAP		(1 << 6)
+#define AA_EXEC_MMAP		0x10000
 #endif
 
-#ifndef AA_EXEC_PUX
-#define AA_EXEC_PUX		(1 << 7)
+#ifndef AA_MAY_LINK
+#define AA_MAY_LINK		0x40000
 #endif
 
-#ifndef AA_EXEC_UNSAFE
-#define AA_EXEC_UNSAFE		(1 << 8)
+#ifndef AA_LINK_SUBSET		/* overlayed perm in pair */
+#define AA_LINK_SUBSET		AA_MAY_LOCK
 #endif
 
-#ifndef AA_EXEC_INHERIT
-#define AA_EXEC_INHERIT		(1 << 9)
+#ifndef AA_MAY_ONEXEC
+#define AA_MAY_ONEXEC		0x20000000
+#endif
+
+#ifndef AA_MAY_CHANGE_PROFILE
+#define AA_MAY_CHANGE_PROFILE	0x40000000
 #endif
 
 static char *progname = NULL;
@@ -148,18 +188,26 @@ static int parse_file_perms(uint32_t *mask, char *perms)
 			*mask |= AA_MAY_READ;
 		else if (!strcmp(perm, "append"))
 			*mask |= AA_MAY_APPEND;
+		else if (!strcmp(perm, "create"))
+			*mask |= AA_MAY_CREATE;
+		else if (!strcmp(perm, "delete"))
+			*mask |= AA_MAY_DELETE;
+		else if (!strcmp(perm, "setattr"))
+			*mask |= AA_MAY_SETATTR;
+		else if (!strcmp(perm, "getattr"))
+			*mask |= AA_MAY_GETATTR;
+		else if (!strcmp(perm, "chmod"))
+			*mask |= AA_MAY_CHMOD;
+		else if (!strcmp(perm, "chown"))
+			*mask |= AA_MAY_CHOWN;
 		else if (!strcmp(perm, "link"))
 			*mask |= AA_MAY_LINK;
 		else if (!strcmp(perm, "lock"))
 			*mask |= AA_MAY_LOCK;
+		else if (!strcmp(perm, "linksubset"))
+			*mask |= AA_LINK_SUBSET;
 		else if (!strcmp(perm, "exec_mmap"))
 			*mask |= AA_EXEC_MMAP;
-		else if (!strcmp(perm, "exec_pux"))
-			*mask |= AA_EXEC_PUX;
-		else if (!strcmp(perm, "exec_unsafe"))
-			*mask |= AA_EXEC_UNSAFE;
-		else if (!strcmp(perm, "exec_inherit"))
-			*mask |= AA_EXEC_INHERIT;
 		else {
 			fprintf(stderr, "FAIL: unknown perm: %s\n", perm);
 			return 1;
@@ -264,8 +312,8 @@ int main(int argc, char **argv)
 	    (allowed == should_allow && audited == should_audit)) {
 		printf("PASS\n");
 	} else {
-		fprintf(stderr, "FAIL: the access should %sbe allowed and should %sbe audited\n",
-			allowed ? "" : "not ", audited ? "" : "not ");
+		fprintf(stderr, "FAIL: the access should %sbe allowed and should %sbe audited. mask 0x%x\n",
+			allowed ? "" : "not ", audited ? "" : "not ", mask);
 		exit(1);
 	}
 
