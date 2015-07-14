@@ -40,9 +40,15 @@ int interp_status(int status)
 #  if defined(__x86_64__) || defined(__i386__)
 #    define ARCH_REGS_STRUCT struct user_regs_struct
 #  elif defined(__aarch64__)
-#    define ARCH_REGS_STRUCT struct user_pt_regs
+#    if (__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 20))
+#      define ARCH_REGS_STRUCT struct user_regs_struct
+#    else
+#      define ARCH_REGS_STRUCT struct user_pt_regs
+#    endif
 #  elif defined(__arm__) || defined(__powerpc__) || defined(__powerpc64__)
 #    define ARCH_REGS_STRUCT struct pt_regs
+#  else
+#    error "Need to define ARCH_REGS_STRUCT for this architecture"
 #  endif
 
 int read_ptrace_registers(pid_t pid)
