@@ -1464,7 +1464,8 @@ def handle_children(profile, hat, root):
                                 ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
                             if ynans == 'y':
                                 hat = exec_target
-                                # XXX do we need to init the profile here?
+                                if not aa[profile].get(hat, False):
+                                    aa[profile][hat] = profile_storage()
                                 aa[profile][hat]['profile'] = True
 
                                 if profile != hat:
