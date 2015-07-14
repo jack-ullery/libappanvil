@@ -15,37 +15,38 @@
 
 #include "changehat.h"
 
-/* actual mapping does not match kernel, just needed for bit manging */
-#define AA_MAY_EXEC			0x001
-#define AA_MAY_WRITE			0x002
-#define AA_MAY_READ			0x004
-#define AA_MAY_APPEND			0x008
+/* Create all possible link + other permission combinations
+ * actual mapping does NOT match kernel, just needed for bit mangling */
+#define TEST_MAY_EXEC			0x001
+#define TEST_MAY_WRITE			0x002
+#define TEST_MAY_READ			0x004
+#define TEST_MAY_APPEND			0x008
 
-#define AA_MAY_LINK			0x0010
-#define AA_MAY_LOCK			0x0020
-#define AA_MAY_MOUNT			0x0040
-#define AA_EXEC_MMAP			0x0080
+#define TEST_MAY_LINK			0x0010
+#define TEST_MAY_LOCK			0x0020
+#define TEST_MAY_MOUNT			0x0040
+#define TEST_EXEC_MMAP			0x0080
 
-#define AA_EXEC_UNSAFE			0x0100
-#define AA_EXEC_INHERIT			0x0200
+#define TEST_EXEC_UNSAFE			0x0100
+#define TEST_EXEC_INHERIT			0x0200
 
-#define AA_EXEC_MOD_0			0x0400
-#define AA_EXEC_MOD_1			0x0800
-#define AA_EXEC_MOD_2			0x1000
-#define AA_EXEC_MOD_3			0x2000
+#define TEST_EXEC_MOD_0			0x0400
+#define TEST_EXEC_MOD_1			0x0800
+#define TEST_EXEC_MOD_2			0x1000
+#define TEST_EXEC_MOD_3			0x2000
 
-#define AA_EXEC_MODIFIERS		(AA_EXEC_MOD_0 | AA_EXEC_MOD_1 | \
-					 AA_EXEC_MOD_2 | AA_EXEC_MOD_3)
+#define TEST_EXEC_MODIFIERS		(TEST_EXEC_MOD_0 | TEST_EXEC_MOD_1 | \
+					 TEST_EXEC_MOD_2 | TEST_EXEC_MOD_3)
 
 
-#define AA_EXEC_TYPE (AA_MAY_EXEC | AA_EXEC_UNSAFE | AA_EXEC_INHERIT | \
-		      AA_EXEC_MODIFIERS)
+#define TEST_EXEC_TYPE (TEST_MAY_EXEC | TEST_EXEC_UNSAFE | TEST_EXEC_INHERIT | \
+		      TEST_EXEC_MODIFIERS)
 
-#define AA_EXEC_UNCONFINED AA_EXEC_MOD_0
-#define AA_EXEC_PROFILE    AA_EXEC_MOD_1
-#define AA_EXEC_LOCAL     (AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
+#define TEST_EXEC_UNCONFINED TEST_EXEC_MOD_0
+#define TEST_EXEC_PROFILE    TEST_EXEC_MOD_1
+#define TEST_EXEC_LOCAL     (TEST_EXEC_MOD_0 | TEST_EXEC_MOD_1)
 
-#define MAX_PERM (AA_EXEC_MOD_2)
+#define MAX_PERM (TEST_EXEC_MOD_2)
 #define MAX_PERM_LEN 10
 
 
@@ -57,38 +58,38 @@
 int valid_link_perm_subset(int tperm, int lperm)
 {
 	/* link must always have link bit set */
-	if (!(lperm & AA_MAY_LINK))
+	if (!(lperm & TEST_MAY_LINK))
 		return 0;
 
-	lperm = lperm & ~AA_MAY_LINK;
+	lperm = lperm & ~TEST_MAY_LINK;
 
 	/* an empty permission set is always a subset of target */
 	if (!lperm)
 		return 1;
 
 	/* ix implies mix */
-	if (lperm & AA_EXEC_INHERIT)
-		lperm |= AA_EXEC_MMAP;
-	if (tperm & AA_EXEC_INHERIT)
-		tperm |= AA_EXEC_MMAP;
+	if (lperm & TEST_EXEC_INHERIT)
+		lperm |= TEST_EXEC_MMAP;
+	if (tperm & TEST_EXEC_INHERIT)
+		tperm |= TEST_EXEC_MMAP;
 
 	/* w implies a */
-	if (lperm & AA_MAY_WRITE)
-		lperm |= AA_MAY_APPEND;
-	if (tperm & AA_MAY_WRITE)
-		tperm |= AA_MAY_APPEND;
+	if (lperm & TEST_MAY_WRITE)
+		lperm |= TEST_MAY_APPEND;
+	if (tperm & TEST_MAY_WRITE)
+		tperm |= TEST_MAY_APPEND;
 
 	/* currently no such thing as a safe ix - probably should be
 	 * depending on how the rule is written */
-//	if ((tperm & AA_EXEC_MODIFIERS) == AA_EXEC_INHERIT && !(tperm & AA_EXEC_UNSAFE))
-//		tperm |= AA_EXEC_UNSAFE;
+//	if ((tperm & TEST_EXEC_MODIFIERS) == TEST_EXEC_INHERIT && !(tperm & TEST_EXEC_UNSAFE))
+//		tperm |= TEST_EXEC_UNSAFE;
 
 	/* treat safe exec as subset of unsafe exec */
-	if (!(lperm & AA_EXEC_UNSAFE))
-		lperm |= AA_EXEC_UNSAFE & tperm;
+	if (!(lperm & TEST_EXEC_UNSAFE))
+		lperm |= TEST_EXEC_UNSAFE & tperm;
 
 	/* check that exec mode, if present, matches */
-	if ((lperm & AA_MAY_EXEC) && ((lperm & AA_EXEC_TYPE) != (tperm & AA_EXEC_TYPE)))
+	if ((lperm & TEST_MAY_EXEC) && ((lperm & TEST_EXEC_TYPE) != (tperm & TEST_EXEC_TYPE)))
 		return 0;
 
 	return !(lperm & ~tperm);
@@ -98,51 +99,51 @@ void permstring(char *buffer, int mask)
 {
 	char *b = buffer;
 
-	if (mask & AA_EXEC_MMAP)
+	if (mask & TEST_EXEC_MMAP)
 		*b++ = 'm';
-	if (mask & AA_MAY_READ)
+	if (mask & TEST_MAY_READ)
 		*b++ = 'r';
-	if (mask & AA_MAY_WRITE)
+	if (mask & TEST_MAY_WRITE)
 		*b++ = 'w';
-	else if (mask & AA_MAY_APPEND)
+	else if (mask & TEST_MAY_APPEND)
 		*b++ = 'a';
-	if (mask & AA_MAY_EXEC) {
-		if (mask & AA_EXEC_UNSAFE) {
-			switch(mask & AA_EXEC_MODIFIERS) {
-			case AA_EXEC_UNCONFINED:
+	if (mask & TEST_MAY_EXEC) {
+		if (mask & TEST_EXEC_UNSAFE) {
+			switch(mask & TEST_EXEC_MODIFIERS) {
+			case TEST_EXEC_UNCONFINED:
 				*b++ = 'u';
 				break;
-			case AA_EXEC_PROFILE:
+			case TEST_EXEC_PROFILE:
 				*b++ = 'p';
 				break;
-			case AA_EXEC_LOCAL:
+			case TEST_EXEC_LOCAL:
 				*b++ = 'c';
 				break;
 			default:
 				*b++ = 'y';
 			}
 		} else {
-			switch(mask & AA_EXEC_MODIFIERS) {
-			case AA_EXEC_UNCONFINED:
+			switch(mask & TEST_EXEC_MODIFIERS) {
+			case TEST_EXEC_UNCONFINED:
 				*b++ = 'U';
 				break;
-			case AA_EXEC_PROFILE:
+			case TEST_EXEC_PROFILE:
 				*b++ = 'P';
 				break;
-			case AA_EXEC_LOCAL:
+			case TEST_EXEC_LOCAL:
 				*b++ = 'C';
 				break;
 			default:
 				*b++ = 'Y';
 			}
 		}
-		if (mask & AA_EXEC_INHERIT)
+		if (mask & TEST_EXEC_INHERIT)
 			*b++ = 'i';
 		*b++ = 'x';
 	}
-	if (mask & AA_MAY_LINK)
+	if (mask & TEST_MAY_LINK)
 		*b++ = 'l';
-	if (mask & AA_MAY_LOCK)
+	if (mask & TEST_MAY_LOCK)
 		*b++ = 'k';
 	*b++ = '\0';
 }
@@ -156,30 +157,30 @@ void build_filename(const char *name, int perm, char *buffer)
 }
 
 int is_valid_perm_set(int perm) {
-	if (AA_EXEC_TYPE & perm) {
+	if (TEST_EXEC_TYPE & perm) {
 		/* exec mods need the perm bit set */
-		if (!(perm & AA_MAY_EXEC))
+		if (!(perm & TEST_MAY_EXEC))
 			return 0;
 
 		/* unconfined can't inherit */
-		if (((perm & AA_EXEC_MODIFIERS) == AA_EXEC_UNCONFINED) &&
-		    (perm & AA_EXEC_INHERIT))
+		if (((perm & TEST_EXEC_MODIFIERS) == TEST_EXEC_UNCONFINED) &&
+		    (perm & TEST_EXEC_INHERIT))
 			return 0;
 
 		/* no such thing as an unsafe ix */
-		if ((perm & AA_EXEC_MODIFIERS) == 0 && (perm & AA_EXEC_INHERIT) && (perm & AA_EXEC_UNSAFE))
+		if ((perm & TEST_EXEC_MODIFIERS) == 0 && (perm & TEST_EXEC_INHERIT) && (perm & TEST_EXEC_UNSAFE))
 			return 0;
 
 		/* check exec_modifiers in range */
-		if (!((perm & AA_EXEC_MODIFIERS) > 0 && (perm & AA_EXEC_MODIFIERS) < AA_EXEC_MOD_2))
+		if (!((perm & TEST_EXEC_MODIFIERS) > 0 && (perm & TEST_EXEC_MODIFIERS) < TEST_EXEC_MOD_2))
 			return 0;
 	}
 	/* only 1 of append or write should be set */
-	if ((perm & AA_MAY_WRITE) && (perm & AA_MAY_APPEND))
+	if ((perm & TEST_MAY_WRITE) && (perm & TEST_MAY_APPEND))
 		return 0;
 
 	/* not using mount yet, how should mount perms affect link? */
-	if (perm & AA_MAY_MOUNT)
+	if (perm & TEST_MAY_MOUNT)
 		return 0;
 
 	return 1;
