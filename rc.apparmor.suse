@@ -94,12 +94,13 @@ aa_log_skipped_msg() {
 	echo -e	"$rc_skipped"
 }
 
+_set_status() {
+	return $1
+}
+
 aa_log_end_msg() {
-	v="-v"
-	if [ "$1" != '0' ]; then
-		rc="-v$1"
-	fi
-	rc_status $v
+	_set_status $1
+	rc_status -v
 }
 
 usage() {
