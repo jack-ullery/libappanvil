@@ -45,7 +45,7 @@
 
   /var/lib/misc/dnsmasq.leases rw, # Required only for DHCP server usage
 
-  /bin/bash ix, # Required to execute --dhcp-script argument
+  /bin/{b,d}ash ix, # Required to execute --dhcp-script argument
 
   # access to iface mtu needed for Router Advertisement messages in IPv6
   # Neighbor Discovery protocol (RFC 2461)
