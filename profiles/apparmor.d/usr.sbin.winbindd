@@ -15,7 +15,7 @@
   /etc/samba/secrets.tdb rwk,
   /etc/samba/smbd.tmp/ rw,
   /etc/samba/smbd.tmp/msg/ rw,
-  /etc/samba/smbd.tmp/msg/* rw,
+  /etc/samba/smbd.tmp/msg/* rwk,
   @{PROC}/sys/kernel/core_pattern r,
   /tmp/.winbindd/ w,
   /tmp/krb5cc_* rwk,
