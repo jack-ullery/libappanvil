@@ -2512,6 +2512,13 @@ def attach_profile_data(profiles, profile_data):
     # Make deep copy of data to avoid changes to
     # arising due to mutables
     for p in profile_data.keys():
+        if profiles.get(p, False):
+            for hat in profile_data[p].keys():
+                if profiles[p].get(hat, False):
+                    raise AppArmorException(_("Conflicting profiles for %s defined in two files:\n- %s\n- %s") %
+                            # 'filename' is not set for hats, therefore print the filename of the main profile
+                            (combine_name(p, hat), profiles[p][p]['filename'], profile_data[p][p]['filename']))
+
         profiles[p] = deepcopy(profile_data[p])
 
 
