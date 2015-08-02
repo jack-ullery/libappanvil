@@ -150,8 +150,8 @@ def fatal_error(message):
     # Get the traceback to the message
     tb_stack = traceback.format_list(traceback.extract_stack())
     tb_stack = ''.join(tb_stack)
-    # Append the traceback to message
-    message = message + '\n' + tb_stack
+    # Add the traceback to message
+    message = tb_stack + '\n\n' + message
     debug_logger.error(message)
     caller = inspect.stack()[1][3]
 
@@ -257,8 +257,8 @@ def name_to_prof_filename(prof_filename):
             prof_filename = get_profile_filename(bin_path)
             if os.path.isfile(prof_filename):
                 return (prof_filename, bin_path)
-            else:
-                return None, None
+
+    return None, None
 
 def complain(path):
     """Sets the profile to complain mode if it exists"""
