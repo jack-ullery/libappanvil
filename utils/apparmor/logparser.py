@@ -180,22 +180,34 @@ class ReadLog:
         #print("log",self.log)
 
     def add_event_to_tree(self, e):
-        aamode = e.get('aamode', 'UNKNOWN')
-        if e.get('type', False):
-            if re.search('(UNKNOWN\[1501\]|APPARMOR_AUDIT|1501)', e['type']):
+        e = self.parse_event_for_tree(e)
+        if e is not None:
+            (pid, parent, mode, details) = e
+            self.add_to_tree(pid, parent, mode, details)
+
+    def map_log_type(self, log_type):
+            if re.search('(UNKNOWN\[1501\]|APPARMOR_AUDIT|1501)', log_type):
                 aamode = 'AUDIT'
-            elif re.search('(UNKNOWN\[1502\]|APPARMOR_ALLOWED|1502)', e['type']):
+            elif re.search('(UNKNOWN\[1502\]|APPARMOR_ALLOWED|1502)', log_type):
                 aamode = 'PERMITTING'
-            elif re.search('(UNKNOWN\[1503\]|APPARMOR_DENIED|1503)', e['type']):
+            elif re.search('(UNKNOWN\[1503\]|APPARMOR_DENIED|1503)', log_type):
                 aamode = 'REJECTING'
-            elif re.search('(UNKNOWN\[1504\]|APPARMOR_HINT|1504)', e['type']):
+            elif re.search('(UNKNOWN\[1504\]|APPARMOR_HINT|1504)', log_type):
                 aamode = 'HINT'
-            elif re.search('(UNKNOWN\[1505\]|APPARMOR_STATUS|1505)', e['type']):
+            elif re.search('(UNKNOWN\[1505\]|APPARMOR_STATUS|1505)', log_type):
                 aamode = 'STATUS'
-            elif re.search('(UNKNOWN\[1506\]|APPARMOR_ERROR|1506)', e['type']):
+            elif re.search('(UNKNOWN\[1506\]|APPARMOR_ERROR|1506)', log_type):
                 aamode = 'ERROR'
             else:
                 aamode = 'UNKNOWN'
+
+            return aamode
+
+    def parse_event_for_tree(self, e):
+        aamode = e.get('aamode', 'UNKNOWN')
+
+        if e.get('type', False):
+            aamode = self.map_log_type(e['type'])
 
         if aamode in ['UNKNOWN', 'AUDIT', 'STATUS', 'ERROR']:
             return None
@@ -240,13 +252,13 @@ class ReadLog:
             e['request_mask'], e['name2'] = log_str_to_mode(e['profile'], e['request_mask'], e['name2'])
 
             if e.get('info', False) and e['info'] == 'mandatory profile missing':
-                self.add_to_tree(e['pid'], e['parent'], 'exec',
+                return(e['pid'], e['parent'], 'exec',
                                  [profile, hat, aamode, 'PERMITTING', e['denied_mask'], e['name'], e['name2']])
             elif (e.get('name2', False) and '//null-' in e['name2']) or e.get('name', False):
-                self.add_to_tree(e['pid'], e['parent'], 'exec',
+                return(e['pid'], e['parent'], 'exec',
                                  [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
             else:
-                self.debug_logger.debug('add_event_to_tree: dropped exec event in %s' % e['profile'])
+                self.debug_logger.debug('parse_event_for_tree: dropped exec event in %s' % e['profile'])
 
         elif ( e['operation'].startswith('file_') or e['operation'].startswith('inode_') or
             e['operation'] in ['open', 'truncate', 'mkdir', 'mknod', 'chmod', 'rename_src',
@@ -286,14 +298,14 @@ class ReadLog:
                         self.throw_away_next_log_entry()
 
             if is_domain_change:
-                self.add_to_tree(e['pid'], e['parent'], 'exec',
+                return(e['pid'], e['parent'], 'exec',
                                  [profile, hat, prog, aamode, e['denied_mask'], e['name'], e['name2']])
             else:
-                self.add_to_tree(e['pid'], e['parent'], 'path',
+                return(e['pid'], e['parent'], 'path',
                                  [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
 
         elif e['operation'] == 'capable':
-            self.add_to_tree(e['pid'], e['parent'], 'capability',
+            return(e['pid'], e['parent'], 'capability',
                              [profile, hat, prog, aamode, e['name'], ''])
 
         elif e['operation'] == 'clone':
@@ -317,10 +329,10 @@ class ReadLog:
 #             self.pid[child] = arrayref
 
         elif self.op_type(e['operation']) == 'net':
-            self.add_to_tree(e['pid'], e['parent'], 'netdomain',
+            return(e['pid'], e['parent'], 'netdomain',
                              [profile, hat, prog, aamode, e['family'], e['sock_type'], e['protocol']])
         elif e['operation'] == 'change_hat':
-            self.add_to_tree(e['pid'], e['parent'], 'unknown_hat',
+            return(e['pid'], e['parent'], 'unknown_hat',
                              [profile, hat, aamode, hat])
         else:
             self.debug_logger.debug('UNHANDLED: %s' % e)
