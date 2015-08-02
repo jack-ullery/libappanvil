@@ -66,9 +66,9 @@ RE_HAS_COMMENT_SPLIT = re.compile('^(?P<not_comment>' + __re_no_or_quoted_hash +
 RE_PROFILE_START          = re.compile(
     '^(?P<leadingspace>\s*)' +
     '(' +
-        RE_PROFILE_PATH % 'plainprofile' + # just a path
+        RE_PROFILE_PATH_OR_VAR % 'plainprofile' + # just a path
         '|' + # or
-        '(' + 'profile' + '\s+' + RE_PROFILE_NAME % 'namedprofile' + '(\s+' + RE_PROFILE_PATH % 'attachment' + ')?' + ')' + # 'profile', profile name, optionally attachment
+        '(' + 'profile' + '\s+' + RE_PROFILE_NAME % 'namedprofile' + '(\s+' + RE_PROFILE_PATH_OR_VAR % 'attachment' + ')?' + ')' + # 'profile', profile name, optionally attachment
     ')' +
     '\s+((flags\s*=\s*)?\((?P<flags>.+)\)\s*)?\{' +
     RE_EOL)

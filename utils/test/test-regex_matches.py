@@ -418,6 +418,11 @@ class AANamedRegexProfileStart_2(AANamedRegexTest):
         ('   /foo flags=(complain) {',    { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': 'complain', 'comment': None }),
         ('   /foo (complain) { # x',      { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': 'complain', 'comment': '# x'}),
         ('   /foo flags = ( complain ){#',{ 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': ' complain ', 'comment': '#'}),
+        ('  @{foo} {',                    { 'plainprofile': '@{foo}',  'namedprofile': None,          'attachment': None,     'flags': None,       'comment': None }),
+        ('  profile @{foo} {',            { 'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': None,     'flags': None,       'comment': None }),
+        ('  profile @{foo} /bar {',       { 'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': '/bar',   'flags': None,       'comment': None }),
+        ('  profile foo @{bar} {',        { 'plainprofile': None,      'namedprofile': 'foo',         'attachment': '@{bar}', 'flags': None,       'comment': None }),
+        ('  profile @{foo} @{bar} {',     { 'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': '@{bar}', 'flags': None,       'comment': None }),
 
         ('   /foo {',                     { 'plainprofile': '/foo',     'namedprofile': None,   'leadingspace': '   ' }),
         ('/foo {',                        { 'plainprofile': '/foo',     'namedprofile': None,   'leadingspace': ''    }),
@@ -445,6 +450,11 @@ class Test_parse_profile_start_line(AATest):
         ('/foo {',                        { 'profile': '/foo',    'plainprofile': '/foo', 'namedprofile': None,  'leadingspace': None  }),
         ('   profile foo {',              { 'profile': 'foo',     'plainprofile': None,   'namedprofile': 'foo', 'leadingspace': '   ' }),
         ('profile foo {',                 { 'profile': 'foo',     'plainprofile': None,   'namedprofile': 'foo', 'leadingspace': None  }),
+        ('  @{foo} {',                    { 'profile': '@{foo}',  'plainprofile': '@{foo}',  'namedprofile': None,          'attachment': None,     'flags': None,       'comment': None }),
+        ('  profile @{foo} {',            { 'profile': '@{foo}',  'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': None,     'flags': None,       'comment': None }),
+        ('  profile @{foo} /bar {',       { 'profile': '@{foo}',  'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': '/bar',   'flags': None,       'comment': None }),
+        ('  profile foo @{bar} {',        { 'profile': 'foo',     'plainprofile': None,      'namedprofile': 'foo',         'attachment': '@{bar}', 'flags': None,       'comment': None }),
+        ('  profile @{foo} @{bar} {',     { 'profile': '@{foo}',  'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': '@{bar}', 'flags': None,       'comment': None }),
     ]
 
     def _run_test(self, line, expected):
