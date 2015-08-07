@@ -7,14 +7,14 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2015-05-24 07:27+0000\n"
-"Last-Translator: Mister Q <misterq@misterqmusic.com>\n"
+"PO-Revision-Date: 2015-08-06 12:58+0000\n"
+"Last-Translator: Tobias Bannert <Unknown>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2015-05-25 05:09+0000\n"
-"X-Generator: Launchpad (build 17514)\n"
+"X-Launchpad-Export-Date: 2015-08-07 05:13+0000\n"
+"X-Generator: Launchpad (build 17656)\n"
 "Language: de\n"
 
 #: ../aa-genprof:56
@@ -152,11 +152,11 @@ msgstr "Ihr Profil"
 
 #: ../aa-mergeprof:32
 msgid "base profile"
-msgstr ""
+msgstr "Grundprofil"
 
 #: ../aa-mergeprof:33
 msgid "other profile"
-msgstr ""
+msgstr "anderes Profil"
 
 #: ../aa-mergeprof:67 ../apparmor/aa.py:2345
 msgid ""
@@ -591,7 +591,7 @@ msgstr ""
 
 #: ../apparmor/aa.py:2324
 msgid "Local profile changes"
-msgstr ""
+msgstr "Lokale Profiländerungen"
 
 #: ../apparmor/aa.py:2418
 msgid "Profile Changes"
@@ -817,7 +817,7 @@ msgstr ""
 
 #: ../apparmor/aa.py:3778
 msgid "Can't find existing profile to modify"
-msgstr ""
+msgstr "Vorhandenes Profil kann nicht zum Verändern gefunden werden"
 
 #: ../apparmor/aa.py:4347
 #, python-format
