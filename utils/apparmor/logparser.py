@@ -42,6 +42,7 @@ class ReadLog:
                        'getpeername': 'net',
                        'getsockopt': 'net',
                        'setsockopt': 'net',
+                       'socket_create': 'net',
                        'sock_shutdown': 'net'
                        }
 
