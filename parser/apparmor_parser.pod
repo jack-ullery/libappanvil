@@ -280,7 +280,7 @@ Use --help=dump to see a full list of which dump flags are supported
 
 =item -O n, --optimize=n
 
-Set the optimization flags used by policy compilation.  A sinlge optimization
+Set the optimization flags used by policy compilation.  A single optimization
 flag can be toggled per -O option, but the optimize flag can be passed
 multiple times.  Turning off some phases of the optimization can make
 it so that policy can't complete compilation due to size constraints
