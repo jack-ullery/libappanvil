@@ -48,6 +48,8 @@ class AANoCleanupMetaClass(type):
         def new_unittest_func(self):
             try:
                 return unittest_func(self)
+            except unittest.SkipTest:
+                raise
             except Exception:
                 self.do_cleanup = False
                 raise
