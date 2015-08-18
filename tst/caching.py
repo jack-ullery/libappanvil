@@ -56,11 +56,6 @@ class AAParserCachingCommon(testlib.AATestTemplate):
         # REPORT ALL THE OUTPUT
         self.maxDiff = None
 
-        # skip all the things if apparmor securityfs isn't mounted
-        if not os.path.exists("/sys/kernel/security/apparmor"):
-            raise unittest.SkipTest("WARNING: /sys/kernel/security/apparmor does not exist. "
-                                    "Skipping tests")
-
         self.tmp_dir = tempfile.mkdtemp(prefix='aa-caching-')
         os.chmod(self.tmp_dir, 0o755)
 
@@ -81,6 +76,9 @@ class AAParserCachingCommon(testlib.AATestTemplate):
 
         self.cmd_prefix = [config.parser, '--base', self.tmp_dir, '--skip-kernel-load']
 
+        if not self.is_apparmorfs_mounted():
+            self.cmd_prefix += ['-M', './features_files/features.all']
+
     def tearDown(self):
         '''teardown for each test'''
 
@@ -98,7 +96,17 @@ class AAParserCachingCommon(testlib.AATestTemplate):
             self.assertFalse(os.path.exists(path),
                              'test created file %s, when it was not expected to do so' % path)
 
+    def is_apparmorfs_mounted(self):
+        return os.path.exists("/sys/kernel/security/apparmor")
+
+    def require_apparmorfs(self):
+        # skip the test if apparmor securityfs isn't mounted
+        if not self.is_apparmorfs_mounted():
+            raise unittest.SkipTest("WARNING: /sys/kernel/security/apparmor does not exist. Skipping test.")
+
     def compare_features_file(self, features_path, expected=True):
+        # tests that need this function should call require_apparmorfs() early
+
         # compare features contents
         expected_output = testlib.read_features_dir('/sys/kernel/security/apparmor/features')
         with open(features_path) as f:
@@ -151,6 +159,8 @@ class AAParserBasicCachingTests(AAParserCachingCommon):
 
     def test_features_match_when_caching(self):
         '''test features file is written when caching'''
+
+        self.require_apparmorfs()
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-q', '--write-cache', '-r', self.profile])
@@ -268,6 +278,8 @@ class AAParserCachingTests(AAParserCachingCommon):
     def test_cache_writing_does_not_overwrite_features_when_features_differ(self):
         '''test cache writing does not overwrite the features files when it differs and --skip-bad-cache is given'''
 
+        self.require_apparmorfs()
+
         features_file = testlib.write_file(self.cache_dir, '.features', 'monkey\n')
 
         cmd = list(self.cmd_prefix)
@@ -289,6 +301,8 @@ class AAParserCachingTests(AAParserCachingCommon):
 
     def test_cache_writing_updates_features(self):
         '''test cache writing updates features'''
+
+        self.require_apparmorfs()
 
         features_file = testlib.write_file(self.cache_dir, '.features', 'monkey\n')
 
