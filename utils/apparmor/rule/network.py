@@ -27,7 +27,7 @@ _ = init_translation()
 network_domain_keywords   = [ 'unix', 'inet', 'ax25', 'ipx', 'appletalk', 'netrom', 'bridge', 'atmpvc', 'x25', 'inet6',
                               'rose', 'netbeui', 'security', 'key', 'netlink', 'packet', 'ash', 'econet', 'atmsvc', 'rds', 'sna',
                               'irda', 'pppox', 'wanpipe', 'llc', 'can', 'tipc', 'bluetooth', 'iucv', 'rxrpc', 'isdn', 'phonet',
-                              'ieee802154', 'caif', 'alg', 'nfc', 'vsock' ]
+                              'ieee802154', 'caif', 'alg', 'nfc', 'vsock', 'mpls', 'ib' ]
 
 network_type_keywords     = ['stream', 'dgram', 'seqpacket', 'rdm', 'raw', 'packet']
 network_protocol_keywords = ['tcp', 'udp', 'icmp']
