@@ -17,6 +17,7 @@
 
 from argparse import ArgumentParser
 import os
+import platform
 import shutil
 import time
 import tempfile
@@ -232,10 +233,24 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.run_cmd_check(cmd)
         self.assert_path_exists(self.cache_file)
 
+    def _assertTimeStampEquals(self, time1, time2):
+        '''Compare two timestamps to ensure equality'''
+
+        # python 3.2 and earlier don't support writing timestamps with
+        # nanosecond resolution, only microsecond. When comparing
+        # timestamps in such an environment, loosen the equality bounds
+        # to compensate
+        # Reference: https://bugs.python.org/issue12904
+        (major, minor, _) = platform.python_version_tuple()
+        if (int(major) < 3) or ((int(major) == 3) and (int(minor) <= 2)):
+            self.assertAlmostEquals(time1, time2, places=5)
+        else:
+            self.assertEquals(time1, time2)
+
     def _set_mtime(self, path, mtime):
         atime = os.stat(path).st_atime
         os.utime(path, (atime, mtime))
-        self.assertEquals(os.stat(path).st_mtime, mtime)
+        self._assertTimeStampEquals(os.stat(path).st_mtime, mtime)
 
     def test_cache_loaded_when_exists(self):
         '''test cache is loaded when it exists, is newer than profile,  and features match'''
@@ -414,7 +429,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         stat = os.stat(self.cache_file)
         self.assertNotEquals(orig_stat.st_ino, stat.st_ino)
-        self.assertEquals(profile_mtime, stat.st_mtime)
+        self._assertTimeStampEquals(profile_mtime, stat.st_mtime)
 
     def test_abstraction_newer_rewrites_cache(self):
         '''test cache is rewritten if abstraction is newer'''
@@ -431,7 +446,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         stat = os.stat(self.cache_file)
         self.assertNotEquals(orig_stat.st_ino, stat.st_ino)
-        self.assertEquals(abstraction_mtime, stat.st_mtime)
+        self._assertTimeStampEquals(abstraction_mtime, stat.st_mtime)
 
     def test_parser_newer_uses_cache(self):
         '''test cache is not skipped if parser is newer'''
