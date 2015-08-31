@@ -992,6 +992,7 @@ int main(int argc, char *argv[])
 
 	if (ofile)
 		fclose(ofile);
+	aa_policy_cache_unref(policy_cache);
 
 	return last_error;
 }
