@@ -860,7 +860,7 @@ static void setup_flags(void)
 int main(int argc, char *argv[])
 {
 	aa_kernel_interface *kernel_interface = NULL;
-	aa_policy_cache *policy_cache;
+	aa_policy_cache *policy_cache = NULL;
 	int retval, last_error;
 	int i;
 	int optind;
