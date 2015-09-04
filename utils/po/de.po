@@ -7,14 +7,14 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2015-08-06 12:58+0000\n"
-"Last-Translator: Tobias Bannert <Unknown>\n"
+"PO-Revision-Date: 2015-09-03 23:03+0000\n"
+"Last-Translator: Daniel <launchlin@mailbox.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2015-08-07 05:13+0000\n"
-"X-Generator: Launchpad (build 17656)\n"
+"X-Launchpad-Export-Date: 2015-09-04 05:10+0000\n"
+"X-Generator: Launchpad (build 17706)\n"
 "Language: de\n"
 
 #: ../aa-genprof:56
@@ -75,6 +75,10 @@ msgid ""
 "wish to confine. See the following wiki page for\n"
 "more information:"
 msgstr ""
+"\n"
+"Bevor Sie beginnen, sollten Sie eventuell erst überprüfen ob nicht bereits "
+"ein Profil für das Programm besteht das Sie einschränken möchten. Besuchen "
+"Sie die folgende wiki Seite um mehr Informationen einzuholen:"
 
 #: ../aa-genprof:126
 msgid ""
@@ -127,11 +131,11 @@ msgstr ""
 
 #: ../aa-logprof:27
 msgid "mark in the log to start processing after"
-msgstr ""
+msgstr "Protokolldatei wird markiert zur späteren Bearbeitung"
 
 #: ../aa-cleanprof:23
 msgid "Cleanup the profiles for the given programs"
-msgstr ""
+msgstr "Profile der genannten Programme werden bereinigt"
 
 #: ../aa-cleanprof:25 ../aa-autodep:26 ../aa-audit:27 ../aa-complain:25
 #: ../aa-enforce:25 ../aa-disable:25
@@ -140,7 +144,7 @@ msgstr "Name des Programms"
 
 #: ../aa-cleanprof:26
 msgid "Silently overwrite with a clean profile"
-msgstr ""
+msgstr "Kommentarloses Überschreiben mit einem sauberen Profil"
 
 #: ../aa-mergeprof:29
 msgid "Perform a 2-way or 3-way merge on the given profiles"
@@ -182,7 +186,7 @@ msgstr "Datei beinhaltet"
 
 #: ../aa-mergeprof:183 ../aa-mergeprof:209
 msgid "Select the ones you wish to add"
-msgstr ""
+msgstr "Wählen Sie welche Sie hinzufügen möchten"
 
 #: ../aa-mergeprof:195 ../aa-mergeprof:222
 #, python-format
@@ -297,7 +301,7 @@ msgstr "Netzwerkzugriff %(family)s %(type)s wird dem Profil verweigert."
 
 #: ../aa-autodep:23
 msgid "Generate a basic AppArmor profile by guessing requirements"
-msgstr ""
+msgstr "Erstelle ein Basis AppArmor Profil nach erwarteten Anforderungen"
 
 #: ../aa-autodep:24
 msgid "overwrite existing profile"
@@ -313,7 +317,7 @@ msgstr "Audit-Modus entfernen"
 
 #: ../aa-audit:28
 msgid "Show full trace"
-msgstr ""
+msgstr "Zeige die komplette Spur"
 
 #: ../aa-complain:23
 msgid "Switch the given program to complain mode"
@@ -325,15 +329,15 @@ msgstr "Das angegebene Programm in den Erzwingen-Modus versetzen"
 
 #: ../aa-disable:23
 msgid "Disable the profile for the given programs"
-msgstr ""
+msgstr "Deaktiviere das Profil für die genannten Programme"
 
 #: ../aa-unconfined:28
 msgid "Lists unconfined processes having tcp or udp ports"
-msgstr ""
+msgstr "Zeige uneingeschränkte Prozesse mit tcp oder udp Ports"
 
 #: ../aa-unconfined:29
 msgid "scan all processes from /proc"
-msgstr ""
+msgstr "Durchsuche alle Prozesse von /proc"
 
 #: ../aa-unconfined:81
 #, python-format
@@ -430,6 +434,8 @@ msgid ""
 "WARNING: Error synchronizing profiles with the repository:\n"
 "%s\n"
 msgstr ""
+"Warnung: Fehler beim synchronisieren der Profile mit der Quelle:\n"
+"%s\n"
 
 #: ../apparmor/aa.py:744
 #, python-format
@@ -437,6 +443,8 @@ msgid ""
 "WARNING: Error synchronizing profiles with the repository\n"
 "%s"
 msgstr ""
+"Warnung: Fehler beim synchronisieren der Profile mit der Quelle:\n"
+"%s"
 
 #: ../apparmor/aa.py:832 ../apparmor/aa.py:883
 #, python-format
@@ -444,10 +452,12 @@ msgid ""
 "WARNING: An error occurred while uploading the profile %(profile)s\n"
 "%(ret)s"
 msgstr ""
+"Warnung: Ein Fehler ist aufgetreten beim Hochladen des Profils %(profile)s\n"
+"%(ret)s"
 
 #: ../apparmor/aa.py:833
 msgid "Uploaded changes to repository."
-msgstr ""
+msgstr "Hochgeladene Änderungen zur Quelle."
 
 #: ../apparmor/aa.py:865
 msgid "Changelog Entry: "
@@ -460,6 +470,10 @@ msgid ""
 "information is required to upload profiles to the repository.\n"
 "These changes could not be sent."
 msgstr ""
+"Quelle Fehler\n"
+"Registrieren oder Anmelden ist fehlgeschlagen. Benutzer Zugangsdaten\n"
+"sind erforderlich um die Profile in die Quelle zu laden.\n"
+"Diese Änderungen konnten nicht übertragen werden."
 
 #: ../apparmor/aa.py:995
 msgid "Default Hat"
