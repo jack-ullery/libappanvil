@@ -7,13 +7,13 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2015-09-03 23:03+0000\n"
+"PO-Revision-Date: 2015-09-04 21:47+0000\n"
 "Last-Translator: Daniel <launchlin@mailbox.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2015-09-04 05:10+0000\n"
+"X-Launchpad-Export-Date: 2015-09-05 05:10+0000\n"
 "X-Generator: Launchpad (build 17706)\n"
 "Language: de\n"
 
@@ -387,7 +387,7 @@ msgstr ""
 #: ../apparmor/aa.py:301
 #, python-format
 msgid "Could not create %(link)s symlink to %(filename)s."
-msgstr ""
+msgstr "Fehlgeschlafen %(link)s Systemlink zu %(filename)s."
 
 #: ../apparmor/aa.py:314
 #, python-format
@@ -400,6 +400,8 @@ msgid ""
 "Unable to fork: %(program)s\n"
 "\t%(error)s"
 msgstr ""
+"Außerstande abzuzweigen: %(program)s\n"
+"\t%(error)s"
 
 #: ../apparmor/aa.py:449 ../apparmor/ui.py:303
 msgid ""
@@ -412,11 +414,11 @@ msgstr "Alle Änderungen verworfen."
 
 #: ../apparmor/aa.py:464
 msgid "Connecting to repository..."
-msgstr ""
+msgstr "Verbinde mit der Quelle..."
 
 #: ../apparmor/aa.py:470
 msgid "WARNING: Error fetching profiles from the repository"
-msgstr ""
+msgstr "Warnung: Fehler beim holen der Profile von der Quelle..."
 
 #: ../apparmor/aa.py:550
 #, python-format
@@ -486,7 +488,7 @@ msgstr "Angeforderter Hat"
 #: ../apparmor/aa.py:1218
 #, python-format
 msgid "%s has transition name but not transition mode"
-msgstr ""
+msgstr "%s hat einen Übergangsname aber keinen Übergangsmodus"
 
 #: ../apparmor/aa.py:1232
 #, python-format
@@ -518,6 +520,12 @@ msgid ""
 "but some applications depend on the presence\n"
 "of LD_PRELOAD or LD_LIBRARY_PATH."
 msgstr ""
+"Soll AppArmor die Umgebung bereinigen wenn\n"
+"Profile gewechselt werden?\n"
+"\n"
+"Ein bereinigen der Umgebung ist sicherer,\n"
+"aber manche Anwendungen sind abhängig\n"
+"von LD_PRELOAD oder LD_LIBRARY_PATH."
 
 #: ../apparmor/aa.py:1310
 msgid ""
@@ -529,6 +537,13 @@ msgid ""
 "or LD_LIBRARY_PATH and sanitising the environment\n"
 "could cause functionality problems."
 msgstr ""
+"Soll AppArmor die Umgebung bereinigen wenn\n"
+"Profile gewechselt werden?\n"
+"\n"
+"Ein bereinigen der Umgebung ist sicherer,\n"
+"aber diese Anwendung scheint LD_PRELOAD\n"
+"oder LD_LIBRARY-PATH zu nutzen und ein bereinigen der Umgebung\n"
+"könnte die Funktionsfähigkeit beeinträchtigen."
 
 #: ../apparmor/aa.py:1318
 #, python-format
@@ -539,6 +554,11 @@ msgid ""
 "Are you absolutely certain you wish to remove all\n"
 "AppArmor protection when executing %s ?"
 msgstr ""
+"Das Starten von Prozessen mit uneingeschränktem Status ist sehr\n"
+"gefährlich und kann ernsthafte Sicherheitslöcher verursachen.\n"
+"\n"
+"Sind sie sich absolut sicher sämtlich Schutz durch\n"
+"AppArmor zu entfernen wenn sie %s ausführen ?"
 
 #: ../apparmor/aa.py:1320
 msgid ""
@@ -549,6 +569,12 @@ msgid ""
 "a program opens up significant security holes\n"
 "and should be avoided if at all possible."
 msgstr ""
+"Soll AppArmor die Umgebung bereinigen wenn\n"
+"dieses Programm uneingeschränkt ausgeführt wird?\n"
+"\n"
+"Ein nicht bereinigen der Umgebung öffnet bei uneingeschränkten\n"
+"Programmen siginifikante Sicherheitslöcher\n"
+"und sollte wenn möglich vermieden werden."
 
 #: ../apparmor/aa.py:1396 ../apparmor/aa.py:1414
 #, python-format
@@ -586,6 +612,11 @@ msgid ""
 "  Entered Path:  %(ans)s\n"
 "Do you really want to use this path?"
 msgstr ""
+"Der genannte Pfad passt nicht zu diesem Protokoll Eintrag:\n"
+"\n"
+"  Protokoll Eintrag: %(path)s\n"
+"  Eingetragener Pfad: %(ans)s\n"
+"Wollen Sie wirklich diesen Pfad benutzen?"
 
 #: ../apparmor/aa.py:2251
 #, python-format
@@ -602,6 +633,8 @@ msgid ""
 "Select which profile changes you would like to save to the\n"
 "local profile set."
 msgstr ""
+"Wählen Sie welche Profil Veränderungen Sie in den lokalen\n"
+"Profil Einstellungen speichern möchten."
 
 #: ../apparmor/aa.py:2324
 msgid "Local profile changes"
@@ -615,6 +648,7 @@ msgstr "Profiländerungen"
 #, python-format
 msgid "Can't find existing profile %s to compare changes."
 msgstr ""
+"Kann kein existierendes Profil finden %s um Änderungen zu vergleichen."
 
 #: ../apparmor/aa.py:2566 ../apparmor/aa.py:2581
 #, python-format
@@ -810,6 +844,7 @@ msgstr ""
 #, python-format
 msgid "Redefining existing variable %(variable)s: %(value)s in %(file)s"
 msgstr ""
+"Redefiniere existierende Variable %(variable)s: %(value)s in %(file)s"
 
 #: ../apparmor/aa.py:3282
 #, python-format
@@ -823,11 +858,13 @@ msgid ""
 "Unknown variable operation %(operation)s for variable %(variable)s in "
 "%(file)s"
 msgstr ""
+"Unbekannte variable Operation %(operation)s für Variable %(variable)s in "
+"%(file)s"
 
 #: ../apparmor/aa.py:3343
 #, python-format
 msgid "Invalid allow string: %(allow)s"
-msgstr ""
+msgstr "Unzulässig erlaubte Kette: %(allow)s"
 
 #: ../apparmor/aa.py:3778
 msgid "Can't find existing profile to modify"
@@ -853,6 +890,15 @@ msgid ""
 "the corresponding entry in the [qualifiers] section in "
 "/etc/apparmor/logprof.conf."
 msgstr ""
+"%s ist zurzeit markiert als ein Programm das nicht sein eigenes\n"
+"Profil haben sollte. Üblicherweise sind solche Programme so markiert da das "
+"erstellen eines Profils für \n"
+"sie den Rest des Systems zum Absturz bringen könnte. Wenn Sie wissen was "
+"Sie\n"
+"tun und sicher sind das Sie ein Profil für dieses Programm erstellen "
+"möchten, bearbeiten\n"
+"Sie den enstprechenden Eintrag im [qualifiers] Abschnitt in "
+"/etc/apparmor/logprof.conf."
 
 #: ../apparmor/logparser.py:127 ../apparmor/logparser.py:132
 #, python-format
@@ -886,7 +932,7 @@ msgstr ""
 #: ../apparmor/tools.py:175 ../apparmor/tools.py:193
 #, python-format
 msgid "Profile for %s not found, skipping"
-msgstr ""
+msgstr "Profil für %s nicht gefunden, übersprungen"
 
 #: ../apparmor/tools.py:140
 #, python-format
@@ -913,7 +959,7 @@ msgstr ""
 #: ../apparmor/tools.py:220
 #, python-format
 msgid "Profile for %s already exists - skipping."
-msgstr ""
+msgstr "Profil für %s exisitiert bereits - überspringen."
 
 #: ../apparmor/tools.py:232
 #, python-format
@@ -936,7 +982,7 @@ msgstr ""
 #: ../apparmor/tools.py:260
 #, python-format
 msgid "The profile for %s does not exists. Nothing to clean."
-msgstr ""
+msgstr "Das Profil für %s existiert nicht. Nichts zu bereinigen."
 
 #: ../apparmor/ui.py:61
 msgid "Invalid hotkey for"
@@ -952,11 +998,11 @@ msgstr "(N)ein"
 
 #: ../apparmor/ui.py:123
 msgid "(C)ancel"
-msgstr ""
+msgstr "(A)bbrechen"
 
 #: ../apparmor/ui.py:223
 msgid "(A)llow"
-msgstr ""
+msgstr "(E)rlauben"
 
 #: ../apparmor/ui.py:224
 msgid "(M)ore"
@@ -964,43 +1010,43 @@ msgstr "(M)ehr"
 
 #: ../apparmor/ui.py:225
 msgid "Audi(t)"
-msgstr ""
+msgstr "(P)rüfen"
 
 #: ../apparmor/ui.py:226
 msgid "Audi(t) off"
-msgstr ""
+msgstr "(Ü)berprüfung abgeschlossen"
 
 #: ../apparmor/ui.py:227
 msgid "Audit (A)ll"
-msgstr ""
+msgstr "Überprüfe (A)lle"
 
 #: ../apparmor/ui.py:229
 msgid "(O)wner permissions on"
-msgstr ""
+msgstr "(B)esitzer Berechtigungen eingeschaltet"
 
 #: ../apparmor/ui.py:230
 msgid "(O)wner permissions off"
-msgstr ""
+msgstr "(B)esitzer Berechtigungen ausgeschaltet"
 
 #: ../apparmor/ui.py:231
 msgid "(D)eny"
-msgstr ""
+msgstr "(A)blehnen"
 
 #: ../apparmor/ui.py:232
 msgid "Abo(r)t"
-msgstr ""
+msgstr "Abb(r)echen"
 
 #: ../apparmor/ui.py:233
 msgid "(F)inish"
-msgstr ""
+msgstr "(E)nde"
 
 #: ../apparmor/ui.py:234
 msgid "(I)nherit"
-msgstr ""
+msgstr "(E)rben"
 
 #: ../apparmor/ui.py:235
 msgid "(P)rofile"
-msgstr ""
+msgstr "(P)rofile"
 
 #: ../apparmor/ui.py:236
 msgid "(P)rofile Clean Exec"
@@ -1008,7 +1054,7 @@ msgstr ""
 
 #: ../apparmor/ui.py:237
 msgid "(C)hild"
-msgstr ""
+msgstr "(K)ind"
 
 #: ../apparmor/ui.py:238
 msgid "(C)hild Clean Exec"
@@ -1032,7 +1078,7 @@ msgstr ""
 
 #: ../apparmor/ui.py:243
 msgid "(P)rofile Inherit"
-msgstr ""
+msgstr "(P)rofil erben"
 
 #: ../apparmor/ui.py:244
 msgid "(P)rofile Inherit Clean Exec"
@@ -1040,7 +1086,7 @@ msgstr ""
 
 #: ../apparmor/ui.py:245
 msgid "(C)hild Inherit"
-msgstr ""
+msgstr "(K)ind erben"
 
 #: ../apparmor/ui.py:246
 msgid "(C)hild Inherit Clean Exec"
