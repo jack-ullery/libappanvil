@@ -7,13 +7,13 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2015-09-04 21:47+0000\n"
-"Last-Translator: Daniel <launchlin@mailbox.org>\n"
+"PO-Revision-Date: 2015-09-05 21:21+0000\n"
+"Last-Translator: Tobias Bannert <Unknown>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2015-09-05 05:10+0000\n"
+"X-Launchpad-Export-Date: 2015-09-06 05:10+0000\n"
 "X-Generator: Launchpad (build 17706)\n"
 "Language: de\n"
 
@@ -29,7 +29,7 @@ msgstr "Pfad zu den Profilen"
 
 #: ../aa-genprof:58 ../aa-logprof:26
 msgid "path to logfile"
-msgstr "Pfad zur Logdatei"
+msgstr "Pfad zur Protokolldatei"
 
 #: ../aa-genprof:59
 msgid "name of program to profile"
@@ -38,7 +38,8 @@ msgstr "Name des Programms, für das ein Profil erstellt werden soll"
 #: ../aa-genprof:69 ../aa-logprof:37
 #, python-format
 msgid "The logfile %s does not exist. Please check the path"
-msgstr "Die Logdatei %s existiert nicht. Bitte überprüfen Sie den Pfad"
+msgstr ""
+"Die Protokolldatei %s ist nicht vorhanden. Bitte überprüfen Sie den Pfad."
 
 #: ../aa-genprof:75 ../aa-logprof:43 ../aa-unconfined:36
 msgid ""
@@ -61,6 +62,11 @@ msgid ""
 "environment set up in order to find the fully-qualified path and\n"
 "use the full path as parameter."
 msgstr ""
+"%(profiling)s kann nicht in der Systempfadliste gefunden werden. Wenn der\n"
+"Name der Anwendung richtig ist, bitte »which %(profiling)s« starten, als "
+"ein\n"
+"Benutzer mit der richtigem Pfadumgebung, um den vollständig qualifizierten\n"
+"Pfad zu finden und bitte den vollständigen Pfad als Parameter benutzen."
 
 #: ../aa-genprof:96
 #, python-format
@@ -95,8 +101,8 @@ msgstr ""
 "Starten Sie die Anwendung, für die ein Profil erstellt werden soll, in\n"
 "einem anderen Fenster, und führen Sie die Funktionalität jetzt aus.\n"
 "\n"
-"Nach Abschluss dieses Vorgangs wählen Sie unten \"Durchsuchen\", um\n"
-"in den Systemprotokollen nach AppArmor-Ereignissen zu suchen. \n"
+"Nach Abschluss dieses Vorgangs bitte unten »Durchsuchen« wählen,\n"
+"um in den Systemprotokollen nach AppArmor-Ereignissen zu suchen. \n"
 "\n"
 "Für jedes AppArmor-Ereignis haben Sie die Gelegenheit anzugeben,\n"
 "ob der Zugriff zugelassen oder verweigert werden soll."
@@ -111,7 +117,7 @@ msgid ""
 "Reloaded AppArmor profiles in enforce mode."
 msgstr ""
 "\n"
-"AppArmor-Profile wurden im Erzwingen-Modus neu geladen."
+"AppArmor-Profile wurden im Erzwingenmodus neu geladen."
 
 #: ../aa-genprof:166
 msgid ""
@@ -119,6 +125,9 @@ msgid ""
 "Please consider contributing your new profile!\n"
 "See the following wiki page for more information:"
 msgstr ""
+"\n"
+"Bitte überlegen Sie es Ihr neues Profil beizusteuern.\n"
+"Weitere Informationen können Sie auf der folgenden Wiki-Seite erhalten:"
 
 #: ../aa-genprof:167
 #, python-format
@@ -127,7 +136,7 @@ msgstr "Profilerstellung für %s abgeschlossen."
 
 #: ../aa-logprof:24
 msgid "Process log entries to generate profiles"
-msgstr ""
+msgstr "Protokolleinträge verarbeiten, um Profile zu erstellen"
 
 #: ../aa-logprof:27
 msgid "mark in the log to start processing after"
@@ -149,6 +158,7 @@ msgstr "Kommentarloses Überschreiben mit einem sauberen Profil"
 #: ../aa-mergeprof:29
 msgid "Perform a 2-way or 3-way merge on the given profiles"
 msgstr ""
+"Eine 2- oder 3-Wege-Zusammenführung auf den angegebenen Profilen durchführen"
 
 #: ../aa-mergeprof:31
 msgid "your profile"
@@ -213,7 +223,7 @@ msgstr "Profil"
 
 #: ../aa-mergeprof:245 ../apparmor/aa.py:1563 ../apparmor/aa.py:1604
 msgid "Capability"
-msgstr "Capability"
+msgstr "Fähigkeit"
 
 #: ../aa-mergeprof:246 ../aa-mergeprof:480 ../apparmor/aa.py:1258
 #: ../apparmor/aa.py:1564 ../apparmor/aa.py:1605 ../apparmor/aa.py:1817
@@ -229,12 +239,12 @@ msgstr "%s wird zum Profil hinzugefügt."
 #: ../aa-mergeprof:282 ../apparmor/aa.py:1627
 #, python-format
 msgid "Adding capability %s to profile."
-msgstr "Capability %s zum Profil hinzugefügt."
+msgstr "Fähigkeit %s wird zum Profil hinzugefügt."
 
 #: ../aa-mergeprof:289 ../apparmor/aa.py:1634
 #, python-format
 msgid "Denying capability %s to profile."
-msgstr "Capability %s wird dem Profil verweigert."
+msgstr "Fähigkeit %s wird dem Profil verweigert."
 
 #: ../aa-mergeprof:439 ../aa-mergeprof:470 ../apparmor/aa.py:1776
 #: ../apparmor/aa.py:1807
@@ -367,7 +377,7 @@ msgstr ""
 #: ../apparmor/aa.py:252 ../apparmor/aa.py:259
 #, python-format
 msgid "Can't find %s"
-msgstr "Kann %s nicht finden"
+msgstr "%s kann nicht gefunden werden"
 
 #: ../apparmor/aa.py:264 ../apparmor/aa.py:548
 #, python-format
@@ -414,11 +424,11 @@ msgstr "Alle Änderungen verworfen."
 
 #: ../apparmor/aa.py:464
 msgid "Connecting to repository..."
-msgstr "Verbinde mit der Quelle..."
+msgstr "Zu Paketquelle wird verbunden …"
 
 #: ../apparmor/aa.py:470
 msgid "WARNING: Error fetching profiles from the repository"
-msgstr "Warnung: Fehler beim holen der Profile von der Quelle..."
+msgstr "ACHTUNG: Fehler beim Abrufen der Profile von der Paketquelle"
 
 #: ../apparmor/aa.py:550
 #, python-format
@@ -436,7 +446,7 @@ msgid ""
 "WARNING: Error synchronizing profiles with the repository:\n"
 "%s\n"
 msgstr ""
-"Warnung: Fehler beim synchronisieren der Profile mit der Quelle:\n"
+"ACHTUNG: Fehler beim Synchronisieren der Profile mit der Paketquelle:\n"
 "%s\n"
 
 #: ../apparmor/aa.py:744
@@ -445,7 +455,7 @@ msgid ""
 "WARNING: Error synchronizing profiles with the repository\n"
 "%s"
 msgstr ""
-"Warnung: Fehler beim synchronisieren der Profile mit der Quelle:\n"
+"ACHTUNG: Fehler beim Synchronisieren der Profile mit der Paketquelle:\n"
 "%s"
 
 #: ../apparmor/aa.py:832 ../apparmor/aa.py:883
@@ -454,16 +464,16 @@ msgid ""
 "WARNING: An error occurred while uploading the profile %(profile)s\n"
 "%(ret)s"
 msgstr ""
-"Warnung: Ein Fehler ist aufgetreten beim Hochladen des Profils %(profile)s\n"
+"ACHTUNG: beim Hochladen des Profils %(profile)s ist ein Fehler aufgetreten\n"
 "%(ret)s"
 
 #: ../apparmor/aa.py:833
 msgid "Uploaded changes to repository."
-msgstr "Hochgeladene Änderungen zur Quelle."
+msgstr "Änderungen wurden zur Paketquelle hochgeladen."
 
 #: ../apparmor/aa.py:865
 msgid "Changelog Entry: "
-msgstr "Changelog-Eintrag: "
+msgstr "Änderungsprotokolleintrag: "
 
 #: ../apparmor/aa.py:885
 msgid ""
@@ -472,9 +482,9 @@ msgid ""
 "information is required to upload profiles to the repository.\n"
 "These changes could not be sent."
 msgstr ""
-"Quelle Fehler\n"
-"Registrieren oder Anmelden ist fehlgeschlagen. Benutzer Zugangsdaten\n"
-"sind erforderlich um die Profile in die Quelle zu laden.\n"
+"Paketquellenfehler\n"
+"Registrieren oder Anmelden ist fehlgeschlagen. Benutzerzugangsdaten\n"
+"sind erforderlich, um die Profile in die Paketquelle zu übertragen.\n"
 "Diese Änderungen konnten nicht übertragen werden."
 
 #: ../apparmor/aa.py:995
@@ -488,12 +498,12 @@ msgstr "Angeforderter Hat"
 #: ../apparmor/aa.py:1218
 #, python-format
 msgid "%s has transition name but not transition mode"
-msgstr "%s hat einen Übergangsname aber keinen Übergangsmodus"
+msgstr "%s hat einen Übergangsnamen aber keinen Übergangsmodus"
 
 #: ../apparmor/aa.py:1232
 #, python-format
 msgid "Target profile exists: %s\n"
-msgstr "Ziel-Profil existiert: %s\n"
+msgstr "Zielprofil ist vorhanden: %s\n"
 
 #: ../apparmor/aa.py:1254
 msgid "Program"
@@ -505,11 +515,11 @@ msgstr "Ausführen"
 
 #: ../apparmor/aa.py:1287
 msgid "Are you specifying a transition to a local profile?"
-msgstr ""
+msgstr "Sind Sie dabei einen Übergang zu einem lokalen Profil festzulegen?"
 
 #: ../apparmor/aa.py:1299
 msgid "Enter profile name to transition to: "
-msgstr ""
+msgstr "Bitte den Profilnamen eingeben, zum Übergeben an: "
 
 #: ../apparmor/aa.py:1308
 msgid ""
@@ -612,16 +622,16 @@ msgid ""
 "  Entered Path:  %(ans)s\n"
 "Do you really want to use this path?"
 msgstr ""
-"Der genannte Pfad passt nicht zu diesem Protokoll Eintrag:\n"
+"Der festgelegt Pfad passt nicht zu diesem Protokolleintrag:\n"
 "\n"
-"  Protokoll Eintrag: %(path)s\n"
-"  Eingetragener Pfad: %(ans)s\n"
+"  Protokolleintrag: %(path)s\n"
+"  Eingegebener Pfad: %(ans)s\n"
 "Wollen Sie wirklich diesen Pfad benutzen?"
 
 #: ../apparmor/aa.py:2251
 #, python-format
 msgid "Reading log entries from %s."
-msgstr "Lese Logeinträge von %s."
+msgstr "Protokolleinträge von %s werden gelesen."
 
 #: ../apparmor/aa.py:2254
 #, python-format
@@ -677,7 +687,7 @@ msgid ""
 "Syntax Error: Unexpected capability entry found in file: %(file)s line: "
 "%(line)s"
 msgstr ""
-"Syntaxfehler: Unerwarteter capability-Eintrag gefunden in Datei: %(file)s "
+"Syntaxfehler: Unerwarteter Fähigkeitseintrag gefunden in Datei: %(file)s "
 "Zeile: %(line)s"
 
 #: ../apparmor/aa.py:2770
@@ -711,6 +721,8 @@ msgid ""
 "Syntax Error: Unexpected boolean definition found in file: %(file)s line: "
 "%(line)s"
 msgstr ""
+"Syntaxfehler: Unerwarteter boolesche Variable gefunden in Datei: %(file)s "
+"Zeile: %(line)s"
 
 #: ../apparmor/aa.py:2871
 #, python-format
@@ -824,6 +836,7 @@ msgstr "Fehler: Mehrfache Definition für hat %(hat)s im Profil %(profile)s."
 #, python-format
 msgid "Warning: invalid \"REPOSITORY:\" line in %s, ignoring."
 msgstr ""
+"ACHTUNG: ungültige Paketquellenzeile »REPOSITORY:« in %s, wird übergangen."
 
 #: ../apparmor/aa.py:3198
 #, python-format
@@ -837,14 +850,14 @@ msgid ""
 "Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside "
 "profile %(profile)s"
 msgstr ""
-"Syntaxfehler: Fehlende '}' or ','. Dateiende von %(file)s innerhalb des "
-"Profils %(profile)s erreicht"
+"Syntaxfehler: fehlende Zeichen »}« oder »,«. Dateiende von %(file)s "
+"innerhalb des Profils %(profile)s erreicht"
 
 #: ../apparmor/aa.py:3277
 #, python-format
 msgid "Redefining existing variable %(variable)s: %(value)s in %(file)s"
 msgstr ""
-"Redefiniere existierende Variable %(variable)s: %(value)s in %(file)s"
+"Vorhandene Variable %(variable)s wird neu bestimmt: %(value)s in %(file)s"
 
 #: ../apparmor/aa.py:3282
 #, python-format
@@ -903,7 +916,7 @@ msgstr ""
 #: ../apparmor/logparser.py:127 ../apparmor/logparser.py:132
 #, python-format
 msgid "Log contains unknown mode %s"
-msgstr "Logdatei enthält unbekannten Modus %s"
+msgstr "Protokolldatei enthält unbekannten Modus %s"
 
 #: ../apparmor/tools.py:84 ../apparmor/tools.py:126
 #, python-format
@@ -932,12 +945,12 @@ msgstr ""
 #: ../apparmor/tools.py:175 ../apparmor/tools.py:193
 #, python-format
 msgid "Profile for %s not found, skipping"
-msgstr "Profil für %s nicht gefunden, übersprungen"
+msgstr "Profil für %s nicht gefunden, wird übersprungen"
 
 #: ../apparmor/tools.py:140
 #, python-format
 msgid "Disabling %s."
-msgstr "Deaktiviere %s."
+msgstr "%s wird deaktiviert."
 
 #: ../apparmor/tools.py:198
 #, python-format
@@ -959,7 +972,7 @@ msgstr ""
 #: ../apparmor/tools.py:220
 #, python-format
 msgid "Profile for %s already exists - skipping."
-msgstr "Profil für %s exisitiert bereits - überspringen."
+msgstr "Profil für %s besteht bereits - wird übersprungen."
 
 #: ../apparmor/tools.py:232
 #, python-format
@@ -1018,15 +1031,15 @@ msgstr "(Ü)berprüfung abgeschlossen"
 
 #: ../apparmor/ui.py:227
 msgid "Audit (A)ll"
-msgstr "Überprüfe (A)lle"
+msgstr "(A)lle überprüfen"
 
 #: ../apparmor/ui.py:229
 msgid "(O)wner permissions on"
-msgstr "(B)esitzer Berechtigungen eingeschaltet"
+msgstr "(B)esitzerberechtigungen an"
 
 #: ../apparmor/ui.py:230
 msgid "(O)wner permissions off"
-msgstr "(B)esitzer Berechtigungen ausgeschaltet"
+msgstr "(B)esitzerberechtigungen aus"
 
 #: ../apparmor/ui.py:231
 msgid "(D)eny"
@@ -1186,11 +1199,11 @@ msgstr ""
 
 #: ../apparmor/ui.py:271
 msgid "(E)nable Repository"
-msgstr ""
+msgstr "Paketquelle (a)ktivieren"
 
 #: ../apparmor/ui.py:272
 msgid "(D)isable Repository"
-msgstr ""
+msgstr "Paketquelle (d)eaktivieren"
 
 #: ../apparmor/ui.py:273
 msgid "(N)ever Ask Again"

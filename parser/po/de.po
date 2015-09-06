@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-13 00:11-0700\n"
-"PO-Revision-Date: 2015-08-06 12:51+0000\n"
+"PO-Revision-Date: 2015-09-05 20:55+0000\n"
 "Last-Translator: Tobias Bannert <Unknown>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2015-08-07 05:13+0000\n"
-"X-Generator: Launchpad (build 17656)\n"
+"X-Launchpad-Export-Date: 2015-09-06 05:10+0000\n"
+"X-Generator: Launchpad (build 17706)\n"
 "Language: de\n"
 
 #: ../parser_include.c:113
@@ -503,12 +503,12 @@ msgstr "Ungültige Fähigkeit %s."
 #: parser_yacc.y:1066 parser_yacc.y:1269
 #, c-format
 msgid "AppArmor parser error for %s%s%s at line %d: %s\n"
-msgstr "AppArmor-Parser-Fehler für %s%s%s in Zeile %d: %s\n"
+msgstr "AppArmor-Analysefehler für %s%s%s in Zeile %d: %s\n"
 
 #: parser_yacc.y:1072 parser_yacc.y:1275
 #, c-format
 msgid "AppArmor parser error,%s%s line %d: %s\n"
-msgstr "AppArmor-Parser-Fehler,%s%s Zeile %d: %s\n"
+msgstr "AppArmor-Analysefehler,%s%s Zeile %d: %s\n"
 
 #: ../parser_regex.c:244
 #, c-format
