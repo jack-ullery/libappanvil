@@ -7,13 +7,13 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2015-09-05 21:21+0000\n"
+"PO-Revision-Date: 2015-09-06 12:35+0000\n"
 "Last-Translator: Tobias Bannert <Unknown>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2015-09-06 05:10+0000\n"
+"X-Launchpad-Export-Date: 2015-09-07 05:11+0000\n"
 "X-Generator: Launchpad (build 17706)\n"
 "Language: de\n"
 
@@ -71,7 +71,7 @@ msgstr ""
 #: ../aa-genprof:96
 #, python-format
 msgid "%s does not exists, please double-check the path."
-msgstr "%s existiert nicht. Bitte überprüfen Sie den Pfad"
+msgstr "%s ist nicht vorhanden. Bitte überprüfen Sie den Pfad."
 
 #: ../aa-genprof:124
 msgid ""
@@ -82,9 +82,10 @@ msgid ""
 "more information:"
 msgstr ""
 "\n"
-"Bevor Sie beginnen, sollten Sie eventuell erst überprüfen ob nicht bereits "
-"ein Profil für das Programm besteht das Sie einschränken möchten. Besuchen "
-"Sie die folgende wiki Seite um mehr Informationen einzuholen:"
+"Bevor Sie beginnen, möchten Sie vielleicht prüfen,\n"
+"ob bereits ein Profil für das Programm besteht,\n"
+"das Sie einschränken möchten. Weitere Informationen\n"
+"können Sie auf der folgenden Wiki-Seite erhalten:"
 
 #: ../aa-genprof:126
 msgid ""
@@ -335,7 +336,7 @@ msgstr "Das angegebene Programm in den Complain-Modus versetzen"
 
 #: ../aa-enforce:23
 msgid "Switch the given program to enforce mode"
-msgstr "Das angegebene Programm in den Erzwingen-Modus versetzen"
+msgstr "Das angegebene Programm in den Erzwingenmodus versetzen"
 
 #: ../aa-disable:23
 msgid "Disable the profile for the given programs"
