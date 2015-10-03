@@ -26,8 +26,24 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 class ReadLog:
-    RE_LOG_v2_6_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?(audit:\s+)?type=\d+\s+audit\([\d\.\:]+\):\s+apparmor=')
-    RE_LOG_v2_6_audit = re.compile('type=AVC\s+(msg=)?audit\([\d\.\:]+\):\s+apparmor=')
+    RE_audit_time_id = '(msg=)?audit\([\d\.\:]+\):\s+'  # 'audit(1282626827.320:411): '
+    RE_kernel_time = '\[[\d\.\s]+\]'    # '[ 1612.746129]'
+    RE_type_num = '1[45][0-9][0-9]'     # 1400..1599
+    RE_aa_or_op = '(apparmor=|operation=)'
+
+    RE_log_parts = [
+        'kernel:\s+(' + RE_kernel_time + '\s+)?(audit:\s+)?type=' + RE_type_num + '\s+' + RE_audit_time_id + RE_aa_or_op,  # v2_6 syslog
+        'kernel:\s+(' + RE_kernel_time + '\s+)?' + RE_audit_time_id + 'type=' + RE_type_num + '\s+' + RE_aa_or_op,
+        'type=(AVC|APPARMOR[_A-Z]*|' + RE_type_num + ')\s+' + RE_audit_time_id + '(type=' + RE_type_num + '\s+)?' + RE_aa_or_op,  # v2_6 audit and dmesg
+        'type=USER_AVC\s+' + RE_audit_time_id + '.*apparmor=',  # dbus
+        'type=UNKNOWN\[' + RE_type_num + '\]\s+' + RE_audit_time_id + RE_aa_or_op,
+        'dbus\[[0-9]+\]:\s+apparmor=',  # dbus
+    ]
+
+    # used to pre-filter log lines so that we hand over only relevant lines to LibAppArmor parsing
+    RE_LOG_ALL = re.compile('(' + '|'.join(RE_log_parts) + ')')
+
+
     # Used by netdomain to identify the operation types
     # New socket names
     OPERATION_TYPES = {'create': 'net',
@@ -62,7 +78,7 @@ class ReadLog:
         if self.next_log_entry:
             sys.stderr.out('A log entry already present: %s' % self.next_log_entry)
         self.next_log_entry = self.LOG.readline()
-        while not self.RE_LOG_v2_6_syslog.search(self.next_log_entry) and not self.RE_LOG_v2_6_audit.search(self.next_log_entry) and not (self.logmark and self.logmark in self.next_log_entry):
+        while not self.RE_LOG_ALL.search(self.next_log_entry) and not (self.logmark and self.logmark in self.next_log_entry):
             self.next_log_entry = self.LOG.readline()
             if not self.next_log_entry:
                 break

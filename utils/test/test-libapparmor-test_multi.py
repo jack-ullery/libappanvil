@@ -44,6 +44,10 @@ class TestLibapparmorTestMulti(AATest):
         if parsed_event and expected:
             parsed_items = dict(parsed_event.items())
 
+            # check if the line passes the regex in logparser.py
+            if not parser.RE_LOG_ALL.search(loglines2[0]):
+                raise Exception("Log event doesn't match RE_LOG_ALL")
+
             for label in expected:
                 if label in [
                         'file',  # filename of the *.in file

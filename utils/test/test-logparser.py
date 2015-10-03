@@ -28,8 +28,7 @@ class TestParseEvent(unittest.TestCase):
         self.assertEqual(parsed_event['aamode'], 'PERMITTING')
         self.assertEqual(parsed_event['request_mask'], 'wc')
 
-        self.assertIsNotNone(ReadLog.RE_LOG_v2_6_audit.search(event))
-        self.assertIsNone(ReadLog.RE_LOG_v2_6_syslog.search(event))
+        self.assertIsNotNone(ReadLog.RE_LOG_ALL.search(event))
 
     def test_parse_event_audit_2(self):
         event = 'type=AVC msg=audit(1322614918.292:4376): apparmor="ALLOWED" operation="file_perm" parent=16001 profile=666F6F20626172 name="/home/foo/.bash_history" pid=17011 comm="bash" requested_mask="rw" denied_mask="rw" fsuid=0 ouid=1000'
@@ -39,8 +38,7 @@ class TestParseEvent(unittest.TestCase):
         self.assertEqual(parsed_event['aamode'], 'PERMITTING')
         self.assertEqual(parsed_event['request_mask'], 'rw')
 
-        self.assertIsNotNone(ReadLog.RE_LOG_v2_6_audit.search(event))
-        self.assertIsNone(ReadLog.RE_LOG_v2_6_syslog.search(event))
+        self.assertIsNotNone(ReadLog.RE_LOG_ALL.search(event))
 
     def test_parse_event_syslog_1(self):
         # from https://bugs.launchpad.net/apparmor/+bug/1399027
@@ -51,8 +49,7 @@ class TestParseEvent(unittest.TestCase):
         self.assertEqual(parsed_event['aamode'], 'PERMITTING')
         self.assertEqual(parsed_event['request_mask'], 'rw')
 
-        self.assertIsNone(ReadLog.RE_LOG_v2_6_audit.search(event))
-        self.assertIsNotNone(ReadLog.RE_LOG_v2_6_syslog.search(event))
+        self.assertIsNotNone(ReadLog.RE_LOG_ALL.search(event))
 
     def test_parse_event_syslog_2(self):
         # from https://bugs.launchpad.net/apparmor/+bug/1399027
@@ -63,8 +60,7 @@ class TestParseEvent(unittest.TestCase):
         self.assertEqual(parsed_event['aamode'], 'PERMITTING')
         self.assertEqual(parsed_event['request_mask'], 'r')
 
-        self.assertIsNone(ReadLog.RE_LOG_v2_6_audit.search(event))
-        self.assertIsNotNone(ReadLog.RE_LOG_v2_6_syslog.search(event))
+        self.assertIsNotNone(ReadLog.RE_LOG_ALL.search(event))
 
     def test_parse_disconnected_path(self):
         # from https://bugzilla.opensuse.org/show_bug.cgi?id=918787
@@ -91,8 +87,7 @@ class TestParseEvent(unittest.TestCase):
             'time': 1424425690
         })
 
-        self.assertIsNotNone(ReadLog.RE_LOG_v2_6_audit.search(event))
-        self.assertIsNone(ReadLog.RE_LOG_v2_6_syslog.search(event))
+        self.assertIsNotNone(ReadLog.RE_LOG_ALL.search(event))
 
 
 if __name__ == "__main__":
