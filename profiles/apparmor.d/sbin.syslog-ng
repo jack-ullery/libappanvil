@@ -20,6 +20,7 @@ profile syslog-ng /{usr/,}sbin/syslog-ng {
   #include <abstractions/consoles>
   #include <abstractions/nameservice>
   #include <abstractions/mysql>
+  #include <abstractions/openssl>
 
   capability chown,
   capability dac_override,
@@ -37,7 +38,10 @@ profile syslog-ng /{usr/,}sbin/syslog-ng {
   /dev/syslog w,
   /dev/tty10 rw,
   /dev/xconsole rw,
+  /etc/machine-id r,
   /etc/syslog-ng/* r,
+  /etc/syslog-ng/conf.d/ r,
+  /etc/syslog-ng/conf.d/* r,
   @{PROC}/kmsg r,
   /etc/hosts.deny r,
   /etc/hosts.allow r,
@@ -50,6 +54,10 @@ profile syslog-ng /{usr/,}sbin/syslog-ng {
   @{CHROOT_BASE}/var/log/** w,
   @{CHROOT_BASE}/{,var/}run/syslog-ng.pid krw,
   @{CHROOT_BASE}/{,var/}run/syslog-ng.ctl rw,
+  /var/log/journal/ r,
+  /var/log/journal/*/ r,
+  /var/log/journal/*/*.journal r,
+  /{var/,}run/syslog-ng.ctl a,
   /{var/,}run/syslog-ng/additional-log-sockets.conf r,
 
   # Site-specific additions and overrides. See local/README for details.
