@@ -4158,7 +4158,7 @@ def load_include(incname):
             attach_profile_data(include, incdata)
         #If the include is a directory means include all subfiles
         elif os.path.isdir(profile_dir + '/' + incfile):
-            load_includeslist += list(map(lambda x: incfile + '/' + x, os.listdir(profile_dir + '/' + incfile)))
+            load_includeslist += include_dir_filelist(profile_dir, incfile)
         else:
             raise AppArmorException("Include file %s not found" % (profile_dir + '/' + incfile) )
 
