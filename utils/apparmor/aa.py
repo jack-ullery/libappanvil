@@ -4155,12 +4155,6 @@ def load_include(incname):
         elif os.path.isfile(profile_dir + '/' + incfile):
             data = get_include_data(incfile)
             incdata = parse_profile_data(data, incfile, True)
-            #print(incdata)
-            if not incdata:
-                # If include is empty, simply push in a placeholder for it
-                # because other profiles may mention them
-                incdata = hasher()
-                incdata[incname] = hasher()
             attach_profile_data(include, incdata)
         #If the include is a directory means include all subfiles
         elif os.path.isdir(profile_dir + '/' + incfile):
