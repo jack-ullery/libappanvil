@@ -4148,11 +4148,11 @@ def include_dir_filelist(profile_dir, include_name):
 
 def load_include(incname):
     load_includeslist = [incname]
-    if include.get(incname, {}).get(incname, False):
-        return 0
     while load_includeslist:
         incfile = load_includeslist.pop(0)
-        if os.path.isfile(profile_dir + '/' + incfile):
+        if include.get(incfile, {}).get(incfile, False):
+            pass  # already read, do nothing
+        elif os.path.isfile(profile_dir + '/' + incfile):
             data = get_include_data(incfile)
             incdata = parse_profile_data(data, incfile, True)
             #print(incdata)
