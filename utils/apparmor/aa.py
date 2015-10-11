@@ -2463,6 +2463,12 @@ def is_skippable_dir(path):
     return False
 
 def read_profiles():
+    # we'll read all profiles from disk, so reset the storage first (autodep() might have created/stored
+    # a profile already, which would cause a 'Conflicting profile' error in attach_profile_data())
+    global aa, original_aa
+    aa = hasher()
+    original_aa = hasher()
+
     try:
         os.listdir(profile_dir)
     except:
