@@ -229,41 +229,11 @@ public:
 	int is_postprocess(void) { return false; }
 };
 
-/* Match one specific character (/c/). */
-class CharNode: public CNode {
-public:
-	CharNode(uchar c): c(c) { }
-	void follow(Cases &cases)
-	{
-		NodeSet **x = &cases.cases[c];
-		if (!*x) {
-			if (cases.otherwise)
-				*x = new NodeSet(*cases.otherwise);
-			else
-				*x = new NodeSet;
-		}
-		(*x)->insert(followpos.begin(), followpos.end());
-	}
-	int eq(Node *other)
-	{
-		CharNode *o = dynamic_cast<CharNode *>(other);
-		if (o) {
-			return c == o->c;
-		}
-		return 0;
-	}
-	ostream &dump(ostream &os)
-	{
-		return os << c;
-	}
-
-	uchar c;
-};
-
 /* Match a set of characters (/[abc]/). */
 class CharSetNode: public CNode {
 public:
 	CharSetNode(Chars &chars): chars(chars) { }
+	CharSetNode(uchar c): chars() { chars.insert(c); }
 	void follow(Cases &cases)
 	{
 		for (Chars::iterator i = chars.begin(); i != chars.end(); i++) {
@@ -591,7 +561,6 @@ public:
 };
 
 struct node_counts {
-	int charnode;
 	int charset;
 	int notcharset;
 	int alt;
