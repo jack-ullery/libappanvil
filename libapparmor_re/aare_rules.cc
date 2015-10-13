@@ -63,7 +63,7 @@ void aare_rules::add_to_rules(Node *tree, Node *perms)
 
 static Node *cat_with_null_seperator(Node *l, Node *r)
 {
-	return new CatNode(new CatNode(l, new CharNode(0)), r);
+	return new CatNode(new CatNode(l, new CharSetNode(0)), r);
 }
 
 bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
