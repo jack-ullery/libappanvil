@@ -232,6 +232,12 @@ void AltNode::normalize(int dir)
 		} else if (dynamic_cast<AltNode *>(child[dir])) {
 			// (a | b) | c -> a | (b | c)
 			rotate_node(this, dir);
+		} else if (dynamic_cast<CharSetNode *>(child[dir]) &&
+			   dynamic_cast<CharNode *>(child[!dir])) {
+			// [a] | b  ->  b | [a]
+			Node *c = child[dir];
+			child[dir] = child[!dir];
+			child[!dir] = c;
 		} else {
 			break;
 		}
@@ -246,77 +252,76 @@ void AltNode::normalize(int dir)
 //charset conversion is disabled for now,
 //it hinders tree optimization in some cases, so it need to be either
 //done post optimization, or have extra factoring rules added
+#if 0
 static Node *merge_charset(Node *a, Node *b)
 {
-	Chars *from = &dynamic_cast<CharSetNode *>(b)->chars;
-	Chars *to = &dynamic_cast<CharSetNode *>(a)->chars;
-	for (Chars::iterator i = from->begin(); i != from->end(); i++)
-		to->insert(*i);
-	b->release();
-	return a;
+	if (dynamic_cast<CharNode *>(a) && dynamic_cast<CharNode *>(b)) {
+		Chars chars;
+		chars.insert(dynamic_cast<CharNode *>(a)->c);
+		chars.insert(dynamic_cast<CharNode *>(b)->c);
+		CharSetNode *n = new CharSetNode(chars);
+		return n;
+	} else if (dynamic_cast<CharNode *>(a) &&
+		   dynamic_cast<CharSetNode *>(b)) {
+		Chars *chars = &dynamic_cast<CharSetNode *>(b)->chars;
+		chars->insert(dynamic_cast<CharNode *>(a)->c);
+		return b;
+	} else if (dynamic_cast<CharSetNode *>(a) &&
+		   dynamic_cast<CharSetNode *>(b)) {
+		Chars *from = &dynamic_cast<CharSetNode *>(a)->chars;
+		Chars *to = &dynamic_cast<CharSetNode *>(b)->chars;
+		for (Chars::iterator i = from->begin(); i != from->end(); i++)
+			to->insert(*i);
+		return b;
+	}
+	//return ???;
 }
 
-/* given a constructed alt vector do duplicate elimination and merging */
-eliminate_dups_and_merge(vector<Node *> vec) {
-	std::sort(vec->begin(), vec->end(), ???);
-
-	i = vec->begin();
-	if (vec->begin()->is_charset()) {
-		for (j = i+1; *j->is_charset() && j != vec->end();
-		     j++) {
-			merge_charset(*i, *j);
-			*j = NULL;
-			merge_count++;
+static Node *alt_to_charsets(Node *t, int dir)
+{
+/*
+	Node *first = NULL;
+	Node *p = t;
+	Node *i = t;
+	for (;dynamic_cast<AltNode *>(i);) {
+		if (dynamic_cast<CharNode *>(i->child[dir]) ||
+		    dynamic_cast<CharNodeSet *>(i->child[dir])) {
+			if (!first) {
+				first = i;
+				p = i;
+				i = i->child[!dir];
+			} else {
+				first->child[dir] = merge_charset(first->child[dir],
+						      i->child[dir]);
+				p->child[!dir] = i->child[!dir];
+				Node *tmp = i;
+				i = tmp->child[!dir];
+				tmp->child[!dir] = NULL;
+				tmp->release();
+			}
+		} else {
+			p = i;
+			i = i->child[!dir];
 		}
-		if (j != vec->end())
-			i = j;
 	}
-
-	/* merged charsets, now eliminate other dups */
-	for (j = i + 1; ??; ???) {
-
+	// last altnode of chain check other dir as well
+	if (first && (dynamic_cast<charNode *>(i) ||
+		      dynamic_cast<charNodeSet *>(i))) {
+		
 	}
+*/
+
+/*
+		if (dynamic_cast<CharNode *>(t->child[dir]) ||
+		    dynamic_cast<CharSetNode *>(t->child[dir]))
+		    char_test = true;
+			    (char_test &&
+			     (dynamic_cast<CharNode *>(i->child[dir]) ||
+			      dynamic_cast<CharSetNode *>(i->child[dir])))) {
+*/
+	return t;
 }
-
-flatten_altnode(Node *t) {
-	
-	/* flatten tree */
-	elimintated_alt_nodes++;
-
-	eliminate_dups_and_merge();
-}
-
-flatten_catnode(Node *t) {
-
-	/* flatten tree */
-	eliminated_cat_nodes++;
-
-	/* only elimination to be done is accept nodes */
-}
-
-factor() {
-
-	factor everything from right, then left
-
-	factor longest/most - look at both left and right, which is most?
-          to determine which dir to factor first
-
-        ab | abc | abcd | abcde
-
-	a (b | bc | bcd | bcde)
-
-	a ( b (E | c | cd | cde))
-
-	a ( b (E | c (E | d | de))
-
-        a ( b (E | c (E | d (E | e))))
-
-        so once flattened, work top to bottom
-
-	may actually want to flatten charsets into single chars in altnode
-        to make it easier to factor them
-
-}
+#endif
 
 static Node *basic_alt_factor(Node *t, int dir)
 {
@@ -329,13 +334,6 @@ static Node *basic_alt_factor(Node *t, int dir)
 		t->child[dir] = NULL;
 		t->release();
 		return tmp;
-	}
-	if (dynamic_cast<CharSetNode *>(t->child[dir]) &&
-	    dynamic_cast<CharSetNode *>(t->child[!dir])) {
-		Node *res = merge_charset(t->child[dir], t->child[!dir]);
-		t->child[dir] = t->child[!dir] = NULL;
-		t->release();
-		return res;
 	}
 	// (ab) | (ac) -> a(b|c)
 	if (dynamic_cast<CatNode *>(t->child[dir]) &&
@@ -536,6 +534,8 @@ static void count_tree_nodes(Node *t, struct node_counts *counts)
 	} else if (dynamic_cast<StarNode *>(t)) {
 		counts->star++;
 		count_tree_nodes(t->child[0], counts);
+	} else if (dynamic_cast<CharNode *>(t)) {
+		counts->charnode++;
 	} else if (dynamic_cast<AnyCharNode *>(t)) {
 		counts->any++;
 	} else if (dynamic_cast<CharSetNode *>(t)) {
@@ -554,11 +554,11 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
 	bool update;
 
 	if (flags & DFA_DUMP_TREE_STATS) {
-		struct node_counts counts = { 0, 0, 0, 0, 0, 0, 0 };
+		struct node_counts counts = { 0, 0, 0, 0, 0, 0, 0, 0 };
 		count_tree_nodes(t, &counts);
 		fprintf(stderr,
-			"expr tree: [] %d, [^] %d, | %d, + %d, * %d, . %d, cat %d\n",
-			counts.charset, counts.notcharset,
+			"expr tree: c %d, [] %d, [^] %d, | %d, + %d, * %d, . %d, cat %d\n",
+			counts.charnode, counts.charset, counts.notcharset,
 			counts.alt, counts.plus, counts.star, counts.any,
 			counts.cat);
 	}
@@ -590,11 +590,11 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
 		}
 	} while (update);
 	if (flags & DFA_DUMP_TREE_STATS) {
-		struct node_counts counts = { 0, 0, 0, 0, 0, 0, 0 };
+		struct node_counts counts = { 0, 0, 0, 0, 0, 0, 0, 0 };
 		count_tree_nodes(t, &counts);
 		fprintf(stderr,
-			"simplified expr tree: [] %d, [^] %d, | %d, + %d, * %d, . %d, cat %d\n",
-			counts.charset, counts.notcharset,
+			"simplified expr tree: c %d, [] %d, [^] %d, | %d, + %d, * %d, . %d, cat %d\n",
+			counts.charnode, counts.charset, counts.notcharset,
 			counts.alt, counts.plus, counts.star, counts.any,
 			counts.cat);
 	}

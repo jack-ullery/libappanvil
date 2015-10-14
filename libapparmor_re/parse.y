@@ -102,7 +102,7 @@ qterm	    : term
 	    ;
 
 term	    : '.'		{ $$ = new AnyCharNode; }
-	    | regex_char	{ $$ = new CharSetNode($1); }
+	    | regex_char	{ $$ = new CharNode($1); }
 	    | '[' charset ']'	{ $$ = new CharSetNode(*$2);
 				  delete $2; }
 	    | '[' '^' charset ']'
