@@ -88,6 +88,19 @@ class TestExamplesConvert_regexp(AATest):
         (['/foo/{,**}',         '/foo/bar/baz/'                     ], True),
         (['/foo/{,**}',         '/bar/'                             ], False),
 
+        (['/foo/a[bcd]e',       '/foo/abe'                          ], True),
+        (['/foo/a[bcd]e',       '/foo/abend'                        ], False),
+        (['/foo/a[bcd]e',       '/foo/axe'                          ], False),
+
+        (['/foo/a[b-d]e',       '/foo/abe'                          ], True),
+        (['/foo/a[b-d]e',       '/foo/ace'                          ], True),
+        (['/foo/a[b-d]e',       '/foo/abend'                        ], False),
+        (['/foo/a[b-d]e',       '/foo/axe'                          ], False),
+
+        (['/foo/a[^bcd]e',      '/foo/abe'                          ], False),
+        (['/foo/a[^bcd]e',      '/foo/abend'                        ], False),
+        (['/foo/a[^bcd]e',      '/foo/axe'                          ], True),
+
         (['/foo/{foo,bar,user,other}/bar/',                         '/foo/user/bar/'                ], True),
         (['/foo/{foo,bar,user,other}/bar/',                         '/foo/bar/bar/'                 ], True),
         (['/foo/{foo,bar,user,other}/bar/',                         '/foo/wrong/bar/'               ], False),
