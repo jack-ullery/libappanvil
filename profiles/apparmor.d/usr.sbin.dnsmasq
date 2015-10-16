@@ -29,6 +29,8 @@
   signal (receive) peer=/usr/sbin/libvirtd,
   ptrace (readby) peer=/usr/sbin/libvirtd,
 
+  owner /dev/tty rw,
+
   /etc/dnsmasq.conf r,
   /etc/dnsmasq.d/ r,
   /etc/dnsmasq.d/* r,
