@@ -2522,8 +2522,7 @@ def attach_profile_data(profiles, profile_data):
             for hat in profile_data[p].keys():
                 if profiles[p].get(hat, False):
                     raise AppArmorException(_("Conflicting profiles for %s defined in two files:\n- %s\n- %s") %
-                            # 'filename' is not set for hats, therefore print the filename of the main profile
-                            (combine_name(p, hat), profiles[p][p]['filename'], profile_data[p][p]['filename']))
+                            (combine_name(p, hat), profiles[p][hat]['filename'], profile_data[p][hat]['filename']))
 
         profiles[p] = deepcopy(profile_data[p])
 
@@ -2576,6 +2575,7 @@ def parse_profile_data(data, file, do_include):
         profile = file
         hat = file
         profile_data[profile][hat] = profile_storage()
+        profile_data[profile][hat]['filename'] = file
 
     for lineno, line in enumerate(data):
         line = line.strip()
@@ -2999,6 +2999,7 @@ def parse_profile_data(data, file, do_include):
             # nevertheless, just to be sure, don't overwrite existing profile_data.
             if not profile_data[profile].get(hat, False):
                 profile_data[profile][hat] = profile_storage()
+                profile_data[profile][hat]['filename'] = file
 
             flags = matches.group('flags')
 
