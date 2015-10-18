@@ -470,6 +470,8 @@ def create_new_profile(localfile, is_stub=False):
     for hatglob in cfg['required_hats'].keys():
         if re.search(hatglob, localfile):
             for hat in sorted(cfg['required_hats'][hatglob].split()):
+                if not local_profile.get(hat, False):
+                    local_profile[hat] = profile_storage()
                 local_profile[hat]['flags'] = 'complain'
 
     if not is_stub:
