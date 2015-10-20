@@ -400,6 +400,43 @@ def handle_binfmt(profile, path):
         profile['allow']['path'][library]['mode'] = profile['allow']['path'][library].get('mode', set()) | str_to_mode('mr')
         profile['allow']['path'][library]['audit'] |= profile['allow']['path'][library].get('audit', set())
 
+def get_interpreter_and_abstraction(exec_target):
+    '''Check if exec_target is a script.
+       If a hashbang is found, check if we have an abstraction for it.
+
+       Returns (interpreter_path, abstraction)
+       - interpreter_path is none if exec_target is not a script or doesn't have a hashbang line
+       - abstraction is None if no matching abstraction exists'''
+
+    if not os.path.exists(exec_target):
+        aaui.UI_Important(_('Execute target %s does not exist!') % exec_target)
+        return None, None
+
+    if not os.path.isfile(exec_target):
+        aaui.UI_Important(_('Execute target %s is not a file!') % exec_target)
+        return None, None
+
+    hashbang = head(exec_target)
+    if not hashbang.startswith('#!'):
+        return None, None
+
+    interpreter = hashbang[2:].strip()
+    interpreter_path = get_full_path(interpreter)
+    interpreter = re.sub('^(/usr)?/bin/', '', interpreter_path)
+
+    if interpreter in ['bash', 'dash', 'sh']:
+        abstraction = 'abstractions/bash'
+    elif interpreter == 'perl':
+        abstraction = 'abstractions/perl'
+    elif re.search('^python([23]|[23]\.[0-9]+)?$', interpreter):
+        abstraction = 'abstractions/python'
+    elif interpreter == 'ruby':
+        abstraction = 'abstractions/ruby'
+    else:
+        abstraction = None
+
+    return interpreter_path, abstraction
+
 def get_inactive_profile(local_profile):
     if extras.get(local_profile, False):
         return {local_profile: extras[local_profile]}
@@ -439,12 +476,9 @@ def create_new_profile(localfile, is_stub=False):
     local_profile[localfile]['include']['abstractions/base'] = 1
 
     if os.path.exists(localfile) and os.path.isfile(localfile):
-        hashbang = head(localfile)
-        if hashbang.startswith('#!'):
-            interpreter_path = get_full_path(hashbang.lstrip('#!').strip())
+        interpreter_path, abstraction = get_interpreter_and_abstraction(localfile)
 
-            interpreter = re.sub('^(/usr)?/bin/', '', interpreter_path)
-
+        if interpreter_path:
             local_profile[localfile]['allow']['path'][localfile]['mode'] = local_profile[localfile]['allow']['path'][localfile].get('mode', str_to_mode('r')) | str_to_mode('r')
 
             local_profile[localfile]['allow']['path'][localfile]['audit'] = local_profile[localfile]['allow']['path'][localfile].get('audit', set())
@@ -453,14 +487,9 @@ def create_new_profile(localfile, is_stub=False):
 
             local_profile[localfile]['allow']['path'][interpreter_path]['audit'] = local_profile[localfile]['allow']['path'][interpreter_path].get('audit', set())
 
-            if interpreter == 'perl':
-                local_profile[localfile]['include']['abstractions/perl'] = True
-            elif re.search('^python([23]|[23]\.[0-9]+)?$', interpreter):
-                local_profile[localfile]['include']['abstractions/python'] = True
-            elif interpreter == 'ruby':
-                local_profile[localfile]['include']['abstractions/ruby'] = True
-            elif interpreter in ['bash', 'dash', 'sh']:
-                local_profile[localfile]['include']['abstractions/bash'] = True
+            if abstraction:
+                local_profile[localfile]['include'][abstraction] = True
+
             handle_binfmt(local_profile[localfile], interpreter_path)
         else:
 
@@ -1409,24 +1438,15 @@ def handle_children(profile, hat, root):
                             changed[profile] = True
 
                             if exec_mode & str_to_mode('i'):
-                                #if 'perl' in exec_target:
-                                #    aa[profile][hat]['include']['abstractions/perl'] = True
-                                #elif '/bin/bash' in exec_target or '/bin/sh' in exec_target:
-                                #    aa[profile][hat]['include']['abstractions/bash'] = True
-                                hashbang = head(exec_target)
-                                if hashbang.startswith('#!'):
-                                    interpreter = hashbang[2:].strip()
-                                    interpreter_path = get_full_path(interpreter)
-                                    interpreter = re.sub('^(/usr)?/bin/', '', interpreter_path)
+                                interpreter_path, abstraction = get_interpreter_and_abstraction(exec_target)
 
+                                if interpreter_path:
                                     aa[profile][hat]['allow']['path'][interpreter_path]['mode'] = aa[profile][hat]['allow']['path'][interpreter_path].get('mode', str_to_mode('ix')) | str_to_mode('ix')
 
                                     aa[profile][hat]['allow']['path'][interpreter_path]['audit'] = aa[profile][hat]['allow']['path'][interpreter_path].get('audit', set())
 
-                                    if interpreter == 'perl':
-                                        aa[profile][hat]['include']['abstractions/perl'] = True
-                                    elif interpreter in ['bash', 'dash', 'sh']:
-                                        aa[profile][hat]['include']['abstractions/bash'] = True
+                                    if abstraction:
+                                        aa[profile][hat]['include'][abstraction] = True
 
                     # Update tracking info based on kind of change
 

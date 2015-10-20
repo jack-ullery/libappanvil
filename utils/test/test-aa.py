@@ -13,7 +13,9 @@ import unittest
 from common_test import AATest, setup_all_loops
 from common_test import read_file, write_file
 
-from apparmor.aa import (check_for_apparmor, create_new_profile,
+import os
+
+from apparmor.aa import (check_for_apparmor, get_interpreter_and_abstraction, create_new_profile,
      get_profile_flags, set_profile_flags, is_skippable_file, is_skippable_dir,
      parse_profile_start, parse_profile_data, separate_vars, store_list_var, write_header, serialize_parse_profile_start)
 from apparmor.common import AppArmorException, AppArmorBug
@@ -96,6 +98,47 @@ class AaTest_create_new_profile(AATest):
             self.assertEqual(profile[program][program]['include'].keys(), {exp_abstraction, 'abstractions/base'})
         else:
             self.assertEqual(profile[program][program]['include'].keys(), {'abstractions/base'})
+
+class AaTest_get_interpreter_and_abstraction(AATest):
+    tests = [
+        ('#!/bin/bash',             ('/bin/bash',           'abstractions/bash')),
+        ('#!/bin/dash',             ('/bin/dash',           'abstractions/bash')),
+        ('#!/bin/sh',               ('/bin/sh',             'abstractions/bash')),
+        ('#!  /bin/sh  ',           ('/bin/sh',             'abstractions/bash')),
+        ('#!/usr/bin/perl',         ('/usr/bin/perl',       'abstractions/perl')),
+        ('#!/usr/bin/python',       ('/usr/bin/python',     'abstractions/python')),
+        ('#!/usr/bin/python2',      ('/usr/bin/python2',    'abstractions/python')),
+        ('#!/usr/bin/python2.7',    ('/usr/bin/python2.7',  'abstractions/python')),
+        ('#!/usr/bin/python3',      ('/usr/bin/python3',    'abstractions/python')),
+        ('#!/usr/bin/python4',      ('/usr/bin/python4',    None)),  # python abstraction is only applied to py2 and py3
+        ('#!/usr/bin/ruby',         ('/usr/bin/ruby',       'abstractions/ruby')),
+        ('#!/usr/bin/foobarbaz',    ('/usr/bin/foobarbaz',  None)),  # we don't have an abstraction for "foobarbaz"
+        ('foo',                     (None,                  None)),  # no hashbang - not a script
+    ]
+
+    def _run_test(self, params, expected):
+        exp_interpreter_path, exp_abstraction = expected
+
+        program = self.writeTmpfile('program', "%s\nfoo\nbar" % params)
+        interpreter_path, abstraction = get_interpreter_and_abstraction(program)
+
+        # damn symlinks!
+        if exp_interpreter_path and os.path.islink(exp_interpreter_path):
+            dirname = os.path.dirname(exp_interpreter_path)
+            exp_interpreter_path = os.readlink(exp_interpreter_path)
+            if not exp_interpreter_path.startswith('/'):
+                exp_interpreter_path = os.path.join(dirname, exp_interpreter_path)
+
+        self.assertEqual(interpreter_path, exp_interpreter_path)
+        self.assertEqual(abstraction, exp_abstraction)
+
+    def test_special_file(self):
+        self.assertEqual((None, None), get_interpreter_and_abstraction('/dev/null'))
+
+    def test_file_not_found(self):
+        self.createTmpdir()
+        self.assertEqual((None, None), get_interpreter_and_abstraction('%s/file-not-found' % self.tmpdir))
+
 
 class AaTest_get_profile_flags(AaTestWithTempdir):
     def _test_get_flags(self, profile_header, expected_flags):
