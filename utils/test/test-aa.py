@@ -13,7 +13,8 @@ import unittest
 from common_test import AATest, setup_all_loops
 from common_test import read_file, write_file
 
-from apparmor.aa import (check_for_apparmor, get_profile_flags, set_profile_flags, is_skippable_file, is_skippable_dir,
+from apparmor.aa import (check_for_apparmor, create_new_profile,
+     get_profile_flags, set_profile_flags, is_skippable_file, is_skippable_dir,
      parse_profile_start, parse_profile_data, separate_vars, store_list_var, write_header, serialize_parse_profile_start)
 from apparmor.common import AppArmorException, AppArmorBug
 
@@ -67,6 +68,34 @@ class AaTest_check_for_apparmor(AaTestWithTempdir):
         filesystems = write_file(self.tmpdir, 'filesystems', self.FILESYSTEMS_WITH_SECURITYFS)
         mounts = write_file(self.tmpdir, 'mounts', self.MOUNTS_WITH_SECURITYFS % self.tmpdir)
         self.assertEqual('%s/security/apparmor' % self.tmpdir, check_for_apparmor(filesystems, mounts))
+
+class AaTest_create_new_profile(AATest):
+    tests = [
+        # file content              expected interpreter    expected abstraction (besides 'base')
+        ('#!/bin/bash\ntrue',      ('/bin/bash',            'abstractions/bash')),
+        ('foo bar',                (None,                   None)),
+    ]
+    def _run_test(self, params, expected):
+        exp_interpreter_path, exp_abstraction = expected
+
+        program = self.writeTmpfile('script', params)
+        profile = create_new_profile(program)
+
+        if exp_interpreter_path:
+            self.assertEqual(profile[program][program]['allow']['path'][exp_interpreter_path]['mode'], {'x', '::i', '::x', 'i'} )
+            self.assertEqual(profile[program][program]['allow']['path'][exp_interpreter_path]['audit'], set() )
+            self.assertEqual(profile[program][program]['allow']['path'][program]['mode'], {'r', '::r'} )
+            self.assertEqual(profile[program][program]['allow']['path'][program]['audit'], set() )
+            self.assertEqual(profile[program][program]['allow']['path'].keys(), {exp_interpreter_path, program} )
+        else:
+            self.assertEqual(profile[program][program]['allow']['path'][program]['mode'], {'r', '::r', 'm', '::m'} )
+            self.assertEqual(profile[program][program]['allow']['path'][program]['audit'], set() )
+            self.assertEqual(profile[program][program]['allow']['path'].keys(), {program} )
+
+        if exp_abstraction:
+            self.assertEqual(profile[program][program]['include'].keys(), {exp_abstraction, 'abstractions/base'})
+        else:
+            self.assertEqual(profile[program][program]['include'].keys(), {'abstractions/base'})
 
 class AaTest_get_profile_flags(AaTestWithTempdir):
     def _test_get_flags(self, profile_header, expected_flags):
