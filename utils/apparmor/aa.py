@@ -82,7 +82,6 @@ cfg = None
 repo_cfg = None
 
 parser = None
-ldd = None
 logger = None
 profile_dir = None
 extra_profile_dir = None
@@ -360,6 +359,11 @@ def get_reqs(file):
     pattern1 = re.compile('^\s*\S+ => (\/\S+)')
     pattern2 = re.compile('^\s*(\/\S+)')
     reqs = []
+
+    ldd = conf.find_first_file(cfg['settings']['ldd']) or '/usr/bin/ldd'
+    if not os.path.isfile(ldd) or not os.access(ldd, os.EX_OK):
+        raise AppArmorException('Can\'t find ldd')
+
     ret, ldd_out = get_output([ldd, file])
     if ret == 0:
         for line in ldd_out:
@@ -4364,10 +4368,6 @@ extra_profile_dir = conf.find_first_dir(cfg['settings']['inactive_profiledir']) 
 parser = conf.find_first_file(cfg['settings']['parser']) or '/sbin/apparmor_parser'
 if not os.path.isfile(parser) or not os.access(parser, os.EX_OK):
     raise AppArmorException('Can\'t find apparmor_parser')
-
-ldd = conf.find_first_file(cfg['settings']['ldd']) or '/usr/bin/ldd'
-if not os.path.isfile(ldd) or not os.access(ldd, os.EX_OK):
-    raise AppArmorException('Can\'t find ldd')
 
 logger = conf.find_first_file(cfg['settings']['logger']) or '/bin/logger'
 if not os.path.isfile(logger) or not os.access(logger, os.EX_OK):
