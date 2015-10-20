@@ -420,7 +420,8 @@ def get_interpreter_and_abstraction(exec_target):
     if not hashbang.startswith('#!'):
         return None, None
 
-    interpreter = hashbang[2:].strip()
+    # get the interpreter (without parameters)
+    interpreter = hashbang[2:].strip().split()[0]
     interpreter_path = get_full_path(interpreter)
     interpreter = re.sub('^(/usr)?/bin/', '', interpreter_path)
 

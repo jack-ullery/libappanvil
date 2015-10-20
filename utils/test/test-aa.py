@@ -105,7 +105,9 @@ class AaTest_get_interpreter_and_abstraction(AATest):
         ('#!/bin/dash',             ('/bin/dash',           'abstractions/bash')),
         ('#!/bin/sh',               ('/bin/sh',             'abstractions/bash')),
         ('#!  /bin/sh  ',           ('/bin/sh',             'abstractions/bash')),
+        ('#!  /bin/sh  -x ',        ('/bin/sh',             'abstractions/bash')),  # '-x' is not part of the interpreter path
         ('#!/usr/bin/perl',         ('/usr/bin/perl',       'abstractions/perl')),
+        ('#!/usr/bin/perl -w',      ('/usr/bin/perl',       'abstractions/perl')),  # '-w' is not part of the interpreter path
         ('#!/usr/bin/python',       ('/usr/bin/python',     'abstractions/python')),
         ('#!/usr/bin/python2',      ('/usr/bin/python2',    'abstractions/python')),
         ('#!/usr/bin/python2.7',    ('/usr/bin/python2.7',  'abstractions/python')),
