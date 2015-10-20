@@ -82,7 +82,6 @@ cfg = None
 repo_cfg = None
 
 parser = None
-logger = None
 profile_dir = None
 extra_profile_dir = None
 ### end our
@@ -4349,6 +4348,12 @@ def matchregexp(new, old):
 
     return None
 
+def logger_path():
+    logger = conf.find_first_file(cfg['settings']['logger']) or '/bin/logger'
+    if not os.path.isfile(logger) or not os.access(logger, os.EX_OK):
+        raise AppArmorException("Can't find logger!\nPlease make sure %s exists, or update the 'logger' path in logprof.conf." % logger)
+    return logger
+
 ######Initialisations######
 
 conf = apparmor.config.Config('ini', CONFDIR)
@@ -4369,6 +4374,3 @@ parser = conf.find_first_file(cfg['settings']['parser']) or '/sbin/apparmor_pars
 if not os.path.isfile(parser) or not os.access(parser, os.EX_OK):
     raise AppArmorException('Can\'t find apparmor_parser')
 
-logger = conf.find_first_file(cfg['settings']['logger']) or '/bin/logger'
-if not os.path.isfile(logger) or not os.access(logger, os.EX_OK):
-    raise AppArmorException('Can\'t find logger')
