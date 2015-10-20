@@ -8,7 +8,7 @@
   #include <abstractions/perl>
 
   /dev/tty rw,
-  /bin/bash ix,
+  /{,usr/}bin/bash ix,
   /etc/init.d/nscd Cx,
   /etc/shadow r,
   /etc/smbldap-tools/smbldap.conf r,
@@ -26,9 +26,9 @@
 
     capability sys_ptrace,
 
-    /bin/bash r,
-    /bin/mountpoint rix,
-    /bin/systemctl rix,
+    /{,usr/}bin/bash r,
+    /{,usr/}bin/mountpoint rix,
+    /{,usr/}bin/systemctl rix,
     /dev/tty rw,
     /etc/init.d/nscd r,
     /etc/rc.status r,
