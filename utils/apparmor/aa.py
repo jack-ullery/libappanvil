@@ -359,7 +359,7 @@ def get_reqs(file):
     pattern2 = re.compile('^\s*(\/\S+)')
     reqs = []
 
-    ldd = conf.find_first_file(cfg['settings']['ldd']) or '/usr/bin/ldd'
+    ldd = conf.find_first_file(cfg['settings'].get('ldd')) or '/usr/bin/ldd'
     if not os.path.isfile(ldd) or not os.access(ldd, os.EX_OK):
         raise AppArmorException('Can\'t find ldd')
 
@@ -4380,18 +4380,21 @@ def logger_path():
 conf = apparmor.config.Config('ini', CONFDIR)
 cfg = conf.read_config('logprof.conf')
 
-#print(cfg['settings'])
-#if 'default_owner_prompt' in cfg['settings']:
+# prevent various failures if logprof.conf doesn't exist
+if not cfg.sections():
+    cfg.add_section('settings')
+    cfg.add_section('required_hats')
+
 if cfg['settings'].get('default_owner_prompt', False):
     cfg['settings']['default_owner_prompt'] = ''
 
-profile_dir = conf.find_first_dir(cfg['settings']['profiledir']) or '/etc/apparmor.d'
+profile_dir = conf.find_first_dir(cfg['settings'].get('profiledir')) or '/etc/apparmor.d'
 if not os.path.isdir(profile_dir):
     raise AppArmorException('Can\'t find AppArmor profiles')
 
-extra_profile_dir = conf.find_first_dir(cfg['settings']['inactive_profiledir']) or '/etc/apparmor/profiles/extras/'
+extra_profile_dir = conf.find_first_dir(cfg['settings'].get('inactive_profiledir')) or '/usr/share/apparmor/extra-profiles/'
 
-parser = conf.find_first_file(cfg['settings']['parser']) or '/sbin/apparmor_parser'
+parser = conf.find_first_file(cfg['settings'].get('parser')) or '/sbin/apparmor_parser'
 if not os.path.isfile(parser) or not os.access(parser, os.EX_OK):
     raise AppArmorException('Can\'t find apparmor_parser')
 
