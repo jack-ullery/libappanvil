@@ -50,6 +50,10 @@ class BaseRule(object):
         # Set only in the parse() class method
         self.raw_rule = None
 
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return '<%s> ' % classname + self.get_raw()
+
     @classmethod
     def match(cls, raw_rule):
         '''return True if raw_rule matches the class (main) regex, False otherwise
@@ -210,6 +214,10 @@ class BaseRuleset(object):
     def _init_vars(self):
         '''called by __init__() and delete_all_rules() - override in child class to initialize more variables'''
         pass
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return '<%s>\n' % classname + '\n'.join(self.get_raw(1)) + '</%s>' % classname
 
     def add(self, rule):
         '''add a rule object'''
