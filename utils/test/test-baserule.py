@@ -35,6 +35,11 @@ class TestBaserule(AATest):
         with self.assertRaises(AppArmorBug):
             BaseRule.match('foo')
 
+    def test_abstract_get_clean(self):
+        obj = BaseRule()
+        with self.assertRaises(AppArmorBug):
+            obj.get_clean()
+
     def test_is_equal_localvars(self):
         obj = BaseRule()
         with self.assertRaises(AppArmorBug):

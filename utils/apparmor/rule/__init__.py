@@ -81,6 +81,11 @@ class BaseRule(object):
            required to be implemented by subclasses; raise exception if not'''
         raise AppArmorBug("'%s' needs to implement _parse(), but didn't" % (str(cls)))
 
+    # @abstractmethod  FIXME - uncomment when python3 only
+    def get_clean(self, depth=0):
+        '''return clean rule (with default formatting, and leading whitespace as specified in the depth parameter)'''
+        raise AppArmorBug("'%s' needs to implement get_clean(), but didn't" % (str(self.__class__)))
+
     def get_raw(self, depth=0):
         '''return raw rule (with original formatting, and leading whitespace in the depth parameter)'''
         if self.raw_rule:
