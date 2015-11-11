@@ -54,9 +54,9 @@ profile syslog-ng /{usr/,}sbin/syslog-ng {
   @{CHROOT_BASE}/var/log/** w,
   @{CHROOT_BASE}/{,var/}run/syslog-ng.pid krw,
   @{CHROOT_BASE}/{,var/}run/syslog-ng.ctl rw,
-  /var/log/journal/ r,
-  /var/log/journal/*/ r,
-  /var/log/journal/*/*.journal r,
+  /{var,var/run,run}/log/journal/ r,
+  /{var,var/run,run}/log/journal/*/ r,
+  /{var,var/run,run}/log/journal/*/*.journal r,
   /{var/,}run/syslog-ng.ctl a,
   /{var/,}run/syslog-ng/additional-log-sockets.conf r,
 
