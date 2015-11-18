@@ -2768,8 +2768,12 @@ def parse_profile_data(data, file, do_include):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected bare file rule found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            audit, allow, allow_keyword, comment = parse_modifiers(matches)
+            audit, deny, allow_keyword, comment = parse_modifiers(matches)
             # TODO: honor allow_keyword and comment
+            if deny:
+                allow = 'deny'
+            else:
+                allow = 'allow'
 
             mode = apparmor.aamode.AA_BARE_FILE_MODE
             if not matches.group('owner'):
