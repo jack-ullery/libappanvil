@@ -443,18 +443,21 @@ def get_inactive_profile(local_profile):
         return {local_profile: extras[local_profile]}
     return dict()
 
-def profile_storage():
+def profile_storage(profilename, hat, calledby):
     # keys used in aa[profile][hat]:
     # a) rules (as dict): alias, include, lvar
     # b) rules (as hasher): allow, deny
     # c) one for each rule class
-    # d) other: external, flags, name, profile, attachment, initial_comment,
+    # d) other: external, flags, name, profile, attachment, initial_comment, filename, info,
     #           profile_keyword, header_comment (these two are currently only set by set_profile_flags())
 
     # Note that this function doesn't explicitely init all those keys (yet).
     # It will be extended over time, with the final goal to get rid of hasher().
 
     profile = hasher()
+
+    # profile['info'] isn't used anywhere, but can be helpful in debugging.
+    profile['info'] = {'profile': profilename, 'hat': hat, 'calledby': calledby}
 
     profile['capability']       = CapabilityRuleset()
     profile['change_profile']   = ChangeProfileRuleset()
@@ -472,7 +475,7 @@ def profile_storage():
 
 def create_new_profile(localfile, is_stub=False):
     local_profile = hasher()
-    local_profile[localfile] = profile_storage()
+    local_profile[localfile] = profile_storage('NEW', localfile, 'create_new_profile()')
     local_profile[localfile]['flags'] = 'complain'
     local_profile[localfile]['include']['abstractions/base'] = 1
 
@@ -504,7 +507,7 @@ def create_new_profile(localfile, is_stub=False):
         if re.search(hatglob, localfile):
             for hat in sorted(cfg['required_hats'][hatglob].split()):
                 if not local_profile.get(hat, False):
-                    local_profile[hat] = profile_storage()
+                    local_profile[hat] = profile_storage('NEW', hat, 'create_new_profile() required_hats')
                 local_profile[hat]['flags'] = 'complain'
 
     if not is_stub:
@@ -1491,7 +1494,7 @@ def handle_children(profile, hat, root):
                             if ynans == 'y':
                                 hat = exec_target
                                 if not aa[profile].get(hat, False):
-                                    aa[profile][hat] = profile_storage()
+                                    aa[profile][hat] = profile_storage(profile, hat, 'handle_children()')
                                 aa[profile][hat]['profile'] = True
 
                                 if profile != hat:
@@ -1612,7 +1615,7 @@ def ask_the_questions():
                 hats = [profile] + hats
 
             for hat in hats:
-                log_obj[profile][hat] = profile_storage()
+                log_obj[profile][hat] = profile_storage(profile, hat, 'ask_the_questions()')
 
                 for capability in sorted(log_dict[aamode][profile][hat]['capability'].keys()):
                     capability_obj = CapabilityRule(capability, log_event=aamode)
@@ -2600,7 +2603,7 @@ def parse_profile_data(data, file, do_include):
     if do_include:
         profile = file
         hat = file
-        profile_data[profile][hat] = profile_storage()
+        profile_data[profile][hat] = profile_storage(profile, hat, 'parse_profile_data() do_include')
         profile_data[profile][hat]['filename'] = file
 
     for lineno, line in enumerate(data):
@@ -2619,7 +2622,7 @@ def parse_profile_data(data, file, do_include):
                 raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
                     { 'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat) })
 
-            profile_data[profile][hat] = profile_storage()
+            profile_data[profile][hat] = profile_storage(profile, hat, 'parse_profile_data() profile_start')
 
             if attachment:
                 profile_data[profile][hat]['attachment'] = attachment
@@ -3028,7 +3031,7 @@ def parse_profile_data(data, file, do_include):
             # if hat is already known, the filelist check some lines below will error out.
             # nevertheless, just to be sure, don't overwrite existing profile_data.
             if not profile_data[profile].get(hat, False):
-                profile_data[profile][hat] = profile_storage()
+                profile_data[profile][hat] = profile_storage(profile, hat, 'parse_profile_data() hat_def')
                 profile_data[profile][hat]['filename'] = file
 
             flags = matches.group('flags')
@@ -3078,7 +3081,7 @@ def parse_profile_data(data, file, do_include):
                 if re.search(hatglob, parsed_prof):
                     for hat in cfg['required_hats'][hatglob].split():
                         if not profile_data[parsed_prof].get(hat, False):
-                            profile_data[parsed_prof][hat] = profile_storage()
+                            profile_data[parsed_prof][hat] = profile_storage(parsed_prof, hat, 'parse_profile_data() required_hats')
 
     # End of file reached but we're stuck in a profile
     if profile and not do_include:
