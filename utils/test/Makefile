@@ -24,8 +24,10 @@ ifdef USE_SYSTEM
     LD_LIBRARY_PATH=
     PYTHONPATH=
 else
+    # PYTHON_DIST_BUILD_PATH based on libapparmor/swig/python/test/Makefile.am
+    PYTHON_DIST_BUILD_PATH = ../../libraries/libapparmor/swig/python/build/$$($(PYTHON) -c "import distutils.util; import platform; print(\"lib.%s-%s\" %(distutils.util.get_platform(), platform.python_version()[:3]))")
     LD_LIBRARY_PATH=../../libraries/libapparmor/src/.libs/
-    PYTHONPATH=..
+    PYTHONPATH=..:$(PYTHON_DIST_BUILD_PATH)
 endif
 
 .PHONY: __libapparmor
