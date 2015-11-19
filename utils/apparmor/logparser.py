@@ -288,15 +288,15 @@ class ReadLog:
                 self.debug_logger.debug('UNHANDLED (missing request_mask): %s' % e)
                 return None
 
-            # Map c (create) to a and d (delete) to w (logging is more detailed than the profile language)
+            # Map c (create) and d (delete) to w (logging is more detailed than the profile language)
             rmask = e['request_mask']
-            rmask = rmask.replace('c', 'a')
+            rmask = rmask.replace('c', 'w')
             rmask = rmask.replace('d', 'w')
             if not validate_log_mode(hide_log_mode(rmask)):
                 raise AppArmorException(_('Log contains unknown mode %s') % rmask)
 
             dmask = e['denied_mask']
-            dmask = dmask.replace('c', 'a')
+            dmask = dmask.replace('c', 'w')
             dmask = dmask.replace('d', 'w')
             if not validate_log_mode(hide_log_mode(dmask)):
                 raise AppArmorException(_('Log contains unknown mode %s') % dmask)
