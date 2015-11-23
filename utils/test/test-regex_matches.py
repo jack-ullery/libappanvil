@@ -299,18 +299,14 @@ class AARegexSignal(AARegexTest):
         self.regex = aa.RE_PROFILE_SIGNAL
 
     tests = [
-        ('   signal,', (None, None, 'signal,', None)),
-        ('   audit signal,', ('audit', None, 'signal,', None)),
-        ('   signal receive,', (None, None, 'signal receive,', None)),
-        ('   signal (send, receive),',
-         (None, None, 'signal (send, receive),', None)),
-        ('   audit signal (receive),',
-         ('audit', None, 'signal (receive),', None)),
-        ('   signal (send, receive) set=(usr1 usr2),',
-         (None, None, 'signal (send, receive) set=(usr1 usr2),', None)),
-        ('   signal send set=(hup, quit) peer=/usr/sbin/daemon,',
-         (None, None,
-          'signal send set=(hup, quit) peer=/usr/sbin/daemon,', None)),
+        ('   signal,',                                  (None,    None, 'signal,',                                  None,                               None)),
+        ('   audit signal,',                            ('audit', None, 'signal,',                                  None,                               None)),
+        ('   signal receive,',                          (None,    None, 'signal receive,',                          'receive',                          None)),
+        ('   signal (send, receive),',                  (None,    None, 'signal (send, receive),',                  '(send, receive)',                  None)),
+        ('   audit signal (receive),',                  ('audit', None, 'signal (receive),',                        '(receive)',                        None)),
+        ('   signal (send, receive) set=(usr1 usr2),',  (None,    None, 'signal (send, receive) set=(usr1 usr2),',  '(send, receive) set=(usr1 usr2)',  None)),
+        ('   signal send set=(hup, quit) peer=/usr/sbin/daemon,', (None, None, 'signal send set=(hup, quit) peer=/usr/sbin/daemon,',
+                                                                                                          'send set=(hup, quit) peer=/usr/sbin/daemon', None)),
 
         ('   signalling,', False),
         ('   audit signalling,', False),
