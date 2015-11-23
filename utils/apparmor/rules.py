@@ -71,9 +71,6 @@ class Raw_DBUS_Rule(_Raw_Rule):
 class Raw_Mount_Rule(_Raw_Rule):
     pass
 
-class Raw_Signal_Rule(_Raw_Rule):
-    pass
-
 class Raw_Ptrace_Rule(_Raw_Rule):
     pass
 
