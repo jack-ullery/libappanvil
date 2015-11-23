@@ -232,6 +232,19 @@ class WriteSignalTestAATest(AATest):
         ('   deny signal         send      set=(quit, int ),'  , 'deny signal send set=(int quit),'),
         ('   deny signal         send      ,# foo bar'         , 'deny signal send, # foo bar'),
         ('   allow signal             set=int    ,# foo bar'   , 'allow signal set=int, # foo bar'),
+        ('signal,'                                             , 'signal,'),
+        ('signal (receive),'                                   , 'signal receive,'),
+        ('signal (send),'                                      , 'signal send,'),
+        ('signal (send receive),'                              , 'signal (receive send),'),
+        ('signal r,'                                           , 'signal r,'),
+        ('signal w,'                                           , 'signal w,'),
+        ('signal rw,'                                          , 'signal rw,'),
+        ('signal send set=("hup"),'                            , 'signal send set=hup,'),
+        ('signal (receive) set=kill,'                          , 'signal receive set=kill,'),
+        ('signal w set=(quit int),'                            , 'signal w set=(int quit),'),
+        ('signal receive peer=foo,'                            , 'signal receive peer=foo,'),
+        ('signal (send receive) peer=/usr/bin/bar,'            , 'signal (receive send) peer=/usr/bin/bar,'),
+        ('signal wr set=(pipe, usr1) peer=/sbin/baz,'          , 'signal wr set=(pipe usr1) peer=/sbin/baz,'),
     ]
 
     def test_write_manually(self):
