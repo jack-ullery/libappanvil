@@ -64,12 +64,11 @@ class CleanProf(object):
                 deleted += apparmor.delete_duplicates(self.other.aa[program][hat], inc)
 
             #Clean duplicate rules in other profile
-            if not self.same_file:
-                deleted += self.other.aa[program][hat]['capability'].delete_duplicates(self.profile.aa[program][hat]['capability'])
-                deleted += self.other.aa[program][hat]['network'].delete_duplicates(self.profile.aa[program][hat]['network'])
-            else:
-                deleted += self.other.aa[program][hat]['capability'].delete_duplicates(None)
-                deleted += self.other.aa[program][hat]['network'].delete_duplicates(None)
+            for ruletype in ['capability', 'change_profile', 'network', 'rlimit', 'signal']:
+                if not self.same_file:
+                    deleted += self.other.aa[program][hat][ruletype].delete_duplicates(self.profile.aa[program][hat][ruletype])
+                else:
+                    deleted += self.other.aa[program][hat][ruletype].delete_duplicates(None)
 
             #Clean the duplicates of path in other profile
             deleted += delete_path_duplicates(self.profile.aa[program][hat], self.other.aa[program][hat], 'allow', self.same_file)

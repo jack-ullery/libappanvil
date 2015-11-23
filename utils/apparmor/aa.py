@@ -2111,7 +2111,7 @@ def delete_duplicates(profile, incname):
     # Allow rules covered by denied rules shouldn't be deleted
     # only a subset allow rules may actually be denied
 
-    ruletypes = ['capability', 'change_profile', 'network', 'rlimit']
+    ruletypes = ['capability', 'change_profile', 'network', 'rlimit', 'signal']
 
     if include.get(incname, False):
         for rule_type in ruletypes:
