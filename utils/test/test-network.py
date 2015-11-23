@@ -441,7 +441,7 @@ class NetworkGlobTestAATest(AATest):
     #     self.assertEqual(self.ruleset.get_glob('network inet raw,'), 'network inet,')
 
     def test_glob_ext(self):
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(NotImplementedError):
             # get_glob_ext is not available for network rules
             self.ruleset.get_glob_ext('network inet raw,')
 

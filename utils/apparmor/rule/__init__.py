@@ -52,7 +52,11 @@ class BaseRule(object):
 
     def __repr__(self):
         classname = self.__class__.__name__
-        return '<%s> ' % classname + self.get_raw()
+        try:
+            raw_content = self.get_raw()  # will fail for BaseRule
+            return '<%s> %s' % (classname, raw_content)
+        except NotImplementedError:
+            return '<%s (NotImplementedError - get_clean() not implemented?)>' % classname
 
     @classmethod
     def match(cls, raw_rule):
@@ -69,7 +73,7 @@ class BaseRule(object):
     @classmethod
     def _match(cls, raw_rule):
         '''parse raw_rule and return regex match object'''
-        raise AppArmorBug("'%s' needs to implement _match(), but didn't" % (str(cls)))
+        raise NotImplementedError("'%s' needs to implement _match(), but didn't" % (str(cls)))
 
     @classmethod
     def parse(cls, raw_rule):
@@ -83,12 +87,12 @@ class BaseRule(object):
     def _parse(cls, raw_rule):
         '''returns a Rule object created from parsing the raw rule.
            required to be implemented by subclasses; raise exception if not'''
-        raise AppArmorBug("'%s' needs to implement _parse(), but didn't" % (str(cls)))
+        raise NotImplementedError("'%s' needs to implement _parse(), but didn't" % (str(cls)))
 
     # @abstractmethod  FIXME - uncomment when python3 only
     def get_clean(self, depth=0):
         '''return clean rule (with default formatting, and leading whitespace as specified in the depth parameter)'''
-        raise AppArmorBug("'%s' needs to implement get_clean(), but didn't" % (str(self.__class__)))
+        raise NotImplementedError("'%s' needs to implement get_clean(), but didn't" % (str(self.__class__)))
 
     def get_raw(self, depth=0):
         '''return raw rule (with original formatting, and leading whitespace in the depth parameter)'''
@@ -121,7 +125,7 @@ class BaseRule(object):
     # @abstractmethod  FIXME - uncomment when python3 only
     def is_covered_localvars(self, other_rule):
         '''check if the rule-specific parts of other_rule is covered by this rule object'''
-        raise AppArmorBug("'%s' needs to implement is_covered_localvars(), but didn't" % (str(self)))
+        raise NotImplementedError("'%s' needs to implement is_covered_localvars(), but didn't" % (str(self)))
 
     def is_equal(self, rule_obj, strict=False):
         '''compare if rule_obj == self
@@ -142,7 +146,7 @@ class BaseRule(object):
     # @abstractmethod  FIXME - uncomment when python3 only
     def is_equal_localvars(self, other_rule):
         '''compare if rule-specific variables are equal'''
-        raise AppArmorBug("'%s' needs to implement is_equal_localvars(), but didn't" % (str(self)))
+        raise NotImplementedError("'%s' needs to implement is_equal_localvars(), but didn't" % (str(self)))
 
     def severity(self, sev_db):
         '''return severity of this rule, which can be:
@@ -178,7 +182,7 @@ class BaseRule(object):
     def logprof_header_localvars(self):
         '''return the headers (human-readable version of the rule) to display in aa-logprof for this rule object
            returns {'label1': 'value1', 'label2': 'value2'} '''
-        raise AppArmorBug("'%s' needs to implement logprof_header(), but didn't" % (str(self)))
+        raise NotImplementedError("'%s' needs to implement logprof_header(), but didn't" % (str(self)))
 
     def modifiers_str(self):
         '''return the allow/deny and audit keyword as string, including whitespace'''
@@ -336,7 +340,7 @@ class BaseRuleset(object):
     def get_glob_ext(self, path_or_rule):
         '''returns the next possible glob with extension (for file rules only).
            For all other rule types, raise an exception'''
-        raise AppArmorBug("get_glob_ext is not available for this rule type!")
+        raise NotImplementedError("get_glob_ext is not available for this rule type!")
 
 
 def parse_comment(matches):

@@ -635,7 +635,7 @@ class CapabilityGlobTest(AATest):
         self.assertEqual(self.ruleset.get_glob('capability net_raw,'), 'capability,')
 
     def test_glob_ext(self):
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(NotImplementedError):
             self.ruleset.get_glob_ext('capability net_raw,')
 
 class CapabilityDeleteTest(AATest):

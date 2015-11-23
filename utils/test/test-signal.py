@@ -572,7 +572,7 @@ class SignalGlobTestAATest(AATest):
     #     self.assertEqual(self.ruleset.get_glob('signal send raw,'), 'signal send,')
 
     def test_glob_ext(self):
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(NotImplementedError):
             # get_glob_ext is not available for signal rules
             self.ruleset.get_glob_ext('signal send set=int,')
 

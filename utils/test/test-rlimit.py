@@ -411,7 +411,7 @@ class RlimitGlobTestAATest(AATest):
     #     self.assertEqual(self.ruleset.get_glob('rlimit /foo -> /bar,'), 'rlimit -> /bar,')
 
     def test_glob_ext(self):
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(NotImplementedError):
             # get_glob_ext is not available for rlimit rules
             self.ruleset.get_glob_ext('set rlimit cpu <= 100,')
 

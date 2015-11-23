@@ -20,34 +20,34 @@ import re
 
 class TestBaserule(AATest):
     def test_abstract__parse(self):
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(NotImplementedError):
             BaseRule._parse('foo')
 
     def test_abstract__parse_2(self):
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(NotImplementedError):
             BaseRule.parse('foo')
 
     def test_abstract__match(self):
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(NotImplementedError):
             BaseRule._match('foo')
 
     def test_abstract__match2(self):
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(NotImplementedError):
             BaseRule.match('foo')
 
     def test_abstract_get_clean(self):
         obj = BaseRule()
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(NotImplementedError):
             obj.get_clean()
 
     def test_is_equal_localvars(self):
         obj = BaseRule()
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(NotImplementedError):
             obj.is_equal_localvars(BaseRule())
 
     def test_is_covered_localvars(self):
         obj = BaseRule()
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(NotImplementedError):
             obj.is_covered_localvars(None)
 
     def test_parse_modifiers_invalid(self):
@@ -65,7 +65,7 @@ class TestBaserule(AATest):
 
     def test_logprof_header_localvars(self):
         obj = BaseRule()
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(NotImplementedError):
             obj.logprof_header_localvars()
 
 
