@@ -9,30 +9,34 @@
 #
 # ------------------------------------------------------------------
 
-import apparmor.aa as aa
 import unittest
-from common_test import AAParseTest, setup_regex_tests
+from common_test import AATest, setup_all_loops
 
-class AAParseSignalTest(AAParseTest):
-    def setUp(self):
-        self.parse_function = aa.parse_signal_rule
+from apparmor.rule.signal import SignalRule
+
+class AAParseSignalTest(AATest):
+    def _run_test(self, params, expected):
+        parsed = SignalRule.parse(params)
+        self.assertEqual(expected, parsed.get_clean())
+
 
     tests = [
-        ('signal,', 'signal base keyword rule'),
-        ('signal (receive),', 'signal receive rule'),
-        ('signal (send),', 'signal send rule'),
-        ('signal (send receive),', 'signal multiple perms rule'),
-        ('signal r,', 'signal r rule'),
-        ('signal w,', 'signal w rule'),
-        ('signal rw,', 'signal rw rule'),
-        ('signal send set=("hup"),', 'signal set rule 1'),
-        ('signal (receive) set=kill,', 'signal set rule 2'),
-        ('signal w set=(quit int),', 'signal set rule 3'),
-        ('signal receive peer=foo,', 'signal peer rule 1'),
-        ('signal (send receive) peer=/usr/bin/bar,', 'signal peer rule 2'),
-        ('signal wr set=(pipe, usr1) peer=/sbin/baz,', 'signal peer rule 3'),
+        ('signal,',                     'signal,'),
+        ('signal (receive),',           'signal receive,'),
+        ('signal (send),',              'signal send,'),
+        ('signal (send receive),',      'signal (receive send),'),
+        ('signal r,',                   'signal r,'),
+        ('signal w,',                   'signal w,'),
+        ('signal rw,',                  'signal rw,'),
+        ('signal send set=("hup"),',    'signal send set=hup,'),
+        ('signal (receive) set=kill,',  'signal receive set=kill,'),
+        ('signal w set=(quit int),',    'signal w set=(int quit),'),
+        ('signal receive peer=foo,',    'signal receive peer=foo,'),
+        ('signal (send receive) peer=/usr/bin/bar,',    'signal (receive send) peer=/usr/bin/bar,'),
+        ('signal wr set=(pipe, usr1) peer=/sbin/baz,',  'signal wr set=(pipe usr1) peer=/sbin/baz,'),
     ]
 
+
+setup_all_loops(__name__)
 if __name__ == '__main__':
-    setup_regex_tests(AAParseSignalTest)
     unittest.main(verbosity=2)

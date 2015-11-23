@@ -14,7 +14,7 @@ import unittest
 from common_test import AATest, setup_all_loops
 from apparmor.common import AppArmorBug, AppArmorException
 
-from apparmor.regex import strip_quotes, parse_profile_start_line, re_match_include, RE_PROFILE_START, RE_PROFILE_CAP
+from apparmor.regex import strip_quotes, parse_profile_start_line, re_match_include, RE_PROFILE_START, RE_PROFILE_CAP, RE_PROFILE_SIGNAL
 
 
 class AARegexTest(AATest):
@@ -296,7 +296,7 @@ class AARegexSignal(AARegexTest):
     '''Tests for RE_PROFILE_SIGNAL'''
 
     def AASetup(self):
-        self.regex = aa.RE_PROFILE_SIGNAL
+        self.regex = RE_PROFILE_SIGNAL
 
     tests = [
         ('   signal,',                                  (None,    None, 'signal,',                                  None,                               None)),
