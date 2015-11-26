@@ -20,7 +20,7 @@ from common_test import AATest, setup_all_loops
 from apparmor.rule.signal import SignalRule, SignalRuleset
 from apparmor.rule import BaseRule
 from apparmor.common import AppArmorException, AppArmorBug
-#from apparmor.logparser import ReadLog
+from apparmor.logparser import ReadLog
 from apparmor.translations import init_translation
 _ = init_translation()
 
@@ -84,44 +84,43 @@ class SignalTestParseInvalid(SignalTest):
         with self.assertRaises(expected):
             SignalRule.parse(rawrule)
 
-#class SignalTestParseFromLog(SignalTest):
-#    def test_signal_from_log(self):
-#        parser = ReadLog('', '', '', '', '')
-#        event = 'type=AVC msg=audit(1428699242.551:386): apparmor="DENIED" operation="create" profile="/bin/ping" pid=10589 comm="ping" family="send" sock_type="raw" protocol=1'
+class SignalTestParseFromLog(SignalTest):
+    def test_net_from_log(self):
+        parser = ReadLog('', '', '', '', '')
+        event = 'type=AVC msg=audit(1409438250.564:201): apparmor="DENIED" operation="signal" profile="/usr/bin/pulseaudio" pid=2531 comm="pulseaudio" requested_mask="send" denied_mask="send" signal=term peer="/usr/bin/pulseaudio///usr/lib/pulseaudio/pulse/gconf-helper"'
 
-#        parsed_event = parser.parse_event(event)
+        parsed_event = parser.parse_event(event)
 
-#        self.assertEqual(parsed_event, {
-#            'request_mask': None,
-#            'denied_mask': None,
-#            'error_code': 0,
-#            'family': 'send',
-#            'magic_token': 0,
-#            'parent': 0,
-#            'profile': '/bin/ping',
-#            'protocol': 'icmp',
-#            'sock_type': 'raw',
-#            'operation': 'create',
-#            'resource': None,
-#            'info': None,
-#            'aamode': 'REJECTING',
-#            'time': 1428699242,
-#            'active_hat': None,
-#            'pid': 10589,
-#            'task': 0,
-#            'attr': None,
-#            'name2': None,
-#            'name': None,
-#        })
+        self.assertEqual(parsed_event, {
+            'request_mask': 'send',
+            'denied_mask': 'send',
+            'error_code': 0,
+            'magic_token': 0,
+            'parent': 0,
+            'profile': '/usr/bin/pulseaudio',
+            'signal': 'term',
+            'peer': '/usr/bin/pulseaudio///usr/lib/pulseaudio/pulse/gconf-helper',
+            'operation': 'signal',
+            'resource': None,
+            'info': None,
+            'aamode': 'REJECTING',
+            'time': 1409438250,
+            'active_hat': None,
+            'pid': 2531,
+            'task': 0,
+            'attr': None,
+            'name2': None,
+            'name': None,
+        })
 
-#        obj = SignalRule(parsed_event['family'], parsed_event['sock_type'], log_event=parsed_event)
+        obj = SignalRule(parsed_event['denied_mask'], parsed_event['signal'], parsed_event['peer'], log_event=parsed_event)
 
-#        #              audit  allow  deny   comment        access    all?   type/proto  all?
-#        expected = exp(False, False, False, ''           , 'send',   False, 'raw'    , False)
+        #              audit  allow  deny   comment    access        all?   signal       all?   peer                                                           all?
+        expected = exp(False, False, False, '',        {'send'},     False, {'term'},    False, '/usr/bin/pulseaudio///usr/lib/pulseaudio/pulse/gconf-helper', False)
 
-#        self._compare_obj(obj, expected)
+        self._compare_obj(obj, expected)
 
-#        self.assertEqual(obj.get_raw(1), '  signal send raw,')
+        self.assertEqual(obj.get_raw(1), '  signal send set=term peer=/usr/bin/pulseaudio///usr/lib/pulseaudio/pulse/gconf-helper,')
 
 class SignalFromInit(SignalTest):
     tests = [

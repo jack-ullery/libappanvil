@@ -137,6 +137,10 @@ class ReadLog:
             ev['family'] = event.net_family
             ev['protocol'] = event.net_protocol
             ev['sock_type'] = event.net_sock_type
+        elif ev['operation'] and ev['operation'] == 'signal':
+            ev['signal'] = event.signal
+            ev['peer'] = event.peer
+
         LibAppArmor.free_record(event)
 
         if not ev['time']:
@@ -352,6 +356,9 @@ class ReadLog:
         elif e['operation'] == 'change_hat':
             return(e['pid'], e['parent'], 'unknown_hat',
                              [profile, hat, aamode, hat])
+        elif e['operation'] == 'signal':
+            return(e['pid'], e['parent'], 'signal',
+                             [profile, hat, prog, aamode, e['denied_mask'], e['signal'], e['peer']])
         else:
             self.debug_logger.debug('UNHANDLED: %s' % e)
 

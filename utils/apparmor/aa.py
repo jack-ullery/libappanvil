@@ -1125,6 +1125,16 @@ def handle_children(profile, hat, root):
                     continue
                 prelog[aamode][profile][hat]['capability'][capability] = True
 
+            elif typ == 'signal':
+                # If signal then we (should) have pid, profile, hat, program, mode, access, signal and peer
+                pid, p, h, prog, aamode, access, signal, peer = entry
+                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
+                    profile = p
+                    hat = h
+                if not profile or not hat:
+                    continue
+                prelog[aamode][profile][hat]['signal'][peer][access][signal] = True
+
             elif typ == 'path' or typ == 'exec':
                 # If path or exec then we (should) have pid, profile, hat, program, mode, details and to_name
                 pid, p, h, prog, aamode, mode, detail, to_name = entry[:8]
@@ -1627,7 +1637,14 @@ def ask_the_questions():
                         network_obj = NetworkRule(family, sock_type, log_event=aamode)
                         log_obj[profile][hat]['network'].add(network_obj)
 
-                for ruletype in ['capability', 'network']:
+
+                for peer in sorted(log_dict[aamode][profile][hat]['signal'].keys()):
+                    for access in sorted(log_dict[aamode][profile][hat]['signal'][peer].keys()):
+                        for signal in sorted(log_dict[aamode][profile][hat]['signal'][peer][access].keys()):
+                            signal_obj = SignalRule(access, signal, peer, log_event=aamode)
+                            log_obj[profile][hat]['signal'].add(signal_obj)
+
+                for ruletype in ['capability', 'network', 'signal']:
                     # XXX aa-mergeprof also has this code - if you change it, keep aa-mergeprof in sync!
                     for rule_obj in log_obj[profile][hat][ruletype].rules:
 
@@ -2453,6 +2470,14 @@ def collapse_log():
                     for sock_type in nd[family].keys():
                         if not is_known_rule(aa[profile][hat], 'network', NetworkRule(family, sock_type)):
                             log_dict[aamode][profile][hat]['netdomain'][family][sock_type] = True
+
+                sig = prelog[aamode][profile][hat]['signal']
+                for peer in sig.keys():
+                    for access in sig[peer].keys():
+                        for signal in sig[peer][access].keys():
+                            if not is_known_rule(aa[profile][hat], 'signal', SignalRule(access, signal, peer)):
+                                log_dict[aamode][profile][hat]['signal'][peer][access][signal] = True
+
 
 PROFILE_MODE_RE      = re.compile('^(r|w|l|m|k|a|ix|ux|px|pux|cx|pix|cix|cux|Ux|Px|PUx|Cx|Pix|Cix|CUx)+$')
 PROFILE_MODE_DENY_RE = re.compile('^(r|w|l|m|k|a|x)+$')
