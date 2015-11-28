@@ -1229,8 +1229,10 @@ provided AppArmor policy:
   @{HOMEDIRS}
   @{multiarch}
   @{pid}
+  @{pids}
   @{PROC}
   @{securityfs}
+  @{apparmorfs}
   @{sys}
   @{tid}
   @{XDG_DESKTOP_DIR}
