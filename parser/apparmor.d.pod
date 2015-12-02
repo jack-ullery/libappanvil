@@ -161,7 +161,7 @@ B<SIGNAL SET> = 'set' '=' '(' I<SIGNAL LIST> ')'
 
 B<SIGNAL LIST> = Comma or space separated list of I<SIGNALS>
 
-B<SIGNALS> = ( 'hup' | 'int' | 'quit' | 'ill' | 'trap' | 'abrt' | 'bus' | 'fpe' | 'kill' | 'usr1' | 'segv' | 'usr2' | 'pipe' | 'alrm' | 'term' | 'stkflt' | 'chld' | 'cont' | 'stop' | 'stp' | 'ttin' | 'ttou' | 'urg' | 'xcpu' | 'xfsz' | 'vtalrm' | 'prof' | 'winch' | 'io' | 'pwr' | 'sys' | 'emt' | 'exists' )
+B<SIGNALS> = ( 'hup' | 'int' | 'quit' | 'ill' | 'trap' | 'abrt' | 'bus' | 'fpe' | 'kill' | 'usr1' | 'segv' | 'usr2' | 'pipe' | 'alrm' | 'term' | 'stkflt' | 'chld' | 'cont' | 'stop' | 'stp' | 'ttin' | 'ttou' | 'urg' | 'xcpu' | 'xfsz' | 'vtalrm' | 'prof' | 'winch' | 'io' | 'pwr' | 'sys' | 'emt' | 'exists' | 'rtmin+0' ... 'rtmin+32' )
 
 B<SIGNAL PEER> = 'peer' '=' I<AARE>
 
