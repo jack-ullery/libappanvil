@@ -964,6 +964,9 @@ Example AppArmor signal rules:
     # Allow us to signal ourselves using the built-in @{profile_name} variable
     signal peer=@{profile_name},
 
+    # Allow two real-time signals
+    signal set=(rtmin+0 rtmin+32),
+
 =head2 DBus rules
 
 AppArmor supports DBus mediation. The mediation is performed in conjunction
