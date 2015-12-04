@@ -16,7 +16,7 @@ import re
 
 from apparmor.regex import RE_PROFILE_SIGNAL, RE_PROFILE_NAME
 from apparmor.common import AppArmorBug, AppArmorException
-from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers, quote_if_needed
+from apparmor.rule import BaseRule, BaseRuleset, check_and_split_list, parse_modifiers, quote_if_needed
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -270,28 +270,4 @@ class SignalRuleset(BaseRuleset):
         '''Return the next possible glob. For signal rules, that means removing access, signal or peer'''
         # XXX only remove one part, not all
         return 'signal,'
-
-
-def check_and_split_list(lst, allowed_keywords, all_obj, classname, keyword_name):
-    '''check if lst is all_obj or contains only items listed in allowed_keywords'''
-
-    if lst == all_obj:
-        return None, True, None
-    elif type(lst) == str:
-        result_list = {lst}
-    elif (type(lst) == list or type(lst) == tuple) and len(lst) > 0:
-        result_list = set(lst)
-    else:
-        raise AppArmorBug('Passed unknown %(type)s object to %(classname)s: %(unknown_object)s' %
-                {'type': type(lst), 'classname': classname, 'unknown_object': str(lst)})
-
-    unknown_items = set()
-    for item in result_list:
-        if not item.strip():
-            raise AppArmorBug('Passed empty %(keyword_name)s to %(classname)s' %
-                    {'keyword_name': keyword_name, 'classname': classname})
-        if item not in allowed_keywords:
-            unknown_items.add(item)
-
-    return result_list, False, unknown_items
 
