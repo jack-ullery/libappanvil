@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
+#    Copyright (C) 2014-2015 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -631,7 +632,7 @@ class Merge(object):
                             elif re.search('\d', ans):
                                 default_option = ans
 
-            for ruletype in ['capability', 'change_profile', 'network', 'rlimit', 'signal']:
+            for ruletype in apparmor.aa.ruletypes:
                 if other.aa[profile][hat].get(ruletype, False): # needed until we have proper profile initialization
                     for rule_obj in other.aa[profile][hat][ruletype].rules:
 

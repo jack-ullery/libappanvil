@@ -1,5 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
+#    Copyright (C) 2014-2015 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -64,7 +65,7 @@ class CleanProf(object):
                 deleted += apparmor.delete_duplicates(self.other.aa[program][hat], inc)
 
             #Clean duplicate rules in other profile
-            for ruletype in ['capability', 'change_profile', 'network', 'rlimit', 'signal']:
+            for ruletype in apparmor.ruletypes:
                 if not self.same_file:
                     deleted += self.other.aa[program][hat][ruletype].delete_duplicates(self.profile.aa[program][hat][ruletype])
                 else:

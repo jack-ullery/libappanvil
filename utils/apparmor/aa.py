@@ -60,6 +60,8 @@ from apparmor.rule.rlimit     import RlimitRuleset,    RlimitRule
 from apparmor.rule.signal     import SignalRuleset,    SignalRule
 from apparmor.rule import parse_modifiers, quote_if_needed
 
+ruletypes = ['capability', 'change_profile', 'network', 'rlimit', 'signal']
+
 from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
 
 # setup module translations
@@ -1644,7 +1646,7 @@ def ask_the_questions():
                             signal_obj = SignalRule(access, signal, peer, log_event=aamode)
                             log_obj[profile][hat]['signal'].add(signal_obj)
 
-                for ruletype in ['capability', 'network', 'signal']:
+                for ruletype in ruletypes:
                     # XXX aa-mergeprof also has this code - if you change it, keep aa-mergeprof in sync!
                     for rule_obj in log_obj[profile][hat][ruletype].rules:
 
@@ -2127,8 +2129,6 @@ def delete_duplicates(profile, incname):
     deleted = 0
     # Allow rules covered by denied rules shouldn't be deleted
     # only a subset allow rules may actually be denied
-
-    ruletypes = ['capability', 'change_profile', 'network', 'rlimit', 'signal']
 
     if include.get(incname, False):
         for rule_type in ruletypes:
