@@ -35,7 +35,10 @@ class SignalTest(AATest):
         self.assertEqual(expected.audit, obj.audit)
         self.assertEqual(expected.access, obj.access)
         self.assertEqual(expected.signal, obj.signal)
-        self.assertEqual(expected.peer, obj.peer)
+        if obj.peer:
+            self.assertEqual(expected.peer, obj.peer.regex)
+        else:
+            self.assertEqual(expected.peer, obj.peer)
         self.assertEqual(expected.all_access, obj.all_access)
         self.assertEqual(expected.all_signals, obj.all_signals)
         self.assertEqual(expected.all_peers, obj.all_peers)
@@ -382,8 +385,8 @@ class SignalCoveredTest_07(SignalCoveredTest):
         ('signal,'                            , [ False   , False         , False     , False     ]),
         ('signal send,'                       , [ False   , False         , False     , False     ]),
         ('signal send peer=/foo/bar,'         , [ True    , True          , True      , True      ]),
-       #('signal send peer=/foo/*,'           , [ False   , False         , True      , True      ]), # XXX
-       #('signal send peer=/**,'              , [ False   , False         , True      , True      ]), # XXX
+        ('signal send peer=/foo/*,'           , [ False   , False         , False     , False     ]),
+        ('signal send peer=/**,'              , [ False   , False         , False     , False     ]),
         ('signal send peer=/what/*,'          , [ False   , False         , False     , False     ]),
         ('signal peer=/foo/bar,'              , [ False   , False         , False     , False     ]),
         ('signal send, # comment'             , [ False   , False         , False     , False     ]),
@@ -409,19 +412,19 @@ class SignalCoveredTest_08(SignalCoveredTest):
         #   rule                                  equal     strict equal    covered     covered exact
         ('signal,'                            , [ False   , False         , False     , False     ]),
         ('signal send,'                       , [ False   , False         , False     , False     ]),
-       #('signal send peer=/foo/bar,'         , [ False   , False         , True      , True      ]),  # XXX several AARE tests
-       #('signal send peer=/foo/*,'           , [ False   , False         , True      , True      ]),
-       #('signal send peer=/**,'              , [ False   , False         , True      , True      ]),
-       #('signal send peer=/what/*,'          , [ False   , False         , True      , True      ]),
+        ('signal send peer=/foo/bar,'         , [ False   , False         , True      , True      ]),
+        ('signal send peer=/foo/*,'           , [ False   , False         , True      , True      ]),
+        ('signal send peer=/**,'              , [ False   , False         , True      , True      ]),
+        ('signal send peer=/what/*,'          , [ False   , False         , True      , True      ]),
         ('signal peer=/foo/bar,'              , [ False   , False         , False     , False     ]),
         ('signal send, # comment'             , [ False   , False         , False     , False     ]),
         ('allow signal send,'                 , [ False   , False         , False     , False     ]),
-       #('allow signal send peer=/foo/bar,'   , [ False   , False         , True      , True      ]),
+        ('allow signal send peer=/foo/bar,'   , [ False   , False         , True      , True      ]),
         ('signal    send,'                    , [ False   , False         , False     , False     ]),
-       #('signal    send peer=/foo/bar,'      , [ False   , False         , True      , True      ]),
-       #('signal    send peer=/what/ever,'    , [ False   , False         , True      , True      ]),
+        ('signal    send peer=/foo/bar,'      , [ False   , False         , True      , True      ]),
+        ('signal    send peer=/what/ever,'    , [ False   , False         , True      , True      ]),
         ('signal send set=quit,'              , [ False   , False         , False     , False     ]),
-       #('signal send set=int peer=/foo/bar,' , [ False   , False         , True      , True      ]),
+        ('signal send set=int peer=/foo/bar,' , [ False   , False         , True      , True      ]),
         ('audit signal send peer=/foo/bar,'   , [ False   , False         , False     , False     ]),
         ('audit signal,'                      , [ False   , False         , False     , False     ]),
         ('signal receive,'                    , [ False   , False         , False     , False     ]),

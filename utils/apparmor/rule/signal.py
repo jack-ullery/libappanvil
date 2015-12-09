@@ -14,6 +14,7 @@
 
 import re
 
+from apparmor.aare import AARE
 from apparmor.regex import RE_PROFILE_SIGNAL, RE_PROFILE_NAME
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.rule import BaseRule, BaseRuleset, check_and_split_list, parse_modifiers, quote_if_needed
@@ -98,7 +99,7 @@ class SignalRule(BaseRule):
         elif type(peer) == str:
             if len(peer.strip()) == 0:
                 raise AppArmorBug('Passed empty peer to SignalRule: %s' % str(peer))
-            self.peer = peer  # XXX use AARE
+            self.peer = AARE(peer, False, log_event=log_event)
         else:
             raise AppArmorBug('Passed unknown object to SignalRule: %s' % str(peer))
 
@@ -181,7 +182,7 @@ class SignalRule(BaseRule):
         if self.all_peers:
             peer = ''
         elif self.peer:
-            peer = ' peer=%s' % quote_if_needed(self.peer)  # XXX use AARE
+            peer = ' peer=%s' % quote_if_needed(self.peer.regex)
         else:
             raise AppArmorBug('Empty peer in signal rule')
 
@@ -196,7 +197,7 @@ class SignalRule(BaseRule):
         if not other_rule.signal and not other_rule.all_signals:
             raise AppArmorBug('No signal specified in other signal rule')
 
-        if not other_rule.peer and not other_rule.all_peers:  # XXX use AARE
+        if not other_rule.peer and not other_rule.all_peers:
             raise AppArmorBug('No peer specified in other signal rule')
 
         if not self.all_access:
@@ -214,7 +215,7 @@ class SignalRule(BaseRule):
         if not self.all_peers:
             if other_rule.all_peers:
                 return False
-            if other_rule.peer != self.peer:  # XXX use AARE
+            if not self.peer.match(other_rule.peer.regex):
                 return False
 
         # still here? -> then it is covered
@@ -234,8 +235,10 @@ class SignalRule(BaseRule):
                 or self.all_signals != rule_obj.all_signals):
             return False
 
-        if (self.peer != rule_obj.peer # XXX switch to AARE
-                or self.all_peers != rule_obj.all_peers):
+        if self.all_peers != rule_obj.all_peers:
+            return False
+
+        if self.peer and not self.peer.is_equal(rule_obj.peer):
             return False
 
         return True
@@ -254,7 +257,7 @@ class SignalRule(BaseRule):
         if self.all_peers:
             peer = _('ALL')
         else:
-            peer = self.peer  # XXX use AARE
+            peer = self.peer.regex
 
         return [
             _('Access mode'), access,
