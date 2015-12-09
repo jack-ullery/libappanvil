@@ -14,7 +14,8 @@ import unittest
 from common_test import AATest, setup_all_loops
 
 import re
-from apparmor.common import convert_regexp
+from apparmor.common import convert_regexp, AppArmorBug, AppArmorException
+from apparmor.aare import AARE, convert_expression_to_aare
 
 class TestConvert_regexp(AATest):
     tests = [
@@ -34,7 +35,24 @@ class TestConvert_regexp(AATest):
     def _run_test(self, params, expected):
         self.assertEqual(convert_regexp(params), expected)
 
-class TestExamplesConvert_regexp(AATest):
+class Test_convert_expression_to_aare(AATest):
+    tests = [
+        # note that \ always needs to be escaped in python, so \\ is actually just \ in the string
+        ('/foo',        '/foo'                  ),
+        ('/foo?',       '/foo\\?'               ),
+        ('/foo*',       '/foo\\*'               ),
+        ('/foo[bar]',   '/foo\\[bar\\]'         ),
+        ('/foo{bar}',   '/foo\\{bar\\}'         ),
+        ('/foo{',       '/foo\\{'               ),
+        ('/foo\\',      '/foo\\\\'              ),
+        ('/foo"',       '/foo\\"'               ),
+        ('}]"\\[{',     '\\}\\]\\"\\\\\\[\\{'   ),
+    ]
+
+    def _run_test(self, params, expected):
+        self.assertEqual(convert_expression_to_aare(params), expected)
+
+class TestConvert_regexpAndAAREMatch(AATest):
     tests = [
         #  aare                  path to check                         match expected?
         (['/foo/**/bar/',       '/foo/user/tools/bar/'              ], True),
@@ -116,6 +134,94 @@ class TestExamplesConvert_regexp(AATest):
         regex, path = params
         parsed_regex = re.compile(convert_regexp(regex))
         self.assertEqual(bool(parsed_regex.search(path)), expected, 'Incorrectly Parsed regex: %s' %regex)
+
+        aare_obj = AARE(regex, True)
+        self.assertEqual(aare_obj.match(path), expected, 'Incorrectly parsed AARE object: %s' % regex)
+
+    def test_multi_usage(self):
+        aare_obj = AARE('/foo/*', True)
+        self.assertTrue(aare_obj.match('/foo/bar'))
+        self.assertFalse(aare_obj.match('/foo/bar/'))
+        self.assertTrue(aare_obj.match('/foo/asdf'))
+
+    def test_match_against_AARE_1(self):
+        aare_obj_1 = AARE('@{foo}/[a-d]**', True)
+        aare_obj_2 = AARE('@{foo}/[a-d]**', True)
+        self.assertTrue(aare_obj_1.match(aare_obj_2))
+        self.assertTrue(aare_obj_1.is_equal(aare_obj_2))
+
+    def test_match_against_AARE_2(self):
+        aare_obj_1 = AARE('@{foo}/[a-d]**', True)
+        aare_obj_2 = AARE('@{foo}/*[a-d]*', True)
+        self.assertFalse(aare_obj_1.match(aare_obj_2))
+        self.assertFalse(aare_obj_1.is_equal(aare_obj_2))
+
+    def test_match_invalid_1(self):
+        aare_obj = AARE('@{foo}/[a-d]**', True)
+        with self.assertRaises(AppArmorBug):
+            aare_obj.match(set())
+
+class TestAAREMatchFromLog(AATest):
+    tests = [
+        #  AARE                 log event                  match expected?
+        (['/foo/bar',           '/foo/bar'              ], True),
+        (['/foo/*',             '/foo/bar'              ], True),
+        (['/**',                '/foo/bar'              ], True),
+        (['/foo/*',             '/bar/foo'              ], False),
+        (['/foo/*',             '/foo/"*'               ], True),
+        (['/foo/bar',           '/foo/*'                ], False),
+        (['/foo/?',             '/foo/('                ], True),
+        (['/foo/{bar,baz}',     '/foo/bar'              ], True),
+        (['/foo/{bar,baz}',     '/foo/bars'             ], False),
+    ]
+
+    def _run_test(self, params, expected):
+        regex, log_event = params
+        aare_obj_1 = AARE(regex, True)
+        aare_obj_2 = AARE(log_event, True, log_event=True)
+        self.assertEqual(aare_obj_1.match(aare_obj_2), expected)
+
+class TestAAREIsEqual(AATest):
+    tests = [
+        # regex         is path?    check for       expected
+        (['/foo',       True,       '/foo'      ],  True ),
+        (['@{foo}',     True,       '@{foo}'    ],  True ),
+        (['/**',        True,       '/foo'      ],  False),
+    ]
+
+    def _run_test(self, params, expected):
+        regex, is_path, check_for = params
+        aare_obj_1 = AARE(regex, is_path)
+        aare_obj_2 = AARE(check_for, is_path)
+        self.assertEqual(expected, aare_obj_1.is_equal(check_for))
+        self.assertEqual(expected, aare_obj_1.is_equal(aare_obj_2))
+
+    def test_is_equal_invalid_1(self):
+        aare_obj = AARE('/foo/**', True)
+        with self.assertRaises(AppArmorBug):
+            aare_obj.is_equal(42)
+
+class TestAAREIsPath(AATest):
+    tests = [
+        # regex         is path?    match for       expected
+        (['/foo*',      True,       '/foobar'   ],  True ),
+        (['@{PROC}/',   True,       '/foobar'   ],  False),
+        (['foo*',       False,      'foobar'    ],  True ),
+    ]
+
+    def _run_test(self, params, expected):
+        regex, is_path, check_for = params
+        aare_obj = AARE(regex, is_path)
+        self.assertEqual(expected, aare_obj.match(check_for))
+
+    def test_path_missing_slash(self):
+        with self.assertRaises(AppArmorException):
+            AARE('foo*', True)
+
+class TestAARERepr(AATest):
+    def test_repr(self):
+        obj = AARE('/foo', True)
+        self.assertEqual(str(obj), "AARE('/foo')")
 
 
 setup_all_loops(__name__)
