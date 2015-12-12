@@ -254,10 +254,10 @@ class ReadLog:
         if e['operation'] == 'change_hat':
             if aamode != 'HINT' and aamode != 'PERMITTING':
                 return None
-            profile = e['name']
+            profile = e['name2']
             #hat = None
-            if '//' in e['name']:
-                profile, hat = e['name'].split('//')[:2]
+            if '//' in e['name2']:
+                profile, hat = e['name2'].split('//')[:2]
 
         if not hat:
             hat = profile
