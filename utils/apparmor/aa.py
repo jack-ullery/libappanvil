@@ -2768,7 +2768,7 @@ def parse_profile_data(data, file, do_include):
 
             list_var = strip_quotes(matches[0])
             var_operation = matches[1]
-            value = strip_quotes(matches[2])
+            value = matches[2]
 
             if profile:
                 if not profile_data[profile][hat].get('lvar', False):
@@ -3133,12 +3133,16 @@ def parse_unix_rule(line):
 def separate_vars(vs):
     """Returns a list of all the values for a variable"""
     data = set()
+    vs = vs.strip()
 
-    RE_VARS = re.compile('\s*((\".+?\")|([^\"]\S+))\s*(.*)$')
+    RE_VARS = re.compile('^(("[^"]*")|([^"\s]+))\s*(.*)$')
     while RE_VARS.search(vs):
         matches = RE_VARS.search(vs).groups()
         data.add(strip_quotes(matches[0]))
-        vs = matches[3]
+        vs = matches[3].strip()
+
+    if vs:
+        raise AppArmorException('Variable assignments contains invalid parts (unbalanced quotes?): %s' % vs)
 
     return data
 
@@ -3266,6 +3270,8 @@ def write_rlimits(prof_data, depth):
 def var_transform(ref):
     data = []
     for value in ref:
+        if not value:
+            value = '""'
         data.append(quote_if_needed(value))
     return ' '.join(data)
 
