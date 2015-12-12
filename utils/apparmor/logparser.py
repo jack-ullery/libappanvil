@@ -288,7 +288,8 @@ class ReadLog:
 
             # for some reason, we get file_perm and file_inherit log events without request_mask, see
             # https://bugs.launchpad.net/apparmor/+bug/1466812/ and https://bugs.launchpad.net/apparmor/+bug/1509030
-            if e['operation'] in ['file_perm', 'file_inherit'] and e['request_mask'] is None:
+            # request_mask can also be '', see https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/1525119
+            if e['operation'] in ['file_perm', 'file_inherit'] and not e['request_mask']:
                 self.debug_logger.debug('UNHANDLED (missing request_mask): %s' % e)
                 return None
 
