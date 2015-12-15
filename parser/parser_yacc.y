@@ -318,6 +318,13 @@ profile_base: TOK_ID opt_id_or_var flags TOK_OPEN rules TOK_CLOSE
 			yyerror(_("Memory allocation error."));
 		}
 
+		/* Honor the --namespace-string command line option */
+		if (profile_ns) {
+			prof->ns = strdup(profile_ns);
+			if (!prof->ns)
+				yyerror(_("Memory allocation error."));
+		}
+
 		prof->name = $1;
 		prof->attachment = $2;
 		if ($2 && !($2[0] == '/' || strncmp($2, "@{", 2) == 0))
@@ -351,12 +358,17 @@ profile:  opt_profile_flag opt_ns profile_base
 		if ($3->name[0] != '/' && !($1 || $2))
 			yyerror(_("Profile names must begin with a '/', namespace or keyword 'profile' or 'hat'."));
 
-		if ($2 && profile_ns) {
-			pwarn("%s: -n %s overriding policy specified namespace :%s:\n", progname, profile_ns, $2);
+		if (prof->ns) {
+			/**
+			 * Print warning if the profile specified a namespace
+			 * different than the one specified with the
+			 * --namespace-string command line option
+			 */
+			if ($2 && strcmp(prof->ns, $2)) {
+				pwarn("%s: -n %s overriding policy specified namespace :%s:\n",
+				      progname, prof->ns, $2);
+			}
 			free($2);
-			prof->ns = strdup(profile_ns);
-			if (!prof->ns)
-				yyerror(_("Memory allocation error."));
 		} else
 			prof->ns = $2;
 		if ($1 == 2)
