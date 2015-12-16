@@ -10,7 +10,7 @@
 # ------------------------------------------------------------------
 
 import apparmor.easyprof
-from apparmor.easyprof import AppArmorException, error
+from apparmor.easyprof import error
 import os
 import sys
 
@@ -61,12 +61,7 @@ if __name__ == "__main__":
     for (binary, options) in profiles:
         if len(profiles) > 1:
             count += 1
-        try:
-            easyp = apparmor.easyprof.AppArmorEasyProfile(binary, options)
-        except AppArmorException as e:
-            error(e.value)
-        except Exception:
-            raise
+        easyp = apparmor.easyprof.AppArmorEasyProfile(binary, options)
 
         if options.list_templates:
             apparmor.easyprof.print_basefilenames(easyp.get_templates())
@@ -118,7 +113,4 @@ if __name__ == "__main__":
             sys.stdout.write('%s\n' % easyp.gen_manifest(params))
         else:
             params['no_verify'] = options.no_verify
-            try:
-                easyp.output_policy(params, count, opt.output_directory)
-            except AppArmorException as e:
-                error(e)
+            easyp.output_policy(params, count, opt.output_directory)
