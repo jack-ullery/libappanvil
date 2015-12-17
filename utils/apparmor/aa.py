@@ -3368,6 +3368,24 @@ def write_pivot_root(prof_data, depth):
     data += write_pivot_root_rules(prof_data, depth, 'allow')
     return data
 
+def write_unix_rules(prof_data, depth, allow):
+    pre = '  ' * depth
+    data = []
+
+    # no unix rules, so return
+    if not prof_data[allow].get('unix', False):
+        return data
+
+    for unix_rule in prof_data[allow]['unix']:
+        data.append('%s%s' % (pre, unix_rule.serialize()))
+    data.append('')
+    return data
+
+def write_unix(prof_data, depth):
+    data = write_unix_rules(prof_data, depth, 'deny')
+    data += write_unix_rules(prof_data, depth, 'allow')
+    return data
+
 def write_link_rules(prof_data, depth, allow):
     pre = '  ' * depth
     data = []
@@ -3479,6 +3497,7 @@ def write_rules(prof_data, depth):
     data += write_signal(prof_data, depth)
     data += write_ptrace(prof_data, depth)
     data += write_pivot_root(prof_data, depth)
+    data += write_unix(prof_data, depth)
     data += write_links(prof_data, depth)
     data += write_paths(prof_data, depth)
     data += write_change_profile(prof_data, depth)
@@ -3635,6 +3654,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                          'signal': write_signal,
                          'ptrace': write_ptrace,
                          'pivot_root': write_pivot_root,
+                         'unix': write_unix,
                          'link': write_links,
                          'path': write_paths,
                          'change_profile': write_change_profile,
@@ -3650,6 +3670,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                                 'signal',
                                 'ptrace',
                                 'pivot_root',
+                                'unix',
                                 'link',
                                 'path',
                                 'change_profile',
@@ -3666,6 +3687,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     'signal': True, # not handled otherwise yet
                     'ptrace': True, # not handled otherwise yet
                     'pivot_root': True, # not handled otherwise yet
+                    'unix': True, # not handled otherwise yet
                     'link': False,
                     'path': False,
                     'change_profile': False,
