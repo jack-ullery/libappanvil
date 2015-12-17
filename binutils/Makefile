@@ -128,55 +128,11 @@ check: check_pod_files tests
 tests: aa-enabled $(TESTS)
 	echo "no tests atm"
 
-.PHONY: install-rhel4
-install-rhel4: install-redhat
-
-.PHONY: install-redhat
-install-redhat:
-
-.PHONY: install-suse
-install-suse:
-
-.PHONY: install-slackware
-install-slackware:
-
-.PHONY: install-debian
-install-debian:
-
-.PHONY: install-unknown
-install-unknown:
-
-INSTALLDEPS=arch
-
-ifndef DISTRO
-DISTRO=$(shell if [ -f /etc/slackware-version ] ; then \
-	         echo slackware ; \
-	       elif [ -f /etc/debian_version ] ; then \
-	         echo debian ;\
-	       elif which rpm > /dev/null ; then \
-	         if [ "$(rpm --eval '0%{?suse_version}')" != "0" ] ; then \
-	             echo suse ;\
-	         elif [ "$(rpm --eval '%{_host_vendor}')" = redhat ] ; then \
-	            echo rhel4 ;\
-	         elif [ "$(rpm --eval '0%{?fedora}')" != "0" ] ; then \
-	            echo rhel4 ;\
-	         else \
-	            echo unknown ;\
-	         fi ;\
-	       else \
-	          echo unknown ;\
-	       fi)
-endif
-
-ifdef DISTRO
-INSTALLDEPS+=install-$(DISTRO)
-endif
-
 .PHONY: install
 install: install-indep install-arch
 
 .PHONY: install-arch
-install-arch: $(INSTALLDEPS)
+install-arch: arch
 	install -m 755 -d $(DESTDIR)/sbin
 	install -m 755 ${TOOLS} $(DESTDIR)/sbin
 
