@@ -33,6 +33,7 @@ B<aa-enabled> [options]
 B<aa-enabled> is used to determine if AppArmor is enabled.
 
 =head1 OPTIONS
+
 B<aa-enabled> accepts the following arguments:
 
 =over 4
