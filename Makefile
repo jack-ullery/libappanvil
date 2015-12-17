@@ -11,6 +11,7 @@ include ${COMMONDIR}/Make.rules
 DIRS=parser \
      profiles \
      utils \
+     binutils \
      libraries/libapparmor \
      changehat/mod_apparmor \
      changehat/pam_apparmor \
