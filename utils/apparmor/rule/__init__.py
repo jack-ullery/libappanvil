@@ -13,7 +13,7 @@
 #
 # ----------------------------------------------------------------------
 
-from apparmor.common import AppArmorBug
+from apparmor.common import AppArmorBug, type_is_str
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -348,7 +348,7 @@ def check_and_split_list(lst, allowed_keywords, all_obj, classname, keyword_name
 
     if lst == all_obj:
         return None, True, None
-    elif type(lst) == str:
+    elif type_is_str(lst):
         result_list = {lst}
     elif (type(lst) == list or type(lst) == tuple) and len(lst) > 0:
         result_list = set(lst)

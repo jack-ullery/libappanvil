@@ -14,7 +14,7 @@
 # ----------------------------------------------------------------------
 
 from apparmor.regex import RE_PROFILE_CHANGE_PROFILE, strip_quotes
-from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.common import AppArmorBug, AppArmorException, type_is_str
 from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers, quote_if_needed
 
 # setup module translations
@@ -48,7 +48,7 @@ class ChangeProfileRule(BaseRule):
         self.all_execconds = False
         if execcond == ChangeProfileRule.ALL:
             self.all_execconds = True
-        elif type(execcond) == str:
+        elif type_is_str(execcond):
             if not execcond.strip():
                 raise AppArmorBug('Empty exec condition in change_profile rule')
             elif execcond.startswith('/') or execcond.startswith('@'):
@@ -62,7 +62,7 @@ class ChangeProfileRule(BaseRule):
         self.all_targetprofiles = False
         if targetprofile == ChangeProfileRule.ALL:
             self.all_targetprofiles = True
-        elif type(targetprofile) == str:
+        elif type_is_str(targetprofile):
             if targetprofile.strip():
                 self.targetprofile = targetprofile
             else:

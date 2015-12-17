@@ -16,7 +16,7 @@
 import re
 
 from apparmor.regex import RE_PROFILE_NETWORK
-from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.common import AppArmorBug, AppArmorException, type_is_str
 from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers
 
 # setup module translations
@@ -66,7 +66,7 @@ class NetworkRule(BaseRule):
         self.all_domains = False
         if domain == NetworkRule.ALL:
             self.all_domains = True
-        elif type(domain) == str:
+        elif type_is_str(domain):
             if domain in network_domain_keywords:
                 self.domain = domain
             else:
@@ -78,7 +78,7 @@ class NetworkRule(BaseRule):
         self.all_type_or_protocols = False
         if type_or_protocol == NetworkRule.ALL:
             self.all_type_or_protocols = True
-        elif type(type_or_protocol) == str:
+        elif type_is_str(type_or_protocol):
             if type_or_protocol in network_protocol_keywords:
                 self.type_or_protocol = type_or_protocol
             elif type_or_protocol in network_type_keywords:

@@ -14,7 +14,7 @@
 # ----------------------------------------------------------------------
 
 from apparmor.regex import RE_PROFILE_CAP
-from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.common import AppArmorBug, AppArmorException, type_is_str
 from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers
 import re
 
@@ -47,7 +47,7 @@ class CapabilityRule(BaseRule):
             self.all_caps = True
             self.capability = set()
         else:
-            if type(cap_list) == str:
+            if type_is_str(cap_list):
                 self.capability = {cap_list}
             elif type(cap_list) == list and len(cap_list) > 0:
                 self.capability = set(cap_list)

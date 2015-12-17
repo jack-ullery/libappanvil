@@ -16,7 +16,7 @@ import re
 
 from apparmor.aare import AARE
 from apparmor.regex import RE_PROFILE_SIGNAL, RE_PROFILE_NAME
-from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.common import AppArmorBug, AppArmorException, type_is_str
 from apparmor.rule import BaseRule, BaseRuleset, check_and_split_list, parse_modifiers, quote_if_needed
 
 # setup module translations
@@ -96,7 +96,7 @@ class SignalRule(BaseRule):
         self.all_peers = False
         if peer == SignalRule.ALL:
             self.all_peers = True
-        elif type(peer) == str:
+        elif type_is_str(peer):
             if len(peer.strip()) == 0:
                 raise AppArmorBug('Passed empty peer to SignalRule: %s' % str(peer))
             self.peer = AARE(peer, False, log_event=log_event)

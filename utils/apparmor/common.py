@@ -245,6 +245,15 @@ def user_perm(prof_dir):
         return False
     return True
 
+def type_is_str(var):
+    ''' returns True if the given variable is a str (or unicode string when using python 2)'''
+    if type(var) == str:
+        return True
+    elif sys.version_info[0] < 3 and type(var) == unicode:  # python 2 sometimes uses the 'unicode' type
+        return True
+    else:
+        return False
+
 class DebugLogger(object):
     def __init__(self, module_name=__name__):
         self.debugging = False

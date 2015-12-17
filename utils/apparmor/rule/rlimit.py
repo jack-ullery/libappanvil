@@ -16,7 +16,7 @@
 import re
 
 from apparmor.regex import RE_PROFILE_RLIMIT, strip_quotes
-from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.common import AppArmorBug, AppArmorException, type_is_str
 from apparmor.rule import BaseRule, BaseRuleset, parse_comment, quote_if_needed
 
 # setup module translations
@@ -57,7 +57,7 @@ class RlimitRule(BaseRule):
         if audit or deny or allow_keyword:
             raise AppArmorBug('The audit, allow or deny keywords are not allowed in rlimit rules.')
 
-        if type(rlimit) == str:
+        if type_is_str(rlimit):
             if rlimit in rlimit_all:
                 self.rlimit = rlimit
             else:
@@ -70,7 +70,7 @@ class RlimitRule(BaseRule):
         self.all_values = False
         if value == RlimitRule.ALL:
             self.all_values = True
-        elif type(value) == str:
+        elif type_is_str(value):
             if not value.strip():
                 raise AppArmorBug('Empty value in rlimit rule')
 
