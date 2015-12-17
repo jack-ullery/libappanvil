@@ -88,7 +88,7 @@ class SignalTestParseInvalid(SignalTest):
             SignalRule.parse(rawrule)
 
 class SignalTestParseFromLog(SignalTest):
-    def test_net_from_log(self):
+    def test_signal_from_log(self):
         parser = ReadLog('', '', '', '', '')
         event = 'type=AVC msg=audit(1409438250.564:201): apparmor="DENIED" operation="signal" profile="/usr/bin/pulseaudio" pid=2531 comm="pulseaudio" requested_mask="send" denied_mask="send" signal=term peer="/usr/bin/pulseaudio///usr/lib/pulseaudio/pulse/gconf-helper"'
 
