@@ -18,7 +18,7 @@ ifdef USE_SYSTEM
 				echo -lapparmor ; \
 			fi )
   ifeq ($(strip $(LIBAPPARMOR)),)
-    ERROR_MESSAGE = $(error ${nl}\
+    LIBAPPARMOR_ERROR_MESSAGE = $(error ${nl}\
 ************************************************************************${nl}\
 Unable to find libapparmor installed on this system; either${nl}\
 install libapparmor devel packages, set the LIBAPPARMOR variable${nl}\
@@ -27,18 +27,39 @@ manually, or build against in-tree libapparmor.${nl}\
   endif # LIBAPPARMOR not set
   LDLIBS += $(LIBAPPARMOR)
 
+  AA_EXEC = $(shell which aa-exec)
+  ifeq ($(AA_EXEC),)
+    AA_EXEC_ERROR_MESSAGE = $(error ${nl}\
+************************************************************************${nl}\
+Unable to find aa-exec installed on this system; either install the${nl}\
+apparmor package, set the AA_EXEC variable manually, or use the in-tree${nl}\
+aa-exec.${nl}\
+************************************************************************${nl})
+  endif # AA_EXEC not set
+
 else # !USE_SYSTEM
   # use in-tree versions
   LIBAPPARMOR_SRC := ../../../libraries/libapparmor/
   LIBAPPARMOR_INCLUDE = $(LIBAPPARMOR_SRC)/include
   LIBAPPARMOR_PATH := $(LIBAPPARMOR_SRC)/src/.libs/
   ifeq ($(realpath $(LIBAPPARMOR_PATH)/libapparmor.a),)
-        ERROR_MESSAGE = $(error ${nl}\
+        LIBAPPARMOR_ERROR_MESSAGE = $(error ${nl}\
 ************************************************************************${nl}\
 $(LIBAPPARMOR_PATH)/libapparmor.a is missing; either build against${nl}\
 the in-tree libapparmor by building it first and then trying again${nl}\
 (see the top-level README for help) or build against the system${nl}\
 libapparmor by adding USE_SYSTEM=1 to your make command.${nl}\
+************************************************************************${nl})
+  endif
+
+  UTILS_SRC := ../../../utils
+  AA_EXEC = $(UTILS_SRC)/aa-exec
+  ifeq ($(realpath $(AA_EXEC)),)
+        AA_EXEC_ERROR_MESSAGE = $(error ${nl}\
+************************************************************************${nl}\
+$(AA_EXEC) is missing; either build the $(UTILS_SRC) directory${nl}\
+and then try again (see the top-level README for help) or use the${nl}\
+system aa-exec by adding USE_SYSTEM=1 to your make command.${nl}\
 ************************************************************************${nl})
   endif
 
@@ -152,7 +173,8 @@ endif
 
 EXEC=$(SRC:%.c=%)
 
-TESTS=access \
+TESTS=aa_exec \
+      access \
       introspect \
       capabilities \
       changeprofile \
@@ -217,9 +239,11 @@ RISKY_TESTS=
 
 .PHONY: libapparmor_check
 .SILENT: libapparmor_check
-libapparmor_check: ; $(ERROR_MESSAGE)
+libapparmor_check: ; $(LIBAPPARMOR_ERROR_MESSAGE)
 
-all: libapparmor_check $(EXEC) changehat.h uservars.inc
+aa_exec_check: ; $(AA_EXEC_ERROR_MESSAGE)
+
+all: libapparmor_check aa_exec_check $(EXEC) changehat.h uservars.inc
 
 uservars.inc: uservars.inc.source uservars.inc.system
 ifdef USE_SYSTEM
