@@ -50,7 +50,7 @@ EXTRA_CFLAGS+=-DPACKAGE=\"${NAME}\" -DLOCALEDIR=\"${LOCALEDIR}\"
 
 SRCS = aa_enabled.c
 HDRS =
-TOOLS = aa-enabled
+TOOLS = aa-enabled aa-exec
 
 AALIB = -Wl,-Bstatic -lapparmor  -Wl,-Bdynamic -lpthread
 
@@ -106,7 +106,7 @@ all:	arch indep
 
 .PHONY: coverage
 coverage:
-	$(MAKE) clean aa-enabled COVERAGE=1
+	$(MAKE) clean $(TOOLS) COVERAGE=1
 
 ifndef USE_SYSTEM
 $(LIBAPPARMOR_A):
@@ -121,12 +121,15 @@ endif
 aa-enabled: aa_enabled.c $(LIBAPPARMOR_A)
 	$(CC) $(LDFLAGS) $(EXTRA_CFLAGS) -o $@ $< $(LIBS) $(AALIB) 
 
+aa-exec: aa_exec.c $(LIBAPPARMOR_A)
+	$(CC) $(LDFLAGS) $(EXTRA_CFLAGS) -o $@ $< $(LIBS) $(AALIB)
+
 .SILENT: check
 .PHONY: check
 check: check_pod_files tests
 
 .SILENT: tests
-tests: aa-enabled $(TESTS)
+tests: $(TOOLS) $(TESTS)
 	echo "no tests atm"
 
 .PHONY: install
