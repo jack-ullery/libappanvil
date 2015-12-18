@@ -29,6 +29,7 @@
 
 static const char *opt_profile = NULL;
 static bool opt_debug = false;
+static bool opt_immediate = false;
 static bool opt_verbose = false;
 
 static void usage(const char *name, bool error)
@@ -49,6 +50,7 @@ static void usage(const char *name, bool error)
 		"OPTIONS:\n"
 		"  -p PROFILE, --profile=PROFILE		PROFILE to confine <prog> with\n"
 		"  -d, --debug				show messages with debugging information\n"
+		"  -i, --immediate			change profile immediately instead of at exec\n"
 		"  -v, --verbose				show messages with stats\n"
 		"  -h, --help				display this help\n"
 		"\n"), name);
@@ -110,10 +112,11 @@ static char **parse_args(int argc, char **argv)
 		{"debug", no_argument, 0, 'd'},
 		{"help", no_argument, 0, 'h'},
 		{"profile", required_argument, 0, 'p'},
+		{"immediate", no_argument, 0, 'i'},
 		{"verbose", no_argument, 0, 'v'},
 	};
 
-	while ((opt = getopt_long(argc, argv, "+dhp:v", long_opts, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "+dhp:iv", long_opts, NULL)) != -1) {
 		switch (opt) {
 		case 'd':
 			opt_debug = true;
@@ -123,6 +126,9 @@ static char **parse_args(int argc, char **argv)
 			break;
 		case 'p':
 			opt_profile = optarg;
+			break;
+		case 'i':
+			opt_immediate = true;
 			break;
 		case 'v':
 			opt_verbose = true;
@@ -145,7 +151,14 @@ int main(int argc, char **argv)
 
 	argv = parse_args(argc, argv);
 
-	if (opt_profile) {
+	if (!opt_profile)
+		goto exec;
+
+	if (opt_immediate) {
+		verbose("aa_change_profile(\"%s\")", opt_profile);
+		rc = aa_change_profile(opt_profile);
+		debug("%d = aa_change_profile(\"%s\")", rc, opt_profile);
+	} else {
 		verbose("aa_change_onexec(\"%s\")", opt_profile);
 		rc = aa_change_onexec(opt_profile);
 		debug("%d = aa_change_onexec(\"%s\")", rc, opt_profile);
@@ -161,6 +174,7 @@ int main(int argc, char **argv)
 		}
 	}
 
+exec:
 	verbose_print_argv(argv);
 	execvp(argv[0], argv);
 	error("Failed to execute \"%s\": %m", argv[0]);
