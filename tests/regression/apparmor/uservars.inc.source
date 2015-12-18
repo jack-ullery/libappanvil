@@ -14,4 +14,4 @@ tmpdir=/tmp/sdtest.$$-$RANDOM
 sys_profiles=/sys/kernel/security/apparmor/profiles
 
 # 5. Location of aa-exec
-aa_exec=${PWD}/../../../utils/aa-exec
+aa_exec=${PWD}/../../../binutils/aa-exec

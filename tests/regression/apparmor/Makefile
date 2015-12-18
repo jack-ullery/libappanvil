@@ -52,12 +52,12 @@ libapparmor by adding USE_SYSTEM=1 to your make command.${nl}\
 ************************************************************************${nl})
   endif
 
-  UTILS_SRC := ../../../utils
-  AA_EXEC = $(UTILS_SRC)/aa-exec
+  BINUTILS_SRC := ../../../binutils
+  AA_EXEC = $(BINUTILS_SRC)/aa-exec
   ifeq ($(realpath $(AA_EXEC)),)
         AA_EXEC_ERROR_MESSAGE = $(error ${nl}\
 ************************************************************************${nl}\
-$(AA_EXEC) is missing; either build the $(UTILS_SRC) directory${nl}\
+$(AA_EXEC) is missing; either build the $(BINUTILS_SRC) directory${nl}\
 and then try again (see the top-level README for help) or use the${nl}\
 system aa-exec by adding USE_SYSTEM=1 to your make command.${nl}\
 ************************************************************************${nl})

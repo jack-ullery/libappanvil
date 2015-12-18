@@ -20,7 +20,7 @@ COMMONDIR=../common/
 
 include $(COMMONDIR)/Make.rules
 
-PERLTOOLS = aa-exec aa-notify
+PERLTOOLS = aa-notify
 PYTOOLS = aa-easyprof aa-genprof aa-logprof aa-cleanprof aa-mergeprof \
           aa-autodep aa-audit aa-complain aa-enforce aa-disable \
 	  aa-status aa-unconfined
