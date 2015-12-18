@@ -18,6 +18,7 @@ COMMONDIR=../common/
 include $(COMMONDIR)/Make.rules
 
 DESTDIR=/
+BINDIR=${DESTDIR}/usr/bin
 LOCALEDIR=/usr/share/locale
 MANPAGES=aa-enabled.8
 
@@ -133,8 +134,8 @@ install: install-indep install-arch
 
 .PHONY: install-arch
 install-arch: arch
-	install -m 755 -d $(DESTDIR)/sbin
-	install -m 755 ${TOOLS} $(DESTDIR)/sbin
+	install -m 755 -d ${BINDIR}
+	install -m 755 ${TOOLS} ${BINDIR}
 
 .PHONY: install-indep
 install-indep:
