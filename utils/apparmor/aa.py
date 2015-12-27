@@ -61,7 +61,7 @@ from apparmor.rule.rlimit     import RlimitRuleset,    RlimitRule
 from apparmor.rule.signal     import SignalRuleset,    SignalRule
 from apparmor.rule import parse_modifiers, quote_if_needed
 
-ruletypes = ['capability', 'change_profile', 'network', 'rlimit', 'signal']
+ruletypes = ['capability', 'change_profile', 'network', 'ptrace', 'rlimit', 'signal']
 
 from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
 
