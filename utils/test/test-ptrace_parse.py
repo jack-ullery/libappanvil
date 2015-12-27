@@ -9,27 +9,29 @@
 #
 # ------------------------------------------------------------------
 
-import apparmor.aa as aa
 import unittest
-from common_test import AAParseTest, setup_regex_tests
+from common_test import AATest, setup_all_loops
 
-class AAParsePtraceTest(AAParseTest):
-    def setUp(self):
-        self.parse_function = aa.parse_ptrace_rule
+from apparmor.rule.ptrace import PtraceRule
+
+class AAParsePtraceTest(AATest):
+    def _run_test(self, params, expected):
+        rule_obj = PtraceRule.parse(params)
+        self.assertEqual(rule_obj.get_clean(), expected)
 
     tests = [
-        ('ptrace,', 'ptrace base keyword rule'),
-        ('ptrace (readby),', 'ptrace readby rule'),
-        ('ptrace (trace),', 'ptrace trace rule'),
-        ('ptrace (trace read),', 'ptrace multi-perm rule'),
-        ('ptrace r,', 'ptrace r rule'),
-        ('ptrace w,', 'ptrace w rule'),
-        ('ptrace rw,', 'ptrace rw rule'),
-        ('ptrace read peer=foo,', 'ptrace peer rule 1'),
-        ('ptrace (trace read) peer=/usr/bin/bar,', 'ptrace peer rule 2'),
-        ('ptrace wr peer=/sbin/baz,', 'ptrace peer rule 3'),
+        ('ptrace,',                 'ptrace,'),
+        ('ptrace (readby),',        'ptrace readby,'),
+        ('ptrace (trace),',         'ptrace trace,'),
+        ('ptrace (trace read),',    'ptrace (read trace),'),
+        ('ptrace r,',               'ptrace r,'),
+        ('ptrace w,',               'ptrace w,'),
+        ('ptrace rw,',              'ptrace rw,'),
+        ('ptrace read peer=foo,',   'ptrace read peer=foo,'),
+        ('ptrace (trace read) peer=/usr/bin/bar,', 'ptrace (read trace) peer=/usr/bin/bar,'),
+        ('ptrace wr peer=/sbin/baz,',   'ptrace wr peer=/sbin/baz,'),
     ]
 
+setup_all_loops(__name__)
 if __name__ == '__main__':
-    setup_regex_tests(AAParsePtraceTest)
     unittest.main(verbosity=2)

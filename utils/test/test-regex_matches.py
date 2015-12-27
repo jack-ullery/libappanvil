@@ -14,7 +14,7 @@ import unittest
 from common_test import AATest, setup_all_loops
 from apparmor.common import AppArmorBug, AppArmorException
 
-from apparmor.regex import strip_quotes, parse_profile_start_line, re_match_include, RE_PROFILE_START, RE_PROFILE_CAP, RE_PROFILE_SIGNAL
+from apparmor.regex import strip_quotes, parse_profile_start_line, re_match_include, RE_PROFILE_START, RE_PROFILE_CAP, RE_PROFILE_PTRACE, RE_PROFILE_SIGNAL
 
 
 class AARegexTest(AATest):
@@ -318,7 +318,7 @@ class AARegexPtrace(AARegexTest):
     '''Tests for RE_PROFILE_PTRACE'''
 
     def AASetup(self):
-        self.regex = aa.RE_PROFILE_PTRACE
+        self.regex = RE_PROFILE_PTRACE
 
     tests = [
         #                                            audit      allow  rule                                     rule details                    comment
