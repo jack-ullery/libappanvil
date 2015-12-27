@@ -13,6 +13,7 @@
 import unittest
 from common_test import AATest, setup_all_loops
 
+from copy import deepcopy
 import re
 from apparmor.common import convert_regexp, AppArmorBug, AppArmorException
 from apparmor.aare import AARE, convert_expression_to_aare
@@ -222,6 +223,25 @@ class TestAARERepr(AATest):
     def test_repr(self):
         obj = AARE('/foo', True)
         self.assertEqual(str(obj), "AARE('/foo')")
+
+class TestAAREDeepcopy(AATest):
+    tests = [
+        # regex         is path?    log event     expected (dummy value)
+        (AARE('/foo',   False)                  , True),
+        (AARE('/foo',   False,      True)       , True),
+        (AARE('/foo',   True)                   , True),
+        (AARE('/foo',   True,       True)       , True),
+    ]
+
+    def _run_test(self, params, expected):
+        dup = deepcopy(params)
+
+        self.assertTrue(params.match('/foo'))
+        self.assertTrue(dup.match('/foo'))
+
+        self.assertEqual(params.regex, dup.regex)
+        self.assertEqual(params.orig_regex, dup.orig_regex)
+        self.assertEqual(params.orig_regex, dup.orig_regex)
 
 
 setup_all_loops(__name__)

@@ -46,6 +46,13 @@ class AARE(object):
         '''returns a "printable" representation of AARE'''
         return "AARE('%s')" % self.regex
 
+    def __deepcopy__(self, memo):
+        # thanks to http://bugs.python.org/issue10076, we need to implement this ourself
+        if self.orig_regex:
+            return AARE(self.orig_regex, is_path=False, log_event=True)
+        else:
+            return AARE(self.regex, is_path=False)
+
     def match(self, expression):
         '''check if the given expression (string or AARE) matches the regex'''
 
