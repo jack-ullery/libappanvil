@@ -140,6 +140,8 @@ class ReadLog:
         elif ev['operation'] and ev['operation'] == 'signal':
             ev['signal'] = event.signal
             ev['peer'] = event.peer
+        elif ev['operation'] and ev['operation'] == 'ptrace':
+            ev['peer'] = event.peer
 
         LibAppArmor.free_record(event)
 

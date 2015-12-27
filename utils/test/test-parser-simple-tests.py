@@ -125,15 +125,9 @@ exception_not_raised = [
     'profile/flags/flags_bad_debug_3.sd',
     'profile/flags/flags_bad_debug_4.sd',
     'profile/simple_bad_no_close_brace4.sd',
-    'ptrace/bad_01.sd',
-    'ptrace/bad_02.sd',
-    'ptrace/bad_03.sd',
-    'ptrace/bad_04.sd',
-    'ptrace/bad_05.sd',
-    'ptrace/bad_06.sd',
-    'ptrace/bad_07.sd',
-    'ptrace/bad_08.sd',
-    'ptrace/bad_10.sd',
+    'ptrace/bad_05.sd',  # actually contains a capability rule with invalid (ptrace-related) keyword
+    'ptrace/bad_06.sd',  # actually contains a capability rule with invalid (ptrace-related) keyword
+    'ptrace/bad_10.sd',  # peer with invalid regex
     'signal/bad_21.sd',  # invalid regex
     'unix/bad_attr_1.sd',
     'unix/bad_attr_2.sd',

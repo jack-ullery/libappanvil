@@ -47,7 +47,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
                             RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY,
                             RE_PROFILE_CHANGE_HAT,
                             RE_PROFILE_HAT_DEF, RE_PROFILE_DBUS, RE_PROFILE_MOUNT,
-                            RE_PROFILE_PTRACE, RE_PROFILE_PIVOT_ROOT,
+                            RE_PROFILE_PIVOT_ROOT,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
                             strip_quotes, parse_profile_start_line, re_match_include )
 
@@ -56,6 +56,7 @@ import apparmor.rules as aarules
 from apparmor.rule.capability import CapabilityRuleset, CapabilityRule
 from apparmor.rule.change_profile import ChangeProfileRuleset, ChangeProfileRule
 from apparmor.rule.network    import NetworkRuleset,    NetworkRule
+from apparmor.rule.ptrace     import PtraceRuleset,    PtraceRule
 from apparmor.rule.rlimit     import RlimitRuleset,    RlimitRule
 from apparmor.rule.signal     import SignalRuleset,    SignalRule
 from apparmor.rule import parse_modifiers, quote_if_needed
@@ -465,13 +466,13 @@ def profile_storage(profilename, hat, calledby):
     profile['capability']       = CapabilityRuleset()
     profile['change_profile']   = ChangeProfileRuleset()
     profile['network']          = NetworkRuleset()
+    profile['ptrace']           = PtraceRuleset()
     profile['rlimit']           = RlimitRuleset()
     profile['signal']           = SignalRuleset()
 
     profile['allow']['path'] = hasher()
     profile['allow']['dbus'] = list()
     profile['allow']['mount'] = list()
-    profile['allow']['ptrace'] = list()
     profile['allow']['pivot_root'] = list()
 
     return profile
@@ -2953,27 +2954,11 @@ def parse_profile_data(data, file, do_include):
 
             profile_data[profile][hat]['signal'].add(SignalRule.parse(line))
 
-        elif RE_PROFILE_PTRACE.search(line):
-            matches = RE_PROFILE_PTRACE.search(line).groups()
-
+        elif PtraceRule.match(line):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected ptrace entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            audit = False
-            if matches[0]:
-                audit = True
-            allow = 'allow'
-            if matches[1] and matches[1].strip() == 'deny':
-                allow = 'deny'
-            ptrace = matches[2].strip()
-
-            ptrace_rule = parse_ptrace_rule(ptrace)
-            ptrace_rule.audit = audit
-            ptrace_rule.deny = (allow == 'deny')
-
-            ptrace_rules = profile_data[profile][hat][allow].get('ptrace', list())
-            ptrace_rules.append(ptrace_rule)
-            profile_data[profile][hat][allow]['ptrace'] = ptrace_rules
+            profile_data[profile][hat]['ptrace'].add(PtraceRule.parse(line))
 
         elif RE_PROFILE_PIVOT_ROOT.search(line):
             matches = RE_PROFILE_PIVOT_ROOT.search(line).groups()
@@ -3117,10 +3102,6 @@ def parse_dbus_rule(line):
 def parse_mount_rule(line):
     # XXX Do real parsing here
     return aarules.Raw_Mount_Rule(line)
-
-def parse_ptrace_rule(line):
-    # XXX Do real parsing here
-    return aarules.Raw_Ptrace_Rule(line)
 
 def parse_pivot_root_rule(line):
     # XXX Do real parsing here
@@ -3332,22 +3313,10 @@ def write_signal(prof_data, depth):
         data = prof_data['signal'].get_clean(depth)
     return data
 
-def write_ptrace_rules(prof_data, depth, allow):
-    pre = '  ' * depth
-    data = []
-
-    # no ptrace rules, so return
-    if not prof_data[allow].get('ptrace', False):
-        return data
-
-    for ptrace_rule in prof_data[allow]['ptrace']:
-        data.append('%s%s' % (pre, ptrace_rule.serialize()))
-    data.append('')
-    return data
-
 def write_ptrace(prof_data, depth):
-    data = write_ptrace_rules(prof_data, depth, 'deny')
-    data += write_ptrace_rules(prof_data, depth, 'allow')
+    data = []
+    if prof_data.get('ptrace', False):
+        data = prof_data['ptrace'].get_clean(depth)
     return data
 
 def write_pivot_root_rules(prof_data, depth, allow):
