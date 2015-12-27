@@ -2478,26 +2478,26 @@ def collapse_log():
                 for cap in prelog[aamode][profile][hat]['capability'].keys():
                     # If capability not already in profile
                     # XXX remove first check when we have proper profile initialisation
-                    if aa[profile][hat].get('capability', False) and not aa[profile][hat]['capability'].is_covered(CapabilityRule(cap)):
+                    if aa[profile][hat].get('capability', False) and not aa[profile][hat]['capability'].is_covered(CapabilityRule(cap, log_event=True)):
                         log_dict[aamode][profile][hat]['capability'][cap] = True
 
                 nd = prelog[aamode][profile][hat]['netdomain']
                 for family in nd.keys():
                     for sock_type in nd[family].keys():
-                        if not is_known_rule(aa[profile][hat], 'network', NetworkRule(family, sock_type)):
+                        if not is_known_rule(aa[profile][hat], 'network', NetworkRule(family, sock_type, log_event=True)):
                             log_dict[aamode][profile][hat]['netdomain'][family][sock_type] = True
 
                 ptrace = prelog[aamode][profile][hat]['ptrace']
                 for peer in ptrace.keys():
                     for access in ptrace[peer].keys():
-                        if not is_known_rule(aa[profile][hat], 'ptrace', PtraceRule(access, peer)):
+                        if not is_known_rule(aa[profile][hat], 'ptrace', PtraceRule(access, peer, log_event=True)):
                             log_dict[aamode][profile][hat]['ptrace'][peer][access] = True
 
                 sig = prelog[aamode][profile][hat]['signal']
                 for peer in sig.keys():
                     for access in sig[peer].keys():
                         for signal in sig[peer][access].keys():
-                            if not is_known_rule(aa[profile][hat], 'signal', SignalRule(access, signal, peer)):
+                            if not is_known_rule(aa[profile][hat], 'signal', SignalRule(access, signal, peer, log_event=True)):
                                 log_dict[aamode][profile][hat]['signal'][peer][access][signal] = True
 
 
