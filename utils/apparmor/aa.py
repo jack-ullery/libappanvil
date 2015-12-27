@@ -1128,6 +1128,16 @@ def handle_children(profile, hat, root):
                     continue
                 prelog[aamode][profile][hat]['capability'][capability] = True
 
+            elif typ == 'ptrace':
+                # If ptrace then we (should) have pid, profile, hat, program, mode, access and peer
+                pid, p, h, prog, aamode, access, peer = entry
+                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
+                    profile = p
+                    hat = h
+                if not profile or not hat:
+                    continue
+                prelog[aamode][profile][hat]['ptrace'][peer][access] = True
+
             elif typ == 'signal':
                 # If signal then we (should) have pid, profile, hat, program, mode, access, signal and peer
                 pid, p, h, prog, aamode, access, signal, peer = entry
@@ -1640,6 +1650,11 @@ def ask_the_questions():
                         network_obj = NetworkRule(family, sock_type, log_event=aamode)
                         log_obj[profile][hat]['network'].add(network_obj)
 
+
+                for peer in sorted(log_dict[aamode][profile][hat]['ptrace'].keys()):
+                    for access in sorted(log_dict[aamode][profile][hat]['ptrace'][peer].keys()):
+                        ptrace_obj = PtraceRule(access, peer, log_event=aamode)
+                        log_obj[profile][hat]['ptrace'].add(ptrace_obj)
 
                 for peer in sorted(log_dict[aamode][profile][hat]['signal'].keys()):
                     for access in sorted(log_dict[aamode][profile][hat]['signal'][peer].keys()):
@@ -2471,6 +2486,12 @@ def collapse_log():
                     for sock_type in nd[family].keys():
                         if not is_known_rule(aa[profile][hat], 'network', NetworkRule(family, sock_type)):
                             log_dict[aamode][profile][hat]['netdomain'][family][sock_type] = True
+
+                ptrace = prelog[aamode][profile][hat]['ptrace']
+                for peer in ptrace.keys():
+                    for access in ptrace[peer].keys():
+                        if not is_known_rule(aa[profile][hat], 'ptrace', PtraceRule(access, peer)):
+                            log_dict[aamode][profile][hat]['ptrace'][peer][access] = True
 
                 sig = prelog[aamode][profile][hat]['signal']
                 for peer in sig.keys():

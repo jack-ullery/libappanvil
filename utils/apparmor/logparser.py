@@ -359,6 +359,9 @@ class ReadLog:
         elif e['operation'] == 'change_hat':
             return(e['pid'], e['parent'], 'unknown_hat',
                              [profile, hat, aamode, hat])
+        elif e['operation'] == 'ptrace':
+            return(e['pid'], e['parent'], 'ptrace',
+                             [profile, hat, prog, aamode, e['denied_mask'], e['peer']])
         elif e['operation'] == 'signal':
             return(e['pid'], e['parent'], 'signal',
                              [profile, hat, prog, aamode, e['denied_mask'], e['signal'], e['peer']])
