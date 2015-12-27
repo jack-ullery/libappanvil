@@ -321,14 +321,13 @@ class AARegexPtrace(AARegexTest):
         self.regex = aa.RE_PROFILE_PTRACE
 
     tests = [
-        ('   ptrace,', (None, None, 'ptrace,', None)),
-        ('   audit ptrace,', ('audit', None, 'ptrace,', None)),
-        ('   ptrace trace,', (None, None, 'ptrace trace,', None)),
-        ('   ptrace (tracedby, readby),',
-         (None, None, 'ptrace (tracedby, readby),', None)),
-        ('   audit ptrace (read),', ('audit', None, 'ptrace (read),', None)),
-        ('   ptrace trace peer=/usr/sbin/daemon,',
-         (None, None, 'ptrace trace peer=/usr/sbin/daemon,', None)),
+        #                                            audit      allow  rule                                     rule details                    comment
+        ('   ptrace,',                              (None,      None, 'ptrace,',                                None,                           None)),
+        ('   audit ptrace,',                        ('audit',   None, 'ptrace,',                                None,                           None)),
+        ('   ptrace trace,',                        (None,      None, 'ptrace trace,',                          'trace',                        None)),
+        ('   ptrace (tracedby, readby),',           (None,      None, 'ptrace (tracedby, readby),',             '(tracedby, readby)',           None)),
+        ('   audit ptrace (read),',                 ('audit',   None, 'ptrace (read),',                         '(read)',                       None)),
+        ('   ptrace trace peer=/usr/sbin/daemon,',  (None,      None, 'ptrace trace peer=/usr/sbin/daemon,',    'trace peer=/usr/sbin/daemon',  None)),
 
         ('   ptraceback,', False),
         ('   audit ptraceback,', False),
