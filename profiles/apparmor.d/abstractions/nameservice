@@ -38,6 +38,9 @@
   # /etc/resolvconf/run/resolv.conf
   /{,var/}run/resolvconf/resolv.conf r,
   /etc/resolvconf/run/resolv.conf r,
+  # on systems using systemd's networkd, /etc/resolv.conf is a symlink to
+  # /run/systemd/resolve/resolv.conf
+  /{,var/}run/systemd/resolve/resolv.conf r,
 
   /etc/samba/lmhosts      r,
   /etc/services           r,
