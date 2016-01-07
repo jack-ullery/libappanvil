@@ -1,0 +1,7 @@
+#
+#=Description bare file rule
+#=EXRESULT PASS
+#
+/usr/bin/foo {
+  deny file,
+}
