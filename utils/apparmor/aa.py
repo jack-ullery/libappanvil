@@ -1183,25 +1183,7 @@ def handle_children(profile, hat, root):
                     else:
                         do_execute = True
 
-                if mode & apparmor.aamode.AA_MAY_LINK:
-                    regex_link = re.compile('^from (.+) to (.+)$')
-                    match = regex_link.search(detail)
-                    if match:
-                        path = match.groups()[0]
-                        target = match.groups()[1]
-
-                        frommode = str_to_mode('lr')
-                        if prelog[aamode][profile][hat]['path'].get(path, False):
-                            frommode |= prelog[aamode][profile][hat]['path'][path]
-                        prelog[aamode][profile][hat]['path'][path] = frommode
-
-                        tomode = str_to_mode('lr')
-                        if prelog[aamode][profile][hat]['path'].get(target, False):
-                            tomode |= prelog[aamode][profile][hat]['path'][target]
-                        prelog[aamode][profile][hat]['path'][target] = tomode
-                    else:
-                        continue
-                elif mode:
+                if mode:
                     path = detail
 
                     if prelog[aamode][profile][hat]['path'].get(path, False):
