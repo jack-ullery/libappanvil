@@ -24,6 +24,10 @@
 
 aa_query_label - query access permission associated with a label
 
+aa_query_file_path, aa_query_file_path_len - query access permissions of a file path
+
+aa_query_link_path, aa_query_link_path_len - query access permissions of a link path
+
 =head1 SYNOPSIS
 
 B<#include E<lt>sys/apparmor.hE<gt>>
