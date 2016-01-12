@@ -17,7 +17,7 @@ import re
 import sys
 import time
 import LibAppArmor
-from apparmor.common import AppArmorException, open_file_read, DebugLogger
+from apparmor.common import AppArmorException, AppArmorBug, open_file_read, DebugLogger
 
 from apparmor.aamode import validate_log_mode, log_str_to_mode, hide_log_mode, AA_MAY_EXEC
 
@@ -398,7 +398,14 @@ class ReadLog:
             event = self.parse_log_record(line)
             #print(event)
             if event:
-                self.add_event_to_tree(event)
+                try:
+                    self.add_event_to_tree(event)
+                except AppArmorException as e:
+                    ex_msg = ('%(msg)s\n\nThis error was caused by the log line:\n%(logline)s' %
+                            {'msg': e.value, 'logline': line})
+                    # when py3 only: Drop the original AppArmorException by passing None as the parent exception
+                    raise AppArmorBug(ex_msg)  # py3-only: from None
+
         self.LOG.close()
         self.logmark = ''
         return self.log
