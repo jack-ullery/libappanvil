@@ -13,6 +13,7 @@
 #
 # ----------------------------------------------------------------------
 
+from apparmor.aare import AARE
 from apparmor.common import AppArmorBug, type_is_str
 
 # setup module translations
@@ -49,6 +50,30 @@ class BaseRule(object):
 
         # Set only in the parse() class method
         self.raw_rule = None
+
+    def _aare_or_all(self, rulepart, partname, is_path, log_event):
+        '''checks rulepart and returns
+           - (AARE, False) if rulepart is a (non-empty) string
+           - (None, True) if rulepart is all_obj (typically *Rule.ALL)
+           - raises AppArmorBug if rulepart is an empty string or has a wrong type
+
+           Parameters:
+           - rulepart: the rule part to check (string or *Rule.ALL object)
+           - partname: the name of the rulepart (for example 'peer', used for exception messages)
+           - is_path (passed through to AARE)
+           - log_event (passed through to AARE)
+           '''
+
+        if rulepart == self.ALL:
+            return None, True
+        elif type_is_str(rulepart):
+            if len(rulepart.strip()) == 0:
+                raise AppArmorBug('Passed empty %(partname)s to %(classname)s: %(rulepart)s' %
+                        {'partname': partname, 'classname': self.__class__.__name__, 'rulepart': str(rulepart)})
+            return AARE(rulepart, is_path=is_path, log_event=log_event), False
+        else:
+            raise AppArmorBug('Passed unknown %(partname)s to %(classname)s: %(rulepart)s'
+                    % {'partname': partname, 'classname': self.__class__.__name__, 'rulepart': str(rulepart)})
 
     def __repr__(self):
         classname = self.__class__.__name__

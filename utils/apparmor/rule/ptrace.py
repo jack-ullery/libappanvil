@@ -14,9 +14,8 @@
 
 import re
 
-from apparmor.aare import AARE
 from apparmor.regex import RE_PROFILE_PTRACE, RE_PROFILE_NAME
-from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.rule import BaseRule, BaseRuleset, check_and_split_list, parse_modifiers, quote_if_needed
 
 # setup module translations
@@ -63,18 +62,7 @@ class PtraceRule(BaseRule):
         if unknown_items:
             raise AppArmorException(_('Passed unknown access keyword to PtraceRule: %s') % ' '.join(unknown_items))
 
-        # XXX same as in SignalRule - move to _init_peer() function!
-        self.peer = None
-        self.all_peers = False
-        if peer == PtraceRule.ALL:
-            self.all_peers = True
-        elif type_is_str(peer):
-            if len(peer.strip()) == 0:
-                raise AppArmorBug('Passed empty peer to PtraceRule: %s' % str(peer))
-            self.peer = AARE(peer, False, log_event=log_event)
-        else:
-            raise AppArmorBug('Passed unknown object to PtraceRule: %s' % str(peer))
-
+        self.peer, self.all_peers = self._aare_or_all(peer, 'peer', is_path=False, log_event=log_event)
 
     @classmethod
     def _match(cls, raw_rule):
