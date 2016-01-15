@@ -1141,8 +1141,10 @@ int main(int argc, char *argv[])
 				  void *data);
 			struct dir_cb_data cb_data;
 
+			memset(&cb_data, 0, sizeof(struct dir_cb_data));
 			cb_data.dirname = profilename;
 			cb_data.cachedir = cacheloc;
+			cb_data.kernel_interface = kernel_interface;
 			cb = binary_input ? binary_dir_cb : profile_dir_cb;
 			if ((retval = dirat_for_each(AT_FDCWD, profilename,
 						     &cb_data, cb))) {
