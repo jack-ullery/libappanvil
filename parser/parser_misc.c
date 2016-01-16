@@ -724,7 +724,7 @@ static const char *capnames[] = {
 	"audit_write",
 	"audit_control",
 	"setfcap",
-	"mac_override"
+	"mac_override",
 	"syslog",
 };
 
