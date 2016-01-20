@@ -83,7 +83,7 @@ class AARE(object):
 def convert_expression_to_aare(expression):
     '''convert an expression (taken from audit.log) to an AARE string'''
 
-    aare_escape_chars = ['\\', '?', '*', '[', ']', '{', '}', '"']
+    aare_escape_chars = ['\\', '?', '*', '[', ']', '{', '}', '"', '!']
     for char in aare_escape_chars:
         expression = expression.replace(char, '\\' + char)
 
