@@ -47,6 +47,8 @@ int interp_status(int status)
 #    endif
 #  elif defined(__arm__) || defined(__powerpc__) || defined(__powerpc64__)
 #    define ARCH_REGS_STRUCT struct pt_regs
+#  elif defined(__s390__) || defined(__s390x__)
+#    define ARCH_REGS_STRUCT struct _user_regs_struct
 #  else
 #    error "Need to define ARCH_REGS_STRUCT for this architecture"
 #  endif
