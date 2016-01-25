@@ -419,14 +419,17 @@ varassign:	TOK_SET_VAR TOK_EQUALS valuelist
 		PDEBUG("Matched: set assignment for (%s)\n", $1);
 		err = new_set_var(var_name, list->value);
 		if (err) {
+			free(var_name);
 			yyerror("variable %s was previously declared", $1);
 			/* FIXME: it'd be handy to report the previous location */
 		}
 		for (list = list->next; list; list = list->next) {
 			err = add_set_value(var_name, list->value);
-			if (err)
+			if (err) {
+				free(var_name);
 				yyerror("Error adding %s to set var %s",
 					list->value, $1);
+			}
 		}
 		free_value_list($3);
 		free(var_name);
@@ -445,13 +448,16 @@ varassign:	TOK_SET_VAR TOK_ADD_ASSIGN valuelist
 		 * failures are indicative of symtab failures */
 		err = add_set_value(var_name, list->value);
 		if (err) {
+			free(var_name);
 			yyerror("variable %s was not previously declared, but is being assigned additional values", $1);
 		}
 		for (list = list->next; list; list = list->next) {
 			err = add_set_value(var_name, list->value);
-			if (err)
+			if (err) {
+				free(var_name);
 				yyerror("Error adding %s to set var %s",
 					list->value, $1);
+			}
 		}
 		free_value_list($3);
 		free(var_name);
@@ -469,11 +475,11 @@ varassign:	TOK_BOOL_VAR TOK_EQUALS TOK_VALUE
 				$1, $3);
 		}
 		err = add_boolean_var(var_name, boolean);
+		free(var_name);
 		if (err) {
 			yyerror("variable %s was previously declared", $1);
 			/* FIXME: it'd be handy to report the previous location */
 		}
-		free(var_name);
 		free($1);
 		free($3);
 	}
