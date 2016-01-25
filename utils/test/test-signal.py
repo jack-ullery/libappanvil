@@ -433,6 +433,41 @@ class SignalCoveredTest_08(SignalCoveredTest):
         ('deny signal send,'                  , [ False   , False         , False     , False     ]),
     ]
 
+class SignalCoveredTest_09(SignalCoveredTest):
+    rule = 'signal (send, receive) set=(int, quit),'
+
+    tests = [
+        #   rule                                  equal     strict equal    covered     covered exact
+        ('signal,'                            , [ False   , False         , False     , False     ]),
+        ('signal send,'                       , [ False   , False         , False     , False     ]),
+        ('signal send set=int,'               , [ False   , False         , True      , True      ]),
+        ('signal receive set=quit,'           , [ False   , False         , True      , True      ]),
+        ('signal (receive,send) set=int,'     , [ False   , False         , True      , True      ]),
+        ('signal (receive,send) set=(int quit),',[True    , False         , True      , True      ]),
+        ('signal send set=(quit int),'        , [ False   , False         , True      , True      ]),
+        ('signal send peer=/foo/bar,'         , [ False   , False         , False     , False     ]),
+        ('signal send peer=/foo/*,'           , [ False   , False         , False     , False     ]),
+        ('signal send peer=/**,'              , [ False   , False         , False     , False     ]),
+        ('signal send peer=/what/*,'          , [ False   , False         , False     , False     ]),
+        ('signal peer=/foo/bar,'              , [ False   , False         , False     , False     ]),
+        ('signal send, # comment'             , [ False   , False         , False     , False     ]),
+        ('allow signal send,'                 , [ False   , False         , False     , False     ]),
+        ('allow signal send peer=/foo/bar,'   , [ False   , False         , False     , False     ]),
+        ('signal    send,'                    , [ False   , False         , False     , False     ]),
+        ('signal    send peer=/foo/bar,'      , [ False   , False         , False     , False     ]),
+        ('signal    send peer=/what/ever,'    , [ False   , False         , False     , False     ]),
+        ('signal send set=quit,'              , [ False   , False         , True      , True      ]),
+        ('signal send set=int peer=/foo/bar,' , [ False   , False         , True      , True      ]),
+        ('audit signal send peer=/foo/bar,'   , [ False   , False         , False     , False     ]),
+        ('audit signal,'                      , [ False   , False         , False     , False     ]),
+        ('signal receive,'                    , [ False   , False         , False     , False     ]),
+        ('signal set=int,'                    , [ False   , False         , False     , False     ]),
+        ('audit deny signal send,'            , [ False   , False         , False     , False     ]),
+        ('deny signal send,'                  , [ False   , False         , False     , False     ]),
+    ]
+
+
+
 class SignalCoveredTest_Invalid(AATest):
     def test_borked_obj_is_covered_1(self):
         obj = SignalRule.parse('signal send peer=/foo,')

@@ -182,10 +182,10 @@ class SignalRule(BaseRule):
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
 
-        if not self._is_covered_plain(self.access, self.all_access, other_rule.access, other_rule.all_access, 'access'):
+        if not self._is_covered_list(self.access, self.all_access, other_rule.access, other_rule.all_access, 'access'):
             return False
 
-        if not self._is_covered_plain(self.signal, self.all_signals, other_rule.signal, other_rule.all_signals, 'signal'):
+        if not self._is_covered_list(self.signal, self.all_signals, other_rule.signal, other_rule.all_signals, 'signal'):
             return False
 
         if not self._is_covered_aare(self.peer, self.all_peers, other_rule.peer, other_rule.all_peers, 'peer'):

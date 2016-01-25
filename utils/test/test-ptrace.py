@@ -380,6 +380,37 @@ class PtraceCoveredTest_07(PtraceCoveredTest):
         ('deny ptrace read,'                    , [ False   , False         , False     , False     ]),
     ]
 
+class PtraceCoveredTest_08(PtraceCoveredTest):
+    rule = 'ptrace (trace, tracedby) peer=/foo/*,'
+
+    tests = [
+        #   rule                                  equal     strict equal    covered     covered exact
+        ('ptrace,'                              , [ False   , False         , False     , False     ]),
+        ('ptrace trace,'                        , [ False   , False         , False     , False     ]),
+        ('ptrace (tracedby, trace),'            , [ False   , False         , False     , False     ]),
+        ('ptrace trace peer=/foo/bar,'          , [ False   , False         , True      , True      ]),
+        ('ptrace (tracedby trace) peer=/foo/bar,',[ False   , False         , True      , True      ]),
+        ('ptrace (tracedby, trace) peer=/foo/*,', [ True    , False         , True      , True      ]),
+        ('ptrace tracedby peer=/foo/bar,'       , [ False   , False         , True      , True      ]),
+        ('ptrace trace peer=/foo/*,'            , [ False   , False         , True      , True      ]),
+        ('ptrace trace peer=/**,'               , [ False   , False         , False     , False     ]),
+        ('ptrace trace peer=/what/*,'           , [ False   , False         , False     , False     ]),
+        ('ptrace peer=/foo/bar,'                , [ False   , False         , False     , False     ]),
+        ('ptrace trace, # comment'              , [ False   , False         , False     , False     ]),
+        ('allow ptrace trace,'                  , [ False   , False         , False     , False     ]),
+        ('allow ptrace trace peer=/foo/bar,'    , [ False   , False         , True      , True      ]),
+        ('ptrace    trace,'                     , [ False   , False         , False     , False     ]),
+        ('ptrace    trace peer=/foo/bar,'       , [ False   , False         , True      , True      ]),
+        ('ptrace    trace peer=/what/ever,'     , [ False   , False         , False     , False     ]),
+        ('audit ptrace trace peer=/foo/bar,'    , [ False   , False         , False     , False     ]),
+        ('audit ptrace,'                        , [ False   , False         , False     , False     ]),
+        ('ptrace tracedby,'                     , [ False   , False         , False     , False     ]),
+        ('audit deny ptrace trace,'             , [ False   , False         , False     , False     ]),
+        ('deny ptrace trace,'                   , [ False   , False         , False     , False     ]),
+    ]
+
+
+
 class PtraceCoveredTest_Invalid(AATest):
     def test_borked_obj_is_covered_1(self):
         obj = PtraceRule.parse('ptrace read peer=/foo,')
