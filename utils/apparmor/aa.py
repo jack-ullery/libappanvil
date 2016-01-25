@@ -3071,7 +3071,7 @@ def parse_profile_data(data, file, do_include):
             else:
                 lastline = line
         else:
-            raise AppArmorException(_('Syntax Error: Unknown line found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
+            raise AppArmorException(_('Syntax Error: Unknown line found in file %(file)s line %(lineno)s:\n    %(line)s') % { 'file': file, 'lineno': lineno + 1, 'line': line })
 
     # Below is not required I'd say
     if not do_include:
