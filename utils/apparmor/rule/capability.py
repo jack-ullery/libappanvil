@@ -33,6 +33,8 @@ class CapabilityRule(BaseRule):
 
     ALL = __CapabilityAll
 
+    rule_name = 'capability'
+
     def __init__(self, cap_list, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
@@ -101,14 +103,8 @@ class CapabilityRule(BaseRule):
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
 
-        if not other_rule.capability and not other_rule.all_caps:
-            raise AppArmorBug('No capability specified')
-
-        if not self.all_caps:
-            if other_rule.all_caps:
-                return False
-            if not other_rule.capability.issubset(self.capability):
-                return False
+        if not self._is_covered_list(self.capability, self.all_caps, other_rule.capability, other_rule.all_caps, 'capability'):
+            return False
 
         # still here? -> then it is covered
         return True

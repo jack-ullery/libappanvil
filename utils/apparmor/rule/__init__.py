@@ -152,6 +152,51 @@ class BaseRule(object):
         '''check if the rule-specific parts of other_rule is covered by this rule object'''
         raise NotImplementedError("'%s' needs to implement is_covered_localvars(), but didn't" % (str(self)))
 
+    def _is_covered_plain(self, self_value, self_all, other_value, other_all, cond_name):
+        '''check if other_* is covered by self_* - for plain str, int etc.'''
+
+        if not other_value and not other_all:
+            raise AppArmorBug('No %(cond_name)s specified in other %(rule_name)s rule' % {'cond_name': cond_name, 'rule_name': self.rule_name})
+
+        if not self_all:
+            if other_all:
+                return False
+            if self_value != other_value:
+                return False
+
+        # still here? -> then it is covered
+        return True
+
+    def _is_covered_list(self, self_value, self_all, other_value, other_all, cond_name):
+        '''check if other_* is covered by self_* - for lists'''
+
+        if not other_value and not other_all:
+            raise AppArmorBug('No %(cond_name)s specified in other %(rule_name)s rule' % {'cond_name': cond_name, 'rule_name': self.rule_name})
+
+        if not self_all:
+            if other_all:
+                return False
+            if not other_value.issubset(self_value):
+                return False
+
+        # still here? -> then it is covered
+        return True
+
+    def _is_covered_aare(self, self_value, self_all, other_value, other_all, cond_name):
+        '''check if other_* is covered by self_* - for AARE'''
+
+        if not other_value and not other_all:
+            raise AppArmorBug('No %(cond_name)s specified in other %(rule_name)s rule' % {'cond_name': cond_name, 'rule_name': self.rule_name})
+
+        if not self_all:
+            if other_all:
+                return False
+            if not self_value.match(other_value.regex):  # XXX should check against other_value (without .regex) - but that gives different (more strict) results
+                return False
+
+        # still here? -> then it is covered
+        return True
+
     def is_equal(self, rule_obj, strict=False):
         '''compare if rule_obj == self
            Calls is_equal_localvars() to compare rule-specific variables'''

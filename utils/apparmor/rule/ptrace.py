@@ -50,6 +50,8 @@ class PtraceRule(BaseRule):
 
     ALL = __PtraceAll
 
+    rule_name = 'ptrace'
+
     def __init__(self, access, peer, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
@@ -133,23 +135,11 @@ class PtraceRule(BaseRule):
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
 
-        if not other_rule.access and not other_rule.all_access:
-            raise AppArmorBug('No access specified in other ptrace rule')
+        if not self._is_covered_plain(self.access, self.all_access, other_rule.access, other_rule.all_access, 'access'):
+            return False
 
-        if not other_rule.peer and not other_rule.all_peers:
-            raise AppArmorBug('No peer specified in other ptrace rule')
-
-        if not self.all_access:
-            if other_rule.all_access:
-                return False
-            if other_rule.access != self.access:
-                return False
-
-        if not self.all_peers:
-            if other_rule.all_peers:
-                return False
-            if not self.peer.match(other_rule.peer.regex):
-                return False
+        if not self._is_covered_aare(self.peer, self.all_peers, other_rule.peer, other_rule.all_peers, 'peer'):
+            return False
 
         # still here? -> then it is covered
         return True

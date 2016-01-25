@@ -71,6 +71,8 @@ class SignalRule(BaseRule):
 
     ALL = __SignalAll
 
+    rule_name = 'signal'
+
     def __init__(self, access, signal, peer, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
@@ -180,32 +182,14 @@ class SignalRule(BaseRule):
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
 
-        if not other_rule.access and not other_rule.all_access:
-            raise AppArmorBug('No access specified in other signal rule')
+        if not self._is_covered_plain(self.access, self.all_access, other_rule.access, other_rule.all_access, 'access'):
+            return False
 
-        if not other_rule.signal and not other_rule.all_signals:
-            raise AppArmorBug('No signal specified in other signal rule')
+        if not self._is_covered_plain(self.signal, self.all_signals, other_rule.signal, other_rule.all_signals, 'signal'):
+            return False
 
-        if not other_rule.peer and not other_rule.all_peers:
-            raise AppArmorBug('No peer specified in other signal rule')
-
-        if not self.all_access:
-            if other_rule.all_access:
-                return False
-            if other_rule.access != self.access:
-                return False
-
-        if not self.all_signals:
-            if other_rule.all_signals:
-                return False
-            if other_rule.signal != self.signal:
-                return False
-
-        if not self.all_peers:
-            if other_rule.all_peers:
-                return False
-            if not self.peer.match(other_rule.peer.regex):
-                return False
+        if not self._is_covered_aare(self.peer, self.all_peers, other_rule.peer, other_rule.all_peers, 'peer'):
+            return False
 
         # still here? -> then it is covered
         return True
