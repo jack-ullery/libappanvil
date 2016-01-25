@@ -291,7 +291,10 @@ class BaseRuleset(object):
 
     def __repr__(self):
         classname = self.__class__.__name__
-        return '<%s>\n' % classname + '\n'.join(self.get_raw(1)) + '</%s>' % classname
+        if self.rules:
+            return '<%s>\n' % classname + '\n'.join(self.get_raw(1)) + '</%s>' % classname
+        else:
+            return '<%s (empty) />' % classname
 
     def add(self, rule):
         '''add a rule object'''
