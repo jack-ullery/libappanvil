@@ -213,6 +213,21 @@ class BaseRule(object):
 
         return self.is_equal_localvars(rule_obj)
 
+    def _is_equal_aare(self, self_value, self_all, other_value, other_all, cond_name):
+        '''check if other_* is the same as self_* - for AARE'''
+
+        if not other_value and not other_all:
+            raise AppArmorBug('No %(cond_name)s specified in other %(rule_name)s rule' % {'cond_name': cond_name, 'rule_name': self.rule_name})
+
+        if self_all != other_all:
+            return False
+
+        if self_value and not self_value.is_equal(other_value):
+            return False
+
+        # still here? -> then it is equal
+        return True
+
     # @abstractmethod  FIXME - uncomment when python3 only
     def is_equal_localvars(self, other_rule):
         '''compare if rule-specific variables are equal'''

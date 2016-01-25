@@ -154,10 +154,7 @@ class PtraceRule(BaseRule):
                 or self.all_access != rule_obj.all_access):
             return False
 
-        if self.all_peers != rule_obj.all_peers:
-            return False
-
-        if self.peer and not self.peer.is_equal(rule_obj.peer):
+        if not self._is_equal_aare(self.peer, self.all_peers, rule_obj.peer, rule_obj.all_peers, 'peer'):
             return False
 
         return True
