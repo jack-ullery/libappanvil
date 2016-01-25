@@ -464,6 +464,77 @@ verify_binary_equality "change_profile == change_profile -> **" \
 		       "/t { change_profile /**, }" \
 		       "/t { change_profile /** -> **, }"
 
+verify_binary_equality "profile name is hname in rule" \
+	":ns:/hname { signal peer=/hname, }" \
+	":ns:/hname { signal peer=@{profile_name}, }"
+
+verify_binary_inequality "profile name is NOT fq name in rule" \
+	":ns:/hname { signal peer=:ns:/hname, }" \
+	":ns:/hname { signal peer=@{profile_name}, }"
+
+verify_binary_equality "profile name is hname in sub pofile rule" \
+	":ns:/hname { profile child { signal peer=/hname//child, } }" \
+	":ns:/hname { profile child { signal peer=@{profile_name}, } }"
+
+verify_binary_inequality "profile name is NOT fq name in sub profile rule" \
+	":ns:/hname { profile child { signal peer=:ns:/hname//child, } }" \
+	":ns:/hname { profile child { signal peer=@{profile_name}, } }"
+
+verify_binary_equality "profile name is hname in hat rule" \
+	":ns:/hname { ^child { signal peer=/hname//child, } }" \
+	":ns:/hname { ^child { signal peer=@{profile_name}, } }"
+
+verify_binary_inequality "profile name is NOT fq name in hat rule" \
+	":ns:/hname { ^child { signal peer=:ns:/hname//child, } }" \
+	":ns:/hname { ^child { signal peer=@{profile_name}, } }"
+
+verify_binary_equality "@{profile_name} is literal in peer" \
+	"/{a,b} { signal peer=/\{a,b\}, }" \
+	"/{a,b} { signal peer=@{profile_name}, }"
+
+verify_binary_equality "@{profile_name} is literal in peer with pattern" \
+	"/{a,b} { signal peer={/\{a,b\},c}, }" \
+	"/{a,b} { signal peer={@{profile_name},c}, }"
+
+verify_binary_inequality "@{profile_name} is not pattern in peer" \
+	"/{a,b} { signal peer=/{a,b}, }" \
+	"/{a,b} { signal peer=@{profile_name}, }"
+
+verify_binary_equality "@{profile_name} is literal in peer with esc sequence" \
+	"/\\\\a { signal peer=/\\\\a, }" \
+	"/\\\\a { signal peer=@{profile_name}, }"
+
+verify_binary_equality "@{profile_name} is literal in peer with esc alt sequence" \
+	"/\\{a,b\\},c { signal peer=/\\{a,b\\},c, }" \
+	"/\\{a,b\\},c { signal peer=@{profile_name}, }"
+
+
+
+# verify rlimit data conversions
+verify_binary_equality "set rlimit rttime <= 12 weeks" \
+                       "/t { set rlimit rttime <= 12 weeks, }" \
+                       "/t { set rlimit rttime <= $((12 * 7)) days, }" \
+                       "/t { set rlimit rttime <= $((12 * 7 * 24)) hours, }" \
+                       "/t { set rlimit rttime <= $((12 * 7 * 24 * 60)) minutes, }" \
+                       "/t { set rlimit rttime <= $((12 * 7 * 24 * 60 * 60)) seconds, }" \
+                       "/t { set rlimit rttime <= $((12 * 7 * 24 * 60 * 60 * 1000)) ms, }" \
+                       "/t { set rlimit rttime <= $((12 * 7 * 24 * 60 * 60 * 1000 * 1000)) us, }" \
+                       "/t { set rlimit rttime <= $((12 * 7 * 24 * 60 * 60 * 1000 * 1000)), }"
+
+verify_binary_equality "set rlimit cpu <= 42 weeks" \
+                       "/t { set rlimit cpu <= 42 weeks, }" \
+                       "/t { set rlimit cpu <= $((42 * 7)) days, }" \
+                       "/t { set rlimit cpu <= $((42 * 7 * 24)) hours, }" \
+                       "/t { set rlimit cpu <= $((42 * 7 * 24 * 60)) minutes, }" \
+                       "/t { set rlimit cpu <= $((42 * 7 * 24 * 60 * 60)) seconds, }" \
+                       "/t { set rlimit cpu <= $((42 * 7 * 24 * 60 * 60)), }"
+
+verify_binary_equality "set rlimit memlock <= 2GB" \
+                       "/t { set rlimit memlock <= 2GB, }" \
+                       "/t { set rlimit memlock <= $((2 * 1024)) MB, }" \
+                       "/t { set rlimit memlock <= $((2 * 1024 * 1024)) KB, }" \
+                       "/t { set rlimit memlock <= $((2 * 1024 * 1024 * 1024)) , }" \
+
 if [ $fails -ne 0 -o $errors -ne 0 ]
 then
 	printf "ERRORS: %d\nFAILS: %d\n" $errors $fails 2>&1

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # ------------------------------------------------------------------
 #
-#   Copyright (C) 2013 Canonical Ltd.
-#   Author: Steve Beattie <steve@nxnw.org>
+#   Copyright (C) 2013-2015 Canonical Ltd.
+#   Authors: Steve Beattie <steve@nxnw.org>
+#            Tyler Hicks <tyhicks@canonical.com>
 #
 #   This program is free software; you can redistribute it and/or
 #   modify it under the terms of version 2 of the GNU General Public
@@ -12,11 +13,11 @@
 
 # TODO
 # - check cache not used if parser in $PATH is newer
-# - check cache used/not used if includes are newer/older
 # - check cache used for force-complain, disable symlink, etc.
 
 from argparse import ArgumentParser
 import os
+import platform
 import shutil
 import time
 import tempfile
@@ -24,19 +25,24 @@ import unittest
 
 import testlib
 
+ABSTRACTION_CONTENTS = '''
+  # Simple example abstraction
+  capability setuid,
+'''
+ABSTRACTION = 'suid-abstraction'
 
 PROFILE_CONTENTS = '''
 # Simple example profile for caching tests
 
 /bin/pingy {
+  #include <%s>
   capability net_raw,
-  capability setuid,
   network inet raw,
 
   /bin/ping mixr,
   /etc/modules.conf r,
 }
-'''
+''' % (ABSTRACTION)
 PROFILE = 'sbin.pingy'
 config = None
 
@@ -51,11 +57,6 @@ class AAParserCachingCommon(testlib.AATestTemplate):
         # REPORT ALL THE OUTPUT
         self.maxDiff = None
 
-        # skip all the things if apparmor securityfs isn't mounted
-        if not os.path.exists("/sys/kernel/security/apparmor"):
-            raise unittest.SkipTest("WARNING: /sys/kernel/security/apparmor does not exist. "
-                                    "Skipping tests")
-
         self.tmp_dir = tempfile.mkdtemp(prefix='aa-caching-')
         os.chmod(self.tmp_dir, 0o755)
 
@@ -63,7 +64,11 @@ class AAParserCachingCommon(testlib.AATestTemplate):
         self.cache_dir = os.path.join(self.tmp_dir, 'cache')
         os.mkdir(self.cache_dir)
 
-        # write our sample profile out
+        # default path of the output cache file
+        self.cache_file = os.path.join(self.cache_dir, PROFILE)
+
+        # write our sample abstraction and profile out
+        self.abstraction = testlib.write_file(self.tmp_dir, ABSTRACTION, ABSTRACTION_CONTENTS)
         self.profile = testlib.write_file(self.tmp_dir, PROFILE, PROFILE_CONTENTS)
 
         if config.debug:
@@ -71,6 +76,9 @@ class AAParserCachingCommon(testlib.AATestTemplate):
             self.debug = True
 
         self.cmd_prefix = [config.parser, '--base', self.tmp_dir, '--skip-kernel-load']
+
+        if not self.is_apparmorfs_mounted():
+            self.cmd_prefix += ['-M', './features_files/features.all']
 
     def tearDown(self):
         '''teardown for each test'''
@@ -89,7 +97,17 @@ class AAParserCachingCommon(testlib.AATestTemplate):
             self.assertFalse(os.path.exists(path),
                              'test created file %s, when it was not expected to do so' % path)
 
+    def is_apparmorfs_mounted(self):
+        return os.path.exists("/sys/kernel/security/apparmor")
+
+    def require_apparmorfs(self):
+        # skip the test if apparmor securityfs isn't mounted
+        if not self.is_apparmorfs_mounted():
+            raise unittest.SkipTest("WARNING: /sys/kernel/security/apparmor does not exist. Skipping test.")
+
     def compare_features_file(self, features_path, expected=True):
+        # tests that need this function should call require_apparmorfs() early
+
         # compare features contents
         expected_output = testlib.read_features_dir('/sys/kernel/security/apparmor/features')
         with open(features_path) as f:
@@ -142,6 +160,8 @@ class AAParserBasicCachingTests(AAParserCachingCommon):
 
     def test_features_match_when_caching(self):
         '''test features file is written when caching'''
+
+        self.require_apparmorfs()
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-q', '--write-cache', '-r', self.profile])
@@ -203,21 +223,34 @@ class AAParserCachingTests(AAParserCachingCommon):
     def setUp(self):
         super(AAParserCachingTests, self).setUp()
 
-        # need separation of length timeout between generating profile
-        # and generating cache entry, as the parser distinguishes
-        # between ctime, not mtime.
-        if not 'timeout' in dir(config):
-            r = testlib.filesystem_time_resolution()
-            config.timeout = r[1]
-
-        time.sleep(config.timeout)
+        r = testlib.filesystem_time_resolution()
+        self.mtime_res = r[1]
 
     def _generate_cache_file(self):
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-q', '--write-cache', '-r', self.profile])
         self.run_cmd_check(cmd)
-        self.assert_path_exists(os.path.join(self.cache_dir, PROFILE))
+        self.assert_path_exists(self.cache_file)
+
+    def _assertTimeStampEquals(self, time1, time2):
+        '''Compare two timestamps to ensure equality'''
+
+        # python 3.2 and earlier don't support writing timestamps with
+        # nanosecond resolution, only microsecond. When comparing
+        # timestamps in such an environment, loosen the equality bounds
+        # to compensate
+        # Reference: https://bugs.python.org/issue12904
+        (major, minor, _) = platform.python_version_tuple()
+        if (int(major) < 3) or ((int(major) == 3) and (int(minor) <= 2)):
+            self.assertAlmostEquals(time1, time2, places=5)
+        else:
+            self.assertEquals(time1, time2)
+
+    def _set_mtime(self, path, mtime):
+        atime = os.stat(path).st_atime
+        os.utime(path, (atime, mtime))
+        self._assertTimeStampEquals(os.stat(path).st_mtime, mtime)
 
     def test_cache_loaded_when_exists(self):
         '''test cache is loaded when it exists, is newer than profile,  and features match'''
@@ -260,6 +293,8 @@ class AAParserCachingTests(AAParserCachingCommon):
     def test_cache_writing_does_not_overwrite_features_when_features_differ(self):
         '''test cache writing does not overwrite the features files when it differs and --skip-bad-cache is given'''
 
+        self.require_apparmorfs()
+
         features_file = testlib.write_file(self.cache_dir, '.features', 'monkey\n')
 
         cmd = list(self.cmd_prefix)
@@ -277,10 +312,12 @@ class AAParserCachingTests(AAParserCachingCommon):
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '--write-cache', '--skip-bad-cache', '-r', self.profile])
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
-        self.assert_path_exists(os.path.join(self.cache_dir, PROFILE), expected=False)
+        self.assert_path_exists(self.cache_file, expected=False)
 
     def test_cache_writing_updates_features(self):
         '''test cache writing updates features'''
+
+        self.require_apparmorfs()
 
         features_file = testlib.write_file(self.cache_dir, '.features', 'monkey\n')
 
@@ -294,18 +331,18 @@ class AAParserCachingTests(AAParserCachingCommon):
         '''test cache writing updates cache file'''
 
         cache_file = testlib.write_file(self.cache_dir, PROFILE, 'monkey\n')
-        orig_size = os.stat(cache_file).st_size
+        orig_stat = os.stat(cache_file)
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '--write-cache', '-r', self.profile])
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
         self.assert_path_exists(cache_file)
-        with open(cache_file, 'rb') as f:
-            new_size = os.fstat(f.fileno()).st_size
+        stat = os.stat(cache_file)
         # We check sizes here rather than whether the string monkey is
         # in cache_contents because of the difficulty coercing cache
         # file bytes into strings in python3
-        self.assertNotEquals(orig_size, new_size, 'Expected cache file to be updated, size is not changed.')
+        self.assertNotEquals(orig_stat.st_size, stat.st_size, 'Expected cache file to be updated, size is not changed.')
+        self.assertEquals(os.stat(self.profile).st_mtime, stat.st_mtime)
 
     def test_cache_writing_clears_all_files(self):
         '''test cache writing clears all cache files'''
@@ -317,27 +354,110 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
         self.assert_path_exists(check_file, expected=False)
 
+    def test_profile_mtime_preserved(self):
+        '''test profile mtime is preserved when it is newest'''
+        expected = 1
+        self._set_mtime(self.abstraction, 0)
+        self._set_mtime(self.profile, expected)
+        self._generate_cache_file()
+        self.assertEquals(expected, os.stat(self.cache_file).st_mtime)
+
+    def test_abstraction_mtime_preserved(self):
+        '''test abstraction mtime is preserved when it is newest'''
+        expected = 1000
+        self._set_mtime(self.profile, 0)
+        self._set_mtime(self.abstraction, expected)
+        self._generate_cache_file()
+        self.assertEquals(expected, os.stat(self.cache_file).st_mtime)
+
+    def test_equal_mtimes_preserved(self):
+        '''test equal profile and abstraction mtimes are preserved'''
+        expected = 10000 + self.mtime_res
+        self._set_mtime(self.profile, expected)
+        self._set_mtime(self.abstraction, expected)
+        self._generate_cache_file()
+        self.assertEquals(expected, os.stat(self.cache_file).st_mtime)
+
     def test_profile_newer_skips_cache(self):
         '''test cache is skipped if profile is newer'''
 
         self._generate_cache_file()
-        time.sleep(config.timeout)
-        testlib.touch(self.profile)
+        profile_mtime = os.stat(self.cache_file).st_mtime + self.mtime_res
+        self._set_mtime(self.profile, profile_mtime)
+
+        orig_stat = os.stat(self.cache_file)
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '-r', self.profile])
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
+        stat = os.stat(self.cache_file)
+        self.assertEquals(orig_stat.st_size, stat.st_size)
+        self.assertEquals(orig_stat.st_ino, stat.st_ino)
+        self.assertEquals(orig_stat.st_mtime, stat.st_mtime)
+
+    def test_abstraction_newer_skips_cache(self):
+        '''test cache is skipped if abstraction is newer'''
+
+        self._generate_cache_file()
+        abstraction_mtime = os.stat(self.cache_file).st_mtime + self.mtime_res
+        self._set_mtime(self.abstraction, abstraction_mtime)
+
+        orig_stat = os.stat(self.cache_file)
+
+        cmd = list(self.cmd_prefix)
+        cmd.extend(['-v', '-r', self.profile])
+        self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
+
+        stat = os.stat(self.cache_file)
+        self.assertEquals(orig_stat.st_size, stat.st_size)
+        self.assertEquals(orig_stat.st_ino, stat.st_ino)
+        self.assertEquals(orig_stat.st_mtime, stat.st_mtime)
+
+    def test_profile_newer_rewrites_cache(self):
+        '''test cache is rewritten if profile is newer'''
+
+        self._generate_cache_file()
+        profile_mtime = os.stat(self.cache_file).st_mtime + self.mtime_res
+        self._set_mtime(self.profile, profile_mtime)
+
+        orig_stat = os.stat(self.cache_file)
+
+        cmd = list(self.cmd_prefix)
+        cmd.extend(['-v', '-r', '-W', self.profile])
+        self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
+
+        stat = os.stat(self.cache_file)
+        self.assertNotEquals(orig_stat.st_ino, stat.st_ino)
+        self._assertTimeStampEquals(profile_mtime, stat.st_mtime)
+
+    def test_abstraction_newer_rewrites_cache(self):
+        '''test cache is rewritten if abstraction is newer'''
+
+        self._generate_cache_file()
+        abstraction_mtime = os.stat(self.cache_file).st_mtime + self.mtime_res
+        self._set_mtime(self.abstraction, abstraction_mtime)
+
+        orig_stat = os.stat(self.cache_file)
+
+        cmd = list(self.cmd_prefix)
+        cmd.extend(['-v', '-r', '-W', self.profile])
+        self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
+
+        stat = os.stat(self.cache_file)
+        self.assertNotEquals(orig_stat.st_ino, stat.st_ino)
+        self._assertTimeStampEquals(abstraction_mtime, stat.st_mtime)
+
     def test_parser_newer_uses_cache(self):
         '''test cache is not skipped if parser is newer'''
 
         self._generate_cache_file()
-        time.sleep(config.timeout)
 
         # copy parser
         os.mkdir(os.path.join(self.tmp_dir, 'parser'))
         new_parser = os.path.join(self.tmp_dir, 'parser', 'apparmor_parser')
         shutil.copy(config.parser, new_parser)
+        self._set_mtime(new_parser, os.stat(self.cache_file).st_mtime + self.mtime_res)
 
         cmd = list(self.cmd_prefix)
         cmd[0] = new_parser
@@ -379,6 +499,7 @@ class AAParserAltCacheTests(AAParserCachingTests):
 
         self.orig_cache_dir = self.cache_dir
         self.cache_dir = alt_cache_dir
+        self.cache_file = os.path.join(self.cache_dir, PROFILE)
         self.cmd_prefix.extend(['--cache-loc', alt_cache_dir])
 
     def tearDown(self):

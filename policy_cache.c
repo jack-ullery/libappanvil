@@ -18,6 +18,7 @@
 
 #include <ctype.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -25,8 +26,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <sys/time.h>
-#include <utime.h>
 
 #include "lib.h"
 #include "parser.h"
@@ -166,12 +165,21 @@ void install_cache(const char *cachetmpname, const char *cachename)
 	/* Only install the generate cache file if it parsed correctly
 	   and did not have write/close errors */
 	if (cachetmpname) {
-		struct timeval t;
+		struct timespec times[2];
+
 		/* set the mtime of the cache file to the most newest mtime
 		 * of policy files used to generate it
 		 */
-		TIMESPEC_TO_TIMEVAL(&t, &mru_policy_tstamp);
-		utimes(cachetmpname, &t);
+		times[0].tv_sec = 0;
+		times[0].tv_nsec = UTIME_OMIT;
+		times[1] = mru_policy_tstamp;
+		if (utimensat(AT_FDCWD, cachetmpname, times, 0) < 0) {
+			PERROR("%s: Failed to set the mtime of cache file '%s': %m\n",
+			       progname, cachename);
+			unlink(cachetmpname);
+			return;
+		}
+
 		if (rename(cachetmpname, cachename) < 0) {
 			pwarn("Warning failed to write cache: %s\n", cachename);
 			unlink(cachetmpname);
