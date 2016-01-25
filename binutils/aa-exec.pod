@@ -57,10 +57,6 @@ use the current profile name (likely unconfined).
 use profiles in NAMESPACE.  This will result in confinement transitioning
 to using the new profile namespace.
 
-=item -f FILE, --file=FILE
-
-a file or directory containing profiles to load before confining the program.
-
 =item -i, --immediate
 
 transition to PROFILE before doing executing I<E<lt>commandE<gt>>.  This

@@ -29,9 +29,13 @@
   signal (receive) peer=/usr/sbin/libvirtd,
   ptrace (readby) peer=/usr/sbin/libvirtd,
 
+  owner /dev/tty rw,
+
   /etc/dnsmasq.conf r,
   /etc/dnsmasq.d/ r,
   /etc/dnsmasq.d/* r,
+  /etc/dnsmasq.d-available/ r,
+  /etc/dnsmasq.d-available/* r,
   /etc/ethers r,
   /etc/NetworkManager/dnsmasq.d/ r,
   /etc/NetworkManager/dnsmasq.d/* r,
@@ -45,7 +49,7 @@
 
   /var/lib/misc/dnsmasq.leases rw, # Required only for DHCP server usage
 
-  /bin/bash ix, # Required to execute --dhcp-script argument
+  /{,usr/}bin/{ba,da,}sh ix, # Required to execute --dhcp-script argument
 
   # access to iface mtu needed for Router Advertisement messages in IPv6
   # Neighbor Discovery protocol (RFC 2461)
@@ -55,19 +59,16 @@
   @{TFTP_DIR}/ r,
   @{TFTP_DIR}/** r,
 
-  # libvirt config, lease and hosts files for dnsmasq
+  # libvirt config and hosts file for dnsmasq
   /var/lib/libvirt/dnsmasq/          r,
   /var/lib/libvirt/dnsmasq/*         r,
-  /var/lib/libvirt/dnsmasq/*.leases  rw,
-  /var/lib/libvirt/dnsmasq/*.status* rw,
 
   # libvirt pid files for dnsmasq
   /{,var/}run/libvirt/network/      r,
   /{,var/}run/libvirt/network/*.pid rw,
 
   # libvirt lease helper
-  /usr/lib{,64}/libvirt/libvirt_leaseshelper ix,
-  /{,var/}run/leaseshelper.pid rwk,
+  /usr/lib{,64}/libvirt/libvirt_leaseshelper Cx -> libvirt_leaseshelper,
 
   # lxc-net pid and lease files
   /{,var/}run/lxc/dnsmasq.pid    rw,
@@ -78,6 +79,25 @@
   /{,var/}run/sendsigs.omit.d/*dnsmasq.pid w,
   /{,var/}run/NetworkManager/dnsmasq.conf r,
   /{,var/}run/NetworkManager/dnsmasq.pid w,
+
+  profile libvirt_leaseshelper {
+    #include <abstractions/base>
+
+    /etc/libnl-3/classid r,
+
+    owner @{PROC}/@{pid}/net/psched r,
+    owner @{PROC}/@{pid}/status r,
+
+    /sys/devices/system/cpu/ r,
+    /sys/devices/system/node/ r,
+    /sys/devices/system/node/*/meminfo r,
+
+    # libvirt lease and status files for dnsmasq
+    /var/lib/libvirt/dnsmasq/*.leases  rw,
+    /var/lib/libvirt/dnsmasq/*.status* rw,
+
+    /{,var/}run/leaseshelper.pid rwk,
+  }
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.dnsmasq>

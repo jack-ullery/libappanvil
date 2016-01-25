@@ -27,6 +27,7 @@ Source Layout
 
 AppArmor consists of several different parts:
 
+binutils/	source for basic utilities written in compiled languages
 changehat/	source for using changehat with Apache, PAM and Tomcat
 common/		common makefile rules
 desktop/	empty
@@ -71,6 +72,13 @@ $ make install
 generate Ruby bindings to libapparmor.]
 
 
+Binary Utilities:
+$ cd binutils
+$ make
+$ make check
+$ make install
+
+
 Utilities:
 $ cd utils
 $ make
@@ -104,7 +112,7 @@ $ make check	# depends on the parser having been built first
 $ make install
 
 
-[Note that for the parser and the utils, if you only with to build/use
+[Note that for the parser, binutils, and utils, if you only wish to build/use
  some of the locale languages, you can override the default by passing
  the LANGS arguments to make; e.g. make all install "LANGS=en_US fr".]
 

@@ -8,6 +8,8 @@
 	allow /usr/share/X11/locale/**  r,
 	allow /home/*/** r,
 
+    unix (receive) type=dgram,
+
     ^foo {
             /etc/fstab r,
         capability dac_override,

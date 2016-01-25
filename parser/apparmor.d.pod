@@ -103,7 +103,7 @@ capabilities(7))
 
 B<NETWORK RULE> = [ I<QUALIFIERS> ] 'network' [ I<DOMAIN> ] [ I<TYPE> | I<PROTOCOL> ]
 
-B<DOMAIN> = ( 'inet' | 'ax25' | 'ipx' | 'appletalk' | 'netrom' | 'bridge' | 'atmpvc' | 'x25' | 'inet6' | 'rose' | 'netbeui' | 'security' | 'key' | 'packet' | 'ash' | 'econet' | 'atmsvc' | 'sna' | 'irda' | 'pppox' | 'wanpipe' | 'bluetooth' | 'netlink' | 'unix' | 'rds' | 'llc' | 'can' | 'tipc' | 'iucv' | 'rxrpc' | 'isdn' | 'phonet' | 'ieee802154' | 'caif' | 'alg' | 'nfc' | 'vsock' ) ','
+B<DOMAIN> = ( 'inet' | 'ax25' | 'ipx' | 'appletalk' | 'netrom' | 'bridge' | 'atmpvc' | 'x25' | 'inet6' | 'rose' | 'netbeui' | 'security' | 'key' | 'packet' | 'ash' | 'econet' | 'atmsvc' | 'sna' | 'irda' | 'pppox' | 'wanpipe' | 'bluetooth' | 'netlink' | 'unix' | 'rds' | 'llc' | 'can' | 'tipc' | 'iucv' | 'rxrpc' | 'isdn' | 'phonet' | 'ieee802154' | 'caif' | 'alg' | 'nfc' | 'vsock' | 'mpls' | 'ib' ) ','
 
 B<TYPE> = ( 'stream' | 'dgram' | 'seqpacket' |  'rdm' | 'raw' | 'packet' )
 
@@ -161,7 +161,7 @@ B<SIGNAL SET> = 'set' '=' '(' I<SIGNAL LIST> ')'
 
 B<SIGNAL LIST> = Comma or space separated list of I<SIGNALS>
 
-B<SIGNALS> = ( 'hup' | 'int' | 'quit' | 'ill' | 'trap' | 'abrt' | 'bus' | 'fpe' | 'kill' | 'usr1' | 'segv' | 'usr2' | 'pipe' | 'alrm' | 'term' | 'stkflt' | 'chld' | 'cont' | 'stop' | 'stp' | 'ttin' | 'ttou' | 'urg' | 'xcpu' | 'xfsz' | 'vtalrm' | 'prof' | 'winch' | 'io' | 'pwr' | 'sys' | 'emt' | 'exists' )
+B<SIGNALS> = ( 'hup' | 'int' | 'quit' | 'ill' | 'trap' | 'abrt' | 'bus' | 'fpe' | 'kill' | 'usr1' | 'segv' | 'usr2' | 'pipe' | 'alrm' | 'term' | 'stkflt' | 'chld' | 'cont' | 'stop' | 'stp' | 'ttin' | 'ttou' | 'urg' | 'xcpu' | 'xfsz' | 'vtalrm' | 'prof' | 'winch' | 'io' | 'pwr' | 'sys' | 'emt' | 'exists' | 'rtmin+0' ... 'rtmin+32' )
 
 B<SIGNAL PEER> = 'peer' '=' I<AARE>
 
@@ -231,11 +231,13 @@ B<RLIMIT RULE> = 'set' 'rlimit' [I<RLIMIT> 'E<lt>=' I<RLIMIT VALUE> ]
 
 B<RLIMIT> = ( 'cpu' | 'fsize' | 'data' | 'stack' | 'core' | 'rss' | 'nofile' | 'ofile' | 'as' | 'nproc' | 'memlock' | 'locks' | 'sigpending' | 'msgqueue' | 'nice' | 'rtprio' | 'rttime' )
 
-B<RLIMIT VALUE> = ( I<RLIMIT SIZE> | I<RLIMIT NUMBER> | I<RLIMIT NICE> )
+B<RLIMIT VALUE> = ( I<RLIMIT SIZE> | I<RLIMIT NUMBER> | I<RLIMIT TIME> | I<RLIMIT NICE> )
 
 B<RLIMIT SIZE> = I<NUMBER> ( 'K' | 'M' | 'G' ) Only applies to RLIMIT of 'fsize', 'data', 'stack', 'core', 'rss', 'as', 'memlock', 'msgqueue'.
 
-B<RLIMIT NUMBER> = number from 0 to max rlimit value. Only applies ot RLIMIT of 'nofile', 'locks', 'sigpending', 'nproc', 'rtprio', 'cpu'
+B<RLIMIT NUMBER> = number from 0 to max rlimit value. Only applies ot RLIMIT of 'ofile', 'nofile', 'locks', 'sigpending', 'nproc', 'rtprio'
+
+B<RLIMIT TIME> = I<NUMBER> ( 'us' | 'microsecond' | 'microseconds' | 'ms' | 'millisecond' | 'milliseconds' | 's' | 'sec' | 'second' | 'seconds' | 'min' | 'minute' | 'minutes' | 'h' | 'hour' | 'hours' | 'd' | 'day' | 'days' | 'week' | 'weeks' ) Only applies to RLIMIT of 'cpu', 'rttime'. RLIMIT 'cpu' only allows units >= 'seconds'.
 
 B<RLIMIT NICE> = a number between -20 and 19. Only applies to RLIMIT of 'nice'
 
@@ -962,6 +964,9 @@ Example AppArmor signal rules:
     # Allow us to signal ourselves using the built-in @{profile_name} variable
     signal peer=@{profile_name},
 
+    # Allow two real-time signals
+    signal set=(rtmin+0 rtmin+32),
+
 =head2 DBus rules
 
 AppArmor supports DBus mediation. The mediation is performed in conjunction
@@ -1227,8 +1232,10 @@ provided AppArmor policy:
   @{HOMEDIRS}
   @{multiarch}
   @{pid}
+  @{pids}
   @{PROC}
   @{securityfs}
+  @{apparmorfs}
   @{sys}
   @{tid}
   @{XDG_DESKTOP_DIR}

@@ -402,6 +402,9 @@ extern void free_cod_entries(struct cod_entry *list);
 extern void __debug_capabilities(uint64_t capset, const char *name);
 void debug_cod_entries(struct cod_entry *list);
 
+#define SECONDS_P_MS (1000LL * 1000LL)
+long long convert_time_units(long long value, long long base, const char *units);
+
 
 /* parser_symtab.c */
 struct set_value {

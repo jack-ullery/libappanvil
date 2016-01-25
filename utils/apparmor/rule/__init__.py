@@ -13,7 +13,8 @@
 #
 # ----------------------------------------------------------------------
 
-from apparmor.common import AppArmorBug
+from apparmor.aare import AARE
+from apparmor.common import AppArmorBug, type_is_str
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -50,6 +51,38 @@ class BaseRule(object):
         # Set only in the parse() class method
         self.raw_rule = None
 
+    def _aare_or_all(self, rulepart, partname, is_path, log_event):
+        '''checks rulepart and returns
+           - (AARE, False) if rulepart is a (non-empty) string
+           - (None, True) if rulepart is all_obj (typically *Rule.ALL)
+           - raises AppArmorBug if rulepart is an empty string or has a wrong type
+
+           Parameters:
+           - rulepart: the rule part to check (string or *Rule.ALL object)
+           - partname: the name of the rulepart (for example 'peer', used for exception messages)
+           - is_path (passed through to AARE)
+           - log_event (passed through to AARE)
+           '''
+
+        if rulepart == self.ALL:
+            return None, True
+        elif type_is_str(rulepart):
+            if len(rulepart.strip()) == 0:
+                raise AppArmorBug('Passed empty %(partname)s to %(classname)s: %(rulepart)s' %
+                        {'partname': partname, 'classname': self.__class__.__name__, 'rulepart': str(rulepart)})
+            return AARE(rulepart, is_path=is_path, log_event=log_event), False
+        else:
+            raise AppArmorBug('Passed unknown %(partname)s to %(classname)s: %(rulepart)s'
+                    % {'partname': partname, 'classname': self.__class__.__name__, 'rulepart': str(rulepart)})
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        try:
+            raw_content = self.get_raw()  # will fail for BaseRule
+            return '<%s> %s' % (classname, raw_content)
+        except NotImplementedError:
+            return '<%s (NotImplementedError - get_clean() not implemented?)>' % classname
+
     @classmethod
     def match(cls, raw_rule):
         '''return True if raw_rule matches the class (main) regex, False otherwise
@@ -65,7 +98,7 @@ class BaseRule(object):
     @classmethod
     def _match(cls, raw_rule):
         '''parse raw_rule and return regex match object'''
-        raise AppArmorBug("'%s' needs to implement _match(), but didn't" % (str(cls)))
+        raise NotImplementedError("'%s' needs to implement _match(), but didn't" % (str(cls)))
 
     @classmethod
     def parse(cls, raw_rule):
@@ -79,7 +112,12 @@ class BaseRule(object):
     def _parse(cls, raw_rule):
         '''returns a Rule object created from parsing the raw rule.
            required to be implemented by subclasses; raise exception if not'''
-        raise AppArmorBug("'%s' needs to implement _parse(), but didn't" % (str(cls)))
+        raise NotImplementedError("'%s' needs to implement _parse(), but didn't" % (str(cls)))
+
+    # @abstractmethod  FIXME - uncomment when python3 only
+    def get_clean(self, depth=0):
+        '''return clean rule (with default formatting, and leading whitespace as specified in the depth parameter)'''
+        raise NotImplementedError("'%s' needs to implement get_clean(), but didn't" % (str(self.__class__)))
 
     def get_raw(self, depth=0):
         '''return raw rule (with original formatting, and leading whitespace in the depth parameter)'''
@@ -112,7 +150,7 @@ class BaseRule(object):
     # @abstractmethod  FIXME - uncomment when python3 only
     def is_covered_localvars(self, other_rule):
         '''check if the rule-specific parts of other_rule is covered by this rule object'''
-        raise AppArmorBug("'%s' needs to implement is_covered_localvars(), but didn't" % (str(self)))
+        raise NotImplementedError("'%s' needs to implement is_covered_localvars(), but didn't" % (str(self)))
 
     def is_equal(self, rule_obj, strict=False):
         '''compare if rule_obj == self
@@ -133,7 +171,7 @@ class BaseRule(object):
     # @abstractmethod  FIXME - uncomment when python3 only
     def is_equal_localvars(self, other_rule):
         '''compare if rule-specific variables are equal'''
-        raise AppArmorBug("'%s' needs to implement is_equal_localvars(), but didn't" % (str(self)))
+        raise NotImplementedError("'%s' needs to implement is_equal_localvars(), but didn't" % (str(self)))
 
     def severity(self, sev_db):
         '''return severity of this rule, which can be:
@@ -169,7 +207,7 @@ class BaseRule(object):
     def logprof_header_localvars(self):
         '''return the headers (human-readable version of the rule) to display in aa-logprof for this rule object
            returns {'label1': 'value1', 'label2': 'value2'} '''
-        raise AppArmorBug("'%s' needs to implement logprof_header(), but didn't" % (str(self)))
+        raise NotImplementedError("'%s' needs to implement logprof_header(), but didn't" % (str(self)))
 
     def modifiers_str(self):
         '''return the allow/deny and audit keyword as string, including whitespace'''
@@ -205,6 +243,10 @@ class BaseRuleset(object):
     def _init_vars(self):
         '''called by __init__() and delete_all_rules() - override in child class to initialize more variables'''
         pass
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return '<%s>\n' % classname + '\n'.join(self.get_raw(1)) + '</%s>' % classname
 
     def add(self, rule):
         '''add a rule object'''
@@ -323,8 +365,31 @@ class BaseRuleset(object):
     def get_glob_ext(self, path_or_rule):
         '''returns the next possible glob with extension (for file rules only).
            For all other rule types, raise an exception'''
-        raise AppArmorBug("get_glob_ext is not available for this rule type!")
+        raise NotImplementedError("get_glob_ext is not available for this rule type!")
 
+
+def check_and_split_list(lst, allowed_keywords, all_obj, classname, keyword_name):
+    '''check if lst is all_obj or contains only items listed in allowed_keywords'''
+
+    if lst == all_obj:
+        return None, True, None
+    elif type_is_str(lst):
+        result_list = {lst}
+    elif (type(lst) == list or type(lst) == tuple) and len(lst) > 0:
+        result_list = set(lst)
+    else:
+        raise AppArmorBug('Passed unknown %(type)s object to %(classname)s: %(unknown_object)s' %
+                {'type': type(lst), 'classname': classname, 'unknown_object': str(lst)})
+
+    unknown_items = set()
+    for item in result_list:
+        if not item.strip():
+            raise AppArmorBug('Passed empty %(keyword_name)s to %(classname)s' %
+                    {'keyword_name': keyword_name, 'classname': classname})
+        if item not in allowed_keywords:
+            unknown_items.add(item)
+
+    return result_list, False, unknown_items
 
 def parse_comment(matches):
     '''returns the comment (with a leading space) from the matches object'''

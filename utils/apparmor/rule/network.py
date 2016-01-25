@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
 #    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
@@ -17,7 +16,7 @@
 import re
 
 from apparmor.regex import RE_PROFILE_NETWORK
-from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.common import AppArmorBug, AppArmorException, type_is_str
 from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers
 
 # setup module translations
@@ -28,7 +27,7 @@ _ = init_translation()
 network_domain_keywords   = [ 'unix', 'inet', 'ax25', 'ipx', 'appletalk', 'netrom', 'bridge', 'atmpvc', 'x25', 'inet6',
                               'rose', 'netbeui', 'security', 'key', 'netlink', 'packet', 'ash', 'econet', 'atmsvc', 'rds', 'sna',
                               'irda', 'pppox', 'wanpipe', 'llc', 'can', 'tipc', 'bluetooth', 'iucv', 'rxrpc', 'isdn', 'phonet',
-                              'ieee802154', 'caif', 'alg', 'nfc', 'vsock' ]
+                              'ieee802154', 'caif', 'alg', 'nfc', 'vsock', 'mpls', 'ib' ]
 
 network_type_keywords     = ['stream', 'dgram', 'seqpacket', 'rdm', 'raw', 'packet']
 network_protocol_keywords = ['tcp', 'udp', 'icmp']
@@ -67,7 +66,7 @@ class NetworkRule(BaseRule):
         self.all_domains = False
         if domain == NetworkRule.ALL:
             self.all_domains = True
-        elif type(domain) == str:
+        elif type_is_str(domain):
             if domain in network_domain_keywords:
                 self.domain = domain
             else:
@@ -79,7 +78,7 @@ class NetworkRule(BaseRule):
         self.all_type_or_protocols = False
         if type_or_protocol == NetworkRule.ALL:
             self.all_type_or_protocols = True
-        elif type(type_or_protocol) == str:
+        elif type_is_str(type_or_protocol):
             if type_or_protocol in network_protocol_keywords:
                 self.type_or_protocol = type_or_protocol
             elif type_or_protocol in network_type_keywords:

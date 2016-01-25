@@ -166,6 +166,11 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_SYSLOG_KERNEL
 %token TOK_SYSLOG_USER
 
+%destructor { free($$); } TOK_QUOTED_STRING TOK_ID TOK_MODE TOK_DMESG_STAMP
+%destructor { free($$); } TOK_AUDIT_DIGITS TOK_DATE_MONTH TOK_DATE TOK_TIME
+%destructor { free($$); } TOK_HEXSTRING TOK_TYPE_OTHER TOK_MSG_REST
+%destructor { free($$); } TOK_IP_ADDR
+
 %%
 
 log_message: audit_type
@@ -201,7 +206,7 @@ other_audit: TOK_TYPE_OTHER audit_msg TOK_MSG_REST
 	;
 
 dmesg_type: TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id key_list
-	{ ret_record->version = AA_RECORD_SYNTAX_V2; }
+	{ ret_record->version = AA_RECORD_SYNTAX_V2; free($1); }
 	;
 
 syslog_type:

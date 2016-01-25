@@ -6,6 +6,8 @@
 /usr/bin/a/simple/cleanprof/test/profile {
   #include <abstractions/base>
 
+  unix (receive) type=dgram,
+
   /home/*/** r,
   /home/foo/** w,
 

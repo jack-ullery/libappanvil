@@ -27,13 +27,15 @@ RE_EOL                  = '\s*(?P<comment>#.*?)?\s*$'  # optional whitespace, op
 RE_COMMA_EOL            = '\s*,' + RE_EOL # optional whitespace, comma + RE_EOL
 
 RE_PROFILE_NAME         = '(?P<%s>(\S+|"[^"]+"))'    # string without spaces, or quoted string. %s is the match group name
-RE_PROFILE_PATH         = '(?P<%s>(/\S+|"/[^"]+"))'  # filename (starting with '/') without spaces, or quoted filename. %s is the match group name
+RE_PATH                 = '/\S+|"/[^"]+"'  # filename (starting with '/') without spaces, or quoted filename.
+RE_PROFILE_PATH         = '(?P<%s>(' + RE_PATH + '))'  # quoted or unquoted filename. %s is the match group name
+RE_PROFILE_PATH_OR_VAR  = '(?P<%s>(' + RE_PATH + '|@{\S+}\S*|"@{\S+}[^"]*"))'  # quoted or unquoted filename or variable. %s is the match group name
 
 RE_PROFILE_END          = re.compile('^\s*\}' + RE_EOL)
 RE_PROFILE_CAP          = re.compile(RE_AUDIT_DENY + 'capability(?P<capability>(\s+\S+)+)?' + RE_COMMA_EOL)
 RE_PROFILE_LINK         = re.compile(RE_AUDIT_DENY + 'link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)' + RE_COMMA_EOL)
 RE_PROFILE_ALIAS        = re.compile('^\s*alias\s+("??.+?"??)\s+->\s*("??.+?"??)' + RE_COMMA_EOL)
-RE_PROFILE_RLIMIT       = re.compile('^\s*set\s+rlimit\s+(?P<rlimit>[a-z]+)\s*<=\s*(?P<value>[^ ]+)' + RE_COMMA_EOL)
+RE_PROFILE_RLIMIT       = re.compile('^\s*set\s+rlimit\s+(?P<rlimit>[a-z]+)\s*<=\s*(?P<value>[^ ]+(\s+[a-zA-Z]+)?)' + RE_COMMA_EOL)
 RE_PROFILE_BOOLEAN      = re.compile('^\s*(\$\{?\w*\}?)\s*=\s*(true|false)\s*,?' + RE_EOL, flags=re.IGNORECASE)
 RE_PROFILE_VARIABLE     = re.compile('^\s*(@\{?\w+\}?)\s*(\+?=)\s*(@*.+?)\s*,?' + RE_EOL)
 RE_PROFILE_CONDITIONAL  = re.compile('^\s*if\s+(not\s+)?(\$\{?\w*\}?)\s*\{' + RE_EOL)
@@ -46,8 +48,8 @@ RE_PROFILE_CHANGE_HAT   = re.compile('^\s*\^(\"??.+?\"??)' + RE_COMMA_EOL)
 RE_PROFILE_HAT_DEF      = re.compile('^(?P<leadingspace>\s*)(?P<hat_keyword>\^|hat\s+)(?P<hat>\"??.+?\"??)\s+((flags=)?\((?P<flags>.+)\)\s+)*\{' + RE_EOL)
 RE_PROFILE_DBUS         = re.compile(RE_AUDIT_DENY + '(dbus\s*,|dbus\s+[^#]*\s*,)' + RE_EOL)
 RE_PROFILE_MOUNT        = re.compile(RE_AUDIT_DENY + '((mount|remount|umount|unmount)(\s+[^#]*)?\s*,)' + RE_EOL)
-RE_PROFILE_SIGNAL       = re.compile(RE_AUDIT_DENY + '(signal\s*,|signal\s+[^#]*\s*,)' + RE_EOL)
-RE_PROFILE_PTRACE       = re.compile(RE_AUDIT_DENY + '(ptrace\s*,|ptrace\s+[^#]*\s*,)' + RE_EOL)
+RE_PROFILE_SIGNAL       = re.compile(RE_AUDIT_DENY + '(signal\s*,|signal(?P<details>\s+[^#]*)\s*,)' + RE_EOL)
+RE_PROFILE_PTRACE       = re.compile(RE_AUDIT_DENY + '(ptrace\s*,|ptrace(?P<details>\s+[^#]*)\s*,)' + RE_EOL)
 RE_PROFILE_PIVOT_ROOT   = re.compile(RE_AUDIT_DENY + '(pivot_root\s*,|pivot_root\s+[^#]*\s*,)' + RE_EOL)
 RE_PROFILE_UNIX         = re.compile(RE_AUDIT_DENY + '(unix\s*,|unix\s+[^#]*\s*,)' + RE_EOL)
 
@@ -64,9 +66,9 @@ RE_HAS_COMMENT_SPLIT = re.compile('^(?P<not_comment>' + __re_no_or_quoted_hash +
 RE_PROFILE_START          = re.compile(
     '^(?P<leadingspace>\s*)' +
     '(' +
-        RE_PROFILE_PATH % 'plainprofile' + # just a path
+        RE_PROFILE_PATH_OR_VAR % 'plainprofile' + # just a path
         '|' + # or
-        '(' + 'profile' + '\s+' + RE_PROFILE_NAME % 'namedprofile' + '(\s+' + RE_PROFILE_PATH % 'attachment' + ')?' + ')' + # 'profile', profile name, optionally attachment
+        '(' + 'profile' + '\s+' + RE_PROFILE_NAME % 'namedprofile' + '(\s+' + RE_PROFILE_PATH_OR_VAR % 'attachment' + ')?' + ')' + # 'profile', profile name, optionally attachment
     ')' +
     '\s+((flags\s*=\s*)?\((?P<flags>.+)\)\s*)?\{' +
     RE_EOL)
@@ -75,7 +77,7 @@ RE_PROFILE_START          = re.compile(
 RE_PROFILE_CHANGE_PROFILE = re.compile(
     RE_AUDIT_DENY +
     'change_profile' +
-    '(\s+' + RE_PROFILE_PATH % 'execcond' + ')?' +  # optionally exec condition
+    '(\s+' + RE_PROFILE_PATH_OR_VAR % 'execcond' + ')?' +  # optionally exec condition
     '(\s+->\s*' + RE_PROFILE_NAME % 'targetprofile' + ')?' +  # optionally '->' target profile
     RE_COMMA_EOL)
 

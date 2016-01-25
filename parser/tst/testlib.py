@@ -48,6 +48,8 @@ class AANoCleanupMetaClass(type):
         def new_unittest_func(self):
             try:
                 return unittest_func(self)
+            except unittest.SkipTest:
+                raise
             except Exception:
                 self.do_cleanup = False
                 raise
@@ -135,7 +137,7 @@ class TimeoutFunction:
 
 
 def filesystem_time_resolution():
-    '''detect whether the filesystem stores sub 1 second timestamps'''
+    '''detect whether the filesystem stores subsecond timestamps'''
 
     default_diff = 0.1
     result = (True, default_diff)
@@ -150,7 +152,7 @@ def filesystem_time_resolution():
                 s = os.fstat(f.fileno())
 
             if (s.st_mtime == last_stamp):
-                print('\n===> WARNING: TMPDIR lacks nanosecond timestamp resolution, falling back to slower test')
+                print('\n===> WARNING: TMPDIR lacks subsecond timestamp resolution, falling back to slower test')
                 result = (False, 1.0)
                 break
 

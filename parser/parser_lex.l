@@ -447,7 +447,7 @@ LT_EQUAL	<=
 }
 
 <RLIMIT_MODE>{
-	-?{NUMBER}[[:alpha:]]*  {
+	-?{NUMBER} {
 	        yylval.var_val = strdup(yytext);
 		RETURN_TOKEN(TOK_VALUE);
 	}
@@ -519,7 +519,14 @@ LT_EQUAL	<=
 #include/.*\r?\n	{
 	/* Don't use PUSH() macro here as we don't want #include echoed out.
 	 * It needs to be handled specially
-	 */ 
+	 */
+	yy_push_state(INCLUDE);
+}
+
+include/{WS}	{
+	/* Don't use PUSH() macro here as we don't want #include echoed out.
+	 * It needs to be handled specially
+	 */
 	yy_push_state(INCLUDE);
 }
 

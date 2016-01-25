@@ -278,9 +278,32 @@ the matching stats flag.
 
 Use --help=dump to see a full list of which dump flags are supported
 
+=item -j n, --jobs=n
+
+Set the number of jobs used to compile the specified policy. Where n can
+be
+
+  #    - a specific number of jobs
+  auto - the # of cpus in the in the system
+  x#   - # * number of cpus
+
+Eg.
+  -j8     OR --jobs=8                   allows for 8 parallel jobs
+  -jauto  OR --jobs=auto                sets the jobs to the # of cpus
+  -jx4    OR --jobs=x4                  sets the jobs to # of cpus * 4
+  -jx1   is equivalent to   -jauto
+
+The default value is the number of cpus in the system.
+
+=item --max-jobs n
+
+Set a hard cap on the value that can be specified by the --jobs flag.
+It takes the same set of options available to the --jobs option, and
+defaults to 8*cpus
+
 =item -O n, --optimize=n
 
-Set the optimization flags used by policy compilation.  A sinlge optimization
+Set the optimization flags used by policy compilation.  A single optimization
 flag can be toggled per -O option, but the optimize flag can be passed
 multiple times.  Turning off some phases of the optimization can make
 it so that policy can't complete compilation due to size constraints

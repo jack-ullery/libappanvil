@@ -14,7 +14,7 @@ import unittest
 from common_test import AATest, setup_all_loops
 from apparmor.common import AppArmorBug, AppArmorException
 
-from apparmor.regex import strip_quotes, parse_profile_start_line, re_match_include, RE_PROFILE_START, RE_PROFILE_CAP
+from apparmor.regex import strip_quotes, parse_profile_start_line, re_match_include, RE_PROFILE_START, RE_PROFILE_CAP, RE_PROFILE_PTRACE, RE_PROFILE_SIGNAL
 
 
 class AARegexTest(AATest):
@@ -296,21 +296,17 @@ class AARegexSignal(AARegexTest):
     '''Tests for RE_PROFILE_SIGNAL'''
 
     def AASetup(self):
-        self.regex = aa.RE_PROFILE_SIGNAL
+        self.regex = RE_PROFILE_SIGNAL
 
     tests = [
-        ('   signal,', (None, None, 'signal,', None)),
-        ('   audit signal,', ('audit', None, 'signal,', None)),
-        ('   signal receive,', (None, None, 'signal receive,', None)),
-        ('   signal (send, receive),',
-         (None, None, 'signal (send, receive),', None)),
-        ('   audit signal (receive),',
-         ('audit', None, 'signal (receive),', None)),
-        ('   signal (send, receive) set=(usr1 usr2),',
-         (None, None, 'signal (send, receive) set=(usr1 usr2),', None)),
-        ('   signal send set=(hup, quit) peer=/usr/sbin/daemon,',
-         (None, None,
-          'signal send set=(hup, quit) peer=/usr/sbin/daemon,', None)),
+        ('   signal,',                                  (None,    None, 'signal,',                                  None,                               None)),
+        ('   audit signal,',                            ('audit', None, 'signal,',                                  None,                               None)),
+        ('   signal receive,',                          (None,    None, 'signal receive,',                          'receive',                          None)),
+        ('   signal (send, receive),',                  (None,    None, 'signal (send, receive),',                  '(send, receive)',                  None)),
+        ('   audit signal (receive),',                  ('audit', None, 'signal (receive),',                        '(receive)',                        None)),
+        ('   signal (send, receive) set=(usr1 usr2),',  (None,    None, 'signal (send, receive) set=(usr1 usr2),',  '(send, receive) set=(usr1 usr2)',  None)),
+        ('   signal send set=(hup, quit) peer=/usr/sbin/daemon,', (None, None, 'signal send set=(hup, quit) peer=/usr/sbin/daemon,',
+                                                                                                          'send set=(hup, quit) peer=/usr/sbin/daemon', None)),
 
         ('   signalling,', False),
         ('   audit signalling,', False),
@@ -322,17 +318,16 @@ class AARegexPtrace(AARegexTest):
     '''Tests for RE_PROFILE_PTRACE'''
 
     def AASetup(self):
-        self.regex = aa.RE_PROFILE_PTRACE
+        self.regex = RE_PROFILE_PTRACE
 
     tests = [
-        ('   ptrace,', (None, None, 'ptrace,', None)),
-        ('   audit ptrace,', ('audit', None, 'ptrace,', None)),
-        ('   ptrace trace,', (None, None, 'ptrace trace,', None)),
-        ('   ptrace (tracedby, readby),',
-         (None, None, 'ptrace (tracedby, readby),', None)),
-        ('   audit ptrace (read),', ('audit', None, 'ptrace (read),', None)),
-        ('   ptrace trace peer=/usr/sbin/daemon,',
-         (None, None, 'ptrace trace peer=/usr/sbin/daemon,', None)),
+        #                                            audit      allow  rule                                     rule details                    comment
+        ('   ptrace,',                              (None,      None, 'ptrace,',                                None,                           None)),
+        ('   audit ptrace,',                        ('audit',   None, 'ptrace,',                                None,                           None)),
+        ('   ptrace trace,',                        (None,      None, 'ptrace trace,',                          'trace',                        None)),
+        ('   ptrace (tracedby, readby),',           (None,      None, 'ptrace (tracedby, readby),',             '(tracedby, readby)',           None)),
+        ('   audit ptrace (read),',                 ('audit',   None, 'ptrace (read),',                         '(read)',                       None)),
+        ('   ptrace trace peer=/usr/sbin/daemon,',  (None,      None, 'ptrace trace peer=/usr/sbin/daemon,',    'trace peer=/usr/sbin/daemon',  None)),
 
         ('   ptraceback,', False),
         ('   audit ptraceback,', False),
@@ -417,6 +412,12 @@ class AANamedRegexProfileStart_2(AANamedRegexTest):
         ('   /foo (complain) {',          { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': 'complain', 'comment': None }),
         ('   /foo flags=(complain) {',    { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': 'complain', 'comment': None }),
         ('   /foo (complain) { # x',      { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': 'complain', 'comment': '# x'}),
+        ('   /foo flags = ( complain ){#',{ 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': ' complain ', 'comment': '#'}),
+        ('  @{foo} {',                    { 'plainprofile': '@{foo}',  'namedprofile': None,          'attachment': None,     'flags': None,       'comment': None }),
+        ('  profile @{foo} {',            { 'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': None,     'flags': None,       'comment': None }),
+        ('  profile @{foo} /bar {',       { 'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': '/bar',   'flags': None,       'comment': None }),
+        ('  profile foo @{bar} {',        { 'plainprofile': None,      'namedprofile': 'foo',         'attachment': '@{bar}', 'flags': None,       'comment': None }),
+        ('  profile @{foo} @{bar} {',     { 'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': '@{bar}', 'flags': None,       'comment': None }),
 
         ('   /foo {',                     { 'plainprofile': '/foo',     'namedprofile': None,   'leadingspace': '   ' }),
         ('/foo {',                        { 'plainprofile': '/foo',     'namedprofile': None,   'leadingspace': ''    }),
@@ -437,12 +438,18 @@ class Test_parse_profile_start_line(AATest):
         ('   profile "foo bar" /foo {',   { 'profile': 'foo bar', 'profile_keyword': True,  'plainprofile': None, 'namedprofile': 'foo bar','attachment': '/foo', 'flags': None,    'comment': None }),
         ('   /foo (complain) {',          { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': 'complain', 'comment': None }),
         ('   /foo flags=(complain) {',    { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': 'complain', 'comment': None }),
+        ('   /foo flags = ( complain ){', { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': ' complain ', 'comment': None }),
         ('   /foo (complain) { # x',      { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': 'complain', 'comment': '# x'}),
 
         ('   /foo {',                     { 'profile': '/foo',    'plainprofile': '/foo', 'namedprofile': None,  'leadingspace': '   ' }),
         ('/foo {',                        { 'profile': '/foo',    'plainprofile': '/foo', 'namedprofile': None,  'leadingspace': None  }),
         ('   profile foo {',              { 'profile': 'foo',     'plainprofile': None,   'namedprofile': 'foo', 'leadingspace': '   ' }),
         ('profile foo {',                 { 'profile': 'foo',     'plainprofile': None,   'namedprofile': 'foo', 'leadingspace': None  }),
+        ('  @{foo} {',                    { 'profile': '@{foo}',  'plainprofile': '@{foo}',  'namedprofile': None,          'attachment': None,     'flags': None,       'comment': None }),
+        ('  profile @{foo} {',            { 'profile': '@{foo}',  'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': None,     'flags': None,       'comment': None }),
+        ('  profile @{foo} /bar {',       { 'profile': '@{foo}',  'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': '/bar',   'flags': None,       'comment': None }),
+        ('  profile foo @{bar} {',        { 'profile': 'foo',     'plainprofile': None,      'namedprofile': 'foo',         'attachment': '@{bar}', 'flags': None,       'comment': None }),
+        ('  profile @{foo} @{bar} {',     { 'profile': '@{foo}',  'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': '@{bar}', 'flags': None,       'comment': None }),
     ]
 
     def _run_test(self, line, expected):

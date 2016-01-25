@@ -20,6 +20,27 @@ COMMONDIR=../../common/
 
 include $(COMMONDIR)/Make.rules
 
+ifdef USE_SYSTEM
+    LD_LIBRARY_PATH=
+    PYTHONPATH=
+else
+    # PYTHON_DIST_BUILD_PATH based on libapparmor/swig/python/test/Makefile.am
+    PYTHON_DIST_BUILD_PATH = ../../libraries/libapparmor/swig/python/build/$$($(PYTHON) -c "import distutils.util; import platform; print(\"lib.%s-%s\" %(distutils.util.get_platform(), platform.python_version()[:3]))")
+    LD_LIBRARY_PATH=../../libraries/libapparmor/src/.libs/
+    PYTHONPATH=..:$(PYTHON_DIST_BUILD_PATH)
+endif
+
+.PHONY: __libapparmor
+__libapparmor:
+ifndef USE_SYSTEM
+	@if [ ! -f $(LD_LIBRARY_PATH)libapparmor.so ]; then \
+		echo "error: $(LD_LIBRARY_PATH)libapparmor.so is missing. Pick one of these possible solutions:" 1>&2; \
+		echo "  1) Build against the in-tree libapparmor by building it first and then trying again. See the top-level README for help." 1>&2; \
+		echo "  2) Build against the system libapparmor by adding USE_SYSTEM=1 to your make command." 1>&2; \
+		return 1; \
+	fi
+endif
+
 COVERAGE_OMIT=test-*.py,common_test.py
 ifneq ($(COVERAGE_OUT), )
 HTML_COVR_ARGS=-d $(COVERAGE_OUT)
@@ -40,11 +61,11 @@ endif
 clean:
 	rm -rf __pycache__/ .coverage htmlcov
 
-check:
-	export PYTHONPATH=.. ; $(foreach test, $(wildcard test-*.py), $(call pyalldo, $(test)))
+check: __libapparmor
+	export PYTHONPATH=$(PYTHONPATH) ; export LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) ; $(foreach test, $(wildcard test-*.py), $(call pyalldo, $(test)))
 
-.coverage: $(wildcard ../aa-* ../apparmor/*.py test-*.py)
-	export PYTHONPATH=.. ; $(COVERAGE_IGNORE_FAILURES_CMD) ; $(foreach test, $(wildcard test-*.py), $(PYTHON) -m coverage run --branch -p $(test); )
+.coverage: $(wildcard ../aa-* ../apparmor/*.py test-*.py) __libapparmor
+	export PYTHONPATH=$(PYTHONPATH) ; export LD_LIBRARY_PATH=$(LD_LIBRARY_PATH); $(COVERAGE_IGNORE_FAILURES_CMD) ; $(foreach test, $(wildcard test-*.py), $(PYTHON) -m coverage run --branch -p $(test); )
 	$(PYTHON) -m coverage combine
 
 coverage: .coverage
