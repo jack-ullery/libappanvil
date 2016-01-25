@@ -121,7 +121,7 @@ pattern_t convert_aaregex_to_pcre(const char *aare, int anchor, int glob,
 	BOOL bEscape = 0;	/* flag to indicate escape */
 	int ingrouping = 0;	/* flag to indicate {} context */
 	int incharclass = 0;	/* flag to indicate [ ] context */
-	int grouping_count[MAX_ALT_DEPTH];
+	int grouping_count[MAX_ALT_DEPTH] = {0};
 
 	error = e_no_error;
 	ptype = ePatternBasic;	/* assume no regex */
