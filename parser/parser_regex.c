@@ -792,46 +792,40 @@ out:
 
 #include "unit_test.h"
 
+#define MY_FILTER_TEST(input, expected_str)	\
+	do {												\
+		char *test_string = NULL;								\
+		char *output_string = NULL;								\
+													\
+		test_string = strdup((input)); 								\
+		filter_slashes(test_string); 								\
+		asprintf(&output_string, "simple filter / conversion for '%s'\texpected = '%s'\tresult = '%s'", \
+				(input), (expected_str), test_string);					\
+		MY_TEST(strcmp(test_string, (expected_str)) == 0, output_string);			\
+													\
+		free(test_string);									\
+		free(output_string);									\
+	}												\
+	while (0)
+
 static int test_filter_slashes(void)
 {
 	int rc = 0;
-	char *test_string;
 
-	test_string = strdup("///foo//////f//oo////////////////");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/foo/f/oo/") == 0, "simple tests");
+	MY_FILTER_TEST("///foo//////f//oo////////////////", "/foo/f/oo/");
+	MY_FILTER_TEST("/foo/f/oo", "/foo/f/oo");
+	MY_FILTER_TEST("/", "/");
+	MY_FILTER_TEST("", "");
 
-	test_string = strdup("/foo/f/oo");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/foo/f/oo") == 0, "simple test for no changes");
+	/* tests for "//" namespace */
+	MY_FILTER_TEST("//usr", "//usr");
+	MY_FILTER_TEST("//", "//");
 
-	test_string = strdup("/");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/") == 0, "simple test for '/'");
+	/* tests for not "//" namespace */
+	MY_FILTER_TEST("///usr", "/usr");
+	MY_FILTER_TEST("///", "/");
 
-	test_string = strdup("");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "") == 0, "simple test for ''");
-
-	test_string = strdup("//usr");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "//usr") == 0, "simple test for // namespace");
-
-	test_string = strdup("//");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "//") == 0, "simple test 2 for // namespace");
-
-	test_string = strdup("///usr");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/usr") == 0, "simple test for ///usr");
-
-	test_string = strdup("///");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/") == 0, "simple test for ///");
-
-	test_string = strdup("/a/");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/a/") == 0, "simple test for /a/");
+	MY_FILTER_TEST("/a/", "/a/");
 
 	return rc;
 }

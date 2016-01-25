@@ -384,6 +384,7 @@ int test_split_string(void)
 	MY_TEST(strcmp(ret_struct->var, var) == 0, "split string 1 var");
 	MY_TEST(strcmp(ret_struct->suffix, suffix) == 0, "split string 1 suffix");
 	free_var_string(ret_struct);
+	free(tst_string);
 
 	asprintf(&tst_string, "@{%s}%s", var, suffix);
 	var_start = tst_string;
@@ -393,6 +394,7 @@ int test_split_string(void)
 	MY_TEST(strcmp(ret_struct->var, var) == 0, "split string 2 var");
 	MY_TEST(strcmp(ret_struct->suffix, suffix) == 0, "split string 2 suffix");
 	free_var_string(ret_struct);
+	free(tst_string);
 
 	asprintf(&tst_string, "%s@{%s}", prefix, var);
 	var_start = tst_string + strlen(prefix);
@@ -402,6 +404,7 @@ int test_split_string(void)
 	MY_TEST(strcmp(ret_struct->var, var) == 0, "split string 3 var");
 	MY_TEST(ret_struct->suffix == NULL, "split string 3 suffix");
 	free_var_string(ret_struct);
+	free(tst_string);
 
 	asprintf(&tst_string, "@{%s}", var);
 	var_start = tst_string;
@@ -411,6 +414,7 @@ int test_split_string(void)
 	MY_TEST(strcmp(ret_struct->var, var) == 0, "split string 4 var");
 	MY_TEST(ret_struct->suffix == NULL, "split string 4 suffix");
 	free_var_string(ret_struct);
+	free(tst_string);
 
 	return rc;
 }
@@ -433,6 +437,7 @@ int test_split_out_var(void)
 	MY_TEST(strcmp(ret_struct->var, var) == 0, "split out var 1 var");
 	MY_TEST(strcmp(ret_struct->suffix, suffix) == 0, "split out var 1 suffix");
 	free_var_string(ret_struct);
+	free(tst_string);
 
 	/* no prefix */
 	asprintf(&tst_string, "@{%s}%s", var, suffix);
@@ -441,6 +446,7 @@ int test_split_out_var(void)
 	MY_TEST(strcmp(ret_struct->var, var) == 0, "split out var 2 var");
 	MY_TEST(strcmp(ret_struct->suffix, suffix) == 0, "split out var 2 suffix");
 	free_var_string(ret_struct);
+	free(tst_string);
 
 	/* no suffix */
 	asprintf(&tst_string, "%s@{%s}", prefix, var);
@@ -449,6 +455,7 @@ int test_split_out_var(void)
 	MY_TEST(strcmp(ret_struct->var, var) == 0, "split out var 3 var");
 	MY_TEST(ret_struct->suffix == NULL, "split out var 3 suffix");
 	free_var_string(ret_struct);
+	free(tst_string);
 
 	/* var only */
 	asprintf(&tst_string, "@{%s}", var);
@@ -457,32 +464,39 @@ int test_split_out_var(void)
 	MY_TEST(strcmp(ret_struct->var, var) == 0, "split out var 4 var");
 	MY_TEST(ret_struct->suffix == NULL, "split out var 4 suffix");
 	free_var_string(ret_struct);
+	free(tst_string);
 
 	/* quoted var, shouldn't split  */
 	asprintf(&tst_string, "%s\\@{%s}%s", prefix, var, suffix);
 	ret_struct = split_out_var(tst_string);
 	MY_TEST(ret_struct == NULL, "split out var - quoted @");
 	free_var_string(ret_struct);
+	free(tst_string);
 
 	/* quoted \, split should succeed */
 	asprintf(&tst_string, "%s\\\\@{%s}%s", prefix, var, suffix);
 	ret_struct = split_out_var(tst_string);
-	MY_TEST(strcmp(ret_struct->prefix, strndup(tst_string, strlen(prefix) + 2)) == 0, "split out var 5 prefix");
+	tmp = strndup(tst_string, strlen(prefix) + 2);
+	MY_TEST(strcmp(ret_struct->prefix, tmp) == 0, "split out var 5 prefix");
 	MY_TEST(strcmp(ret_struct->var, var) == 0, "split out var 5 var");
 	MY_TEST(strcmp(ret_struct->suffix, suffix) == 0, "split out var 5 suffix");
 	free_var_string(ret_struct);
+	free(tst_string);
+	free(tmp);
 
 	/* un terminated var, should fail */
 	asprintf(&tst_string, "%s@{%s%s", prefix, var, suffix);
 	ret_struct = split_out_var(tst_string);
 	MY_TEST(ret_struct == NULL, "split out var - un-terminated var");
 	free_var_string(ret_struct);
+	free(tst_string);
 
 	/* invalid char in var, should fail */
 	asprintf(&tst_string, "%s@{%s^%s}%s", prefix, var, var, suffix);
 	ret_struct = split_out_var(tst_string);
 	MY_TEST(ret_struct == NULL, "split out var - invalid char in var");
 	free_var_string(ret_struct);
+	free(tst_string);
 
 	/* two vars, should only strip out first */
 	asprintf(&tmp, "@{%s}%s}", suffix, suffix);
@@ -492,14 +506,19 @@ int test_split_out_var(void)
 	MY_TEST(strcmp(ret_struct->var, var) == 0, "split out var 6 var");
 	MY_TEST(strcmp(ret_struct->suffix, tmp) == 0, "split out var 6 suffix");
 	free_var_string(ret_struct);
+	free(tst_string);
+	free(tmp);
 
 	/* quoted @ followed by var, split should succeed */
 	asprintf(&tst_string, "%s\\@@{%s}%s", prefix, var, suffix);
 	ret_struct = split_out_var(tst_string);
-	MY_TEST(strcmp(ret_struct->prefix, strndup(tst_string, strlen(prefix) + 2)) == 0, "split out var 7 prefix");
+	tmp = strndup(tst_string, strlen(prefix) + 2);
+	MY_TEST(strcmp(ret_struct->prefix, tmp) == 0, "split out var 7 prefix");
 	MY_TEST(strcmp(ret_struct->var, var) == 0, "split out var 7 var");
 	MY_TEST(strcmp(ret_struct->suffix, suffix) == 0, "split out var 7 suffix");
 	free_var_string(ret_struct);
+	free(tst_string);
+	free(tmp);
 
 	/* numeric char in var, should succeed */
 	asprintf(&tst_string, "%s@{%s}%s", prefix, var2, suffix);
@@ -508,12 +527,14 @@ int test_split_out_var(void)
 	MY_TEST(ret_struct && strcmp(ret_struct->var, var2) == 0, "split numeric var var");
 	MY_TEST(ret_struct && strcmp(ret_struct->suffix, suffix) == 0, "split out numeric var suffix");
 	free_var_string(ret_struct);
+	free(tst_string);
 
 	/* numeric first char in var, should fail */
 	asprintf(&tst_string, "%s@{6%s}%s", prefix, var2, suffix);
 	ret_struct = split_out_var(tst_string);
 	MY_TEST(ret_struct == NULL, "split out var - numeric first char in var");
 	free_var_string(ret_struct);
+	free(tst_string);
 
 	/* underscore char in var, should succeed */
 	asprintf(&tst_string, "%s@{%s}%s", prefix, var3, suffix);
@@ -522,12 +543,14 @@ int test_split_out_var(void)
 	MY_TEST(ret_struct && strcmp(ret_struct->var, var3) == 0, "split out underscore var");
 	MY_TEST(ret_struct && strcmp(ret_struct->suffix, suffix) == 0, "split out underscore var suffix");
 	free_var_string(ret_struct);
+	free(tst_string);
 
 	/* underscore first char in var, should fail */
 	asprintf(&tst_string, "%s@{_%s%s}%s", prefix, var2, var3, suffix);
 	ret_struct = split_out_var(tst_string);
 	MY_TEST(ret_struct == NULL, "split out var - underscore first char in var");
 	free_var_string(ret_struct);
+	free(tst_string);
 
 	return rc;
 }
