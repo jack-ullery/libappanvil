@@ -15,7 +15,7 @@
 
 from apparmor.regex import RE_PROFILE_CAP
 from apparmor.common import AppArmorBug, AppArmorException, type_is_str
-from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers
+from apparmor.rule import BaseRule, BaseRuleset, logprof_value_or_all, parse_modifiers
 import re
 
 # setup module translations
@@ -137,10 +137,7 @@ class CapabilityRule(BaseRule):
         return severity
 
     def logprof_header_localvars(self):
-        if self.all_caps:
-            cap_txt = _('ALL')
-        else:
-            cap_txt = ' '.join(sorted(self.capability))
+        cap_txt = logprof_value_or_all(self.capability, self.all_caps)
 
         return [
             _('Capability'), cap_txt,

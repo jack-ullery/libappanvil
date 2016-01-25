@@ -16,7 +16,7 @@ import re
 
 from apparmor.regex import RE_PROFILE_SIGNAL, RE_PROFILE_NAME
 from apparmor.common import AppArmorBug, AppArmorException
-from apparmor.rule import BaseRule, BaseRuleset, check_and_split_list, parse_modifiers, quote_if_needed
+from apparmor.rule import BaseRule, BaseRuleset, check_and_split_list, logprof_value_or_all, parse_modifiers, quote_if_needed
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -214,20 +214,9 @@ class SignalRule(BaseRule):
         return True
 
     def logprof_header_localvars(self):
-        if self.all_access:
-            access = _('ALL')
-        else:
-            access = ' '.join(sorted(self.access))
-
-        if self.all_signals:
-            signal = _('ALL')
-        else:
-            signal = ' '.join(sorted(self.signal))
-
-        if self.all_peers:
-            peer = _('ALL')
-        else:
-            peer = self.peer.regex
+        access  = logprof_value_or_all(self.access, self.all_access)
+        signal  = logprof_value_or_all(self.signal, self.all_signals)
+        peer    = logprof_value_or_all(self.peer,   self.all_peers)
 
         return [
             _('Access mode'), access,

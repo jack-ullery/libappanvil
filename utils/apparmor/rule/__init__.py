@@ -454,6 +454,20 @@ def check_and_split_list(lst, allowed_keywords, all_obj, classname, keyword_name
 
     return result_list, False, unknown_items
 
+def logprof_value_or_all(value, all_values):
+    '''helper for logprof_header() to return 'all' (if all_values is True) or the specified value.
+       For some types, the value is made more readable.'''
+
+    if all_values:
+        return _('ALL')
+
+    if type(value) == AARE:
+        return value.regex
+    elif type(value) == set or type(value) == list or type(value) == tuple:
+        return ' '.join(sorted(value))
+    else:
+        return value
+
 def parse_comment(matches):
     '''returns the comment (with a leading space) from the matches object'''
     comment = ''

@@ -15,7 +15,7 @@
 
 from apparmor.regex import RE_PROFILE_CHANGE_PROFILE, strip_quotes
 from apparmor.common import AppArmorBug, AppArmorException, type_is_str
-from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers, quote_if_needed
+from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers, logprof_value_or_all, quote_if_needed
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -150,15 +150,8 @@ class ChangeProfileRule(BaseRule):
         return True
 
     def logprof_header_localvars(self):
-        if self.all_execconds:
-            execcond_txt = _('ALL')
-        else:
-            execcond_txt = self.execcond
-
-        if self.all_targetprofiles:
-            targetprofiles_txt = _('ALL')
-        else:
-            targetprofiles_txt = self.targetprofile
+        execcond_txt        = logprof_value_or_all(self.execcond,       self.all_execconds)
+        targetprofiles_txt  = logprof_value_or_all(self.targetprofile,  self.all_targetprofiles)
 
         return [
             _('Exec Condition'), execcond_txt,

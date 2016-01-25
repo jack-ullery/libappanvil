@@ -17,7 +17,7 @@ import re
 
 from apparmor.regex import RE_PROFILE_NETWORK
 from apparmor.common import AppArmorBug, AppArmorException, type_is_str
-from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers
+from apparmor.rule import BaseRule, BaseRuleset, logprof_value_or_all, parse_modifiers
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -179,15 +179,8 @@ class NetworkRule(BaseRule):
         return True
 
     def logprof_header_localvars(self):
-        if self.all_domains:
-            family = _('ALL')
-        else:
-            family = self.domain
-
-        if self.all_type_or_protocols:
-            sock_type = _('ALL')
-        else:
-            sock_type = self.type_or_protocol
+        family      = logprof_value_or_all(self.domain,             self.all_domains)
+        sock_type   = logprof_value_or_all(self.type_or_protocol,   self.all_type_or_protocols)
 
         return [
             _('Network Family'), family,
