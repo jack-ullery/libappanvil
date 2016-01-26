@@ -115,6 +115,8 @@ class AaTest_get_interpreter_and_abstraction(AATest):
         ('#!/usr/bin/python3',      ('/usr/bin/python3',    'abstractions/python')),
         ('#!/usr/bin/python4',      ('/usr/bin/python4',    None)),  # python abstraction is only applied to py2 and py3
         ('#!/usr/bin/ruby',         ('/usr/bin/ruby',       'abstractions/ruby')),
+        ('#!/usr/bin/ruby2.2',      ('/usr/bin/ruby2.2',    'abstractions/ruby')),
+        ('#!/usr/bin/ruby1.9.1',    ('/usr/bin/ruby1.9.1',  'abstractions/ruby')),
         ('#!/usr/bin/foobarbaz',    ('/usr/bin/foobarbaz',  None)),  # we don't have an abstraction for "foobarbaz"
         ('foo',                     (None,                  None)),  # no hashbang - not a script
     ]

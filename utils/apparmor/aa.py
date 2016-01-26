@@ -435,7 +435,7 @@ def get_interpreter_and_abstraction(exec_target):
         abstraction = 'abstractions/perl'
     elif re.search('^python([23]|[23]\.[0-9]+)?$', interpreter):
         abstraction = 'abstractions/python'
-    elif interpreter == 'ruby':
+    elif re.search('^ruby([0-9]+(\.[0-9]+)*)?$', interpreter):
         abstraction = 'abstractions/ruby'
     else:
         abstraction = None
