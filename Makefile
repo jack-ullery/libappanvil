@@ -8,13 +8,13 @@ all:
 COMMONDIR=common
 include ${COMMONDIR}/Make.rules
 
-DIRS=parser \
-     profiles \
-     utils \
+DIRS=libraries/libapparmor \
      binutils \
-     libraries/libapparmor \
+     parser \
+     utils \
      changehat/mod_apparmor \
      changehat/pam_apparmor \
+     profiles \
      tests
 
 #REPO_URL?=lp:apparmor
