@@ -48,7 +48,7 @@ If a program wants to return out of the current profile to the
 original profile, it may use aa_change_hat(2). Otherwise, the two profiles must
 have rules permitting changing between the two profiles.
 
-Open file descriptors are not remediated after a call to aa_change_profile()
+Open file descriptors may not be remediated after a call to aa_change_profile()
 so the calling program must close(2) open file descriptors to ensure they
 are not available after calling aa_change_profile(). As aa_change_profile()
 is typically used just before execve(2), you may want to use open(2) or
