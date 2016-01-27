@@ -24,6 +24,7 @@ REPO_URL?=https://code.launchpad.net/~apparmor-dev/apparmor/master
 #REPO_URL=.
 #REPO_URL="bzr+ssh://bazaar.launchpad.net/~sbeattie/+junk/apparmor-dev/"
 
+COVERITY_DIR=cov-int
 RELEASE_DIR=apparmor-${VERSION}
 __SETUP_DIR?=.
 
@@ -51,6 +52,12 @@ snapshot: clean
 	make setup __SETUP_DIR=${SNAPSHOT_NAME} ; \
 	tar ${TAR_EXCLUSIONS} -cvzf ${SNAPSHOT_NAME}.tar.gz ${SNAPSHOT_NAME} ;
 
+.PHONY: coverity
+coverity: snapshot
+	cd $(SNAPSHOT_NAME)/libraries/libapparmor && ./configure --with-python
+	$(foreach dir, $(filter-out utils profiles tests, $(DIRS)), \
+		cov-build --dir $(COVERITY_DIR) -- make -C $(SNAPSHOT_NAME)/$(dir);)
+	tar -cvzf $(SNAPSHOT_NAME)-$(COVERITY_DIR).tar.gz $(COVERITY_DIR)
 
 .PHONY: export_dir
 export_dir:
@@ -60,7 +67,7 @@ export_dir:
 
 .PHONY: clean
 clean:
-	-rm -rf ${RELEASE_DIR} ./apparmor-${VERSION}~*
+	-rm -rf ${RELEASE_DIR} ./apparmor-${VERSION}~* ${COVERITY_DIR}
 	for dir in $(DIRS); do \
 		make -C $$dir clean; \
 	done
