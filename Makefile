@@ -45,11 +45,11 @@ tarball: clean
 
 .PHONY: snapshot
 snapshot: clean
-	REPO_VERSION=`$(value REPO_VERSION_CMD)` ; \
-	SNAPSHOT_DIR=apparmor-${VERSION}~$${REPO_VERSION} ;\
-	make export_dir __EXPORT_DIR=$${SNAPSHOT_DIR} __REPO_VERSION=$${REPO_VERSION} ; \
-	make setup __SETUP_DIR=$${SNAPSHOT_DIR} ; \
-	tar ${TAR_EXCLUSIONS} -cvzf $${SNAPSHOT_DIR}.tar.gz $${SNAPSHOT_DIR} ;
+	$(eval REPO_VERSION:=$(shell $(value REPO_VERSION_CMD)))
+	$(eval SNAPSHOT_NAME=apparmor-$(VERSION)~$(REPO_VERSION))
+	make export_dir __EXPORT_DIR=${SNAPSHOT_NAME} __REPO_VERSION=${REPO_VERSION} ; \
+	make setup __SETUP_DIR=${SNAPSHOT_NAME} ; \
+	tar ${TAR_EXCLUSIONS} -cvzf ${SNAPSHOT_NAME}.tar.gz ${SNAPSHOT_NAME} ;
 
 
 .PHONY: export_dir
