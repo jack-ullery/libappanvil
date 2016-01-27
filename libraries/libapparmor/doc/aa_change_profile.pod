@@ -83,8 +83,8 @@ Insufficient kernel memory was available.
 
 =item B<EPERM>
 
-The calling application is not confined by apparmor, or the no_new_privs
-bit is set.
+The calling application is confined by apparmor and the no_new_privs bit is
+set.
 
 =item B<EACCES>
 
