@@ -928,7 +928,6 @@ int aa_query_link_path_len(const char *label, size_t label_len,
 			   int *allowed, int *audited)
 {
 	autofree char *query = NULL;
-	int rc;
 
 	/* + 1 for null separators */
 	size_t size = AA_QUERY_CMD_LABEL_SIZE + label_len + 1 + target_len +
@@ -950,7 +949,7 @@ int aa_query_link_path_len(const char *label, size_t label_len,
 	 * trip to the kernel and adds a race on policy replacement between
 	 * the two queries.
 	 *
-	rc = aa_query_label(AA_MAY_LINK, query, size, allowed, audited);
+	int rc = aa_query_label(AA_MAY_LINK, query, size, allowed, audited);
 	if (rc || !*allowed)
 		return rc;
 	*/
