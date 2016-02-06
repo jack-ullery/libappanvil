@@ -4252,29 +4252,6 @@ def match_prof_incs_to_path(frag, allow, path):
 
     return combinedmode, combinedaudit, matches
 
-def suggest_incs_for_path(incname, path, allow):
-    combinedmode = set()
-    combinedaudit = set()
-    matches = []
-
-    includelist = [incname]
-    while includelist:
-        inc = includelist.pop(0)
-        cm, am, m = rematchfrag(include[inc][inc], 'allow', path)
-        if cm:
-            combinedmode |= cm
-            combinedaudit |= am
-            matches += m
-
-        if include[inc][inc]['allow']['path'].get(path, False):
-            combinedmode |= include[inc][inc]['allow']['path'][path]['mode']
-            combinedaudit |= include[inc][inc]['allow']['path'][path]['audit']
-
-        if include[inc][inc]['include'].keys():
-            includelist += include[inc][inc]['include'].keys()
-
-    return combinedmode, combinedaudit, matches
-
 def check_qualifiers(program):
     if cfg['qualifiers'].get(program, False):
         if cfg['qualifiers'][program] != 'p':
