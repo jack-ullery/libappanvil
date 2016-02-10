@@ -1179,8 +1179,7 @@ def handle_children(profile, hat, root):
 
                 if mode & str_to_mode('x'):
                     if os.path.isdir(exec_target):
-                        mode = mode - apparmor.aamode.ALL_AA_EXEC_TYPE
-                        mode = mode | str_to_mode('ix')
+                        raise AppArmorBug('exec permissions requested for directory %s. This should not happen - please open a bugreport!' % exec_target)
                     else:
                         do_execute = True
 
