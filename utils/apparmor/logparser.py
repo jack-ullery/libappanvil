@@ -288,10 +288,10 @@ class ReadLog:
                                 'rename_dest', 'unlink', 'rmdir', 'symlink_create', 'link',
                                 'sysctl', 'getattr', 'setattr', 'xattr'] ):
 
-            # for some reason, we get file_perm and file_inherit log events without request_mask, see
-            # https://bugs.launchpad.net/apparmor/+bug/1466812/ and https://bugs.launchpad.net/apparmor/+bug/1509030
+            # for some kernel-side reason, we get file-related log events without request_mask, see
+            # https://bugs.launchpad.net/apparmor/+bug/1466812/, https://bugs.launchpad.net/apparmor/+bug/1509030 and https://bugs.launchpad.net/apparmor/+bug/1540562
             # request_mask can also be '', see https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/1525119
-            if e['operation'] in ['file_perm', 'file_inherit'] and not e['request_mask']:
+            if not e['request_mask']:
                 self.debug_logger.debug('UNHANDLED (missing request_mask): %s' % e)
                 return None
 
