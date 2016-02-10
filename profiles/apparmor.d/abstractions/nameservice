@@ -66,6 +66,10 @@
   # avahi-daemon is used for mdns4 resolution
   /{,var/}run/avahi-daemon/socket rw,
 
+  # libnl-3-200 via libnss-gw-name
+  @{PROC}/@{pid}/net/psched r,
+  /etc/libnl-*/classid r,
+
   # nis
   #include <abstractions/nis>
 
