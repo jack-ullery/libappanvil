@@ -35,12 +35,12 @@
   /etc/resolv.conf        r,
   # on systems using resolvconf, /etc/resolv.conf is a symlink to
   # /{,var/}run/resolvconf/resolv.conf and a file sometimes referenced in
-  # /etc/resolvconf/run/resolv.conf
-  /{,var/}run/resolvconf/resolv.conf r,
+  # /etc/resolvconf/run/resolv.conf. Similarly, if NetworkManager is used
+  # without resolvconf, /etc/resolv.conf is a symlink to its own resolv.conf.
+  # Finally, on systems using systemd's networkd, /etc/resolv.conf is
+  # a symlink to /run/systemd/resolve/resolv.conf
+  /{,var/}run/{resolvconf,NetworkManager,systemd/resolve}/resolv.conf r,
   /etc/resolvconf/run/resolv.conf r,
-  # on systems using systemd's networkd, /etc/resolv.conf is a symlink to
-  # /run/systemd/resolve/resolv.conf
-  /{,var/}run/systemd/resolve/resolv.conf r,
 
   /etc/samba/lmhosts      r,
   /etc/services           r,
