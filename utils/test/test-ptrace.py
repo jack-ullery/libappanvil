@@ -54,9 +54,11 @@ class PtraceTestParse(PtraceTest):
         ('deny ptrace read, # cmt'              , exp(False, False, True , ' # cmt',  {'read'},     False, None,           True     )),
         ('audit allow ptrace,'                  , exp(True , True , False, '',        None  ,       True , None,           True     )),
         ('ptrace peer=unconfined,'              , exp(False, False, False, '',        None  ,       True , 'unconfined',   False    )),
+        ('ptrace peer="unconfined",'            , exp(False, False, False, '',        None  ,       True , 'unconfined',   False    )),
         ('ptrace read,'                         , exp(False, False, False, '',        {'read'},     False, None,           True     )),
         ('ptrace peer=/foo,'                    , exp(False, False, False, '',        None  ,       True , '/foo',         False    )),
         ('ptrace r peer=/foo,'                  , exp(False, False, False, '',        {'r'},        False, '/foo',         False    )),
+        ('ptrace r peer="/foo bar",'            , exp(False, False, False, '',        {'r'},        False, '/foo bar',     False    )),
     ]
 
     def _run_test(self, rawrule, expected):

@@ -14,7 +14,7 @@
 
 import re
 
-from apparmor.regex import RE_PROFILE_PTRACE, RE_PROFILE_NAME
+from apparmor.regex import RE_PROFILE_PTRACE, RE_PROFILE_NAME, strip_quotes
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.rule import BaseRule, BaseRuleset, check_and_split_list, logprof_value_or_all, parse_modifiers, quote_if_needed
 
@@ -99,7 +99,7 @@ class PtraceRule(BaseRule):
                 access = PtraceRule.ALL
 
             if details.group('peer'):
-                peer = details.group('peer')
+                peer = strip_quotes(details.group('peer'))
             else:
                 peer = PtraceRule.ALL
         else:
