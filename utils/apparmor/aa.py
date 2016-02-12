@@ -638,8 +638,6 @@ def activate_repo_profiles(url, profiles, complain):
 def autodep(bin_name, pname=''):
     bin_full = None
     global repo_cfg
-    if not bin_name and pname.startswith('/'):
-        bin_name = pname
     if not repo_cfg and not cfg['repository'].get('url', False):
         repo_conf = apparmor.config.Config('shell', CONFDIR)
         repo_cfg = repo_conf.read_config('repository.conf')
