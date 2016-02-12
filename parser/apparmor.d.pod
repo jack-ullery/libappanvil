@@ -251,7 +251,7 @@ B<UNQUOTED FILEGLOB> = (must start with '/' (after variable expansion), B<AARE> 
 
 B<ACCESS> = ( 'r' | 'w' | 'a' | 'l' | 'k' | 'm' | I<EXEC TRANSITION> )+  (not all combinations are allowed; see below.)
 
-B<EXEC TRANSITION> =  ( 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'cx' | 'Cx' | 'pix' | 'Pix' | 'cix' | 'Cix' | 'pux' | 'PUx' | 'cux' | 'CUx' )
+B<EXEC TRANSITION> =  ( 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'cx' | 'Cx' | 'pix' | 'Pix' | 'cix' | 'Cix' | 'pux' | 'PUx' | 'cux' | 'CUx' | 'x' )  ('x' is only allowed in rules with the deny qualifier, everything else only without the deny qualifier)
 
 B<EXEC TARGET> = name  (requires I<EXEC TRANSITION> specified)
 
@@ -366,6 +366,10 @@ modes:
 
 - transition to subprofile on execute with fallback to unconfined -- scrub the environment
 
+=item B<deny x>
+
+- disallow execute (in rules with the deny qualifier)
+
 =item B<m>
 
 - allow PROT_EXEC with mmap(2) calls
@@ -425,7 +429,7 @@ over the callee.  Use this mode only if the child absolutely must be
 run unconfined and LD_PRELOAD must be used. Any profile using this mode
 provides negligible security. Use at your own risk.
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<Ux - unconfined execute -- scrub the environment>
 
@@ -439,7 +443,7 @@ designated child processes to be run without any AppArmor protection.
 Use this mode only if the child absolutely must be run unconfined. Use
 at your own risk.
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<px - Discrete Profile execute mode>
 
@@ -451,7 +455,7 @@ B<WARNING> 'px' does not scrub the environment of variables such as
 LD_PRELOAD; as a result, the calling domain may have an undue amount of
 influence over the callee.
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<Px - Discrete Profile execute mode -- scrub the environment>
 
@@ -460,7 +464,7 @@ will invoke the Linux Kernel's B<unsafe_exec> routines to scrub
 the environment, similar to setuid programs. (See ld.so(8) for some
 information on setuid/setgid environment scrubbing.)
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<cx - Transition to Subprofile execute mode>
 
@@ -472,7 +476,7 @@ B<WARNING> 'cx' does not scrub the environment of variables such as
 LD_PRELOAD; as a result, the calling domain may have an undue amount of
 influence over the callee.
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<Cx - Transition to Subprofile execute mode -- scrub the environment>
 
@@ -481,7 +485,7 @@ will invoke the Linux Kernel's B<unsafe_exec> routines to scrub
 the environment, similar to setuid programs. (See ld.so(8) for some
 information on setuid/setgid environment scrubbing.)
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<ix - Inherit execute mode>
 
@@ -495,7 +499,7 @@ profile, or losing the permissions of the current profile. There is no
 version to scrub the environment because 'ix' executions don't change
 privileges.
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<Profile transition with inheritance fallback execute mode>
 
@@ -509,7 +513,7 @@ the 'ix' transition mode.
   'Cix' == 'Cx' with fallback to 'ix'
   'cix' == 'cx' with fallback to 'ix'
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<Profile transition with unconfined fallback execute mode>
 
@@ -524,7 +528,14 @@ if 'PUx', 'CUx' is used.
   'CUx' == 'Cx' with fallback to 'Ux'
   'cux' == 'cx' with fallback to 'ux'
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
+
+=item B<deny x - Deny execute>
+
+For rules including the deny modifier, only 'x' is allowed to deny execute.
+
+The 'ix', 'Px', 'px', 'Cx', 'cx' and the fallback modes conflict with the deny
+modifier.
 
 =item B<Directed profile transitions>
 
