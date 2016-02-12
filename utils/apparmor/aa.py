@@ -4070,7 +4070,11 @@ def write_profile(profile):
 
     os.rename(newprof.name, prof_filename)
 
-    changed.pop(profile)
+    if profile in changed:
+        changed.pop(profile)
+    else:
+        debug_logger.info("Unchanged profile written: %s (not listed in 'changed' list)" % profile)
+
     original_aa[profile] = deepcopy(aa[profile])
 
 def matchliteral(aa_regexp, literal):
