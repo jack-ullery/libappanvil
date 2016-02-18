@@ -394,6 +394,8 @@ extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
 extern int parse_X_mode(const char *X, int valid, const char *str_mode, int *mode, int fail);
 void parse_label(char **ns, char **name, const char *label);
+void parse_named_transition_target(struct named_transition *nt,
+				   const char *target);
 extern struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id);
 
 /* returns -1 if value != true or false, otherwise 0 == false, 1 == true */

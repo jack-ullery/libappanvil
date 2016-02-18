@@ -29,6 +29,7 @@ fqsubbase="$pwd/changeprofile"
 fqsubtest="$fqsubbase//$subtest"
 subtest2="$pwd//sub2"
 subtest3="$pwd//sub3"
+nstest=":ns:changeprofile"
 
 
 touch $file $subfile
@@ -70,3 +71,10 @@ runchecktest "CHANGEPROFILE_RE (nochange access file)" pass nochange $file
 runchecktest_errno EACCES "CHANGEPROFILE_RE (nochange access subfile)" fail nochange $subfile
 runchecktest_errno EACCES "CHANGEPROFILE_RE (access file)" fail $fqsubtest $file
 runchecktest "CHANGEPROFILE_RE (access sub file)" pass $fqsubtest $subfile
+
+genprofile --stdin <<EOF
+$test { file, change_profile -> ${nstest}, }
+$nstest { $subfile ${okperm}, }
+EOF
+runchecktest "CHANGEPROFILE_NS (access sub file)" pass $nstest $subfile
+runchecktest "CHANGEPROFILE_NS (access file)" fail $nstest $file

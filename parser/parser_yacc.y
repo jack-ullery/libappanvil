@@ -258,8 +258,6 @@ void add_local_entry(Profile *prof);
 %type <boolean> opt_profile_flag
 %type <boolean> opt_flags
 %type <boolean> opt_perm_mode
-%type <id>	opt_ns
-%type <id>	ns_id
 %type <id>	opt_id
 %type <prefix>  opt_prefix
 %type <fmode>	dbus_perm
@@ -298,11 +296,6 @@ profilelist:	profilelist profile
 opt_profile_flag: { /* nothing */ $$ = 0; }
 	| TOK_PROFILE { $$ = 1; }
 	| hat_start { $$ = 2; }
-
-ns_id: TOK_COLON id_or_var TOK_COLON { $$ = $2; }
-
-opt_ns: { /* nothing */ $$ = NULL; }
-	| ns_id { $$ = $1; }
 
 opt_id: { /* nothing */ $$ = NULL; }
 	| TOK_ID { $$ = $1; }
@@ -1053,21 +1046,12 @@ id_or_var: TOK_SET_VAR { $$ = $1; };
 
 opt_named_transition:
 	{ /* nothing */
-		$$.present = 0;
-		$$.ns = NULL;
-		$$.name = NULL;
+		parse_named_transition_target(&$$, NULL);
 	}
 	| TOK_ARROW id_or_var
 	{
-		$$.present = 1;
-		$$.ns = NULL;
-		$$.name = $2;
-	}
-	| TOK_ARROW ns_id id_or_var
-	{
-		$$.present = 1;
-		$$.ns = $2;
-		$$.name = $3;
+		parse_named_transition_target(&$$, $2);
+		free($2);
 	};
 
 rule: file_rule { $$ = $1; }
@@ -1508,27 +1492,25 @@ change_profile_head: TOK_CHANGE_PROFILE opt_id
 		$$ = $2;
 	}
 
-change_profile: change_profile_head TOK_END_OF_RULE
+change_profile: change_profile_head opt_named_transition TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
-		char *rule = strdup("**");
-		if (!rule)
-			yyerror(_("Memory allocation error."));
-		PDEBUG("Matched change_profile,\n");
-		entry = new_entry(NULL, rule, AA_CHANGE_PROFILE, $1);
-		if (!entry)
-			yyerror(_("Memory allocation error."));
-		PDEBUG("change_profile,\n");
-		$$ = entry;
-	};
 
-change_profile:	change_profile_head TOK_ARROW opt_ns TOK_ID TOK_END_OF_RULE
-	{
-		struct cod_entry *entry;
-		PDEBUG("Matched change_profile: tok_id (:%s://%s)\n", $3 ? $3 : "", $4);
-		entry = new_entry($3, $4, AA_CHANGE_PROFILE, $1);
+		if ($2.present) {
+			PDEBUG("Matched change_profile: tok_id (:%s://%s)\n",
+			       $2.ns ? $2.ns : "", $2.name);
+			entry = new_entry($2.ns, $2.name, AA_CHANGE_PROFILE, $1);
+		} else {
+			char *rule = strdup("**");
+			if (!rule)
+				yyerror(_("Memory allocation error."));
+
+			PDEBUG("Matched change_profile,\n");
+			entry = new_entry(NULL, rule, AA_CHANGE_PROFILE, $1);
+		}
 		if (!entry)
 			yyerror(_("Memory allocation error."));
+
 		PDEBUG("change_profile.entry: (%s)\n", entry->name);
 		$$ = entry;
 	};

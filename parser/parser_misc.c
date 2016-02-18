@@ -615,6 +615,19 @@ void parse_label(char **ns, char **name, const char *label)
 	*name = _name;
 }
 
+void parse_named_transition_target(struct named_transition *nt,
+				   const char *target)
+{
+	memset(nt, 0, sizeof(*nt));
+	if (!target) {
+		/* Return with nt->present set to 0 (thanks to the memset) */
+		return;
+	}
+
+	parse_label(&nt->ns, &nt->name, target);
+	nt->present = 1;
+}
+
 struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id)
 {
 	struct cod_entry *entry = NULL;
