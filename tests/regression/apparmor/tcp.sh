@@ -52,6 +52,10 @@ runchecktest "TCP (accept, connect) low numbered port/bind cap" pass 23
 genprofile network:inet 
 runchecktest "TCP (accept, connect) low numbered port/no bind cap" fail 23
 
+# FAIL TEST - make sure that unspec doesn't match
+genprofile network:unspec
+runchecktest "TCP (accept, connect) wrong socket family" fail 23
+
 exit 0
 
 # PASS TEST - accept via interface

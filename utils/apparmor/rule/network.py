@@ -24,7 +24,7 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 
-network_domain_keywords   = [ 'unix', 'inet', 'ax25', 'ipx', 'appletalk', 'netrom', 'bridge', 'atmpvc', 'x25', 'inet6',
+network_domain_keywords   = [ 'unspec', 'unix', 'inet', 'ax25', 'ipx', 'appletalk', 'netrom', 'bridge', 'atmpvc', 'x25', 'inet6',
                               'rose', 'netbeui', 'security', 'key', 'netlink', 'packet', 'ash', 'econet', 'atmsvc', 'rds', 'sna',
                               'irda', 'pppox', 'wanpipe', 'llc', 'can', 'tipc', 'bluetooth', 'iucv', 'rxrpc', 'isdn', 'phonet',
                               'ieee802154', 'caif', 'alg', 'nfc', 'vsock', 'mpls', 'ib' ]

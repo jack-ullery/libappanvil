@@ -98,7 +98,7 @@ list_capabilities: /usr/include/linux/capability.h
 # to mediate. We use PF_ here since that is what is required in
 # bits/socket.h, but we will rewrite these as AF_.
 
-FILTER_FAMILIES=PF_UNSPEC PF_UNIX
+FILTER_FAMILIES=PF_UNIX
 
 __FILTER=$(shell echo $(strip $(FILTER_FAMILIES)) | sed -e 's/ /\\\|/g')
 
