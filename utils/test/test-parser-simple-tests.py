@@ -125,6 +125,7 @@ exception_not_raised = [
     'profile/flags/flags_bad_debug_3.sd',
     'profile/flags/flags_bad_debug_4.sd',
     'profile/simple_bad_no_close_brace4.sd',
+    'profile/profile_ns_bad8.sd',  # 'profile :ns/t' without terminating ':'
     'ptrace/bad_05.sd',  # actually contains a capability rule with invalid (ptrace-related) keyword
     'ptrace/bad_06.sd',  # actually contains a capability rule with invalid (ptrace-related) keyword
     'ptrace/bad_10.sd',  # peer with invalid regex
