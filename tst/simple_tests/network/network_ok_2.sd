@@ -3,6 +3,7 @@
 #=EXRESULT PASS
 #
 /usr/bin/foo {
+  network unspec,
   network inet,
   network ax25,
   network ipx,
