@@ -569,6 +569,52 @@ int parse_X_mode(const char *X, int valid, const char *str_mode, int *mode, int 
 	return 1;
 }
 
+void parse_label(char **ns, char **name, const char *label)
+{
+	const char *name_start = NULL;
+	char *_ns = NULL;
+	char *_name = NULL;
+
+	if (label[0] != ':') {
+		/* There is no namespace specified in the label */
+		name_start = label;
+	} else {
+		/* A leading ':' indicates that a namespace is specified */
+		const char *ns_start = label + 1;
+		const char *ns_end = strstr(ns_start, ":");
+
+		if (!ns_end)
+			yyerror(_("Namespace not terminated: %s\n"), label);
+		else if (ns_end - ns_start == 0)
+			yyerror(_("Empty namespace: %s\n"), label);
+
+		/**
+		 * Handle either of the two namespace formats:
+		 *  1) :ns:name
+		 *  2) :ns://name
+		 */
+		name_start = ns_end + 1;
+		if (!strncmp(name_start, "//", 2))
+			name_start += 2;
+
+		_ns = strndup(ns_start, ns_end - ns_start);
+		if (!_ns)
+			yyerror(_("Memory allocation error."));
+	}
+
+	if (!strlen(name_start))
+		yyerror(_("Empty named transition profile name: %s\n"), label);
+
+	_name = strdup(name_start);
+	if (!_name) {
+		free(_ns);
+		yyerror(_("Memory allocation error."));
+	}
+
+	*ns = _ns;
+	*name = _name;
+}
+
 struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id)
 {
 	struct cod_entry *entry = NULL;
