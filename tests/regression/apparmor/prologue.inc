@@ -49,6 +49,15 @@ requires_kernel_features()
 	fi
 }
 
+requires_namespace_interface()
+{
+	if [ ! -e "/sys/kernel/security/apparmor/policy/namespaces" ]
+	then
+		echo "Namespaces in apparmorfs policy interface not supported. Skipping tests ..."
+		exit 0
+	fi
+}
+
 requires_query_interface()
 {
 	if [ ! -e "/sys/kernel/security/apparmor/.access" ]

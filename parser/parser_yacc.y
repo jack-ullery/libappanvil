@@ -318,14 +318,26 @@ profile_base: TOK_ID opt_id_or_var flags TOK_OPEN rules TOK_CLOSE
 			yyerror(_("Memory allocation error."));
 		}
 
+		parse_label(&prof->ns, &prof->name, $1);
+		free($1);
+
 		/* Honor the --namespace-string command line option */
 		if (profile_ns) {
+			/**
+			 * Print warning if the profile specified a namespace
+			 * different than the one specified with the
+			 * --namespace-string command line option
+			 */
+			if (prof->ns && strcmp(prof->ns, profile_ns))
+				pwarn("%s: -n %s overriding policy specified namespace :%s:\n",
+				      progname, profile_ns, prof->ns);
+
+			free(prof->ns);
 			prof->ns = strdup(profile_ns);
 			if (!prof->ns)
 				yyerror(_("Memory allocation error."));
 		}
 
-		prof->name = $1;
 		prof->attachment = $2;
 		if ($2 && !($2[0] == '/' || strncmp($2, "@{", 2) == 0))
 			yyerror(_("Profile attachment must begin with a '/' or variable."));
@@ -347,30 +359,18 @@ profile_base: TOK_ID opt_id_or_var flags TOK_OPEN rules TOK_CLOSE
 
 	};
 
-profile:  opt_profile_flag opt_ns profile_base
+profile:  opt_profile_flag profile_base
 	{
-		Profile *prof = $3;
-		if ($2)
-			PDEBUG("Matched: %s://%s { ... }\n", $2, $3->name);
-		else
-			PDEBUG("Matched: %s { ... }\n", $3->name);
+		Profile *prof = $2;
 
-		if ($3->name[0] != '/' && !($1 || $2))
+		if ($2->ns)
+			PDEBUG("Matched: :%s://%s { ... }\n", $2->ns, $2->name);
+		else
+			PDEBUG("Matched: %s { ... }\n", $2->name);
+
+		if ($2->name[0] != '/' && !($1 || $2->ns))
 			yyerror(_("Profile names must begin with a '/', namespace or keyword 'profile' or 'hat'."));
 
-		if (prof->ns) {
-			/**
-			 * Print warning if the profile specified a namespace
-			 * different than the one specified with the
-			 * --namespace-string command line option
-			 */
-			if ($2 && strcmp(prof->ns, $2)) {
-				pwarn("%s: -n %s overriding policy specified namespace :%s:\n",
-				      progname, prof->ns, $2);
-			}
-			free($2);
-		} else
-			prof->ns = $2;
 		if ($1 == 2)
 			prof->flags.hat = 1;
 		$$ = prof;

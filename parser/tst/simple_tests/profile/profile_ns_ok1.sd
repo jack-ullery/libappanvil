@@ -40,7 +40,7 @@ profile :foo:/does/not/exist2 {
   /bin/echo uxuxuxuxux,
 }
 
-profile :foo:unattached {
+profile :foo:unattached2 {
   #include <includes/base>
 
   /usr/X11R6/lib/lib*so* rrr,

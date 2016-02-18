@@ -200,6 +200,7 @@ TESTS=aa_exec \
       mount \
       mult_mount \
       named_pipe \
+      namespaces \
       net_raw \
       open \
       openat \
