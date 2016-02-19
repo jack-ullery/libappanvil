@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2014-10-22 22:09+0000\n"
+"PO-Revision-Date: 2016-02-18 06:24+0000\n"
 "Last-Translator: Andi Chandler <Unknown>\n"
 "Language-Team: English (United Kingdom) <en_GB@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2016-02-02 05:11+0000\n"
-"X-Generator: Launchpad (build 17908)\n"
+"X-Launchpad-Export-Date: 2016-02-19 05:10+0000\n"
+"X-Generator: Launchpad (build 17925)\n"
 
 #: ../aa-genprof:56
 msgid "Generate profile for the given program"
@@ -97,6 +97,15 @@ msgid ""
 "opportunity to choose whether the access should be \n"
 "allowed or denied."
 msgstr ""
+"Please start the application to be profiled in\n"
+"another window and exercise its functionality now.\n"
+"\n"
+"Once completed, select the \"Scan\" option below in \n"
+"order to scan the system logs for AppArmor events. \n"
+"\n"
+"For each AppArmor event, you will be given the \n"
+"opportunity to choose whether the access should be \n"
+"allowed or denied."
 
 #: ../aa-genprof:147
 msgid "Profiling"
@@ -224,7 +233,7 @@ msgstr "Severity"
 #: ../apparmor/aa.py:1857
 #, python-format
 msgid "Adding %s to profile."
-msgstr ""
+msgstr "Adding %s to profile."
 
 #: ../aa-mergeprof:282 ../apparmor/aa.py:1627
 #, python-format
@@ -243,56 +252,56 @@ msgstr "(owner permissions off)"
 
 #: ../aa-mergeprof:444 ../apparmor/aa.py:1781
 msgid "(force new perms to owner)"
-msgstr ""
+msgstr "(force new perms to owner)"
 
 #: ../aa-mergeprof:447 ../apparmor/aa.py:1784
 msgid "(force all rule perms to owner)"
-msgstr ""
+msgstr "(force all rule perms to owner)"
 
 #: ../aa-mergeprof:459 ../apparmor/aa.py:1796
 msgid "Old Mode"
-msgstr ""
+msgstr "Old Mode"
 
 #: ../aa-mergeprof:460 ../apparmor/aa.py:1797
 msgid "New Mode"
-msgstr ""
+msgstr "New Mode"
 
 #: ../aa-mergeprof:475 ../apparmor/aa.py:1812
 msgid "(force perms to owner)"
-msgstr ""
+msgstr "(force perms to owner)"
 
 #: ../aa-mergeprof:478 ../apparmor/aa.py:1815
 msgid "Mode"
-msgstr ""
+msgstr "Mode"
 
 #: ../aa-mergeprof:556
 #, python-format
 msgid "Adding %(path)s %(mod)s to profile"
-msgstr ""
+msgstr "Adding %(path)s %(mod)s to profile"
 
 #: ../aa-mergeprof:574 ../apparmor/aa.py:1915
 msgid "Enter new path: "
-msgstr ""
+msgstr "Enter new path: "
 
 #: ../aa-mergeprof:630 ../aa-mergeprof:657 ../apparmor/aa.py:1959
 #: ../apparmor/aa.py:1995
 msgid "Network Family"
-msgstr ""
+msgstr "Network Family"
 
 #: ../aa-mergeprof:631 ../aa-mergeprof:658 ../apparmor/aa.py:1960
 #: ../apparmor/aa.py:1996
 msgid "Socket Type"
-msgstr ""
+msgstr "Socket Type"
 
 #: ../aa-mergeprof:673 ../apparmor/aa.py:2010
 #, python-format
 msgid "Adding %s to profile"
-msgstr ""
+msgstr "Adding %s to profile"
 
 #: ../aa-mergeprof:683 ../apparmor/aa.py:2020
 #, python-format
 msgid "Adding network access %(family)s %(type)s to profile."
-msgstr ""
+msgstr "Adding network access %(family)s %(type)s to profile."
 
 #: ../aa-mergeprof:689 ../apparmor/aa.py:2026
 #, python-format
@@ -301,23 +310,23 @@ msgstr ""
 
 #: ../aa-autodep:23
 msgid "Generate a basic AppArmor profile by guessing requirements"
-msgstr ""
+msgstr "Generate a basic AppArmor profile by guessing requirements"
 
 #: ../aa-autodep:24
 msgid "overwrite existing profile"
-msgstr ""
+msgstr "overwrite existing profile"
 
 #: ../aa-audit:24
 msgid "Switch the given programs to audit mode"
-msgstr ""
+msgstr "Switch the given programs to audit mode"
 
 #: ../aa-audit:26
 msgid "remove audit mode"
-msgstr ""
+msgstr "remove audit mode"
 
 #: ../aa-audit:28
 msgid "Show full trace"
-msgstr ""
+msgstr "Show full trace"
 
 #: ../aa-complain:23
 msgid "Switch the given program to complain mode"
