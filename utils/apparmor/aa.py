@@ -2317,7 +2317,12 @@ def save_profiles():
                         oldprofile = aa[which][which]['filename']
                     else:
                         oldprofile = get_profile_filename(which)
-                    newprofile = serialize_profile_from_old_profile(aa[which], which, '')
+
+                    try:
+                        newprofile = serialize_profile_from_old_profile(aa[which], which, '')
+                    except AttributeError:
+                        # see https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/1528139
+                        newprofile = "###\n###\n### Internal error while generating diff, please use '%s' instead\n###\n###\n" % _('View Changes b/w (C)lean profiles')
 
                     display_changes_with_comments(oldprofile, newprofile)
 
@@ -3586,6 +3591,11 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
     write_filelist = deepcopy(filelist[prof_filename])
     write_prof_data = deepcopy(profile_data)
+
+    # XXX profile_data / write_prof_data contain only one profile with its hats
+    # XXX this will explode if a file contains multiple profiles, see https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/1528139
+    # XXX fixing this needs lots of write_prof_data[hat] -> write_prof_data[profile][hat] changes (and of course also a change in the calling code)
+    # XXX (the better option is a full rewrite of serialize_profile_from_old_profile())
 
     if options:  # and type(options) == dict:
         if options.get('METADATA', False):
