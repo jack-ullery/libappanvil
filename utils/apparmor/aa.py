@@ -4317,12 +4317,6 @@ def combine_name(name1, name2):
     else:
         return '%s^%s' % (name1, name2)
 
-def split_name(name):
-    names = name.split('^')
-    if len(names) == 1:
-        return name, name
-    else:
-        return names[0], names[1]
 def commonprefix(new, old):
     match = re.search(r'^([^\0]*)[^\0]*(\0\1[^\0]*)*$', '\0'.join([new, old]))
     if match:
