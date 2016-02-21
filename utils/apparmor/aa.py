@@ -1179,6 +1179,8 @@ def handle_children(profile, hat, root):
                 if mode & str_to_mode('x'):
                     if os.path.isdir(exec_target):
                         raise AppArmorBug('exec permissions requested for directory %s. This should not happen - please open a bugreport!' % exec_target)
+                    elif typ != 'exec':
+                        raise AppArmorBug('exec permissions requested for %(exec_target)s, but mode is %(mode)s instead of exec. This should not happen - please open a bugreport!' % {'exec_target': exec_target, 'mode':mode})
                     else:
                         do_execute = True
 
