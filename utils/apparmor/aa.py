@@ -332,29 +332,23 @@ def head(file):
         raise AppArmorException(_('Unable to read first line from %s: File Not Found') % file)
 
 def get_output(params):
-    """Returns the return code output by running the program with the args given in the list"""
-    program = params[0]
-    # args = params[1:]
-    ret = -1
-    output = []
-    # program is executable
-    if os.access(program, os.X_OK):
-        try:
-            # Get the output of the program
-            output = subprocess.check_output(params)
-        except OSError as e:
-            raise AppArmorException(_("Unable to fork: %(program)s\n\t%(error)s") % { 'program': program, 'error': str(e) })
-            # If exit-codes besides 0
-        except subprocess.CalledProcessError as e:
-            output = e.output
-            output = output.decode('utf-8').split('\n')
-            ret = e.returncode
-        else:
-            ret = 0
-            output = output.decode('utf-8').split('\n')
+    '''Runs the program with the given args and returns the return code and stdout (as list of lines)'''
+    try:
+        # Get the output of the program
+        output = subprocess.check_output(params)
+        ret = 0
+    except OSError as e:
+        raise AppArmorException(_("Unable to fork: %(program)s\n\t%(error)s") % { 'program': params[0], 'error': str(e) })
+    except subprocess.CalledProcessError as e:  # If exit code != 0
+        output = e.output
+        ret = e.returncode
+
+    output = output.decode('utf-8').split('\n')
+
     # Remove the extra empty string caused due to \n if present
-    if len(output) > 1:
+    if output[len(output) - 1] == '':
         output.pop()
+
     return (ret, output)
 
 def get_reqs(file):

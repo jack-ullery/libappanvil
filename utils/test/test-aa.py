@@ -77,10 +77,14 @@ class AATest_get_output(AATest):
     tests = [
         (['./fake_ldd', '/AATest/lib64/libc-2.22.so'],  (0, ['        /AATest/lib64/ld-linux-x86-64.so.2 (0x0000556858473000)', '        linux-vdso.so.1 (0x00007ffe98912000)']     )),
         (['./fake_ldd', '/tmp/aa-test-foo'],            (0, ['        not a dynamic executable']                                                                                    )),
-        (['./fake_ldd', 'invalid'],                     (1, ['']                                                                                                                    )),  # stderr is not part of output
+        (['./fake_ldd', 'invalid'],                     (1, []                                                                                                                      )),  # stderr is not part of output
     ]
     def _run_test(self, params, expected):
         self.assertEqual(get_output(params), expected)
+
+    def test_get_output_nonexisting(self):
+        with self.assertRaises(AppArmorException):
+            ret, output = get_output(['./_file_/_not_/_found_'])
 
 class AATest_get_reqs(AATest):
     tests = [
