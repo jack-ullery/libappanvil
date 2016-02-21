@@ -391,6 +391,7 @@ def handle_binfmt(profile, path):
     reqs = get_reqs(path)
     while reqs:
         library = reqs.pop()
+        library = get_full_path(library)  # resolve symlinks
         if not reqs_processed.get(library, False):
             if get_reqs(library):
                 reqs += get_reqs(library)
