@@ -1592,7 +1592,6 @@ def order_globs(globs, path):
 def ask_the_questions():
     found = 0
     global seen_events
-    log_obj = hasher()
     for aamode in sorted(log_dict.keys()):
         # Describe the type of changes
         if aamode == 'PERMITTING':
@@ -1616,35 +1615,9 @@ def ask_the_questions():
                 hats = [profile] + hats
 
             for hat in hats:
-                log_obj[profile][hat] = profile_storage(profile, hat, 'ask_the_questions()')
-
-                for capability in sorted(log_dict[aamode][profile][hat]['capability'].keys()):
-                    capability_obj = CapabilityRule(capability, log_event=aamode)
-                    log_obj[profile][hat]['capability'].add(capability_obj)
-
-                for family in sorted(log_dict[aamode][profile][hat]['netdomain'].keys()):
-                    for sock_type in sorted(log_dict[aamode][profile][hat]['netdomain'][family].keys()):
-                        network_obj = NetworkRule(family, sock_type, log_event=aamode)
-                        log_obj[profile][hat]['network'].add(network_obj)
-
-
-                for peer in sorted(log_dict[aamode][profile][hat]['ptrace'].keys()):
-                    for access in sorted(log_dict[aamode][profile][hat]['ptrace'][peer].keys()):
-                        ptrace_obj = PtraceRule(access, peer, log_event=aamode)
-                        log_obj[profile][hat]['ptrace'].add(ptrace_obj)
-
-                for peer in sorted(log_dict[aamode][profile][hat]['signal'].keys()):
-                    for access in sorted(log_dict[aamode][profile][hat]['signal'][peer].keys()):
-                        for signal in sorted(log_dict[aamode][profile][hat]['signal'][peer][access].keys()):
-                            signal_obj = SignalRule(access, signal, peer, log_event=aamode)
-                            log_obj[profile][hat]['signal'].add(signal_obj)
-
                 for ruletype in ruletypes:
-                    # XXX aa-mergeprof also has this code - if you change it, keep aa-mergeprof in sync!
-                    for rule_obj in log_obj[profile][hat][ruletype].rules:
-
-                        if rule_obj.log_event != aamode:  # XXX does it really make sense to handle enforce and complain mode changes in different rounds?
-                            continue
+                    for rule_obj in log_dict[aamode][profile][hat][ruletype].rules:
+                        # XXX aa-mergeprof also has this code - if you change it, keep aa-mergeprof in sync!
 
                         if is_known_rule(aa[profile][hat], ruletype, rule_obj):
                             continue
@@ -1735,8 +1708,8 @@ def ask_the_questions():
                     # END of code (mostly) shared with aa-mergeprof
 
                 # Process all the path entries.
-                for path in sorted(log_dict[aamode][profile][hat]['path'].keys()):
-                    mode = log_dict[aamode][profile][hat]['path'][path]
+                for path in sorted(log_dict[aamode][profile][hat]['allow']['path'].keys()):
+                    mode = log_dict[aamode][profile][hat]['allow']['path'][path]
                     # Lookup modes from profile
                     allow_mode = set()
                     allow_audit = set()
@@ -2436,6 +2409,8 @@ def collapse_log():
         for profile in prelog[aamode].keys():
             for hat in prelog[aamode][profile].keys():
 
+                log_dict[aamode][profile][hat] = profile_storage(profile, hat, 'collapse_log()')
+
                 for path in prelog[aamode][profile][hat]['path'].keys():
                     mode = prelog[aamode][profile][hat]['path'][path]
 
@@ -2452,35 +2427,37 @@ def collapse_log():
                     combinedmode |= match_prof_incs_to_path(aa[profile][hat], 'allow', path)[0]
 
                     if not combinedmode or not mode_contains(combinedmode, mode):
-                        if log_dict[aamode][profile][hat]['path'].get(path, False):
-                            mode |= log_dict[aamode][profile][hat]['path'][path]
+                        if log_dict[aamode][profile][hat]['allow']['path'].get(path, False):
+                            mode |= log_dict[aamode][profile][hat]['allow']['path'][path]
 
-                        log_dict[aamode][profile][hat]['path'][path] = mode
+                        log_dict[aamode][profile][hat]['allow']['path'][path] = mode
 
                 for cap in prelog[aamode][profile][hat]['capability'].keys():
-                    # If capability not already in profile
-                    # XXX remove first check when we have proper profile initialisation
-                    if aa[profile][hat].get('capability', False) and not aa[profile][hat]['capability'].is_covered(CapabilityRule(cap, log_event=True)):
-                        log_dict[aamode][profile][hat]['capability'][cap] = True
+                    cap_event = CapabilityRule(cap, log_event=True)
+                    if not is_known_rule(aa[profile][hat], 'capability', cap_event):
+                        log_dict[aamode][profile][hat]['capability'].add(cap_event)
 
                 nd = prelog[aamode][profile][hat]['netdomain']
                 for family in nd.keys():
                     for sock_type in nd[family].keys():
-                        if not is_known_rule(aa[profile][hat], 'network', NetworkRule(family, sock_type, log_event=True)):
-                            log_dict[aamode][profile][hat]['netdomain'][family][sock_type] = True
+                        net_event = NetworkRule(family, sock_type, log_event=True)
+                        if not is_known_rule(aa[profile][hat], 'network', net_event):
+                            log_dict[aamode][profile][hat]['network'].add(net_event)
 
                 ptrace = prelog[aamode][profile][hat]['ptrace']
                 for peer in ptrace.keys():
                     for access in ptrace[peer].keys():
-                        if not is_known_rule(aa[profile][hat], 'ptrace', PtraceRule(access, peer, log_event=True)):
-                            log_dict[aamode][profile][hat]['ptrace'][peer][access] = True
+                        ptrace_event = PtraceRule(access, peer, log_event=True)
+                        if not is_known_rule(aa[profile][hat], 'ptrace', ptrace_event):
+                            log_dict[aamode][profile][hat]['ptrace'].add(ptrace_event)
 
                 sig = prelog[aamode][profile][hat]['signal']
                 for peer in sig.keys():
                     for access in sig[peer].keys():
                         for signal in sig[peer][access].keys():
-                            if not is_known_rule(aa[profile][hat], 'signal', SignalRule(access, signal, peer, log_event=True)):
-                                log_dict[aamode][profile][hat]['signal'][peer][access][signal] = True
+                            signal_event = SignalRule(access, signal, peer, log_event=True)
+                            if not is_known_rule(aa[profile][hat], 'signal', signal_event):
+                                log_dict[aamode][profile][hat]['signal'].add(signal_event)
 
 
 PROFILE_MODE_RE      = re.compile('^(r|w|l|m|k|a|ix|ux|px|pux|cx|pix|cix|cux|Ux|Px|PUx|Cx|Pix|Cix|CUx)+$')
