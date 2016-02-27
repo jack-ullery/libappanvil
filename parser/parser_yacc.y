@@ -276,6 +276,7 @@ void add_local_entry(Profile *prof);
 %type <fmode>	net_perms
 %type <fmode>	opt_net_perm
 %type <unix_entry>	unix_rule
+%type <id>	opt_target
 %type <transition> opt_named_transition
 %type <boolean> opt_unsafe
 %type <boolean> opt_file
@@ -1044,6 +1045,9 @@ expr:	TOK_DEFINED TOK_BOOL_VAR
 id_or_var: TOK_ID { $$ = $1; }
 id_or_var: TOK_SET_VAR { $$ = $1; };
 
+opt_target: /* nothing */ { $$ = NULL; }
+opt_target: TOK_ARROW id_or_var { $$ = $2; };
+
 opt_named_transition:
 	{ /* nothing */
 		parse_named_transition_target(&$$, NULL);
@@ -1242,23 +1246,9 @@ mnt_rule: TOK_UMOUNT opt_conds opt_id TOK_END_OF_RULE
 		$$ = do_mnt_rule($2, NULL, NULL, $3, AA_MAY_UMOUNT);
 	}
 
-mnt_rule: TOK_PIVOTROOT opt_conds opt_id opt_named_transition TOK_END_OF_RULE
+mnt_rule: TOK_PIVOTROOT opt_conds opt_id opt_target TOK_END_OF_RULE
 	{
-		char *name = NULL;
-		if ($4.present && $4.ns) {
-			name = (char *) malloc(strlen($4.ns) +
-					       strlen($4.name) + 3);
-			if (!name) {
-				PERROR("Memory allocation error\n");
-				exit(1);
-			}
-			sprintf(name, ":%s:%s", $4.ns, $4.name);
-			free($4.ns);
-			free($4.name);
-		} else if ($4.present)
-			name = $4.name;
-
-		$$ = do_pivot_rule($2, $3, name);
+		$$ = do_pivot_rule($2, $3, $4);
 	}
 
 dbus_perm: TOK_VALUE
