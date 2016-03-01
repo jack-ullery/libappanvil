@@ -3672,7 +3672,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
             if RE_PROFILE_START.search(line):
 
                 (profile, hat, attachment, flags, in_contained_hat, correct) = serialize_parse_profile_start(
-                        line, prof_filename, None, profile, hat, write_prof_data[profile][hat]['profile'], write_prof_data[profile][hat]['external'], correct)
+                        line, prof_filename, None, profile, hat, write_prof_data[hat]['profile'], write_prof_data[hat]['external'], correct)
 
                 if not write_prof_data[hat]['name'] == profile:
                     correct = False
@@ -3908,7 +3908,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 if matches[0]:
                     audit = mode
 
-                path_rule = write_prof_data[profile][hat][allow]['path'][ALL]
+                path_rule = write_prof_data[hat][allow]['path'][ALL]
                 if path_rule.get('mode', set()) & mode and \
                    (not audit or path_rule.get('audit', set()) & audit) and \
                    path_rule.get('file_prefix', set()):
