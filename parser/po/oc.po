@@ -8,19 +8,19 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-13 00:11-0700\n"
-"PO-Revision-Date: 2013-11-14 22:00+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2016-03-10 21:29+0000\n"
+"Last-Translator: Cédric VALMARY (Tot en òc) <cvalmary@yahoo.fr>\n"
 "Language-Team: Occitan (post 1500) <oc@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2016-02-02 05:10+0000\n"
-"X-Generator: Launchpad (build 17908)\n"
+"X-Launchpad-Export-Date: 2016-03-11 05:18+0000\n"
+"X-Generator: Launchpad (build 17939)\n"
 "Language: oc\n"
 
 #: ../parser_include.c:113
 msgid "Error: Out of memory.\n"
-msgstr ""
+msgstr "Error : memòria insufisenta.\n"
 
 #: ../parser_include.c:123
 #, c-format
@@ -38,15 +38,15 @@ msgstr ""
 
 #: ../parser_interface.c:69 ../parser_interface.c:72
 msgid "Bad write position\n"
-msgstr ""
+msgstr "Marrida posicion d'escritura\n"
 
 #: ../parser_interface.c:72 ../parser_interface.c:75
 msgid "Permission denied\n"
-msgstr ""
+msgstr "Autorizacion refusada\n"
 
 #: ../parser_interface.c:75 ../parser_interface.c:78
 msgid "Out of memory\n"
-msgstr ""
+msgstr "Pas pro de memòria\n"
 
 #: ../parser_interface.c:78 ../parser_interface.c:81
 msgid "Couldn't copy profile: Bad memory address\n"
@@ -70,7 +70,7 @@ msgstr ""
 
 #: ../parser_interface.c:93 ../parser_interface.c:96
 msgid "Profile doesn't exist\n"
-msgstr ""
+msgstr "Perfil inexistent\n"
 
 #: ../parser_interface.c:96 ../parser_interface.c:99
 msgid "Permission denied; attempted to load a profile while confined?\n"
@@ -84,17 +84,17 @@ msgstr ""
 #: ../parser_interface.c:116 ../parser_interface.c:119
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr ""
+msgstr "%s : impossible d'apondre « %s ».  "
 
 #: ../parser_interface.c:121 ../parser_interface.c:124
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr ""
+msgstr "%s : impossible de remplaçar « %s ».  "
 
 #: ../parser_interface.c:126 ../parser_interface.c:129
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr ""
+msgstr "%s : impossible de suprimir « %s ».  "
 
 #: ../parser_interface.c:131 ../parser_interface.c:134
 #, c-format
@@ -115,7 +115,7 @@ msgstr ""
 #: ../parser_interface.c:147 ../parser_interface.c:150
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Apondon capitat per « %s ».\n"
 
 #: ../parser_interface.c:151 ../parser_interface.c:154
 #, c-format
@@ -125,7 +125,7 @@ msgstr ""
 #: ../parser_interface.c:155 ../parser_interface.c:158
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Supression capitada per « %s ».\n"
 
 #: ../parser_interface.c:251 ../parser_interface.c:254
 #, c-format
@@ -145,7 +145,7 @@ msgstr ""
 #: ../parser_interface.c:743 ../parser_interface.c:894
 #, c-format
 msgid "Unable to open %s - %s\n"
-msgstr ""
+msgstr "Impossible de dobrir %s - %s\n"
 
 #: ../parser_interface.c:776 ../parser_interface.c:768
 #, c-format
@@ -159,18 +159,18 @@ msgstr ""
 
 #: ../parser_interface.c:810 ../parser_interface.c:802
 msgid "unable to create work area\n"
-msgstr ""
+msgstr "impossible de crear una zòna de trabalh\n"
 
 #: ../parser_interface.c:818 ../parser_interface.c:810
 #, c-format
 msgid "unable to serialize profile %s\n"
-msgstr ""
+msgstr "impossible de serializar lo perfil %s\n"
 
 #: ../parser_interface.c:829 ../parser_interface.c:916
 #: ../parser_interface.c:821 ../parser_interface.c:908
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
-msgstr ""
+msgstr "%s : impossible d'escriure l'entrada de perfil completa\n"
 
 #: ../parser_interface.c:839 ../parser_interface.c:831
 #, c-format
@@ -180,7 +180,7 @@ msgstr ""
 #: parser_lex.l:100 parser_lex.l:163
 #, c-format
 msgid "Could not open '%s'"
-msgstr ""
+msgstr "Impossible de dobrir « %s »"
 
 #: parser_lex.l:104 parser_lex.l:167
 #, c-format
@@ -386,7 +386,7 @@ msgstr ""
 
 #: parser_yacc.y:498 parser_yacc.y:520 parser_yacc.y:548
 msgid "Assert: `rule' returned NULL."
-msgstr ""
+msgstr "Assert : « rule » a tornat NULL"
 
 #: parser_yacc.y:501 parser_yacc.y:546 parser_yacc.y:552 parser_yacc.y:584
 msgid ""
@@ -413,7 +413,7 @@ msgstr ""
 
 #: parser_yacc.y:680 parser_yacc.y:720
 msgid "Assert: 'hat rule' returned NULL."
-msgstr ""
+msgstr "Assert : « hat rule » a tornat NULL."
 
 #: parser_yacc.y:689 parser_yacc.y:729
 msgid "Assert: 'local_profile rule' returned NULL."
