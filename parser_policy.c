@@ -91,7 +91,7 @@ static int add_named_transition(Profile *prof, struct cod_entry *entry)
 	char *name = NULL;
 
 	/* check to see if it is a local transition */
-	if (!entry->ns) {
+	if (!label_contains_ns(entry->nt_name)) {
 		char *sub = strstr(entry->nt_name, "//");
 		/* does the subprofile name match the rule */
 
@@ -128,15 +128,11 @@ static int add_named_transition(Profile *prof, struct cod_entry *entry)
 			entry->nt_name = NULL;
 		}
 	} else {
-	  name = (char *) malloc(strlen(entry->ns) + strlen(entry->nt_name) + 3);
-		if (!name) {
-			PERROR("Memory allocation error\n");
-			exit(1);
-		}
-		sprintf(name, ":%s:%s", entry->ns, entry->nt_name);
-		free(entry->ns);
-		free(entry->nt_name);
-		entry->ns = NULL;
+		/**
+		 * pass control of the memory pointed to by nt_name
+		 * from entry to add_entry_to_x_table()
+		 */
+		name = entry->nt_name;
 		entry->nt_name = NULL;
 	}
 
@@ -184,7 +180,7 @@ void post_process_file_entries(Profile *prof)
 			PERROR("Memory allocation error\n");
 			exit(1);
 		}
-		new_ent = new_entry(NULL, buffer, AA_MAY_WRITE, NULL);
+		new_ent = new_entry(buffer, AA_MAY_WRITE, NULL);
 		if (!new_ent) {
 			PERROR("Memory allocation error\n");
 			exit(1);
@@ -214,7 +210,7 @@ static int profile_add_hat_rules(Profile *prof)
 		return 0;
 
 	/* add entry to hat */
-	entry = new_entry(NULL, strdup(CHANGEHAT_PATH), AA_MAY_WRITE, NULL);
+	entry = new_entry(strdup(CHANGEHAT_PATH), AA_MAY_WRITE, NULL);
 	if (!entry)
 		return ENOMEM;
 

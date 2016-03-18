@@ -585,11 +585,6 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 			/* allow change_profile for all execs */
 			vec[0] = "/[^/\\x00][^\\x00]*";
 
-		if (entry->ns) {
-			int pos;
-			ptype = convert_aaregex_to_pcre(entry->ns, 0, glob_default, lbuf, &pos);
-			vec[index++] = lbuf.c_str();
-		}
 		vec[index++] = tbuf.c_str();
 
 		/* regular change_profile rule */

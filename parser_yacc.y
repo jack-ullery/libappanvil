@@ -71,8 +71,7 @@
 
 int parser_token = 0;
 
-struct cod_entry *do_file_rule(char *ns, char *id, int mode,
-			       char *link_id, char *nt);
+struct cod_entry *do_file_rule(char *id, int mode, char *link_id, char *nt);
 mnt_rule *do_mnt_rule(struct cond_entry *src_conds, char *src,
 		      struct cond_entry *dst_conds, char *dst,
 		      int mode);
@@ -212,7 +211,6 @@ void add_local_entry(Profile *prof);
 	struct cond_entry *cond_entry;
 	struct cond_entry_list cond_entry_list;
 	int boolean;
-	struct named_transition transition;
 	struct prefixes prefix;
 }
 
@@ -277,7 +275,7 @@ void add_local_entry(Profile *prof);
 %type <fmode>	opt_net_perm
 %type <unix_entry>	unix_rule
 %type <id>	opt_target
-%type <transition> opt_named_transition
+%type <id>	opt_named_transition
 %type <boolean> opt_unsafe
 %type <boolean> opt_file
 %%
@@ -1048,14 +1046,10 @@ id_or_var: TOK_SET_VAR { $$ = $1; };
 opt_target: /* nothing */ { $$ = NULL; }
 opt_target: TOK_ARROW id_or_var { $$ = $2; };
 
-opt_named_transition:
-	{ /* nothing */
-		parse_named_transition_target(&$$, NULL);
-	}
+opt_named_transition: { /* nothing */ $$ = NULL; }
 	| TOK_ARROW id_or_var
 	{
-		parse_named_transition_target(&$$, $2);
-		free($2);
+		$$ = $2;
 	};
 
 rule: file_rule { $$ = $1; }
@@ -1070,23 +1064,24 @@ opt_file: { /* nothing */ $$ = 0; }
 
 frule:	id_or_var file_mode opt_named_transition TOK_END_OF_RULE
 	{
-		$$ = do_file_rule($3.ns, $1, $2, NULL, $3.name);
+		$$ = do_file_rule($1, $2, NULL, $3);
 	};
 
 frule:	file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE
 	{
 		if ($2 && ($1 & ~AA_LINK_BITS))
 			yyerror(_("subset can only be used with link rules."));
-		if ($4.present && ($1 & AA_LINK_BITS) && ($1 & AA_EXEC_BITS))
+		if ($4 && ($1 & AA_LINK_BITS) && ($1 & AA_EXEC_BITS))
 			yyerror(_("link and exec perms conflict on a file rule using ->"));
-		if ($4.present && $4.ns && ($1 & AA_LINK_BITS))
+		if ($4 && label_contains_ns($4) && ($1 & AA_LINK_BITS))
 			yyerror(_("link perms are not allowed on a named profile transition.\n"));
+
 		if (($1 & AA_LINK_BITS)) {
-			$$ = do_file_rule(NULL, $3, $1, $4.name, NULL);
+			$$ = do_file_rule($3, $1, $4, NULL);
 			$$->subset = $2;
 
 		} else {
-			$$ = do_file_rule($4.ns, $3, $1, NULL, $4.name);
+			$$ = do_file_rule($3, $1, NULL, $4);
 		}
  	};
 
@@ -1099,7 +1094,7 @@ file_rule: TOK_FILE TOK_END_OF_RULE
 		perms |= perms << AA_OTHER_SHIFT;
 		if (!path)
 			yyerror(_("Memory allocation error."));
-		$$ = do_file_rule(NULL, path, perms, NULL, NULL);
+		$$ = do_file_rule(path, perms, NULL, NULL);
 	}
 	| opt_file file_rule_tail { $$ = $2; }
 
@@ -1132,7 +1127,7 @@ link_rule: TOK_LINK opt_subset_flag id_or_var TOK_ARROW id_or_var TOK_END_OF_RUL
 	{
 		struct cod_entry *entry;
 		PDEBUG("Matched: link tok_id (%s) -> (%s)\n", $3, $5);
-		entry = new_entry(NULL, $3, AA_LINK_BITS, $5);
+		entry = new_entry($3, AA_LINK_BITS, $5);
 		entry->subset = $2;
 		PDEBUG("rule.entry: link (%s)\n", entry->name);
 		$$ = entry;
@@ -1486,17 +1481,16 @@ change_profile: change_profile_head opt_named_transition TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 
-		if ($2.present) {
-			PDEBUG("Matched change_profile: tok_id (:%s://%s)\n",
-			       $2.ns ? $2.ns : "", $2.name);
-			entry = new_entry($2.ns, $2.name, AA_CHANGE_PROFILE, $1);
+		if ($2) {
+			PDEBUG("Matched change_profile: tok_id (%s)\n", $2);
+			entry = new_entry($2, AA_CHANGE_PROFILE, $1);
 		} else {
 			char *rule = strdup("**");
 			if (!rule)
 				yyerror(_("Memory allocation error."));
 
 			PDEBUG("Matched change_profile,\n");
-			entry = new_entry(NULL, rule, AA_CHANGE_PROFILE, $1);
+			entry = new_entry(rule, AA_CHANGE_PROFILE, $1);
 		}
 		if (!entry)
 			yyerror(_("Memory allocation error."));
@@ -1567,12 +1561,11 @@ void yyerror(const char *msg, ...)
 	exit(1);
 }
 
-struct cod_entry *do_file_rule(char *ns, char *id, int mode,
-			       char *link_id, char *nt)
+struct cod_entry *do_file_rule(char *id, int mode, char *link_id, char *nt)
 {
 		struct cod_entry *entry;
 		PDEBUG("Matched: tok_id (%s) tok_mode (0x%x)\n", id, mode);
-		entry = new_entry(ns, id, mode, link_id);
+		entry = new_entry(id, mode, link_id);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		entry->nt_name = nt;
@@ -1595,7 +1588,7 @@ void add_local_entry(Profile *prof)
 			yyerror(_("Memory allocation error."));
 		sprintf(name, "%s//%s", prof->parent->name, prof->name);
 
-		entry = new_entry(NULL, name, prof->local_mode, NULL);
+		entry = new_entry(name, prof->local_mode, NULL);
 		entry->audit = prof->local_audit;
 		entry->nt_name = trans;
 		if (!entry)
