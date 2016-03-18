@@ -663,6 +663,7 @@ struct cod_entry *copy_cod_entry(struct cod_entry *orig)
 	DUP_STRING(orig, entry, ns, err);
 	DUP_STRING(orig, entry, name, err);
 	DUP_STRING(orig, entry, link_name, err);
+	DUP_STRING(orig, entry, nt_name, err);
 	entry->mode = orig->mode;
 	entry->audit = orig->audit;
 	entry->deny = orig->deny;
