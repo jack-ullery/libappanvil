@@ -118,10 +118,16 @@ static int add_named_transition(Profile *prof, struct cod_entry *entry)
 			}
 			sprintf(name, "%s//%s", prof->name, entry->nt_name);
 			free(entry->nt_name);
-			entry->nt_name = name;
+			entry->nt_name = NULL;
+		} else {
+			/**
+			 * pass control of the memory pointed to by nt_name
+			 * from entry to add_entry_to_x_table()
+			 */
+			name = entry->nt_name;
+			entry->nt_name = NULL;
 		}
-	}
-	if (entry->ns) {
+	} else {
 	  name = (char *) malloc(strlen(entry->ns) + strlen(entry->nt_name) + 3);
 		if (!name) {
 			PERROR("Memory allocation error\n");
@@ -132,8 +138,6 @@ static int add_named_transition(Profile *prof, struct cod_entry *entry)
 		free(entry->nt_name);
 		entry->ns = NULL;
 		entry->nt_name = NULL;
-	} else {
-		name = entry->nt_name;
 	}
 
 	return add_entry_to_x_table(prof, name);
@@ -164,8 +168,6 @@ void post_process_file_entries(Profile *prof)
 				mode |= SHIFT_MODE(n << 10, AA_OTHER_SHIFT);
 			entry->mode = ((entry->mode & ~AA_ALL_EXEC_MODIFIERS) |
 				       (mode & AA_ALL_EXEC_MODIFIERS));
-			entry->ns = NULL;
-			entry->nt_name = NULL;
 		}
 		/* FIXME: currently change_profile also implies onexec */
 		cp_mode |= entry->mode & (AA_CHANGE_PROFILE);
