@@ -305,13 +305,18 @@ opt_id_or_var: { /* nothing */ $$ = NULL; }
 profile_base: TOK_ID opt_id_or_var flags TOK_OPEN rules TOK_CLOSE
 	{
 		Profile *prof = $5;
+		bool self_stack = false;
 
 		if (!prof) {
 			yyerror(_("Memory allocation error."));
 		}
 
-		parse_label(&prof->ns, &prof->name, $1);
+		parse_label(&self_stack, &prof->ns, &prof->name, $1);
 		free($1);
+
+		if (self_stack) {
+			yyerror(_("Profile names must begin with a '/' or a namespace"));
+		}
 
 		/* Honor the --namespace-string command line option */
 		if (profile_ns) {
