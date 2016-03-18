@@ -45,10 +45,17 @@ genprofile $file:$okperm
 runchecktest "NO CHANGEPROFILE (access parent file)" pass nochange $file
 runchecktest "NO CHANGEPROFILE (access sub file)" fail nochange $subfile
 
-# CHANGEPROFILE NO Target TEST - NO PERMISSION
+errno=EACCES
+if [ "$(kernel_features domain/stack)" == "true" ]; then
+	# The returned errno changed in the set of kernel patches that
+	# introduced AppArmor profile stacking
+	errno=ENOENT
+fi
+
+# CHANGEPROFILE NO Target TEST - NO PERMISSION and target does not exist
 runchecktest "CHANGEPROFILE (no target, nochange)" pass nochange $file
-runchecktest_errno EACCES "CHANGEPROFILE (no target, $file)" fail $othertest $file
-runchecktest_errno EACCES "CHANGEPROFILE (no target, $subfile)" fail $othertest $subfile
+runchecktest_errno $errno "CHANGEPROFILE (no target, $file)" fail $othertest $file
+runchecktest_errno $errno "CHANGEPROFILE (no target, $subfile)" fail $othertest $subfile
 
 # CHANGEPROFILE NO Target TEST - PERMISSION
 genprofile $file:$okperm 'change_profile->':$othertest
