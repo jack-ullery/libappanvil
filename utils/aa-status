@@ -12,9 +12,19 @@
 
 import re, os, sys, errno
 
+# PLEASE NOTE: we try to keep aa-status as minimal as possible, for
+# environments where installing all of the python utils and python
+# apparmor module may not make sense. Please think carefully before
+# importing anything from apparmor; see how the apparmor.fail import is
+# handled below.
+
 # setup exception handling
-from apparmor.fail import enable_aa_exception_handler
-enable_aa_exception_handler()
+try:
+    from apparmor.fail import enable_aa_exception_handler
+    enable_aa_exception_handler()
+except ImportError:
+    # just let normal python exceptions happen (LP: #1480492)
+    pass
 
 def cmd_enabled():
     '''Returns error code if AppArmor is not enabled'''
