@@ -87,6 +87,14 @@ APPARMOR_2.10 {
         *;
 } APPARMOR_2.9;
 
+APPARMOR_2.11 {
+  global:
+        aa_stack_profile;
+        aa_stack_onexec;
+  local:
+        *;
+} APPARMOR_2.10;
+
 PRIVATE {
 	global:
 		_aa_is_blacklisted;
