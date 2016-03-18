@@ -571,6 +571,7 @@ int parse_X_mode(const char *X, int valid, const char *str_mode, int *mode, int 
 
 /**
  * parse_label - break a label down to the namespace and profile name
+ * @stack: Will be true if the first char in @label is '&' to indicate stacking
  * @ns: Will point to the first char in the namespace upon return or NULL
  *      if no namespace is present
  * @ns_len: Number of chars in the namespace string or 0 if no namespace
@@ -589,13 +590,25 @@ int parse_X_mode(const char *X, int valid, const char *str_mode, int *mode, int 
  * 2) Namespace is empty meaning @label starts with "::"
  * 3) Profile name is empty
  */
-static int _parse_label(char **ns, size_t *ns_len,
+static int _parse_label(bool *stack,
+			char **ns, size_t *ns_len,
 			char **name, size_t *name_len,
 			const char *label)
 {
 	const char *name_start = NULL;
 	const char *ns_start = NULL;
 	const char *ns_end = NULL;
+
+	if (label[0] == '&') {
+		/**
+		 * Leading ampersand means that the current profile should
+		 * be stacked with the rest of the label
+		 */
+		*stack = true;
+		label++;
+	} else {
+		*stack = false;
+	}
 
 	if (label[0] != ':') {
 		/* There is no namespace specified in the label */
@@ -639,15 +652,16 @@ static int _parse_label(char **ns, size_t *ns_len,
 
 bool label_contains_ns(const char *label)
 {
+	bool stack = false;
 	char *ns = NULL;
 	char *name = NULL;
 	size_t ns_len = 0;
 	size_t name_len = 0;
 
-	return _parse_label(&ns, &ns_len, &name, &name_len, label) == 0 && ns;
+	return _parse_label(&stack, &ns, &ns_len, &name, &name_len, label) == 0 && ns;
 }
 
-void parse_label(char **_ns, char **_name, const char *label)
+void parse_label(bool *_stack, char **_ns, char **_name, const char *label)
 {
 	char *ns = NULL;
 	char *name = NULL;
@@ -655,7 +669,7 @@ void parse_label(char **_ns, char **_name, const char *label)
 	size_t name_len = 0;
 	int res;
 
-	res = _parse_label(&ns, &ns_len, &name, &name_len, label);
+	res = _parse_label(_stack, &ns, &ns_len, &name, &name_len, label);
 	if (res == 1) {
 		yyerror(_("Namespace not terminated: %s\n"), label);
 	} else if (res == 2) {
