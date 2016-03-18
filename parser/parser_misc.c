@@ -569,24 +569,44 @@ int parse_X_mode(const char *X, int valid, const char *str_mode, int *mode, int 
 	return 1;
 }
 
-void parse_label(char **ns, char **name, const char *label)
+/**
+ * parse_label - break a label down to the namespace and profile name
+ * @ns: Will point to the first char in the namespace upon return or NULL
+ *      if no namespace is present
+ * @ns_len: Number of chars in the namespace string or 0 if no namespace
+ *          is present
+ * @name: Will point to the first char in the profile name upon return
+ * @name_len: Number of chars in the name string
+ * @label: The label to parse into namespace and profile name
+ *
+ * The returned pointers will point to locations within the original
+ * @label string. No new strings are allocated.
+ *
+ * Returns 0 upon success or non-zero with @ns, @ns_len, @name, and
+ * @name_len undefined upon error. Error codes are:
+ *
+ * 1) Namespace is not terminated despite @label starting with ':'
+ * 2) Namespace is empty meaning @label starts with "::"
+ * 3) Profile name is empty
+ */
+static int _parse_label(char **ns, size_t *ns_len,
+			char **name, size_t *name_len,
+			const char *label)
 {
 	const char *name_start = NULL;
-	char *_ns = NULL;
-	char *_name = NULL;
+	const char *ns_start = NULL;
+	const char *ns_end = NULL;
 
 	if (label[0] != ':') {
 		/* There is no namespace specified in the label */
 		name_start = label;
 	} else {
 		/* A leading ':' indicates that a namespace is specified */
-		const char *ns_start = label + 1;
-		const char *ns_end = strstr(ns_start, ":");
+		ns_start = label + 1;
+		ns_end = strstr(ns_start, ":");
 
 		if (!ns_end)
-			yyerror(_("Namespace not terminated: %s\n"), label);
-		else if (ns_end - ns_start == 0)
-			yyerror(_("Empty namespace: %s\n"), label);
+			return 1;
 
 		/**
 		 * Handle either of the two namespace formats:
@@ -596,23 +616,59 @@ void parse_label(char **ns, char **name, const char *label)
 		name_start = ns_end + 1;
 		if (!strncmp(name_start, "//", 2))
 			name_start += 2;
-
-		_ns = strndup(ns_start, ns_end - ns_start);
-		if (!_ns)
-			yyerror(_("Memory allocation error."));
 	}
 
-	if (!strlen(name_start))
-		yyerror(_("Empty named transition profile name: %s\n"), label);
+	/**
+	 * The casts below are to allow @label to be const, signifying
+	 * that this function doesn't modify it, while allowing callers to
+	 * decide if they want to pass in pointers to const or non-const
+	 * strings.
+	 */
+	*ns = (char *)ns_start;
+	*name = (char *)name_start;
+	*ns_len = ns_end - ns_start;
+	*name_len = strlen(name_start);
 
-	_name = strdup(name_start);
-	if (!_name) {
-		free(_ns);
+	if (*ns && *ns_len == 0)
+		return 2;
+	else if (*name_len == 0)
+		return 3;
+
+	return 0;
+}
+
+void parse_label(char **_ns, char **_name, const char *label)
+{
+	char *ns = NULL;
+	char *name = NULL;
+	size_t ns_len = 0;
+	size_t name_len = 0;
+	int res;
+
+	res = _parse_label(&ns, &ns_len, &name, &name_len, label);
+	if (res == 1) {
+		yyerror(_("Namespace not terminated: %s\n"), label);
+	} else if (res == 2) {
+		yyerror(_("Empty namespace: %s\n"), label);
+	} else if (res == 3) {
+		yyerror(_("Empty named transition profile name: %s\n"), label);
+	} else if (res != 0) {
+		yyerror(_("Unknown error while parsing label: %s\n"), label);
+	}
+
+	if (ns) {
+		*_ns = strndup(ns, ns_len);
+		if (!*_ns)
+			yyerror(_("Memory allocation error."));
+	} else {
+		*_ns = NULL;
+	}
+
+	*_name = strndup(name, name_len);
+	if (!*_name) {
+		free(*_ns);
 		yyerror(_("Memory allocation error."));
 	}
-
-	*ns = _ns;
-	*name = _name;
 }
 
 void parse_named_transition_target(struct named_transition *nt,
