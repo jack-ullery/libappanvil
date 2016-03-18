@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-13 00:11-0700\n"
-"PO-Revision-Date: 2015-07-09 19:44+0000\n"
-"Last-Translator: Christian Boltz <Unknown>\n"
+"PO-Revision-Date: 2015-09-05 20:55+0000\n"
+"Last-Translator: Tobias Bannert <Unknown>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2015-07-10 05:19+0000\n"
-"X-Generator: Launchpad (build 17608)\n"
+"X-Launchpad-Export-Date: 2016-02-02 05:10+0000\n"
+"X-Generator: Launchpad (build 17908)\n"
 "Language: de\n"
 
 #: ../parser_include.c:113
@@ -74,7 +74,7 @@ msgstr "Profil ist nicht vorhanden\n"
 #: ../parser_interface.c:96 ../parser_interface.c:99
 msgid "Permission denied; attempted to load a profile while confined?\n"
 msgstr ""
-"Zugriff verweigert! Haben Sie versucht ein Profil zu laden während Sie "
+"Zugriff verweigert! Haben Sie versucht ein Profil zu laden, während Sie "
 "eingeschränkt waren?\n"
 
 #: ../parser_interface.c:99 ../parser_interface.c:102
@@ -326,9 +326,9 @@ msgid ""
 "Unconfined exec qualifier (%c%c) allows some dangerous environment variables "
 "to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
 msgstr ""
-"Aufgrund uneingeschränkter Exec-Qualifizierer ('%c%c') können einige "
-"gefährliche Umgebungsvariablen an den uneingeschränkten Prozess übergeben "
-"werden. Weitere Details in 'man 5 apparmor.d'.\n"
+"Nicht angebundener exec-Qualifier (%c%c) ermöglicht es einigen gefährlichen "
+"Umgebungsvariablen, an den unangebundenen Prozess übergeben zu werden; "
+"Einzelheiten mit »man 5 apparmor.d«.\n"
 
 #: ../parser_misc.c:510 ../parser_misc.c:551 ../parser_misc.c:681
 #: ../parser_misc.c:722
@@ -503,12 +503,12 @@ msgstr "Ungültige Fähigkeit %s."
 #: parser_yacc.y:1066 parser_yacc.y:1269
 #, c-format
 msgid "AppArmor parser error for %s%s%s at line %d: %s\n"
-msgstr "AppArmor-Parser-Fehler für %s%s%s in Zeile %d: %s\n"
+msgstr "AppArmor-Analysefehler für %s%s%s in Zeile %d: %s\n"
 
 #: parser_yacc.y:1072 parser_yacc.y:1275
 #, c-format
 msgid "AppArmor parser error,%s%s line %d: %s\n"
-msgstr "AppArmor-Parser-Fehler,%s%s Zeile %d: %s\n"
+msgstr "AppArmor-Analysefehler,%s%s Zeile %d: %s\n"
 
 #: ../parser_regex.c:244
 #, c-format
@@ -699,11 +699,14 @@ msgstr "Ungültige pivotroot-Bedingung »%s«"
 msgid ""
 "%s: Regex grouping error: Invalid close ], no matching open [ detected\n"
 msgstr ""
+"%s: Regex-Gruppierungsfehler: Ungültiges schließendes Zeichen ], kein "
+"passendes öffnendes Zeichen [ gefunden\n"
 
 #: ../parser_regex.c:257
 #, c-format
 msgid "%s: Regex grouping error: Exceeded maximum nesting of {}\n"
 msgstr ""
+"%s: Regex-Gruppierungsfehler: maximale Verschachtelung von {} überschritten\n"
 
 #: ../parser_policy.c:366
 #, c-format
