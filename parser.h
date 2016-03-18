@@ -298,6 +298,7 @@ extern int kernel_supports_dbus;
 extern int kernel_supports_signal;
 extern int kernel_supports_ptrace;
 extern int kernel_supports_unix;
+extern int kernel_supports_stacking;
 extern int conf_verbose;
 extern int conf_quiet;
 extern int names_only;
@@ -386,7 +387,8 @@ extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
 extern int parse_X_mode(const char *X, int valid, const char *str_mode, int *mode, int fail);
 bool label_contains_ns(const char *label);
-void parse_label(bool *stack, char **ns, char **name, const char *label);
+bool parse_label(bool *_stack, char **_ns, char **_name,
+		 const char *label, bool yyerr);
 extern struct cod_entry *new_entry(char *id, int mode, char *link_id);
 
 /* returns -1 if value != true or false, otherwise 0 == false, 1 == true */
