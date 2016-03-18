@@ -311,7 +311,7 @@ profile_base: TOK_ID opt_id_or_var flags TOK_OPEN rules TOK_CLOSE
 			yyerror(_("Memory allocation error."));
 		}
 
-		parse_label(&self_stack, &prof->ns, &prof->name, $1);
+		parse_label(&self_stack, &prof->ns, &prof->name, $1, true);
 		free($1);
 
 		if (self_stack) {

@@ -661,8 +661,10 @@ bool label_contains_ns(const char *label)
 	return _parse_label(&stack, &ns, &ns_len, &name, &name_len, label) == 0 && ns;
 }
 
-void parse_label(bool *_stack, char **_ns, char **_name, const char *label)
+bool parse_label(bool *_stack, char **_ns, char **_name,
+		 const char *label, bool yyerr)
 {
+	const char *err = NULL;
 	char *ns = NULL;
 	char *name = NULL;
 	size_t ns_len = 0;
@@ -671,19 +673,28 @@ void parse_label(bool *_stack, char **_ns, char **_name, const char *label)
 
 	res = _parse_label(_stack, &ns, &ns_len, &name, &name_len, label);
 	if (res == 1) {
-		yyerror(_("Namespace not terminated: %s\n"), label);
+		err = _("Namespace not terminated: %s\n");
 	} else if (res == 2) {
-		yyerror(_("Empty namespace: %s\n"), label);
+		err = _("Empty namespace: %s\n");
 	} else if (res == 3) {
-		yyerror(_("Empty named transition profile name: %s\n"), label);
+		err = _("Empty named transition profile name: %s\n");
 	} else if (res != 0) {
-		yyerror(_("Unknown error while parsing label: %s\n"), label);
+		err = _("Unknown error while parsing label: %s\n");
+	}
+
+	if (err) {
+		if (yyerr)
+			yyerror(err, label);
+		else
+			fprintf(stderr, err, label);
+
+		return false;
 	}
 
 	if (ns) {
 		*_ns = strndup(ns, ns_len);
 		if (!*_ns)
-			yyerror(_("Memory allocation error."));
+			goto alloc_fail;
 	} else {
 		*_ns = NULL;
 	}
@@ -691,8 +702,19 @@ void parse_label(bool *_stack, char **_ns, char **_name, const char *label)
 	*_name = strndup(name, name_len);
 	if (!*_name) {
 		free(*_ns);
-		yyerror(_("Memory allocation error."));
+		goto alloc_fail;
 	}
+
+	return true;
+
+alloc_fail:
+	err = _("Memory allocation error.");
+	if (yyerr)
+		yyerror(err);
+	else
+		fprintf(stderr, "%s", err);
+
+	return false;
 }
 
 struct cod_entry *new_entry(char *id, int mode, char *link_id)

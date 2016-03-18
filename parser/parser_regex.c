@@ -566,6 +566,8 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 	if (entry->mode & AA_CHANGE_PROFILE) {
 		const char *vec[3];
 		std::string lbuf, xbuf;
+		autofree char *ns = NULL;
+		autofree char *name = NULL;
 		int index = 1;
 
 		if ((warnflags & WARN_RULE_DOWNGRADED) && entry->audit && warn_change_profile) {
@@ -585,7 +587,27 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 			/* allow change_profile for all execs */
 			vec[0] = "/[^/\\x00][^\\x00]*";
 
-		vec[index++] = tbuf.c_str();
+		if (!kernel_supports_stacking) {
+			bool stack;
+
+			if (!parse_label(&stack, &ns, &name,
+					 tbuf.c_str(), false)) {
+				return FALSE;
+			}
+
+			if (stack) {
+				fprintf(stderr,
+					_("The current kernel does not support stacking of named transitions: %s\n"),
+					tbuf.c_str());
+				return FALSE;
+			}
+
+			if (ns)
+				vec[index++] = ns;
+			vec[index++] = name;
+		} else {
+			vec[index++] = tbuf.c_str();
+		}
 
 		/* regular change_profile rule */
 		if (!dfarules->add_rule_vec(entry->deny, AA_CHANGE_PROFILE | AA_ONEXEC, 0, index - 1, &vec[1], dfaflags))
