@@ -637,6 +637,16 @@ static int _parse_label(char **ns, size_t *ns_len,
 	return 0;
 }
 
+bool label_contains_ns(const char *label)
+{
+	char *ns = NULL;
+	char *name = NULL;
+	size_t ns_len = 0;
+	size_t name_len = 0;
+
+	return _parse_label(&ns, &ns_len, &name, &name_len, label) == 0 && ns;
+}
+
 void parse_label(char **_ns, char **_name, const char *label)
 {
 	char *ns = NULL;
@@ -671,20 +681,7 @@ void parse_label(char **_ns, char **_name, const char *label)
 	}
 }
 
-void parse_named_transition_target(struct named_transition *nt,
-				   const char *target)
-{
-	memset(nt, 0, sizeof(*nt));
-	if (!target) {
-		/* Return with nt->present set to 0 (thanks to the memset) */
-		return;
-	}
-
-	parse_label(&nt->ns, &nt->name, target);
-	nt->present = 1;
-}
-
-struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id)
+struct cod_entry *new_entry(char *id, int mode, char *link_id)
 {
 	struct cod_entry *entry = NULL;
 
@@ -692,7 +689,6 @@ struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id)
 	if (!entry)
 		return NULL;
 
-	entry->ns = ns;
 	entry->name = id;
 	entry->link_name = link_id;
 	entry->mode = mode;
@@ -716,7 +712,6 @@ struct cod_entry *copy_cod_entry(struct cod_entry *orig)
 	if (!entry)
 		return NULL;
 
-	DUP_STRING(orig, entry, ns, err);
 	DUP_STRING(orig, entry, name, err);
 	DUP_STRING(orig, entry, link_name, err);
 	DUP_STRING(orig, entry, nt_name, err);
@@ -743,8 +738,6 @@ void free_cod_entries(struct cod_entry *list)
 		return;
 	if (list->next)
 		free_cod_entries(list->next);
-	if (list->ns)
-		free(list->ns);
 	if (list->name)
 		free(list->name);
 	if (list->link_name)
@@ -796,9 +789,6 @@ void debug_cod_entries(struct cod_entry *list)
 			printf("\tName:\t(%s)\n", item->name);
 		else
 			printf("\tName:\tNULL\n");
-
-		if (item->ns)
-			printf("\tNs:\t(%s)\n", item->ns);
 
 		if (AA_LINK_BITS & item->mode)
 			printf("\tlink:\t(%s)\n", item->link_name ? item->link_name : "/**");

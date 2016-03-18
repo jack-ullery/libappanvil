@@ -32,18 +32,6 @@ static int file_comp(const void *c1, const void *c2)
 	e2 = (struct cod_entry **)c2;
 	int res = 0;
 
-	//PERROR("strcmp %s %s\n", (*e1)->name, (*e2)->name);
-	if ((*e1)->ns) {
-		if ((*e2)->ns)
-			res = strcmp((*e1)->ns, (*e2)->ns);
-		else
-			return 1;
-	} else if ((*e2)->ns) {
-		return -1;
-	}
-	if (res)
-		return res;
-
 	if ((*e1)->link_name) {
 		if ((*e2)->link_name)
 			res = strcmp((*e1)->link_name, (*e2)->link_name);
