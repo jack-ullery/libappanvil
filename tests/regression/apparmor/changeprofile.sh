@@ -84,7 +84,12 @@ genprofile --stdin <<EOF
 $test { file, change_profile -> ${nstest}, }
 $nstest { $subfile ${okperm}, }
 EOF
-runchecktest "CHANGEPROFILE_NS (access sub file)" pass $nstest $subfile
+expected_result=pass
+if [ "$(kernel_features domain/stack)" != "true" ]; then
+	# Fails on older kernels due to namespaces not being well supported
+	expected_result=xpass
+fi
+runchecktest "CHANGEPROFILE_NS (access sub file)" $expected_result $nstest $subfile
 runchecktest "CHANGEPROFILE_NS (access file)" fail $nstest $file
 
 if [ "$(kernel_features domain/stack)" != "true" ]; then
