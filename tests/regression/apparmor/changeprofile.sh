@@ -21,6 +21,7 @@ bin=$pwd
 
 file=$tmpdir/file
 subfile=$tmpdir/file2
+stackfile=$tmpdir/file3
 okperm=rw
 
 othertest="$pwd/rename"
@@ -32,7 +33,7 @@ subtest3="$pwd//sub3"
 nstest=":ns:changeprofile"
 
 
-touch $file $subfile
+touch $file $subfile $stackfile
 
 # CHANGEPROFILE UNCONFINED
 runchecktest "CHANGEPROFILE (unconfined - nochange)" pass nochange $file
@@ -85,3 +86,26 @@ $nstest { $subfile ${okperm}, }
 EOF
 runchecktest "CHANGEPROFILE_NS (access sub file)" pass $nstest $subfile
 runchecktest "CHANGEPROFILE_NS (access file)" fail $nstest $file
+
+if [ "$(kernel_features domain/stack)" != "true" ]; then
+	echo "      WARNING: kernel does not support stacking, skipping tests ..."
+else
+	genprofile $file:$okperm $stackfile:$okperm 'change_profile->':"&$othertest" -- image=$othertest $subfile:$okperm $stackfile:$okperm
+	runchecktest "CHANGEPROFILE_STACK (nochange access file)" pass nochange $file
+	runchecktest "CHANGEPROFILE_STACK (nochange access sub file)" fail nochange $subfile
+	runchecktest "CHANGEPROFILE_STACK (nochange access stack file)" pass nochange $stackfile
+	runchecktest "CHANGEPROFILE_STACK (access sub file)" fail "&$othertest" $subfile
+	runchecktest "CHANGEPROFILE_STACK (access file)" fail "&$othertest" $file
+	runchecktest "CHANGEPROFILE_STACK (access stack file)" pass "&$othertest" $stackfile
+
+	genprofile --stdin <<EOF
+$test { file, audit deny $subfile $okperm, $stackfile $okperm, change_profile -> &${nstest}, }
+$nstest { $subfile $okperm, $stackfile $okperm, }
+EOF
+	runchecktest "CHANGEPROFILE_NS_STACK (nochange access file)" pass nochange $file
+	runchecktest "CHANGEPROFILE_NS_STACK (nochange access sub file)" fail nochange $subfile
+	runchecktest "CHANGEPROFILE_NS_STACK (nochange access stack file)" pass nochange $stackfile
+	runchecktest "CHANGEPROFILE_NS_STACK (access sub file)" fail "&$nstest" $subfile
+	runchecktest "CHANGEPROFILE_NS_STACK (access file)" fail "&$nstest" $file
+	runchecktest "CHANGEPROFILE_NS_STACK (access stack file)" pass "&$nstest" $stackfile
+fi
