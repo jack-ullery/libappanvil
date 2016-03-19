@@ -810,9 +810,6 @@ void debug_cod_entries(struct cod_entry *list)
 	printf("--- Entries ---\n");
 
 	list_for_each(list, item) {
-		if (!item)
-			printf("Item is NULL!\n");
-
 		printf("Mode:\t");
 		if (HAS_CHANGE_PROFILE(item->mode))
 			printf(" change_profile");
