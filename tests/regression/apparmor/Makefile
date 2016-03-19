@@ -190,6 +190,7 @@ TESTS=aa_exec \
       environ \
       exec \
       exec_qual \
+      exec_stack \
       fchdir \
       fd_inheritance \
       fork \
