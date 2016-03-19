@@ -103,6 +103,12 @@ do_test()
     # give the onexec process a chance to run
     sleep 0.05
 
+    # check that task hasn't exited because change_onexec failed
+    if ! [ -d "/proc/${_pid}" ] ; then
+	checktestfg
+	return
+    fi
+
     if ! check_current "${desc}" $_pid $prof ; then
 	checktestfg
 	return
