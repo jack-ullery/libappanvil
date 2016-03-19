@@ -4,7 +4,7 @@
 
 #define SD_ID_MAGIC     0x8c235e38
 
-static inline int do_open (char * file)
+static inline int do_open (const char * file)
 {
 	int fd, rc;
 	char buf[128];
@@ -23,7 +23,7 @@ static inline int do_open (char * file)
         if (rc != strlen(data)){
                 fprintf(stderr, "FAIL: write failed - %s\n",
                         strerror(errno));
-                return errno;
+                return rc == -1 ? errno : EINVAL;
         }
 
         (void)lseek(fd, 0, SEEK_SET);
@@ -32,13 +32,13 @@ static inline int do_open (char * file)
         if (rc != strlen(data)){
                 fprintf(stderr, "FAIL: read failed - %s\n",
                         strerror(errno));
-                return errno;
+                return rc == -1 ? errno : EINVAL;
         }
 
         if (memcmp(buf, data, strlen(data)) != 0){
                 fprintf(stderr, "FAIL: comparison failed - %s\n",
                         strerror(errno));
-                return errno;
+                return EINVAL;
         }
 
 	close(fd);

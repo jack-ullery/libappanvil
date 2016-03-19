@@ -17,14 +17,14 @@ import re
 
 from apparmor.regex import RE_PROFILE_NETWORK
 from apparmor.common import AppArmorBug, AppArmorException, type_is_str
-from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers
+from apparmor.rule import BaseRule, BaseRuleset, logprof_value_or_all, parse_modifiers
 
 # setup module translations
 from apparmor.translations import init_translation
 _ = init_translation()
 
 
-network_domain_keywords   = [ 'unix', 'inet', 'ax25', 'ipx', 'appletalk', 'netrom', 'bridge', 'atmpvc', 'x25', 'inet6',
+network_domain_keywords   = [ 'unspec', 'unix', 'inet', 'ax25', 'ipx', 'appletalk', 'netrom', 'bridge', 'atmpvc', 'x25', 'inet6',
                               'rose', 'netbeui', 'security', 'key', 'netlink', 'packet', 'ash', 'econet', 'atmsvc', 'rds', 'sna',
                               'irda', 'pppox', 'wanpipe', 'llc', 'can', 'tipc', 'bluetooth', 'iucv', 'rxrpc', 'isdn', 'phonet',
                               'ieee802154', 'caif', 'alg', 'nfc', 'vsock', 'mpls', 'ib' ]
@@ -53,6 +53,8 @@ class NetworkRule(BaseRule):
         pass
 
     ALL = __NetworkAll
+
+    rule_name = 'network'
 
     def __init__(self, domain, type_or_protocol, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
@@ -151,23 +153,11 @@ class NetworkRule(BaseRule):
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
 
-        if not other_rule.domain and not other_rule.all_domains:
-            raise AppArmorBug('No domain specified in other network rule')
+        if not self._is_covered_plain(self.domain, self.all_domains, other_rule.domain, other_rule.all_domains, 'domain'):
+            return False
 
-        if not other_rule.type_or_protocol and not other_rule.all_type_or_protocols:
-            raise AppArmorBug('No type or protocol specified in other network rule')
-
-        if not self.all_domains:
-            if other_rule.all_domains:
-                return False
-            if other_rule.domain != self.domain:
-                return False
-
-        if not self.all_type_or_protocols:
-            if other_rule.all_type_or_protocols:
-                return False
-            if other_rule.type_or_protocol != self.type_or_protocol:
-                return False
+        if not self._is_covered_plain(self.type_or_protocol, self.all_type_or_protocols, other_rule.type_or_protocol, other_rule.all_type_or_protocols, 'type or protocol'):
+            return False
 
         # still here? -> then it is covered
         return True
@@ -189,15 +179,8 @@ class NetworkRule(BaseRule):
         return True
 
     def logprof_header_localvars(self):
-        if self.all_domains:
-            family = _('ALL')
-        else:
-            family = self.domain
-
-        if self.all_type_or_protocols:
-            sock_type = _('ALL')
-        else:
-            sock_type = self.type_or_protocol
+        family      = logprof_value_or_all(self.domain,             self.all_domains)
+        sock_type   = logprof_value_or_all(self.type_or_protocol,   self.all_type_or_protocols)
 
         return [
             _('Network Family'), family,

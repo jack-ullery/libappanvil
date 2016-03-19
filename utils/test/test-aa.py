@@ -15,7 +15,8 @@ from common_test import read_file, write_file
 
 import os
 
-from apparmor.aa import (check_for_apparmor, get_interpreter_and_abstraction, create_new_profile,
+import apparmor.aa  # needed to set global vars in some tests
+from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
      get_profile_flags, set_profile_flags, is_skippable_file, is_skippable_dir,
      parse_profile_start, parse_profile_data, separate_vars, store_list_var, write_header,
      var_transform, serialize_parse_profile_start)
@@ -72,6 +73,30 @@ class AaTest_check_for_apparmor(AaTestWithTempdir):
         mounts = write_file(self.tmpdir, 'mounts', self.MOUNTS_WITH_SECURITYFS % self.tmpdir)
         self.assertEqual('%s/security/apparmor' % self.tmpdir, check_for_apparmor(filesystems, mounts))
 
+class AATest_get_output(AATest):
+    tests = [
+        (['./fake_ldd', '/AATest/lib64/libc-2.22.so'],  (0, ['        /AATest/lib64/ld-linux-x86-64.so.2 (0x0000556858473000)', '        linux-vdso.so.1 (0x00007ffe98912000)']     )),
+        (['./fake_ldd', '/tmp/aa-test-foo'],            (0, ['        not a dynamic executable']                                                                                    )),
+        (['./fake_ldd', 'invalid'],                     (1, []                                                                                                                      )),  # stderr is not part of output
+    ]
+    def _run_test(self, params, expected):
+        self.assertEqual(get_output(params), expected)
+
+    def test_get_output_nonexisting(self):
+        with self.assertRaises(AppArmorException):
+            ret, output = get_output(['./_file_/_not_/_found_'])
+
+class AATest_get_reqs(AATest):
+    tests = [
+        ('/AATest/bin/bash',    ['/AATest/lib64/libreadline.so.6', '/AATest/lib64/libtinfo.so.6', '/AATest/lib64/libdl.so.2', '/AATest/lib64/libc.so.6', '/AATest/lib64/ld-linux-x86-64.so.2']),
+        ('/tmp/aa-test-foo',    []),
+    ]
+
+    def _run_test(self, params, expected):
+        apparmor.aa.cfg['settings']['ldd'] = './fake_ldd'
+
+        self.assertEqual(get_reqs(params), expected)
+
 class AaTest_create_new_profile(AATest):
     tests = [
         # file content              expected interpreter    expected abstraction (besides 'base')
@@ -115,6 +140,8 @@ class AaTest_get_interpreter_and_abstraction(AATest):
         ('#!/usr/bin/python3',      ('/usr/bin/python3',    'abstractions/python')),
         ('#!/usr/bin/python4',      ('/usr/bin/python4',    None)),  # python abstraction is only applied to py2 and py3
         ('#!/usr/bin/ruby',         ('/usr/bin/ruby',       'abstractions/ruby')),
+        ('#!/usr/bin/ruby2.2',      ('/usr/bin/ruby2.2',    'abstractions/ruby')),
+        ('#!/usr/bin/ruby1.9.1',    ('/usr/bin/ruby1.9.1',  'abstractions/ruby')),
         ('#!/usr/bin/foobarbaz',    ('/usr/bin/foobarbaz',  None)),  # we don't have an abstraction for "foobarbaz"
         ('foo',                     (None,                  None)),  # no hashbang - not a script
     ]

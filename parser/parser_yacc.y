@@ -71,8 +71,7 @@
 
 int parser_token = 0;
 
-struct cod_entry *do_file_rule(char *ns, char *id, int mode,
-			       char *link_id, char *nt);
+struct cod_entry *do_file_rule(char *id, int mode, char *link_id, char *nt);
 mnt_rule *do_mnt_rule(struct cond_entry *src_conds, char *src,
 		      struct cond_entry *dst_conds, char *dst,
 		      int mode);
@@ -212,7 +211,6 @@ void add_local_entry(Profile *prof);
 	struct cond_entry *cond_entry;
 	struct cond_entry_list cond_entry_list;
 	int boolean;
-	struct named_transition transition;
 	struct prefixes prefix;
 }
 
@@ -258,8 +256,6 @@ void add_local_entry(Profile *prof);
 %type <boolean> opt_profile_flag
 %type <boolean> opt_flags
 %type <boolean> opt_perm_mode
-%type <id>	opt_ns
-%type <id>	ns_id
 %type <id>	opt_id
 %type <prefix>  opt_prefix
 %type <fmode>	dbus_perm
@@ -278,7 +274,8 @@ void add_local_entry(Profile *prof);
 %type <fmode>	net_perms
 %type <fmode>	opt_net_perm
 %type <unix_entry>	unix_rule
-%type <transition> opt_named_transition
+%type <id>	opt_target
+%type <id>	opt_named_transition
 %type <boolean> opt_unsafe
 %type <boolean> opt_file
 %%
@@ -299,11 +296,6 @@ opt_profile_flag: { /* nothing */ $$ = 0; }
 	| TOK_PROFILE { $$ = 1; }
 	| hat_start { $$ = 2; }
 
-ns_id: TOK_COLON id_or_var TOK_COLON { $$ = $2; }
-
-opt_ns: { /* nothing */ $$ = NULL; }
-	| ns_id { $$ = $1; }
-
 opt_id: { /* nothing */ $$ = NULL; }
 	| TOK_ID { $$ = $1; }
 
@@ -313,19 +305,36 @@ opt_id_or_var: { /* nothing */ $$ = NULL; }
 profile_base: TOK_ID opt_id_or_var flags TOK_OPEN rules TOK_CLOSE
 	{
 		Profile *prof = $5;
+		bool self_stack = false;
 
 		if (!prof) {
 			yyerror(_("Memory allocation error."));
 		}
 
+		parse_label(&self_stack, &prof->ns, &prof->name, $1, true);
+		free($1);
+
+		if (self_stack) {
+			yyerror(_("Profile names must begin with a '/' or a namespace"));
+		}
+
 		/* Honor the --namespace-string command line option */
 		if (profile_ns) {
+			/**
+			 * Print warning if the profile specified a namespace
+			 * different than the one specified with the
+			 * --namespace-string command line option
+			 */
+			if (prof->ns && strcmp(prof->ns, profile_ns))
+				pwarn("%s: -n %s overriding policy specified namespace :%s:\n",
+				      progname, profile_ns, prof->ns);
+
+			free(prof->ns);
 			prof->ns = strdup(profile_ns);
 			if (!prof->ns)
 				yyerror(_("Memory allocation error."));
 		}
 
-		prof->name = $1;
 		prof->attachment = $2;
 		if ($2 && !($2[0] == '/' || strncmp($2, "@{", 2) == 0))
 			yyerror(_("Profile attachment must begin with a '/' or variable."));
@@ -347,30 +356,18 @@ profile_base: TOK_ID opt_id_or_var flags TOK_OPEN rules TOK_CLOSE
 
 	};
 
-profile:  opt_profile_flag opt_ns profile_base
+profile:  opt_profile_flag profile_base
 	{
-		Profile *prof = $3;
-		if ($2)
-			PDEBUG("Matched: %s://%s { ... }\n", $2, $3->name);
-		else
-			PDEBUG("Matched: %s { ... }\n", $3->name);
+		Profile *prof = $2;
 
-		if ($3->name[0] != '/' && !($1 || $2))
+		if ($2->ns)
+			PDEBUG("Matched: :%s://%s { ... }\n", $2->ns, $2->name);
+		else
+			PDEBUG("Matched: %s { ... }\n", $2->name);
+
+		if ($2->name[0] != '/' && !($1 || $2->ns))
 			yyerror(_("Profile names must begin with a '/', namespace or keyword 'profile' or 'hat'."));
 
-		if (prof->ns) {
-			/**
-			 * Print warning if the profile specified a namespace
-			 * different than the one specified with the
-			 * --namespace-string command line option
-			 */
-			if ($2 && strcmp(prof->ns, $2)) {
-				pwarn("%s: -n %s overriding policy specified namespace :%s:\n",
-				      progname, prof->ns, $2);
-			}
-			free($2);
-		} else
-			prof->ns = $2;
 		if ($1 == 2)
 			prof->flags.hat = 1;
 		$$ = prof;
@@ -419,14 +416,17 @@ varassign:	TOK_SET_VAR TOK_EQUALS valuelist
 		PDEBUG("Matched: set assignment for (%s)\n", $1);
 		err = new_set_var(var_name, list->value);
 		if (err) {
+			free(var_name);
 			yyerror("variable %s was previously declared", $1);
 			/* FIXME: it'd be handy to report the previous location */
 		}
 		for (list = list->next; list; list = list->next) {
 			err = add_set_value(var_name, list->value);
-			if (err)
+			if (err) {
+				free(var_name);
 				yyerror("Error adding %s to set var %s",
 					list->value, $1);
+			}
 		}
 		free_value_list($3);
 		free(var_name);
@@ -445,13 +445,16 @@ varassign:	TOK_SET_VAR TOK_ADD_ASSIGN valuelist
 		 * failures are indicative of symtab failures */
 		err = add_set_value(var_name, list->value);
 		if (err) {
+			free(var_name);
 			yyerror("variable %s was not previously declared, but is being assigned additional values", $1);
 		}
 		for (list = list->next; list; list = list->next) {
 			err = add_set_value(var_name, list->value);
-			if (err)
+			if (err) {
+				free(var_name);
 				yyerror("Error adding %s to set var %s",
 					list->value, $1);
+			}
 		}
 		free_value_list($3);
 		free(var_name);
@@ -469,11 +472,11 @@ varassign:	TOK_BOOL_VAR TOK_EQUALS TOK_VALUE
 				$1, $3);
 		}
 		err = add_boolean_var(var_name, boolean);
+		free(var_name);
 		if (err) {
 			yyerror("variable %s was previously declared", $1);
 			/* FIXME: it'd be handy to report the previous location */
 		}
-		free(var_name);
 		free($1);
 		free($3);
 	}
@@ -1045,23 +1048,13 @@ expr:	TOK_DEFINED TOK_BOOL_VAR
 id_or_var: TOK_ID { $$ = $1; }
 id_or_var: TOK_SET_VAR { $$ = $1; };
 
-opt_named_transition:
-	{ /* nothing */
-		$$.present = 0;
-		$$.ns = NULL;
-		$$.name = NULL;
-	}
+opt_target: /* nothing */ { $$ = NULL; }
+opt_target: TOK_ARROW id_or_var { $$ = $2; };
+
+opt_named_transition: { /* nothing */ $$ = NULL; }
 	| TOK_ARROW id_or_var
 	{
-		$$.present = 1;
-		$$.ns = NULL;
-		$$.name = $2;
-	}
-	| TOK_ARROW ns_id id_or_var
-	{
-		$$.present = 1;
-		$$.ns = $2;
-		$$.name = $3;
+		$$ = $2;
 	};
 
 rule: file_rule { $$ = $1; }
@@ -1076,23 +1069,24 @@ opt_file: { /* nothing */ $$ = 0; }
 
 frule:	id_or_var file_mode opt_named_transition TOK_END_OF_RULE
 	{
-		$$ = do_file_rule($3.ns, $1, $2, NULL, $3.name);
+		$$ = do_file_rule($1, $2, NULL, $3);
 	};
 
 frule:	file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE
 	{
 		if ($2 && ($1 & ~AA_LINK_BITS))
 			yyerror(_("subset can only be used with link rules."));
-		if ($4.present && ($1 & AA_LINK_BITS) && ($1 & AA_EXEC_BITS))
+		if ($4 && ($1 & AA_LINK_BITS) && ($1 & AA_EXEC_BITS))
 			yyerror(_("link and exec perms conflict on a file rule using ->"));
-		if ($4.present && $4.ns && ($1 & AA_LINK_BITS))
+		if ($4 && label_contains_ns($4) && ($1 & AA_LINK_BITS))
 			yyerror(_("link perms are not allowed on a named profile transition.\n"));
+
 		if (($1 & AA_LINK_BITS)) {
-			$$ = do_file_rule(NULL, $3, $1, $4.name, NULL);
+			$$ = do_file_rule($3, $1, $4, NULL);
 			$$->subset = $2;
 
 		} else {
-			$$ = do_file_rule($4.ns, $3, $1, NULL, $4.name);
+			$$ = do_file_rule($3, $1, NULL, $4);
 		}
  	};
 
@@ -1105,7 +1099,7 @@ file_rule: TOK_FILE TOK_END_OF_RULE
 		perms |= perms << AA_OTHER_SHIFT;
 		if (!path)
 			yyerror(_("Memory allocation error."));
-		$$ = do_file_rule(NULL, path, perms, NULL, NULL);
+		$$ = do_file_rule(path, perms, NULL, NULL);
 	}
 	| opt_file file_rule_tail { $$ = $2; }
 
@@ -1138,7 +1132,7 @@ link_rule: TOK_LINK opt_subset_flag id_or_var TOK_ARROW id_or_var TOK_END_OF_RUL
 	{
 		struct cod_entry *entry;
 		PDEBUG("Matched: link tok_id (%s) -> (%s)\n", $3, $5);
-		entry = new_entry(NULL, $3, AA_LINK_BITS, $5);
+		entry = new_entry($3, AA_LINK_BITS, $5);
 		entry->subset = $2;
 		PDEBUG("rule.entry: link (%s)\n", entry->name);
 		$$ = entry;
@@ -1252,23 +1246,9 @@ mnt_rule: TOK_UMOUNT opt_conds opt_id TOK_END_OF_RULE
 		$$ = do_mnt_rule($2, NULL, NULL, $3, AA_MAY_UMOUNT);
 	}
 
-mnt_rule: TOK_PIVOTROOT opt_conds opt_id opt_named_transition TOK_END_OF_RULE
+mnt_rule: TOK_PIVOTROOT opt_conds opt_id opt_target TOK_END_OF_RULE
 	{
-		char *name = NULL;
-		if ($4.present && $4.ns) {
-			name = (char *) malloc(strlen($4.ns) +
-					       strlen($4.name) + 3);
-			if (!name) {
-				PERROR("Memory allocation error\n");
-				exit(1);
-			}
-			sprintf(name, ":%s:%s", $4.ns, $4.name);
-			free($4.ns);
-			free($4.name);
-		} else if ($4.present)
-			name = $4.name;
-
-		$$ = do_pivot_rule($2, $3, name);
+		$$ = do_pivot_rule($2, $3, $4);
 	}
 
 dbus_perm: TOK_VALUE
@@ -1502,27 +1482,24 @@ change_profile_head: TOK_CHANGE_PROFILE opt_id
 		$$ = $2;
 	}
 
-change_profile: change_profile_head TOK_END_OF_RULE
+change_profile: change_profile_head opt_named_transition TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
-		char *rule = strdup("**");
-		if (!rule)
-			yyerror(_("Memory allocation error."));
-		PDEBUG("Matched change_profile,\n");
-		entry = new_entry(NULL, rule, AA_CHANGE_PROFILE, $1);
-		if (!entry)
-			yyerror(_("Memory allocation error."));
-		PDEBUG("change_profile,\n");
-		$$ = entry;
-	};
 
-change_profile:	change_profile_head TOK_ARROW opt_ns TOK_ID TOK_END_OF_RULE
-	{
-		struct cod_entry *entry;
-		PDEBUG("Matched change_profile: tok_id (:%s://%s)\n", $3 ? $3 : "", $4);
-		entry = new_entry($3, $4, AA_CHANGE_PROFILE, $1);
+		if ($2) {
+			PDEBUG("Matched change_profile: tok_id (%s)\n", $2);
+			entry = new_entry($2, AA_CHANGE_PROFILE, $1);
+		} else {
+			char *rule = strdup("**");
+			if (!rule)
+				yyerror(_("Memory allocation error."));
+
+			PDEBUG("Matched change_profile,\n");
+			entry = new_entry(rule, AA_CHANGE_PROFILE, $1);
+		}
 		if (!entry)
 			yyerror(_("Memory allocation error."));
+
 		PDEBUG("change_profile.entry: (%s)\n", entry->name);
 		$$ = entry;
 	};
@@ -1589,12 +1566,11 @@ void yyerror(const char *msg, ...)
 	exit(1);
 }
 
-struct cod_entry *do_file_rule(char *ns, char *id, int mode,
-			       char *link_id, char *nt)
+struct cod_entry *do_file_rule(char *id, int mode, char *link_id, char *nt)
 {
 		struct cod_entry *entry;
 		PDEBUG("Matched: tok_id (%s) tok_mode (0x%x)\n", id, mode);
-		entry = new_entry(ns, id, mode, link_id);
+		entry = new_entry(id, mode, link_id);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		entry->nt_name = nt;
@@ -1617,7 +1593,7 @@ void add_local_entry(Profile *prof)
 			yyerror(_("Memory allocation error."));
 		sprintf(name, "%s//%s", prof->parent->name, prof->name);
 
-		entry = new_entry(NULL, name, prof->local_mode, NULL);
+		entry = new_entry(name, prof->local_mode, NULL);
 		entry->audit = prof->local_audit;
 		entry->nt_name = trans;
 		if (!entry)

@@ -4,11 +4,31 @@
 /usr/bin/a/simple/cleanprof/test/profile {
 	# Just for the heck of it, this comment wont see the day of light
 	#include <abstractions/base>
+
+    capability sys_admin,
+    audit capability,
+
+    change_profile -> /bin/foo,
+    change_profile,
+
+    network inet stream,
+    network stream,
+
 	#Below rule comes from abstractions/base
 	allow /usr/share/X11/locale/**  r,
 	allow /home/*/** r,
 
+    ptrace tracedby peer=/bin/strace,
+    ptrace tracedby,
     unix (receive) type=dgram,
+
+    set rlimit nofile <= 256,
+    set rlimit nofile <= 64,
+
+    signal set=(hup int quit ill trap abrt)
+             set=(bus,fpe,,,kill,usr1)
+                      set=segv set=usr2 set=pipe set=alrm set=term set=stkflt set=chld,
+    signal set=(hup int quit),
 
     ^foo {
             /etc/fstab r,

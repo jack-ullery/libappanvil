@@ -66,13 +66,6 @@ struct prefixes {
 	int owner;
 };
 
-
-struct named_transition {
-	int present;
-	char *ns;
-	char *name;
-};
-
 struct cod_pattern {
 	char *regex;		// posix regex
 };
@@ -98,7 +91,6 @@ struct cond_entry_list {
 };
 
 struct cod_entry {
-	char *ns;
 	char *name;
 	union {
 		char *link_name;
@@ -306,6 +298,7 @@ extern int kernel_supports_dbus;
 extern int kernel_supports_signal;
 extern int kernel_supports_ptrace;
 extern int kernel_supports_unix;
+extern int kernel_supports_stacking;
 extern int conf_verbose;
 extern int conf_quiet;
 extern int names_only;
@@ -393,7 +386,10 @@ extern int get_rlimit(const char *name);
 extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
 extern int parse_X_mode(const char *X, int valid, const char *str_mode, int *mode, int fail);
-extern struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id);
+bool label_contains_ns(const char *label);
+bool parse_label(bool *_stack, char **_ns, char **_name,
+		 const char *label, bool yyerr);
+extern struct cod_entry *new_entry(char *id, int mode, char *link_id);
 
 /* returns -1 if value != true or false, otherwise 0 == false, 1 == true */
 extern int str_to_boolean(const char* str);

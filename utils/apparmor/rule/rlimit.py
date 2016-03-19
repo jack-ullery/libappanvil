@@ -46,6 +46,8 @@ class RlimitRule(BaseRule):
 
     ALL = __RlimitAll
 
+    rule_name = 'rlimit'
+
     def __init__(self, rlimit, value, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
@@ -201,14 +203,11 @@ class RlimitRule(BaseRule):
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
 
-        if not other_rule.rlimit:
-            raise AppArmorBug('No rlimit specified in other rlimit rule')
+        if not self._is_covered_plain(self.rlimit, False, other_rule.rlimit, False, 'rlimit'):  # rlimit can't be ALL, therefore using False
+            return False
 
         if not other_rule.value and not other_rule.all_values:
             raise AppArmorBug('No target profile specified in other rlimit rule')
-
-        if other_rule.rlimit != self.rlimit:
-            return False
 
         if not self.all_values:
             if other_rule.all_values:

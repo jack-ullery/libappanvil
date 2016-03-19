@@ -638,6 +638,8 @@ static void set_supported_features(void)
 						       "policy/set_load");
 	kernel_supports_diff_encode = aa_features_supports(features,
 							   "policy/diff_encode");
+	kernel_supports_stacking = aa_features_supports(features,
+							"domain/stack");
 
 	if (aa_features_supports(features, "policy/versions/v7"))
 		kernel_abi_version = 7;

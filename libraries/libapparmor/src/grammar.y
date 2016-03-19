@@ -425,7 +425,6 @@ _parse_yacc(char *str)
 	/* yydebug = 1;  */
 	YY_BUFFER_STATE lex_buf;
 	yyscan_t scanner;
-	int parser_return;
 
 	ret_record = NULL;
 	ret_record = malloc(sizeof(aa_log_record));
@@ -441,7 +440,8 @@ _parse_yacc(char *str)
 
 	aalogparse_lex_init(&scanner);
 	lex_buf = aalogparse__scan_string(str, scanner);
-	parser_return = aalogparse_parse(scanner);
+	/* Ignore return value to return an AA_RECORD_INVALID event */
+	(void)aalogparse_parse(scanner);
 	aalogparse__delete_buffer(lex_buf, scanner);
 	aalogparse_lex_destroy(scanner);
 	return ret_record;

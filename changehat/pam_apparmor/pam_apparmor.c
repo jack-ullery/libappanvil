@@ -111,6 +111,7 @@ int pam_sm_open_session(pam_handle_t *pamh, int flags,
 					  sizeof(magic_token));
 		if (retval < 0) {
 			pam_syslog(pamh, LOG_ERR, "Can't read from /dev/urandom\n");
+			close(fd);
 			return PAM_PERM_DENIED;
 		}
 	} while ((magic_token == 0) || (retval != sizeof(magic_token)));

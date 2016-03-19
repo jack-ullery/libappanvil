@@ -196,6 +196,27 @@ $ ./stress.sh
 
 (see stress.sh -h for options)
 
+Coverity Support
+----------------
+Coverity scans are available to AppArmor developers at
+https://scan.coverity.com/projects/apparmor.
+
+In order to submit a Coverity build for analysis, the cov-build binary
+must be discoverable from your PATH. See the "To Setup" section of
+https://scan.coverity.com/download?tab=cxx to obtain a pre-built copy of
+cov-build.
+
+To generate a compressed tarball of an intermediate Coverity directory:
+$ make coverity
+
+The compressed tarball is written to
+apparmor-<SNAPSHOT_VERSION>-cov-int.tar.gz, where <SNAPSHOT_VERSION>
+is something like 2.10.90~3328, and must be uploaded to
+https://scan.coverity.com/projects/apparmor/builds/new for analysis. You must
+include the snapshot version in Coverity's project build submission form, in
+the "Project Version" field, so that it is quickly obvious to all AppArmor
+developers what snapshot of the AppArmor repository was used for the analysis.
+
 -----------------------------------------------
 Building and Installing AppArmor Kernel Patches
 -----------------------------------------------

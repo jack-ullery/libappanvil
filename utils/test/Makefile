@@ -62,10 +62,10 @@ clean:
 	rm -rf __pycache__/ .coverage htmlcov
 
 check: __libapparmor
-	export PYTHONPATH=$(PYTHONPATH) ; export LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) ; $(foreach test, $(wildcard test-*.py), $(call pyalldo, $(test)))
+	export PYTHONPATH=$(PYTHONPATH) ; export LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) ; $(foreach test, $(wildcard test-*.py), echo ; echo === $(test) === ; $(call pyalldo, $(test)))
 
 .coverage: $(wildcard ../aa-* ../apparmor/*.py test-*.py) __libapparmor
-	export PYTHONPATH=$(PYTHONPATH) ; export LD_LIBRARY_PATH=$(LD_LIBRARY_PATH); $(COVERAGE_IGNORE_FAILURES_CMD) ; $(foreach test, $(wildcard test-*.py), $(PYTHON) -m coverage run --branch -p $(test); )
+	export PYTHONPATH=$(PYTHONPATH) ; export LD_LIBRARY_PATH=$(LD_LIBRARY_PATH); $(COVERAGE_IGNORE_FAILURES_CMD) ; $(foreach test, $(wildcard test-*.py), echo ; echo === $(test) === ; $(PYTHON) -m coverage run --branch -p $(test); )
 	$(PYTHON) -m coverage combine
 
 coverage: .coverage

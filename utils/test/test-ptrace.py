@@ -54,9 +54,11 @@ class PtraceTestParse(PtraceTest):
         ('deny ptrace read, # cmt'              , exp(False, False, True , ' # cmt',  {'read'},     False, None,           True     )),
         ('audit allow ptrace,'                  , exp(True , True , False, '',        None  ,       True , None,           True     )),
         ('ptrace peer=unconfined,'              , exp(False, False, False, '',        None  ,       True , 'unconfined',   False    )),
+        ('ptrace peer="unconfined",'            , exp(False, False, False, '',        None  ,       True , 'unconfined',   False    )),
         ('ptrace read,'                         , exp(False, False, False, '',        {'read'},     False, None,           True     )),
         ('ptrace peer=/foo,'                    , exp(False, False, False, '',        None  ,       True , '/foo',         False    )),
         ('ptrace r peer=/foo,'                  , exp(False, False, False, '',        {'r'},        False, '/foo',         False    )),
+        ('ptrace r peer="/foo bar",'            , exp(False, False, False, '',        {'r'},        False, '/foo bar',     False    )),
     ]
 
     def _run_test(self, rawrule, expected):
@@ -379,6 +381,37 @@ class PtraceCoveredTest_07(PtraceCoveredTest):
         ('audit deny ptrace read,'              , [ False   , False         , False     , False     ]),
         ('deny ptrace read,'                    , [ False   , False         , False     , False     ]),
     ]
+
+class PtraceCoveredTest_08(PtraceCoveredTest):
+    rule = 'ptrace (trace, tracedby) peer=/foo/*,'
+
+    tests = [
+        #   rule                                  equal     strict equal    covered     covered exact
+        ('ptrace,'                              , [ False   , False         , False     , False     ]),
+        ('ptrace trace,'                        , [ False   , False         , False     , False     ]),
+        ('ptrace (tracedby, trace),'            , [ False   , False         , False     , False     ]),
+        ('ptrace trace peer=/foo/bar,'          , [ False   , False         , True      , True      ]),
+        ('ptrace (tracedby trace) peer=/foo/bar,',[ False   , False         , True      , True      ]),
+        ('ptrace (tracedby, trace) peer=/foo/*,', [ True    , False         , True      , True      ]),
+        ('ptrace tracedby peer=/foo/bar,'       , [ False   , False         , True      , True      ]),
+        ('ptrace trace peer=/foo/*,'            , [ False   , False         , True      , True      ]),
+        ('ptrace trace peer=/**,'               , [ False   , False         , False     , False     ]),
+        ('ptrace trace peer=/what/*,'           , [ False   , False         , False     , False     ]),
+        ('ptrace peer=/foo/bar,'                , [ False   , False         , False     , False     ]),
+        ('ptrace trace, # comment'              , [ False   , False         , False     , False     ]),
+        ('allow ptrace trace,'                  , [ False   , False         , False     , False     ]),
+        ('allow ptrace trace peer=/foo/bar,'    , [ False   , False         , True      , True      ]),
+        ('ptrace    trace,'                     , [ False   , False         , False     , False     ]),
+        ('ptrace    trace peer=/foo/bar,'       , [ False   , False         , True      , True      ]),
+        ('ptrace    trace peer=/what/ever,'     , [ False   , False         , False     , False     ]),
+        ('audit ptrace trace peer=/foo/bar,'    , [ False   , False         , False     , False     ]),
+        ('audit ptrace,'                        , [ False   , False         , False     , False     ]),
+        ('ptrace tracedby,'                     , [ False   , False         , False     , False     ]),
+        ('audit deny ptrace trace,'             , [ False   , False         , False     , False     ]),
+        ('deny ptrace trace,'                   , [ False   , False         , False     , False     ]),
+    ]
+
+
 
 class PtraceCoveredTest_Invalid(AATest):
     def test_borked_obj_is_covered_1(self):

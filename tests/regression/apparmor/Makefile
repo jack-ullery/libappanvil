@@ -159,16 +159,26 @@ endif
 ifdef USE_SYSTEM
   ifneq (,$(shell pkg-config --atleast-version 2.10 libapparmor && echo TRUE))
     SRC+=aa_policy_cache.c
-    AA_POLICY_CACHE_TEST=aa_policy_cache
+    CONDITIONAL_TESTS+=aa_policy_cache
   else
     $(warning ${nl}\
     ************************************************************************${nl}\
     Skipping aa_policy_cache tests: requires libapparmor 2.10 or newer ...${nl}\
     ************************************************************************${nl})
   endif
+
+  ifneq (,$(shell pkg-config --atleast-version 2.11 libapparmor && echo TRUE))
+    SRC+=stacking.c
+    CONDITIONAL_TESTS+=exec_stack stackonexec stackprofile
+  else
+    $(warning ${nl}\
+    ************************************************************************${nl}\
+    Skipping stacking tests: requires libapparmor 2.11 or newer ...${nl}\
+    ************************************************************************${nl})
+  endif
 else
-  SRC+=aa_policy_cache.c
-  AA_POLICY_CACHE_TEST=aa_policy_cache
+  SRC+=aa_policy_cache.c stacking.c
+  CONDITIONAL_TESTS+=exec_stack aa_policy_cache stackonexec stackprofile
 endif
 
 EXEC=$(SRC:%.c=%)
@@ -200,6 +210,7 @@ TESTS=aa_exec \
       mount \
       mult_mount \
       named_pipe \
+      namespaces \
       net_raw \
       open \
       openat \
@@ -232,7 +243,7 @@ ifneq (,$(shell pkg-config --exists dbus-1 && echo TRUE))
 TESTS+=dbus_eavesdrop dbus_message dbus_service dbus_unrequested_reply
 endif
 
-TESTS+=$(AA_POLICY_CACHE_TEST)
+TESTS+=$(CONDITIONAL_TESTS)
 
 # Tests that can crash the kernel should be placed here
 RISKY_TESTS=

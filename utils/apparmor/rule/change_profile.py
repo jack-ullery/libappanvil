@@ -15,7 +15,7 @@
 
 from apparmor.regex import RE_PROFILE_CHANGE_PROFILE, strip_quotes
 from apparmor.common import AppArmorBug, AppArmorException, type_is_str
-from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers, quote_if_needed
+from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers, logprof_value_or_all, quote_if_needed
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -31,6 +31,8 @@ class ChangeProfileRule(BaseRule):
         pass
 
     ALL = __ChangeProfileAll
+
+    rule_name = 'change_profile'
 
     def __init__(self, execcond, targetprofile, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
@@ -121,24 +123,12 @@ class ChangeProfileRule(BaseRule):
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
 
-        if not other_rule.execcond and not other_rule.all_execconds:
-            raise AppArmorBug('No execcond specified in other change_profile rule')
+        if not self._is_covered_plain(self.execcond, self.all_execconds, other_rule.execcond, other_rule.all_execconds, 'exec condition'):
+            # TODO: honor globbing and variables
+            return False
 
-        if not other_rule.targetprofile and not other_rule.all_targetprofiles:
-            raise AppArmorBug('No target profile specified in other change_profile rule')
-
-        if not self.all_execconds:
-            if other_rule.all_execconds:
-                return False
-            if other_rule.execcond != self.execcond:
-                # TODO: honor globbing and variables
-                return False
-
-        if not self.all_targetprofiles:
-            if other_rule.all_targetprofiles:
-                return False
-            if other_rule.targetprofile != self.targetprofile:
-                return False
+        if not self._is_covered_plain(self.targetprofile, self.all_targetprofiles, other_rule.targetprofile, other_rule.all_targetprofiles, 'target profile'):
+            return False
 
         # still here? -> then it is covered
         return True
@@ -160,15 +150,8 @@ class ChangeProfileRule(BaseRule):
         return True
 
     def logprof_header_localvars(self):
-        if self.all_execconds:
-            execcond_txt = _('ALL')
-        else:
-            execcond_txt = self.execcond
-
-        if self.all_targetprofiles:
-            targetprofiles_txt = _('ALL')
-        else:
-            targetprofiles_txt = self.targetprofile
+        execcond_txt        = logprof_value_or_all(self.execcond,       self.all_execconds)
+        targetprofiles_txt  = logprof_value_or_all(self.targetprofile,  self.all_targetprofiles)
 
         return [
             _('Exec Condition'), execcond_txt,

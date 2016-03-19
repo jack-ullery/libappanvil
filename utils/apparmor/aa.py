@@ -332,29 +332,23 @@ def head(file):
         raise AppArmorException(_('Unable to read first line from %s: File Not Found') % file)
 
 def get_output(params):
-    """Returns the return code output by running the program with the args given in the list"""
-    program = params[0]
-    # args = params[1:]
-    ret = -1
-    output = []
-    # program is executable
-    if os.access(program, os.X_OK):
-        try:
-            # Get the output of the program
-            output = subprocess.check_output(params)
-        except OSError as e:
-            raise AppArmorException(_("Unable to fork: %(program)s\n\t%(error)s") % { 'program': program, 'error': str(e) })
-            # If exit-codes besides 0
-        except subprocess.CalledProcessError as e:
-            output = e.output
-            output = output.decode('utf-8').split('\n')
-            ret = e.returncode
-        else:
-            ret = 0
-            output = output.decode('utf-8').split('\n')
+    '''Runs the program with the given args and returns the return code and stdout (as list of lines)'''
+    try:
+        # Get the output of the program
+        output = subprocess.check_output(params)
+        ret = 0
+    except OSError as e:
+        raise AppArmorException(_("Unable to fork: %(program)s\n\t%(error)s") % { 'program': params[0], 'error': str(e) })
+    except subprocess.CalledProcessError as e:  # If exit code != 0
+        output = e.output
+        ret = e.returncode
+
+    output = output.decode('utf-8').split('\n')
+
     # Remove the extra empty string caused due to \n if present
-    if len(output) > 1:
+    if output[len(output) - 1] == '':
         output.pop()
+
     return (ret, output)
 
 def get_reqs(file):
@@ -391,6 +385,7 @@ def handle_binfmt(profile, path):
     reqs = get_reqs(path)
     while reqs:
         library = reqs.pop()
+        library = get_full_path(library)  # resolve symlinks
         if not reqs_processed.get(library, False):
             if get_reqs(library):
                 reqs += get_reqs(library)
@@ -435,7 +430,7 @@ def get_interpreter_and_abstraction(exec_target):
         abstraction = 'abstractions/perl'
     elif re.search('^python([23]|[23]\.[0-9]+)?$', interpreter):
         abstraction = 'abstractions/python'
-    elif interpreter == 'ruby':
+    elif re.search('^ruby([0-9]+(\.[0-9]+)*)?$', interpreter):
         abstraction = 'abstractions/ruby'
     else:
         abstraction = None
@@ -638,8 +633,6 @@ def activate_repo_profiles(url, profiles, complain):
 def autodep(bin_name, pname=''):
     bin_full = None
     global repo_cfg
-    if not bin_name and pname.startswith('/'):
-        bin_name = pname
     if not repo_cfg and not cfg['repository'].get('url', False):
         repo_conf = apparmor.config.Config('shell', CONFDIR)
         repo_cfg = repo_conf.read_config('repository.conf')
@@ -1179,8 +1172,9 @@ def handle_children(profile, hat, root):
 
                 if mode & str_to_mode('x'):
                     if os.path.isdir(exec_target):
-                        mode = mode - apparmor.aamode.ALL_AA_EXEC_TYPE
-                        mode = mode | str_to_mode('ix')
+                        raise AppArmorBug('exec permissions requested for directory %s. This should not happen - please open a bugreport!' % exec_target)
+                    elif typ != 'exec':
+                        raise AppArmorBug('exec permissions requested for %(exec_target)s, but mode is %(mode)s instead of exec. This should not happen - please open a bugreport!' % {'exec_target': exec_target, 'mode':mode})
                     else:
                         do_execute = True
 
@@ -1598,7 +1592,6 @@ def order_globs(globs, path):
 def ask_the_questions():
     found = 0
     global seen_events
-    log_obj = hasher()
     for aamode in sorted(log_dict.keys()):
         # Describe the type of changes
         if aamode == 'PERMITTING':
@@ -1622,35 +1615,9 @@ def ask_the_questions():
                 hats = [profile] + hats
 
             for hat in hats:
-                log_obj[profile][hat] = profile_storage(profile, hat, 'ask_the_questions()')
-
-                for capability in sorted(log_dict[aamode][profile][hat]['capability'].keys()):
-                    capability_obj = CapabilityRule(capability, log_event=aamode)
-                    log_obj[profile][hat]['capability'].add(capability_obj)
-
-                for family in sorted(log_dict[aamode][profile][hat]['netdomain'].keys()):
-                    for sock_type in sorted(log_dict[aamode][profile][hat]['netdomain'][family].keys()):
-                        network_obj = NetworkRule(family, sock_type, log_event=aamode)
-                        log_obj[profile][hat]['network'].add(network_obj)
-
-
-                for peer in sorted(log_dict[aamode][profile][hat]['ptrace'].keys()):
-                    for access in sorted(log_dict[aamode][profile][hat]['ptrace'][peer].keys()):
-                        ptrace_obj = PtraceRule(access, peer, log_event=aamode)
-                        log_obj[profile][hat]['ptrace'].add(ptrace_obj)
-
-                for peer in sorted(log_dict[aamode][profile][hat]['signal'].keys()):
-                    for access in sorted(log_dict[aamode][profile][hat]['signal'][peer].keys()):
-                        for signal in sorted(log_dict[aamode][profile][hat]['signal'][peer][access].keys()):
-                            signal_obj = SignalRule(access, signal, peer, log_event=aamode)
-                            log_obj[profile][hat]['signal'].add(signal_obj)
-
                 for ruletype in ruletypes:
-                    # XXX aa-mergeprof also has this code - if you change it, keep aa-mergeprof in sync!
-                    for rule_obj in log_obj[profile][hat][ruletype].rules:
-
-                        if rule_obj.log_event != aamode:  # XXX does it really make sense to handle enforce and complain mode changes in different rounds?
-                            continue
+                    for rule_obj in log_dict[aamode][profile][hat][ruletype].rules:
+                        # XXX aa-mergeprof also has this code - if you change it, keep aa-mergeprof in sync!
 
                         if is_known_rule(aa[profile][hat], ruletype, rule_obj):
                             continue
@@ -1741,8 +1708,8 @@ def ask_the_questions():
                     # END of code (mostly) shared with aa-mergeprof
 
                 # Process all the path entries.
-                for path in sorted(log_dict[aamode][profile][hat]['path'].keys()):
-                    mode = log_dict[aamode][profile][hat]['path'][path]
+                for path in sorted(log_dict[aamode][profile][hat]['allow']['path'].keys()):
+                    mode = log_dict[aamode][profile][hat]['allow']['path'][path]
                     # Lookup modes from profile
                     allow_mode = set()
                     allow_audit = set()
@@ -2320,7 +2287,12 @@ def save_profiles():
                         oldprofile = aa[which][which]['filename']
                     else:
                         oldprofile = get_profile_filename(which)
-                    newprofile = serialize_profile_from_old_profile(aa[which], which, '')
+
+                    try:
+                        newprofile = serialize_profile_from_old_profile(aa[which], which, '')
+                    except AttributeError:
+                        # see https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/1528139
+                        newprofile = "###\n###\n### Internal error while generating diff, please use '%s' instead\n###\n###\n" % _('View Changes b/w (C)lean profiles')
 
                     display_changes_with_comments(oldprofile, newprofile)
 
@@ -2437,6 +2409,8 @@ def collapse_log():
         for profile in prelog[aamode].keys():
             for hat in prelog[aamode][profile].keys():
 
+                log_dict[aamode][profile][hat] = profile_storage(profile, hat, 'collapse_log()')
+
                 for path in prelog[aamode][profile][hat]['path'].keys():
                     mode = prelog[aamode][profile][hat]['path'][path]
 
@@ -2453,35 +2427,37 @@ def collapse_log():
                     combinedmode |= match_prof_incs_to_path(aa[profile][hat], 'allow', path)[0]
 
                     if not combinedmode or not mode_contains(combinedmode, mode):
-                        if log_dict[aamode][profile][hat]['path'].get(path, False):
-                            mode |= log_dict[aamode][profile][hat]['path'][path]
+                        if log_dict[aamode][profile][hat]['allow']['path'].get(path, False):
+                            mode |= log_dict[aamode][profile][hat]['allow']['path'][path]
 
-                        log_dict[aamode][profile][hat]['path'][path] = mode
+                        log_dict[aamode][profile][hat]['allow']['path'][path] = mode
 
                 for cap in prelog[aamode][profile][hat]['capability'].keys():
-                    # If capability not already in profile
-                    # XXX remove first check when we have proper profile initialisation
-                    if aa[profile][hat].get('capability', False) and not aa[profile][hat]['capability'].is_covered(CapabilityRule(cap, log_event=True)):
-                        log_dict[aamode][profile][hat]['capability'][cap] = True
+                    cap_event = CapabilityRule(cap, log_event=True)
+                    if not is_known_rule(aa[profile][hat], 'capability', cap_event):
+                        log_dict[aamode][profile][hat]['capability'].add(cap_event)
 
                 nd = prelog[aamode][profile][hat]['netdomain']
                 for family in nd.keys():
                     for sock_type in nd[family].keys():
-                        if not is_known_rule(aa[profile][hat], 'network', NetworkRule(family, sock_type, log_event=True)):
-                            log_dict[aamode][profile][hat]['netdomain'][family][sock_type] = True
+                        net_event = NetworkRule(family, sock_type, log_event=True)
+                        if not is_known_rule(aa[profile][hat], 'network', net_event):
+                            log_dict[aamode][profile][hat]['network'].add(net_event)
 
                 ptrace = prelog[aamode][profile][hat]['ptrace']
                 for peer in ptrace.keys():
                     for access in ptrace[peer].keys():
-                        if not is_known_rule(aa[profile][hat], 'ptrace', PtraceRule(access, peer, log_event=True)):
-                            log_dict[aamode][profile][hat]['ptrace'][peer][access] = True
+                        ptrace_event = PtraceRule(access, peer, log_event=True)
+                        if not is_known_rule(aa[profile][hat], 'ptrace', ptrace_event):
+                            log_dict[aamode][profile][hat]['ptrace'].add(ptrace_event)
 
                 sig = prelog[aamode][profile][hat]['signal']
                 for peer in sig.keys():
                     for access in sig[peer].keys():
                         for signal in sig[peer][access].keys():
-                            if not is_known_rule(aa[profile][hat], 'signal', SignalRule(access, signal, peer, log_event=True)):
-                                log_dict[aamode][profile][hat]['signal'][peer][access][signal] = True
+                            signal_event = SignalRule(access, signal, peer, log_event=True)
+                            if not is_known_rule(aa[profile][hat], 'signal', signal_event):
+                                log_dict[aamode][profile][hat]['signal'].add(signal_event)
 
 
 PROFILE_MODE_RE      = re.compile('^(r|w|l|m|k|a|ix|ux|px|pux|cx|pix|cix|cux|Ux|Px|PUx|Cx|Pix|Cix|CUx)+$')
@@ -3071,7 +3047,7 @@ def parse_profile_data(data, file, do_include):
             else:
                 lastline = line
         else:
-            raise AppArmorException(_('Syntax Error: Unknown line found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
+            raise AppArmorException(_('Syntax Error: Unknown line found in file %(file)s line %(lineno)s:\n    %(line)s') % { 'file': file, 'lineno': lineno + 1, 'line': line })
 
     # Below is not required I'd say
     if not do_include:
@@ -3590,6 +3566,11 @@ def serialize_profile_from_old_profile(profile_data, name, options):
     write_filelist = deepcopy(filelist[prof_filename])
     write_prof_data = deepcopy(profile_data)
 
+    # XXX profile_data / write_prof_data contain only one profile with its hats
+    # XXX this will explode if a file contains multiple profiles, see https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/1528139
+    # XXX fixing this needs lots of write_prof_data[hat] -> write_prof_data[profile][hat] changes (and of course also a change in the calling code)
+    # XXX (the better option is a full rewrite of serialize_profile_from_old_profile())
+
     if options:  # and type(options) == dict:
         if options.get('METADATA', False):
             include_metadata = True
@@ -3691,7 +3672,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
             if RE_PROFILE_START.search(line):
 
                 (profile, hat, attachment, flags, in_contained_hat, correct) = serialize_parse_profile_start(
-                        line, prof_filename, None, profile, hat, write_prof_data[profile][hat]['profile'], write_prof_data[profile][hat]['external'], correct)
+                        line, prof_filename, None, profile, hat, write_prof_data[hat]['profile'], write_prof_data[hat]['external'], correct)
 
                 if not write_prof_data[hat]['name'] == profile:
                     correct = False
@@ -3927,7 +3908,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 if matches[0]:
                     audit = mode
 
-                path_rule = write_prof_data[profile][hat][allow]['path'][ALL]
+                path_rule = write_prof_data[hat][allow]['path'][ALL]
                 if path_rule.get('mode', set()) & mode and \
                    (not audit or path_rule.get('audit', set()) & audit) and \
                    path_rule.get('file_prefix', set()):
@@ -4073,7 +4054,11 @@ def write_profile(profile):
 
     os.rename(newprof.name, prof_filename)
 
-    changed.pop(profile)
+    if profile in changed:
+        changed.pop(profile)
+    else:
+        debug_logger.info("Unchanged profile written: %s (not listed in 'changed' list)" % profile)
+
     original_aa[profile] = deepcopy(aa[profile])
 
 def matchliteral(aa_regexp, literal):
@@ -4252,29 +4237,6 @@ def match_prof_incs_to_path(frag, allow, path):
 
     return combinedmode, combinedaudit, matches
 
-def suggest_incs_for_path(incname, path, allow):
-    combinedmode = set()
-    combinedaudit = set()
-    matches = []
-
-    includelist = [incname]
-    while includelist:
-        inc = includelist.pop(0)
-        cm, am, m = rematchfrag(include[inc][inc], 'allow', path)
-        if cm:
-            combinedmode |= cm
-            combinedaudit |= am
-            matches += m
-
-        if include[inc][inc]['allow']['path'].get(path, False):
-            combinedmode |= include[inc][inc]['allow']['path'][path]['mode']
-            combinedaudit |= include[inc][inc]['allow']['path'][path]['audit']
-
-        if include[inc][inc]['include'].keys():
-            includelist += include[inc][inc]['include'].keys()
-
-    return combinedmode, combinedaudit, matches
-
 def check_qualifiers(program):
     if cfg['qualifiers'].get(program, False):
         if cfg['qualifiers'][program] != 'p':
@@ -4329,12 +4291,6 @@ def combine_name(name1, name2):
     else:
         return '%s^%s' % (name1, name2)
 
-def split_name(name):
-    names = name.split('^')
-    if len(names) == 1:
-        return name, name
-    else:
-        return names[0], names[1]
 def commonprefix(new, old):
     match = re.search(r'^([^\0]*)[^\0]*(\0\1[^\0]*)*$', '\0'.join([new, old]))
     if match:

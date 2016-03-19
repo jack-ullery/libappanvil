@@ -121,7 +121,7 @@ pattern_t convert_aaregex_to_pcre(const char *aare, int anchor, int glob,
 	BOOL bEscape = 0;	/* flag to indicate escape */
 	int ingrouping = 0;	/* flag to indicate {} context */
 	int incharclass = 0;	/* flag to indicate [ ] context */
-	int grouping_count[MAX_ALT_DEPTH];
+	int grouping_count[MAX_ALT_DEPTH] = {0};
 
 	error = e_no_error;
 	ptype = ePatternBasic;	/* assume no regex */
@@ -566,6 +566,8 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 	if (entry->mode & AA_CHANGE_PROFILE) {
 		const char *vec[3];
 		std::string lbuf, xbuf;
+		autofree char *ns = NULL;
+		autofree char *name = NULL;
 		int index = 1;
 
 		if ((warnflags & WARN_RULE_DOWNGRADED) && entry->audit && warn_change_profile) {
@@ -585,12 +587,27 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 			/* allow change_profile for all execs */
 			vec[0] = "/[^/\\x00][^\\x00]*";
 
-		if (entry->ns) {
-			int pos;
-			ptype = convert_aaregex_to_pcre(entry->ns, 0, glob_default, lbuf, &pos);
-			vec[index++] = lbuf.c_str();
+		if (!kernel_supports_stacking) {
+			bool stack;
+
+			if (!parse_label(&stack, &ns, &name,
+					 tbuf.c_str(), false)) {
+				return FALSE;
+			}
+
+			if (stack) {
+				fprintf(stderr,
+					_("The current kernel does not support stacking of named transitions: %s\n"),
+					tbuf.c_str());
+				return FALSE;
+			}
+
+			if (ns)
+				vec[index++] = ns;
+			vec[index++] = name;
+		} else {
+			vec[index++] = tbuf.c_str();
 		}
-		vec[index++] = tbuf.c_str();
 
 		/* regular change_profile rule */
 		if (!dfarules->add_rule_vec(entry->deny, AA_CHANGE_PROFILE | AA_ONEXEC, 0, index - 1, &vec[1], dfaflags))
@@ -792,46 +809,40 @@ out:
 
 #include "unit_test.h"
 
+#define MY_FILTER_TEST(input, expected_str)	\
+	do {												\
+		char *test_string = NULL;								\
+		char *output_string = NULL;								\
+													\
+		test_string = strdup((input)); 								\
+		filter_slashes(test_string); 								\
+		asprintf(&output_string, "simple filter / conversion for '%s'\texpected = '%s'\tresult = '%s'", \
+				(input), (expected_str), test_string);					\
+		MY_TEST(strcmp(test_string, (expected_str)) == 0, output_string);			\
+													\
+		free(test_string);									\
+		free(output_string);									\
+	}												\
+	while (0)
+
 static int test_filter_slashes(void)
 {
 	int rc = 0;
-	char *test_string;
 
-	test_string = strdup("///foo//////f//oo////////////////");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/foo/f/oo/") == 0, "simple tests");
+	MY_FILTER_TEST("///foo//////f//oo////////////////", "/foo/f/oo/");
+	MY_FILTER_TEST("/foo/f/oo", "/foo/f/oo");
+	MY_FILTER_TEST("/", "/");
+	MY_FILTER_TEST("", "");
 
-	test_string = strdup("/foo/f/oo");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/foo/f/oo") == 0, "simple test for no changes");
+	/* tests for "//" namespace */
+	MY_FILTER_TEST("//usr", "//usr");
+	MY_FILTER_TEST("//", "//");
 
-	test_string = strdup("/");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/") == 0, "simple test for '/'");
+	/* tests for not "//" namespace */
+	MY_FILTER_TEST("///usr", "/usr");
+	MY_FILTER_TEST("///", "/");
 
-	test_string = strdup("");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "") == 0, "simple test for ''");
-
-	test_string = strdup("//usr");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "//usr") == 0, "simple test for // namespace");
-
-	test_string = strdup("//");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "//") == 0, "simple test 2 for // namespace");
-
-	test_string = strdup("///usr");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/usr") == 0, "simple test for ///usr");
-
-	test_string = strdup("///");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/") == 0, "simple test for ///");
-
-	test_string = strdup("/a/");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/a/") == 0, "simple test for /a/");
+	MY_FILTER_TEST("/a/", "/a/");
 
 	return rc;
 }
