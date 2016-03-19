@@ -285,7 +285,8 @@ void aa_kernel_interface_unref(aa_kernel_interface *kernel_interface)
 {
 	if (kernel_interface &&
 	    atomic_dec_and_test(&kernel_interface->ref_count)) {
-		close(kernel_interface->dirfd);
+		if (kernel_interface->dirfd >= 0)
+			close(kernel_interface->dirfd);
 		free(kernel_interface);
 	}
 }
