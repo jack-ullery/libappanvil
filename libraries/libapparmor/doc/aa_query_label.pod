@@ -47,22 +47,22 @@ Link with B<-lapparmor> when compiling.
 
 =head1 DESCRIPTION
 
-The aa_query_label function fetches the current permissions granted by the
+The B<aa_query_label> function fetches the current permissions granted by the
 specified I<label> in the I<query> string.
 
 The query is a raw binary formatted query, containing the label and
 permission query to make. The returned I<allowed> and I<audited> values are
-interpreted boolean values, simple stating whether the query is allowed and
+interpreted boolean values, simply stating whether the query is allowed and
 if it is audited.
 
 The mask of the query string is a bit mask of permissions to query and is
-class type dependent (see AA_CLASS_xxx) entries in I<sys/apparmor.h>.
+class type dependent (see B<AA_CLASS_xxx> entries in I<sys/apparmor.h>).
 
 The format of the query string is also dependent on the B<AA_CLASS> and as
-such the the aa_query_xxx helper functions should usually be used instead
-of directly using I<aa_query_label>. If directly using the interface the
+such the B<aa_query_xxx> helper functions should usually be used instead
+of directly using B<aa_query_label>. If directly using the interface the
 I<query> string is required to have a header of B<AA_QUERY_CMD_LABEL_SIZE>
-that will be used by I<aa_query_label>.
+that will be used by B<aa_query_label>.
 
 The B<aa_query_file_path> and B<aa_query_file_path_len> functions are helper
 function that assemble a properly formatted file path query for the
@@ -92,9 +92,9 @@ error, -1 is returned, and errno(3) is set appropriately.
 
 The requested I<mask> is empty.
 
-The I<size> of the query is E<lt> the query B<AA_QUER?Y_CMD_LABEL_SIZE>
+The I<size> of the query is less than the query B<AA_QUERY_CMD_LABEL_SIZE>
 
-The apparmor kernel module is not loaded or the he kernel interface access
+The apparmor kernel module is not loaded or the kernel interface access
 interface is not available
 
 =item B<ENOMEM>
