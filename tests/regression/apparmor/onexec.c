@@ -45,7 +45,12 @@ int main(int argc, char *argv[])
 
 	/* stop after onexec and wait to for continue before exec so
 	 * caller can introspect task */
-	(void)kill(getpid(), SIGSTOP);
+	rc = kill(getpid(), SIGSTOP);
+	if (rc == -1){
+		fprintf(stderr, "FAIL: signal to self failed - %s\n",
+			strerror(errno));
+		exit(errno);
+	}
 
 	(void)execve(argv[2], &argv[2], environ);
 	/* exec failed, kill outselves to flag parent */
