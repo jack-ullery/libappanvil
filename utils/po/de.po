@@ -7,14 +7,14 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2015-09-06 12:35+0000\n"
-"Last-Translator: Tobias Bannert <Unknown>\n"
+"PO-Revision-Date: 2016-03-19 00:05+0000\n"
+"Last-Translator: Christian Boltz <Unknown>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2016-02-02 05:11+0000\n"
-"X-Generator: Launchpad (build 17908)\n"
+"X-Launchpad-Export-Date: 2016-03-19 05:19+0000\n"
+"X-Generator: Launchpad (build 17947)\n"
 "Language: de\n"
 
 #: ../aa-genprof:56
@@ -141,7 +141,7 @@ msgstr "Protokolleinträge verarbeiten, um Profile zu erstellen"
 
 #: ../aa-logprof:27
 msgid "mark in the log to start processing after"
-msgstr "Protokolldatei wird markiert zur späteren Bearbeitung"
+msgstr "Bearbeitung ab dieser Markierung in der Protokolldatei starten"
 
 #: ../aa-cleanprof:23
 msgid "Cleanup the profiles for the given programs"
@@ -344,7 +344,7 @@ msgstr "Deaktiviere das Profil für die genannten Programme"
 
 #: ../aa-unconfined:28
 msgid "Lists unconfined processes having tcp or udp ports"
-msgstr "Zeige uneingeschränkte Prozesse mit tcp oder udp Ports"
+msgstr "Zeigt uneingeschränkte Prozesse mit tcp oder udp Ports"
 
 #: ../aa-unconfined:29
 msgid "scan all processes from /proc"
@@ -353,22 +353,23 @@ msgstr "Durchsuche alle Prozesse von /proc"
 #: ../aa-unconfined:81
 #, python-format
 msgid "%(pid)s %(program)s (%(commandline)s) not confined"
-msgstr ""
+msgstr "%(pid)s %(program)s (%(commandline)s) nicht eingeschränkt"
 
 #: ../aa-unconfined:85
 #, python-format
 msgid "%(pid)s %(program)s%(pname)s not confined"
-msgstr ""
+msgstr "%(pid)s %(program)s%(pname)s nicht eingeschränkt"
 
 #: ../aa-unconfined:90
 #, python-format
 msgid "%(pid)s %(program)s (%(commandline)s) confined by '%(attribute)s'"
 msgstr ""
+"%(pid)s %(program)s (%(commandline)s) eingeschränkt durch '%(attribute)s'"
 
 #: ../aa-unconfined:94
 #, python-format
 msgid "%(pid)s %(program)s%(pname)s confined by '%(attribute)s'"
-msgstr ""
+msgstr "%(pid)s %(program)s%(pname)s eingeschränkt durch '%(attribute)s'"
 
 #: ../apparmor/aa.py:196
 #, python-format
@@ -398,7 +399,8 @@ msgstr ""
 #: ../apparmor/aa.py:301
 #, python-format
 msgid "Could not create %(link)s symlink to %(filename)s."
-msgstr "Fehlgeschlafen %(link)s Systemlink zu %(filename)s."
+msgstr ""
+"Symbolischer Link %(link)s zu %(filename)s kann nicht erstellt werden."
 
 #: ../apparmor/aa.py:314
 #, python-format
@@ -520,7 +522,7 @@ msgstr "Sind Sie dabei einen Übergang zu einem lokalen Profil festzulegen?"
 
 #: ../apparmor/aa.py:1299
 msgid "Enter profile name to transition to: "
-msgstr "Bitte den Profilnamen eingeben, zum Übergeben an: "
+msgstr "Bitte den Ziel-Profilnamen eingeben: "
 
 #: ../apparmor/aa.py:1308
 msgid ""
@@ -568,8 +570,8 @@ msgstr ""
 "Das Starten von Prozessen mit uneingeschränktem Status ist sehr\n"
 "gefährlich und kann ernsthafte Sicherheitslöcher verursachen.\n"
 "\n"
-"Sind sie sich absolut sicher sämtlich Schutz durch\n"
-"AppArmor zu entfernen wenn sie %s ausführen ?"
+"Sind sie sich absolut sicher, dass Sie sämtlichen Schutz durch\n"
+"AppArmor entfernen wollen, wenn sie %s ausführen ?"
 
 #: ../apparmor/aa.py:1320
 msgid ""
@@ -644,8 +646,8 @@ msgid ""
 "Select which profile changes you would like to save to the\n"
 "local profile set."
 msgstr ""
-"Wählen Sie welche Profil Veränderungen Sie in den lokalen\n"
-"Profil Einstellungen speichern möchten."
+"Wählen Sie welche Profiländerungen Sie in den lokalen\n"
+"Profilen speichern möchten."
 
 #: ../apparmor/aa.py:2324
 msgid "Local profile changes"
@@ -659,7 +661,7 @@ msgstr "Profiländerungen"
 #, python-format
 msgid "Can't find existing profile %s to compare changes."
 msgstr ""
-"Kann kein existierendes Profil finden %s um Änderungen zu vergleichen."
+"Kann kein existierendes Profil %s finden um Änderungen zu vergleichen."
 
 #: ../apparmor/aa.py:2566 ../apparmor/aa.py:2581
 #, python-format
@@ -872,13 +874,13 @@ msgid ""
 "Unknown variable operation %(operation)s for variable %(variable)s in "
 "%(file)s"
 msgstr ""
-"Unbekannte variable Operation %(operation)s für Variable %(variable)s in "
+"Unbekannte Variablenoperation %(operation)s für Variable %(variable)s in "
 "%(file)s"
 
 #: ../apparmor/aa.py:3343
 #, python-format
 msgid "Invalid allow string: %(allow)s"
-msgstr "Unzulässig erlaubte Kette: %(allow)s"
+msgstr ""
 
 #: ../apparmor/aa.py:3778
 msgid "Can't find existing profile to modify"
@@ -1024,15 +1026,15 @@ msgstr "(M)ehr"
 
 #: ../apparmor/ui.py:225
 msgid "Audi(t)"
-msgstr "(P)rüfen"
+msgstr ""
 
 #: ../apparmor/ui.py:226
 msgid "Audi(t) off"
-msgstr "(Ü)berprüfung abgeschlossen"
+msgstr ""
 
 #: ../apparmor/ui.py:227
 msgid "Audit (A)ll"
-msgstr "(A)lle überprüfen"
+msgstr ""
 
 #: ../apparmor/ui.py:229
 msgid "(O)wner permissions on"
