@@ -37,19 +37,22 @@ check_exec()
 {
     local rc
     local actual
-    actual=`cat /proc/$1/attr/exec 2>/dev/null`
+    local desc="$1"
+    local pid="$2"
+    local expected="$3"
+    actual=`cat /proc/${pid}/attr/exec 2>/dev/null`
     rc=$?
 
-    # /proc/$1/attr/exec returns invalid argument if onexec has not been called
+    # /proc/${pid}/attr/exec returns invalid argument if onexec has not been called
     if [ $rc -ne 0 ] ; then
-	if [ "$2" == "nochange" ] ; then
+	if [ "${expected}" == "nochange" ] ; then
 	    return 0
 	fi
-	echo "ONEXEC - exec transition not set"
+	echo "ONEXEC (${desc}) - exec transition not set"
 	return $rc
     fi
-    if [ "${actual% (*)}" != "$2" ] ; then
-	echo "ONEXEC - check exec '${actual% (*)}' != expected '$2'"
+    if [ "${actual% (*)}" != "${expected}" ] ; then
+	echo "ONEXEC (${desc}) - check exec '${actual% (*)}' != expected '${expected}'"
 	return 1
     fi
 
@@ -60,16 +63,23 @@ check_current()
 {
     local rc
     local actual
-    actual=`cat /proc/$1/attr/current 2>/dev/null`
+    local desc="$1"
+    local pid="$2"
+    local expected="$3"
+    actual=`cat /proc/${pid}/attr/current 2>/dev/null`
     rc=$?
 
-    # /proc/$1/attr/current return enoent if the onexec process already exited due to error
+    # /proc/${pid}/attr/current return enoent if the onexec process already exited due to error
     if [ $rc -ne 0 ] ; then
+	# These assume a check has already been done to see if the
+	# task is still around
+	echo -n "ONEXEC - check current ($1): "
+	cat /proc/${pid}/attr/current
 	return $rc
     fi
 
-    if [ "${actual% (*)}" != "$2" ] ; then
-	echo "ONEXEC - check current '${actual% (*)}' != expected '$2'"
+    if [ "${actual% (*)}" != "${expected}" ] ; then
+	echo "ONEXEC - check current (${desc}) '${actual% (*)}' != expected '${expected}'"
 	return 1
     fi
 
@@ -93,12 +103,12 @@ do_test()
     # give the onexec process a chance to run
     sleep 0.05
 
-    if ! check_current $_pid $prof ; then
+    if ! check_current "${desc}" $_pid $prof ; then
 	checktestfg
 	return
     fi
 
-    if ! check_exec $_pid $target_prof ; then
+    if ! check_exec "${desc}" $_pid $target_prof ; then
 	checktestfg
 	return
     fi
