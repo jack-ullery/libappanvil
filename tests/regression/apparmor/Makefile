@@ -218,6 +218,7 @@ TESTS=aa_exec \
       swap \
       sd_flags \
       setattr \
+      stackonexec \
       stackprofile \
       symlink \
       syscall \
