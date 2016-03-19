@@ -146,55 +146,59 @@ do_test "override px" unconfined $bin/rw pass $bin/open $file
 
 #------
 
+# NOTE: test program pauses for the driver script to catch up by sending
+# and recieving SIGSTOP/SIGCONT, so the onexec program needs access to
+# signals (this is not a script to test signal mediation)
+
 # ONEXEC from CONFINED - don't change profile, open can't exec
-genprofile 'change_profile->':$bin/rw $onexec:w
+genprofile 'change_profile->':$bin/rw $onexec:w signal:ALL
 do_test "no px perm" $bin/onexec nochange fail $bin/open $file
 
 # ONEXEC from CONFINED - don't change profile, open is run unconfined
-genprofile 'change_profile->':$bin/rw $bin/open:rux $onexec:w
+genprofile 'change_profile->':$bin/rw $bin/open:rux $onexec:w signal:ALL
 do_test "nochange rux" $bin/onexec nochange pass $bin/open $file
 
 # ONEXEC from CONFINED - don't change profile, open is run confined without necessary perms
-genprofile 'change_profile->':$bin/rw $onexec:w -- image=$bin/open $file:rw
+genprofile 'change_profile->':$bin/rw $onexec:w signal:ALL -- image=$bin/open $file:rw
 do_test "nochange px - no px perm" $bin/onexec nochange fail $bin/open $file
 
 # ONEXEC from CONFINED - don't change profile, open is run confined without necessary perms
-genprofile 'change_profile->':$bin/rw $bin/open:rpx $onexec:w -- image=$bin/open
+genprofile 'change_profile->':$bin/rw $bin/open:rpx $onexec:w signal:ALL -- image=$bin/open
 do_test "nochange px - no file perm" $bin/onexec nochange fail $bin/open $file
 
 # ONEXEC from CONFINED - target does NOT exist
-genprofile 'change_profile->':$bin/open $onexec:w -- image=$bin/rw $bin/open:rix $file:rw  -- image=$bin/open
+genprofile 'change_profile->':$bin/open $onexec:w signal:ALL -- image=$bin/rw $bin/open:rix $file:rw  -- image=$bin/open
 do_test "noexist px" $bin/onexec noexist fail $bin/open $file
 
 # ONEXEC from CONFINED - change to rw profile, no exec profile to override
-genprofile 'change_profile->':$bin/rw $onexec:w -- image=$bin/rw $bin/open:rix $file:rw
+genprofile 'change_profile->':$bin/rw $onexec:w signal:ALL -- image=$bin/rw $bin/open:rix $file:rw
 do_test "change profile - override rix" $bin/onexec $bin/rw pass $bin/open $file
 
 # ONEXEC from CONFINED - change to rw profile, no exec profile to override, no explicit access to /proc/*/attr/exec
-genprofile 'change_profile->':$bin/rw -- image=$bin/rw $bin/open:rix $file:rw
+genprofile 'change_profile->':$bin/rw signal:ALL -- image=$bin/rw $bin/open:rix $file:rw
 do_test "change profile - no onexec:w" $bin/onexec $bin/rw pass $bin/open $file
 
 # ONEXEC from CONFINED - don't change profile, make sure exec profile is applied
-genprofile 'change_profile->':$bin/rw $onexec:w $bin/open:rpx -- image=$bin/rw $bin/open:rix $file:rw  -- image=$bin/open $file:rw
+genprofile 'change_profile->':$bin/rw $onexec:w $bin/open:rpx signal:ALL -- image=$bin/rw $bin/open:rix $file:rw  -- image=$bin/open $file:rw
 do_test "nochange px" $bin/onexec nochange pass $bin/open $file
 
 # ONEXEC from CONFINED - change to rw profile, override regular exec profile, exec profile doesn't have perms
-genprofile 'change_profile->':$bin/rw $onexec:w -- image=$bin/rw $bin/open:rix $file:rw  -- image=$bin/open
+genprofile 'change_profile->':$bin/rw $onexec:w signal:ALL -- image=$bin/rw $bin/open:rix $file:rw  -- image=$bin/open
 do_test "override px" $bin/onexec $bin/rw pass $bin/open $file
 
 # ONEXEC from - change to rw profile, override regular exec profile, exec profile has perms, rw doesn't
-genprofile 'change_profile->':$bin/rw $onexec:w -- image=$bin/rw $bin/open:rix  -- image=$bin/open $file:rw
+genprofile 'change_profile->':$bin/rw $onexec:w signal:ALL -- image=$bin/rw $bin/open:rix  -- image=$bin/open $file:rw
 do_test "override px" $bin/onexec $bin/rw fail $bin/open $file
 
 # ONEXEC from COFINED - change to rw profile via glob rule, override exec profile, exec profile doesn't have perms
-genprofile 'change_profile->':/** $onexec:w -- image=$bin/rw $bin/open:rix $file:rw  -- image=$bin/open
+genprofile 'change_profile->':/** $onexec:w signal:ALL -- image=$bin/rw $bin/open:rix $file:rw  -- image=$bin/open
 do_test "glob override px" $bin/onexec $bin/rw pass $bin/open $file
 
 # ONEXEC from COFINED - change to exec profile via glob rule, override exec profile, exec profile doesn't have perms
-genprofile 'change_profile->':/** $onexec:w -- image=$bin/rw $bin/open:rix $file:rw  -- image=$bin/open
+genprofile 'change_profile->':/** $onexec:w signal:ALL -- image=$bin/rw $bin/open:rix $file:rw  -- image=$bin/open
 do_test "glob override px" $bin/onexec $bin/open fail $bin/open $file
 
 # ONEXEC from COFINED - change to exec profile via glob rule, override exec profile, exec profile has perms
-genprofile 'change_profile->':/** $onexec:w -- image=$bin/rw $bin/open:rix $file:rw  -- image=$bin/open $file:rw
+genprofile 'change_profile->':/** $onexec:w signal:ALL -- image=$bin/rw $bin/open:rix $file:rw  -- image=$bin/open $file:rw
 do_test "glob override px" $bin/onexec $bin/rw pass $bin/open $file
 
