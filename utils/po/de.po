@@ -7,13 +7,13 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2016-03-19 00:05+0000\n"
+"PO-Revision-Date: 2016-03-19 12:56+0000\n"
 "Last-Translator: Christian Boltz <Unknown>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2016-03-19 05:19+0000\n"
+"X-Launchpad-Export-Date: 2016-03-20 05:16+0000\n"
 "X-Generator: Launchpad (build 17947)\n"
 "Language: de\n"
 
@@ -141,7 +141,7 @@ msgstr "Protokolleinträge verarbeiten, um Profile zu erstellen"
 
 #: ../aa-logprof:27
 msgid "mark in the log to start processing after"
-msgstr "Bearbeitung ab dieser Markierung in der Protokolldatei starten"
+msgstr "Verarbeitung ab dieser Markierung in der Protokolldatei starten"
 
 #: ../aa-cleanprof:23
 msgid "Cleanup the profiles for the given programs"
