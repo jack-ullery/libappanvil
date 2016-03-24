@@ -75,6 +75,16 @@ displays the number of loaded non-enforcing AppArmor policies.
 displays multiple data points about loaded AppArmor policy
 set (the default action if no arguments are given).
 
+=item --json
+
+displays multiple data points about loaded AppArmor policy
+set in a JSON format, fit for machine consumption.
+
+=item --pretty-json
+
+same as --json, formatted to be readable by humans as well
+as by machines.
+
 =item --help
 
 displays a short usage statement.
