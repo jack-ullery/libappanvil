@@ -95,7 +95,7 @@ ifdef USE_SYSTEM
   INCLUDE_APPARMOR =
   APPARMOR_H =
 else
-  LIBAPPARMOR_SRC = ../libraries/libapparmor/
+  LIBAPPARMOR_SRC = ../libraries/libapparmor
   LOCAL_LIBAPPARMOR_INCLUDE = $(LIBAPPARMOR_SRC)/include
   LOCAL_LIBAPPARMOR_LDPATH = $(LIBAPPARMOR_SRC)/src/.libs
 
