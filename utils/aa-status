@@ -10,7 +10,7 @@
 #
 # ------------------------------------------------------------------
 
-import re, os, sys, errno
+import re, os, sys, errno, json
 
 # PLEASE NOTE: we try to keep aa-status as minimal as possible, for
 # environments where installing all of the python utils and python
@@ -81,6 +81,42 @@ def cmd_verbose():
 
     if profiles == {}:
         sys.exit(2)
+
+def cmd_json(pretty_output=False):
+    '''Outputs multiple data points about loaded profile set in a machine-readable JSON format'''
+    global verbose
+    profiles = get_profiles()
+    processes = get_processes(profiles)
+
+    i = {
+        'version': '1',
+        'profiles': {},
+        'processes': {}
+    }
+
+    for status in ('enforce', 'complain'):
+        filtered_profiles = filter_profiles(profiles, status)
+        for item in filtered_profiles:
+            i['profiles'][item] = status
+
+    for status in ('enforce', 'complain', 'unconfined'):
+        filtered_processes = filter_processes(processes, status)
+        for (pid, process) in filtered_processes:
+            if process not in i['processes']:
+                i['processes'][process] = []
+
+            i['processes'][process].append({
+                'pid': pid,
+                'status': status
+            })
+
+    if pretty_output:
+        sys.stdout.write(json.dumps(i, sort_keys=True, indent=4, separators=(',', ': ')))
+    else:
+        sys.stdout.write(json.dumps(i))
+
+def cmd_pretty_json():
+    cmd_json(True)
 
 def get_profiles():
     '''Fetch loaded profiles'''
@@ -182,6 +218,8 @@ OPTIONS (one only):
   --profiled      prints the number of loaded policies
   --enforced      prints the number of loaded enforcing policies
   --complaining   prints the number of loaded non-enforcing policies
+  --json          displays multiple data points in machine-readable JSON format
+  --pretty-json   same data as --json, formatted for human consumption as well
   --verbose       (default) displays multiple data points about loaded policy set
   --help          this message
 ''' % sys.argv[0])
@@ -205,6 +243,8 @@ commands = {
     '--profiled'     : cmd_profiled,
     '--enforced'     : cmd_enforced,
     '--complaining'  : cmd_complaining,
+    '--json'         : cmd_json,
+    '--pretty-json'  : cmd_pretty_json,
     '--verbose'      : cmd_verbose,
     '-v'             : cmd_verbose,
     '--help'         : print_usage,
