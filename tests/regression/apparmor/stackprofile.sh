@@ -97,7 +97,7 @@ runchecktest_errno EACCES "STACKPROFILE (2 stacked - no change_profile)" fail -p
 
 # Verify file access and contexts by 3 stacked profiles
 genprofile $fileok $sharedok $getcon $stackotherok $stackthirdok -- \
-	image=$othertest $otherok $sharedok $test:ix $getcon $stackthirdok -- \
+	image=$othertest addimage:$test $otherok $sharedok $getcon $stackthirdok -- \
 	image=$thirdtest $thirdok $sharedok $getcon
 runchecktest_errno EACCES "STACKPROFILE (3 stacked - file)" fail -p $othertest -- $test -p $thirdtest -f $file
 runchecktest_errno EACCES "STACKPROFILE (3 stacked - otherfile)" fail -p $othertest -- $test -p $thirdtest -f $otherfile
@@ -107,7 +107,7 @@ runchecktest "STACKPROFILE (3 stacked - sharedfile)" pass -p $othertest -- $test
 runchecktest "STACKPROFILE (3 stacked - okcon)" pass -p $othertest -- $test -p $thirdtest -l "${thirdtest}//&${test}//&${othertest}" -m enforce
 
 genprofile $fileok $sharedok $getcon $stackotherok -- \
-	image=$othertest $otherok $sharedok $test:ix $getcon $stackthirdok -- \
+	image=$othertest addimage:$test $otherok $sharedok $getcon $stackthirdok -- \
 	image=$thirdtest $thirdok $sharedok $getcon
 runchecktest_errno EACCES "STACKPROFILE (3 stacked - sharedfile - no change_profile)" fail -p $othertest -- $test -p $thirdtest -f $sharedfile
 
