@@ -1202,7 +1202,6 @@ def handle_children(profile, hat, root):
                         context_new = context_new + '^%s' % hat
                     context_new = context_new + ' -> %s' % exec_target
 
-                    # ans_new = transitions.get(context_new, '')  # XXX ans meant here?
                     combinedmode = set()
                     combinedaudit = set()
                     ## Check return Value Consistency
@@ -1412,7 +1411,6 @@ def handle_children(profile, hat, root):
                                         exec_mode = exec_mode - (apparmor.aamode.AA_EXEC_UNSAFE | AA_OTHER(apparmor.aamode.AA_EXEC_UNSAFE))
                                 else:
                                     ans = 'INVALID'
-                        transitions[context_new] = ans
 
                         regex_options = re.compile('CMD_(ix|px|cx|nx|pix|cix|nix)')
                         if regex_options.search(ans):
