@@ -20,7 +20,7 @@ include $(COMMONDIR)/Make.rules
 DESTDIR=/
 BINDIR=${DESTDIR}/usr/bin
 LOCALEDIR=/usr/share/locale
-MANPAGES=aa-enabled.8 aa-exec.8
+MANPAGES=aa-enabled.1 aa-exec.1
 
 WARNINGS = -Wall
 EXTRA_WARNINGS = -Wsign-compare -Wmissing-field-initializers -Wformat-security -Wunused-parameter
