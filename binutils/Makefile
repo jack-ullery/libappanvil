@@ -141,7 +141,7 @@ install-arch: arch
 	install -m 755 ${TOOLS} ${BINDIR}
 
 .PHONY: install-indep
-install-indep:
+install-indep: indep
 	$(MAKE) -C po install NAME=${NAME} DESTDIR=${DESTDIR}
 	$(MAKE) install_manpages DESTDIR=${DESTDIR}
 
