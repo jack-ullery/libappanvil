@@ -74,6 +74,10 @@
   /{,var/}run/lxc/dnsmasq.pid    rw,
   /var/lib/misc/dnsmasq.*.leases rw,
 
+  # lxd-bridge pid and lease files
+  /{,var/}run/lxd-bridge/dnsmasq.pid   rw,
+  /var/lib/lxd-bridge/dnsmasq.*.leases rw,
+
   # NetworkManager integration
   /{,var/}run/nm-dns-dnsmasq.conf r,
   /{,var/}run/sendsigs.omit.d/*dnsmasq.pid w,
