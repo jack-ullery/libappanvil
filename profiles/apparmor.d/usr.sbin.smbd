@@ -18,6 +18,7 @@
   capability net_bind_service,
   capability setgid,
   capability setuid,
+  capability sys_admin,
   capability sys_resource,
   capability sys_tty_config,
 
