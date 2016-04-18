@@ -225,7 +225,7 @@ public:
 	std::string fqname(void)
 	{
 		if (parent)
-			return parent->fqname() + "://" + name;
+			return parent->fqname() + "//" + name;
 		else if (!ns)
 			return hname();
 		return ":" + std::string(ns) + "://" + hname();
