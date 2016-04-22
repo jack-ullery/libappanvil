@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2016-01-20 08:55+0000\n"
+"PO-Revision-Date: 2016-04-21 13:45+0000\n"
 "Last-Translator: Ari Setyo Wibowo <mr.a.contact@gmail.com>\n"
 "Language-Team: Indonesian <id@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2016-02-02 05:11+0000\n"
-"X-Generator: Launchpad (build 17908)\n"
+"X-Launchpad-Export-Date: 2016-04-22 05:13+0000\n"
+"X-Generator: Launchpad (build 17995)\n"
 
 #: ../aa-genprof:56
 msgid "Generate profile for the given program"
@@ -98,16 +98,27 @@ msgid ""
 "opportunity to choose whether the access should be \n"
 "allowed or denied."
 msgstr ""
+"Silakan jalankan aplikasi untuk diprofilkan dalam\n"
+"jendela lain dan berlatih fungsinya sekarang.\n"
+"\n"
+"Setelah selesai, pilih \"Scan\" di bawah \n"
+"untuk memindai system logs untuk event AppArmor. \n"
+"\n"
+"Untuk tiap event AppArmor, Anda akan diberi \n"
+"kesempatan untuk memilih apakah akses \n"
+"harus diizinkan atau ditolak."
 
 #: ../aa-genprof:147
 msgid "Profiling"
-msgstr ""
+msgstr "Memprofilkan"
 
 #: ../aa-genprof:165
 msgid ""
 "\n"
 "Reloaded AppArmor profiles in enforce mode."
 msgstr ""
+"\n"
+"Profil AppArmor dimuat ulang dalam mode paksa."
 
 #: ../aa-genprof:166
 msgid ""
@@ -115,32 +126,35 @@ msgid ""
 "Please consider contributing your new profile!\n"
 "See the following wiki page for more information:"
 msgstr ""
+"\n"
+"Pertimbangkan untuk mengkontribusikan profil Anda!\n"
+"Lihat halaman wiki berikut untuk informasi lebih lanjut:"
 
 #: ../aa-genprof:167
 #, python-format
 msgid "Finished generating profile for %s."
-msgstr ""
+msgstr "Selesai membuat profil untuk %s."
 
 #: ../aa-logprof:24
 msgid "Process log entries to generate profiles"
-msgstr ""
+msgstr "Entry log proses untuk membuat profil"
 
 #: ../aa-logprof:27
 msgid "mark in the log to start processing after"
-msgstr ""
+msgstr "tandai di dalam log untuk mulai memproses setelah"
 
 #: ../aa-cleanprof:23
 msgid "Cleanup the profiles for the given programs"
-msgstr ""
+msgstr "Bersihkan profil untuk program tersebut"
 
 #: ../aa-cleanprof:25 ../aa-autodep:26 ../aa-audit:27 ../aa-complain:25
 #: ../aa-enforce:25 ../aa-disable:25
 msgid "name of program"
-msgstr ""
+msgstr "nama program"
 
 #: ../aa-cleanprof:26
 msgid "Silently overwrite with a clean profile"
-msgstr ""
+msgstr "Timpa dengan profil bersih secara hening"
 
 #: ../aa-mergeprof:29
 msgid "Perform a 2-way or 3-way merge on the given profiles"
