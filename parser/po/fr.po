@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-13 00:11-0700\n"
-"PO-Revision-Date: 2014-01-07 05:58+0000\n"
+"PO-Revision-Date: 2016-04-28 10:19+0000\n"
 "Last-Translator: Sylvie Gallet <Unknown>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2016-02-02 05:10+0000\n"
-"X-Generator: Launchpad (build 17908)\n"
+"X-Launchpad-Export-Date: 2016-04-29 05:14+0000\n"
+"X-Generator: Launchpad (build 17995)\n"
 "Language: fr\n"
 
 #: ../parser_include.c:113
@@ -185,7 +185,7 @@ msgstr "Impossible d'ouvrir « %s »"
 #: parser_lex.l:104 parser_lex.l:167
 #, c-format
 msgid "fstat failed for '%s'"
-msgstr ""
+msgstr "Échec de fstat pour « %s »"
 
 #: parser_lex.l:121
 #, c-format
@@ -497,12 +497,12 @@ msgstr "Capacité %s invalide."
 #: parser_yacc.y:1066 parser_yacc.y:1269
 #, c-format
 msgid "AppArmor parser error for %s%s%s at line %d: %s\n"
-msgstr ""
+msgstr "Erreur de l'analyseur AppArmor pour %s%s%s à la ligne %d : %s\n"
 
 #: parser_yacc.y:1072 parser_yacc.y:1275
 #, c-format
 msgid "AppArmor parser error,%s%s line %d: %s\n"
-msgstr ""
+msgstr "Erreur de l'analyseur AppArmor, %s%s ligne %d : %s\n"
 
 #: ../parser_regex.c:244
 #, c-format
@@ -547,6 +547,7 @@ msgstr "%s : impossible d'analyser la ligne en entrée « %s »\n"
 #, c-format
 msgid "%s: Invalid profile name '%s' - bad regular expression\n"
 msgstr ""
+"%s : Nom de profil non valide « %s » - expression régulière incorrecte\n"
 
 #: ../parser_policy.c:202 ../parser_policy.c:402
 #, c-format
