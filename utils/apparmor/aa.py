@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014-2015 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2016 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -1607,6 +1607,10 @@ def ask_the_questions():
                 UI_SelectUpdatedRepoProfile(profile, p)
 
             found += 1
+
+            sev_db.unload_variables()
+            sev_db.load_variables(get_profile_filename(profile))
+
             # Sorted list of hats with the profile name coming first
             hats = list(filter(lambda key: key != profile, sorted(log_dict[aamode][profile].keys())))
             if log_dict[aamode][profile].get(profile, False):

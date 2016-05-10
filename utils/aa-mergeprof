@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014-2015 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2016 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -18,7 +18,7 @@ import re
 import os
 
 import apparmor.aa
-from apparmor.aa import available_buttons, combine_name, delete_duplicates, is_known_rule, match_includes
+from apparmor.aa import available_buttons, combine_name, delete_duplicates, get_profile_filename, is_known_rule, match_includes
 import apparmor.aamode
 from apparmor.common import AppArmorException
 from apparmor.regex import re_match_include
@@ -283,6 +283,9 @@ class Merge(object):
         sev_db = apparmor.aa.sev_db
         if not sev_db:
             sev_db = apparmor.severity.Severity(apparmor.aa.CONFDIR + '/severity.db', _('unknown'))
+
+        sev_db.unload_variables()
+        sev_db.load_variables(get_profile_filename(profile))
 
         for hat in sorted(other.aa[profile].keys()):
             #Add the includes from the other profile to the user profile
