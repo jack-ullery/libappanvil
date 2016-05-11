@@ -149,8 +149,7 @@ test_sysctl_proc()
 # generally we want to encourage kernels to disable it, but if it's
 # enabled we want to test against it
 settest syscall_sysctl
-res=$(${test} ro)
-if [ $? -ne 0 -a $res == "FAIL: sysctl read failed - Function not implemented" ] ; then
+if ! res="$(${test} ro 2>&1)" && [ "$res" = "FAIL: sysctl read failed - Function not implemented" ] ; then
     echo "	WARNING: syscall sysctl not implemented, skipping tests ..."
 else
     test_syscall_sysctl
