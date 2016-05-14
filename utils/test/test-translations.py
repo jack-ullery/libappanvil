@@ -30,6 +30,8 @@ class TestHotkeyConflicts(AATest):
         (['CMD_ix', 'CMD_cx', 'CMD_px', 'CMD_nx', 'CMD_ux', 'CMD_EXEC_IX_ON', 'CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED'],                     True),  # aa.py build_x_functions() without exec_toggle
         (['CMD_ADDHAT', 'CMD_USEDEFAULT', 'CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED'],                                                         True),  # aa.py handle_children()
         (['CMD_YES', 'CMD_NO', 'CMD_CANCEL'],                                                                                               True),  # ui.py UI_YesNo() and UI_YesNoCancel
+        (['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ABORT', 'CMD_IGNORE_ENTRY'],                                                         True),  # aa-mergeprof act()
+        (['CMD_ALLOW', 'CMD_ABORT'],                                                                                                        True),  # aa-mergeprof conflict_mode()
     ]
 
     def _run_test(self, params, expected):
