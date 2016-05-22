@@ -1244,7 +1244,8 @@ must be made before the start of the profile.
 
 The parser will automatically expand variables to include all values
 that they have been assigned; it is an error to reference a variable
-without setting at least one value.
+without setting at least one value. You can use empty quotes ("") to
+explicitly add an empty value.
 
 At the time of this writing, the following variables are defined in the
 provided AppArmor policy:
