@@ -3050,9 +3050,6 @@ def parse_profile_data(data, file, do_include):
 
     return profile_data
 
-# RE_DBUS_ENTRY = re.compile('^dbus\s*()?,\s*$')
-#   use stuff like '(?P<action>(send|write|w|receive|read|r|rw))'
-
 def parse_mount_rule(line):
     # XXX Do real parsing here
     return aarules.Raw_Mount_Rule(line)
