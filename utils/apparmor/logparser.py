@@ -142,6 +142,12 @@ class ReadLog:
             ev['peer'] = event.peer
         elif ev['operation'] and ev['operation'] == 'ptrace':
             ev['peer'] = event.peer
+        elif ev['operation'] and ev['operation'].startswith('dbus_'):
+            ev['peer_profile'] = event.peer_profile
+            ev['bus'] = event.dbus_bus
+            ev['path'] = event.dbus_path
+            ev['interface'] = event.dbus_interface
+            ev['member'] = event.dbus_member
 
         LibAppArmor.free_record(event)
 
