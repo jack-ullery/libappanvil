@@ -259,10 +259,10 @@ class AARegexDbus(AARegexTest):
         self.regex = aa.RE_PROFILE_DBUS
 
     tests = [
-        ('   dbus,', (None, None, 'dbus,', None)),
-        ('   audit dbus,', ('audit', None, 'dbus,', None)),
-        ('   dbus send member=no_comment,', (None, None, 'dbus send member=no_comment,', None)),
-        ('   dbus send member=no_comment, # comment', (None, None, 'dbus send member=no_comment,', '# comment')),
+        ('   dbus,',                                    (None,      None,   'dbus,',                            None,                       None)),
+        ('   audit dbus,',                              ('audit',   None,   'dbus,',                            None,                       None)),
+        ('   dbus send member=no_comment,',             (None,      None,   'dbus send member=no_comment,',     'send member=no_comment',   None)),
+        ('   dbus send member=no_comment, # comment',   (None,      None,   'dbus send member=no_comment,',     'send member=no_comment',   '# comment')),
 
         ('   dbusdriver,', False),
         ('   audit dbusdriver,', False),
