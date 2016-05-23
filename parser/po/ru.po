@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-13 00:11-0700\n"
-"PO-Revision-Date: 2013-11-19 08:47+0000\n"
+"PO-Revision-Date: 2016-03-29 14:53+0000\n"
 "Last-Translator: Eugene Marshal <Unknown>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2016-02-02 05:10+0000\n"
-"X-Generator: Launchpad (build 17908)\n"
+"X-Launchpad-Export-Date: 2016-03-30 05:13+0000\n"
+"X-Generator: Launchpad (build 17967)\n"
 "Language: ru\n"
 
 #: ../parser_include.c:113
@@ -134,7 +134,7 @@ msgstr ""
 #: ../parser_interface.c:656 ../parser_interface.c:658
 #, c-format
 msgid "profile %s network rules not enforced\n"
-msgstr ""
+msgstr "Сетевые правила, указанные в профиле %s не применяются\n"
 
 #: ../parser_interface.c:666
 msgid "Unknown pattern type\n"
@@ -184,17 +184,17 @@ msgstr "Невозможно открыть '%s'"
 #: parser_lex.l:104 parser_lex.l:167
 #, c-format
 msgid "fstat failed for '%s'"
-msgstr ""
+msgstr "fstat не выполнен для '%s'"
 
 #: parser_lex.l:121
 #, c-format
 msgid "opendir failed '%s'"
-msgstr ""
+msgstr "opendir не выполнен для '%s'"
 
 #: parser_lex.l:152
 #, c-format
 msgid "stat failed for '%s'"
-msgstr ""
+msgstr "stat не выполнен для '%s'"
 
 #: parser_lex.l:155 parser_lex.l:133
 #, c-format
@@ -363,12 +363,14 @@ msgstr ""
 
 #: parser_yacc.y:236 parser_yacc.y:277
 msgid "Profile attachment must begin with a '/'."
-msgstr ""
+msgstr "Вложение профиля должно начинаться с '/'."
 
 #: parser_yacc.y:260 parser_yacc.y:302
 msgid ""
 "Profile names must begin with a '/', namespace or keyword 'profile' or 'hat'."
 msgstr ""
+"Имена профилей должны начинаться с a '/', пространства имён или ключевого "
+"слова 'profile' или 'hat'."
 
 #: parser_yacc.y:296 parser_yacc.y:338
 #, c-format
@@ -377,20 +379,21 @@ msgstr "Не удалось создать псевдоним %s -> %s\n"
 
 #: parser_yacc.y:417 parser_yacc.y:460
 msgid "Profile flag chroot_relative conflicts with namespace_relative"
-msgstr ""
+msgstr "Флаг профиля chroot_relative конфликтует с namespace_relative"
 
 #: parser_yacc.y:421 parser_yacc.y:464
 msgid "Profile flag mediate_deleted conflicts with delegate_deleted"
-msgstr ""
+msgstr "Флаг профиля mediate_deleted конфликтует с delegate_deleted"
 
 #: parser_yacc.y:424 parser_yacc.y:467
 msgid ""
 "Profile flag attach_disconnected conflicts with no_attach_disconnected"
 msgstr ""
+"Флаг профиля attach_disconnected конфликтует с no_attach_disconnected"
 
 #: parser_yacc.y:427 parser_yacc.y:470
 msgid "Profile flag chroot_attach conflicts with chroot_no_attach"
-msgstr ""
+msgstr "Флаг профиля chroot_attach conflicts с chroot_no_attach"
 
 #: parser_yacc.y:441 parser_yacc.y:484
 msgid "Profile flag 'debug' is no longer valid."
@@ -488,7 +491,7 @@ msgstr ""
 #: parser_yacc.y:1072 parser_yacc.y:1275
 #, c-format
 msgid "AppArmor parser error,%s%s line %d: %s\n"
-msgstr ""
+msgstr "Ошибка анализатора AppArmor,%s%s в строке %d: %s\n"
 
 #: ../parser_regex.c:244
 #, c-format
@@ -531,6 +534,7 @@ msgstr "%s: невозможно обработать строку ввода \"
 #, c-format
 msgid "%s: Invalid profile name '%s' - bad regular expression\n"
 msgstr ""
+"%s: Недопустимое имя профиля '%s' - неправильное регулярное выражение\n"
 
 #: ../parser_policy.c:202 ../parser_policy.c:402
 #, c-format
@@ -598,7 +602,7 @@ msgstr ""
 #: parser_lex.l:180
 #, c-format
 msgid "Could not process include directory '%s' in '%s'"
-msgstr ""
+msgstr "Невозможно выполнить включение каталога '%s' в '%s'"
 
 #: ../parser_main.c:660
 msgid "Feature buffer full."
@@ -606,22 +610,22 @@ msgstr ""
 
 #: ../parser_main.c:1115 ../parser_main.c:1132
 msgid "Out of memory"
-msgstr ""
+msgstr "Недостаточно памяти"
 
 #: ../parser_main.c:1182
 #, c-format
 msgid "Can't create cache directory: %s\n"
-msgstr ""
+msgstr "Невозможно создать временный каталог: %s\n"
 
 #: ../parser_main.c:1185
 #, c-format
 msgid "File in cache directory location: %s\n"
-msgstr ""
+msgstr "Расположение файла во временном каталоге: %s\n"
 
 #: ../parser_main.c:1188
 #, c-format
 msgid "Can't update cache directory: %s\n"
-msgstr ""
+msgstr "Невозможно обновить временный каталог: %s\n"
 
 #: ../parser_misc.c:833
 #, c-format
@@ -639,7 +643,7 @@ msgstr ""
 
 #: parser_yacc.y:612
 msgid "owner prefix not allowed"
-msgstr ""
+msgstr "префикс владельца не разрешён"
 
 #: parser_yacc.y:660
 msgid "owner prefix not allow on mount rules"
@@ -695,17 +699,18 @@ msgstr ""
 #: ../parser_interface.c:635 ../parser_interface.c:638
 #, c-format
 msgid "%s: Unable to write %s\n"
-msgstr ""
+msgstr "%s: Невозможно записать %s\n"
 
 #: ../parser_main.c:721
 #, c-format
 msgid "Error: Could not read binary profile or cache file %s: %s.\n"
 msgstr ""
+"Ошибка: невозможно прочитать двоичный профиль или временный файл %s: %s.\n"
 
 #: ../parser_main.c:811
 #, c-format
 msgid "Error: Could not read cache file '%s', skipping...\n"
-msgstr ""
+msgstr "Ошибка: невозможно прочитать временный файл '%s', пропуск...\n"
 
 #: ../parser_misc.c:575
 #, c-format
