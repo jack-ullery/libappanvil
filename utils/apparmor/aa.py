@@ -46,7 +46,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
                             RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
                             RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY,
                             RE_PROFILE_CHANGE_HAT,
-                            RE_PROFILE_HAT_DEF, RE_PROFILE_DBUS, RE_PROFILE_MOUNT,
+                            RE_PROFILE_HAT_DEF, RE_PROFILE_MOUNT,
                             RE_PROFILE_PIVOT_ROOT,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
                             strip_quotes, parse_profile_start_line, re_match_include )
@@ -55,6 +55,7 @@ import apparmor.rules as aarules
 
 from apparmor.rule.capability import CapabilityRuleset, CapabilityRule
 from apparmor.rule.change_profile import ChangeProfileRuleset, ChangeProfileRule
+from apparmor.rule.dbus       import DbusRuleset,       DbusRule
 from apparmor.rule.network    import NetworkRuleset,    NetworkRule
 from apparmor.rule.ptrace     import PtraceRuleset,    PtraceRule
 from apparmor.rule.rlimit     import RlimitRuleset,    RlimitRule
@@ -459,6 +460,7 @@ def profile_storage(profilename, hat, calledby):
     profile['info'] = {'profile': profilename, 'hat': hat, 'calledby': calledby}
 
     profile['capability']       = CapabilityRuleset()
+    profile['dbus']             = DbusRuleset()
     profile['change_profile']   = ChangeProfileRuleset()
     profile['network']          = NetworkRuleset()
     profile['ptrace']           = PtraceRuleset()
@@ -466,7 +468,6 @@ def profile_storage(profilename, hat, calledby):
     profile['signal']           = SignalRuleset()
 
     profile['allow']['path'] = hasher()
-    profile['allow']['dbus'] = list()
     profile['allow']['mount'] = list()
     profile['allow']['pivot_root'] = list()
 
@@ -2885,28 +2886,11 @@ def parse_profile_data(data, file, do_include):
 
             profile_data[profile][hat]['network'].add(NetworkRule.parse(line))
 
-        elif RE_PROFILE_DBUS.search(line):
-            matches = RE_PROFILE_DBUS.search(line).groups()
-
+        elif DbusRule.match(line):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected dbus entry found in file: %(file)s line: %(line)s') % {'file': file, 'line': lineno + 1 })
 
-            audit = False
-            if matches[0]:
-                audit = True
-            allow = 'allow'
-            if matches[1] and matches[1].strip() == 'deny':
-                allow = 'deny'
-            dbus = matches[2]
-
-            #parse_dbus_rule(profile_data[profile], dbus, audit, allow)
-            dbus_rule = parse_dbus_rule(dbus)
-            dbus_rule.audit = audit
-            dbus_rule.deny = (allow == 'deny')
-
-            dbus_rules = profile_data[profile][hat][allow].get('dbus', list())
-            dbus_rules.append(dbus_rule)
-            profile_data[profile][hat][allow]['dbus'] = dbus_rules
+            profile_data[profile][hat]['dbus'].add(DbusRule.parse(line))
 
         elif RE_PROFILE_MOUNT.search(line):
             matches = RE_PROFILE_MOUNT.search(line).groups()
@@ -3068,18 +3052,6 @@ def parse_profile_data(data, file, do_include):
 
 # RE_DBUS_ENTRY = re.compile('^dbus\s*()?,\s*$')
 #   use stuff like '(?P<action>(send|write|w|receive|read|r|rw))'
-
-def parse_dbus_rule(line):
-    # XXX Do real parsing here
-    return aarules.Raw_DBUS_Rule(line)
-
-    #matches = RE_DBUS_ENTRY.search(line).groups()
-    #if len(matches) == 1:
-        # XXX warn?
-        # matched nothing
-    #    print('no matches')
-    #    return aarules.DBUS_Rule()
-    #print(line)
 
 def parse_mount_rule(line):
     # XXX Do real parsing here
@@ -3253,22 +3225,10 @@ def write_netdomain(prof_data, depth):
         data = prof_data['network'].get_clean(depth)
     return data
 
-def write_dbus_rules(prof_data, depth, allow):
-    pre = '  ' * depth
-    data = []
-
-    # no dbus rules, so return
-    if not prof_data[allow].get('dbus', False):
-        return data
-
-    for dbus_rule in prof_data[allow]['dbus']:
-        data.append('%s%s' % (pre, dbus_rule.serialize()))
-    data.append('')
-    return data
-
 def write_dbus(prof_data, depth):
-    data = write_dbus_rules(prof_data, depth, 'deny')
-    data += write_dbus_rules(prof_data, depth, 'allow')
+    data = []
+    if prof_data.get('dbus', False):
+        data = prof_data['dbus'].get_clean(depth)
     return data
 
 def write_mount_rules(prof_data, depth, allow):
