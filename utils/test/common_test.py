@@ -87,7 +87,7 @@ def setup_tests_loop(test_class):
         def stub_test(self, test_data=test_data, expected=expected):
             self._run_test(test_data, expected)
 
-        stub_test.__doc__ = "test '%s'" % (test_data)
+        stub_test.__doc__ = "test '%s'" % str(test_data)
         setattr(test_class, 'test_%d' % (i), stub_test)
 
 
