@@ -128,6 +128,15 @@ def re_match_include(line):
 
     return matches.group('magicpath')
 
+def strip_parenthesis(data):
+    '''strips parenthesis from the given string and returns the strip()ped result.
+       The parenthesis must be the first and last char, otherwise they won't be removed.
+       Even if no parenthesis get removed, the result will be strip()ped.
+       '''
+    if data[0] + data[-1] == '()':
+        return data[1:-1].strip()
+    else:
+        return data.strip()
 
 def strip_quotes(data):
     if data[0] + data[-1] == '""':

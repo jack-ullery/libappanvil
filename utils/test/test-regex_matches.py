@@ -14,7 +14,7 @@ import unittest
 from common_test import AATest, setup_all_loops
 from apparmor.common import AppArmorBug, AppArmorException
 
-from apparmor.regex import strip_quotes, parse_profile_start_line, re_match_include, RE_PROFILE_START, RE_PROFILE_CAP, RE_PROFILE_PTRACE, RE_PROFILE_SIGNAL
+from apparmor.regex import strip_parenthesis, strip_quotes, parse_profile_start_line, re_match_include, RE_PROFILE_START, RE_PROFILE_CAP, RE_PROFILE_PTRACE, RE_PROFILE_SIGNAL
 
 
 class AARegexTest(AATest):
@@ -500,6 +500,24 @@ class TestInvalid_re_match_include(AATest):
         with self.assertRaises(expected):
             re_match_include(params)
 
+
+class TestStripParenthesis(AATest):
+    tests = [
+        ('foo',         'foo'       ),
+        ('(foo)',       'foo'       ),
+        ('(  foo )',    'foo'       ),
+        ('(foo',        '(foo'      ),
+        ('foo  )',      'foo  )'    ),
+        ('foo ()',      'foo ()'    ),
+        ('()',          ''          ),
+        ('(  )',        ''          ),
+        ('(())',        '()'        ),
+        (' (foo)',       '(foo)'    ),  # parenthesis not first char, whitespace stripped nevertheless
+        ('(foo) ',       '(foo)'    ),  # parenthesis not last char, whitespace stripped nevertheless
+    ]
+
+    def _run_test(self, params, expected):
+        self.assertEqual(strip_parenthesis(params), expected)
 
 class TestStripQuotes(AATest):
     def test_strip_quotes_01(self):
