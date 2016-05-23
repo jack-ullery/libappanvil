@@ -1122,6 +1122,16 @@ def handle_children(profile, hat, root):
                     continue
                 prelog[aamode][profile][hat]['capability'][capability] = True
 
+            elif typ == 'dbus':
+                # If dbus then we (should) have pid, profile, hat, program, mode, access, bus, name, path, interface, member, peer_profile
+                pid, p, h, prog, aamode, access, bus, path, name, interface, member, peer_profile = entry
+                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
+                    profile = p
+                    hat = h
+                if not profile or not hat:
+                    continue
+                prelog[aamode][profile][hat]['dbus'][access][bus][path][name][interface][member][peer_profile] = True
+
             elif typ == 'ptrace':
                 # If ptrace then we (should) have pid, profile, hat, program, mode, access and peer
                 pid, p, h, prog, aamode, access, peer = entry
@@ -2439,6 +2449,28 @@ def collapse_log():
                     cap_event = CapabilityRule(cap, log_event=True)
                     if not is_known_rule(aa[profile][hat], 'capability', cap_event):
                         log_dict[aamode][profile][hat]['capability'].add(cap_event)
+
+                dbus = prelog[aamode][profile][hat]['dbus']
+                for access in                               dbus:
+                    for bus in                              dbus[access]:
+                        for path in                         dbus[access][bus]:
+                            for name in                     dbus[access][bus][path]:
+                                for interface in            dbus[access][bus][path][name]:
+                                    for member in           dbus[access][bus][path][name][interface]:
+                                        for peer_profile in dbus[access][bus][path][name][interface][member]:
+                                            # Depending on the access type, not all parameters are allowed.
+                                            # Ignore them, even if some of them appear in the log.
+                                            # Also, the log doesn't provide a peer name, therefore always use ALL.
+                                            if access in ['send', 'receive']:
+                                                dbus_event = DbusRule(access, bus, path,            DbusRule.ALL,   interface,   member,        DbusRule.ALL,   peer_profile, log_event=True)
+                                            elif access == 'bind':
+                                                dbus_event = DbusRule(access, bus, DbusRule.ALL,    name,           DbusRule.ALL, DbusRule.ALL, DbusRule.ALL,   DbusRule.ALL, log_event=True)
+                                            elif access == 'eavesdrop':
+                                                dbus_event = DbusRule(access, bus, DbusRule.ALL,    DbusRule.ALL,   DbusRule.ALL, DbusRule.ALL, DbusRule.ALL,   DbusRule.ALL, log_event=True)
+                                            else:
+                                                raise AppArmorBug('unexpected dbus access: %s')
+
+                                            log_dict[aamode][profile][hat]['dbus'].add(dbus_event)
 
                 nd = prelog[aamode][profile][hat]['netdomain']
                 for family in nd.keys():

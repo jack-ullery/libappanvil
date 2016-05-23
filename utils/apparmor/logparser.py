@@ -371,6 +371,9 @@ class ReadLog:
         elif e['operation'] == 'signal':
             return(e['pid'], e['parent'], 'signal',
                              [profile, hat, prog, aamode, e['denied_mask'], e['signal'], e['peer']])
+        elif e['operation'].startswith('dbus_'):
+            return(e['pid'], e['parent'], 'dbus',
+                             [profile, hat, prog, aamode, e['denied_mask'], e['bus'], e['path'], e['name'], e['interface'], e['member'], e['peer_profile']])
         else:
             self.debug_logger.debug('UNHANDLED: %s' % e)
 
