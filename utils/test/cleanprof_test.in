@@ -22,6 +22,9 @@
     ptrace tracedby,
     unix (receive) type=dgram,
 
+    dbus send bus=session,
+    dbus send bus=session peer=(label=foo),
+
     set rlimit nofile <= 256,
     set rlimit nofile <= 64,
 
