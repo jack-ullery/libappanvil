@@ -301,6 +301,13 @@ class ReadLog:
                 self.debug_logger.debug('UNHANDLED (missing request_mask): %s' % e)
                 return None
 
+            # sometimes network events come with an e['operation'] that matches the list of file operations
+            # see https://bugs.launchpad.net/apparmor/+bug/1577051 and https://bugs.launchpad.net/apparmor/+bug/1582374
+            # XXX these events are network events, so we should map them as such
+            if e['request_mask'] in ('send', 'receive'):
+                self.debug_logger.debug('UNHANDLED (request_mask is send or receive): %s' % e)
+                return None
+
             # Map c (create) and d (delete) to w (logging is more detailed than the profile language)
             rmask = e['request_mask']
             rmask = rmask.replace('c', 'w')
