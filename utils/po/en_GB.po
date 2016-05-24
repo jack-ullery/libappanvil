@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor\n"
-"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"Report-Msgid-Bugs-To: AppArmor list <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
 "PO-Revision-Date: 2016-03-17 17:48+0000\n"
 "Last-Translator: Andi Chandler <Unknown>\n"
@@ -16,6 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Launchpad-Export-Date: 2016-03-18 05:17+0000\n"
 "X-Generator: Launchpad (build 17947)\n"
+"Language: en_GB\n"
 
 #: ../aa-genprof:56
 msgid "Generate profile for the given program"
