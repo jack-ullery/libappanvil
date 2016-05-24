@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014-2015 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2016 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -46,7 +46,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
                             RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
                             RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY,
                             RE_PROFILE_CHANGE_HAT,
-                            RE_PROFILE_HAT_DEF, RE_PROFILE_DBUS, RE_PROFILE_MOUNT,
+                            RE_PROFILE_HAT_DEF, RE_PROFILE_MOUNT,
                             RE_PROFILE_PIVOT_ROOT,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
                             strip_quotes, parse_profile_start_line, re_match_include )
@@ -55,13 +55,14 @@ import apparmor.rules as aarules
 
 from apparmor.rule.capability import CapabilityRuleset, CapabilityRule
 from apparmor.rule.change_profile import ChangeProfileRuleset, ChangeProfileRule
+from apparmor.rule.dbus       import DbusRuleset,       DbusRule
 from apparmor.rule.network    import NetworkRuleset,    NetworkRule
 from apparmor.rule.ptrace     import PtraceRuleset,    PtraceRule
 from apparmor.rule.rlimit     import RlimitRuleset,    RlimitRule
 from apparmor.rule.signal     import SignalRuleset,    SignalRule
 from apparmor.rule import parse_modifiers, quote_if_needed
 
-ruletypes = ['capability', 'change_profile', 'network', 'ptrace', 'rlimit', 'signal']
+ruletypes = ['capability', 'change_profile', 'dbus', 'network', 'ptrace', 'rlimit', 'signal']
 
 from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
 
@@ -459,6 +460,7 @@ def profile_storage(profilename, hat, calledby):
     profile['info'] = {'profile': profilename, 'hat': hat, 'calledby': calledby}
 
     profile['capability']       = CapabilityRuleset()
+    profile['dbus']             = DbusRuleset()
     profile['change_profile']   = ChangeProfileRuleset()
     profile['network']          = NetworkRuleset()
     profile['ptrace']           = PtraceRuleset()
@@ -466,7 +468,6 @@ def profile_storage(profilename, hat, calledby):
     profile['signal']           = SignalRuleset()
 
     profile['allow']['path'] = hasher()
-    profile['allow']['dbus'] = list()
     profile['allow']['mount'] = list()
     profile['allow']['pivot_root'] = list()
 
@@ -1121,6 +1122,16 @@ def handle_children(profile, hat, root):
                     continue
                 prelog[aamode][profile][hat]['capability'][capability] = True
 
+            elif typ == 'dbus':
+                # If dbus then we (should) have pid, profile, hat, program, mode, access, bus, name, path, interface, member, peer_profile
+                pid, p, h, prog, aamode, access, bus, path, name, interface, member, peer_profile = entry
+                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
+                    profile = p
+                    hat = h
+                if not profile or not hat:
+                    continue
+                prelog[aamode][profile][hat]['dbus'][access][bus][path][name][interface][member][peer_profile] = True
+
             elif typ == 'ptrace':
                 # If ptrace then we (should) have pid, profile, hat, program, mode, access and peer
                 pid, p, h, prog, aamode, access, peer = entry
@@ -1202,7 +1213,6 @@ def handle_children(profile, hat, root):
                         context_new = context_new + '^%s' % hat
                     context_new = context_new + ' -> %s' % exec_target
 
-                    # ans_new = transitions.get(context_new, '')  # XXX ans meant here?
                     combinedmode = set()
                     combinedaudit = set()
                     ## Check return Value Consistency
@@ -1412,7 +1422,6 @@ def handle_children(profile, hat, root):
                                         exec_mode = exec_mode - (apparmor.aamode.AA_EXEC_UNSAFE | AA_OTHER(apparmor.aamode.AA_EXEC_UNSAFE))
                                 else:
                                     ans = 'INVALID'
-                        transitions[context_new] = ans
 
                         regex_options = re.compile('CMD_(ix|px|cx|nx|pix|cix|nix)')
                         if regex_options.search(ans):
@@ -1609,6 +1618,10 @@ def ask_the_questions():
                 UI_SelectUpdatedRepoProfile(profile, p)
 
             found += 1
+
+            sev_db.unload_variables()
+            sev_db.load_variables(get_profile_filename(profile))
+
             # Sorted list of hats with the profile name coming first
             hats = list(filter(lambda key: key != profile, sorted(log_dict[aamode][profile].keys())))
             if log_dict[aamode][profile].get(profile, False):
@@ -2437,6 +2450,28 @@ def collapse_log():
                     if not is_known_rule(aa[profile][hat], 'capability', cap_event):
                         log_dict[aamode][profile][hat]['capability'].add(cap_event)
 
+                dbus = prelog[aamode][profile][hat]['dbus']
+                for access in                               dbus:
+                    for bus in                              dbus[access]:
+                        for path in                         dbus[access][bus]:
+                            for name in                     dbus[access][bus][path]:
+                                for interface in            dbus[access][bus][path][name]:
+                                    for member in           dbus[access][bus][path][name][interface]:
+                                        for peer_profile in dbus[access][bus][path][name][interface][member]:
+                                            # Depending on the access type, not all parameters are allowed.
+                                            # Ignore them, even if some of them appear in the log.
+                                            # Also, the log doesn't provide a peer name, therefore always use ALL.
+                                            if access in ['send', 'receive']:
+                                                dbus_event = DbusRule(access, bus, path,            DbusRule.ALL,   interface,   member,        DbusRule.ALL,   peer_profile, log_event=True)
+                                            elif access == 'bind':
+                                                dbus_event = DbusRule(access, bus, DbusRule.ALL,    name,           DbusRule.ALL, DbusRule.ALL, DbusRule.ALL,   DbusRule.ALL, log_event=True)
+                                            elif access == 'eavesdrop':
+                                                dbus_event = DbusRule(access, bus, DbusRule.ALL,    DbusRule.ALL,   DbusRule.ALL, DbusRule.ALL, DbusRule.ALL,   DbusRule.ALL, log_event=True)
+                                            else:
+                                                raise AppArmorBug('unexpected dbus access: %s')
+
+                                            log_dict[aamode][profile][hat]['dbus'].add(dbus_event)
+
                 nd = prelog[aamode][profile][hat]['netdomain']
                 for family in nd.keys():
                     for sock_type in nd[family].keys():
@@ -2883,28 +2918,11 @@ def parse_profile_data(data, file, do_include):
 
             profile_data[profile][hat]['network'].add(NetworkRule.parse(line))
 
-        elif RE_PROFILE_DBUS.search(line):
-            matches = RE_PROFILE_DBUS.search(line).groups()
-
+        elif DbusRule.match(line):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected dbus entry found in file: %(file)s line: %(line)s') % {'file': file, 'line': lineno + 1 })
 
-            audit = False
-            if matches[0]:
-                audit = True
-            allow = 'allow'
-            if matches[1] and matches[1].strip() == 'deny':
-                allow = 'deny'
-            dbus = matches[2]
-
-            #parse_dbus_rule(profile_data[profile], dbus, audit, allow)
-            dbus_rule = parse_dbus_rule(dbus)
-            dbus_rule.audit = audit
-            dbus_rule.deny = (allow == 'deny')
-
-            dbus_rules = profile_data[profile][hat][allow].get('dbus', list())
-            dbus_rules.append(dbus_rule)
-            profile_data[profile][hat][allow]['dbus'] = dbus_rules
+            profile_data[profile][hat]['dbus'].add(DbusRule.parse(line))
 
         elif RE_PROFILE_MOUNT.search(line):
             matches = RE_PROFILE_MOUNT.search(line).groups()
@@ -3063,21 +3081,6 @@ def parse_profile_data(data, file, do_include):
         raise AppArmorException(_("Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside profile %(profile)s") % { 'file': file, 'profile': profile })
 
     return profile_data
-
-# RE_DBUS_ENTRY = re.compile('^dbus\s*()?,\s*$')
-#   use stuff like '(?P<action>(send|write|w|receive|read|r|rw))'
-
-def parse_dbus_rule(line):
-    # XXX Do real parsing here
-    return aarules.Raw_DBUS_Rule(line)
-
-    #matches = RE_DBUS_ENTRY.search(line).groups()
-    #if len(matches) == 1:
-        # XXX warn?
-        # matched nothing
-    #    print('no matches')
-    #    return aarules.DBUS_Rule()
-    #print(line)
 
 def parse_mount_rule(line):
     # XXX Do real parsing here
@@ -3251,22 +3254,10 @@ def write_netdomain(prof_data, depth):
         data = prof_data['network'].get_clean(depth)
     return data
 
-def write_dbus_rules(prof_data, depth, allow):
-    pre = '  ' * depth
-    data = []
-
-    # no dbus rules, so return
-    if not prof_data[allow].get('dbus', False):
-        return data
-
-    for dbus_rule in prof_data[allow]['dbus']:
-        data.append('%s%s' % (pre, dbus_rule.serialize()))
-    data.append('')
-    return data
-
 def write_dbus(prof_data, depth):
-    data = write_dbus_rules(prof_data, depth, 'deny')
-    data += write_dbus_rules(prof_data, depth, 'allow')
+    data = []
+    if prof_data.get('dbus', False):
+        data = prof_data['dbus'].get_clean(depth)
     return data
 
 def write_mount_rules(prof_data, depth, allow):

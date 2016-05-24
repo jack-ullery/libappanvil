@@ -89,6 +89,12 @@ int debug_cache = 0;
 long jobs_max = -8;			/* 8 * cpus */
 long jobs = JOBS_AUTO;			/* default: number of processor cores */
 long njobs = 0;
+long jobs_scale = 0;			/* number of chance to resample online
+					 * cpus. This allows jobs spawning to
+					 * scale when scheduling policy is
+					 * taking cpus off line, and brings
+					 * them back with load
+					 */
 bool debug_jobs = false;
 
 struct timespec cache_tstamp, mru_policy_tstamp;
@@ -900,6 +906,18 @@ do {									\
 		RESULT(WORK);						\
 		break;							\
 	}*/								\
+	if (jobs_scale) {						\
+		long n = sysconf(_SC_NPROCESSORS_ONLN);			\
+		if (n > jobs_max)					\
+			n = jobs_max;					\
+		if (n > jobs) {						\
+			/* reset sample chances - potentially reduce to 0 */ \
+			jobs_scale = jobs_max - n;			\
+			jobs = n;					\
+		} else							\
+			/* reduce scaling chance by 1 */		\
+			jobs_scale--;					\
+	}								\
 	if (njobs == jobs) {						\
 		/* wait for a child */					\
 		if (debug_jobs)						\
@@ -961,17 +979,24 @@ static void setup_parallel_compile(void)
 {
 	/* jobs and paralell_max set by default, config or args */
 	long n = sysconf(_SC_NPROCESSORS_ONLN);
+	long maxn = sysconf(_SC_NPROCESSORS_CONF);
 	if (n == -1)
 		/* unable to determine number of processors, default to 1 */
 		n = 1;
+	if (maxn == -1)
+		/* unable to determine number of processors, default to 1 */
+		maxn = 1;
 	jobs = compute_jobs(n, jobs);
-	jobs_max = compute_jobs(n, jobs_max);
+	jobs_max = compute_jobs(maxn, jobs_max);
 
 	if (jobs > jobs_max) {
 		pwarn("%s: Warning capping number of jobs to %ld * # of cpus == '%ld'",
 		      progname, jobs_max, jobs);
 		jobs = jobs_max;
-	}
+	} else if (jobs < jobs_max)
+		/* the bigger the difference the more sample chances given */
+		jobs_scale = jobs_max + 1 - n;
+
 	njobs = 0;
 	if (debug_jobs)
 		fprintf(stderr, "jobs: %ld\n", jobs);

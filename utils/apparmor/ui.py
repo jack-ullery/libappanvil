@@ -77,8 +77,8 @@ def UI_YesNo(text, default):
     default = default.lower()
     ans = None
     if UI_mode == 'text':
-        yes = _('(Y)es')
-        no = _('(N)o')
+        yes = CMDS['CMD_YES']
+        no = CMDS['CMD_NO']
         yeskey = get_translated_hotkey(yes).lower()
         nokey = get_translated_hotkey(no).lower()
         ans = 'XXXINVALIDXXX'
@@ -121,9 +121,9 @@ def UI_YesNoCancel(text, default):
     default = default.lower()
     ans = None
     if UI_mode == 'text':
-        yes = _('(Y)es')
-        no = _('(N)o')
-        cancel = _('(C)ancel')
+        yes = CMDS['CMD_YES']
+        no = CMDS['CMD_NO']
+        cancel = CMDS['CMD_CANCEL']
 
         yeskey = get_translated_hotkey(yes).lower()
         nokey = get_translated_hotkey(no).lower()
@@ -274,6 +274,7 @@ CMDS = {'CMD_ALLOW': _('(A)llow'),
         'CMD_ASK_LATER': _('Ask Me (L)ater'),
         'CMD_YES': _('(Y)es'),
         'CMD_NO': _('(N)o'),
+        'CMD_CANCEL': _('(C)ancel'),
         'CMD_ALL_NET': _('Allow All (N)etwork'),
         'CMD_NET_FAMILY': _('Allow Network Fa(m)ily'),
         'CMD_OVERWRITE': _('(O)verwrite Profile'),

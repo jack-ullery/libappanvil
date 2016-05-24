@@ -178,7 +178,7 @@ syslog_month 		Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(
 hhmmss			{digit}{2}{colon}{digit}{2}{colon}{digit}{2}
 timezone		({plus}|{minus}){digit}{2}{colon}{digit}{2}
 syslog_time 		{hhmmss}({period}{digits})?{timezone}?
-syslog_hostname		[[:alnum:]_-]+
+syslog_hostname		[[:alnum:]._-]+
 dmesg_timestamp		\[[[:digit:] ]{5,}\.[[:digit:]]{6,}\]
 
 %x single_quoted_string

@@ -46,7 +46,7 @@ RE_PROFILE_PATH_ENTRY   = re.compile(RE_AUDIT_DENY + RE_OWNER + '(file\s+)?([\"@
 RE_PROFILE_NETWORK      = re.compile(RE_AUDIT_DENY + 'network(?P<details>\s+.*)?' + RE_COMMA_EOL)
 RE_PROFILE_CHANGE_HAT   = re.compile('^\s*\^(\"??.+?\"??)' + RE_COMMA_EOL)
 RE_PROFILE_HAT_DEF      = re.compile('^(?P<leadingspace>\s*)(?P<hat_keyword>\^|hat\s+)(?P<hat>\"??.+?\"??)\s+((flags=)?\((?P<flags>.+)\)\s+)*\{' + RE_EOL)
-RE_PROFILE_DBUS         = re.compile(RE_AUDIT_DENY + '(dbus\s*,|dbus\s+[^#]*\s*,)' + RE_EOL)
+RE_PROFILE_DBUS         = re.compile(RE_AUDIT_DENY + '(dbus\s*,|dbus(?P<details>\s+[^#]*)\s*,)' + RE_EOL)
 RE_PROFILE_MOUNT        = re.compile(RE_AUDIT_DENY + '((mount|remount|umount|unmount)(\s+[^#]*)?\s*,)' + RE_EOL)
 RE_PROFILE_SIGNAL       = re.compile(RE_AUDIT_DENY + '(signal\s*,|signal(?P<details>\s+[^#]*)\s*,)' + RE_EOL)
 RE_PROFILE_PTRACE       = re.compile(RE_AUDIT_DENY + '(ptrace\s*,|ptrace(?P<details>\s+[^#]*)\s*,)' + RE_EOL)
@@ -128,6 +128,15 @@ def re_match_include(line):
 
     return matches.group('magicpath')
 
+def strip_parenthesis(data):
+    '''strips parenthesis from the given string and returns the strip()ped result.
+       The parenthesis must be the first and last char, otherwise they won't be removed.
+       Even if no parenthesis get removed, the result will be strip()ped.
+       '''
+    if data[0] + data[-1] == '()':
+        return data[1:-1].strip()
+    else:
+        return data.strip()
 
 def strip_quotes(data):
     if data[0] + data[-1] == '""':

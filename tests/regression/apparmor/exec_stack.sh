@@ -66,7 +66,7 @@ runchecktest "EXEC_STACK (not stacked - bad mode)" fail -l "$test" -m complain
 
 # Verify file access and contexts by 2 stacked profiles
 genprofile -I $fileok $sharedok $getcon $test:"ix -> &$othertest" -- \
-	image=$othertest $otherok $sharedok $getcon $test:r
+	image=$othertest addimage:$test $otherok $sharedok $getcon $test:r
 runchecktest_errno EACCES "EXEC_STACK (2 stacked - file)" fail -- $test -f $file
 runchecktest_errno EACCES "EXEC_STACK (2 stacked - otherfile)" fail -- $test -f $otherfile
 runchecktest_errno EACCES "EXEC_STACK (2 stacked - thirdfile)" fail -- $test -f $thirdfile
@@ -78,8 +78,8 @@ runchecktest "EXEC_STACK (2 stacked - bad mode)" fail -- $test -l "${test}//&${t
 
 # Verify file access and contexts by 3 stacked profiles
 genprofile -I $fileok $sharedok $getcon $test:"ix -> &$othertest" -- \
-	image=$othertest $otherok $sharedok $getcon $test:"rix -> &$thirdtest" -- \
-	image=$thirdtest $thirdok $sharedok $getcon $test:r
+	image=$othertest addimage:$test $otherok $sharedok $getcon $test:"rix -> &$thirdtest" -- \
+	image=$thirdtest addimage:$test $thirdok $sharedok $getcon $test:r
 runchecktest_errno EACCES "EXEC_STACK (3 stacked - file)" fail -- $test -- $test -f $file
 runchecktest_errno EACCES "EXEC_STACK (3 stacked - otherfile)" fail -- $test -- $test -f $otherfile
 runchecktest_errno EACCES "EXEC_STACK (3 stacked - thirdfile)" fail -- $test -- $test -f $thirdfile
@@ -88,8 +88,8 @@ runchecktest "EXEC_STACK (3 stacked - sharedfile)" pass -- $test -- $test -f $sh
 runchecktest "EXEC_STACK (3 stacked - okcon)" pass -- $test -- $test -l "${thirdtest}//&${test}//&${othertest}" -m enforce
 
 genprofile -I $sharedok $stackotherok $stackthirdok $test:"rix -> &$othertest" -- \
-	image=$othertest $sharedok $stackthirdok $test:"rix -> &$thirdtest" -- \
-	image=$thirdtest $sharedok $test:r $stackthirdok
+	image=$othertest addimage:$test $sharedok $stackthirdok $test:"rix -> &$thirdtest" -- \
+	image=$thirdtest addimage:$test $sharedok $stackthirdok $test:r
 # Triggered an AppArmor WARN in the initial stacking patch set
 runchecktest "EXEC_STACK (3 stacked - old AA WARN)" pass -p $othertest -- $test -p $thirdtest -f $sharedfile
 
@@ -120,7 +120,7 @@ runchecktest "EXEC_STACK (stacked with namespaced profile - okcon)" pass -- $tes
 
 # Verify file access and contexts in mixed mode
 genprofile -I $fileok $sharedok $getcon $test:"ix -> &$othertest" -- \
-	image=$othertest flag:complain $otherok $sharedok $getcon $test:r
+	image=$othertest flag:complain addimage:$test $otherok $sharedok $getcon $test:r
 runchecktest "EXEC_STACK (mixed mode - file)" pass -- $test -f $file
 runchecktest_errno EACCES "EXEC_STACK (mixed mode - otherfile)" fail -- $test -f $otherfile
 runchecktest "EXEC_STACK (mixed mode - sharedfile)" pass -- $test -f $sharedfile
@@ -129,7 +129,7 @@ runchecktest "EXEC_STACK (mixed mode - okcon)" pass -- $test -l "${othertest}//&
 
 # Verify file access and contexts in complain mode
 genprofile -I flag:complain $getcon $test:"ix -> &$othertest" -- \
-	image=$othertest flag:complain $getcon
+	image=$othertest flag:complain addimage:$test $getcon
 runchecktest "EXEC_STACK (complain mode - file)" pass -- $test -f $file
 
 runchecktest "EXEC_STACK (complain mode - okcon)" pass -- $test -l "${test}//&${othertest}" -m complain

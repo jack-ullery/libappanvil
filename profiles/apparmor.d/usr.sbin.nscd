@@ -31,6 +31,7 @@
   /{var/cache,var/run,run}/nscd/{passwd,group,services,hosts,netgroup} rw,
   /{,var/}run/{nscd/,}nscd.pid rwl,
   /var/log/nscd.log rw,
+  @{PROC}/@{pid}/cmdline r,
   @{PROC}/@{pid}/fd/ r,
   @{PROC}/@{pid}/fd/* r,
   @{PROC}/@{pid}/mounts r,

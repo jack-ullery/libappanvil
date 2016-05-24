@@ -95,7 +95,7 @@ ifdef USE_SYSTEM
   INCLUDE_APPARMOR =
   APPARMOR_H =
 else
-  LIBAPPARMOR_SRC = ../libraries/libapparmor/
+  LIBAPPARMOR_SRC = ../libraries/libapparmor
   LOCAL_LIBAPPARMOR_INCLUDE = $(LIBAPPARMOR_SRC)/include
   LOCAL_LIBAPPARMOR_LDPATH = $(LIBAPPARMOR_SRC)/src/.libs
 
@@ -368,7 +368,7 @@ install-arch: $(INSTALLDEPS)
 	install -m 755 ${TOOLS} $(DESTDIR)/sbin
 
 .PHONY: install-indep
-install-indep:
+install-indep: indep
 	install -m 755 -d $(INSTALL_CONFDIR)
 	install -m 644 subdomain.conf $(INSTALL_CONFDIR)
 	install -m 644 parser.conf $(INSTALL_CONFDIR)

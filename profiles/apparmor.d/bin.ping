@@ -18,6 +18,7 @@
   capability net_raw,
   capability setuid,
   network inet raw,
+  network inet6 raw,
 
   /{,usr/}bin/ping mixr,
   /etc/modules.conf r,

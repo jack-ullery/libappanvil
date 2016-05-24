@@ -142,6 +142,12 @@ class ReadLog:
             ev['peer'] = event.peer
         elif ev['operation'] and ev['operation'] == 'ptrace':
             ev['peer'] = event.peer
+        elif ev['operation'] and ev['operation'].startswith('dbus_'):
+            ev['peer_profile'] = event.peer_profile
+            ev['bus'] = event.dbus_bus
+            ev['path'] = event.dbus_path
+            ev['interface'] = event.dbus_interface
+            ev['member'] = event.dbus_member
 
         LibAppArmor.free_record(event)
 
@@ -295,6 +301,13 @@ class ReadLog:
                 self.debug_logger.debug('UNHANDLED (missing request_mask): %s' % e)
                 return None
 
+            # sometimes network events come with an e['operation'] that matches the list of file operations
+            # see https://bugs.launchpad.net/apparmor/+bug/1577051 and https://bugs.launchpad.net/apparmor/+bug/1582374
+            # XXX these events are network events, so we should map them as such
+            if e['request_mask'] in ('send', 'receive'):
+                self.debug_logger.debug('UNHANDLED (request_mask is send or receive): %s' % e)
+                return None
+
             # Map c (create) and d (delete) to w (logging is more detailed than the profile language)
             rmask = e['request_mask']
             rmask = rmask.replace('c', 'w')
@@ -365,6 +378,9 @@ class ReadLog:
         elif e['operation'] == 'signal':
             return(e['pid'], e['parent'], 'signal',
                              [profile, hat, prog, aamode, e['denied_mask'], e['signal'], e['peer']])
+        elif e['operation'].startswith('dbus_'):
+            return(e['pid'], e['parent'], 'dbus',
+                             [profile, hat, prog, aamode, e['denied_mask'], e['bus'], e['path'], e['name'], e['interface'], e['member'], e['peer_profile']])
         else:
             self.debug_logger.debug('UNHANDLED: %s' % e)
 

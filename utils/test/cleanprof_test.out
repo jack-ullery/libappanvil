@@ -12,6 +12,8 @@
 
   network stream,
 
+  dbus send bus=session,
+
   signal set=(abrt alrm bus chld fpe hup ill int kill pipe quit segv stkflt term trap usr1 usr2),
 
   ptrace tracedby,

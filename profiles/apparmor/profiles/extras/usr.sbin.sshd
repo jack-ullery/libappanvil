@@ -2,6 +2,7 @@
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
 #    Copyright (C) 2012 Canonical Ltd.
+#    Copyright (C) 2015-2016 Simon Deziel
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -19,6 +20,7 @@
   #include <abstractions/authentication>
   #include <abstractions/base>
   #include <abstractions/consoles>
+  #include <abstractions/libpam-systemd>
   #include <abstractions/nameservice>
   #include <abstractions/wutmp>
 
@@ -32,10 +34,21 @@
   capability setgid,
   capability setuid,
   capability audit_control,
+  capability audit_write,
   capability dac_override,
   capability dac_read_search,
+  capability sys_ptrace,
+
+  # sshd doesn't require net_admin. libpam-systemd tries to
+  # use it if available to set the send/receive buffers size,
+  # but will fall back to a non-privileged version if it fails.
+  deny capability net_admin,
+
+  # needed when /proc is mounted with hidepid>=1
+  ptrace (read,trace) peer="unconfined",
 
   /dev/ptmx rw,
+  /dev/pts/[0-9]* rw,
   /dev/urandom r,
   /etc/default/locale r,
   /etc/environment r,
@@ -43,142 +56,89 @@
   /etc/hosts.deny r,
   /etc/modules.conf r,
   /etc/security/** r,
-  /etc/ssh/* r,
+  /etc/ssh/** r,
   /etc/ssl/openssl.cnf r,
-  @{PROC}/@{pid}/oom_adj rw,
-  @{PROC}/@{pid}/oom_score_adj rw,
   /usr/sbin/sshd mrix,
-  /var/log/btmp r,
-  /{,var/}run w,
-  /{,var/}run/sshd{,.init}.pid wl,
+  /usr/share/ssh/blacklist.* r,
+  /var/log/btmp rw,
+  owner /{,var/}run/sshd{,.init}.pid wl,
+  @{HOME}/.ssh/authorized_keys{,2} r,
 
-  @{PROC}/@{pid}/fd/ r,
-  @{PROC}/@{pid}/loginuid w,
-  @{PROC}/@{pid}/limits r,
+  @{PROC}/cmdline r,
+  @{PROC}/1/environ r,
+  @{PROC}/@{pids}/fd/ r,  # pid of the just-logged in user's shell
+  owner @{PROC}/@{pid}/loginuid rw,
+  owner @{PROC}/@{pid}/limits r,
+  owner @{PROC}/@{pid}/uid_map r,
+  owner @{PROC}/@{pid}/mounts r,
+  owner @{PROC}/@{pid}/oom_adj rw,
+  owner @{PROC}/@{pid}/oom_score_adj rw,
 
-# should only be here for use in non-change-hat openssh
-# duplicated from EXEC hat
-  /bin/ash rUx,
-  /bin/bash rUx,
-  /bin/bash2 rUx,
-  /bin/bsh rUx,
-  /bin/csh rUx,
-  /bin/dash rUx,
-  /bin/ksh rUx,
-  /bin/sh rUx,
-  /bin/tcsh rUx,
-  /bin/zsh rUx,
-  /bin/zsh4 rUx,
-  /sbin/nologin rUx,
+  /sys/fs/cgroup/*/user/*/[0-9]*/ rw,
+  /sys/fs/cgroup/systemd/user.slice/user-[0-9]*.slice/session-c[0-9]*.scope/ rw,
 
-# Call passwd for password change when expired
-#  /usr/bin/passwd Px,
+  /bin/ash      Uxr,
+  /bin/bash     Uxr,
+  /bin/bash2    Uxr,
+  /bin/bsh      Uxr,
+  /bin/csh      Uxr,
+  /bin/dash     Uxr,
+  /bin/ksh      Uxr,
+  /bin/sh       Uxr,
+  /bin/tcsh     Uxr,
+  /bin/zsh      Uxr,
+  /bin/zsh4     Uxr,
+  /bin/zsh5     Uxr,
+  /{,usr/}sbin/nologin Uxr,
+  /bin/false    Uxr,
 
+  # XXX: this needs to be enabled otherwise we risk locking out a user
+  # Call passwd for password change when expired
+  /usr/bin/passwd Cx -> passwd,
 
-# stuff duplicated from PRIVSEP_MONITOR
-  @{HOME}/.ssh/authorized_keys{,2}         r,
-
-  /dev/pts/[0-9]* rw,
-  /etc/ssh/moduli r,
-  @{PROC}/@{pid}/mounts r,
-
-# duplicated from AUTHENTICATED
-  /etc/motd r,
-  /{,var/}run/motd{,.new} rw,
-  /tmp/ssh-*/agent.[0-9]* rwl,
-
-  /tmp/ssh-*[0-9]*/ w,
-
-#
-# default subprofile for when sshd has authenticated the user
-#
-  ^EXEC {
-    #include <abstractions/base>
-
-    /bin/ash Ux,
-    /bin/bash Ux,
-    /bin/bash2 Ux,
-    /bin/bsh Ux,
-    /bin/csh Ux,
-    /bin/dash Ux,
-    /bin/ksh Ux,
-    /bin/sh Ux,
-    /bin/tcsh Ux,
-    /bin/zsh Ux,
-    /bin/zsh4 Ux,
-    /sbin/nologin Ux,
-
-# for debugging
-#  /dev/pts/[0-9]*                                              rw,
-  }
-
-#
-# subprofile for handling network input (privilege seperated child)
-#
-  ^PRIVSEP {
-    #include <abstractions/base>
-    #include <abstractions/nameservice>
-
-    capability sys_chroot,
-    capability setuid,
-    capability setgid,
-
-# for debugging
-#  /dev/pts/[0-9]*                                              rw,
-  }
-
-#
-# subprofile that handles authentication requests from the privilege
-# seperated child
-#
-  ^PRIVSEP_MONITOR {
+  # to set memory protection for passwd
+  @{PROC}/@{pid}/task/@{pid}/attr/exec w,
+  profile passwd {
     #include <abstractions/authentication>
     #include <abstractions/base>
     #include <abstractions/nameservice>
-    #include <abstractions/wutmp>
 
-
-    capability setuid,
-    capability setgid,
+    capability audit_write,
     capability chown,
-
-    @{HOME}/.ssh/authorized_keys{,2}         r,
-    /dev/ptmx rw,
-    /dev/pts/[0-9]* rw,
-    /dev/urandom r,
-    /etc/hosts.allow r,
-    /etc/hosts.deny r,
-    /etc/ssh/moduli r,
-    @{PROC}/@{pid}/mounts r,
-
-# for debugging
-#  /dev/pts/[0-9]*                                              rw,
-  }
-
-#
-# subprofile for post-authentication period until the user's shell is spawned
-#
-  ^AUTHENTICATED {
-    #include <abstractions/authentication>
-    #include <abstractions/consoles>
-    #include <abstractions/nameservice>
-    #include <abstractions/wutmp>
-
-    capability sys_tty_config,
-    capability setgid,
+    capability fsetid,
     capability setuid,
+    capability setgid,
 
-    /dev/log  w,
-    /dev/ptmx rw,
-    /etc/default/passwd r,
-    /etc/localtime r,
-    /etc/login.defs r,
-    /etc/motd r,
-    /{,var/}run/motd{,.new} rw,
-    /tmp/ssh-*/agent.[0-9]* rwl,
-    /tmp/ssh-*[0-9]*/ w,
+    /usr/bin/passwd r,
+    /dev/pts/[0-9]* rw,
+    /{,var/}run/utmp rwk,
 
-# for debugging
-#  /dev/pts/[0-9]*                                              rw,
+    owner /etc/.pwd.lock rwk,
+    owner /etc/nshadow rw,
+    owner /etc/shadow  rw,
+    owner @{PROC}/@{pid}/loginuid r,
+
+    # XXX: put into another subprofile?
+    /usr/bin/gnome-keyring-daemon ix,
+    capability ipc_lock,
+    owner @{PROC}/@{pid}/status r,
+    owner @{HOME}/.cache/keyring-*/        rw,
+    owner @{HOME}/.cache/keyring-*/control rw,
   }
+
+  /etc.legal r,
+  /etc/motd r,
+  /{,var/}run/motd{,.dynamic}{,.new} rw,
+  /tmp/ssh-[a-zA-Z0-9]*/ w,
+  /tmp/ssh-[a-zA-Z0-9]*/agent.[0-9]* wl,
+
+  # for internal-sftp
+  /         r,
+  /**       r,
+  owner /** rwl,
+
+  /usr/lib/openssh/sftp-server PUx,
+
+  # Site-specific additions and overrides. See local/README for details.
+  #include <local/usr.sbin.sshd>
 }

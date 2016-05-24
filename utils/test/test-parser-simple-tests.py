@@ -25,15 +25,6 @@ from apparmor.common import open_file_read, AppArmorException
 
 # XXX tests listed here will be *** SKIPPED *** XXX
 skip_startswith = (
-    # lots of invalid dbus rules (the tools currently just store them without any parsing)
-    'generated_dbus/bad-perms-',
-    'generated_dbus/bad-formatting-',
-    'generated_dbus/duplicated-conditionals-',
-    'generated_dbus/eavesdrop-incompat-',
-    'generated_dbus/message-incompat-',
-    'generated_dbus/pairing-unsupported-',
-    'generated_dbus/service-incompat-',
-
     # the tools don't check for conflicting x permissions (yet?)
     'generated_x/conflict-',
     'generated_x/ambiguous-',
@@ -56,14 +47,6 @@ exception_not_raised = [
     'capability/bad_3.sd',
     'capability/bad_4.sd',
     'change_hat/bad_parsing.sd',
-    'dbus/bad_bind_1.sd',
-    'dbus/bad_bind_2.sd',
-    'dbus/bad_eavesdrop_1.sd',
-    'dbus/bad_modifier_1.sd',
-    'dbus/bad_modifier_2.sd',
-    'dbus/bad_modifier_3.sd',
-    'dbus/bad_modifier_4.sd',
-    'dbus/bad_peer_1.sd',
     'dbus/bad_regex_01.sd',
     'dbus/bad_regex_02.sd',
     'dbus/bad_regex_03.sd',
@@ -174,8 +157,6 @@ exception_not_raised = [
     'vars/vars_dbus_bad_01.sd',
     'vars/vars_dbus_bad_02.sd',
     'vars/vars_dbus_bad_03.sd',
-    'vars/vars_dbus_bad_04.sd',
-    'vars/vars_dbus_bad_05.sd',
     'vars/vars_dbus_bad_06.sd',
     'vars/vars_dbus_bad_07.sd',
     'vars/vars_file_evaluation_7.sd',
@@ -290,7 +271,13 @@ syntax_failure = [
     'xtrans/simple_ok_pix_1.sd',  # Invalid mode pIx
     'xtrans/simple_ok_pux_1.sd',  # Invalid mode rPux
 
+    # dbus regex mismatch
+    'vars/vars_dbus_4.sd',
+    'vars/vars_dbus_9.sd',
+    'vars/vars_dbus_2.sd',
+
     # misc
+    'vars/vars_dbus_8.sd',  # Path doesn't start with / or variable: {/@{TLDS}/foo,/com/@{DOMAINS}}
     'vars/vars_simple_assignment_12.sd',  # Redefining existing variable @{BAR} ('\' not handled)
     'rewrite/alias_good_5.sd',  # Values added to a non-existing variable @{FOO} (defined in include, lp:1331856)
     'bare_include_tests/ok_2.sd',  # two #include<...> in one line

@@ -167,13 +167,13 @@ ifdef USE_SYSTEM
     ************************************************************************${nl})
   endif
 
-  ifneq (,$(shell pkg-config --atleast-version 2.11 libapparmor && echo TRUE))
+  ifneq (,$(shell pkg-config --atleast-version 2.10.95 libapparmor && echo TRUE))
     SRC+=stacking.c
     CONDITIONAL_TESTS+=exec_stack stackonexec stackprofile
   else
     $(warning ${nl}\
     ************************************************************************${nl}\
-    Skipping stacking tests: requires libapparmor 2.11 or newer ...${nl}\
+    Skipping stacking tests: requires libapparmor 2.11 Beta 1 or newer ...${nl}\
     ************************************************************************${nl})
   endif
 else

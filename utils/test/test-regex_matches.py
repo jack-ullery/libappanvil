@@ -14,7 +14,8 @@ import unittest
 from common_test import AATest, setup_all_loops
 from apparmor.common import AppArmorBug, AppArmorException
 
-from apparmor.regex import strip_quotes, parse_profile_start_line, re_match_include, RE_PROFILE_START, RE_PROFILE_CAP, RE_PROFILE_PTRACE, RE_PROFILE_SIGNAL
+from apparmor.regex import ( strip_parenthesis, strip_quotes, parse_profile_start_line, re_match_include,
+     RE_PROFILE_START, RE_PROFILE_DBUS, RE_PROFILE_CAP, RE_PROFILE_PTRACE, RE_PROFILE_SIGNAL )
 
 
 class AARegexTest(AATest):
@@ -256,13 +257,13 @@ class AARegexDbus(AARegexTest):
     '''Tests for RE_PROFILE_DBUS'''
 
     def AASetup(self):
-        self.regex = aa.RE_PROFILE_DBUS
+        self.regex = RE_PROFILE_DBUS
 
     tests = [
-        ('   dbus,', (None, None, 'dbus,', None)),
-        ('   audit dbus,', ('audit', None, 'dbus,', None)),
-        ('   dbus send member=no_comment,', (None, None, 'dbus send member=no_comment,', None)),
-        ('   dbus send member=no_comment, # comment', (None, None, 'dbus send member=no_comment,', '# comment')),
+        ('   dbus,',                                    (None,      None,   'dbus,',                            None,                       None)),
+        ('   audit dbus,',                              ('audit',   None,   'dbus,',                            None,                       None)),
+        ('   dbus send member=no_comment,',             (None,      None,   'dbus send member=no_comment,',     'send member=no_comment',   None)),
+        ('   dbus send member=no_comment, # comment',   (None,      None,   'dbus send member=no_comment,',     'send member=no_comment',   '# comment')),
 
         ('   dbusdriver,', False),
         ('   audit dbusdriver,', False),
@@ -500,6 +501,24 @@ class TestInvalid_re_match_include(AATest):
         with self.assertRaises(expected):
             re_match_include(params)
 
+
+class TestStripParenthesis(AATest):
+    tests = [
+        ('foo',         'foo'       ),
+        ('(foo)',       'foo'       ),
+        ('(  foo )',    'foo'       ),
+        ('(foo',        '(foo'      ),
+        ('foo  )',      'foo  )'    ),
+        ('foo ()',      'foo ()'    ),
+        ('()',          ''          ),
+        ('(  )',        ''          ),
+        ('(())',        '()'        ),
+        (' (foo)',       '(foo)'    ),  # parenthesis not first char, whitespace stripped nevertheless
+        ('(foo) ',       '(foo)'    ),  # parenthesis not last char, whitespace stripped nevertheless
+    ]
+
+    def _run_test(self, params, expected):
+        self.assertEqual(strip_parenthesis(params), expected)
 
 class TestStripQuotes(AATest):
     def test_strip_quotes_01(self):
