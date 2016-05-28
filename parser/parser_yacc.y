@@ -241,7 +241,6 @@ void add_local_entry(Profile *prof);
 %type <flags>	flagval
 %type <cap>	caps
 %type <cap>	capability
-%type <id>	change_profile_head
 %type <user_entry> change_profile
 %type <set_var> TOK_SET_VAR
 %type <bool_var> TOK_BOOL_VAR
@@ -1475,28 +1474,25 @@ file_mode: TOK_MODE
 		free($1);
 	}
 
-change_profile_head: TOK_CHANGE_PROFILE opt_id
-	{
-		if ($2 && !($2[0] == '/' || strncmp($2, "@{", 2) == 0))
-			yyerror(_("Exec condition must begin with '/'."));
-		$$ = $2;
-	}
-
-change_profile: change_profile_head opt_named_transition TOK_END_OF_RULE
+change_profile: TOK_CHANGE_PROFILE opt_id opt_named_transition TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
+		char *exec = $2;
+		char *target = $3;
 
-		if ($2) {
-			PDEBUG("Matched change_profile: tok_id (%s)\n", $2);
-			entry = new_entry($2, AA_CHANGE_PROFILE, $1);
+		if (exec && !(exec[0] == '/' || strncmp(exec, "@{", 2) == 0))
+			yyerror(_("Exec condition must begin with '/'."));
+
+		if (target) {
+			PDEBUG("Matched change_profile: tok_id (%s)\n", target);
 		} else {
-			char *rule = strdup("**");
-			if (!rule)
-				yyerror(_("Memory allocation error."));
-
 			PDEBUG("Matched change_profile,\n");
-			entry = new_entry(rule, AA_CHANGE_PROFILE, $1);
+			target = strdup("**");
+			if (!target)
+				yyerror(_("Memory allocation error."));
 		}
+
+		entry = new_entry(target, AA_CHANGE_PROFILE, exec);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 
