@@ -70,6 +70,7 @@ endif # USE_SYSTEM
 CFLAGS += -g -O0 -Wall -Wstrict-prototypes
 
 SRC=access.c \
+    at_secure.c \
     introspect.c \
     changeprofile.c \
     onexec.c \
@@ -187,6 +188,7 @@ EXEC=$(SRC:%.c=%)
 
 TESTS=aa_exec \
       access \
+      at_secure \
       introspect \
       capabilities \
       changeprofile \
@@ -264,6 +266,9 @@ ifdef USE_SYSTEM
 else # !USE_SYSTEM
 	cp uservars.inc.source uservars.inc
 endif # USE_SYSTEM
+
+at_secure: at_secure.c transition
+	${CC} ${CFLAGS} ${LDFLAGS} $< -o $@ ${LDLIBS}
 
 changehat_pthread: changehat_pthread.c changehat.h
 	${CC} ${CFLAGS} ${LDFLAGS} $< -o $@ ${LDLIBS} -pthread
