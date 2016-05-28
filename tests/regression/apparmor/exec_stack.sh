@@ -20,7 +20,7 @@ bin=$pwd
 . $bin/prologue.inc
 
 requires_kernel_features domain/stack
-settest stacking
+settest transition
 
 file=$tmpdir/file
 otherfile=$tmpdir/file2
