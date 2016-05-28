@@ -32,6 +32,11 @@
 
 #define NO_MODE		"(null)"
 
+#define CHANGE_PROFILE	1
+#define CHANGE_ONEXEC	2
+#define STACK_PROFILE	3
+#define STACK_ONEXEC	4
+
 static void file_io(const char *file)
 {
 	int rc = do_open(file);
@@ -215,20 +220,47 @@ err:
 	exit(EINVAL);
 }
 
-static void stack_onexec(const char *label)
+static void handle_transition(int transition, const char *target)
 {
-	if (aa_stack_onexec(label) != 0) {
-		int err = errno;
-		perror("FAIL - aa_stack_onexec");
-		exit(err);
-	}
-}
+	const char *msg;
+	int rc = 0;
 
-static void stack_profile(const char *label)
-{
-	if (aa_stack_profile(label) != 0) {
+	switch (transition) {
+	case CHANGE_ONEXEC:
+		msg = "FAIL - aa_change_onexec";
+		rc = aa_change_onexec(target);
+		break;
+	case CHANGE_PROFILE:
+		msg = "FAIL - aa_change_profile";
+		rc = aa_change_profile(target);
+		break;
+	case STACK_ONEXEC:
+		msg = "FAIL - aa_stack_onexec";
+#ifdef WITHOUT_STACKING
+		rc = -1;
+		errno = ENOTSUP;
+#else
+		rc = aa_stack_onexec(target);
+#endif
+		break;
+	case STACK_PROFILE:
+		msg = "FAIL - aa_stack_profile";
+#ifdef WITHOUT_STACKING
+		rc = -1;
+		errno = ENOTSUP;
+#else
+		rc = aa_stack_profile(target);
+#endif
+		break;
+	default:
+		msg = "FAIL - handle_transition";
+		rc = -1;
+		errno = ENOTSUP;
+	}
+
+	if (rc != 0) {
 		int err = errno;
-		perror("FAIL - aa_stack_profile");
+		perror(msg);
 		exit(err);
 	}
 }
@@ -246,7 +278,9 @@ static void exec(const char *prog, char **argv)
 static void usage(const char *prog)
 {
 	fprintf(stderr,
-		"%s: [-o <LABEL> | -p <LABEL>] [-l <LABEL>] [-m <MODE>] [-f <FILE>] [-- ... [-- ...]]\n"
+		"%s: [-O <LABEL> | -P <LABEL> | -o <LABEL> | -p <LABEL>] [-l <LABEL>] [-m <MODE>] [-f <FILE>] [-- ... [-- ...]]\n"
+		"  -O <LABEL>\tCall aa_change_onexec(LABEL)\n"
+		"  -P <LABEL>\tCall aa_change_profile(LABEL)\n"
 		"  -o <LABEL>\tCall aa_stack_onexec(LABEL)\n"
 		"  -p <LABEL>\tCall aa_stack_profile(LABEL)\n"
 		"  -l <LABEL>\tVerify that aa_getcon() returns LABEL\n"
@@ -262,18 +296,32 @@ struct options {
 	const char *file;
 	const char *expected_label;
 	const char *expected_mode;
-	const char *stack_onexec;
-	const char *stack_profile;
+
+	int transition;		/* CHANGE_PROFILE, STACK_ONEXEC, etc. */
+	const char *target;	/* The target label of the transition */
+
 	const char *exec;
 	char **exec_argv;
 };
 
+static void set_transition(const char *prog, struct options *opts,
+			   int transition, const char *target)
+{
+	/* Can only specify one transition */
+	if (opts->transition || opts->target)
+		usage(prog);
+
+	opts->transition = transition;
+	opts->target = target;
+}
+
 static void parse_opts(int argc, char **argv, struct options *opts)
 {
+	const char *prog = argv[0];
 	int o;
 
 	memset(opts, 0, sizeof(*opts));
-	while ((o = getopt(argc, argv, "f:l:m:o:p:")) != -1) {
+	while ((o = getopt(argc, argv, "f:l:m:O:P:o:p:")) != -1) {
 		switch (o) {
 		case 'f': /* file */
 			opts->file = optarg;
@@ -284,26 +332,27 @@ static void parse_opts(int argc, char **argv, struct options *opts)
 		case 'm': /* expected mode */
 			opts->expected_mode = optarg;
 			break;
+		case 'O': /* aa_change_profile */
+			set_transition(prog, opts, CHANGE_ONEXEC, optarg);
+			break;
+		case 'P': /* aa_change_profile */
+			set_transition(prog, opts, CHANGE_PROFILE, optarg);
+			break;
 		case 'o': /* aa_stack_onexec */
-			opts->stack_onexec = optarg;
+			set_transition(prog, opts, STACK_ONEXEC, optarg);
 			break;
 		case 'p': /* aa_stack_profile */
-			opts->stack_profile = optarg;
+			set_transition(prog, opts, STACK_PROFILE, optarg);
 			break;
 		default: /* '?' */
-			usage(argv[0]);
+			usage(prog);
 		}
-	}
-
-	/* Can only specify one or the other */
-	if (opts->stack_onexec && opts->stack_profile) {
-		usage(argv[0]);
 	}
 
 	if (optind < argc) {
 		/* Ensure that the previous option was "--" */
 		if (optind == 0 || strcmp("--", argv[optind - 1]))
-			usage(argv[0]);
+			usage(prog);
 
 		opts->exec = argv[optind];
 		opts->exec_argv = &argv[optind];
@@ -316,10 +365,8 @@ int main(int argc, char **argv)
 
 	parse_opts(argc, argv, &opts);
 
-	if (opts.stack_onexec)
-		stack_onexec(opts.stack_onexec);
-	else if (opts.stack_profile)
-		stack_profile(opts.stack_profile);
+	if (opts.transition)
+		handle_transition(opts.transition, opts.target);
 
 	if (opts.file)
 		file_io(opts.file);

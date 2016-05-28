@@ -133,6 +133,7 @@ SRC=access.c \
     syscall_sysctl.c \
     sysctl_proc.c \
     tcp.c \
+    transition.c \
     unix_fd_client.c \
     unix_fd_server.c \
     unix_socket.c \
@@ -156,6 +157,7 @@ Install libdbus-1-dev or equivalent package to build and run these tests${nl}\
 ************************************************************************${nl})
 endif
 
+TRANSITION_CFLAGS=
 ifdef USE_SYSTEM
   ifneq (,$(shell pkg-config --atleast-version 2.10 libapparmor && echo TRUE))
     SRC+=aa_policy_cache.c
@@ -168,16 +170,16 @@ ifdef USE_SYSTEM
   endif
 
   ifneq (,$(shell pkg-config --atleast-version 2.10.95 libapparmor && echo TRUE))
-    SRC+=transition.c
     CONDITIONAL_TESTS+=exec_stack stackonexec stackprofile
   else
     $(warning ${nl}\
     ************************************************************************${nl}\
     Skipping stacking tests: requires libapparmor 2.11 Beta 1 or newer ...${nl}\
     ************************************************************************${nl})
+    TRANSITION_CFLAGS=-DWITHOUT_STACKING
   endif
 else
-  SRC+=aa_policy_cache.c transition.c
+  SRC+=aa_policy_cache.c
   CONDITIONAL_TESTS+=exec_stack aa_policy_cache stackonexec stackprofile
 endif
 
@@ -280,6 +282,9 @@ dbus_service: dbus_message dbus_service.c dbus_common.o
 
 dbus_unrequested_reply: dbus_service dbus_unrequested_reply.c dbus_common.o
 	${CC} ${CFLAGS} ${LDFLAGS} $(filter-out dbus_service, $^) -o $@ ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
+
+transition: transition.c
+	${CC} ${CFLAGS} ${TRANSITION_CFLAGS} ${LDFLAGS} $< -o $@ ${LDLIBS}
 
 unix_socket_common.o: unix_socket_common.c unix_socket_common.h
 	${CC} ${CFLAGS} ${LDFLAGS} $< -c ${LDLIBS}
