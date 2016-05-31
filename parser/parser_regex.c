@@ -494,6 +494,23 @@ static int process_profile_name_xmatch(Profile *prof)
 
 static int warn_change_profile = 1;
 
+static bool is_change_profile_mode(int mode)
+{
+	/**
+	 * A change_profile entry will have the AA_CHANGE_PROFILE bit set.
+	 * It could also have the (AA_EXEC_BITS | ALL_AA_EXEC_UNSAFE) bits
+	 * set by the frontend parser. That means that it is incorrect to
+	 * identify change_profile modes using a test like this:
+	 *
+	 *   (mode & ~AA_CHANGE_PROFILE)
+	 *
+	 * The above test would incorrectly return true on a
+	 * change_profile mode that has the
+	 * (AA_EXEC_BITS | ALL_AA_EXEC_UNSAFE) bits set.
+	 */
+	return mode & AA_CHANGE_PROFILE;
+}
+
 static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 {
 	std::string tbuf;
@@ -504,7 +521,7 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 		return TRUE;
 
 
-	if (entry->mode & ~AA_CHANGE_PROFILE)
+	if (!is_change_profile_mode(entry->mode))
 		filter_slashes(entry->name);
 	ptype = convert_aaregex_to_pcre(entry->name, 0, glob_default, tbuf, &pos);
 	if (ptype == ePatternInvalid)
@@ -530,13 +547,14 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 	 * TODO: split link and change_profile entries earlier
 	 */
 	if (entry->deny) {
-		if ((entry->mode & ~(AA_LINK_BITS | AA_CHANGE_PROFILE)) &&
+		if ((entry->mode & ~AA_LINK_BITS) &&
+		    !is_change_profile_mode(entry->mode) &&
 		    !dfarules->add_rule(tbuf.c_str(), entry->deny,
 					entry->mode & ~(AA_LINK_BITS | AA_CHANGE_PROFILE),
 					entry->audit & ~(AA_LINK_BITS | AA_CHANGE_PROFILE),
 					dfaflags))
 			return FALSE;
-	} else if (entry->mode & ~AA_CHANGE_PROFILE) {
+	} else if (!is_change_profile_mode(entry->mode)) {
 		if (!dfarules->add_rule(tbuf.c_str(), entry->deny, entry->mode,
 					entry->audit, dfaflags))
 			return FALSE;
@@ -563,12 +581,13 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 		if (!dfarules->add_rule_vec(entry->deny, perms, entry->audit & AA_LINK_BITS, 2, vec, dfaflags))
 			return FALSE;
 	}
-	if (entry->mode & AA_CHANGE_PROFILE) {
+	if (is_change_profile_mode(entry->mode)) {
 		const char *vec[3];
 		std::string lbuf, xbuf;
 		autofree char *ns = NULL;
 		autofree char *name = NULL;
 		int index = 1;
+		uint32_t onexec_perms = AA_ONEXEC;
 
 		if ((warnflags & WARN_RULE_DOWNGRADED) && entry->audit && warn_change_profile) {
 			/* don't have profile name here, so until this code
@@ -610,12 +629,23 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 		}
 
 		/* regular change_profile rule */
-		if (!dfarules->add_rule_vec(entry->deny, AA_CHANGE_PROFILE | AA_ONEXEC, 0, index - 1, &vec[1], dfaflags))
+		if (!dfarules->add_rule_vec(entry->deny,
+					    AA_CHANGE_PROFILE | onexec_perms,
+					    0, index - 1, &vec[1], dfaflags))
 			return FALSE;
+
 		/* onexec rules - both rules are needed for onexec */
-		if (!dfarules->add_rule_vec(entry->deny, AA_ONEXEC, 0, 1, vec, dfaflags))
+		if (!dfarules->add_rule_vec(entry->deny, onexec_perms,
+					    0, 1, vec, dfaflags))
 			return FALSE;
-		if (!dfarules->add_rule_vec(entry->deny, AA_ONEXEC, 0, index, vec, dfaflags))
+
+		/**
+		 * pick up any exec bits, from the frontend parser, related to
+		 * unsafe exec transitions
+		 */
+		onexec_perms |= (entry->mode & (AA_EXEC_BITS | ALL_AA_EXEC_UNSAFE));
+		if (!dfarules->add_rule_vec(entry->deny, onexec_perms,
+					    0, index, vec, dfaflags))
 			return FALSE;
 	}
 	return TRUE;

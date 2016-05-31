@@ -1474,11 +1474,31 @@ file_mode: TOK_MODE
 		free($1);
 	}
 
-change_profile: TOK_CHANGE_PROFILE opt_id opt_named_transition TOK_END_OF_RULE
+change_profile: TOK_CHANGE_PROFILE opt_unsafe opt_id opt_named_transition TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
-		char *exec = $2;
-		char *target = $3;
+		int mode = AA_CHANGE_PROFILE;
+		int exec_mode = $2;
+		char *exec = $3;
+		char *target = $4;
+
+		if (exec_mode) {
+			if (!exec)
+				yyerror(_("Exec condition is required when unsafe or safe keywords are present"));
+
+			if (exec_mode == 1) {
+				mode |= (AA_EXEC_BITS | ALL_AA_EXEC_UNSAFE);
+			} else if (exec_mode == 2 &&
+				   !kernel_supports_stacking &&
+				   warnflags & WARN_RULE_DOWNGRADED) {
+				pwarn("downgrading change_profile safe rule to unsafe due to lack of necessary kernel support\n");
+				/**
+				 * No need to do anything because the 'unsafe'
+				 * variant is the only supported type of
+				 * change_profile rules in non-stacking kernels
+				 */
+			}
+		}
 
 		if (exec && !(exec[0] == '/' || strncmp(exec, "@{", 2) == 0))
 			yyerror(_("Exec condition must begin with '/'."));
@@ -1492,7 +1512,7 @@ change_profile: TOK_CHANGE_PROFILE opt_id opt_named_transition TOK_END_OF_RULE
 				yyerror(_("Memory allocation error."));
 		}
 
-		entry = new_entry(target, AA_CHANGE_PROFILE, exec);
+		entry = new_entry(target, mode, exec);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 
