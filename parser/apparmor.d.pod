@@ -277,7 +277,9 @@ B<ALPHA> = ('a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
 B<ALPHANUMERIC> = ('0', '1', '2', ... '9', 'a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
-B<CHANGE_PROFILE RULE> = 'change_profile' [ I<EXEC COND> ] [ '-E<gt>' I<PROFILE NAME> ]
+B<CHANGE_PROFILE RULE> = 'change_profile' [ [ I<EXEC MODE> ] I<EXEC COND> ] [ '-E<gt>' I<PROFILE NAME> ]
+
+B<EXEC_MODE> = ( 'safe' | 'unsafe' )
 
 B<EXEC COND> = I<FILEGLOB>
 
@@ -1207,6 +1209,20 @@ rule set.  Eg.
 
   /bin/bash Px -> new_profile1,
   change_profile /bin/bash -> {new_profile1,new_profile2,new_profile3},
+
+The exec mode dictates whether or not the Linux Kernel's B<unsafe_exec>
+routines should be used to scrub the environment, similar to setuid programs.
+(See ld.so(8) for some information on setuid/setgid environment scrubbing.) The
+B<safe> mode sets up environment scrubbing to occur when the new application is
+executed and B<unsafe> mode disables AppArmor's requirement for environment
+scrubbing (the kernel and/or libc may still require environment scrubbing). An
+exec mode can only be specified when an exec condition is present.
+
+  change_profile safe /bin/bash -> new_profile,
+
+Not all kernels support B<safe> mode and the parser will downgrade rules to
+B<unsafe> mode in that situation. If no exec mode is specified, the default is
+B<safe> mode in kernels that support it.
 
 =head2 rlimit rules
 
