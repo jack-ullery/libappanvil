@@ -322,15 +322,7 @@ LT_EQUAL	<=
 	}
 }
 
-<SUB_ID>{
-	({IDS}|{QUOTED_ID}) {
-		/* Go into separate state to match generic ID strings */
-		yylval.id =  processid(yytext, yyleng);
-		POP_AND_RETURN(TOK_ID);
-	}
-}
-
-<SUB_ID_WS>{
+<SUB_ID,SUB_ID_WS>{
 	({IDS}|{QUOTED_ID}) {
 		/* Go into separate state to match generic ID strings */
 		yylval.id =  processid(yytext, yyleng);
