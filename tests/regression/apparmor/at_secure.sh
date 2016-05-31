@@ -151,3 +151,58 @@ else
 	runchecktest "AT_SECURE (confined -> &confined - stack_onexec)" \
 		pass -o $test_prof -- $at_secure $onexec_default
 fi
+
+if [ "$(parser_supports 'change_profile safe /a -> /b,')" != "true" ]; then
+	echo "Warning: parser doesn't support change_profile (un)safe rules. Skipping tests..."
+else
+	safe_at_secure=1
+	if [ "$stacking_supported" != "true" ]; then
+		# Pre-stacking kernels can't properly support the
+		# change_profile safe modifier:
+		#  change_profile safe /a -> /b,
+		#
+		# The parser downgrades 'safe' to 'unsafe' in this situation.
+		safe_at_secure=0
+	fi
+
+	# Verify AT_SECURE after (un)safe confined -> unconfined transition
+	genprofile "change_profile:unsafe:$at_secure:unconfined"
+	runchecktest "AT_SECURE (confined -> unconfined - unsafe change_onexec)" \
+		pass -O unconfined -- $at_secure 0
+
+	genprofile "change_profile:safe:$at_secure:unconfined"
+	runchecktest "AT_SECURE (confined -> unconfined - safe change_onexec)" \
+		pass -O unconfined -- $at_secure $safe_at_secure
+
+	# Verify AT_SECURE after (un)safe confined -> confined transition
+	genprofile "change_profile:unsafe:$at_secure:$test_prof" -- image=$test_prof addimage:$at_secure
+	runchecktest "AT_SECURE (confined -> confined - unsafe change_onexec)" \
+		pass -O $test_prof -- $at_secure 0
+
+	genprofile "change_profile:safe:$at_secure:$test_prof" -- image=$test_prof addimage:$at_secure
+	runchecktest "AT_SECURE (confined -> confined - safe change_onexec)" \
+		pass -O $test_prof -- $at_secure $safe_at_secure
+
+	if [ "$stacking_supported" != "true" ]; then
+		# We've already warned the user that we're skipping stacking tests
+		:
+	else
+		# Verify AT_SECURE after (un)safe confined -> &unconfined stacking transition
+		genprofile "change_profile:unsafe:$at_secure:&unconfined"
+		runchecktest "AT_SECURE (confined -> &unconfined - unsafe stack_onexec)" \
+			pass -o unconfined -- $at_secure 0
+
+		genprofile "change_profile:safe:$at_secure:&unconfined"
+		runchecktest "AT_SECURE (confined -> &unconfined - safe stack_onexec)" \
+			pass -o unconfined -- $at_secure 1
+
+		# Verify AT_SECURE after (un)safe confined -> &confined stacking transition
+		genprofile "change_profile:unsafe:$at_secure:&$test_prof" -- image=$test_prof addimage:$at_secure
+		runchecktest "AT_SECURE (confined -> &confined - unsafe stack_onexec)" \
+			pass -o $test_prof -- $at_secure 0
+
+		genprofile "change_profile:safe:$at_secure:&$test_prof" -- image=$test_prof addimage:$at_secure
+		runchecktest "AT_SECURE (confined -> &confined - safe stack_onexec)" \
+			pass -o $test_prof -- $at_secure 1
+	fi
+fi
