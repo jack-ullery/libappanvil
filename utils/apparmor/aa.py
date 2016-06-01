@@ -557,8 +557,11 @@ def get_profile(prof_name):
         inactive_profile[prof_name][prof_name].pop('filename')
         profile_hash[uname]['username'] = uname
         profile_hash[uname]['profile_type'] = 'INACTIVE_LOCAL'
-        profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name)
+        profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name, None)
         profile_hash[uname]['profile_data'] = inactive_profile
+
+        existing_profiles.pop(prof_name)  # remove profile filename from list to force storing in /etc/apparmor.d/ instead of extra_profile_dir
+
     # If no profiles in repo and no inactive profiles
     if not profile_hash.keys():
         return None
@@ -579,18 +582,13 @@ def get_profile(prof_name):
 
     q = aaui.PromptQuestion()
     q.headers = ['Profile', prof_name]
-    q.functions = ['CMD_VIEW_PROFILE', 'CMD_USE_PROFILE', 'CMD_CREATE_PROFILE',
-                      'CMD_ABORT', 'CMD_FINISHED']
+    q.functions = ['CMD_VIEW_PROFILE', 'CMD_USE_PROFILE', 'CMD_CREATE_PROFILE', 'CMD_ABORT']
     q.default = "CMD_VIEW_PROFILE"
     q.options = options
     q.selected = 0
 
     ans = ''
     while 'CMD_USE_PROFILE' not in ans and 'CMD_CREATE_PROFILE' not in ans:
-        if ans == 'CMD_FINISHED':
-            save_profiles()
-            return
-
         ans, arg = q.promptUser()
         p = profile_hash[options[arg]]
         q.selected = options.index(options[arg])
@@ -602,12 +600,13 @@ def get_profile(prof_name):
                                 'profile_type': p['profile_type']
                                 })
                 ypath, yarg = GetDataFromYast()
-            #else:
-            #    pager = get_pager()
-            #    proc = subprocess.Popen(pager, stdin=subprocess.PIPE)
+            else:
+                pager = get_pager()
+                proc = subprocess.Popen(pager, stdin=subprocess.PIPE)
             #    proc.communicate('Profile submitted by %s:\n\n%s\n\n' %
             #                     (options[arg], p['profile']))
-            #    proc.kill()
+                proc.communicate(p['profile'].encode())
+                proc.kill()
         elif ans == 'CMD_USE_PROFILE':
             if p['profile_type'] == 'INACTIVE_LOCAL':
                 profile_data = p['profile_data']
@@ -658,6 +657,7 @@ def autodep(bin_name, pname=''):
     if not profile_data:
         profile_data = create_new_profile(pname)
     file = get_profile_filename(pname)
+    profile_data[pname][pname]['filename'] = None  # will be stored in /etc/apparmor.d when saving, so it shouldn't carry the extra_profile_dir filename
     attach_profile_data(aa, profile_data)
     attach_profile_data(original_aa, profile_data)
     if os.path.isfile(profile_dir + '/tunables/global'):
@@ -2321,7 +2321,7 @@ def save_profiles():
                 reload_base(profile_name)
 
 def get_pager():
-    pass
+    return 'less'
 
 def generate_diff(oldprofile, newprofile):
     oldtemp = tempfile.NamedTemporaryFile('w')
@@ -2560,7 +2560,7 @@ def read_inactive_profiles():
     except:
         fatal_error(_("Can't read AppArmor profiles in %s") % extra_profile_dir)
 
-    for file in os.listdir(profile_dir):
+    for file in os.listdir(extra_profile_dir):
         if os.path.isfile(extra_profile_dir + '/' + file):
             if is_skippable_file(file):
                 continue
