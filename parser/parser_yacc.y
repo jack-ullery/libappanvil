@@ -1486,15 +1486,16 @@ change_profile: TOK_CHANGE_PROFILE opt_exec_mode opt_id opt_named_transition TOK
 		char *exec = $3;
 		char *target = $4;
 
-		if (exec_mode != EXEC_MODE_EMPTY) {
-			if (!exec)
-				yyerror(_("Exec condition is required when unsafe or safe keywords are present"));
-
-			if (exec_mode == EXEC_MODE_UNSAFE) {
-				mode |= (AA_EXEC_BITS | ALL_AA_EXEC_UNSAFE);
-			} else if (exec_mode == EXEC_MODE_SAFE &&
-				   !kernel_supports_stacking &&
-				   warnflags & WARN_RULE_DOWNGRADED) {
+		if (exec) {
+			/* exec bits required to trigger rule conflict if
+			 * for overlapping safe and unsafe exec rules
+			 */
+			mode |= AA_EXEC_BITS;
+			if (exec_mode == EXEC_MODE_UNSAFE)
+				mode |= ALL_AA_EXEC_UNSAFE;
+			else if (exec_mode == EXEC_MODE_SAFE &&
+				 !kernel_supports_stacking &&
+				 warnflags & WARN_RULE_DOWNGRADED) {
 				pwarn("downgrading change_profile safe rule to unsafe due to lack of necessary kernel support\n");
 				/**
 				 * No need to do anything because 'unsafe' exec
@@ -1502,8 +1503,8 @@ change_profile: TOK_CHANGE_PROFILE opt_exec_mode opt_id opt_named_transition TOK
 				 * change_profile rules in non-stacking kernels
 				 */
 			}
-		}
-
+		} else if (exec_mode != EXEC_MODE_EMPTY)
+			yyerror(_("Exec condition is required when unsafe or safe keywords are present"));
 		if (exec && !(exec[0] == '/' || strncmp(exec, "@{", 2) == 0))
 			yyerror(_("Exec condition must begin with '/'."));
 
