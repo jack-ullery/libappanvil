@@ -41,6 +41,8 @@ B<aa-complain> is used to set the enforcement mode for one or more profiles to I
 In this mode security policy is not enforced but rather access violations
 are logged to the system log.
 
+Note that 'deny' rules will be enforced even in complain mode.
+
 =head1 BUGS
 
 If you find any bugs, please report them at
