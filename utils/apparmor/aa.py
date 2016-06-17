@@ -3135,14 +3135,6 @@ def store_list_var(var, list_var, value, var_operation, filename):
     else:
         raise AppArmorException(_('Unknown variable operation %(operation)s for variable %(variable)s in %(file)s') % { 'operation': var_operation, 'variable': list_var, 'file': filename })
 
-
-def escape(escape):
-    escape = strip_quotes(escape)
-    escape = re.sub('((?<!\\))"', r'\1\\', escape)
-    if re.search('(\s|^$|")', escape):
-        return '"%s"' % escape
-    return escape
-
 def write_header(prof_data, depth, name, embedded_hat, write_flags):
     pre = ' ' * int(depth * 2)
     data = []
