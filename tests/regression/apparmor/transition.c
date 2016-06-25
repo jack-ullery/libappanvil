@@ -139,12 +139,16 @@ static bool compound_labels_equal(struct compound_label *cl1,
 /**
  * Verifies that the current confinement context matches the expected context.
  *
+ * @attr is the file in /proc/self/attr/ that you want to verify. It is passed
+ * directly to aa_getprocattr(2).
+ *
  * Either @expected_label or @expected_mode can be NULL if their values should
  * not be verified. If a NULL mode is expected, as what happens when an
  * unconfined process calls aa_getcon(2), then @expected_mode should be equal
  * to NO_MODE.
  */
-static void verify_confinement_context(const char *expected_label,
+static void verify_confinement_context(const char *attr,
+				       const char *expected_label,
 				       const char *expected_mode)
 {
 	char *label, *mode;
@@ -152,10 +156,10 @@ static void verify_confinement_context(const char *expected_label,
 	bool null_expected_mode = expected_mode ?
 				  strcmp(NO_MODE, expected_mode) == 0 : false;
 
-	rc = aa_getcon(&label, &mode);
+	rc = aa_getprocattr(getpid(), attr, &label, &mode);
 	if (rc < 0) {
 		int err = errno;
-		fprintf(stderr, "FAIL - aa_getcon: %m");
+		fprintf(stderr, "FAIL - aa_getprocattr (%s): %m", attr);
 		exit(err);
 	}
 
@@ -177,8 +181,8 @@ static void verify_confinement_context(const char *expected_label,
 		}
 
 		if (!compound_labels_equal(&cl, &expected_cl)) {
-			fprintf(stderr, "FAIL - label \"%s\" != expected_label \"%s\"\n",
-				label, expected_label);
+			fprintf(stderr, "FAIL - %s label \"%s\" != expected_label \"%s\"\n",
+				attr, label, expected_label);
 			rc = EINVAL;
 			goto err;
 		}
@@ -187,8 +191,8 @@ static void verify_confinement_context(const char *expected_label,
 	if (expected_mode &&
 	    ((!mode && !null_expected_mode) ||
 	     (mode && strcmp(mode, expected_mode)))) {
-		fprintf(stderr, "FAIL - mode \"%s\" != expected_mode \"%s\"\n",
-			mode, expected_mode);
+		fprintf(stderr, "FAIL - %s mode \"%s\" != expected_mode \"%s\"\n",
+			attr, mode, expected_mode);
 		rc = EINVAL;
 		goto err;
 	}
@@ -218,6 +222,18 @@ static void verify_confinement_context(const char *expected_label,
 err:
 	free(label);
 	exit(EINVAL);
+}
+
+static void verify_current(const char *expected_label,
+			   const char *expected_mode)
+{
+	verify_confinement_context("current", expected_label, expected_mode);
+}
+
+static void verify_exec(const char *expected_label,
+			const char *expected_mode)
+{
+	verify_confinement_context("exec", expected_label, expected_mode);
 }
 
 static void handle_transition(int transition, const char *target)
@@ -278,24 +294,28 @@ static void exec(const char *prog, char **argv)
 static void usage(const char *prog)
 {
 	fprintf(stderr,
-		"%s: [-O <LABEL> | -P <LABEL> | -o <LABEL> | -p <LABEL>] [-l <LABEL>] [-m <MODE>] [-f <FILE>] [-- ... [-- ...]]\n"
+		"%s: [-O <LABEL> | -P <LABEL> | -o <LABEL> | -p <LABEL>] [-L <LABEL>] [-M <MODE>] [-l <LABEL>] [-m <MODE>] [-f <FILE>] [-- ... [-- ...]]\n"
 		"  -O <LABEL>\tCall aa_change_onexec(LABEL)\n"
 		"  -P <LABEL>\tCall aa_change_profile(LABEL)\n"
 		"  -o <LABEL>\tCall aa_stack_onexec(LABEL)\n"
 		"  -p <LABEL>\tCall aa_stack_profile(LABEL)\n"
-		"  -l <LABEL>\tVerify that aa_getcon() returns LABEL\n"
-		"  -m <MODE>\tVerify that aa_getcon() returns MODE. Set to \"%s\" if a NULL mode is expected.\n"
+		"  -L <LABEL>\tVerify that /proc/self/attr/exec contains LABEL\n"
+		"  -M <MODE>\tVerify that /proc/self/attr/exec contains MODE. Set to \"%s\" if a NULL mode is expected.\n"
+		"  -l <LABEL>\tVerify that /proc/self/attr/current contains LABEL\n"
+		"  -m <MODE>\tVerify that /proc/self/attr/current contains MODE. Set to \"%s\" if a NULL mode is expected.\n"
 		"  -f <FILE>\tOpen FILE and attempt to write to and read from it\n\n"
 		"If \"--\" is encountered, execv() will be called using the following argument\n"
 		"as the program to execute and passing it all of the arguments following the\n"
-		"program name.\n", prog, NO_MODE);
+		"program name.\n", prog, NO_MODE, NO_MODE);
 	exit(EINVAL);
 }
 
 struct options {
 	const char *file;
-	const char *expected_label;
-	const char *expected_mode;
+	const char *expected_current_label;
+	const char *expected_current_mode;
+	const char *expected_exec_label;
+	const char *expected_exec_mode;
 
 	int transition;		/* CHANGE_PROFILE, STACK_ONEXEC, etc. */
 	const char *target;	/* The target label of the transition */
@@ -321,16 +341,22 @@ static void parse_opts(int argc, char **argv, struct options *opts)
 	int o;
 
 	memset(opts, 0, sizeof(*opts));
-	while ((o = getopt(argc, argv, "f:l:m:O:P:o:p:")) != -1) {
+	while ((o = getopt(argc, argv, "f:L:M:l:m:O:P:o:p:")) != -1) {
 		switch (o) {
 		case 'f': /* file */
 			opts->file = optarg;
 			break;
-		case 'l': /* expected label */
-			opts->expected_label = optarg;
+		case 'L': /* expected exec label */
+			opts->expected_exec_label = optarg;
 			break;
-		case 'm': /* expected mode */
-			opts->expected_mode = optarg;
+		case 'M': /* expected exec mode */
+			opts->expected_exec_mode = optarg;
+			break;
+		case 'l': /* expected current label */
+			opts->expected_current_label = optarg;
+			break;
+		case 'm': /* expected current mode */
+			opts->expected_current_mode = optarg;
 			break;
 		case 'O': /* aa_change_profile */
 			set_transition(prog, opts, CHANGE_ONEXEC, optarg);
@@ -371,9 +397,12 @@ int main(int argc, char **argv)
 	if (opts.file)
 		file_io(opts.file);
 
-	if (opts.expected_label || opts.expected_mode)
-		verify_confinement_context(opts.expected_label,
-					   opts.expected_mode);
+	if (opts.expected_current_label || opts.expected_current_mode)
+		verify_current(opts.expected_current_label,
+			       opts.expected_current_mode);
+
+	if (opts.expected_exec_label || opts.expected_exec_mode)
+		verify_exec(opts.expected_exec_label, opts.expected_exec_mode);
 
 	if (opts.exec)
 		exec(opts.exec, opts.exec_argv);
