@@ -73,7 +73,6 @@ SRC=access.c \
     at_secure.c \
     introspect.c \
     changeprofile.c \
-    onexec.c \
     changehat.c \
     changehat_fork.c \
     changehat_misc.c \
