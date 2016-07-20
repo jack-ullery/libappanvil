@@ -47,6 +47,11 @@ exception_not_raised = [
     'capability/bad_3.sd',
     'capability/bad_4.sd',
     'change_hat/bad_parsing.sd',
+
+    # The tools don't detect conflicting change_profile exec modes
+    'change_profile/onx_conflict_unsafe1.sd',
+    'change_profile/onx_conflict_unsafe2.sd',
+
     'dbus/bad_regex_01.sd',
     'dbus/bad_regex_02.sd',
     'dbus/bad_regex_03.sd',
