@@ -304,7 +304,7 @@ class ReadLog:
             # sometimes network events come with an e['operation'] that matches the list of file operations
             # see https://bugs.launchpad.net/apparmor/+bug/1577051 and https://bugs.launchpad.net/apparmor/+bug/1582374
             # XXX these events are network events, so we should map them as such
-            if e['request_mask'] in ('send', 'receive'):
+            if 'send' in e['request_mask'] or 'receive' in e['request_mask']:
                 self.debug_logger.debug('UNHANDLED (request_mask is send or receive): %s' % e)
                 return None
 
