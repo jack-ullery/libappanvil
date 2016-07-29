@@ -47,6 +47,7 @@
   # ld.so.cache and ld are used to load shared libraries; they are best
   # available everywhere
   /etc/ld.so.cache               mr,
+  /etc/ld.so.preload             r,
   /lib{,32,64}/ld{,32,64}-*.so   mrix,
   /lib{,32,64}/**/ld{,32,64}-*.so     mrix,
   /lib/@{multiarch}/ld{,32,64}-*.so    mrix,
