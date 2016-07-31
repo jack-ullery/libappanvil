@@ -133,7 +133,7 @@ class ReadLog:
         ev['denied_mask'] = event.denied_mask
         ev['request_mask'] = event.requested_mask
         ev['magic_token'] = event.magic_token
-        if ev['operation'] and self.op_type(ev['operation']) == 'net':
+        if ev['operation'] and (self.op_type(ev['operation']) == 'net' or event.net_protocol):
             ev['family'] = event.net_family
             ev['protocol'] = event.net_protocol
             ev['sock_type'] = event.net_sock_type
