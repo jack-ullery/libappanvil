@@ -7,6 +7,7 @@
 
   deny capability block_suspend,
 
+  capability dac_override,
   capability ipc_lock,
   capability setuid,
 
