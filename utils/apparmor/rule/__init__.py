@@ -397,10 +397,13 @@ class BaseRuleset(object):
 
         # delete rules that are covered by include files
         if include_rules:
-            for rule in self.rules:
-                if include_rules.is_covered(rule, True, True):
-                    self.delete(rule)
+            oldrules = self.rules
+            self.rules = []
+            for rule in oldrules:
+                if include_rules.is_covered(rule, True, False):
                     deleted += 1
+                else:
+                    self.rules.append(rule)
 
         # de-duplicate rules inside the profile
         deleted += self.delete_in_profile_duplicates()

@@ -817,7 +817,6 @@ class CapabilityDeleteTest(AATest):
             inc.add(CapabilityRule.parse(rule))
 
         expected_raw = [
-            '  allow capability sys_admin,',  # XXX huh? should be deleted!
             '  deny capability chgrp, # example comment',
             '',
         ]
@@ -825,11 +824,9 @@ class CapabilityDeleteTest(AATest):
         expected_clean = [
             '  deny capability chgrp, # example comment',
             '',
-            '  allow capability sys_admin,',  # XXX huh? should be deleted!
-            '',
         ]
 
-        self.assertEqual(self.ruleset.delete_duplicates(inc), 1)
+        self.assertEqual(self.ruleset.delete_duplicates(inc), 2)
         self.assertEqual(expected_raw, self.ruleset.get_raw(1))
         self.assertEqual(expected_clean, self.ruleset.get_clean(1))
 
