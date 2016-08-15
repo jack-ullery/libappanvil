@@ -1095,7 +1095,7 @@ def handle_children(profile, hat, root):
 
                     seen_events += 1
 
-                    ans = q.promptUser()
+                    ans = q.promptUser()[0]
 
                     if ans == 'CMD_FINISHED':
                         save_profiles()
@@ -1105,7 +1105,9 @@ def handle_children(profile, hat, root):
 
                 if ans == 'CMD_ADDHAT':
                     hat = uhat
+                    aa[profile][hat] = profile_storage(profile, hat, 'handle_children addhat')
                     aa[profile][hat]['flags'] = aa[profile][profile]['flags']
+                    changed[profile] = True
                 elif ans == 'CMD_USEDEFAULT':
                     hat = default_hat
                 elif ans == 'CMD_DENY':
