@@ -20,7 +20,8 @@
   network inet raw,
   network inet6 raw,
 
-  /usr/sbin/traceroute rmix,
+  /usr/sbin/traceroute mrix,
+  /usr/bin/traceroute.db mrix,
   @{PROC}/net/route r,
 
   # Site-specific additions and overrides. See local/README for details.
