@@ -66,7 +66,7 @@ runchecktest "EXEC_STACK (not stacked - bad mode)" fail -l "$test" -m complain
 
 # Verify file access and contexts by 2 stacked profiles
 genprofile -I $fileok $sharedok $getcon $test:"ix -> &$othertest" -- \
-	image=$othertest addimage:$test $otherok $sharedok $getcon $test:r
+	image=$othertest addimage:$test $otherok $sharedok $getcon $test:rm
 runchecktest_errno EACCES "EXEC_STACK (2 stacked - file)" fail -- $test -f $file
 runchecktest_errno EACCES "EXEC_STACK (2 stacked - otherfile)" fail -- $test -f $otherfile
 runchecktest_errno EACCES "EXEC_STACK (2 stacked - thirdfile)" fail -- $test -f $thirdfile
@@ -79,7 +79,7 @@ runchecktest "EXEC_STACK (2 stacked - bad mode)" fail -- $test -l "${test}//&${t
 # Verify file access and contexts by 3 stacked profiles
 genprofile -I $fileok $sharedok $getcon $test:"ix -> &$othertest" -- \
 	image=$othertest addimage:$test $otherok $sharedok $getcon $test:"rix -> &$thirdtest" -- \
-	image=$thirdtest addimage:$test $thirdok $sharedok $getcon $test:r
+	image=$thirdtest addimage:$test $thirdok $sharedok $getcon $test:rm
 runchecktest_errno EACCES "EXEC_STACK (3 stacked - file)" fail -- $test -- $test -f $file
 runchecktest_errno EACCES "EXEC_STACK (3 stacked - otherfile)" fail -- $test -- $test -f $otherfile
 runchecktest_errno EACCES "EXEC_STACK (3 stacked - thirdfile)" fail -- $test -- $test -f $thirdfile
@@ -89,7 +89,7 @@ runchecktest "EXEC_STACK (3 stacked - okcon)" pass -- $test -- $test -l "${third
 
 genprofile -I $sharedok $stackotherok $stackthirdok $test:"rix -> &$othertest" -- \
 	image=$othertest addimage:$test $sharedok $stackthirdok $test:"rix -> &$thirdtest" -- \
-	image=$thirdtest addimage:$test $sharedok $stackthirdok $test:r
+	image=$thirdtest addimage:$test $sharedok $stackthirdok $test:rm
 # Triggered an AppArmor WARN in the initial stacking patch set
 runchecktest "EXEC_STACK (3 stacked - old AA WARN)" pass -p $othertest -- $test -p $thirdtest -f $sharedfile
 
@@ -120,7 +120,7 @@ runchecktest "EXEC_STACK (stacked with namespaced profile - okcon)" pass -- $tes
 
 # Verify file access and contexts in mixed mode
 genprofile -I $fileok $sharedok $getcon $test:"ix -> &$othertest" -- \
-	image=$othertest flag:complain addimage:$test $otherok $sharedok $getcon $test:r
+	image=$othertest flag:complain addimage:$test $otherok $sharedok $getcon $test:rm
 runchecktest "EXEC_STACK (mixed mode - file)" pass -- $test -f $file
 runchecktest_errno EACCES "EXEC_STACK (mixed mode - otherfile)" fail -- $test -f $otherfile
 runchecktest "EXEC_STACK (mixed mode - sharedfile)" pass -- $test -f $sharedfile
