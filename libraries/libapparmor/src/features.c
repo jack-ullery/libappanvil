@@ -92,8 +92,8 @@ static int features_snprintf(struct features_struct *fst, const char *fmt, ...)
  * ENOBUFS indicating that @buffer was not large enough to contain all of the
  * file contents.
  */
-static int load_features_file(int dirfd, const char *path,
-			      char *buffer, size_t size)
+static ssize_t load_features_file(int dirfd, const char *path,
+				  char *buffer, size_t size)
 {
 	autoclose int file = -1;
 	char *pos = buffer;
@@ -156,7 +156,7 @@ static int features_dir_cb(int dirfd, const char *name, struct stat *st,
 		return -1;
 
 	if (S_ISREG(st->st_mode)) {
-		int len;
+		ssize_t len;
 		int remaining = fst->size - (fst->pos - fst->buffer);
 
 		len = load_features_file(dirfd, name, fst->pos, remaining);
@@ -175,8 +175,8 @@ static int features_dir_cb(int dirfd, const char *name, struct stat *st,
 	return 0;
 }
 
-static int load_features_dir(int dirfd, const char *path,
-			     char *buffer, int size)
+static ssize_t load_features_dir(int dirfd, const char *path,
+				 char *buffer, int size)
 {
 	struct features_struct fst = { buffer, size, buffer };
 
@@ -369,7 +369,7 @@ int aa_features_new(aa_features **features, int dirfd, const char *path)
 {
 	struct stat stat_file;
 	aa_features *f;
-	int retval;
+	ssize_t retval;
 
 	*features = NULL;
 
