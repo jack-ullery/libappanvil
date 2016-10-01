@@ -738,6 +738,28 @@ class Merge(object):
                                     globbed_rule_obj.glob_ext()
                                     options, default_option = add_to_options(options, globbed_rule_obj.get_raw())
 
+                            elif ans == 'CMD_NEW':
+                                if not re_match_include(selection):
+                                    edit_rule_obj = selection_to_rule_obj(rule_obj, selection)
+                                    prompt, oldpath = edit_rule_obj.edit_header()
+
+                                    newpath = aaui.UI_GetString(prompt, oldpath)
+                                    if newpath:
+                                        try:
+                                            input_matches_path = rule_obj.validate_edit(newpath)  # note that we check against the original rule_obj here, not edit_rule_obj (which might be based on a globbed path)
+                                        except AppArmorException:
+                                            aaui.UI_Important(_('The path you entered is invalid (not starting with / or a variable)!'))
+                                            continue
+
+                                        if not input_matches_path:
+                                            ynprompt = _('The specified path does not match this log entry:\n\n  Log Entry: %(path)s\n  Entered Path:  %(ans)s\nDo you really want to use this path?') % { 'path': oldpath, 'ans': newpath }
+                                            key = aaui.UI_YesNo(ynprompt, 'n')
+                                            if key == 'n':
+                                                continue
+
+                                        edit_rule_obj.store_edit(newpath)
+                                        options, default_option = add_to_options(options, edit_rule_obj.get_raw())
+
                             else:
                                 done = False
 
