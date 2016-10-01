@@ -27,7 +27,7 @@ RE_EOL                  = '\s*(?P<comment>#.*?)?\s*$'  # optional whitespace, op
 RE_COMMA_EOL            = '\s*,' + RE_EOL # optional whitespace, comma + RE_EOL
 
 RE_PROFILE_NAME         = '(?P<%s>(\S+|"[^"]+"))'    # string without spaces, or quoted string. %s is the match group name
-RE_PATH                 = '/\S+|"/[^"]+"'  # filename (starting with '/') without spaces, or quoted filename.
+RE_PATH                 = '/\S*|"/[^"]*"'  # filename (starting with '/') without spaces, or quoted filename.
 RE_PROFILE_PATH         = '(?P<%s>(' + RE_PATH + '))'  # quoted or unquoted filename. %s is the match group name
 RE_PROFILE_PATH_OR_VAR  = '(?P<%s>(' + RE_PATH + '|@{\S+}\S*|"@{\S+}[^"]*"))'  # quoted or unquoted filename or variable. %s is the match group name
 RE_SAFE_OR_UNSAFE       = '(?P<execmode>(safe|unsafe))'
