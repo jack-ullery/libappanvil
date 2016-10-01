@@ -142,17 +142,6 @@ class Severity(object):
         else:
             return sev
 
-    def rank(self, resource, mode=None):
-        """Returns the rank for the resource file/capability"""
-        if '@' in resource:    # path contains variable
-            return self.rank_path(resource, mode)
-        elif resource[0] == '/':    # file resource
-            return self.rank_path(resource, mode)
-        elif resource[0:4] == 'CAP_':    # capability resource
-            return self.rank_capability(resource[4:])
-        else:
-            raise AppArmorException("Unexpected rank input: %s" % resource)
-
     def handle_variable_rank(self, resource, mode):
         """Returns the max possible rank for file resources containing variables"""
         regex_variable = re.compile('@{([^{.]*)}')

@@ -1241,7 +1241,7 @@ def handle_children(profile, hat, root):
 
                         sev_db.unload_variables()
                         sev_db.load_variables(get_profile_filename(profile))
-                        severity = sev_db.rank(exec_target, 'x')
+                        severity = sev_db.rank_path(exec_target, 'x')
 
                         # Prompt portion starts
                         q = aaui.PromptQuestion()
