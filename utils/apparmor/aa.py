@@ -1186,6 +1186,9 @@ def handle_children(profile, hat, root):
                     prelog[aamode][profile][hat]['path'][path] = mode
 
                 if do_execute:
+                    if not aa[profile][hat]:
+                        continue  # ignore log entries for non-existing profiles
+
                     exec_event = FileRule(exec_target, None, FileRule.ANY_EXEC, FileRule.ALL, owner=False, log_event=True)
                     if is_known_rule(aa[profile][hat], 'file', exec_event):
                         continue
