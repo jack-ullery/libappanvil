@@ -869,6 +869,109 @@ class FileRulesTest(AATest):
 #class FileDeleteTest(AATest):
 #    pass
 
+class FileGetRulesForPath(AATest):
+    tests = [
+        #  path                                 audit   deny    expected
+        (('/etc/foo/dovecot.conf',              False,  False), ['/etc/foo/* r,', '/etc/foo/dovecot.conf rw,',                                  '']),
+        (('/etc/foo/foo.conf',                  False,  False), ['/etc/foo/* r,',                                                               '']),
+        (('/etc/foo/dovecot-database.conf.ext', False,  False), ['/etc/foo/* r,', '/etc/foo/dovecot-database.conf.ext w,',                      '']),
+        (('/etc/foo/auth.d/authfoo.conf',       False,  False), ['/etc/foo/{auth,conf}.d/*.conf r,','/etc/foo/{auth,conf}.d/authfoo.conf w,',   '']),
+        (('/etc/foo/dovecot-deny.conf',         False,  False), ['deny /etc/foo/dovecot-deny.conf r,', '', '/etc/foo/* r,',                     '']),
+        (('/foo/bar',                           False,  True ), [                                                                                 ]),
+        (('/etc/foo/dovecot-deny.conf',         False,  True ), ['deny /etc/foo/dovecot-deny.conf r,',                                          '']),
+        (('/etc/foo/foo.conf',                  False,  True ), [                                                                                 ]),
+        (('/etc/foo/owner.conf',                False,  False), ['/etc/foo/* r,', 'owner /etc/foo/owner.conf w,',                               '']),
+    ]
+
+    def _run_test(self, params, expected):
+        rules = [
+            '/etc/foo/* r,',
+            '/etc/foo/dovecot.conf rw,',
+            '/etc/foo/{auth,conf}.d/*.conf r,',
+            '/etc/foo/{auth,conf}.d/authfoo.conf w,',
+            '/etc/foo/dovecot-database.conf.ext w,',
+            'owner /etc/foo/owner.conf w,',
+            'deny /etc/foo/dovecot-deny.conf r,',
+        ]
+
+        ruleset = FileRuleset()
+        for rule in rules:
+            ruleset.add(FileRule.parse(rule))
+
+        matching = ruleset.get_rules_for_path(params[0], params[1], params[2])
+        self. assertEqual(matching.get_clean(), expected)
+
+
+class FileGetPermsForPath_1(AATest):
+    tests = [
+        #  path                                 audit   deny    expected
+        (('/etc/foo/dovecot.conf',              False,  False), {'allow': {'all': {'r', 'w'},    'owner': set()  },  'deny': {'all': set(),          'owner': set()   }, 'paths': {'/etc/foo/*', '/etc/foo/dovecot.conf'                                    }   }),
+        (('/etc/foo/foo.conf',                  False,  False), {'allow': {'all': {'r'     },    'owner': set()  },  'deny': {'all': set(),          'owner': set()   }, 'paths': {'/etc/foo/*'                                                             }   }),
+        (('/etc/foo/dovecot-database.conf.ext', False,  False), {'allow': {'all': {'r', 'w'},    'owner': set()  },  'deny': {'all': set(),          'owner': set()   }, 'paths': {'/etc/foo/*', '/etc/foo/dovecot-database.conf.ext'                       }   }),
+        (('/etc/foo/auth.d/authfoo.conf',       False,  False), {'allow': {'all': {'r', 'w'},    'owner': set()  },  'deny': {'all': set(),          'owner': set()   }, 'paths': {'/etc/foo/{auth,conf}.d/*.conf', '/etc/foo/{auth,conf}.d/authfoo.conf'   }   }),
+        (('/etc/foo/dovecot-deny.conf',         False,  False), {'allow': {'all': {'r'     },    'owner': set()  },  'deny': {'all': {'r'     },     'owner': set()   }, 'paths': {'/etc/foo/*', '/etc/foo/dovecot-deny.conf'                               }   }),
+        (('/foo/bar',                           False,  True ), {'allow': {'all': set(),         'owner': set()  },  'deny': {'all': set(),          'owner': set()   }, 'paths': set()                                                                         }),
+        (('/etc/foo/dovecot-deny.conf',         False,  True ), {'allow': {'all': set(),         'owner': set()  },  'deny': {'all': {'r'     },     'owner': set()   }, 'paths': {'/etc/foo/dovecot-deny.conf'                                             }   }),
+        (('/etc/foo/foo.conf',                  False,  True ), {'allow': {'all': set(),         'owner': set()  },  'deny': {'all': set(),          'owner': set()   }, 'paths': set()                                                                         }),
+    ]
+
+    def _run_test(self, params, expected):
+        rules = [
+            '/etc/foo/* r,',
+            '/etc/foo/dovecot.conf rw,',
+            '/etc/foo/{auth,conf}.d/*.conf r,',
+            '/etc/foo/{auth,conf}.d/authfoo.conf w,',
+            '/etc/foo/dovecot-database.conf.ext w,',
+            'deny /etc/foo/dovecot-deny.conf r,',
+            '/usr/lib/dovecot/config ix,',
+        ]
+
+        ruleset = FileRuleset()
+        for rule in rules:
+            ruleset.add(FileRule.parse(rule))
+
+        perms = ruleset.get_perms_for_path(params[0], params[1], params[2])
+        self. assertEqual(perms, expected)
+
+class FileGetPermsForPath_2(AATest):
+    tests = [
+        #  path                                 audit   deny    expected
+        (('/etc/foo/dovecot.conf',              False,  False), {'allow': {'all': FileRule.ALL, 'owner': set()  },  'deny': {'all': FileRule.ALL,   'owner': set()  }, 'paths': {'/etc/foo/*', '/etc/foo/dovecot.conf'                                     }    }),
+        (('/etc/foo/dovecot.conf',              True,   False), {'allow': {'all': {'r', 'w'},   'owner': set()  },  'deny': {'all': set(),          'owner': set()  }, 'paths': {'/etc/foo/dovecot.conf'                                                   }    }),
+        (('/etc/foo/foo.conf',                  False,  False), {'allow': {'all': FileRule.ALL, 'owner': set()  },  'deny': {'all': FileRule.ALL,   'owner': set()  }, 'paths': {'/etc/foo/*'                                                              }    }),
+        (('/etc/foo/dovecot-database.conf.ext', False,  False), {'allow': {'all': FileRule.ALL, 'owner': set()  },  'deny': {'all': FileRule.ALL,   'owner': set()  }, 'paths': {'/etc/foo/*', '/etc/foo/dovecot-database.conf.ext'                        }    }),
+        (('/etc/foo/auth.d/authfoo.conf',       False,  False), {'allow': {'all': FileRule.ALL, 'owner': set()  },  'deny': {'all': FileRule.ALL,   'owner': set()  }, 'paths': {'/etc/foo/{auth,conf}.d/*.conf', '/etc/foo/{auth,conf}.d/authfoo.conf'    }    }),
+        (('/etc/foo/auth.d/authfoo.conf',       True,   False), {'allow': {'all': {'w'     },   'owner': set()  },  'deny': {'all': set(),          'owner': set()  }, 'paths': {'/etc/foo/{auth,conf}.d/authfoo.conf'                                     }    }),
+        (('/etc/foo/dovecot-deny.conf',         False,  False), {'allow': {'all': FileRule.ALL, 'owner': set()  },  'deny': {'all': FileRule.ALL,   'owner': set()  }, 'paths': {'/etc/foo/*', '/etc/foo/dovecot-deny.conf'                                }    }),
+        (('/foo/bar',                           False,  True ), {'allow': {'all': set(),        'owner': set()  },  'deny': {'all': FileRule.ALL,   'owner': set()  }, 'paths': set()                                                                           }),
+        (('/etc/foo/dovecot-deny.conf',         False,  True ), {'allow': {'all': set(),        'owner': set()  },  'deny': {'all': FileRule.ALL,   'owner': set()  }, 'paths': {'/etc/foo/dovecot-deny.conf'                                              }    }),
+        (('/etc/foo/foo.conf',                  False,  True ), {'allow': {'all': set(),        'owner': set()  },  'deny': {'all': FileRule.ALL,   'owner': set()  }, 'paths': set()                                                                           }),
+    #   (('/etc/foo/owner.conf',                False,  True ), {'allow': {'all': set(),        'owner': {'w'}  },  'deny': {'all': FileRule.ALL,   'owner': set()  }, 'paths': {'/etc/foo/owner.conf'                                                     }    }), # XXX doen't work yet
+    ]
+
+    def _run_test(self, params, expected):
+        rules = [
+            '/etc/foo/* r,',
+            'audit /etc/foo/dovecot.conf rw,',
+            '/etc/foo/{auth,conf}.d/*.conf r,',
+            'audit /etc/foo/{auth,conf}.d/authfoo.conf w,',
+            '/etc/foo/dovecot-database.conf.ext w,',
+            'deny /etc/foo/dovecot-deny.conf r,',
+            'file,',
+            'owner /etc/foo/owner.conf w,',
+            'deny file,',
+        ]
+
+        ruleset = FileRuleset()
+        for rule in rules:
+            ruleset.add(FileRule.parse(rule))
+
+        perms = ruleset.get_perms_for_path(params[0], params[1], params[2])
+        self. assertEqual(perms, expected)
+
+
+
+
 setup_all_loops(__name__)
 if __name__ == '__main__':
     unittest.main(verbosity=2)

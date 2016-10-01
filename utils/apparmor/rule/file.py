@@ -380,7 +380,72 @@ class FileRule(BaseRule):
 class FileRuleset(BaseRuleset):
     '''Class to handle and store a collection of file rules'''
 
-    pass
+    def get_rules_for_path(self, path, audit=False, deny=False):
+        '''Get all rules matching the given path
+           path can be str or AARE
+           If audit is True, only return rules with the audit flag set.
+           If deny is True, only return matching deny rules'''
+
+        matching_rules = FileRuleset()
+        for rule in self.rules:
+            if (rule.all_paths or rule.path.match(path)) and ((not deny) or rule.deny) and ((not audit) or rule.audit):
+                matching_rules.add(rule)
+
+        return matching_rules
+
+    def get_perms_for_path(self, path, audit=False, deny=False):
+        '''Get the summarized permissions of all rules matching the given path, and the list of paths involved in the calculation
+           path can be str or AARE
+           If audit is True, only analyze rules with the audit flag set.
+           If deny is True, only analyze matching deny rules
+           Returns {'allow': {'owner': set_of_perms, 'all': set_of_perms},
+                    'deny':  {'owner': set_of_perms, 'all': set_of_perms},
+                    'path':  involved_paths}
+           Note: exec rules and exec/link target are not honored!
+           '''
+           # XXX do we need to honor the link target?
+
+        perms = {
+            'allow':    {'owner': set(), 'all': set() },
+            'deny':     {'owner': set(), 'all': set() },
+        }
+        all_perms = {
+            'allow':    {'owner': False, 'all': False },
+            'deny':     {'owner': False, 'all': False },
+        }
+        paths       = set()
+
+        matching_rules = self.get_rules_for_path(path, audit, deny)
+
+        for rule in matching_rules.rules:
+            allow_or_deny = 'allow'
+            if rule.deny:
+                allow_or_deny = 'deny'
+
+            owner_or_all = 'all'
+            if rule.owner:
+                owner_or_all = 'owner'
+
+            if rule.all_perms:
+                all_perms[allow_or_deny][owner_or_all] = True
+            elif rule.perms:
+                perms[allow_or_deny][owner_or_all] = perms[allow_or_deny][owner_or_all].union(rule.perms)
+                paths.add(rule.path.regex)
+
+        allow = {}
+        deny = {}
+        for who in ['all', 'owner']:
+            if all_perms['allow'][who]:
+                allow[who] = FileRule.ALL
+            else:
+                allow[who] = perms['allow'][who]
+
+            if all_perms['deny'][who]:
+                deny[who] = FileRule.ALL
+            else:
+                deny[who] = perms['deny'][who]
+
+        return {'allow': allow, 'deny': deny, 'paths': paths}
 
 
 def split_perms(perm_string, deny):
