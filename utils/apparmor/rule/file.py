@@ -218,16 +218,20 @@ class FileRule(BaseRule):
             raise AppArmorBug('Invalid combination of path and perms in file rule - either specify path and perms, or none of them')
 
     def _joint_perms(self):
-        '''return the permissions as string'''
+        '''return the permissions as string (using self.perms and self.exec_perms)'''
+        return self._join_given_perms(self.perms, self.exec_perms)
+
+    def _join_given_perms(self, perms, exec_perms):
+        '''return the permissions as string (using the perms and exec_perms given as parameter)'''
         perm_string = ''
         for perm in file_permissions:
-            if perm in self.perms:
+            if perm in perms:
                 perm_string = perm_string + perm
 
-        if self.exec_perms == self.ANY_EXEC:
+        if exec_perms == self.ANY_EXEC:
             raise AppArmorBug("FileRule.ANY_EXEC can't be used for actual rules")
-        if self.exec_perms:
-            perm_string = perm_string + self.exec_perms
+        if exec_perms:
+            perm_string = perm_string + exec_perms
 
         return perm_string
 
@@ -323,24 +327,42 @@ class FileRule(BaseRule):
         return severity
 
     def logprof_header_localvars(self):
+        headers = []
+
+        path = logprof_value_or_all(self.path, self.all_paths)
+        headers += [_('Path'), path]
+
+        old_mode = ''
+        if self.original_perms:
+            original_perms_all = self._join_given_perms(self.original_perms['allow']['all'], None)
+            original_perms_owner = self._join_given_perms(self.original_perms['allow']['owner'] - self.original_perms['allow']['all'], None)  # only list owner perms that are not covered by other perms
+
+            if original_perms_all and original_perms_owner:
+                old_mode = '%s + owner %s' % (original_perms_all, original_perms_owner)
+            elif original_perms_all:
+                old_mode = original_perms_all
+            elif original_perms_owner:
+                old_mode = 'owner %s' % original_perms_owner
+            else:
+                old_mode = ''
+
+        if old_mode:
+            headers += [_('Old Mode'), old_mode]
+
+        perms = logprof_value_or_all(self.perms, self.all_perms)
+        if self.perms or self.exec_perms:
+            perms = self._joint_perms()
+
         if self.owner:
-            owner = _('Yes')
-        else:
-            owner = _('No')
+            perms = 'owner %s' % perms
 
-        path    = logprof_value_or_all(self.path,       self.all_paths)
-        perms   = logprof_value_or_all(self.perms,      self.all_perms)
-        if self.exec_perms:
-            perms = perms + self.exec_perms
-        target  = logprof_value_or_all(self.target,     self.all_targets)
+        if not self.all_targets:
+            perms = "%s -> %s" % (perms, self.target.regex)
 
-        return [
-            _('Owner only'),    owner,
-            _('Path'),          path,
-            _('Permissions'),   perms,
-            _('Target'),        target,
-            # file_keyword and leading_perms are not really relevant
-        ]
+        headers += [_('New Mode'), perms]
+
+        # file_keyword and leading_perms are not really relevant
+        return headers
 
     def glob(self):
         '''Change path to next possible glob'''

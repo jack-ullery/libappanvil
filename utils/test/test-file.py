@@ -720,25 +720,34 @@ class FileSeverityTest(AATest):
         rank = obj.severity(sev_db)
         self.assertEqual(rank, expected)
 
+class FileLogprofHeaderTest(AATest):
+    tests = [
+        # log event                        old perms ALL / owner
+        (['file,',                              set(),      set()       ], [                               _('Path'), _('ALL'),                                         _('New Mode'), _('ALL')                 ]),
+        (['/foo r,',                            set(),      set()       ], [                               _('Path'), '/foo',                                           _('New Mode'), 'r'                      ]),
+        (['file /bar Px -> foo,',               set(),      set()       ], [                               _('Path'), '/bar',                                           _('New Mode'), 'Px -> foo'              ]),
+        (['deny file,',                         set(),      set()       ], [_('Qualifier'), 'deny',        _('Path'), _('ALL'),                                         _('New Mode'), _('ALL')                 ]),
+        (['allow file /baz rwk,',               set(),      set()       ], [_('Qualifier'), 'allow',       _('Path'), '/baz',                                           _('New Mode'), 'rwk'                    ]),
+        (['audit file /foo mr,',                set(),      set()       ], [_('Qualifier'), 'audit',       _('Path'), '/foo',                                           _('New Mode'), 'mr'                     ]),
+        (['audit deny /foo wk,',                set(),      set()       ], [_('Qualifier'), 'audit deny',  _('Path'), '/foo',                                           _('New Mode'), 'wk'                     ]),
+        (['owner file /foo ix,',                set(),      set()       ], [                               _('Path'), '/foo',                                           _('New Mode'), 'owner ix'               ]),
+        (['audit deny file /foo rlx -> /baz,',  set(),      set()       ], [_('Qualifier'), 'audit deny',  _('Path'), '/foo',                                           _('New Mode'), 'rlx -> /baz'            ]),
+        (['/foo rw,',                           set('r'),   set()       ], [                               _('Path'), '/foo',         _('Old Mode'), _('r'),            _('New Mode'), _('rw')                  ]),
+        (['/foo rw,',                           set(),      set('rw')   ], [                               _('Path'), '/foo',         _('Old Mode'), _('owner rw'),     _('New Mode'), _('rw')                  ]),
+        (['/foo mrw,',                          set('r'),   set('k')    ], [                               _('Path'), '/foo',         _('Old Mode'), _('r + owner k'),  _('New Mode'), _('mrw')                 ]),
+        (['/foo mrw,',                          set('r'),   set('rk')   ], [                               _('Path'), '/foo',         _('Old Mode'), _('r + owner k'),  _('New Mode'), _('mrw')                 ]),
+   ]
 
-#class FileLogprofHeaderTest(AATest):
-#    tests = [
-#        ('file,',                        [                               _('Access mode'), _('ALL'),    _('Bus'), _('ALL'),    _('Path'), _('ALL'), _('Name'), _('ALL'),    _('Interface'), _('ALL'),  _('Member'), _('ALL'), _('Peer exec_perms'), _('ALL'),   _('Peer label'), _('ALL')]),
-#        ('file (send receive),',         [                               _('Access mode'), 'receive send', _('Bus'), _('ALL'), _('Path'), _('ALL'), _('Name'), _('ALL'),    _('Interface'), _('ALL'),  _('Member'), _('ALL'), _('Peer exec_perms'), _('ALL'),   _('Peer label'), _('ALL')]),
-#        ('file send bus=session,',       [                               _('Access mode'), 'send',      _('Bus'), 'session',   _('Path'), _('ALL'), _('Name'), _('ALL'),    _('Interface'), _('ALL'),  _('Member'), _('ALL'), _('Peer exec_perms'), _('ALL'),   _('Peer label'), _('ALL')]),
-#        ('deny file,',                   [_('Qualifier'), 'deny',        _('Access mode'), _('ALL'),    _('Bus'), _('ALL'),    _('Path'), _('ALL'), _('Name'), _('ALL'),    _('Interface'), _('ALL'),  _('Member'), _('ALL'), _('Peer exec_perms'), _('ALL'),   _('Peer label'), _('ALL')]),
-#        ('allow file send,',             [_('Qualifier'), 'allow',       _('Access mode'), 'send',      _('Bus'), _('ALL'),    _('Path'), _('ALL'), _('Name'), _('ALL'),    _('Interface'), _('ALL'),  _('Member'), _('ALL'), _('Peer exec_perms'), _('ALL'),   _('Peer label'), _('ALL')]),
-#        ('audit file send bus=session,', [_('Qualifier'), 'audit',       _('Access mode'), 'send',      _('Bus'), 'session',   _('Path'), _('ALL'), _('Name'), _('ALL'),    _('Interface'), _('ALL'),  _('Member'), _('ALL'), _('Peer exec_perms'), _('ALL'),   _('Peer label'), _('ALL')]),
-#        ('audit deny file send,',        [_('Qualifier'), 'audit deny',  _('Access mode'), 'send',      _('Bus'), _('ALL'),    _('Path'), _('ALL'), _('Name'), _('ALL'),    _('Interface'), _('ALL'),  _('Member'), _('ALL'), _('Peer exec_perms'), _('ALL'),   _('Peer label'), _('ALL')]),
-#        ('file bind exec_perms=bind.exec_perms,',    [                               _('Access mode'), 'bind',      _('Bus'), _('ALL'),    _('Path'), _('ALL'), _('Name'), 'bind.exec_perms', _('Interface'), _('ALL'),  _('Member'), _('ALL'), _('Peer exec_perms'), _('ALL'),   _('Peer label'), _('ALL')]),
-#        ('file send bus=session path=/path target=aa.test owner=ExMbr peer=(exec_perms=(peer.exec_perms)),',
-#                                         [                               _('Access mode'), 'send',      _('Bus'), 'session',   _('Path'), '/path',  _('Name'), _('ALL'),    _('Interface'), 'aa.test', _('Member'), 'ExMbr',  _('Peer exec_perms'), 'peer.exec_perms',_('Peer label'), _('ALL')]),
-#        ('file send peer=(label=foo),',  [                               _('Access mode'), 'send',      _('Bus'), _('ALL'),    _('Path'), _('ALL'), _('Name'), _('ALL'),    _('Interface'), _('ALL'),  _('Member'), _('ALL'), _('Peer exec_perms'), _('ALL'),   _('Peer label'), 'foo'   ]),
-#   ]
-#
-#    def _run_test(self, params, expected):
-#        obj = FileRule._parse(params)
-#        self.assertEqual(obj.logprof_header(), expected)
+    def _run_test(self, params, expected):
+        obj = FileRule._parse(params[0])
+        if params[1] or params[2]:
+            obj.original_perms = {'allow': { 'all': params[1], 'owner': params[2]}}
+        self.assertEqual(obj.logprof_header(), expected)
+
+    def test_empty_original_perms(self):
+        obj = FileRule._parse('/foo rw,')
+        obj.original_perms = {'allow': { 'all': set(), 'owner': set()}}
+        self.assertEqual(obj.logprof_header(), [_('Path'), '/foo', _('New Mode'), _('rw')])
 
 class FileEditHeaderTest(AATest):
     def _run_test(self, params, expected):
