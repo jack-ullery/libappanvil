@@ -84,6 +84,27 @@ RE_PROFILE_CHANGE_PROFILE = re.compile(
     RE_COMMA_EOL)
 
 
+# RE_PATH_PERMS is as restrictive as possible, but might still cause mismatches when adding different rule types.
+# Therefore parsing code should match against file rules only after trying to match all other rule types.
+RE_PATH_PERMS = '(?P<%s>[mrwalkPUCpucix]+)'
+
+# XXX drop RE_PROFILE_PATH_ENTRY, RE_PROFILE_BARE_FILE_ENTRY and RE_OWNER after switching to this regex
+RE_PROFILE_FILE_ENTRY = re.compile(
+    RE_AUDIT_DENY +
+    '(?P<owner>owner\s+)?' +  # optionally: <owner>
+    '(' +
+        '(?P<bare_file>file)' +  # bare 'file,'
+    '|' + # or
+        '(?P<file_keyword>file\s+)?' +  # optional 'file' keyword
+        '(' +
+            RE_PROFILE_PATH_OR_VAR % 'path' + '\s+' + RE_PATH_PERMS % 'perms' +  # path and perms
+        '|' +  # or
+            RE_PATH_PERMS % 'perms2' + '\s+' + RE_PROFILE_PATH_OR_VAR % 'path2' +  # perms and path
+        ')' +
+        '(\s+->\s*' + RE_PROFILE_NAME % 'target' + ')?' +
+    ')' +
+    RE_COMMA_EOL)
+
 
 def parse_profile_start_line(line, filename):
     matches = RE_PROFILE_START.search(line)
