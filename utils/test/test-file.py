@@ -19,6 +19,7 @@ from common_test import AATest, setup_all_loops
 
 from apparmor.rule.file import FileRule, FileRuleset
 from apparmor.rule import BaseRule
+import apparmor.severity as severity
 from apparmor.common import AppArmorException, AppArmorBug
 from apparmor.logparser import ReadLog
 from apparmor.translations import init_translation
@@ -696,6 +697,29 @@ class FileCoveredTest_ManualOrInvalid(AATest):
 
         with self.assertRaises(AppArmorBug):
             obj.is_equal(testobj)
+
+class FileSeverityTest(AATest):
+    tests = [
+        ('/usr/bin/whatis ix,',         5),
+        ('/etc ix,',                    'unknown'),
+        ('/dev/doublehit ix,',          0),
+        ('/dev/doublehit rix,',         4),
+        ('/dev/doublehit rwix,',        8),
+        ('/dev/tty10 rwix,',            9),
+        ('/var/adm/foo/** rix,',        3),
+        ('/etc/apparmor/** r,',         6),
+        ('/etc/** r,',                  'unknown'),
+        ('/usr/foo@bar r,',             'unknown'),  # filename containing @
+        ('/home/foo@bar rw,',           6),  # filename containing @
+        ('file,',                       'unknown'),  # bare file rule XXX should return maximum severity
+    ]
+
+    def _run_test(self, params, expected):
+        sev_db = severity.Severity('severity.db', 'unknown')
+        obj = FileRule.parse(params)
+        rank = obj.severity(sev_db)
+        self.assertEqual(rank, expected)
+
 
 #class FileLogprofHeaderTest(AATest):
 #    tests = [

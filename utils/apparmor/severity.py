@@ -88,6 +88,15 @@ class Severity(object):
         warn("unknown capability: %s" % resource)
         return self.severity['DEFAULT_RANK']
 
+    def rank_path(self, path, mode=None):
+        """Returns the rank for the given path"""
+        if '@' in path:    # path contains variable
+            return self.handle_variable_rank(path, mode)
+        elif path[0] == '/':    # file resource
+            return self.handle_file(path, mode)
+        else:
+            raise AppArmorException("Unexpected path input: %s" % path)
+
     def check_subtree(self, tree, mode, sev, segments):
         """Returns the max severity from the regex tree"""
         if len(segments) == 0:
@@ -136,9 +145,9 @@ class Severity(object):
     def rank(self, resource, mode=None):
         """Returns the rank for the resource file/capability"""
         if '@' in resource:    # path contains variable
-            return self.handle_variable_rank(resource, mode)
+            return self.rank_path(resource, mode)
         elif resource[0] == '/':    # file resource
-            return self.handle_file(resource, mode)
+            return self.rank_path(resource, mode)
         elif resource[0:4] == 'CAP_':    # capability resource
             return self.rank_capability(resource[4:])
         else:

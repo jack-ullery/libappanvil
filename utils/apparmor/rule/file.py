@@ -306,6 +306,20 @@ class FileRule(BaseRule):
 
         return True
 
+    def severity(self, sev_db):
+        if self.all_paths:
+            severity = sev_db.rank_path('/**', 'mrwlkix')
+        else:
+            severity = -1
+            sev = sev_db.rank_path(self.path.regex, self._joint_perms())
+            if isinstance(sev, int):  # type check avoids breakage caused by 'unknown'
+                severity = max(severity, sev)
+
+        if severity == -1:
+            severity = sev  # effectively 'unknown'
+
+        return severity
+
     def logprof_header_localvars(self):
         if self.owner:
             owner = _('Yes')
