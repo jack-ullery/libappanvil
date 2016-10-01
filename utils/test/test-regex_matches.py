@@ -15,6 +15,7 @@ from common_test import AATest, setup_all_loops
 from apparmor.common import AppArmorBug, AppArmorException
 
 from apparmor.regex import ( strip_parenthesis, strip_quotes, parse_profile_start_line, re_match_include,
+     RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY,
      RE_PROFILE_START, RE_PROFILE_DBUS, RE_PROFILE_CAP, RE_PROFILE_PTRACE, RE_PROFILE_SIGNAL )
 
 
@@ -220,7 +221,7 @@ class AARegexPath(AARegexTest):
     '''Tests for RE_PROFILE_PATH_ENTRY'''
 
     def AASetup(self):
-        self.regex = aa.RE_PROFILE_PATH_ENTRY
+        self.regex = RE_PROFILE_PATH_ENTRY
 
     tests = [
         ('   /tmp/foo r,',
@@ -239,7 +240,7 @@ class AARegexBareFile(AARegexTest):
     '''Tests for RE_PROFILE_BARE_FILE_ENTRY'''
 
     def AASetup(self):
-        self.regex = aa.RE_PROFILE_BARE_FILE_ENTRY
+        self.regex = RE_PROFILE_BARE_FILE_ENTRY
 
     tests = [
         ('   file,', (None, None, None, None)),
