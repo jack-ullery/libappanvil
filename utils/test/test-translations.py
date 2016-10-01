@@ -32,6 +32,8 @@ class TestHotkeyConflicts(AATest):
         (['CMD_YES', 'CMD_NO', 'CMD_CANCEL'],                                                                                               True),  # ui.py UI_YesNo() and UI_YesNoCancel
         (['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ABORT', 'CMD_IGNORE_ENTRY'],                                                         True),  # aa-mergeprof act()
         (['CMD_ALLOW', 'CMD_ABORT'],                                                                                                        True),  # aa-mergeprof conflict_mode()
+        (['CMD_ADDSUBPROFILE', 'CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED'],                                                                    True),  # aa-mergeprof ask_the_questions() - new subprofile
+        (['CMD_ADDHAT', 'CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED'],                                                                           True),  # aa-mergeprof ask_the_questions() - new hat
     ]
 
     def _run_test(self, params, expected):

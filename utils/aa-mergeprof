@@ -24,7 +24,7 @@ import apparmor.cleanprofile as cleanprofile
 import apparmor.ui as aaui
 
 from apparmor.aa import (add_to_options, available_buttons, combine_name, delete_duplicates,
-                         get_profile_filename, is_known_rule, match_includes,
+                         get_profile_filename, is_known_rule, match_includes, profile_storage,
                          set_options_audit_mode, propose_file_rules, selection_to_rule_obj)
 from apparmor.aare import AARE
 from apparmor.common import AppArmorException
@@ -289,6 +289,39 @@ class Merge(object):
         sev_db.load_variables(get_profile_filename(profile))
 
         for hat in sorted(other.aa[profile].keys()):
+
+            if not aa[profile].get(hat):
+                ans = ''
+                while ans not in ['CMD_ADDHAT', 'CMD_ADDSUBPROFILE', 'CMD_DENY']:
+                    q = aaui.PromptQuestion()
+                    q.headers += [_('Profile'), profile]
+
+                    if other.aa[profile][hat]['profile']:
+                        q.headers += [_('Requested Subprofile'), hat]
+                        q.functions.append('CMD_ADDSUBPROFILE')
+                    else:
+                        q.headers += [_('Requested Hat'), hat]
+                        q.functions.append('CMD_ADDHAT')
+
+                    q.functions += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
+
+                    q.default = 'CMD_DENY'
+
+                    ans = q.promptUser()[0]
+
+                    if ans == 'CMD_FINISHED':
+                        return
+
+                if ans == 'CMD_DENY':
+                    continue  # don't ask about individual rules if the user doesn't want the additional subprofile/hat
+
+                if other.aa[profile][hat]['profile']:
+                    aa[profile][hat] = profile_storage(profile, hat, 'mergeprof ask_the_questions() - missing subprofile')
+                    aa[profile][hat]['profile'] = True
+                else:
+                    aa[profile][hat] = profile_storage(profile, hat, 'mergeprof ask_the_questions() - missing hat')
+                    aa[profile][hat]['profile'] = False
+
             #Add the includes from the other profile to the user profile
             done = False
 
