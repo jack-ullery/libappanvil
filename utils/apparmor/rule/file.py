@@ -35,8 +35,11 @@ class FileRule(BaseRule):
     # should reference the class field FileRule.ALL
     class __FileAll(object):
         pass
+    class __FileAnyExec(object):
+        pass
 
     ALL = __FileAll
+    ANY_EXEC = __FileAnyExec
 
     rule_name = 'file'
 
@@ -76,6 +79,8 @@ class FileRule(BaseRule):
 
         if exec_perms is None:
             self.exec_perms = None
+        elif exec_perms == self.ANY_EXEC:
+            self.exec_perms = exec_perms
         elif type_is_str(exec_perms):
             if deny:
                 if exec_perms != 'x':
@@ -212,6 +217,8 @@ class FileRule(BaseRule):
             if perm in self.perms:
                 perm_string = perm_string + perm
 
+        if self.exec_perms == self.ANY_EXEC:
+            raise AppArmorBug("FileRule.ANY_EXEC can't be used for actual rules")
         if self.exec_perms:
             perm_string = perm_string + self.exec_perms
 
@@ -236,12 +243,14 @@ class FileRule(BaseRule):
             return False
 
         # TODO: handle fallback modes?
-        if other_rule.exec_perms and self.exec_perms != other_rule.exec_perms:
+        if other_rule.exec_perms == self.ANY_EXEC and self.exec_perms:
+            pass  # other_rule has ANY_EXEC and self has an exec rule set -> covered, so avoid hitting the 'elif' branch
+        elif other_rule.exec_perms and self.exec_perms != other_rule.exec_perms:
             return False
 
-        # check exec_mode and target only if other_rule contains exec_perms or link permissions
+        # check exec_mode and target only if other_rule contains exec_perms (except ANY_EXEC) or link permissions
         # (for mrwk permissions, the target is ignored anyway)
-        if other_rule.exec_perms or (other_rule.perms and 'l' in other_rule.perms):
+        if (other_rule.exec_perms and other_rule.exec_perms != self.ANY_EXEC) or (other_rule.perms and 'l' in other_rule.perms):
             if not self._is_covered_aare(self.target,   self.all_targets,       other_rule.target,      other_rule.all_targets,         'target'):
                 return False
 

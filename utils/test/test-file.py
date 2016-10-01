@@ -375,6 +375,10 @@ class WriteFileTest(AATest):
        self.assertEqual(expected, obj.get_clean(2), 'unexpected clean rule')
        self.assertEqual(expected, obj.get_raw(2), 'unexpected raw rule')
 
+    def test_write_any_exec(self):
+        obj   = FileRule( '/foo',         'rw',   FileRule.ANY_EXEC,'/bar',    False,  False,          False)
+        with self.assertRaises(AppArmorBug):
+            obj.get_clean()
 
 class FileCoveredTest(AATest):
     def _run_test(self, param, expected):
@@ -578,6 +582,55 @@ class FileCoveredTest_ManualOrInvalid(AATest):
         # testobj with leading_perms
         self.testobj   = FileRule( '/foo',         'rw',   'ix',       '/bar',         False,  False,          True)
         self.assertTrue(self.obj.is_equal(self.testobj, strict=False))
+        self.assertFalse(self.obj.is_equal(self.testobj, strict=True))
+
+    def test_covered_anyperm_1(self):
+        self.obj       = FileRule( '/foo',         'rw',   None,       '/bar',         False,  False,          False)
+        self.testobj   = FileRule( '/foo',         'rw',   FileRule.ANY_EXEC, '/bar',   False,  False,          False)
+        self.assertFalse(self.obj.is_covered(self.testobj))
+        self.assertFalse(self.obj.is_equal(self.testobj, strict=False))
+        self.assertFalse(self.obj.is_equal(self.testobj, strict=True))
+
+    def test_covered_anyperm_2(self):
+        self.testobj   = FileRule( '/foo',         'rw',   FileRule.ANY_EXEC,'/bar',    False,  False,          False)
+        self.assertTrue(self.obj.is_covered(self.testobj))
+        self.assertFalse(self.obj.is_equal(self.testobj, strict=False))
+        self.assertFalse(self.obj.is_equal(self.testobj, strict=True))
+
+    def test_covered_anyperm_3(self):
+        # make sure a different exec target gets ignored with ANY_EXEC
+        self.testobj   = FileRule( '/foo',         'rw',   FileRule.ANY_EXEC, '/xyz',   False,  False,          False)
+        self.assertTrue(self.obj.is_covered(self.testobj))
+        self.assertFalse(self.obj.is_equal(self.testobj, strict=False))
+        self.assertFalse(self.obj.is_equal(self.testobj, strict=True))
+
+    def test_covered_anyperm_4(self):
+        # make sure a different exec target gets ignored with ANY_EXEC
+        self.testobj   = FileRule( '/foo',         'rw',   FileRule.ANY_EXEC, FileRule.ALL, False,  False,          False)
+        self.assertTrue(self.obj.is_covered(self.testobj))
+        self.assertFalse(self.obj.is_equal(self.testobj, strict=False))
+        self.assertFalse(self.obj.is_equal(self.testobj, strict=True))
+
+    def test_covered_anyperm_5(self):
+        # even with ANY_EXEC, a different link target causes a mismatch
+        self.testobj   = FileRule( '/foo',         'rwl',  FileRule.ANY_EXEC, '/xyz',   False,  False,          False)
+        self.assertFalse(self.obj.is_covered(self.testobj))
+        self.assertFalse(self.obj.is_equal(self.testobj, strict=False))
+        self.assertFalse(self.obj.is_equal(self.testobj, strict=True))
+
+    def test_covered_anyperm_6(self):
+        # even with ANY_EXEC, a different link target causes a mismatch
+        self.testobj   = FileRule( '/foo',         'rwl',  FileRule.ANY_EXEC, FileRule.ALL, False,  False,          False)
+        self.assertFalse(self.obj.is_covered(self.testobj))
+        self.assertFalse(self.obj.is_equal(self.testobj, strict=False))
+        self.assertFalse(self.obj.is_equal(self.testobj, strict=True))
+
+    def test_covered_anyperm_7(self):
+        self.obj       = FileRule( '/foo',         'rw',   'x',        '/bar',         False,  False,          False, deny=True)
+        self.testobj   = FileRule( '/foo',         'rw',   FileRule.ANY_EXEC,'/bar',    False,  False,          False)
+        self.assertFalse(self.obj.is_covered(self.testobj))
+        self.assertTrue(self.obj.is_covered(self.testobj, check_allow_deny=False))
+        self.assertFalse(self.obj.is_equal(self.testobj, strict=False))
         self.assertFalse(self.obj.is_equal(self.testobj, strict=True))
 
     def test_borked_obj_is_covered_1(self):
