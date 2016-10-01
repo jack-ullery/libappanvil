@@ -133,9 +133,7 @@ def main():
 def act(files, merge_mode, merging_profile):
     mergeprofiles = Merge(files)
     #Get rid of common/superfluous stuff
-#    mergeprofiles.clear_common()
-# mergeprofiles.clear_common() temporarily disabled because it crashes,
-# see https://bugs.launchpad.net/apparmor/+bug/1382236
+    mergeprofiles.clear_common()
 
 #    if not args.auto:
     if 1 == 1:  # workaround to avoid lots of whitespace changes
