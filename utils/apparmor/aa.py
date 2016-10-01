@@ -38,7 +38,7 @@ from apparmor.common import (AppArmorException, AppArmorBug, open_file_read, val
 
 import apparmor.ui as aaui
 
-from apparmor.aamode import str_to_mode, mode_contains, split_mode
+from apparmor.aamode import str_to_mode, split_mode
 
 from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
                             RE_PROFILE_ALIAS,
@@ -392,10 +392,6 @@ def handle_binfmt(profile, path):
             if get_reqs(library):
                 reqs += get_reqs(library)
             reqs_processed[library] = True
-        # match_prof_incs_to_path result gets ignored, so just skip it
-        #combined_mode = match_prof_incs_to_path(profile, 'allow', library)
-        #if combined_mode:
-        #    continue
 
         library_rule = FileRule(library, 'mr', None, FileRule.ALL, owner=False, log_event=True)
 
@@ -2067,25 +2063,6 @@ def collapse_log():
                     if not is_known_rule(aa[profile][hat], 'file', file_event):
                         log_dict[aamode][profile][hat]['file'].add(file_event)
 
-                if False: # # XXX re-implement with FileRule
-                    combinedmode = set()
-                    # Is path in original profile?
-                    if aa[profile][hat]['allow']['path'].get(path, False):
-                        combinedmode |= aa[profile][hat]['allow']['path'][path]['mode']
-
-                    # Match path to regexps in profile
-                    combinedmode |= rematchfrag(aa[profile][hat], 'allow', path)[0]
-
-                    # Match path from includes
-
-                    combinedmode |= match_prof_incs_to_path(aa[profile][hat], 'allow', path)[0]
-
-                    if not combinedmode or not mode_contains(combinedmode, mode):
-                        if log_dict[aamode][profile][hat]['allow']['path'].get(path, False):
-                            mode |= log_dict[aamode][profile][hat]['allow']['path'][path]
-
-                        log_dict[aamode][profile][hat]['allow']['path'][path] = mode
-
                 for cap in prelog[aamode][profile][hat]['capability'].keys():
                     cap_event = CapabilityRule(cap, log_event=True)
                     if not is_known_rule(aa[profile][hat], 'capability', cap_event):
@@ -3470,15 +3447,6 @@ def write_profile(profile):
 
     original_aa[profile] = deepcopy(aa[profile])
 
-def matchliteral(aa_regexp, literal):
-    p_regexp = '^' + convert_regexp(aa_regexp) + '$'
-    match = False
-    try:
-        match = re.search(p_regexp, literal)
-    except:
-        return None
-    return match
-
 def is_known_rule(profile, rule_type, rule_obj):
     # XXX get rid of get() checks after we have a proper function to initialize a profile
     if profile.get(rule_type, False):
@@ -3634,65 +3602,6 @@ def load_include(incname):
             raise AppArmorException("Include file %s not found" % (profile_dir + '/' + incfile) )
 
     return 0
-
-def rematchfrag(frag, allow, path):
-    combinedmode = set()
-    combinedaudit = set()
-    matches = []
-    if not frag:
-        return combinedmode, combinedaudit, matches
-    for entry in frag[allow]['path'].keys():
-        match = matchliteral(entry, path)
-        if match:
-            #print(frag[allow]['path'][entry]['mode'])
-            combinedmode |= frag[allow]['path'][entry].get('mode', set())
-            combinedaudit |= frag[allow]['path'][entry].get('audit', set())
-            matches.append(entry)
-
-    return combinedmode, combinedaudit, matches
-
-def match_include_to_path(incname, allow, path):
-    combinedmode = set()
-    combinedaudit = set()
-    matches = []
-    includelist = [incname]
-    while includelist:
-        incfile = str(includelist.pop(0))
-        # ret = load_include(incfile)
-        load_include(incfile)
-        if not include.get(incfile, {}):
-            continue
-        cm, am, m = rematchfrag(include[incfile].get(incfile, {}), allow, path)
-        #print(incfile, cm, am, m)
-        if cm:
-            combinedmode |= cm
-            combinedaudit |= am
-            matches += m
-
-        if path in include[incfile][incfile][allow]['path']:
-            combinedmode |= include[incfile][incfile][allow]['path'][path]['mode']
-            combinedaudit |= include[incfile][incfile][allow]['path'][path]['audit']
-
-        if include[incfile][incfile]['include'].keys():
-            includelist += include[incfile][incfile]['include'].keys()
-
-    return combinedmode, combinedaudit, matches
-
-def match_prof_incs_to_path(frag, allow, path):
-    combinedmode = set()
-    combinedaudit = set()
-    matches = []
-
-    includelist = list(frag['include'].keys())
-    while includelist:
-        incname = includelist.pop(0)
-        cm, am, m = match_include_to_path(incname, allow, path)
-        if cm:
-            combinedmode |= cm
-            combinedaudit |= am
-            matches += m
-
-    return combinedmode, combinedaudit, matches
 
 def check_qualifiers(program):
     if cfg['qualifiers'].get(program, False):
