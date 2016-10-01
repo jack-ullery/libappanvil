@@ -251,6 +251,7 @@ class Merge(object):
         #print(other.aa)
 
         #Add the file-wide includes from the other profile to the user profile
+        apparmor.aa.loadincludes()
         done = False
 
         options = []
