@@ -340,12 +340,12 @@ def split_perms(perm_string, deny):
             exec_mode = 'x'
             perm_string = perm_string[1:]
         elif perm_string.startswith(allow_exec_transitions):
-            if exec_mode:
+            if exec_mode and exec_mode != perm_string[0:2]:
                 raise AppArmorException(_('conflicting execute permissions found: %s and %s' % (exec_mode, perm_string[0:2])))
             exec_mode = perm_string[0:2]
             perm_string = perm_string[2:]
         elif perm_string.startswith(allow_exec_fallback_transitions):
-            if exec_mode:
+            if exec_mode and exec_mode != perm_string[0:3]:
                 raise AppArmorException(_('conflicting execute permissions found: %s and %s' % (exec_mode, perm_string[0:3])))
             exec_mode = perm_string[0:3]
             perm_string = perm_string[3:]

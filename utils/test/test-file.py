@@ -87,6 +87,10 @@ class FileTestParse(FileTest):
         ('audit deny r /tmp/foo,'               , exp(True,  False, True,  '',        '/tmp/foo',       False,      {'r'},          False,  None,       None,       True,   False,  False,          True        )),
         ('allow ra /tmp/foo,'                   , exp(False, True,  False, '',        '/tmp/foo',       False,      {'r', 'a'},     False,  None,       None,       True,   False,  False,          True        )),
         ('audit allow ra /tmp/foo,'             , exp(True,  True,  False, '',        '/tmp/foo',       False,      {'r', 'a'},     False,  None,       None,       True,   False,  False,          True        )),
+
+        # duplicated (but not conflicting) permissions
+        ('/foo PxPxPxPxrwPx -> bar,'            , exp(False, False, False, '',        '/foo',           False,      {'r', 'w'},     False,  'Px',       'bar',      False,  False,  False,          False       )),
+        ('/foo CixCixrwCix -> bar, '            , exp(False, False, False, '',        '/foo',           False,      {'r', 'w'},     False,  'Cix',      'bar',      False,  False,  False,          False       )),
     ]
 
     def _run_test(self, rawrule, expected):
