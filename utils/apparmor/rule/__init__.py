@@ -211,7 +211,7 @@ class BaseRule(object):
         ):
             return False
 
-        return self.is_equal_localvars(rule_obj)
+        return self.is_equal_localvars(rule_obj, strict)
 
     def _is_equal_aare(self, self_value, self_all, other_value, other_all, cond_name):
         '''check if other_* is the same as self_* - for AARE'''
@@ -229,7 +229,7 @@ class BaseRule(object):
         return True
 
     # @abstractmethod  FIXME - uncomment when python3 only
-    def is_equal_localvars(self, other_rule):
+    def is_equal_localvars(self, other_rule, strict):
         '''compare if rule-specific variables are equal'''
         raise NotImplementedError("'%s' needs to implement is_equal_localvars(), but didn't" % (str(self)))
 

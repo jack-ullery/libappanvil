@@ -43,7 +43,7 @@ class TestBaserule(AATest):
     def test_is_equal_localvars(self):
         obj = BaseRule()
         with self.assertRaises(NotImplementedError):
-            obj.is_equal_localvars(BaseRule())
+            obj.is_equal_localvars(BaseRule(), False)
 
     def test_is_covered_localvars(self):
         obj = BaseRule()

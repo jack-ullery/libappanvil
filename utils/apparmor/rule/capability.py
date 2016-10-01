@@ -110,7 +110,7 @@ class CapabilityRule(BaseRule):
         # still here? -> then it is covered
         return True
 
-    def is_equal_localvars(self, rule_obj):
+    def is_equal_localvars(self, rule_obj, strict):
         '''compare if rule-specific variables are equal'''
 
         if not type(rule_obj) == CapabilityRule:
