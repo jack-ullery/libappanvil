@@ -26,7 +26,7 @@ import apparmor.ui as aaui
 
 from apparmor.aa import (add_to_options, available_buttons, combine_name, delete_duplicates,
                          get_profile_filename, is_known_rule, match_includes,
-                         propose_file_rules, selection_to_rule_obj)
+                         set_options_audit_mode, propose_file_rules, selection_to_rule_obj)
 from apparmor.aare import AARE
 from apparmor.common import AppArmorException
 from apparmor.regex import re_match_include
@@ -694,8 +694,7 @@ class Merge(object):
                                     rule_obj.audit = False
                                     rule_obj.raw_rule = None
 
-                                options[len(options) - 1] = rule_obj.get_clean()
-                                q.options = options
+                                options = set_options_audit_mode(rule_obj, options)
 
                             elif ans == 'CMD_ALLOW':
                                 done = True

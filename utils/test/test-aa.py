@@ -19,7 +19,7 @@ import sys
 
 import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
-     get_profile_flags, set_profile_flags, is_skippable_file, is_skippable_dir,
+     get_profile_flags, set_profile_flags, set_options_audit_mode, is_skippable_file, is_skippable_dir,
      parse_profile_start, parse_profile_data, separate_vars, store_list_var, write_header,
      var_transform, serialize_parse_profile_start, get_file_perms, propose_file_rules)
 from apparmor.aare import AARE
@@ -399,6 +399,19 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
         with self.assertRaises(IOError):
             set_profile_flags('%s/file-not-found' % self.tmpdir, '/foo', 'audit')
 
+class AaTest_set_options_audit_mode(AATest):
+    tests = [
+        ((FileRule.parse('audit /foo/bar r,'),      ['/foo/bar r,', '/foo/* r,', '/** r,']                      ), ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),
+        ((FileRule.parse('audit /foo/bar r,'),      ['/foo/bar r,', 'audit /foo/* r,', 'audit /** r,']          ), ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),
+        ((FileRule.parse('/foo/bar r,'),            ['/foo/bar r,', '/foo/* r,', '/** r,']                      ), ['/foo/bar r,', '/foo/* r,', '/** r,']),
+        ((FileRule.parse('/foo/bar r,'),            ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']    ), ['/foo/bar r,', '/foo/* r,', '/** r,']),
+        ((FileRule.parse('audit /foo/bar r,'),      ['/foo/bar r,', '/foo/* r,', '#include <abstractions/base>']), ['audit /foo/bar r,', 'audit /foo/* r,', '#include <abstractions/base>']),
+    ]
+
+    def _run_test(self, params, expected):
+        rule_obj, options = params
+        new_options = set_options_audit_mode(rule_obj, options)
+        self.assertEqual(new_options, expected)
 
 class AaTest_is_skippable_file(AATest):
     def test_not_skippable_01(self):

@@ -1586,8 +1586,7 @@ def ask_the_questions():
                                     rule_obj.audit = False
                                     rule_obj.raw_rule = None
 
-                                options[len(options) - 1] = rule_obj.get_clean()
-                                q.options = options
+                                options = set_options_audit_mode(rule_obj, options)
 
                             elif ans == 'CMD_ALLOW':
                                 done = True
@@ -1665,6 +1664,24 @@ def ask_the_questions():
 def selection_to_rule_obj(rule_obj, selection):
     rule_type = type(rule_obj)
     return rule_type.parse(selection)
+
+def set_options_audit_mode(rule_obj, options):
+    '''change audit state in options (proposed rules) to audit state in rule_obj.
+       #include options will be kept unchanged
+    '''
+    new_options = []
+
+    for rule in options:
+        if re_match_include(rule):
+            new_options.append(rule)
+        else:
+            parsed_rule = selection_to_rule_obj(rule_obj, rule)
+            parsed_rule.audit = rule_obj.audit
+            parsed_rule.raw_rule = None
+            new_options.append(parsed_rule.get_raw())
+
+    return new_options
+
 
 def ask_the_questions_OLD_FILE_CODE(): # XXX unused
                 global seen_events
