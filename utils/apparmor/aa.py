@@ -37,7 +37,7 @@ from apparmor.common import (AppArmorException, AppArmorBug, open_file_read, val
 import apparmor.ui as aaui
 
 from apparmor.aamode import (str_to_mode, mode_to_str,
-                             mode_to_str_user, mode_contains, AA_OTHER,
+                             mode_to_str_user, mode_contains, split_mode,
                              flatten_mode, owner_flatten_mode)
 
 from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
@@ -391,14 +391,20 @@ def handle_binfmt(profile, path):
             if get_reqs(library):
                 reqs += get_reqs(library)
             reqs_processed[library] = True
-        combined_mode = match_prof_incs_to_path(profile, 'allow', library)
-        if combined_mode:
-            continue
-        library = glob_common(library)
-        if not library:
-            continue
-        profile['allow']['path'][library]['mode'] = profile['allow']['path'][library].get('mode', set()) | str_to_mode('mr')
-        profile['allow']['path'][library]['audit'] |= profile['allow']['path'][library].get('audit', set())
+        # match_prof_incs_to_path result gets ignored, so just skip it
+        #combined_mode = match_prof_incs_to_path(profile, 'allow', library)
+        #if combined_mode:
+        #    continue
+
+        library_rule = FileRule(library, 'mr', None, FileRule.ALL, owner=False, log_event=True)
+
+        if not is_known_rule(profile, 'file', library_rule):
+            globbed_library = glob_common(library)
+            if globbed_library:
+                # glob_common returns a list, just use the first element (typically '/lib/libfoo.so.*')
+                library_rule = FileRule(globbed_library[0], 'mr', None, FileRule.ALL, owner=False)
+
+            profile['file'].add(library_rule)
 
 def get_interpreter_and_abstraction(exec_target):
     '''Check if exec_target is a script.
@@ -468,7 +474,6 @@ def profile_storage(profilename, hat, calledby):
     profile['rlimit']           = RlimitRuleset()
     profile['signal']           = SignalRuleset()
 
-    profile['allow']['path'] = hasher()
     profile['allow']['mount'] = list()
     profile['allow']['pivot_root'] = list()
 
@@ -484,23 +489,15 @@ def create_new_profile(localfile, is_stub=False):
         interpreter_path, abstraction = get_interpreter_and_abstraction(localfile)
 
         if interpreter_path:
-            local_profile[localfile]['allow']['path'][localfile]['mode'] = local_profile[localfile]['allow']['path'][localfile].get('mode', str_to_mode('r')) | str_to_mode('r')
-
-            local_profile[localfile]['allow']['path'][localfile]['audit'] = local_profile[localfile]['allow']['path'][localfile].get('audit', set())
-
-            local_profile[localfile]['allow']['path'][interpreter_path]['mode'] = local_profile[localfile]['allow']['path'][interpreter_path].get('mode', str_to_mode('ix')) | str_to_mode('ix')
-
-            local_profile[localfile]['allow']['path'][interpreter_path]['audit'] = local_profile[localfile]['allow']['path'][interpreter_path].get('audit', set())
+            local_profile[localfile]['file'].add(FileRule(localfile,        'r',  None, FileRule.ALL, owner=False))
+            local_profile[localfile]['file'].add(FileRule(interpreter_path, None, 'ix', FileRule.ALL, owner=False))
 
             if abstraction:
                 local_profile[localfile]['include'][abstraction] = True
 
             handle_binfmt(local_profile[localfile], interpreter_path)
         else:
-
-            local_profile[localfile]['allow']['path'][localfile]['mode'] = local_profile[localfile]['allow']['path'][localfile].get('mode', str_to_mode('mr')) | str_to_mode('mr')
-
-            local_profile[localfile]['allow']['path'][localfile]['audit'] = local_profile[localfile]['allow']['path'][localfile].get('audit', set())
+            local_profile[localfile]['file'].add(FileRule(localfile,        'mr', None, FileRule.ALL, owner=False))
 
             handle_binfmt(local_profile[localfile], localfile)
     # Add required hats to the profile if they match the localfile
@@ -1166,19 +1163,6 @@ def handle_children(profile, hat, root):
                 if not profile or not hat or not detail:
                     continue
 
-                domainchange = 'nochange'
-                if typ == 'exec':
-                    domainchange = 'change'
-
-                # Escape special characters
-                detail = detail.replace('[', '\[')
-                detail = detail.replace(']', '\]')
-                detail = detail.replace('+', '\+')
-                detail = detail.replace('*', '\*')
-                detail = detail.replace('{', '\{')
-                detail = detail.replace('}', '\}')
-                detail = detail.replace('!', '\!')
-
                 # Give Execute dialog if x access requested for something that's not a directory
                 # For directories force an 'ix' Path dialog
                 do_execute = False
@@ -1191,8 +1175,9 @@ def handle_children(profile, hat, root):
                         raise AppArmorBug('exec permissions requested for %(exec_target)s, but mode is %(mode)s instead of exec. This should not happen - please open a bugreport!' % {'exec_target': exec_target, 'mode':mode})
                     else:
                         do_execute = True
+                        domainchange = 'change'
 
-                if mode:
+                if mode and mode != str_to_mode('x'):  # x is already handled in handle_children, so it must not become part of prelog
                     path = detail
 
                     if prelog[aamode][profile][hat]['path'].get(path, False):
@@ -1200,15 +1185,16 @@ def handle_children(profile, hat, root):
                     prelog[aamode][profile][hat]['path'][path] = mode
 
                 if do_execute:
-                    if profile_known_exec(aa[profile][hat], 'exec', exec_target):
+                    exec_event = FileRule(exec_target, None, FileRule.ANY_EXEC, FileRule.ALL, owner=False, log_event=True)
+                    if is_known_rule(aa[profile][hat], 'file', exec_event):
                         continue
 
                     p = update_repo_profile(aa[profile][profile])
                     if to_name:
-                        if UI_SelectUpdatedRepoProfile(profile, p) and profile_known_exec(aa[profile][hat], 'exec', to_name):
+                        if UI_SelectUpdatedRepoProfile(profile, p) and is_known_rule(aa[profile][hat], 'file', exec_event):  # we need an exec_event with target=to_name here
                             continue
                     else:
-                        if UI_SelectUpdatedRepoProfile(profile, p) and profile_known_exec(aa[profile][hat], 'exec', exec_target):
+                        if UI_SelectUpdatedRepoProfile(profile, p) and is_known_rule(aa[profile][hat], 'file', exec_event):  # we need an exec_event with target=exec_target here
                             continue
 
                     context_new = profile
@@ -1220,6 +1206,7 @@ def handle_children(profile, hat, root):
                     # Log parsing methods will convert it to its profile form
                     # nx is internally cx/px/cix/pix + to_name
                     exec_mode = False
+                    file_perm = None
 
                     if True:
                         options = cfg['qualifiers'].get(exec_target, 'ipcnu')
@@ -1272,15 +1259,15 @@ def handle_children(profile, hat, root):
 
                         # options = '|'.join(options)
                         seen_events += 1
-                        regex_options = re.compile('^CMD_(ix|px|cx|nx|pix|cix|nix|px_safe|cx_safe|nx_safe|pix_safe|cix_safe|nix_safe|ux|ux_safe|EXEC_TOGGLE|DENY)$')
 
+                        # ask user about the exec mode to use
                         ans = ''
-                        while not regex_options.search(ans):
-                            ans = q.promptUser()[0].strip()
+                        while ans not in ['CMD_ix', 'CMD_px', 'CMD_cx', 'CMD_nx', 'CMD_pix', 'CMD_cix', 'CMD_nix', 'CMD_ux', 'CMD_DENY']:  # add '(I)gnore'? (hotkey conflict with '(i)x'!)
+                            ans = q.promptUser()[0]
+
                             if ans.startswith('CMD_EXEC_IX_'):
                                 exec_toggle = not exec_toggle
-                                q.functions = []
-                                q.functions += build_x_functions(default, options, exec_toggle)
+                                q.functions = build_x_functions(default, options, exec_toggle)
                                 ans = ''
                                 continue
 
@@ -1306,70 +1293,61 @@ def handle_children(profile, hat, root):
 
                                 to_name = aaui.UI_GetString(_('Enter profile name to transition to: '), arg)
 
-                            regex_optmode = re.compile('CMD_(px|cx|nx|pix|cix|nix)')
                             if ans == 'CMD_ix':
-                                exec_mode = str_to_mode('ix')
-                            elif regex_optmode.search(ans):
-                                match = regex_optmode.search(ans).groups()[0]
-                                exec_mode = str_to_mode(match)
-                                px_default = 'n'
+                                exec_mode = 'ix'
+                            elif ans in ['CMD_px', 'CMD_cx', 'CMD_pix', 'CMD_cix']:
+                                exec_mode = ans.replace('CMD_', '')
                                 px_msg = _("Should AppArmor sanitise the environment when\nswitching profiles?\n\nSanitising environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH.")
                                 if parent_uses_ld_xxx:
                                     px_msg = _("Should AppArmor sanitise the environment when\nswitching profiles?\n\nSanitising environment is more secure,\nbut this application appears to be using LD_PRELOAD\nor LD_LIBRARY_PATH and sanitising the environment\ncould cause functionality problems.")
 
-                                ynans = aaui.UI_YesNo(px_msg, px_default)
+                                ynans = aaui.UI_YesNo(px_msg, 'y')
                                 if ynans == 'y':
                                     # Disable the unsafe mode
-                                    exec_mode = exec_mode - (apparmor.aamode.AA_EXEC_UNSAFE | AA_OTHER(apparmor.aamode.AA_EXEC_UNSAFE))
+                                    exec_mode = exec_mode.capitalize()
                             elif ans == 'CMD_ux':
-                                exec_mode = str_to_mode('ux')
+                                exec_mode = 'ux'
                                 ynans = aaui.UI_YesNo(_("Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s ?") % exec_target, 'n')
                                 if ynans == 'y':
                                     ynans = aaui.UI_YesNo(_("Should AppArmor sanitise the environment when\nrunning this program unconfined?\n\nNot sanitising the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."), 'y')
                                     if ynans == 'y':
                                         # Disable the unsafe mode
-                                        exec_mode = exec_mode - (apparmor.aamode.AA_EXEC_UNSAFE | AA_OTHER(apparmor.aamode.AA_EXEC_UNSAFE))
+                                        exec_mode = exec_mode.capitalize()
                                 else:
                                     ans = 'INVALID'
 
-                        regex_options = re.compile('CMD_(ix|px|cx|nx|pix|cix|nix)')
-                        if regex_options.search(ans):
+                        if exec_mode and 'i' in exec_mode:
                             # For inherit we need r
-                            if exec_mode & str_to_mode('i'):
-                                exec_mode |= str_to_mode('r')
+                            file_perm = 'r'
                         else:
                             if ans == 'CMD_DENY':
-                                aa[profile][hat]['deny']['path'][exec_target]['mode'] = aa[profile][hat]['deny']['path'][exec_target].get('mode', str_to_mode('x')) | str_to_mode('x')
-                                aa[profile][hat]['deny']['path'][exec_target]['audit'] = aa[profile][hat]['deny']['path'][exec_target].get('audit', set())
+                                aa[profile][hat]['file'].add(FileRule(exec_target, None, 'x', FileRule.ALL, owner=False, log_event=True, deny=True))
                                 changed[profile] = True
                                 # Skip remaining events if they ask to deny exec
                                 if domainchange == 'change':
                                     return None
 
                         if ans != 'CMD_DENY':
-                            prelog['PERMITTING'][profile][hat]['path'][exec_target] = prelog['PERMITTING'][profile][hat]['path'].get(exec_target, exec_mode) | exec_mode
-
-                            log_dict['PERMITTING'][profile] = hasher()
-
-                            aa[profile][hat]['allow']['path'][exec_target]['mode'] = aa[profile][hat]['allow']['path'][exec_target].get('mode', exec_mode)
-
-                            aa[profile][hat]['allow']['path'][exec_target]['audit'] = aa[profile][hat]['allow']['path'][exec_target].get('audit', set())
-
                             if to_name:
-                                aa[profile][hat]['allow']['path'][exec_target]['to'] = to_name
+                                rule_to_name = to_name
+                            else:
+                                rule_to_name = FileRule.ALL
+
+                            aa[profile][hat]['file'].add(FileRule(exec_target, file_perm, exec_mode, rule_to_name, owner=False, log_event=True))
 
                             changed[profile] = True
 
-                            if exec_mode & str_to_mode('i'):
+                            if 'i' in exec_mode:
                                 interpreter_path, abstraction = get_interpreter_and_abstraction(exec_target)
 
                                 if interpreter_path:
-                                    aa[profile][hat]['allow']['path'][interpreter_path]['mode'] = aa[profile][hat]['allow']['path'][interpreter_path].get('mode', str_to_mode('ix')) | str_to_mode('ix')
-
-                                    aa[profile][hat]['allow']['path'][interpreter_path]['audit'] = aa[profile][hat]['allow']['path'][interpreter_path].get('audit', set())
+                                    aa[profile][hat]['file'].add(FileRule(exec_target,      'r',  None, FileRule.ALL, owner=False))
+                                    aa[profile][hat]['file'].add(FileRule(interpreter_path, None, 'ix', FileRule.ALL, owner=False))
 
                                     if abstraction:
                                         aa[profile][hat]['include'][abstraction] = True
+
+                                    handle_binfmt(aa[profile][hat], interpreter_path)
 
                     # Update tracking info based on kind of change
 
@@ -1390,7 +1368,7 @@ def handle_children(profile, hat, root):
                         # Check profile exists for px
                         if not os.path.exists(get_profile_filename(exec_target)):
                             ynans = 'y'
-                            if exec_mode & str_to_mode('i'):
+                            if 'i' in exec_mode:
                                 ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
                             if ynans == 'y':
                                 helpers[exec_target] = 'enforce'
@@ -1408,7 +1386,7 @@ def handle_children(profile, hat, root):
 
                         if not aa[profile].get(exec_target, False):
                             ynans = 'y'
-                            if exec_mode & str_to_mode('i'):
+                            if 'i' in exec_mode:
                                 ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
                             if ynans == 'y':
                                 hat = exec_target
@@ -1629,6 +1607,8 @@ def ask_the_questions():
                                 done = False
                     # END of code (mostly) shared with aa-mergeprof
 
+def ask_the_questions_OLD_FILE_CODE(): # XXX unused
+                global seen_events
                 # Process all the path entries.
                 for path in sorted(log_dict[aamode][profile][hat]['allow']['path'].keys()):
                     mode = log_dict[aamode][profile][hat]['allow']['path'][path]
@@ -2314,6 +2294,29 @@ def collapse_log():
                 for path in prelog[aamode][profile][hat]['path'].keys():
                     mode = prelog[aamode][profile][hat]['path'][path]
 
+                    user, other = split_mode(mode)
+
+                    # logparser.py doesn't preserve 'owner' information, see https://bugs.launchpad.net/apparmor/+bug/1538340
+                    # XXX re-check this code after fixing this bug
+                    if other:
+                        owner = False
+                        mode = other
+                    else:
+                        owner = True
+                        mode = user
+
+                    # python3 aa-logprof -f <(echo '[55826.822365] audit: type=1400 audit(1454355221.096:85479): apparmor="ALLOWED" operation="file_receive" profile="/usr/sbin/smbd" name="/foo.png" pid=28185 comm="smbd" requested_mask="w" denied_mask="w" fsuid=100 ouid=100')
+                    # happens via log_str_to_mode() called in logparser.py parse_event_for_tree()
+                    # XXX fix this in the log parsing!
+                    if 'a' in mode and 'w' in mode:
+                        mode.remove('a')
+
+                    file_event = FileRule(path, mode, None, FileRule.ALL, owner=owner, log_event=True)
+
+                    if not is_known_rule(aa[profile][hat], 'file', file_event):
+                        log_dict[aamode][profile][hat]['file'].add(file_event)
+
+                if False: # # XXX re-implement with FileRule
                     combinedmode = set()
                     # Is path in original profile?
                     if aa[profile][hat]['allow']['path'].get(path, False):
@@ -2380,24 +2383,6 @@ def collapse_log():
                             signal_event = SignalRule(access, signal, peer, log_event=True)
                             if not is_known_rule(aa[profile][hat], 'signal', signal_event):
                                 log_dict[aamode][profile][hat]['signal'].add(signal_event)
-
-
-PROFILE_MODE_RE      = re.compile('^(r|w|l|m|k|a|ix|ux|px|pux|cx|pix|cix|cux|Ux|Px|PUx|Cx|Pix|Cix|CUx)+$')
-PROFILE_MODE_DENY_RE = re.compile('^(r|w|l|m|k|a|x)+$')
-
-def validate_profile_mode(mode, allow, nt_name=None):
-    if allow == 'deny':
-        if PROFILE_MODE_DENY_RE.search(mode):
-            return True
-        else:
-            return False
-
-    else:
-        if PROFILE_MODE_RE.search(mode):
-            return True
-        else:
-            return False
-
 
 def is_skippable_file(path):
     """Returns True if filename matches something to be skipped (rpm or dpkg backup files, hidden files etc.)
@@ -3742,30 +3727,6 @@ def matchliteral(aa_regexp, literal):
     except:
         return None
     return match
-
-def profile_known_exec(profile, typ, exec_target):
-    if typ == 'exec':
-        cm = None
-        am = None
-        m = []
-
-        cm, am, m = rematchfrag(profile, 'deny', exec_target)
-        if cm & apparmor.aamode.AA_MAY_EXEC:
-            return -1
-
-        cm, am, m = match_prof_incs_to_path(profile, 'deny', exec_target)
-        if cm & apparmor.aamode.AA_MAY_EXEC:
-            return -1
-
-        cm, am, m = rematchfrag(profile, 'allow', exec_target)
-        if cm & apparmor.aamode.AA_MAY_EXEC:
-            return 1
-
-        cm, am, m = match_prof_incs_to_path(profile, 'allow', exec_target)
-        if cm & apparmor.aamode.AA_MAY_EXEC:
-            return 1
-
-    return 0
 
 def is_known_rule(profile, rule_type, rule_obj):
     # XXX get rid of get() checks after we have a proper function to initialize a profile

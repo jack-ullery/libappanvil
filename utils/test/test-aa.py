@@ -14,6 +14,7 @@ from common_test import AATest, setup_all_loops
 from common_test import read_file, write_file
 
 import os
+import shutil
 import sys
 
 import apparmor.aa  # needed to set global vars in some tests
@@ -111,21 +112,35 @@ class AaTest_create_new_profile(AATest):
         ('foo bar',                (None,                   None)),
     ]
     def _run_test(self, params, expected):
+        apparmor.aa.cfg['settings']['ldd'] = './fake_ldd'
+        # for some reason, setting the ldd config option does not get
+        # honored in python2.7
+        # XXX KILL when python 2.7 is dropped XXX
+        if sys.version_info[0] < 3:
+            print("Skipping on python < 3.x")
+            return
+
+        self.createTmpdir()
+
+        #copy the local profiles to the test directory
+        self.profile_dir = '%s/profiles' % self.tmpdir
+        shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
+
+        # load the abstractions we need in the test
+        apparmor.aa.profiledir = self.profile_dir
+        apparmor.aa.load_include('abstractions/base')
+        apparmor.aa.load_include('abstractions/bash')
+
         exp_interpreter_path, exp_abstraction = expected
 
         program = self.writeTmpfile('script', params)
         profile = create_new_profile(program)
 
         if exp_interpreter_path:
-            self.assertEqual(profile[program][program]['allow']['path'][exp_interpreter_path]['mode'], {'x', '::i', '::x', 'i'} )
-            self.assertEqual(profile[program][program]['allow']['path'][exp_interpreter_path]['audit'], set() )
-            self.assertEqual(profile[program][program]['allow']['path'][program]['mode'], {'r', '::r'} )
-            self.assertEqual(profile[program][program]['allow']['path'][program]['audit'], set() )
-            self.assertEqual(set(profile[program][program]['allow']['path'].keys()), {program, exp_interpreter_path} )
+            self.assertEqual(set(profile[program][program]['file'].get_clean()), {'%s ix,' % exp_interpreter_path, '%s r,' % program, '',
+                    '/AATest/lib64/libtinfo.so.* mr,', '/AATest/lib64/libc.so.* mr,', '/AATest/lib64/libdl.so.* mr,', '/AATest/lib64/libreadline.so.* mr,', '/AATest/lib64/ld-linux-x86-64.so.* mr,' })
         else:
-            self.assertEqual(profile[program][program]['allow']['path'][program]['mode'], {'r', '::r', 'm', '::m'} )
-            self.assertEqual(profile[program][program]['allow']['path'][program]['audit'], set() )
-            self.assertEqual(set(profile[program][program]['allow']['path'].keys()), {program} )
+            self.assertEqual(set(profile[program][program]['file'].get_clean()), {'%s mr,' % program, ''})
 
         if exp_abstraction:
             self.assertEqual(set(profile[program][program]['include'].keys()), {exp_abstraction, 'abstractions/base'})
