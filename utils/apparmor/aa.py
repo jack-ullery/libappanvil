@@ -1612,9 +1612,11 @@ def ask_the_questions():
 
                                 else:
                                     rule_obj = selection_to_rule_obj(rule_obj, selection)
-                                    aa[profile][hat][ruletype].add(rule_obj)
+                                    deleted = aa[profile][hat][ruletype].add(rule_obj, cleanup=True)
 
                                     aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
+                                    if deleted:
+                                        aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                             elif ans == 'CMD_DENY':
                                 if re_match_include(selection):
@@ -1627,8 +1629,10 @@ def ask_the_questions():
                                     rule_obj = selection_to_rule_obj(rule_obj, selection)
                                     rule_obj.deny = True
                                     rule_obj.raw_rule = None  # reset raw rule after manually modifying rule_obj
-                                    aa[profile][hat][ruletype].add(rule_obj)
+                                    deleted = aa[profile][hat][ruletype].add(rule_obj, cleanup=True)
                                     aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
+                                    if deleted:
+                                        aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                             elif ans == 'CMD_GLOB':
                                 if not re_match_include(selection):
