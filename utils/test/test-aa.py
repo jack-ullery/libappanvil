@@ -21,7 +21,8 @@ import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
      get_profile_flags, set_profile_flags, is_skippable_file, is_skippable_dir,
      parse_profile_start, parse_profile_data, separate_vars, store_list_var, write_header,
-     var_transform, serialize_parse_profile_start, get_file_perms)
+     var_transform, serialize_parse_profile_start, get_file_perms, propose_file_rules)
+from apparmor.aare import AARE
 from apparmor.common import AppArmorException, AppArmorBug
 from apparmor.rule.file import FileRule
 
@@ -799,6 +800,46 @@ class AaTest_get_file_perms_2(AATest):
         perms = get_file_perms(profile, params, False, False)  # only testing with audit and deny = False
         self.assertEqual(perms, expected)
 
+class AaTest_propose_file_rules(AATest):
+    tests = [
+        # log event path                   and perms    expected proposals
+        (['/usr/share/common-licenses/foo/bar', 'w'],   ['/usr/share/common*/foo/* rw,', '/usr/share/common-licenses/** rw,', '/usr/share/common-licenses/foo/bar rw,']         ),
+        (['/dev/null',                          'wk'],  ['/dev/null rwk,']                                                                                                      ),
+        (['/foo/bar',                           'rw'],  ['/foo/bar rw,']                                                                                                        ),
+        (['/usr/lib/ispell/',                   'w'],   ['/usr/lib{,32,64}/** rw,', '/usr/lib/ispell/ rw,']                                                                     ),
+        (['/usr/lib/aspell/some.so',            'k'],   ['/usr/lib/aspell/* mrk,', '/usr/lib/aspell/*.so mrk,', '/usr/lib{,32,64}/** mrk,', '/usr/lib/aspell/some.so mrk,']     ),
+    ]
+
+    def _run_test(self, params, expected):
+        self.createTmpdir()
+
+        #copy the local profiles to the test directory
+        self.profile_dir = '%s/profiles' % self.tmpdir
+        shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
+
+        # load the abstractions we need in the test
+        apparmor.aa.profiledir = self.profile_dir
+        apparmor.aa.load_include('abstractions/base')
+        apparmor.aa.load_include('abstractions/bash')
+        apparmor.aa.load_include('abstractions/enchant')
+        apparmor.aa.load_include('abstractions/aspell')
+
+        # add some user_globs ('(N)ew') to simulate a professional aa-logprof user (and to make sure that part of the code also gets tested)
+        apparmor.aa.user_globs['/usr/share/common*/foo/*'] = AARE('/usr/share/common*/foo/*', True)
+        apparmor.aa.user_globs['/no/thi*ng'] = AARE('/no/thi*ng', True)
+
+        profile = apparmor.aa.profile_storage('/test', '/test', 'test-aa.py')
+        profile['include']['abstractions/base'] = True
+        profile['include']['abstractions/bash'] = True
+        profile['include']['abstractions/enchant'] = True  # includes abstractions/aspell
+
+        profile['file'].add(FileRule.parse('owner /usr/share/common-licenses/**  w,'))
+        profile['file'].add(FileRule.parse('/dev/null rwk,'))
+        profile['file'].add(FileRule.parse('/foo/bar rwix,'))
+
+        rule_obj = FileRule(params[0], params[1], None, FileRule.ALL, owner=False, log_event=True)
+        proposals = propose_file_rules(profile, rule_obj)
+        self.assertEqual(proposals, expected)
 
 setup_all_loops(__name__)
 if __name__ == '__main__':

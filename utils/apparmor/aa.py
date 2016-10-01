@@ -31,6 +31,8 @@ import apparmor.severity
 
 from copy import deepcopy
 
+from apparmor.aare import AARE
+
 from apparmor.common import (AppArmorException, AppArmorBug, open_file_read, valid_path, hasher,
                              open_file_write, convert_regexp, DebugLogger)
 
@@ -97,7 +99,8 @@ existing_profiles = dict()
 
 seen_events = 0  # was our
 # To store the globs entered by users so they can be provided again
-user_globs = []
+# format: user_globs['/foo*'] = AARE('/foo*')
+user_globs = {}
 
 # The key for representing bare "file," rules
 ALL = '\0ALL'
@@ -1479,11 +1482,19 @@ def update_repo_profile(profile):
     # To-Do
     return None
 
-def order_globs(globs, path):
+def order_globs(globs, original_path):
     """Returns the globs in sorted order, more specific behind"""
     # To-Do
     # ATM its lexicographic, should be done to allow better matches later
-    return sorted(globs)
+
+    globs = sorted(globs)
+
+    # make sure the original path is always the last option
+    if original_path in globs:
+        globs.remove(original_path)
+    globs.append(original_path)
+
+    return globs
 
 def ask_the_questions():
     found = 0
@@ -1529,7 +1540,10 @@ def ask_the_questions():
                         if newincludes:
                             options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
 
-                        options.append(rule_obj.get_clean())
+                        if ruletype == 'file' and rule_obj.path:
+                            options += propose_file_rules(aa[profile][hat], rule_obj)
+                        else:
+                            options.append(rule_obj.get_clean())
 
                         seen_events += 1
 
@@ -1642,6 +1656,7 @@ def ask_the_questions():
 
                                         edit_rule_obj.store_edit(newpath)
                                         options, default_option = add_to_options(options, edit_rule_obj.get_raw())
+                                        user_globs[newpath] = AARE(newpath, True)
 
                             else:
                                 done = False
@@ -3791,6 +3806,44 @@ def get_file_perms(profile, path, audit, deny):
                     includelist += [childinc]
 
     return perms
+
+def propose_file_rules(profile_obj, rule_obj):
+    '''Propose merged file rules based on the existing profile and the log events
+       - permissions get merged
+       - matching paths from existing rules, common_glob() and user_globs get proposed
+       - IMPORTANT: modifies rule_obj.original_perms and rule_obj.perms'''
+    options = []
+    original_path = rule_obj.path.regex
+
+    merged_rule_obj = deepcopy(rule_obj)   # make sure not to modify the original rule object (with exceptions, see end of this function)
+
+    existing_perms = get_file_perms(profile_obj, rule_obj.path, False, False)
+    for perm in existing_perms['allow']['all']:  # XXX also handle owner-only perms
+        merged_rule_obj.perms.add(perm)
+        merged_rule_obj.raw_rule = None
+
+    pathlist = {original_path} | existing_perms['paths'] | set(glob_common(original_path))
+
+    for user_glob in user_globs:
+        if user_globs[user_glob].match(original_path):
+            pathlist.add(user_glob)
+
+    pathlist = order_globs(pathlist, original_path)
+
+    # paths in existing rules that match the original path
+    for path in pathlist:
+        merged_rule_obj.store_edit(path)
+        merged_rule_obj.raw_rule = None
+        options.append(merged_rule_obj.get_clean())
+
+    merged_rule_obj.exec_perms = None
+
+    rule_obj.original_perms = existing_perms
+    if rule_obj.perms != merged_rule_obj.perms:
+        rule_obj.perms = merged_rule_obj.perms
+        rule_obj.raw_rule = None
+
+    return options
 
 def reload_base(bin_path):
     if not check_for_apparmor():

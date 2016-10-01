@@ -25,7 +25,9 @@ import apparmor.cleanprofile as cleanprofile
 import apparmor.ui as aaui
 
 from apparmor.aa import (add_to_options, available_buttons, combine_name, delete_duplicates,
-                         get_profile_filename, is_known_rule, match_includes, selection_to_rule_obj)
+                         get_profile_filename, is_known_rule, match_includes,
+                         propose_file_rules, selection_to_rule_obj)
+from apparmor.aare import AARE
 from apparmor.common import AppArmorException
 from apparmor.regex import re_match_include
 
@@ -655,7 +657,10 @@ class Merge(object):
                         if newincludes:
                             options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
 
-                        options.append(rule_obj.get_clean())
+                        if ruletype == 'file' and rule_obj.path:
+                            options += propose_file_rules(aa[profile][hat], rule_obj)
+                        else:
+                            options.append(rule_obj.get_clean())
 
                         done = False
                         while not done:
@@ -759,6 +764,7 @@ class Merge(object):
 
                                         edit_rule_obj.store_edit(newpath)
                                         options, default_option = add_to_options(options, edit_rule_obj.get_raw())
+                                        apparmor.aa.user_globs[newpath] = AARE(newpath, True)
 
                             else:
                                 done = False

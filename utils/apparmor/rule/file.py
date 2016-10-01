@@ -82,6 +82,8 @@ class FileRule(BaseRule):
         if self.perms and 'a' in self.perms and 'w' in self.perms:
             raise AppArmorException("Conflicting permissions found: 'a' and 'w'")
 
+        self.original_perms = None  # might be set by aa-logprof / aa.py propose_file_rules()
+
         if exec_perms is None:
             self.exec_perms = None
         elif exec_perms == self.ANY_EXEC:
