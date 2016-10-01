@@ -18,8 +18,8 @@
 
   unix (receive) type=dgram,
 
-  /home/*/** r,
-  /home/foo/** w,
+  allow /home/*/** r,
+  allow /home/foo/** w,
 
   change_profile,
 
@@ -32,7 +32,7 @@
   }
 }
 /usr/bin/other/cleanprof/test/profile {
-  /home/*/** rw,
-  /home/foo/bar r,
+  allow /home/*/** rw,
+  allow /home/foo/bar r,
 
 }

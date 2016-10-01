@@ -58,17 +58,9 @@ exception_not_raised = [
     'dbus/bad_regex_04.sd',
     'dbus/bad_regex_05.sd',
     'dbus/bad_regex_06.sd',
-    'file/bad_append_1.sd',
-    'file/bad_append_2.sd',
-    'file/bad_embedded_spaces_1.sd',
+    'file/bad_re_brace_1.sd',
     'file/bad_re_brace_2.sd',
     'file/bad_re_brace_3.sd',
-    'file/file/bad_append_1.sd',
-    'file/file/bad_embedded_spaces_1.sd',
-    'file/file/owner/bad_3.sd',
-    'file/file/owner/bad_5.sd',
-    'file/owner/bad_3.sd',
-    'file/owner/bad_5.sd',
     'mount/bad_opt_10.sd',
     'mount/bad_opt_11.sd',
     'mount/bad_opt_12.sd',
@@ -194,17 +186,10 @@ exception_not_raised = [
     'xtrans/simple_bad_conflicting_x_11.sd',
     'xtrans/simple_bad_conflicting_x_12.sd',
     'xtrans/simple_bad_conflicting_x_13.sd',
-    'xtrans/simple_bad_conflicting_x_14.sd',
-    'xtrans/simple_bad_conflicting_x_15.sd',
-    'xtrans/simple_bad_conflicting_x_1.sd',
     'xtrans/simple_bad_conflicting_x_2.sd',
-    'xtrans/simple_bad_conflicting_x_3.sd',
     'xtrans/simple_bad_conflicting_x_4.sd',
-    'xtrans/simple_bad_conflicting_x_5.sd',
     'xtrans/simple_bad_conflicting_x_6.sd',
-    'xtrans/simple_bad_conflicting_x_7.sd',
     'xtrans/simple_bad_conflicting_x_8.sd',
-    'xtrans/simple_bad_conflicting_x_9.sd',
     'xtrans/x-conflict.sd',
 ]
 
@@ -217,11 +202,9 @@ unknown_line = [
     'file/ok_other_2.sd',
     'file/ok_other_3.sd',
 
-    # permissions before path
+    # 'unsafe' keyword
     'file/file/front_perms_ok_1.sd',
     'file/front_perms_ok_1.sd',
-    'profile/local/local_named_profile_ok1.sd',
-    'profile/local/local_profile_ok1.sd',
     'xtrans/simple_ok_cx_1.sd',
 
     # permissions before path and owner / audit {...} blocks
@@ -273,6 +256,9 @@ syntax_failure = [
     'file/ok_5.sd',  # Invalid mode UX
     'file/ok_2.sd',  # Invalid mode RWM
     'file/ok_4.sd',  # Invalid mode iX
+    'file/ok_embedded_spaces_4.sd',  # \-escaped space
+    'file/file/ok_embedded_spaces_4.sd',  # \-escaped space
+    'file/ok_quoted_4.sd',  # quoted string including \"
     'xtrans/simple_ok_pix_1.sd',  # Invalid mode pIx
     'xtrans/simple_ok_pux_1.sd',  # Invalid mode rPux
 

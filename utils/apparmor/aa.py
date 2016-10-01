@@ -36,7 +36,7 @@ from apparmor.common import (AppArmorException, AppArmorBug, open_file_read, val
 
 import apparmor.ui as aaui
 
-from apparmor.aamode import (str_to_mode, mode_to_str, split_mode,
+from apparmor.aamode import (str_to_mode, mode_to_str,
                              mode_to_str_user, mode_contains, AA_OTHER,
                              flatten_mode, owner_flatten_mode)
 
@@ -44,7 +44,6 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
                             RE_PROFILE_ALIAS,
                             RE_PROFILE_BOOLEAN, RE_PROFILE_VARIABLE, RE_PROFILE_CONDITIONAL,
                             RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
-                            RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY,
                             RE_PROFILE_CHANGE_HAT,
                             RE_PROFILE_HAT_DEF, RE_PROFILE_MOUNT,
                             RE_PROFILE_PIVOT_ROOT,
@@ -56,13 +55,14 @@ import apparmor.rules as aarules
 from apparmor.rule.capability import CapabilityRuleset, CapabilityRule
 from apparmor.rule.change_profile import ChangeProfileRuleset, ChangeProfileRule
 from apparmor.rule.dbus       import DbusRuleset,       DbusRule
+from apparmor.rule.file       import FileRuleset,       FileRule
 from apparmor.rule.network    import NetworkRuleset,    NetworkRule
 from apparmor.rule.ptrace     import PtraceRuleset,    PtraceRule
 from apparmor.rule.rlimit     import RlimitRuleset,    RlimitRule
 from apparmor.rule.signal     import SignalRuleset,    SignalRule
-from apparmor.rule import parse_modifiers, quote_if_needed
+from apparmor.rule import quote_if_needed
 
-ruletypes = ['capability', 'change_profile', 'dbus', 'network', 'ptrace', 'rlimit', 'signal']
+ruletypes = ['capability', 'change_profile', 'dbus', 'file', 'network', 'ptrace', 'rlimit', 'signal']
 
 from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
 
@@ -461,6 +461,7 @@ def profile_storage(profilename, hat, calledby):
 
     profile['capability']       = CapabilityRuleset()
     profile['dbus']             = DbusRuleset()
+    profile['file']             = FileRuleset()
     profile['change_profile']   = ChangeProfileRuleset()
     profile['network']          = NetworkRuleset()
     profile['ptrace']           = PtraceRuleset()
@@ -1996,22 +1997,6 @@ def glob_path_withext(newpath):
             newpath = re.sub('/[^/]+(\.[^/]+)$', '/*' + match.groups()[0], newpath)
     return newpath
 
-def delete_path_duplicates(profile, incname, allow):
-    deleted = []
-    for entry in profile[allow]['path'].keys():
-        if entry == '#include <%s>' % incname:
-            continue
-        # XXX Make this code smart enough to know that bare file rules
-        #     makes some path rules unnecessary. For example, "/dev/random r,"
-        #     would no longer be needed if "file," was present.
-        cm, am, m = match_include_to_path(incname, allow, entry)
-        if cm and mode_contains(cm, profile[allow]['path'][entry]['mode']) and mode_contains(am, profile[allow]['path'][entry]['audit']):
-            deleted.append(entry)
-
-    for entry in deleted:
-        profile[allow]['path'].pop(entry)
-    return len(deleted)
-
 def delete_duplicates(profile, incname):
     deleted = 0
     # Allow rules covered by denied rules shouldn't be deleted
@@ -2021,15 +2006,9 @@ def delete_duplicates(profile, incname):
         for rule_type in ruletypes:
             deleted += profile[rule_type].delete_duplicates(include[incname][incname][rule_type])
 
-        deleted += delete_path_duplicates(profile, incname, 'allow')
-        deleted += delete_path_duplicates(profile, incname, 'deny')
-
     elif filelist.get(incname, False):
         for rule_type in ruletypes:
             deleted += profile[rule_type].delete_duplicates(filelist[incname][incname][rule_type])
-
-        deleted += delete_path_duplicates(profile, incname, 'allow')
-        deleted += delete_path_duplicates(profile, incname, 'deny')
 
     return deleted
 
@@ -2715,86 +2694,6 @@ def parse_profile_data(data, file, do_include):
             # Conditional Boolean defined
             pass
 
-        elif RE_PROFILE_BARE_FILE_ENTRY.search(line):
-            matches = RE_PROFILE_BARE_FILE_ENTRY.search(line)
-
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected bare file rule found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            audit, deny, allow_keyword, comment = parse_modifiers(matches)
-            # TODO: honor allow_keyword and comment
-            if deny:
-                allow = 'deny'
-            else:
-                allow = 'allow'
-
-            mode = apparmor.aamode.AA_BARE_FILE_MODE
-            if not matches.group('owner'):
-                mode |= AA_OTHER(apparmor.aamode.AA_BARE_FILE_MODE)
-
-            path_rule = profile_data[profile][hat][allow]['path'][ALL]
-            path_rule['mode'] = mode
-            path_rule['audit'] = set()
-            if audit:
-                path_rule['audit'] = mode
-            path_rule['file_prefix'] = True
-
-        elif RE_PROFILE_PATH_ENTRY.search(line):
-            matches = RE_PROFILE_PATH_ENTRY.search(line).groups()
-
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected path entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            audit = False
-            if matches[0]:
-                audit = True
-
-            allow = 'allow'
-            if matches[1] and matches[1].strip() == 'deny':
-                allow = 'deny'
-
-            user = False
-            if matches[2]:
-                user = True
-
-            file_prefix = False
-            if matches[3]:
-                file_prefix = True
-
-            path = strip_quotes(matches[4].strip())
-            mode = matches[5]
-            nt_name = matches[7]
-            if nt_name:
-                nt_name = nt_name.strip()
-
-            p_re = convert_regexp(path)
-            try:
-                re.compile(p_re)
-            except:
-                raise AppArmorException(_('Syntax Error: Invalid Regex %(path)s in file: %(file)s line: %(line)s') % { 'path': path, 'file': file, 'line': lineno + 1 })
-
-            if not validate_profile_mode(mode, allow, nt_name):
-                raise AppArmorException(_('Invalid mode %(mode)s in file: %(file)s line: %(line)s') % {'mode': mode, 'file': file, 'line': lineno + 1 })
-
-            tmpmode = set()
-            if user:
-                tmpmode = str_to_mode('%s::' % mode)
-            else:
-                tmpmode = str_to_mode(mode)
-
-            profile_data[profile][hat][allow]['path'][path]['mode'] = profile_data[profile][hat][allow]['path'][path].get('mode', set()) | tmpmode
-
-            if file_prefix:
-                profile_data[profile][hat][allow]['path'][path]['file_prefix'] = True
-
-            if nt_name:
-                profile_data[profile][hat][allow]['path'][path]['to'] = nt_name
-
-            if audit:
-                profile_data[profile][hat][allow]['path'][path]['audit'] = profile_data[profile][hat][allow]['path'][path].get('audit', set()) | tmpmode
-            else:
-                profile_data[profile][hat][allow]['path'][path]['audit'] = set()
-
         elif re_match_include(line):
             # Include files
             include_name = re_match_include(line)
@@ -2964,6 +2863,13 @@ def parse_profile_data(data, file, do_include):
                         initial_comment = initial_comment + line + '\n'
                 else:
                     initial_comment = initial_comment + line + '\n'
+
+        elif FileRule.match(line):
+            # leading permissions could look like a keyword, therefore handle file rules after everything else
+            if not profile:
+                raise AppArmorException(_('Syntax Error: Unexpected path entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
+
+            profile_data[profile][hat]['file'].add(FileRule.parse(line))
 
         elif not RE_RULE_HAS_COMMA.search(line):
             # Bah, line continues on to the next line
@@ -3253,76 +3159,10 @@ def write_links(prof_data, depth):
 
     return data
 
-def write_path_rules(prof_data, depth, allow):
-    pre = '  ' * depth
+def write_file(prof_data, depth):
     data = []
-    allowstr = set_allow_str(allow)
-
-    if prof_data[allow].get('path', False):
-        for path in sorted(prof_data[allow]['path'].keys()):
-            filestr = ''
-            if prof_data[allow]['path'][path].get('file_prefix', False):
-                filestr = 'file'
-            mode = prof_data[allow]['path'][path]['mode']
-            audit = prof_data[allow]['path'][path]['audit']
-            tail = ''
-            if prof_data[allow]['path'][path].get('to', False):
-                tail = ' -> %s' % prof_data[allow]['path'][path]['to']
-            user, other = split_mode(mode)
-            user_audit, other_audit = split_mode(audit)
-
-            while user or other:
-                ownerstr = ''
-                tmpmode = 0
-                tmpaudit = False
-                if user - other:
-                    # if no other mode set
-                    ownerstr = 'owner '
-                    tmpmode = user - other
-                    tmpaudit = user_audit
-                    user = user - tmpmode
-                else:
-                    if user_audit - other_audit & user:
-                        ownerstr = 'owner '
-                        tmpaudit = user_audit - other_audit & user
-                        tmpmode = user & tmpaudit
-                        user = user - tmpmode
-                    else:
-                        ownerstr = ''
-                        tmpmode = user | other
-                        tmpaudit = user_audit | other_audit
-                        user = user - tmpmode
-                        other = other - tmpmode
-
-                if path == ALL:
-                    path = ''
-
-                if tmpmode & tmpaudit:
-                    modestr = mode_to_str(tmpmode & tmpaudit)
-                    if modestr:
-                        modestr = ' ' + modestr
-                    path = quote_if_needed(path)
-                    if filestr and path:
-                        filestr += ' '
-                    data.append('%saudit %s%s%s%s%s%s,' % (pre, allowstr, ownerstr, filestr, path, modestr, tail))
-                    tmpmode = tmpmode - tmpaudit
-
-                if tmpmode:
-                    modestr = mode_to_str(tmpmode)
-                    if modestr:
-                        modestr = ' ' + modestr
-                    path = quote_if_needed(path)
-                    if filestr and path:
-                        filestr += ' '
-                    data.append('%s%s%s%s%s%s%s,' % (pre, allowstr, ownerstr, filestr, path, modestr, tail))
-
-        data.append('')
-    return data
-
-def write_paths(prof_data, depth):
-    data = write_path_rules(prof_data, depth, 'deny')
-    data += write_path_rules(prof_data, depth, 'allow')
-
+    if prof_data.get('file', False):
+        data = prof_data['file'].get_clean(depth)
     return data
 
 def write_rules(prof_data, depth):
@@ -3339,7 +3179,7 @@ def write_rules(prof_data, depth):
     data += write_pivot_root(prof_data, depth)
     data += write_unix(prof_data, depth)
     data += write_links(prof_data, depth)
-    data += write_paths(prof_data, depth)
+    data += write_file(prof_data, depth)
     data += write_change_profile(prof_data, depth)
 
     return data
@@ -3501,7 +3341,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                          'pivot_root': write_pivot_root,
                          'unix': write_unix,
                          'link': write_links,
-                         'path': write_paths,
+                         'file': write_file,
                          'change_profile': write_change_profile,
                          }
         default_write_order = [ 'alias',
@@ -3517,7 +3357,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                                 'pivot_root',
                                 'unix',
                                 'link',
-                                'path',
+                                'file',
                                 'change_profile',
                               ]
         # prof_correct = True  # XXX correct?
@@ -3534,7 +3374,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     'pivot_root': True, # not handled otherwise yet
                     'unix': True, # not handled otherwise yet
                     'link': False,
-                    'path': False,
+                    'file': False,
                     'change_profile': False,
                     'include_local_started': False, # unused
                     }
@@ -3784,78 +3624,6 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     #To-Do
                     pass
 
-            elif RE_PROFILE_BARE_FILE_ENTRY.search(line):
-                matches = RE_PROFILE_BARE_FILE_ENTRY.search(line).groups()
-
-                allow = 'allow'
-                if matches[1] and matches[1].strip() == 'deny':
-                    allow = 'deny'
-
-                mode = apparmor.aamode.AA_BARE_FILE_MODE
-                if not matches[2]:
-                    mode |= AA_OTHER(apparmor.aamode.AA_BARE_FILE_MODE)
-
-                audit = set()
-                if matches[0]:
-                    audit = mode
-
-                path_rule = write_prof_data[hat][allow]['path'][ALL]
-                if path_rule.get('mode', set()) & mode and \
-                   (not audit or path_rule.get('audit', set()) & audit) and \
-                   path_rule.get('file_prefix', set()):
-                    if not segments['path'] and True in segments.values():
-                        data += write_prior_segments(write_prof_data[name], segments, line)
-                    segments['path'] = True
-                    write_prof_data[hat][allow]['path'].pop(ALL)
-                    data.append(line)
-
-            elif RE_PROFILE_PATH_ENTRY.search(line):
-                matches = RE_PROFILE_PATH_ENTRY.search(line).groups()
-                audit = False
-                if matches[0]:
-                    audit = True
-                allow = 'allow'
-                if matches[1] and matches[1].split() == 'deny':
-                    allow = 'deny'
-
-                user = False
-                if matches[2]:
-                    user = True
-
-                path = strip_quotes(matches[4].strip())
-                mode = matches[5]
-                nt_name = matches[7]
-                if nt_name:
-                    nt_name = nt_name.strip()
-
-                tmpmode = set()
-                if user:
-                    tmpmode = str_to_mode('%s::' % mode)
-                else:
-                    tmpmode = str_to_mode(mode)
-
-                if not write_prof_data[hat][allow]['path'].get(path):
-                    correct = False
-                else:
-                    if not write_prof_data[hat][allow]['path'][path].get('mode', set()) & tmpmode:
-                        correct = False
-
-                    if nt_name and not write_prof_data[hat][allow]['path'][path].get('to', False) == nt_name:
-                        correct = False
-
-                    if audit and not write_prof_data[hat][allow]['path'][path].get('audit', set()) & tmpmode:
-                        correct = False
-
-                if correct:
-                    if not segments['path'] and True in segments.values():
-                        data += write_prior_segments(write_prof_data[name], segments, line)
-                    segments['path'] = True
-                    write_prof_data[hat][allow]['path'].pop(path)
-                    data.append(line)
-                else:
-                    #To-Do
-                    pass
-
             elif re_match_include(line):
                 include_name = re_match_include(line)
                 if profile:
@@ -3899,6 +3667,20 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 else:
                     #To-Do
                     pass
+            elif FileRule.match(line):
+                # leading permissions could look like a keyword, therefore handle file rules after everything else
+                file_obj = FileRule.parse(line)
+
+                if write_prof_data[hat]['file'].is_covered(file_obj, True, True):
+                    if not segments['file'] and True in segments.values():
+                        data += write_prior_segments(write_prof_data[name], segments, line)
+                    segments['file'] = True
+                    write_prof_data[hat]['file'].delete(file_obj)
+                    data.append(line)
+                else:
+                    #To-Do
+                    pass
+
             else:
                 if correct:
                     data.append(line)
