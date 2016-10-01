@@ -53,12 +53,19 @@ class AARE(object):
         else:
             return AARE(self.regex, is_path=False)
 
+    # check if a regex is a plain path (not containing variables, alternations or wildcards)
+    # some special characters are probably not covered by the plain_path regex (if in doubt, better error out on the safe side)
+    plain_path = re.compile('^[0-9a-zA-Z/._-]+$')
+
     def match(self, expression):
         '''check if the given expression (string or AARE) matches the regex'''
 
         if type(expression) == AARE:
             if expression.orig_regex:
                 expression = expression.orig_regex
+            elif self.plain_path.match(expression.regex):
+                # regex doesn't contain variables or wildcards, therefore handle it as plain path
+                expression = expression.regex
             else:
                 return self.is_equal(expression)  # better safe than sorry
         elif not type_is_str(expression):
