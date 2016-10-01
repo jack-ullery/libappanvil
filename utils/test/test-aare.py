@@ -243,6 +243,117 @@ class TestAAREDeepcopy(AATest):
         self.assertEqual(params.orig_regex, dup.orig_regex)
         self.assertEqual(params.orig_regex, dup.orig_regex)
 
+class TestAAREglobPath(AATest):
+    tests = [
+        # _run_test() will also run each test with '/' appended
+        # regex                     expected AARE.regex
+        ('/foo/bar/baz**',          '/foo/bar/**'),
+        ('/foo/bar/**baz',          '/foo/bar/**'),
+        ('/foo/bar/fo**baz',        '/foo/bar/**'),
+        ('/foo/bar/**foo**',        '/foo/bar/**'),
+        ('/foo/bar/**f?o**',        '/foo/bar/**'),
+        ('/foo/bar/**fo[a-z]**',    '/foo/bar/**'),
+
+        ('/foo/bar/baz',            '/foo/bar/*'),
+        ('/foo/bar/baz*',           '/foo/bar/*'),
+        ('/foo/bar/*baz',           '/foo/bar/*'),
+        ('/foo/bar/fo*baz',         '/foo/bar/*'),
+        ('/foo/bar/*foo*',          '/foo/bar/*'),
+
+        ('/foo/bar/b[a-z]z',        '/foo/bar/*'),
+        ('/foo/bar/{bar,baz}',      '/foo/bar/*'),
+        ('/foo/bar/{bar,ba/z}',     '/foo/bar/{bar,ba/*'),  # XXX
+        ('/foo/*/baz',              '/foo/*/*'),
+
+        ('/foo/bar/**',             '/foo/**'),
+        ('/foo/bar/*',              '/foo/**'),
+
+        ('/foo/**/*',               '/foo/**'),
+        ('/foo/*/**',               '/foo/**'),
+        ('/foo/*/*',                '/foo/**'),
+
+    ]
+
+    def _run_test(self, params, expected):
+        # test for files
+        oldpath = AARE(params, True)
+        newpath = oldpath.glob_path()
+        self.assertEqual(expected, newpath.regex)
+
+        # test for directories
+        oldpath = AARE(params + '/', True)
+        newpath = oldpath.glob_path()
+        self.assertEqual(expected + '/', newpath.regex)
+
+class TestAAREglobPathWithExt(AATest):
+    tests = [
+        # _run_test() will also run each test with '/' appended
+        # regex                     expected AARE.regex
+
+        # no extension - shouldn't change
+        ('/foo/bar/baz**',          '/foo/bar/baz**'),
+        ('/foo/bar/**baz',          '/foo/bar/**baz'),
+        ('/foo/bar/fo**baz',        '/foo/bar/fo**baz'),
+        ('/foo/bar/**foo**',        '/foo/bar/**foo**'),
+        ('/foo/bar/**f?o**',        '/foo/bar/**f?o**'),
+        ('/foo/bar/**fo[a-z]**',    '/foo/bar/**fo[a-z]**'),
+
+        ('/foo/bar/baz',            '/foo/bar/baz'),
+        ('/foo/bar/baz*',           '/foo/bar/baz*'),
+        ('/foo/bar/*baz',           '/foo/bar/*baz'),
+        ('/foo/bar/fo*baz',         '/foo/bar/fo*baz'),
+        ('/foo/bar/*foo*',          '/foo/bar/*foo*'),
+
+        ('/foo/bar/b[a-z]z',        '/foo/bar/b[a-z]z'),
+        ('/foo/bar/{bar,baz}',      '/foo/bar/{bar,baz}'),
+        ('/foo/bar/{bar,ba/z}',     '/foo/bar/{bar,ba/z}'),
+        ('/foo/*/baz',              '/foo/*/baz'),
+
+        ('/foo/bar/**',             '/foo/bar/**'),
+        ('/foo/bar/*',              '/foo/bar/*'),
+
+        ('/foo/**/*',               '/foo/**/*'),
+        ('/foo/*/**',               '/foo/*/**'),
+        ('/foo/*/*',                '/foo/*/*'),
+
+        # with extension added
+        ('/foo/bar/baz**.xy',          '/foo/bar/**.xy'),
+        ('/foo/bar/**baz.xy',          '/foo/bar/**.xy'),
+        ('/foo/bar/fo**baz.xy',        '/foo/bar/**.xy'),
+        ('/foo/bar/**foo**.xy',        '/foo/bar/**.xy'),
+        ('/foo/bar/**f?o**.xy',        '/foo/bar/**.xy'),
+        ('/foo/bar/**fo[a-z]**.xy',    '/foo/bar/**.xy'),
+
+        ('/foo/bar/baz.xy',            '/foo/bar/*.xy'),
+        ('/foo/bar/baz*.xy',           '/foo/bar/*.xy'),
+        ('/foo/bar/*baz.xy',           '/foo/bar/*.xy'),
+        ('/foo/bar/fo*baz.xy',         '/foo/bar/*.xy'),
+        ('/foo/bar/*foo*.xy',          '/foo/bar/*.xy'),
+
+        ('/foo/bar/b[a-z]z.xy',        '/foo/bar/*.xy'),
+        ('/foo/bar/{bar,baz}.xy',      '/foo/bar/*.xy'),
+        ('/foo/bar/{bar,ba/z}.xy',     '/foo/bar/{bar,ba/*.xy'),  # XXX
+        ('/foo/*/baz.xy',              '/foo/*/*.xy'),
+
+        ('/foo/bar/**.xy',             '/foo/**.xy'),
+        ('/foo/bar/*.xy',              '/foo/**.xy'),
+
+        ('/foo/**/*.xy',               '/foo/**.xy'),
+        ('/foo/*/**.xy',               '/foo/**.xy'),
+        ('/foo/*/*.xy',                '/foo/**.xy'),
+    ]
+
+    def _run_test(self, params, expected):
+        # test for files
+        oldpath = AARE(params, True)
+        newpath = oldpath.glob_path_withext()
+        self.assertEqual(expected, newpath.regex)
+
+        # test for directories - should be kept unchanged
+        oldpath = AARE(params + '/', True)
+        newpath = oldpath.glob_path_withext()
+        self.assertEqual(params + '/', newpath.regex)  # note that we compare to params, not expected here
+
 
 setup_all_loops(__name__)
 if __name__ == '__main__':

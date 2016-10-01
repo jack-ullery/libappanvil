@@ -1928,55 +1928,6 @@ def add_to_options(options, newpath):
     default_option = options.index(newpath) + 1
     return (options, default_option)
 
-def glob_path(newpath):
-    """Glob the given file path"""
-    if newpath[-1] == '/':
-        if newpath[-4:] == '/**/' or newpath[-3:] == '/*/':
-            # /foo/**/ and /foo/*/ => /**/
-            newpath = re.sub('/[^/]+/\*{1,2}/$', '/**/', newpath)  # re.sub('/[^/]+/\*{1,2}$/', '/\*\*/', newpath)
-        elif re.search('/[^/]+\*\*[^/]*/$', newpath):
-            # /foo**/ and /foo**bar/ => /**/
-            newpath = re.sub('/[^/]+\*\*[^/]*/$', '/**/', newpath)
-        elif re.search('/\*\*[^/]+/$', newpath):
-            # /**bar/ => /**/
-            newpath = re.sub('/\*\*[^/]+/$', '/**/', newpath)
-        else:
-            newpath = re.sub('/[^/]+/$', '/*/', newpath)
-    else:
-            if newpath[-3:] == '/**' or newpath[-2:] == '/*':
-                # /foo/** and /foo/* => /**
-                newpath = re.sub('/[^/]+/\*{1,2}$', '/**', newpath)
-            elif re.search('/[^/]*\*\*[^/]+$', newpath):
-                # /**foo and /foor**bar => /**
-                newpath = re.sub('/[^/]*\*\*[^/]+$', '/**', newpath)
-            elif re.search('/[^/]+\*\*$', newpath):
-                # /foo** => /**
-                newpath = re.sub('/[^/]+\*\*$', '/**', newpath)
-            else:
-                newpath = re.sub('/[^/]+$', '/*', newpath)
-    return newpath
-
-def glob_path_withext(newpath):
-    """Glob given file path with extension"""
-    # match /**.ext and /*.ext
-    match = re.search('/\*{1,2}(\.[^/]+)$', newpath)
-    if match:
-        # /foo/**.ext and /foo/*.ext => /**.ext
-        newpath = re.sub('/[^/]+/\*{1,2}\.[^/]+$', '/**' + match.groups()[0], newpath)
-    elif re.search('/[^/]+\*\*[^/]*\.[^/]+$', newpath):
-        # /foo**.ext and /foo**bar.ext => /**.ext
-        match = re.search('/[^/]+\*\*[^/]*(\.[^/]+)$', newpath)
-        newpath = re.sub('/[^/]+\*\*[^/]*\.[^/]+$', '/**' + match.groups()[0], newpath)
-    elif re.search('/\*\*[^/]+\.[^/]+$', newpath):
-        # /**foo.ext => /**.ext
-        match = re.search('/\*\*[^/]+(\.[^/]+)$', newpath)
-        newpath = re.sub('/\*\*[^/]+\.[^/]+$', '/**' + match.groups()[0], newpath)
-    else:
-        match = re.search('(\.[^/]+)$', newpath)
-        if match:
-            newpath = re.sub('/[^/]+(\.[^/]+)$', '/*' + match.groups()[0], newpath)
-    return newpath
-
 def delete_duplicates(profile, incname):
     deleted = 0
     # Allow rules covered by denied rules shouldn't be deleted
