@@ -313,7 +313,36 @@ class BrokenFileTest(AATest):
         with self.assertRaises(AppArmorBug):
             self.obj.get_clean(1)
 
+class FileGlobTest(AATest):
+    def _run_test(self, params, expected):
+        exp_can_glob, exp_can_glob_ext, exp_rule_glob, exp_rule_glob_ext = expected
 
+        # test glob()
+        rule_obj = FileRule.parse(params)
+        self.assertEqual(exp_can_glob, rule_obj.can_glob)
+        self.assertEqual(exp_can_glob_ext, rule_obj.can_glob_ext)
+
+        rule_obj.glob()
+        self.assertEqual(rule_obj.get_clean(), exp_rule_glob)
+
+        # test glob_ext()
+        rule_obj = FileRule.parse(params)
+        self.assertEqual(exp_can_glob, rule_obj.can_glob)
+        self.assertEqual(exp_can_glob_ext, rule_obj.can_glob_ext)
+
+        rule_obj.glob_ext()
+        self.assertEqual(rule_obj.get_clean(), exp_rule_glob_ext)
+
+    # These tests are meant to ensure AARE integration in FileRule works as expected.
+    # test-aare.py has more comprehensive globbing tests.
+    tests = [
+        # rule               can glob   can glob_ext    globbed rule        globbed_ext rule
+        ('/foo/bar r,',     (True,      True,           '/foo/* r,',        '/foo/bar r,')),
+        ('/foo/* r,',       (True,      True,           '/** r,',           '/foo/* r,')),
+        ('/foo/bar.xy r,',  (True,      True,           '/foo/* r,',        '/foo/*.xy r,')),
+        ('/foo/*.xy r,',    (True,      True,           '/foo/* r,',        '/**.xy r,')),
+        ('file,',           (False,     False,          'file,',            'file,')),  # bare 'file,' rules can't be globbed
+    ]
 
 class WriteFileTest(AATest):
     def _run_test(self, rawrule, expected):
@@ -755,24 +784,6 @@ class FileRulesTest(AATest):
         self.assertEqual(expected_raw, ruleset.get_raw(1))
         self.assertEqual(expected_clean, ruleset.get_clean(1))
 
-
-#class FileGlobTest(AATest):
-# XXX not (really) implemented yet
-#    def setUp(self):
-#        self.maxDiff = None
-#        self.ruleset = FileRuleset()
-# 
-#    def test_glob_1(self):
-#        self.assertEqual(self.ruleset.get_glob('file send,'), 'file,')
-# 
-#    # not supported or used yet
-#    # def test_glob_2(self):
-#    #     self.assertEqual(self.ruleset.get_glob('file send raw,'), 'file send,')
-# 
-#    def test_glob_ext(self):
-#        with self.assertRaises(NotImplementedError):
-#            # get_glob_ext is not available for file rules
-#            self.ruleset.get_glob_ext('file send peer=(label=foo),')
 
 #class FileDeleteTest(AATest):
 #    pass

@@ -39,6 +39,10 @@ class BaseRule(object):
     #   is_equal_localvars(self, other_rule)
     #     - equality check for the rule-specific fields
 
+    # decides if the (G)lob and Glob w/ (E)xt options are displayed
+    can_glob = False
+    can_glob_ext = False
+
     def __init__(self, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
         '''initialize variables needed by all rule types'''
@@ -291,6 +295,7 @@ class BaseRuleset(object):
     '''Base class to handle and store a collection of rules'''
 
     # decides if the (G)lob and Glob w/ (E)xt options are displayed
+    # XXX TODO: remove in all *Ruleset classes (moved to *Rule)
     can_glob = True
     can_glob_ext = False
 

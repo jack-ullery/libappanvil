@@ -64,6 +64,9 @@ class FileRule(BaseRule):
         self.path,          self.all_paths          = self._aare_or_all(path,           'path',         True,   log_event)
         self.target,        self.all_targets,       = self._aare_or_all(target,         'target',       False,  log_event)
 
+        self.can_glob = not self.all_paths
+        self.can_glob_ext = not self.all_paths
+
         if type_is_str(perms):
             perms, tmp_exec_perms = split_perms(perms, deny)
             if tmp_exec_perms:
@@ -321,14 +324,27 @@ class FileRule(BaseRule):
             # file_keyword and leading_perms are not really relevant
         ]
 
+    def glob(self):
+        '''Change path to next possible glob'''
+        if self.all_paths:
+           return
+
+        self.path = self.path.glob_path()
+        self.raw_rule = None
+
+    def glob_ext(self):
+        '''Change path to next possible glob with extension'''
+        if self.all_paths:
+           return
+
+        self.path = self.path.glob_path_withext()
+        self.raw_rule = None
+
 
 class FileRuleset(BaseRuleset):
     '''Class to handle and store a collection of file rules'''
 
-    def get_glob(self, path_or_rule):
-        '''Return the next possible glob. For file rules, that means removing owner or globbing the path'''
-        # XXX only remove one part, not all
-        return 'file,'
+    pass
 
 
 def split_perms(perm_string, deny):
