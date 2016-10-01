@@ -123,9 +123,6 @@ def mode_contains(mode, subset):
 
     return (mode & subset) == subset
 
-def contains(mode, string):
-    return mode_contains(mode, str_to_mode(string))
-
 def validate_log_mode(mode):
     if LOG_MODE_RE.search(mode):
         return True
@@ -249,7 +246,7 @@ def log_str_to_mode(profile, string, nt_name):
     mode = str_to_mode(string)
     # If contains nx and nix
     #print (profile, string, nt_name)
-    if contains(mode, 'Nx'):
+    if mode_contains(mode, str_to_mode('Nx')):
         # Transform to px, cx
         match = re.search('(.+?)//(.+?)', nt_name)
         if match:
