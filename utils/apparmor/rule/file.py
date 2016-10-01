@@ -471,6 +471,36 @@ class FileRuleset(BaseRuleset):
 
         return {'allow': allow, 'deny': deny, 'paths': paths}
 
+    def get_exec_rules_for_path(self, path, only_exact_matches=True):
+        '''Get all rules matching the given path that contain exec permissions
+           path can be str or AARE'''
+
+        matches = FileRuleset()
+
+        for rule in self.get_rules_for_path(path).rules:
+            if rule.exec_perms:
+                if rule.path.is_equal(path):
+                    matches.add(rule)
+                elif not only_exact_matches:
+                    matches.add(rule)
+
+        return matches
+
+    def get_exec_conflict_rules(self, oldrule):
+        '''check if one of the exec rules conflict with oldrule. If yes, return the conflicting rules.'''
+
+        conflictingrules = FileRuleset()
+
+        if oldrule.exec_perms:
+            execrules = self.get_exec_rules_for_path(oldrule.path)
+
+            for mergerule in execrules.rules:
+                if mergerule.exec_perms != oldrule.exec_perms or mergerule.target != oldrule.target:
+                    conflictingrules.add(mergerule)
+
+        return conflictingrules
+
+
 
 def split_perms(perm_string, deny):
     '''parse permission string

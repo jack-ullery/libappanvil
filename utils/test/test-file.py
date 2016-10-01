@@ -978,6 +978,77 @@ class FileGetPermsForPath_2(AATest):
         perms = ruleset.get_perms_for_path(params[0], params[1], params[2])
         self. assertEqual(perms, expected)
 
+class FileGetExecRulesForPath_1(AATest):
+    tests = [
+        ('/bin/foo',    ['audit /bin/foo ix,', '']                      ),
+        ('/bin/bar',    ['deny /bin/bar x,', '']                        ),
+        ('/foo',        []                                              ),
+    ]
+
+    def _run_test(self, params, expected):
+        rules = [
+            '/foo r,',
+            'audit /bin/foo ix,',
+            '/bin/b* Px,',
+            'deny /bin/bar x,',
+        ]
+
+        ruleset = FileRuleset()
+        for rule in rules:
+            ruleset.add(FileRule.parse(rule))
+
+        perms = ruleset.get_exec_rules_for_path(params)
+        matches = perms.get_clean()
+        self. assertEqual(matches, expected)
+
+class FileGetExecRulesForPath_2(AATest):
+    tests = [
+        ('/bin/foo',    ['audit /bin/foo ix,', '']                      ),
+        ('/bin/bar',    ['deny /bin/bar x,', '', '/bin/b* Px,', '']     ),
+        ('/foo',        []                                              ),
+    ]
+
+    def _run_test(self, params, expected):
+        rules = [
+            '/foo r,',
+            'audit /bin/foo ix,',
+            '/bin/b* Px,',
+            'deny /bin/bar x,',
+        ]
+
+        ruleset = FileRuleset()
+        for rule in rules:
+            ruleset.add(FileRule.parse(rule))
+
+        perms = ruleset.get_exec_rules_for_path(params, only_exact_matches=False)
+        matches = perms.get_clean()
+        self. assertEqual(matches, expected)
+
+class FileGetExecConflictRules_1(AATest):
+    tests = [
+        ('/bin/foo ix,',    ['/bin/foo Px,', '']                            ),
+        ('/bin/bar Px,',    ['deny /bin/bar x,', '', '/bin/bar cx,', '']    ),
+        ('/bin/bar cx,',    ['deny /bin/bar x,','',]                        ),
+        ('/bin/foo r,',     []                                              ),
+    ]
+
+    def _run_test(self, params, expected):
+        rules = [
+            '/foo r,',
+            'audit /bin/foo ix,',
+            '/bin/foo Px,',
+            '/bin/b* Px,',
+            '/bin/bar cx,',
+            'deny /bin/bar x,',
+        ]
+
+        ruleset = FileRuleset()
+        for rule in rules:
+            ruleset.add(FileRule.parse(rule))
+
+        rule_obj = FileRule.parse(params)
+        conflicts = ruleset.get_exec_conflict_rules(rule_obj)
+        self. assertEqual(conflicts.get_clean(), expected)
 
 
 
