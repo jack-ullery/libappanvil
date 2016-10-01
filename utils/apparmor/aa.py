@@ -1530,13 +1530,13 @@ def ask_the_questions():
                             options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
 
                         options.append(rule_obj.get_clean())
-                        q.options = options
-                        q.selected = default_option - 1
 
                         seen_events += 1
 
                         done = False
                         while not done:
+                            q.options = options
+                            q.selected = default_option - 1
                             q.headers = [_('Profile'), combine_name(profile, hat)]
                             q.headers += rule_obj.logprof_header()
 
@@ -1555,6 +1555,8 @@ def ask_the_questions():
                                 q.default = 'CMD_ALLOW'
 
                             ans, selected = q.promptUser()
+                            selection = options[selected]
+
                             if ans == 'CMD_IGNORE_ENTRY':
                                 done = True
                                 break
@@ -1577,8 +1579,6 @@ def ask_the_questions():
                                 done = True
                                 changed[profile] = True
 
-                                selection = options[selected]
-
                                 inc = re_match_include(selection)
                                 if inc:
                                     deleted = delete_duplicates(aa[profile][hat], inc)
@@ -1590,22 +1590,44 @@ def ask_the_questions():
                                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                 else:
+                                    rule_obj = selection_to_rule_obj(rule_obj, selection)
                                     aa[profile][hat][ruletype].add(rule_obj)
 
                                     aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
 
                             elif ans == 'CMD_DENY':
-                                done = True
-                                changed[profile] = True
+                                if re_match_include(selection):
+                                    aaui.UI_Important("Denying via an include file isn't supported by the AppArmor tools")
 
-                                rule_obj.deny = True
-                                rule_obj.raw_rule = None  # reset raw rule after manually modifying rule_obj
-                                aa[profile][hat][ruletype].add(rule_obj)
-                                aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
+                                else:
+                                    done = True
+                                    changed[profile] = True
+
+                                    rule_obj = selection_to_rule_obj(rule_obj, selection)
+                                    rule_obj.deny = True
+                                    rule_obj.raw_rule = None  # reset raw rule after manually modifying rule_obj
+                                    aa[profile][hat][ruletype].add(rule_obj)
+                                    aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
+
+                            elif ans == 'CMD_GLOB':
+                                if not re_match_include(selection):
+                                    globbed_rule_obj = selection_to_rule_obj(rule_obj, selection)
+                                    globbed_rule_obj.glob()
+                                    options, default_option = add_to_options(options, globbed_rule_obj.get_raw())
+
+                            elif ans == 'CMD_GLOBEXT':
+                                if not re_match_include(selection):
+                                    globbed_rule_obj = selection_to_rule_obj(rule_obj, selection)
+                                    globbed_rule_obj.glob_ext()
+                                    options, default_option = add_to_options(options, globbed_rule_obj.get_raw())
 
                             else:
                                 done = False
                     # END of code (mostly) shared with aa-mergeprof
+
+def selection_to_rule_obj(rule_obj, selection):
+    rule_type = type(rule_obj)
+    return rule_type.parse(selection)
 
 def ask_the_questions_OLD_FILE_CODE(): # XXX unused
                 global seen_events
@@ -1911,6 +1933,12 @@ def available_buttons(rule_obj):
         buttons += ['CMD_ALLOW']
 
     buttons += ['CMD_DENY', 'CMD_IGNORE_ENTRY']
+
+    if rule_obj.can_glob:
+        buttons += ['CMD_GLOB']
+
+    if rule_obj.can_glob_ext:
+        buttons += ['CMD_GLOBEXT']
 
     if rule_obj.audit:
         buttons += ['CMD_AUDIT_OFF']

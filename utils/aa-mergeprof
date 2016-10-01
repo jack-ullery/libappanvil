@@ -24,8 +24,8 @@ import apparmor.severity
 import apparmor.cleanprofile as cleanprofile
 import apparmor.ui as aaui
 
-from apparmor.aa import (available_buttons, combine_name, delete_duplicates,
-                         get_profile_filename, is_known_rule, match_includes)
+from apparmor.aa import (add_to_options, available_buttons, combine_name, delete_duplicates,
+                         get_profile_filename, is_known_rule, match_includes, selection_to_rule_obj)
 from apparmor.common import AppArmorException
 from apparmor.regex import re_match_include
 
@@ -327,7 +327,9 @@ class Merge(object):
 
             # Process all the path entries.
             for allow in ['allow', 'deny']:
-                for path in sorted(other.aa[profile][hat][allow]['path'].keys()):
+                if False: # XXX
+                #for path in sorted(other.aa[profile][hat][allow]['path'].keys()):
+                    path = None  # XXX needed to keep 'make check' happy
                     #print(path, other.aa[profile][hat][allow]['path'][path])
                     mode = other.aa[profile][hat][allow]['path'][path]['mode']
 
@@ -654,11 +656,11 @@ class Merge(object):
                             options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
 
                         options.append(rule_obj.get_clean())
-                        q.options = options
-                        q.selected = default_option - 1
 
                         done = False
                         while not done:
+                            q.options = options
+                            q.selected = default_option - 1
                             q.headers = [_('Profile'), combine_name(profile, hat)]
                             q.headers += rule_obj.logprof_header()
 
@@ -671,6 +673,7 @@ class Merge(object):
                             q.default = q.functions[0]
 
                             ans, selected = q.promptUser()
+                            selection = options[selected]
                             if ans == 'CMD_IGNORE_ENTRY':
                                 done = True
                                 break
@@ -693,8 +696,6 @@ class Merge(object):
                                 done = True
                                 changed[profile] = True
 
-                                selection = options[selected]
-
                                 inc = re_match_include(selection)
                                 if inc:
                                     deleted = delete_duplicates(aa[profile][hat], inc)
@@ -706,18 +707,36 @@ class Merge(object):
                                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                 else:
+                                    rule_obj = selection_to_rule_obj(rule_obj, selection)
                                     aa[profile][hat][ruletype].add(rule_obj)
 
                                     aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
 
                             elif ans == 'CMD_DENY':
-                                done = True
-                                changed[profile] = True
+                                if re_match_include(selection):
+                                    aaui.UI_Important("Denying via an include file isn't supported by the AppArmor tools")
 
-                                rule_obj.deny = True
-                                rule_obj.raw_rule = None  # reset raw rule after manually modifying rule_obj
-                                aa[profile][hat][ruletype].add(rule_obj)
-                                aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
+                                else:
+                                    done = True
+                                    changed[profile] = True
+
+                                    rule_obj = selection_to_rule_obj(rule_obj, selection)
+                                    rule_obj.deny = True
+                                    rule_obj.raw_rule = None  # reset raw rule after manually modifying rule_obj
+                                    aa[profile][hat][ruletype].add(rule_obj)
+                                    aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
+
+                            elif ans == 'CMD_GLOB':
+                                if not re_match_include(selection):
+                                    globbed_rule_obj = selection_to_rule_obj(rule_obj, selection)
+                                    globbed_rule_obj.glob()
+                                    options, default_option = add_to_options(options, globbed_rule_obj.get_raw())
+
+                            elif ans == 'CMD_GLOBEXT':
+                                if not re_match_include(selection):
+                                    globbed_rule_obj = selection_to_rule_obj(rule_obj, selection)
+                                    globbed_rule_obj.glob_ext()
+                                    options, default_option = add_to_options(options, globbed_rule_obj.get_raw())
 
                             else:
                                 done = False
