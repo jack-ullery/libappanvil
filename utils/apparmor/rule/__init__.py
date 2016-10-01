@@ -434,14 +434,14 @@ class BaseRuleset(object):
         raise NotImplementedError("get_glob_ext is not available for this rule type!")
 
 
-def check_and_split_list(lst, allowed_keywords, all_obj, classname, keyword_name):
+def check_and_split_list(lst, allowed_keywords, all_obj, classname, keyword_name, allow_empty_list=False):
     '''check if lst is all_obj or contains only items listed in allowed_keywords'''
 
     if lst == all_obj:
         return None, True, None
     elif type_is_str(lst):
         result_list = {lst}
-    elif (type(lst) == list or type(lst) == tuple) and len(lst) > 0:
+    elif (type(lst) == list or type(lst) == tuple) and (len(lst) > 0 or allow_empty_list):
         result_list = set(lst)
     else:
         raise AppArmorBug('Passed unknown %(type)s object to %(classname)s: %(unknown_object)s' %
