@@ -3758,6 +3758,40 @@ def is_known_rule(profile, rule_type, rule_obj):
 
     return False
 
+def get_file_perms(profile, path, audit, deny):
+    '''get the current permissions for the given path'''
+
+    perms = profile['file'].get_perms_for_path(path, audit, deny)
+
+    includelist = list(profile['include'].keys())
+    checked = []
+
+    while includelist:
+        incname = includelist.pop(0)
+
+        if incname in checked:
+            continue
+        checked.append(incname)
+
+        if os.path.isdir(profile_dir + '/' + incname):
+            includelist += include_dir_filelist(profile_dir, incname)
+        else:
+            incperms = include[incname][incname]['file'].get_perms_for_path(path, audit, deny)
+
+            for allow_or_deny in ['allow', 'deny']:
+                for owner_or_all in ['all', 'owner']:
+                    for perm in incperms[allow_or_deny][owner_or_all]:
+                        perms[allow_or_deny][owner_or_all].add(perm)
+
+            for incpath in incperms['paths']:
+                perms['paths'].add(incpath)
+
+            for childinc in include[incname][incname]['include'].keys():
+                if childinc not in checked:
+                    includelist += [childinc]
+
+    return perms
+
 def reload_base(bin_path):
     if not check_for_apparmor():
         return None

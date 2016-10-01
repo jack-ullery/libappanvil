@@ -21,8 +21,9 @@ import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
      get_profile_flags, set_profile_flags, is_skippable_file, is_skippable_dir,
      parse_profile_start, parse_profile_data, separate_vars, store_list_var, write_header,
-     var_transform, serialize_parse_profile_start)
+     var_transform, serialize_parse_profile_start, get_file_perms)
 from apparmor.common import AppArmorException, AppArmorBug
+from apparmor.rule.file import FileRule
 
 class AaTestWithTempdir(AATest):
     def AASetup(self):
@@ -734,6 +735,69 @@ class AaTestInvalid_serialize_parse_profile_start(AATest):
         with self.assertRaises(expected):
             # 'correct' is always True in the code that uses serialize_parse_profile_start() (set some lines above the function call)
             serialize_parse_profile_start(line, 'somefile', 1, profile, hat, prof_data_profile, prof_data_external, True)
+
+class AaTest_get_file_perms_1(AATest):
+    tests = [
+        ('/usr/share/common-licenses/foo/bar',      {'allow': {'all': set(),            'owner': {'w'}  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/share/common-licenses/**'}  }),
+        ('/dev/null',                               {'allow': {'all': {'r', 'w', 'k'},  'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/dev/null'}                      }),
+        ('/foo/bar',                                {'allow': {'all': {'r', 'w'},       'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/foo/bar'}                       }),  # exec perms not included
+        ('/no/thing',                               {'allow': {'all': set(),            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': set()                              }),
+        ('/usr/lib/ispell/',                        {'allow': {'all': set(),            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': set()                              }),
+        ('/usr/lib/aspell/*.so',                    {'allow': {'all': set(),            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': set()                              }),
+    ]
+
+    def _run_test(self, params, expected):
+        self.createTmpdir()
+
+        #copy the local profiles to the test directory
+        self.profile_dir = '%s/profiles' % self.tmpdir
+        shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
+
+        profile = apparmor.aa.profile_storage('/test', '/test', 'test-aa.py')
+
+        # simple profile without any includes
+        profile['file'].add(FileRule.parse('owner /usr/share/common-licenses/**  w,'))
+        profile['file'].add(FileRule.parse('/dev/null rwk,'))
+        profile['file'].add(FileRule.parse('/foo/bar rwix,'))
+
+        perms = get_file_perms(profile, params, False, False)  # only testing with audit and deny = False
+        self.assertEqual(perms, expected)
+
+class AaTest_get_file_perms_2(AATest):
+    tests = [
+        ('/usr/share/common-licenses/foo/bar',      {'allow': {'all': {'r'},            'owner': {'w'}  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/share/common-licenses/**'}              }),
+        ('/dev/null',                               {'allow': {'all': {'r', 'w', 'k'},  'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/dev/null'}                                  }),
+        ('/foo/bar',                                {'allow': {'all': {'r', 'w'},       'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/foo/bar'}                                   }),  # exec perms not included
+        ('/no/thing',                               {'allow': {'all': set(),            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': set()                                          }),
+        ('/usr/lib/ispell/',                        {'allow': {'all': {'r'},            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/lib/ispell/', '/usr/lib{,32,64}/**'}    }),  # from abstractions/enchant
+        ('/usr/lib/aspell/*.so',                    {'allow': {'all': {'m', 'r'},       'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/lib/aspell/*', '/usr/lib/aspell/*.so', '/usr/lib{,32,64}/**'} }),  # from abstractions/aspell via abstractions/enchant
+    ]
+
+    def _run_test(self, params, expected):
+        self.createTmpdir()
+
+        #copy the local profiles to the test directory
+        self.profile_dir = '%s/profiles' % self.tmpdir
+        shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
+
+        # load the abstractions we need in the test
+        apparmor.aa.profiledir = self.profile_dir
+        apparmor.aa.load_include('abstractions/base')
+        apparmor.aa.load_include('abstractions/bash')
+        apparmor.aa.load_include('abstractions/enchant')
+        apparmor.aa.load_include('abstractions/aspell')
+
+        profile = apparmor.aa.profile_storage('/test', '/test', 'test-aa.py')
+        profile['include']['abstractions/base'] = True
+        profile['include']['abstractions/bash'] = True
+        profile['include']['abstractions/enchant'] = True  # includes abstractions/aspell
+
+        profile['file'].add(FileRule.parse('owner /usr/share/common-licenses/**  w,'))
+        profile['file'].add(FileRule.parse('/dev/null rwk,'))
+        profile['file'].add(FileRule.parse('/foo/bar rwix,'))
+
+        perms = get_file_perms(profile, params, False, False)  # only testing with audit and deny = False
+        self.assertEqual(perms, expected)
 
 
 setup_all_loops(__name__)
