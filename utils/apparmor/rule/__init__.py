@@ -167,10 +167,10 @@ class BaseRule(object):
         # still here? -> then it is covered
         return True
 
-    def _is_covered_list(self, self_value, self_all, other_value, other_all, cond_name):
+    def _is_covered_list(self, self_value, self_all, other_value, other_all, cond_name, sanity_check=True):
         '''check if other_* is covered by self_* - for lists'''
 
-        if not other_value and not other_all:
+        if sanity_check and not other_value and not other_all:
             raise AppArmorBug('No %(cond_name)s specified in other %(rule_name)s rule' % {'cond_name': cond_name, 'rule_name': self.rule_name})
 
         if not self_all:
