@@ -1526,6 +1526,14 @@ def ask_the_questions():
                 hats = [profile] + hats
 
             for hat in hats:
+
+                if not aa[profile].get(hat).get('file'):
+                    # Ignore log events for a non-existing profile or child profile. Such events can occour
+                    # after deleting a profile or hat manually, or when processing a foreign log.
+                    # (Checking for 'file' is a simplified way to check if it's a profile_storage() struct.)
+                    debug_logger.debug("Ignoring events for non-existing profile %s" % combine_name(profile, hat))
+                    continue
+
                 for ruletype in ruletypes:
                     for rule_obj in log_dict[aamode][profile][hat][ruletype].rules:
                         # XXX aa-mergeprof also has this code - if you change it, keep aa-mergeprof in sync!
