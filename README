@@ -232,7 +232,8 @@ The AppArmor userspace utilities are written with some assumptions about
 installed and available versions of other tools. This is a (possibly
 incomplete) list of known version dependencies:
 
-The Python utilities require a minimum of Python 2.7 or Python 3.3.
+The Python utilities require a minimum of Python 2.7 (deprecated) or Python 3.3.
+Python 3.x is recommended. Python 2.x support is deprecated since AppArmor 2.11.
 
 Some utilities (aa-exec, aa-notify and aa-decode) require Perl 5.10.1 or newer.
 

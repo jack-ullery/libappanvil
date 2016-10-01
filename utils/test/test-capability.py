@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 # ----------------------------------------------------------------------
 #    Copyright (C) 2014 Christian Boltz <apparmor@cboltz.de>
 #
