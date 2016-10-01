@@ -208,26 +208,19 @@ class Merge(object):
             base_other = cleanprofile.CleanProf(False, self.base, self.other)
             deleted += base_other.compare_profiles()
 
-    def conflict_mode(self, profile, hat, allow, path, mode, new_mode, old_mode):
-        m = new_mode
-        o = old_mode
-        new_mode = apparmor.aa.flatten_mode(new_mode)
-        old_mode = apparmor.aa.flatten_mode(old_mode)
-        conflict_modes = set('uUpPcCiIxX')
-        conflict_x= (old_mode | new_mode) & conflict_modes
-        if conflict_x:
-        #We may have conflicting x modes
-            if conflict_x & set('x'):
-                conflict_x.remove('x')
-            if conflict_x & set('X'):
-                conflict_x.remove('X')
-            if len(conflict_x) > 1:
+    def ask_conflict_mode(self, profile, hat, old_profile, merge_profile):
+        '''ask user about conflicting exec rules'''
+        for oldrule in old_profile['file'].rules:
+            conflictingrules = merge_profile['file'].get_exec_conflict_rules(oldrule)
+
+            if conflictingrules.rules:
                 q = aaui.PromptQuestion()
-                q.headers = [_('Path'), path]
+                q.headers = [_('Path'), oldrule.path.regex]
                 q.headers += [_('Select the appropriate mode'), '']
                 options = []
-                options.append('%s: %s' %(mode, apparmor.aa.mode_to_str_user(new_mode)))# - (old_mode & conflict_x))))
-                options.append('%s: %s' %(mode, apparmor.aa.mode_to_str_user(old_mode)))#(old_mode | new_mode) - (new_mode & conflict_x))))
+                options.append(oldrule.get_clean())
+                for rule in conflictingrules.rules:
+                    options.append(rule.get_clean())
                 q.options = options
                 q.functions = ['CMD_ALLOW', 'CMD_ABORT']
                 done = False
@@ -235,13 +228,17 @@ class Merge(object):
                     ans, selected = q.promptUser()
                     if ans == 'CMD_ALLOW':
                         if selected == 0:
-                            self.user.aa[profile][hat][allow]['path'][path][mode] = m#apparmor.aa.owner_flatten_mode(new_mode)#(old_mode | new_mode) - (old_mode & conflict_x)
-                            return m
-                        elif selected == 1:
-                            return o
-                            pass#self.user.aa[profile][hat][allow][path][mode] = (old_mode | new_mode) - (new_mode & conflict_x)
+                            pass  # just keep the existing rule
+                        elif selected > 0:
+                            # replace existing rule with merged one
+                            old_profile['file'].delete(oldrule)
+                            old_profile['file'].add(conflictingrules.rules[selected - 1])
                         else:
                             raise AppArmorException(_('Unknown selection'))
+
+                        for rule in conflictingrules.rules:
+                            merge_profile['file'].delete(rule)  # make sure aa-mergeprof doesn't ask to add conflicting rules later
+
                         done = True
 
     def ask_the_questions(self, other, profile):
@@ -640,6 +637,9 @@ class Merge(object):
 
                             elif re.search('\d', ans):
                                 default_option = ans
+
+            # check for and ask about conflicting exec modes
+            self.ask_conflict_mode(profile, hat, aa[profile][hat], other.aa[profile][hat])
 
             for ruletype in apparmor.aa.ruletypes:
                 if other.aa[profile][hat].get(ruletype, False): # needed until we have proper profile initialization
