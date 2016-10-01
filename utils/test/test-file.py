@@ -839,9 +839,11 @@ class FileRulesTest(AATest):
             '',
         ]
 
+        deleted = 0
         for rule in rules:
-            ruleset.add(FileRule.parse(rule))
+            deleted += ruleset.add(FileRule.parse(rule))
 
+        self.assertEqual(deleted, 0)
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())
 
@@ -868,9 +870,50 @@ class FileRulesTest(AATest):
              '',
         ]
 
+        deleted = 0
         for rule in rules:
-            ruleset.add(FileRule.parse(rule))
+            deleted += ruleset.add(FileRule.parse(rule))
 
+        self.assertEqual(deleted, 0)
+        self.assertEqual(expected_raw, ruleset.get_raw(1))
+        self.assertEqual(expected_clean, ruleset.get_clean(1))
+
+    def test_ruleset_cleanup_add_1(self):
+        ruleset = FileRuleset()
+        rules = [
+            '/foo/bar r,',
+            '/foo/baz rw,',
+            '/foo/baz rwk,',
+        ]
+
+        rules_with_cleanup = [
+            '/foo/* r,',
+        ]
+
+        expected_raw = [
+            '  /foo/baz rw,',
+            '  /foo/baz rwk,',
+            '  /foo/* r,',
+             '',
+        ]
+
+        expected_clean = [
+            '  /foo/* r,',
+            '  /foo/baz rw,',
+            '  /foo/baz rwk,',
+             '',
+        ]
+
+        deleted = 0
+        for rule in rules:
+            deleted += ruleset.add(FileRule.parse(rule))
+
+        self.assertEqual(deleted, 0)  # rules[] are added without cleanup mode, so the superfluous '/foo/baz rw,' should be kept
+
+        for rule in rules_with_cleanup:
+            deleted += ruleset.add(FileRule.parse(rule), cleanup=True)
+
+        self.assertEqual(deleted, 1)  # rules_with_cleanup made '/foo/bar r,' superfluous
         self.assertEqual(expected_raw, ruleset.get_raw(1))
         self.assertEqual(expected_clean, ruleset.get_clean(1))
 

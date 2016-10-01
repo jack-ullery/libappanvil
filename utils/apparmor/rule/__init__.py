@@ -345,9 +345,27 @@ class BaseRuleset(object):
         else:
             return '<%s (empty) />' % classname
 
-    def add(self, rule):
-        '''add a rule object'''
+    def add(self, rule, cleanup=False):
+        '''add a rule object
+           if cleanup is specified, delete rules that are covered by the new rule
+           (the difference to delete_duplicates() is: cleanup only deletes rules that
+           are covered by the new rule, but keeps other, unrelated superfluous rules)
+        '''
+        deleted = 0
+
+        if cleanup:
+            oldrules = self.rules
+            self.rules = []
+
+            for oldrule in oldrules:
+                if not rule.is_covered(oldrule):
+                    self.rules.append(oldrule)
+                else:
+                    deleted += 1
+
         self.rules.append(rule)
+
+        return deleted
 
     def get_raw(self, depth=0):
         '''return all raw rules (if possible/not modified in their original formatting).
