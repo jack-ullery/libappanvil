@@ -36,7 +36,7 @@ from apparmor.common import (AppArmorException, AppArmorBug, open_file_read, val
 
 import apparmor.ui as aaui
 
-from apparmor.aamode import (str_to_mode, mode_to_str, contains, split_mode,
+from apparmor.aamode import (str_to_mode, mode_to_str, split_mode,
                              mode_to_str_user, mode_contains, AA_OTHER,
                              flatten_mode, owner_flatten_mode)
 
@@ -1215,106 +1215,12 @@ def handle_children(profile, hat, root):
                         context_new = context_new + '^%s' % hat
                     context_new = context_new + ' -> %s' % exec_target
 
-                    combinedmode = set()
-                    combinedaudit = set()
-                    ## Check return Value Consistency
-                    # Check if path matches any existing regexps in profile
-                    cm, am, m = rematchfrag(aa[profile][hat], 'allow', exec_target)
-                    if cm:
-                        combinedmode |= cm
-                    if am:
-                        combinedaudit |= am
-
-                    if combinedmode & str_to_mode('x'):
-                        nt_name = None
-                        for entr in m:
-                            if aa[profile][hat]['allow']['path'].get(entr, False):
-                                nt_name = entr
-                                break
-                        if to_name and to_name != nt_name:
-                            pass
-                        elif nt_name:
-                            to_name = nt_name
-                    ## Check return value consistency
-                    # Check if the includes from profile match
-                    cm, am, m = match_prof_incs_to_path(aa[profile][hat], 'allow', exec_target)
-                    if cm:
-                        combinedmode |= cm
-                    if am:
-                        combinedaudit |= am
-                    if combinedmode & str_to_mode('x'):
-                        nt_name = None
-                        for entr in m:
-                            if aa[profile][hat]['allow']['path'][entry]['to']:
-                                nt_name = aa[profile][hat]['allow']['path'][entry]['to']
-                                break
-                        if to_name and to_name != nt_name:
-                            pass
-                        elif nt_name:
-                            to_name = nt_name
-
                     # nx is not used in profiles but in log files.
                     # Log parsing methods will convert it to its profile form
                     # nx is internally cx/px/cix/pix + to_name
                     exec_mode = False
-                    if contains(combinedmode, 'pix'):
-                        if to_name:
-                            ans = 'CMD_nix'
-                        else:
-                            ans = 'CMD_pix'
-                        exec_mode = str_to_mode('pixr')
-                    elif contains(combinedmode, 'cix'):
-                        if to_name:
-                            ans = 'CMD_nix'
-                        else:
-                            ans = 'CMD_cix'
-                        exec_mode = str_to_mode('cixr')
-                    elif contains(combinedmode, 'Pix'):
-                        if to_name:
-                            ans = 'CMD_nix_safe'
-                        else:
-                            ans = 'CMD_pix_safe'
-                        exec_mode = str_to_mode('Pixr')
-                    elif contains(combinedmode, 'Cix'):
-                        if to_name:
-                            ans = 'CMD_nix_safe'
-                        else:
-                            ans = 'CMD_cix_safe'
-                        exec_mode = str_to_mode('Cixr')
-                    elif contains(combinedmode, 'ix'):
-                        ans = 'CMD_ix'
-                        exec_mode = str_to_mode('ixr')
-                    elif contains(combinedmode, 'px'):
-                        if to_name:
-                            ans = 'CMD_nx'
-                        else:
-                            ans = 'CMD_px'
-                        exec_mode = str_to_mode('px')
-                    elif contains(combinedmode, 'cx'):
-                        if to_name:
-                            ans = 'CMD_nx'
-                        else:
-                            ans = 'CMD_cx'
-                        exec_mode = str_to_mode('cx')
-                    elif contains(combinedmode, 'ux'):
-                        ans = 'CMD_ux'
-                        exec_mode = str_to_mode('ux')
-                    elif contains(combinedmode, 'Px'):
-                        if to_name:
-                            ans = 'CMD_nx_safe'
-                        else:
-                            ans = 'CMD_px_safe'
-                        exec_mode = str_to_mode('Px')
-                    elif contains(combinedmode, 'Cx'):
-                        if to_name:
-                            ans = 'CMD_nx_safe'
-                        else:
-                            ans = 'CMD_cx_safe'
-                        exec_mode = str_to_mode('Cx')
-                    elif contains(combinedmode, 'Ux'):
-                        ans = 'CMD_ux_safe'
-                        exec_mode = str_to_mode('Ux')
-                    else:
+
+                    if True:
                         options = cfg['qualifiers'].get(exec_target, 'ipcnu')
                         if to_name:
                             fatal_error(_('%s has transition name but not transition mode') % entry)
