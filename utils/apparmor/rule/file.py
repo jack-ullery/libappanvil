@@ -12,6 +12,7 @@
 #
 # ----------------------------------------------------------------------
 
+from apparmor.aare import AARE
 from apparmor.regex import RE_PROFILE_FILE_ENTRY, strip_quotes
 from apparmor.common import AppArmorBug, AppArmorException, type_is_str
 from apparmor.rule import BaseRule, BaseRuleset, check_and_split_list, logprof_value_or_all, parse_modifiers, quote_if_needed
@@ -66,6 +67,7 @@ class FileRule(BaseRule):
 
         self.can_glob = not self.all_paths
         self.can_glob_ext = not self.all_paths
+        self.can_edit = not self.all_paths
 
         if type_is_str(perms):
             perms, tmp_exec_perms = split_perms(perms, deny)
@@ -338,6 +340,26 @@ class FileRule(BaseRule):
            return
 
         self.path = self.path.glob_path_withext()
+        self.raw_rule = None
+
+    def edit_header(self):
+        if self.all_paths:
+            raise AppArmorBug('Attemp to edit bare file rule')
+
+        return(_('Enter new path: '), self.path.regex)
+
+    def validate_edit(self, newpath):
+        if self.all_paths:
+            raise AppArmorBug('Attemp to edit bare file rule')
+
+        newpath = AARE(newpath, True)  # might raise AppArmorException if the new path doesn't start with / or a variable
+        return newpath.match(self.path)
+
+    def store_edit(self, newpath):
+        if self.all_paths:
+            raise AppArmorBug('Attemp to edit bare file rule')
+
+        self.path = AARE(newpath, True)  # might raise AppArmorException if the new path doesn't start with / or a variable
         self.raw_rule = None
 
 

@@ -716,6 +716,63 @@ class FileCoveredTest_ManualOrInvalid(AATest):
 #        obj = FileRule._parse(params)
 #        self.assertEqual(obj.logprof_header(), expected)
 
+class FileEditHeaderTest(AATest):
+    def _run_test(self, params, expected):
+        rule_obj = FileRule.parse(params)
+        self.assertEqual(rule_obj.can_edit, True)
+        prompt, path_to_edit = rule_obj.edit_header()
+        self.assertEqual(path_to_edit, expected)
+
+    tests = [
+        ('/foo/bar/baz r,',         '/foo/bar/baz'),
+        ('/foo/**/baz r,',          '/foo/**/baz'),
+    ]
+
+    def test_edit_header_bare_file(self):
+        rule_obj = FileRule.parse('file,')
+        self.assertEqual(rule_obj.can_edit, False)
+        with self.assertRaises(AppArmorBug):
+            rule_obj.edit_header()
+
+class FileValidateAndStoreEditTest(AATest):
+    def _run_test(self, params, expected):
+        rule_obj = FileRule('/foo/bar/baz', 'r', None, FileRule.ALL, False, False, False, log_event=True)
+
+        self.assertEqual(rule_obj.validate_edit(params), expected)
+
+        rule_obj.store_edit(params)
+        self.assertEqual(rule_obj.get_raw(), '%s r,' % params)
+
+    tests = [
+        # edited path           match
+        ('/foo/bar/baz',        True),
+        ('/foo/bar/*',          True),
+        ('/foo/bar/???',        True),
+        ('/foo/xy**',           False),
+        ('/foo/bar/baz/',       False),
+    ]
+
+    def test_validate_not_a_path(self):
+        rule_obj = FileRule.parse('/foo/bar/baz r,')
+
+        with self.assertRaises(AppArmorException):
+            rule_obj.validate_edit('foo/bar/baz')
+
+        with self.assertRaises(AppArmorException):
+            rule_obj.store_edit('foo/bar/baz')
+
+    def test_validate_edit_bare_file(self):
+        rule_obj = FileRule.parse('file,')
+        self.assertEqual(rule_obj.can_edit, False)
+
+        with self.assertRaises(AppArmorBug):
+            rule_obj.validate_edit('/foo/bar')
+
+        with self.assertRaises(AppArmorBug):
+            rule_obj.store_edit('/foo/bar')
+
+
+
 ## --- tests for FileRuleset --- #
 
 class FileRulesTest(AATest):

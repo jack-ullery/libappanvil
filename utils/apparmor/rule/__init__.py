@@ -43,6 +43,9 @@ class BaseRule(object):
     can_glob = False
     can_glob_ext = False
 
+    # defines if the (N)ew option is displayed
+    can_edit = False
+
     def __init__(self, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
         '''initialize variables needed by all rule types'''
@@ -272,6 +275,23 @@ class BaseRule(object):
         '''return the headers (human-readable version of the rule) to display in aa-logprof for this rule object
            returns {'label1': 'value1', 'label2': 'value2'} '''
         raise NotImplementedError("'%s' needs to implement logprof_header(), but didn't" % (str(self)))
+
+    # @abstractmethod  FIXME - uncomment when python3 only
+    def edit_header(self):
+        '''return the prompt for, and the path to edit when using '(N)ew' '''
+        raise NotImplementedError("'%s' needs to implement edit_header(), but didn't" % (str(self)))
+
+    # @abstractmethod  FIXME - uncomment when python3 only
+    def validate_edit(self, newpath):
+        '''validate the new path.
+           Returns True if it covers the previous path, False if it doesn't.'''
+        raise NotImplementedError("'%s' needs to implement validate_edit(), but didn't" % (str(self)))
+
+    # @abstractmethod  FIXME - uncomment when python3 only
+    def store_edit(self, newpath):
+        '''store the changed path.
+           This is done even if the new path doesn't match the original one.'''
+        raise NotImplementedError("'%s' needs to implement store_edit(), but didn't" % (str(self)))
 
     def modifiers_str(self):
         '''return the allow/deny and audit keyword as string, including whitespace'''

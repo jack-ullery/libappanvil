@@ -68,6 +68,21 @@ class TestBaserule(AATest):
         with self.assertRaises(NotImplementedError):
             obj.logprof_header_localvars()
 
+    def test_edit_header_localvars(self):
+        obj = BaseRule()
+        with self.assertRaises(NotImplementedError):
+            obj.edit_header()
+
+    def test_validate_edit_localvars(self):
+        obj = BaseRule()
+        with self.assertRaises(NotImplementedError):
+            obj.validate_edit('/foo')
+
+    def test_store_edit_localvars(self):
+        obj = BaseRule()
+        with self.assertRaises(NotImplementedError):
+            obj.store_edit('/foo')
+
 
 setup_all_loops(__name__)
 if __name__ == '__main__':
