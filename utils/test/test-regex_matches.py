@@ -15,7 +15,6 @@ from common_test import AATest, setup_all_loops
 from apparmor.common import AppArmorBug, AppArmorException
 
 from apparmor.regex import ( strip_parenthesis, strip_quotes, parse_profile_start_line, re_match_include,
-     RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY,
      RE_PROFILE_START, RE_PROFILE_DBUS, RE_PROFILE_CAP, RE_PROFILE_PTRACE, RE_PROFILE_SIGNAL )
 
 
@@ -215,44 +214,6 @@ class AARegexCapability(AARegexTest):
         ('   capability   ,  ', (None, None, None, None, None)),
         ('   capabilitynet_raw,', False)
     ]
-
-
-class AARegexPath(AARegexTest):
-    '''Tests for RE_PROFILE_PATH_ENTRY'''
-
-    def AASetup(self):
-        self.regex = RE_PROFILE_PATH_ENTRY
-
-    tests = [
-        ('   /tmp/foo r,',
-         (None, None, None, None, '/tmp/foo', 'r', None, None, None)),
-        ('   audit /tmp/foo rw,',
-         ('audit', None, None, None, '/tmp/foo', 'rw', None, None, None)),
-        ('   audit deny /tmp/foo rw,',
-         ('audit', 'deny', None, None, '/tmp/foo', 'rw', None, None, None)),
-        ('   file /tmp/foo rw,',
-         (None, None, None, 'file', '/tmp/foo', 'rw', None, None, None)),
-        ('   file,', False),
-    ]
-
-
-class AARegexBareFile(AARegexTest):
-    '''Tests for RE_PROFILE_BARE_FILE_ENTRY'''
-
-    def AASetup(self):
-        self.regex = RE_PROFILE_BARE_FILE_ENTRY
-
-    tests = [
-        ('   file,', (None, None, None, None)),
-        ('   dbus,', False),
-        ('   file /tmp/foo rw,', False),
-        ('   file /tmp/foo,', False),
-        ('   file r,', False),
-        ('  owner file  , ', (None, None, 'owner', None)),
-        ('  audit owner file  , ', ('audit', None, 'owner', None)),
-        ('  deny file  , ', (None, 'deny', None, None)),
-    ]
-
 
 class AARegexDbus(AARegexTest):
     '''Tests for RE_PROFILE_DBUS'''
