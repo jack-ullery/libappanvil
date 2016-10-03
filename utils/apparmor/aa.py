@@ -34,7 +34,7 @@ from copy import deepcopy
 from apparmor.aare import AARE
 
 from apparmor.common import (AppArmorException, AppArmorBug, open_file_read, valid_path, hasher,
-                             open_file_write, convert_regexp, DebugLogger)
+                             open_file_write, DebugLogger)
 
 import apparmor.ui as aaui
 
@@ -3656,42 +3656,6 @@ def combine_name(name1, name2):
         return name1
     else:
         return '%s^%s' % (name1, name2)
-
-def commonprefix(new, old):
-    match = re.search(r'^([^\0]*)[^\0]*(\0\1[^\0]*)*$', '\0'.join([new, old]))
-    if match:
-        return match.groups()[0]
-    return match
-
-def commonsuffix(new, old):
-    match = commonprefix(new[-1::-1], old[-1::-1])
-    if match:
-        return match[-1::-1]
-
-def matchregexp(new, old):
-    if re.search('\{.*(\,.*)*\}', old):
-        return None
-
-#     if re.search('\[.+\]', old) or re.search('\*', old) or re.search('\?', old):
-#
-#         new_reg = convert_regexp(new)
-#         old_reg = convert_regexp(old)
-#
-#         pref = commonprefix(new, old)
-#         if pref:
-#             if convert_regexp('(*,**)$') in pref:
-#                 pref = pref.replace(convert_regexp('(*,**)$'), '')
-#             new = new.replace(pref, '', 1)
-#             old = old.replace(pref, '', 1)
-#
-#         suff = commonsuffix(new, old)
-#         if suffix:
-#             pass
-    new_reg = convert_regexp(new)
-    if re.search(new_reg, old):
-        return True
-
-    return None
 
 def logger_path():
     logger = conf.find_first_file(cfg['settings']['logger']) or '/bin/logger'
