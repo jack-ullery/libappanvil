@@ -249,7 +249,6 @@ CMDS = {'CMD_ALLOW': _('(A)llow'),
         'CMD_EXEC_IX_ON': _('(X) ix On'),
         'CMD_EXEC_IX_OFF': _('(X) ix Off'),
         'CMD_SAVE': _('(S)ave Changes'),
-        'CMD_CONTINUE': _('(C)ontinue Profiling'),
         'CMD_NEW': _('(N)ew'),
         'CMD_GLOB': _('(G)lob'),
         'CMD_GLOBEXT': _('Glob with (E)xtension'),
@@ -280,7 +279,6 @@ CMDS = {'CMD_ALLOW': _('(A)llow'),
         'CMD_NET_FAMILY': _('Allow Network Fa(m)ily'),
         'CMD_OVERWRITE': _('(O)verwrite Profile'),
         'CMD_KEEP': _('(K)eep Profile'),
-        'CMD_CONTINUE': _('(C)ontinue'),
         'CMD_IGNORE_ENTRY': _('(I)gnore')
         }
 
