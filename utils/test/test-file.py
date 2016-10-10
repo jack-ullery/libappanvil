@@ -965,6 +965,7 @@ class FileGetPermsForPath_1(AATest):
         (('/foo/bar',                           False,  True ), {'allow': {'all': set(),         'owner': set()  },  'deny': {'all': set(),          'owner': set()   }, 'paths': set()                                                                         }),
         (('/etc/foo/dovecot-deny.conf',         False,  True ), {'allow': {'all': set(),         'owner': set()  },  'deny': {'all': {'r'     },     'owner': set()   }, 'paths': {'/etc/foo/dovecot-deny.conf'                                             }   }),
         (('/etc/foo/foo.conf',                  False,  True ), {'allow': {'all': set(),         'owner': set()  },  'deny': {'all': set(),          'owner': set()   }, 'paths': set()                                                                         }),
+        (('/usr/lib/dovecot/config',            False,  False), {'allow': {'all': set(),         'owner': set()  },  'deny': {'all': set(),          'owner': set()   }, 'paths': set()                     }),  # exec perms are not honored by get_perms_for_path()
     ]
 
     def _run_test(self, params, expected):
