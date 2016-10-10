@@ -13,8 +13,7 @@
 # ----------------------------------------------------------------------
 import unittest
 
-import apparmor.aa
-import apparmor.logparser
+import apparmor.aamode
 
 class Test(unittest.TestCase):
 
@@ -34,16 +33,6 @@ class Test(unittest.TestCase):
                   'c': apparmor.aamode.AA_EXEC_CHILD | apparmor.aamode.AA_EXEC_UNSAFE,
                   'C': apparmor.aamode.AA_EXEC_CHILD,
                   }
-
-    def test_loadinclude(self):
-        apparmor.aa.loadincludes()
-
-
-    def test_modes_to_string(self):
-
-        for string in self.MODE_TEST.keys():
-            mode = self.MODE_TEST[string]
-            self.assertEqual(apparmor.aamode.mode_to_str(mode), string, 'mode is %s and string is %s'%(mode, string))
 
     def test_string_to_modes(self):
 
