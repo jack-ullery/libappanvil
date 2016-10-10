@@ -275,6 +275,27 @@ class TestAAREglobPath(AATest):
         ('/foo/*/**',               '/foo/**'),
         ('/foo/*/*',                '/foo/**'),
 
+        ('/foo',                    '/*',),
+        ('/b*',                     '/*',),
+        ('/*b',                     '/*',),
+        ('/*',                      '/*',),
+        ('/*.foo',                  '/*',),
+        ('/**.foo',                 '/**',),
+        ('/foo/*',                  '/**',),
+        ('/usr/foo/*',              '/usr/**',),
+        ('/usr/foo/**',             '/usr/**',),
+        ('/usr/foo/bar**',          '/usr/foo/**',),
+        ('/usr/foo/**bar',          '/usr/foo/**',),
+        ('/usr/bin/foo**bar',       '/usr/bin/**',),
+        ('/usr/foo/**/bar',         '/usr/foo/**/*',),
+        ('/usr/foo/**/*',           '/usr/foo/**',),
+        ('/usr/foo/*/bar',          '/usr/foo/*/*',),
+        ('/usr/bin/foo*bar',        '/usr/bin/*',),
+        ('/usr/bin/*foo*',          '/usr/bin/*',),
+        ('/usr/foo/*/*',            '/usr/foo/**',),
+        ('/usr/foo/*/**',           '/usr/foo/**',),
+        ('/**',                     '/**',),
+
     ]
 
     def _run_test(self, params, expected):
@@ -319,6 +340,23 @@ class TestAAREglobPathWithExt(AATest):
         ('/foo/*/**',               '/foo/*/**'),
         ('/foo/*/*',                '/foo/*/*'),
 
+        ('/*',                      '/*'),
+        ('/**',                     '/**'),
+
+        ('/foo/bar',                '/foo/bar'),
+        ('/foo/**/bar',             '/foo/**/bar'),
+        ('/foo.bar',                '/*.bar'),
+        ('/*.foo',                  '/*.foo' ),
+        ('/usr/*.bar',              '/**.bar'),
+        ('/usr/**.bar',             '/**.bar'),
+        ('/usr/foo**.bar',          '/usr/**.bar'),
+        ('/usr/foo*.bar',           '/usr/*.bar'),
+        ('/usr/fo*oo.bar',          '/usr/*.bar'),
+        ('/usr/*foo*.bar',          '/usr/*.bar'),
+        ('/usr/**foo.bar',          '/usr/**.bar'),
+        ('/usr/*foo.bar',           '/usr/*.bar'),
+        ('/usr/foo.b*',             '/usr/*.b*'),
+
         # with extension added
         ('/foo/bar/baz**.xy',          '/foo/bar/**.xy'),
         ('/foo/bar/**baz.xy',          '/foo/bar/**.xy'),
@@ -344,6 +382,28 @@ class TestAAREglobPathWithExt(AATest):
         ('/foo/**/*.xy',               '/foo/**.xy'),
         ('/foo/*/**.xy',               '/foo/**.xy'),
         ('/foo/*/*.xy',                '/foo/**.xy'),
+
+        ('/*.foo',                      '/*.foo'),
+        ('/**.foo',                     '/**.foo'),
+
+        ('/foo.baz',                    '/*.baz'),
+        ('/b*.baz',                     '/*.baz'),
+        ('/*b.baz',                     '/*.baz'),
+        ('/foo/*.baz',                  '/**.baz'),
+        ('/usr/foo/*.baz',              '/usr/**.baz'),
+        ('/usr/foo/**.baz',             '/usr/**.baz'),
+        ('/usr/foo/bar**.baz',          '/usr/foo/**.baz'),
+        ('/usr/foo/**bar.baz',          '/usr/foo/**.baz'),
+        ('/usr/bin/foo**bar.baz',       '/usr/bin/**.baz'),
+        ('/usr/foo/**/bar.baz',         '/usr/foo/**/*.baz'),
+        ('/usr/foo/**/*.baz',           '/usr/foo/**.baz'),
+        ('/usr/foo/*/bar.baz',          '/usr/foo/*/*.baz'),
+        ('/usr/bin/foo*bar.baz',        '/usr/bin/*.baz'),
+        ('/usr/bin/*foo*.baz',          '/usr/bin/*.baz'),
+        ('/usr/foo/*/*.baz',            '/usr/foo/**.baz'),
+        ('/usr/foo/*/**.baz',           '/usr/foo/**.baz'),
+
+
     ]
 
     def _run_test(self, params, expected):

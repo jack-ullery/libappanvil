@@ -38,53 +38,6 @@ class Test(unittest.TestCase):
     def test_loadinclude(self):
         apparmor.aa.loadincludes()
 
-    def test_path_globs(self):
-        globs = {
-                 '/foo/': '/*/',
-                 '/foo': '/*',
-                 '/b*': '/*',
-                 '/*b': '/*',
-                 '/*': '/*',
-                 '/*/': '/*/',
-                 '/*.foo/': '/*/',
-                 '/**.foo/': '/**/',
-                 '/foo/*/': '/**/',
-                 '/usr/foo/*': '/usr/**',
-                 '/usr/foo/**': '/usr/**',
-                 '/usr/foo/bar**': '/usr/foo/**',
-                 '/usr/foo/**bar': '/usr/foo/**',
-                 '/usr/bin/foo**bar': '/usr/bin/**',
-                 '/usr/foo/**/bar': '/usr/foo/**/*',
-                 '/usr/foo/**/*': '/usr/foo/**',
-                 '/usr/foo/*/bar': '/usr/foo/*/*',
-                 '/usr/bin/foo*bar': '/usr/bin/*',
-                 '/usr/bin/*foo*': '/usr/bin/*',
-                 '/usr/foo/*/*': '/usr/foo/**',
-                 '/usr/foo/*/**': '/usr/foo/**',
-                 '/**': '/**',
-                 '/**/': '/**/'
-                 }
-        for path in globs.keys():
-            self.assertEqual(apparmor.aa.glob_path(path), globs[path], 'Unexpected glob generated for path: %s'%path)
-
-    def test_path_withext_globs(self):
-        globs = {
-                 '/foo/bar': '/foo/bar',
-                 '/foo/**/bar': '/foo/**/bar',
-                 '/foo.bar': '/*.bar',
-                 '/*.foo': '/*.foo' ,
-                 '/usr/*.bar': '/**.bar',
-                 '/usr/**.bar': '/**.bar',
-                 '/usr/foo**.bar': '/usr/**.bar',
-                 '/usr/foo*.bar': '/usr/*.bar',
-                 '/usr/fo*oo.bar': '/usr/*.bar',
-                 '/usr/*foo*.bar': '/usr/*.bar',
-                 '/usr/**foo.bar': '/usr/**.bar',
-                 '/usr/*foo.bar': '/usr/*.bar',
-                 '/usr/foo.b*': '/usr/*.b*'
-                 }
-        for path in globs.keys():
-            self.assertEqual(apparmor.aa.glob_path_withext(path), globs[path], 'Unexpected glob generated for path: %s'%path)
 
     def test_modes_to_string(self):
 
