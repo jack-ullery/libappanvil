@@ -1487,7 +1487,6 @@ def order_globs(globs, original_path):
     return globs
 
 def ask_the_questions():
-    found = 0
     for aamode in sorted(log_dict.keys()):
         # Describe the type of changes
         if aamode == 'PERMITTING':
@@ -1503,8 +1502,6 @@ def ask_the_questions():
             p = update_repo_profile(aa[profile][profile])
             if p:
                 UI_SelectUpdatedRepoProfile(profile, p)
-
-            found += 1
 
             sev_db.unload_variables()
             sev_db.load_variables(get_profile_filename(profile))
