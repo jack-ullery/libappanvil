@@ -95,7 +95,6 @@ include = dict()
 
 existing_profiles = dict()
 
-seen_events = 0  # was our
 # To store the globs entered by users so they can be provided again
 # format: user_globs['/foo*'] = AARE('/foo*')
 user_globs = {}
@@ -1030,7 +1029,6 @@ def handle_children(profile, hat, root):
     family = None
     sock_type = None
     protocol = None
-    global seen_events
     regex_nullcomplain = re.compile('^null(-complain)*-profile$')
 
     for entry in entries:
@@ -1087,8 +1085,6 @@ def handle_children(profile, hat, root):
                     q.default = 'CMD_DENY'
                     if aamode == 'PERMITTING':
                         q.default = 'CMD_ADDHAT'
-
-                    seen_events += 1
 
                     ans = q.promptUser()[0]
 
@@ -1256,9 +1252,6 @@ def handle_children(profile, hat, root):
                         # prompt = '\n%s\n' % context_new  # XXX
                         exec_toggle = False
                         q.functions += build_x_functions(default, options, exec_toggle)
-
-                        # options = '|'.join(options)
-                        seen_events += 1
 
                         # ask user about the exec mode to use
                         ans = ''
@@ -1495,7 +1488,6 @@ def order_globs(globs, original_path):
 
 def ask_the_questions():
     found = 0
-    global seen_events
     for aamode in sorted(log_dict.keys()):
         # Describe the type of changes
         if aamode == 'PERMITTING':
@@ -1549,8 +1541,6 @@ def ask_the_questions():
                             options += propose_file_rules(aa[profile][hat], rule_obj)
                         else:
                             options.append(rule_obj.get_clean())
-
-                        seen_events += 1
 
                         done = False
                         while not done:
