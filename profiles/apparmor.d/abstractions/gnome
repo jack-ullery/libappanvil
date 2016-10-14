@@ -15,6 +15,7 @@
 #include <abstractions/freedesktop.org>
 #include <abstractions/xdg-desktop>
 #include <abstractions/user-tmp>
+#include <abstractions/wayland>
 
   # systemwide gtk defaults
   /etc/gnome/gtkrc*               r,
