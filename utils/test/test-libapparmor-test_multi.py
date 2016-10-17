@@ -10,19 +10,18 @@
 # ------------------------------------------------------------------
 
 import unittest
-from common_test import AATest, setup_all_loops
+from common_test import AATest, setup_all_loops, read_file
 
 import os
 from apparmor.common import open_file_read
 
+import apparmor.aa
 from apparmor.logparser import ReadLog
 
-# This testcase will parse all libraries/libapparmor/testsuite/test_multi tests
-# and compare the result with the *.out files
-
-
 class TestLibapparmorTestMulti(AATest):
-    tests = []  # filled by parse_test_profiles()
+    '''Parse all libraries/libapparmor/testsuite/test_multi tests and compare the result with the *.out files'''
+
+    tests = 'invalid'  # filled by parse_test_profiles()
 
     def _run_test(self, params, expected):
         # tests[][expected] is a dummy, replace it with the real values
@@ -138,12 +137,78 @@ class TestLibapparmorTestMulti(AATest):
         return exresult
 
 
+log_to_profile_known_failures = [
+    'testcase31',  # XXX AppArmorBug: Log contains unknown mode mrwIxl
+    'testcase24',  # XXX network with operation="socket_create"
+    'testcase33',  # XXX network with operation="socket_create"
+    'testcase_dmesg_changehat_negative_error',  # fails in write_header -> quote_if_needed because data is None
+    'testcase_syslog_changehat_negative_error',  # fails in write_header -> quote_if_needed because data is None
+    'testcase_changehat_01',  # interactive, asks to add a hat
+]
+
+class TestLogToProfile(AATest):
+    '''Check if the libraries/libapparmor/testsuite/test_multi tests result in the expected profile'''
+
+    tests = 'invalid'  # filled by parse_test_profiles()
+
+    def _run_test(self, params, expected):
+        logfile = '%s.in' % params
+        profile_dummy_file = 'AATest_does_exist'
+
+        # we need to find out the profile name and aamode (complain vs. enforce mode) so that the test can access the correct place in storage
+        parser = ReadLog('', '', '', '', '')
+        parsed_event = parser.parse_event(read_file(logfile))
+
+        if not parsed_event:  # AA_RECORD_INVALID
+            return
+
+        if params.split('/')[-1] in log_to_profile_known_failures:
+            return
+
+        aamode = parsed_event['aamode']
+
+        if aamode in['AUDIT', 'STATUS', 'HINT']: # ignore some event types  # XXX maybe we shouldn't ignore AUDIT events?
+            return
+
+        if aamode not in ['PERMITTING', 'REJECTING']:
+            raise Exception('Unexpected aamode %s' % parsed_event['aamode'])
+
+        # cleanup apparmor.aa storage
+        apparmor.aa.log = dict()
+        apparmor.aa.aa = apparmor.aa.hasher()
+        apparmor.aa.prelog = apparmor.aa.hasher()
+        apparmor.aa.log_dict = apparmor.aa.hasher()
+
+        profile = parsed_event['profile']
+
+        apparmor.aa.existing_profiles = {profile: profile_dummy_file}
+
+        log_reader = ReadLog(dict(), logfile, apparmor.aa.existing_profiles, '', [])
+        log = log_reader.read_log('')
+
+        for root in log:
+            apparmor.aa.handle_children('', '', root)  # interactive for exec events!
+
+        apparmor.aa.collapse_log()
+
+        apparmor.aa.filelist = apparmor.aa.hasher()
+        apparmor.aa.filelist[profile_dummy_file]['profiles'][profile] = True
+
+        new_profile = apparmor.aa.serialize_profile(apparmor.aa.log_dict[aamode][profile], profile, None)
+
+        try:
+            expected_profile = read_file('%s.profile' % params)
+        except FileNotFoundError:  # no .profile file
+            # print('%s.profile not found, skipping' % params)  # XXX enable this line to get a TODO list
+            return  # we don't have profiles for all testcases yet
+
+        self.assertEqual(new_profile, expected_profile)
+
+
 def find_test_multi(log_dir):
     '''find all log sniplets in the given log_dir'''
 
     log_dir = os.path.abspath(log_dir)
-
-    print('Testing libapparmor test_multi tests...')
 
     tests = []
     for root, dirs, files in os.walk(log_dir):
@@ -152,7 +217,7 @@ def find_test_multi(log_dir):
                 file_with_path = os.path.join(root, file[:-3])  # filename without '.in'
                 tests.append([file_with_path, True])  # True is a dummy testresult, parsing of the *.out files is done while running the tests
 
-            elif file.endswith('.out') or file.endswith('.err'):
+            elif file.endswith('.out') or file.endswith('.err') or file.endswith('.profile'):
                 pass
             else:
                 raise Exception('Found unknown file %s in libapparmor test_multi' % file)
@@ -160,7 +225,9 @@ def find_test_multi(log_dir):
     return tests
 
 
+print('Testing libapparmor test_multi tests...')
 TestLibapparmorTestMulti.tests = find_test_multi('../../libraries/libapparmor/testsuite/test_multi/')
+TestLogToProfile.tests = find_test_multi('../../libraries/libapparmor/testsuite/test_multi/')
 
 setup_all_loops(__name__)
 if __name__ == '__main__':
