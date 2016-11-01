@@ -137,12 +137,49 @@ class TestLibapparmorTestMulti(AATest):
         return exresult
 
 
+# tests that do not produce the expected profile (checked with assertNotEqual)
 log_to_profile_known_failures = [
+    'testcase_dmesg_changeprofile_01',  # change_profile not yet supported in logparser
+    'testcase_changeprofile_01',        # change_profile not yet supported in logparser
+
+    'testcase_mount_01',  # mount rules not yet supported in logparser
+
+    'testcase_pivotroot_01',  # pivot_rot not yet supported in logparser
+
+    # exec events
+    'testcase01',
+    'testcase12',
+    'testcase13',
+
+    # null-* hats get ignored by handle_children() if it didn't see an exec event for that null-* hat
+    'syslog_datetime_01',
+    'syslog_datetime_02',
+    'syslog_datetime_03',
+    'syslog_datetime_04',
+    'syslog_datetime_05',
+    'syslog_datetime_06',
+    'syslog_datetime_07',
+    'syslog_datetime_08',
+    'syslog_datetime_09',
+    'syslog_datetime_10',
+    'syslog_datetime_11',
+    'syslog_datetime_12',
+    'syslog_datetime_13',
+    'syslog_datetime_14',
+    'syslog_datetime_15',
+    'syslog_datetime_16',
+    'syslog_datetime_17',
+    'syslog_datetime_18',
+    'testcase_network_send_receive',
+]
+
+# tests that cause crashes or need user interaction (will be skipped)
+log_to_profile_skip = [
     'testcase31',  # XXX AppArmorBug: Log contains unknown mode mrwIxl
-    'testcase24',  # XXX network with operation="socket_create"
-    'testcase33',  # XXX network with operation="socket_create"
-    'testcase_dmesg_changehat_negative_error',  # fails in write_header -> quote_if_needed because data is None
+
+    'testcase_dmesg_changehat_negative_error',   # fails in write_header -> quote_if_needed because data is None
     'testcase_syslog_changehat_negative_error',  # fails in write_header -> quote_if_needed because data is None
+
     'testcase_changehat_01',  # interactive, asks to add a hat
 ]
 
@@ -162,7 +199,7 @@ class TestLogToProfile(AATest):
         if not parsed_event:  # AA_RECORD_INVALID
             return
 
-        if params.split('/')[-1] in log_to_profile_known_failures:
+        if params.split('/')[-1] in log_to_profile_skip:
             return
 
         aamode = parsed_event['aamode']
@@ -180,6 +217,9 @@ class TestLogToProfile(AATest):
         apparmor.aa.log_dict = apparmor.aa.hasher()
 
         profile = parsed_event['profile']
+        hat = profile
+        if '//' in profile:
+            profile, hat = profile.split('//')
 
         apparmor.aa.existing_profiles = {profile: profile_dummy_file}
 
@@ -196,13 +236,12 @@ class TestLogToProfile(AATest):
 
         new_profile = apparmor.aa.serialize_profile(apparmor.aa.log_dict[aamode][profile], profile, None)
 
-        try:
-            expected_profile = read_file('%s.profile' % params)
-        except FileNotFoundError:  # no .profile file
-            # print('%s.profile not found, skipping' % params)  # XXX enable this line to get a TODO list
-            return  # we don't have profiles for all testcases yet
+        expected_profile = read_file('%s.profile' % params)
 
-        self.assertEqual(new_profile, expected_profile)
+        if params.split('/')[-1] in log_to_profile_known_failures:
+            self.assertNotEqual(new_profile, expected_profile)  # known failure
+        else:
+            self.assertEqual(new_profile, expected_profile)
 
 
 def find_test_multi(log_dir):
