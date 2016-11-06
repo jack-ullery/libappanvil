@@ -40,6 +40,7 @@
   /usr/lib/@{multiarch}/gdk-pixbuf-*/** mr,
 
   # per-user gtk configuration
+  owner @{HOME}/.config/gtk-3.0/*       r,
   owner @{HOME}/.gnome/Gnome            r,
   owner @{HOME}/.gtk                    r,
   owner @{HOME}/.gtkrc                  r,
