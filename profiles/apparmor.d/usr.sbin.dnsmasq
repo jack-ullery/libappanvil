@@ -92,6 +92,8 @@
 
     /etc/libnl-3/classid r,
 
+    /usr/lib{,64}/libvirt/libvirt_leaseshelper m,
+
     owner @{PROC}/@{pid}/net/psched r,
     owner @{PROC}/@{pid}/status r,
 
