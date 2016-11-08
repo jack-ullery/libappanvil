@@ -12,20 +12,11 @@
 
 #include <tunables/global>
 
-/usr/bin/mlmmj-send {
+/usr/bin/mlmmj-receive {
   #include <abstractions/base>
-  #include <abstractions/nameservice>
 
-  /usr/bin/mlmmj-send r,
-  /var/spool/mlmmj/*/archive/* w,
-  /var/spool/mlmmj/*/control/* r,
-  /var/spool/mlmmj/*/index rwk,
-  /var/spool/mlmmj/*/queue/* klrw,
-  /var/spool/mlmmj/*/subscribers.d/ r,
-  /var/spool/mlmmj/*/subscribers.d/* r,
-
-  /var/spool/mlmmj/*/digesters.d/ r,
-
-  /var/spool/mlmmj/*/moderation/* rwk,
-
+  /usr/bin/mlmmj-process Px,
+  /usr/bin/mlmmj-receive r,
+  /var/spool/mlmmj/*/incoming/ rw,
+  /var/spool/mlmmj/*/incoming/* rw,
 }
