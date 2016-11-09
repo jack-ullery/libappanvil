@@ -15,7 +15,7 @@
 /usr/bin/mlmmj-unsub {
   #include <abstractions/base>
 
-  /usr/bin/mlmmj-unsub r,
+  /usr/bin/mlmmj-unsub mr,
   /usr/bin/mlmmj-send Px,
   /var/spool/mlmmj/*/control/ r,
   /var/spool/mlmmj/*/control/* r,

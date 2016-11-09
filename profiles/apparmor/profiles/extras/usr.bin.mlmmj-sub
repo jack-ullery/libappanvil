@@ -18,7 +18,7 @@
   capability setuid,
 
   /usr/bin/mlmmj-send Px,
-  /usr/bin/mlmmj-sub r,
+  /usr/bin/mlmmj-sub mr,
   /var/spool/mlmmj/*/control/ r,
   /var/spool/mlmmj/*/control/* r,
   /var/spool/mlmmj/*/queue/ rw,

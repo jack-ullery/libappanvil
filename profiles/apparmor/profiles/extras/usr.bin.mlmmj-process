@@ -15,7 +15,7 @@
 /usr/bin/mlmmj-process {
   #include <abstractions/base>
 
-  /usr/bin/mlmmj-process r,
+  /usr/bin/mlmmj-process mr,
   /usr/bin/mlmmj-send Px,
   /usr/bin/mlmmj-sub Px,
   /usr/bin/mlmmj-unsub Px,

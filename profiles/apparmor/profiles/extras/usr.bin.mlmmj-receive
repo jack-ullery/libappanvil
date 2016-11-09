@@ -16,7 +16,7 @@
   #include <abstractions/base>
 
   /usr/bin/mlmmj-process Px,
-  /usr/bin/mlmmj-receive r,
+  /usr/bin/mlmmj-receive mr,
   /var/spool/mlmmj/*/incoming/ rw,
   /var/spool/mlmmj/*/incoming/* rw,
 }

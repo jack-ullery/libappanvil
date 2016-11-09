@@ -9,12 +9,17 @@
 # ------------------------------------------------------------------
 # vim:syntax=apparmor
 
+
+# mlmmj upstream renamed the (misspelled) mlmmj-recieve to mlmmj-receive,
+# so this profile is probably superfluous
+
+
 #include <tunables/global>
 
 /usr/bin/mlmmj-recieve {
   #include <abstractions/base>
 
   /usr/bin/mlmmj-process Px,
-  /usr/bin/mlmmj-recieve r,
+  /usr/bin/mlmmj-recieve mr,
   /var/spool/mlmmj/*/incoming/* w,
 }

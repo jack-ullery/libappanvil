@@ -16,7 +16,7 @@
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
-  /usr/bin/mlmmj-send r,
+  /usr/bin/mlmmj-send mr,
   /var/spool/mlmmj/*/archive/* w,
   /var/spool/mlmmj/*/control/* r,
   /var/spool/mlmmj/*/index rwk,

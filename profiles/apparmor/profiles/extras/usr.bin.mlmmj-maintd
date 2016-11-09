@@ -17,7 +17,7 @@
 
   capability setuid,
 
-  /usr/bin/mlmmj-maintd r,
+  /usr/bin/mlmmj-maintd mr,
   /usr/bin/mlmmj-send Px,
   /usr/bin/mlmmj-bounce Px,
   /usr/bin/mlmmj-unsub Px,
