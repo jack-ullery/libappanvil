@@ -88,7 +88,7 @@ libraries/libapparmor/swig/perl/MYMETA.yml
 libraries/libapparmor/swig/perl/blib
 libraries/libapparmor/swig/perl/libapparmor_wrap.c
 libraries/libapparmor/swig/perl/pm_to_blib
-libraries/libapparmor/swig/python/__init__.py
+libraries/libapparmor/swig/python/LibAppArmor.py
 libraries/libapparmor/swig/python/build/
 libraries/libapparmor/swig/python/libapparmor_wrap.c
 libraries/libapparmor/swig/python/Makefile
