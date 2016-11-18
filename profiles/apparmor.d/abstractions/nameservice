@@ -46,7 +46,7 @@
   # to vast speed increases when working with network-based lookups.
   /{,var/}run/.nscd_socket   rw,
   /{,var/}run/nscd/socket    rw,
-  /{var/db,var/cache,var/run,run}/nscd/{passwd,group,services,hosts}    r,
+  /{var/db,var/cache,var/lib,var/run,run}/nscd/{passwd,group,services,hosts}    r,
   # nscd renames and unlinks files in it's operation that clients will
   # have open
   /{,var/}run/nscd/db*  rmix,
