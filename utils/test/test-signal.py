@@ -114,6 +114,9 @@ class SignalTestParseFromLog(SignalTest):
             'attr': None,
             'name2': None,
             'name': None,
+            'family': None,
+            'protocol': None,
+            'sock_type': None,
         })
 
         obj = SignalRule(parsed_event['denied_mask'], parsed_event['signal'], parsed_event['peer'], log_event=parsed_event)

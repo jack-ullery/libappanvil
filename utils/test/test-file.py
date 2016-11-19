@@ -158,6 +158,9 @@ class FileTestParseFromLog(FileTest):
             'pid': 13726,
             'task': 0,
             'attr': None,
+            'family': None,
+            'protocol': None,
+            'sock_type': None,
         })
 
         #FileRule#     path,                 perms,                         exec_perms, target,         owner,  file_keyword,   leading_perms

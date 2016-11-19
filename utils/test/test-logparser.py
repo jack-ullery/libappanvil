@@ -84,7 +84,10 @@ class TestParseEvent(unittest.TestCase):
             'request_mask': 'r',
             'resource': 'Failed name lookup - disconnected path',
             'task': 0,
-            'time': 1424425690
+            'time': 1424425690,
+            'family': None,
+            'protocol': None,
+            'sock_type': None,
         })
 
         self.assertIsNotNone(ReadLog.RE_LOG_ALL.search(event))

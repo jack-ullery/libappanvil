@@ -109,6 +109,9 @@ class PtraceTestParseFromLog(PtraceTest):
             'attr': None,
             'name2': None,
             'name': None,
+            'family': None,
+            'protocol': None,
+            'sock_type': None,
         })
 
         obj = PtraceRule(parsed_event['denied_mask'], parsed_event['peer'], log_event=parsed_event)
