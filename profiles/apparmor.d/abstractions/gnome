@@ -22,6 +22,8 @@
   /etc/gtk/*                      r,
   /usr/lib{,32,64}/gtk/**         mr,
   /usr/lib/@{multiarch}/gtk/**    mr,
+  /usr/lib{,32,64}/gtk-[0-9]*/**  mr,
+  /usr/lib/@{multiarch}/gtk-[0-9]*/** mr,
   /usr/share/themes/              r,
   /usr/share/themes/**            r,
 
