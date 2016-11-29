@@ -28,6 +28,7 @@
   capability net_bind_service,
   capability setuid,
   capability sys_chroot,
+  capability sys_resource,
 
   /etc/dovecot/** r,
   /etc/mtab r,
