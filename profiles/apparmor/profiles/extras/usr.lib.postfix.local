@@ -25,8 +25,8 @@
   /usr/bin/mlmmj-recieve                                Px,
 
   /usr/lib/postfix/local                                rmix,
-  /bin/bash                                             mixr,
-  /bin/date                                             mixr,
+  /{usr/,}bin/bash                                             mixr,
+  /{usr/,}bin/date                                             mixr,
 
   /dev/tty                                              rw,
   /etc/{postfix/,}aliases.db                            r,

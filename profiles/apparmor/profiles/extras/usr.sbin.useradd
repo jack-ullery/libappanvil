@@ -26,7 +26,7 @@
   capability fsetid,
   capability sys_resource,
 
-  /bin/bash mixr,
+  /{usr/,}bin/bash mixr,
   /etc/.pwd.lock rwk,
   /etc/default/useradd r,
   /etc/group* rwl,
