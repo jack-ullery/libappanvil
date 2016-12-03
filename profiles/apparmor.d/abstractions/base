@@ -48,11 +48,11 @@
   # available everywhere
   /etc/ld.so.cache               mr,
   /etc/ld.so.preload             r,
-  /{usr/,}lib{,32,64}/ld{,32,64}-*.so   mrix,
-  /{usr/,}lib/@{multiarch}/ld{,32,64}-*.so    mrix,
-  /{usr/,}lib/tls/i686/{cmov,nosegneg}/ld-*.so     mrix,
-  /{usr/,}lib/i386-linux-gnu/tls/i686/{cmov,nosegneg}/ld-*.so     mrix,
-  /opt/*-linux-uclibc/lib/ld-uClibc*so* mrix,
+  /{usr/,}lib{,32,64}/ld{,32,64}-*.so   mrPix,
+  /{usr/,}lib/@{multiarch}/ld{,32,64}-*.so    mrPix,
+  /{usr/,}lib/tls/i686/{cmov,nosegneg}/ld-*.so     mrPix,
+  /{usr/,}lib/i386-linux-gnu/tls/i686/{cmov,nosegneg}/ld-*.so     mrPix,
+  /opt/*-linux-uclibc/lib/ld-uClibc*so* mrPix,
 
   # we might as well allow everything to use common libraries
   /{usr/,}lib{,32,64}/**                r,
