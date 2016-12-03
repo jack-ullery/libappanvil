@@ -49,7 +49,6 @@
   /etc/ld.so.cache               mr,
   /etc/ld.so.preload             r,
   /{usr/,}lib{,32,64}/ld{,32,64}-*.so   mrix,
-  /{usr/,}lib{,32,64}/**/ld{,32,64}-*.so     mrix,
   /{usr/,}lib/@{multiarch}/ld{,32,64}-*.so    mrix,
   /{usr/,}lib/tls/i686/{cmov,nosegneg}/ld-*.so     mrix,
   /{usr/,}lib/i386-linux-gnu/tls/i686/{cmov,nosegneg}/ld-*.so     mrix,
