@@ -148,7 +148,7 @@
   # prevents access to the files from processes running under a different uid.
 
   # encrypted ~/.Private and old-style encrypted $HOME
-  owner @{HOME}/.Private/** mrixwlk,
+  owner @{HOME}/.Private/** mrPixwlk,
   # new-style encrypted $HOME
-  owner @{HOMEDIRS}/.ecryptfs/*/.Private/** mrixwlk,
+  owner @{HOMEDIRS}/.ecryptfs/*/.Private/** mrPixwlk,
 
