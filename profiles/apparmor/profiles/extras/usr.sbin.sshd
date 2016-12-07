@@ -89,7 +89,7 @@
   /{usr/,}bin/zsh      Uxr,
   /{usr/,}bin/zsh4     Uxr,
   /{usr/,}bin/zsh5     Uxr,
-  /{,usr/}sbin/nologin Uxr,
+  /{usr/,}sbin/nologin Uxr,
   /{usr/,}bin/false    Uxr,
 
   # XXX: this needs to be enabled otherwise we risk locking out a user

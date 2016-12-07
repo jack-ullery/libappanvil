@@ -14,7 +14,7 @@ profile rpc.statd /{usr/,}sbin/rpc.statd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   /etc/rpc                         r,
-  /{usr/,}sbin/rpc.statd                  rmix,
+  /{usr/,}sbin/rpc.statd           rmix,
   /sm                              rw,
   /sm.bak                          rw,
   /state                           rw,
