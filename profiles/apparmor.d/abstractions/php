@@ -19,7 +19,7 @@
   # php extensions
   /usr/lib{64,}/php{,5,7}/*/*.so mr,
 
-  # php5 session mmap socket
+  # php session mmap socket
   /var/lib/php{,5,7}/session_mm_* rwlk,
   # file based session handler
   /var/lib/php{,5,7}/sess_* rwlk,
