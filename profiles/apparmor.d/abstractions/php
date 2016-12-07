@@ -11,18 +11,19 @@
 # ------------------------------------------------------------------
 
   # shared snippets for config files
-  /etc/php5/**/ r,
-  /etc/php5/**.ini r,
+  /etc/php{,5}/**/ r,
+  /etc/php{,5}/**.ini r,
 
   # Xlibs
   /usr/X11R6/lib{,32,64}/lib*.so* mr,
   # php extensions
-  /usr/lib{64,}/php5/*/*.so mr,
+  /usr/lib{64,}/php{,5}/*/*.so mr,
 
   # php5 session mmap socket
-  /var/lib/php5/session_mm_* rwlk,
+  /var/lib/php{,5}/session_mm_* rwlk,
   # file based session handler
-  /var/lib/php5/sess_* rwlk,
+  /var/lib/php{,5}/sess_* rwlk,
+  /var/lib/php{,5}/sessions/* rwlk,
 
   # php libraries
   /usr/share/php{,5}/ r,
