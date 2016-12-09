@@ -30,6 +30,8 @@
   /{,var/}run/nscd/socket wl,
   /{var/cache,var/lib,var/run,run}/nscd/{passwd,group,services,hosts,netgroup} rw,
   /{,var/}run/{nscd/,}nscd.pid rwl,
+  /var/lib/libvirt/dnsmasq/ r,
+  /var/lib/libvirt/dnsmasq/*.status r,
   /var/log/nscd.log rw,
   @{PROC}/@{pid}/cmdline r,
   @{PROC}/@{pid}/fd/ r,
