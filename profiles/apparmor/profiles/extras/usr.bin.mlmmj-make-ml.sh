@@ -22,12 +22,12 @@
   /usr/bin/mlmmj-make-ml.sh r,
 
   # some shell tools are needed
-  /bin/domainname mix,
-  /bin/hostname mix,
-  /bin/bash mix,
-  /bin/cp mixr,
-  /bin/mkdir mixr,
-  /bin/touch mixr,
+  /{usr/,}bin/domainname mix,
+  /{usr/,}bin/hostname mix,
+  /{usr/,}bin/bash mix,
+  /{usr/,}bin/cp mixr,
+  /{usr/,}bin/mkdir mixr,
+  /{usr/,}bin/touch mixr,
   /usr/bin/which mixr,
   # if mkdir cant read the current work directory it jumps into /
   # allow reading that dir.

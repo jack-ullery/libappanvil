@@ -16,12 +16,12 @@
   #include <abstractions/bash>
   #include <abstractions/nameservice>
 
-  /bin/bash mixr,
-  /bin/cat mixr,
-  /bin/gzip mixr,
-  /bin/kill mixr,
-  /bin/logger mixr,
-  /bin/true mixr,
+  /{usr/,}bin/bash mixr,
+  /{usr/,}bin/cat mixr,
+  /{usr/,}bin/gzip mixr,
+  /{usr/,}bin/kill mixr,
+  /{usr/,}bin/logger mixr,
+  /{usr/,}bin/true mixr,
   /etc/init.d/* mixr,
   /usr/bin/killall mixr,
   /usr/sbin/logrotate mixr,
