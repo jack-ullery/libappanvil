@@ -161,7 +161,8 @@ htmlmanpages:	$(HTMLMANPAGES)
 
 pdf:	techdoc.pdf
 
-docs:	manpages htmlmanpages pdf
+docs:	manpages htmlmanpages
+extra_docs: pdf
 
 indep: docs
 	$(Q)$(MAKE) -C po all

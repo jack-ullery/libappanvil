@@ -1,5 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (c) 1999, 2004, 2005 NOVELL (All rights reserved)
+#    Copyright (c) 2016 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -62,7 +63,11 @@ OBJECTS=${NAME}.o get_options.o
 .SILENT: libapparmor_check
 libapparmor_check: ; $(ERROR_MESSAGE)
 
-all: libapparmor_check $(NAME).so
+all: libapparmor_check $(NAME).so docs
+
+.PHONY: docs
+# docs: we should have some
+docs:
 
 $(NAME).so: ${OBJECTS}
 	$(CC) $(EXTRA_CFLAGS) $(LINK_FLAGS) -o $@ ${OBJECTS} $(LIBS)

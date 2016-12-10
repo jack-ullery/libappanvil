@@ -75,6 +75,12 @@ clean:
 .PHONY: setup
 setup:
 	cd $(__SETUP_DIR)/libraries/libapparmor && ./autogen.sh
+	# parser has an extra doc to build
+	make -C $(__SETUP_DIR)/parser extra_docs
+	# libraries/libapparmor needs configure to have run before
+	# building docs
+	$(foreach dir, $(filter-out libraries/libapparmor tests, $(DIRS)), \
+		make -C $(__SETUP_DIR)/$(dir) docs;)
 
 .PHONY: tag
 tag:

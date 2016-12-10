@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2009 Novell/SUSE
-#    Copyright (C) 2010 Canonical Ltd.
+#    Copyright (C) 2010-2016 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -20,7 +20,7 @@
 # Makefile for LSM-based AppArmor profiles
 
 NAME=apparmor-profiles
-all: local
+all: local docs
 COMMONDIR=../common/
 
 include $(COMMONDIR)/Make.rules
@@ -74,6 +74,10 @@ ifndef LOGPROF
 # use ../utils logprof
 LOGPROF=PYTHONPATH=../utils $(PYTHON) ../utils/aa-logprof
 endif
+
+.PHONY: docs
+# docs: should we have some here?
+docs:
 
 IGNORE_FILES=${EXTRAS_SOURCE}/README
 CHECK_PROFILES=$(filter-out ${IGNORE_FILES} ${SUBDIRS}, $(wildcard ${PROFILES_SOURCE}/*) $(wildcard ${EXTRAS_SOURCE}/*))

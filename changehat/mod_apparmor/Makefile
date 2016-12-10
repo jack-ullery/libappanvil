@@ -1,5 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (c) 2004, 2005 NOVELL (All rights reserved)
+#    Copyright (c) 2016 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -73,7 +74,10 @@ endif
 .SILENT: libapparmor_check
 libapparmor_check: ; $(ERROR_MESSAGE)
 
-all: libapparmor_check $(TARGET) ${MANPAGES} ${HTMLMANPAGES}
+all: libapparmor_check $(TARGET) docs
+
+.PHONY: docs
+docs: ${MANPAGES} ${HTMLMANPAGES}
 
 %.so: %.c
 	${APXS} ${LIBAPPARMOR_FLAGS} -c $< ${LDLIBS}
