@@ -39,6 +39,9 @@
 
   /{var/,}run/dovecot/auth-token-secret.dat{,.tmp} rw,
   /{var/,}run/dovecot/stats-user rw,
+  /{var/,}run/dovecot/anvil-auth-penalty rw,
+
+  /var/spool/postfix/private/auth w,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.lib.dovecot.auth>
