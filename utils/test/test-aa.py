@@ -94,6 +94,7 @@ class AATest_get_reqs(AATest):
     tests = [
         ('/AATest/bin/bash',    ['/AATest/lib64/libreadline.so.6', '/AATest/lib64/libtinfo.so.6', '/AATest/lib64/libdl.so.2', '/AATest/lib64/libc.so.6', '/AATest/lib64/ld-linux-x86-64.so.2']),
         ('/tmp/aa-test-foo',    []),
+        ('/AATest/sbin/ldconfig', []),  # comes with $? == 1
     ]
 
     def _run_test(self, params, expected):
