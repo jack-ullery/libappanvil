@@ -50,7 +50,7 @@ def get_all_pids():
     return set(filter(lambda x: re.search(r"^\d+$", x), aa.get_subdirectories("/proc")))
 
 
-def get_pids_ss():
+def get_pids_ss(ss='ss'):
     '''Get a set of pids listening on network sockets via ss(8)'''
     regex_lines = re.compile(r"^(tcp|udp|raw|p_dgr)\s.+\s+users:(?P<users>\(\(.*\)\))$")
     regex_users_pids = re.compile(r'(\("[^"]+",(pid=)?(\d+),[^)]+\))')
@@ -60,7 +60,7 @@ def get_pids_ss():
     my_env['LANG'] = 'C'
     my_env['PATH'] = '/bin:/usr/bin:/sbin:/usr/sbin'
     for family in ['inet', 'inet6', 'link']:
-        cmd = ['ss', '-nlp', '--family', family]
+        cmd = [ss, '-nlp', '--family', family]
         if sys.version_info < (3, 0):
             output = subprocess.check_output(cmd, shell=False, env=my_env).split("\n")
         else:
@@ -76,11 +76,11 @@ def get_pids_ss():
     return pids
 
 
-def get_pids_netstat():
+def get_pids_netstat(netstat='netstat'):
     '''Get a set of pids listening on network sockets via netstat(8)'''
     regex_tcp_udp = re.compile(r"^(tcp|udp|raw)6?\s+\d+\s+\d+\s+\S+\:(\d+)\s+\S+\:(\*|\d+)\s+(LISTEN|\d+|\s+)\s+(?P<pid>\d+)\/(\S+)")
 
-    cmd = ['netstat', '-nlp', '--protocol', 'inet,inet6']
+    cmd = [netstat, '-nlp', '--protocol', 'inet,inet6']
     my_env = os.environ.copy()
     my_env['LANG'] = 'C'
     my_env['PATH'] = '/bin:/usr/bin:/sbin:/usr/sbin'
