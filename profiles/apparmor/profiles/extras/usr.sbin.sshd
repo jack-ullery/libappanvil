@@ -140,5 +140,5 @@
   /usr/lib/openssh/sftp-server PUx,
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/usr.sbin.sshd>
+  ## include <local/usr.sbin.sshd>
 }
