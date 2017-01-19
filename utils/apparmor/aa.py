@@ -1585,6 +1585,9 @@ def ask_the_questions():
                     elif ans == 'CMD_FINISHED':
                         return
 
+                # check for and ask about conflicting exec modes
+                ask_conflict_mode(profile, hat, aa[profile][hat], log_dict[aamode][profile][hat])
+
                 for ruletype in ruletypes:
                     for rule_obj in log_dict[aamode][profile][hat][ruletype].rules:
                         # XXX aa-mergeprof also has this code - if you change it, keep aa-mergeprof in sync!
@@ -1790,6 +1793,39 @@ def delete_duplicates(profile, incname):
             deleted += profile[rule_type].delete_duplicates(filelist[incname][incname][rule_type])
 
     return deleted
+
+def ask_conflict_mode(profile, hat, old_profile, merge_profile):
+    '''ask user about conflicting exec rules'''
+    for oldrule in old_profile['file'].rules:
+        conflictingrules = merge_profile['file'].get_exec_conflict_rules(oldrule)
+
+        if conflictingrules.rules:
+            q = aaui.PromptQuestion()
+            q.headers = [_('Path'), oldrule.path.regex]
+            q.headers += [_('Select the appropriate mode'), '']
+            options = []
+            options.append(oldrule.get_clean())
+            for rule in conflictingrules.rules:
+                options.append(rule.get_clean())
+            q.options = options
+            q.functions = ['CMD_ALLOW', 'CMD_ABORT']
+            done = False
+            while not done:
+                ans, selected = q.promptUser()
+                if ans == 'CMD_ALLOW':
+                    if selected == 0:
+                        pass  # just keep the existing rule
+                    elif selected > 0:
+                        # replace existing rule with merged one
+                        old_profile['file'].delete(oldrule)
+                        old_profile['file'].add(conflictingrules.rules[selected - 1])
+                    else:
+                        raise AppArmorException(_('Unknown selection'))
+
+                    for rule in conflictingrules.rules:
+                        merge_profile['file'].delete(rule)  # make sure aa-mergeprof doesn't ask to add conflicting rules later
+
+                    done = True
 
 def match_includes(profile, rule_type, rule_obj):
     newincludes = []
