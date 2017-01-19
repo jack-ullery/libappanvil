@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014-2016 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2017 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -1519,6 +1519,39 @@ def ask_the_questions():
                     # (Checking for 'file' is a simplified way to check if it's a profile_storage() struct.)
                     debug_logger.debug("Ignoring events for non-existing profile %s" % combine_name(profile, hat))
                     continue
+
+                #Add the includes from the other profile to the user profile
+                done = False
+
+                options = []
+                for inc in log_dict[aamode][profile][hat]['include'].keys():
+                    if not inc in aa[profile][hat]['include'].keys():
+                        options.append('#include <%s>' %inc)
+
+                default_option = 1
+
+                q = aaui.PromptQuestion()
+                q.options = options
+                q.selected = default_option - 1
+                q.headers = [_('File includes'), _('Select the ones you wish to add')]
+                q.functions = ['CMD_ALLOW', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
+                q.default = 'CMD_ALLOW'
+
+                while not done and options:
+                    ans, selected = q.promptUser()
+                    if ans == 'CMD_IGNORE_ENTRY':
+                        done = True
+                    elif ans == 'CMD_ALLOW':
+                        selection = options[selected]
+                        inc = re_match_include(selection)
+                        deleted = apparmor.aa.delete_duplicates(aa[profile][hat], inc)
+                        aa[profile][hat]['include'][inc] = True
+                        options.pop(selected)
+                        aaui.UI_Info(_('Adding %s to the file.') % selection)
+                        if deleted:
+                            aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
+                    elif ans == 'CMD_FINISHED':
+                        return
 
                 for ruletype in ruletypes:
                     for rule_obj in log_dict[aamode][profile][hat][ruletype].rules:
