@@ -41,16 +41,13 @@ _ = init_translation()
 
 parser = argparse.ArgumentParser(description=_('Merge the given profiles into /etc/apparmor.d/ (or the directory specified with -d)'))
 parser.add_argument('files', nargs='+', type=str, help=_('Profile(s) to merge'))
-#parser.add_argument('other', nargs='?', type=str, help=_('other profile'))
 parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))
 #parser.add_argument('-a', '--auto', action='store_true', help=_('Automatically merge profiles, exits incase of *x conflicts'))
 args = parser.parse_args()
 
 args.other = None
-# 2-way merge or 3-way merge based on number of params
-merge_mode = 2 #if args.other == None else 3
 
-profiles = [args.files, [args.other]]
+profiles = args.files
 
 profiledir = args.dir
 if profiledir:
@@ -87,61 +84,29 @@ def find_files_from_profiles(profiles):
     return profile_to_filename
 
 def main():
-    profiles_to_merge = set()
+    base_profile_to_file = find_profiles_from_files(profiles)
 
-    base_files, other_files = profiles
-
-    base_profile_to_file = find_profiles_from_files(base_files)
-
-    profiles_to_merge = profiles_to_merge.union(set(base_profile_to_file.keys()))
-
-    other_profile_to_file = dict()
-
-    if merge_mode == 3:
-        other_profile_to_file = find_profiles_from_files(other_files)
-        profiles_to_merge.add(other_profile_to_file.keys())
+    profiles_to_merge = set(base_profile_to_file.keys())
 
     user_profile_to_file = find_files_from_profiles(profiles_to_merge)
-
-#    print(base_files,"\n",other_files)
-#    print(base_profile_to_file,"\n",other_profile_to_file,"\n",user_profile_to_file)
-#    print(profiles_to_merge)
 
     for profile_name in profiles_to_merge:
         aaui.UI_Info("\n\n" + _("Merging profile for %s" % profile_name))
         user_file = user_profile_to_file[profile_name]
         base_file = base_profile_to_file.get(profile_name, None)
-        other_file =  None
 
-        if merge_mode == 3:
-            other_file = other_profile_to_file.get(profile_name, None)
-
-        if base_file == None:
-            if other_file == None:
-                continue
-
-            act([user_file, other_file, None], 2, profile_name)
-        else:
-            if other_file == None:
-                act([user_file, base_file, None], 2, profile_name)
-            else:
-                act([user_file, base_file, other_file], 3, profile_name)
+        act([user_file, base_file], profile_name)
 
         reset_aa()
 
-def act(files, merge_mode, merging_profile):
+def act(files, merging_profile):
     mergeprofiles = Merge(files)
     #Get rid of common/superfluous stuff
     mergeprofiles.clear_common()
 
 #    if not args.auto:
     if 1 == 1:  # workaround to avoid lots of whitespace changes
-        if merge_mode == 3:
-            mergeprofiles.ask_the_questions('other', merging_profile)
-
-            mergeprofiles.clear_common()
-
-        mergeprofiles.ask_the_questions('base', merging_profile)
+        mergeprofiles.ask_the_questions(merging_profile)
 
         q = aaui.PromptQuestion()
         q.title = _('Changed Local Profiles')
@@ -172,19 +137,13 @@ def act(files, merge_mode, merging_profile):
 
 class Merge(object):
     def __init__(self, profiles):
-        user, base, other = profiles
+        user, base = profiles
 
         #Read and parse base profile and save profile data, include data from it and reset them
         apparmor.aa.read_profile(base, True)
         self.base = cleanprofile.Prof(base)
 
         reset_aa()
-
-        #Read and parse other profile and save profile data, include data from it and reset them
-        if merge_mode == 3:
-            apparmor.aa.read_profile(other, True)
-            self.other = cleanprofile.Prof(other)
-            reset_aa()
 
         #Read and parse user profile
         apparmor.aa.read_profile(user, True)
@@ -193,19 +152,9 @@ class Merge(object):
     def clear_common(self):
         deleted = 0
 
-        if merge_mode == 3:
-            #Remove off the parts in other profile which are common/superfluous from user profile
-            user_other = cleanprofile.CleanProf(False, self.user, self.other)
-            deleted += user_other.compare_profiles()
-
         #Remove off the parts in base profile which are common/superfluous from user profile
         user_base = cleanprofile.CleanProf(False, self.user, self.base)
         deleted += user_base.compare_profiles()
-
-        if merge_mode == 3:
-            #Remove off the parts in other profile which are common/superfluous from base profile
-            base_other = cleanprofile.CleanProf(False, self.base, self.other)
-            deleted += base_other.compare_profiles()
 
     def ask_conflict_mode(self, profile, hat, old_profile, merge_profile):
         '''ask user about conflicting exec rules'''
@@ -240,15 +189,11 @@ class Merge(object):
 
                         done = True
 
-    def ask_the_questions(self, other, profile):
+    def ask_the_questions(self, profile):
         aa = self.user.aa  # keep references so that the code in this function can use the short name
         changed = apparmor.aa.changed  # (and be more in sync with aa.py ask_the_questions())
 
-        if other == 'other':
-            other = self.other
-        else:
-            other = self.base
-        #print(other.aa)
+        other = self.base
 
         #Add the file-wide includes from the other profile to the user profile
         apparmor.aa.loadincludes()
