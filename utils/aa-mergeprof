@@ -23,10 +23,6 @@ import apparmor.severity
 import apparmor.cleanprofile as cleanprofile
 import apparmor.ui as aaui
 
-from apparmor.aa import (add_to_options, available_buttons, combine_name, delete_duplicates,
-                         get_profile_filename, is_known_rule, match_includes, profile_storage,
-                         set_options_audit_mode, propose_file_rules, selection_to_rule_obj)
-from apparmor.aare import AARE
 from apparmor.common import AppArmorException
 from apparmor.regex import re_match_include
 
@@ -106,7 +102,7 @@ def act(files, merging_profile):
 
 #    if not args.auto:
     if 1 == 1:  # workaround to avoid lots of whitespace changes
-        mergeprofiles.ask_the_questions(merging_profile)
+        mergeprofiles.ask_merge_questions()
 
         q = aaui.PromptQuestion()
         q.title = _('Changed Local Profiles')
@@ -156,14 +152,9 @@ class Merge(object):
         user_base = cleanprofile.CleanProf(False, self.user, self.base)
         deleted += user_base.compare_profiles()
 
-
-    def ask_the_questions(self, profile):
-        aa = self.user.aa  # keep references so that the code in this function can use the short name
-        changed = apparmor.aa.changed  # (and be more in sync with aa.py ask_the_questions())
-
+    def ask_merge_questions(self):
         other = self.base
         log_dict = {'merge': other.aa}
-        aamode = 'merge'
 
         apparmor.aa.loadincludes()
         done = False
@@ -196,211 +187,10 @@ class Merge(object):
             elif ans == 'CMD_FINISHED':
                 return
 
-        sev_db = apparmor.aa.sev_db
-        if not sev_db:
-            sev_db = apparmor.severity.Severity(apparmor.aa.CONFDIR + '/severity.db', _('unknown'))
+        if not apparmor.aa.sev_db:
+            apparmor.aa.sev_db = apparmor.severity.Severity(apparmor.aa.CONFDIR + '/severity.db', _('unknown'))
 
-        sev_db.unload_variables()
-        sev_db.load_variables(get_profile_filename(profile))
-
-        for hat in sorted(log_dict[aamode][profile].keys()):
-
-            if not aa[profile].get(hat):
-                ans = ''
-                while ans not in ['CMD_ADDHAT', 'CMD_ADDSUBPROFILE', 'CMD_DENY']:
-                    q = aaui.PromptQuestion()
-                    q.headers += [_('Profile'), profile]
-
-                    if log_dict[aamode][profile][hat]['profile']:
-                        q.headers += [_('Requested Subprofile'), hat]
-                        q.functions.append('CMD_ADDSUBPROFILE')
-                    else:
-                        q.headers += [_('Requested Hat'), hat]
-                        q.functions.append('CMD_ADDHAT')
-
-                    q.functions += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
-
-                    q.default = 'CMD_DENY'
-
-                    ans = q.promptUser()[0]
-
-                    if ans == 'CMD_FINISHED':
-                        return
-
-                if ans == 'CMD_DENY':
-                    continue  # don't ask about individual rules if the user doesn't want the additional subprofile/hat
-
-                if log_dict[aamode][profile][hat]['profile']:
-                    aa[profile][hat] = profile_storage(profile, hat, 'mergeprof ask_the_questions() - missing subprofile')
-                    aa[profile][hat]['profile'] = True
-                else:
-                    aa[profile][hat] = profile_storage(profile, hat, 'mergeprof ask_the_questions() - missing hat')
-                    aa[profile][hat]['profile'] = False
-
-            #Add the includes from the other profile to the user profile
-            done = False
-
-            options = []
-            for inc in log_dict[aamode][profile][hat]['include'].keys():
-                if not inc in aa[profile][hat]['include'].keys():
-                    options.append('#include <%s>' %inc)
-
-            default_option = 1
-
-            q = aaui.PromptQuestion()
-            q.options = options
-            q.selected = default_option - 1
-            q.headers = [_('File includes'), _('Select the ones you wish to add')]
-            q.functions = ['CMD_ALLOW', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
-            q.default = 'CMD_ALLOW'
-
-            while not done and options:
-                ans, selected = q.promptUser()
-                if ans == 'CMD_IGNORE_ENTRY':
-                    done = True
-                elif ans == 'CMD_ALLOW':
-                    selection = options[selected]
-                    inc = re_match_include(selection)
-                    deleted = apparmor.aa.delete_duplicates(aa[profile][hat], inc)
-                    aa[profile][hat]['include'][inc] = True
-                    options.pop(selected)
-                    aaui.UI_Info(_('Adding %s to the file.') % selection)
-                    if deleted:
-                        aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
-                elif ans == 'CMD_FINISHED':
-                    return
-
-            # check for and ask about conflicting exec modes
-            self.ask_conflict_mode(profile, hat, aa[profile][hat], log_dict[aamode][profile][hat])
-
-            for ruletype in apparmor.aa.ruletypes:
-                if log_dict[aamode][profile][hat].get(ruletype, False): # needed until we have proper profile initialization
-                    for rule_obj in log_dict[aamode][profile][hat][ruletype].rules:
-
-                        if is_known_rule(aa[profile][hat], ruletype, rule_obj):
-                            continue
-
-                        default_option = 1
-                        options = []
-                        newincludes = match_includes(aa[profile][hat], ruletype, rule_obj)
-                        q = aaui.PromptQuestion()
-                        if newincludes:
-                            options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
-
-                        if ruletype == 'file' and rule_obj.path:
-                            options += propose_file_rules(aa[profile][hat], rule_obj)
-                        else:
-                            options.append(rule_obj.get_clean())
-
-                        done = False
-                        while not done:
-                            q.options = options
-                            q.selected = default_option - 1
-                            q.headers = [_('Profile'), combine_name(profile, hat)]
-                            q.headers += rule_obj.logprof_header()
-
-                            # Load variables into sev_db? Not needed/used for capabilities and network rules.
-                            severity = rule_obj.severity(sev_db)
-                            if severity != sev_db.NOT_IMPLEMENTED:
-                                q.headers += [_('Severity'), severity]
-
-                            q.functions = available_buttons(rule_obj)
-                            q.default = q.functions[0]
-
-                            ans, selected = q.promptUser()
-                            selection = options[selected]
-                            if ans == 'CMD_IGNORE_ENTRY':
-                                done = True
-                                break
-
-                            elif ans == 'CMD_FINISHED':
-                                return
-
-                            elif ans.startswith('CMD_AUDIT'):
-                                if ans == 'CMD_AUDIT_NEW':
-                                    rule_obj.audit = True
-                                    rule_obj.raw_rule = None
-                                else:
-                                    rule_obj.audit = False
-                                    rule_obj.raw_rule = None
-
-                                options = set_options_audit_mode(rule_obj, options)
-
-                            elif ans == 'CMD_ALLOW':
-                                done = True
-                                changed[profile] = True
-
-                                inc = re_match_include(selection)
-                                if inc:
-                                    deleted = delete_duplicates(aa[profile][hat], inc)
-
-                                    aa[profile][hat]['include'][inc] = True
-
-                                    aaui.UI_Info(_('Adding %s to profile.') % selection)
-                                    if deleted:
-                                        aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
-
-                                else:
-                                    rule_obj = selection_to_rule_obj(rule_obj, selection)
-                                    deleted = aa[profile][hat][ruletype].add(rule_obj, cleanup=True)
-
-                                    aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
-                                    if deleted:
-                                        aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
-
-                            elif ans == 'CMD_DENY':
-                                if re_match_include(selection):
-                                    aaui.UI_Important("Denying via an include file isn't supported by the AppArmor tools")
-
-                                else:
-                                    done = True
-                                    changed[profile] = True
-
-                                    rule_obj = selection_to_rule_obj(rule_obj, selection)
-                                    rule_obj.deny = True
-                                    rule_obj.raw_rule = None  # reset raw rule after manually modifying rule_obj
-                                    deleted = aa[profile][hat][ruletype].add(rule_obj, cleanup=True)
-                                    aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
-                                    if deleted:
-                                        aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
-
-                            elif ans == 'CMD_GLOB':
-                                if not re_match_include(selection):
-                                    globbed_rule_obj = selection_to_rule_obj(rule_obj, selection)
-                                    globbed_rule_obj.glob()
-                                    options, default_option = add_to_options(options, globbed_rule_obj.get_raw())
-
-                            elif ans == 'CMD_GLOBEXT':
-                                if not re_match_include(selection):
-                                    globbed_rule_obj = selection_to_rule_obj(rule_obj, selection)
-                                    globbed_rule_obj.glob_ext()
-                                    options, default_option = add_to_options(options, globbed_rule_obj.get_raw())
-
-                            elif ans == 'CMD_NEW':
-                                if not re_match_include(selection):
-                                    edit_rule_obj = selection_to_rule_obj(rule_obj, selection)
-                                    prompt, oldpath = edit_rule_obj.edit_header()
-
-                                    newpath = aaui.UI_GetString(prompt, oldpath)
-                                    if newpath:
-                                        try:
-                                            input_matches_path = rule_obj.validate_edit(newpath)  # note that we check against the original rule_obj here, not edit_rule_obj (which might be based on a globbed path)
-                                        except AppArmorException:
-                                            aaui.UI_Important(_('The path you entered is invalid (not starting with / or a variable)!'))
-                                            continue
-
-                                        if not input_matches_path:
-                                            ynprompt = _('The specified path does not match this log entry:\n\n  Log Entry: %(path)s\n  Entered Path:  %(ans)s\nDo you really want to use this path?') % { 'path': oldpath, 'ans': newpath }
-                                            key = aaui.UI_YesNo(ynprompt, 'n')
-                                            if key == 'n':
-                                                continue
-
-                                        edit_rule_obj.store_edit(newpath)
-                                        options, default_option = add_to_options(options, edit_rule_obj.get_raw())
-                                        apparmor.aa.user_globs[newpath] = AARE(newpath, True)
-
-                            else:
-                                done = False
+        apparmor.aa.ask_the_questions(log_dict)
 
 if __name__ == '__main__':
     main()

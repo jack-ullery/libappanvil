@@ -1492,9 +1492,10 @@ def ask_the_questions(log_dict):
             aaui.UI_Info(_('Complain-mode changes:'))
         elif aamode == 'REJECTING':
             aaui.UI_Info(_('Enforce-mode changes:'))
+        elif aamode == 'merge':
+            pass  # aa-mergeprof
         else:
-            # This is so wrong!
-            fatal_error(_('Invalid mode found: %s') % aamode)
+            raise AppArmorBug(_('Invalid mode found: %s') % aamode)
 
         for profile in sorted(log_dict[aamode].keys()):
             # Update the repo profiles
