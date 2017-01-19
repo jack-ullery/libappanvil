@@ -214,7 +214,6 @@ class TestLogToProfile(AATest):
         apparmor.aa.log = dict()
         apparmor.aa.aa = apparmor.aa.hasher()
         apparmor.aa.prelog = apparmor.aa.hasher()
-        apparmor.aa.log_dict = apparmor.aa.hasher()
 
         profile = parsed_event['profile']
         hat = profile
@@ -229,12 +228,12 @@ class TestLogToProfile(AATest):
         for root in log:
             apparmor.aa.handle_children('', '', root)  # interactive for exec events!
 
-        apparmor.aa.collapse_log()
+        log_dict = apparmor.aa.collapse_log()
 
         apparmor.aa.filelist = apparmor.aa.hasher()
         apparmor.aa.filelist[profile_dummy_file]['profiles'][profile] = True
 
-        new_profile = apparmor.aa.serialize_profile(apparmor.aa.log_dict[aamode][profile], profile, None)
+        new_profile = apparmor.aa.serialize_profile(log_dict[aamode][profile], profile, None)
 
         expected_profile = read_file('%s.profile' % params)
 

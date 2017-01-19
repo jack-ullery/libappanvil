@@ -117,7 +117,6 @@ pid = dict()
 seen = hasher()  # dir()
 profile_changes = hasher()
 prelog = hasher()
-log_dict = hasher()  # dict()
 changed = dict()
 created = []
 skip = hasher()
@@ -1486,7 +1485,7 @@ def order_globs(globs, original_path):
 
     return globs
 
-def ask_the_questions():
+def ask_the_questions(log_dict):
     for aamode in sorted(log_dict.keys()):
         # Describe the type of changes
         if aamode == 'PERMITTING':
@@ -1513,7 +1512,7 @@ def ask_the_questions():
 
             for hat in hats:
 
-                if not aa[profile].get(hat).get('file'):
+                if not aa[profile].get(hat, {}).get('file'):
                     if aamode != 'merge':
                         # Ignore log events for a non-existing profile or child profile. Such events can occour
                         # after deleting a profile or hat manually, or when processing a foreign log.
@@ -1590,7 +1589,6 @@ def ask_the_questions():
 
                 for ruletype in ruletypes:
                     for rule_obj in log_dict[aamode][profile][hat][ruletype].rules:
-                        # XXX aa-mergeprof also has this code - if you change it, keep aa-mergeprof in sync!
 
                         if is_known_rule(aa[profile][hat], ruletype, rule_obj):
                             continue
@@ -1723,7 +1721,6 @@ def ask_the_questions():
 
                             else:
                                 done = False
-                    # END of code (mostly) shared with aa-mergeprof
 
 def selection_to_rule_obj(rule_obj, selection):
     rule_type = type(rule_obj)
@@ -1880,7 +1877,6 @@ def do_logprof_pass(logmark='', passno=0, pid=pid):
 #    aa = hasher()
 #    profile_changes = hasher()
 #     prelog = hasher()
-#     log_dict = hasher()
 #     changed = dict()
 #    skip = hasher()  # XXX global?
 #    filelist = hasher()
@@ -1912,9 +1908,9 @@ def do_logprof_pass(logmark='', passno=0, pid=pid):
     for pid in sorted(profile_changes.keys()):
         set_process(pid, profile_changes[pid])
 
-    collapse_log()
+    log_dict = collapse_log()
 
-    ask_the_questions()
+    ask_the_questions(log_dict)
 
     if aaui.UI_mode == 'yast':
         # To-Do
@@ -2120,6 +2116,7 @@ def set_process(pid, profile):
     process.close()
 
 def collapse_log():
+    log_dict = hasher()
     for aamode in prelog.keys():
         for profile in prelog[aamode].keys():
             for hat in prelog[aamode][profile].keys():
@@ -2199,6 +2196,8 @@ def collapse_log():
                             signal_event = SignalRule(access, signal, peer, log_event=True)
                             if not is_known_rule(aa[profile][hat], 'signal', signal_event):
                                 log_dict[aamode][profile][hat]['signal'].add(signal_event)
+
+    return log_dict
 
 def is_skippable_file(path):
     """Returns True if filename matches something to be skipped (rpm or dpkg backup files, hidden files etc.)
