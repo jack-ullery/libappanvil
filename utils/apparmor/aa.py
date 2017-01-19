@@ -1514,11 +1514,43 @@ def ask_the_questions():
             for hat in hats:
 
                 if not aa[profile].get(hat).get('file'):
-                    # Ignore log events for a non-existing profile or child profile. Such events can occour
-                    # after deleting a profile or hat manually, or when processing a foreign log.
-                    # (Checking for 'file' is a simplified way to check if it's a profile_storage() struct.)
-                    debug_logger.debug("Ignoring events for non-existing profile %s" % combine_name(profile, hat))
-                    continue
+                    if aamode != 'merge':
+                        # Ignore log events for a non-existing profile or child profile. Such events can occour
+                        # after deleting a profile or hat manually, or when processing a foreign log.
+                        # (Checking for 'file' is a simplified way to check if it's a profile_storage() struct.)
+                        debug_logger.debug("Ignoring events for non-existing profile %s" % combine_name(profile, hat))
+                        continue
+
+                    ans = ''
+                    while ans not in ['CMD_ADDHAT', 'CMD_ADDSUBPROFILE', 'CMD_DENY']:
+                        q = aaui.PromptQuestion()
+                        q.headers += [_('Profile'), profile]
+
+                        if log_dict[aamode][profile][hat]['profile']:
+                            q.headers += [_('Requested Subprofile'), hat]
+                            q.functions.append('CMD_ADDSUBPROFILE')
+                        else:
+                            q.headers += [_('Requested Hat'), hat]
+                            q.functions.append('CMD_ADDHAT')
+
+                        q.functions += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
+
+                        q.default = 'CMD_DENY'
+
+                        ans = q.promptUser()[0]
+
+                        if ans == 'CMD_FINISHED':
+                            return
+
+                    if ans == 'CMD_DENY':
+                        continue  # don't ask about individual rules if the user doesn't want the additional subprofile/hat
+
+                    if log_dict[aamode][profile][hat]['profile']:
+                        aa[profile][hat] = profile_storage(profile, hat, 'mergeprof ask_the_questions() - missing subprofile')
+                        aa[profile][hat]['profile'] = True
+                    else:
+                        aa[profile][hat] = profile_storage(profile, hat, 'mergeprof ask_the_questions() - missing hat')
+                        aa[profile][hat]['profile'] = False
 
                 #Add the includes from the other profile to the user profile
                 done = False
