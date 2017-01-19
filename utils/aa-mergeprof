@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014-2016 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2017 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -194,11 +194,13 @@ class Merge(object):
         changed = apparmor.aa.changed  # (and be more in sync with aa.py ask_the_questions())
 
         other = self.base
+        log_dict = {'merge': other.aa}
+        aamode = 'merge'
 
-        #Add the file-wide includes from the other profile to the user profile
         apparmor.aa.loadincludes()
         done = False
 
+        #Add the file-wide includes from the other profile to the user profile
         options = []
         for inc in other.filelist[other.filename]['include'].keys():
             if not inc in self.user.filelist[self.user.filename]['include'].keys():
@@ -233,7 +235,7 @@ class Merge(object):
         sev_db.unload_variables()
         sev_db.load_variables(get_profile_filename(profile))
 
-        for hat in sorted(other.aa[profile].keys()):
+        for hat in sorted(log_dict[aamode][profile].keys()):
 
             if not aa[profile].get(hat):
                 ans = ''
@@ -241,7 +243,7 @@ class Merge(object):
                     q = aaui.PromptQuestion()
                     q.headers += [_('Profile'), profile]
 
-                    if other.aa[profile][hat]['profile']:
+                    if log_dict[aamode][profile][hat]['profile']:
                         q.headers += [_('Requested Subprofile'), hat]
                         q.functions.append('CMD_ADDSUBPROFILE')
                     else:
@@ -260,7 +262,7 @@ class Merge(object):
                 if ans == 'CMD_DENY':
                     continue  # don't ask about individual rules if the user doesn't want the additional subprofile/hat
 
-                if other.aa[profile][hat]['profile']:
+                if log_dict[aamode][profile][hat]['profile']:
                     aa[profile][hat] = profile_storage(profile, hat, 'mergeprof ask_the_questions() - missing subprofile')
                     aa[profile][hat]['profile'] = True
                 else:
@@ -271,7 +273,7 @@ class Merge(object):
             done = False
 
             options = []
-            for inc in other.aa[profile][hat]['include'].keys():
+            for inc in log_dict[aamode][profile][hat]['include'].keys():
                 if not inc in aa[profile][hat]['include'].keys():
                     options.append('#include <%s>' %inc)
 
@@ -301,11 +303,11 @@ class Merge(object):
                     return
 
             # check for and ask about conflicting exec modes
-            self.ask_conflict_mode(profile, hat, aa[profile][hat], other.aa[profile][hat])
+            self.ask_conflict_mode(profile, hat, aa[profile][hat], log_dict[aamode][profile][hat])
 
             for ruletype in apparmor.aa.ruletypes:
-                if other.aa[profile][hat].get(ruletype, False): # needed until we have proper profile initialization
-                    for rule_obj in other.aa[profile][hat][ruletype].rules:
+                if log_dict[aamode][profile][hat].get(ruletype, False): # needed until we have proper profile initialization
+                    for rule_obj in log_dict[aamode][profile][hat][ruletype].rules:
 
                         if is_known_rule(aa[profile][hat], ruletype, rule_obj):
                             continue
