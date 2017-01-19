@@ -86,7 +86,7 @@ OBJECTS = $(patsubst %.cc, %.o, $(SRCS:.c=.o))
 AAREDIR= libapparmor_re
 AAREOBJECT = ${AAREDIR}/libapparmor_re.a
 AAREOBJECTS = $(AAREOBJECT)
-AARE_LDFLAGS = -static-libgcc -static-libstdc++ -L.
+AARE_LDFLAGS = -static-libgcc -static-libstdc++ -L. $(LDFLAGS)
 AALIB = -Wl,-Bstatic -lapparmor -Wl,-Bdynamic -lpthread
 
 ifdef USE_SYSTEM
