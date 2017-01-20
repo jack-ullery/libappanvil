@@ -74,8 +74,6 @@ _ = init_translation()
 debug_logger = DebugLogger('aa')
 
 CONFDIR = '/etc/apparmor'
-running_under_genprof = False
-unimplemented_warning = False
 
 # The database for severity
 sev_db = None
@@ -99,12 +97,7 @@ existing_profiles = dict()
 # format: user_globs['/foo*'] = AARE('/foo*')
 user_globs = {}
 
-# The key for representing bare "file," rules
-ALL = '\0ALL'
-
 ## Variables used under logprof
-### Were our
-t = hasher()  # dict()
 transitions = hasher()
 
 aa = hasher()  # Profiles originally in sd, replace by aa
@@ -114,12 +107,10 @@ extras = hasher()  # Inactive profiles from extras
 log = []
 pid = dict()
 
-seen = hasher()  # dir()
 profile_changes = hasher()
 prelog = hasher()
 changed = dict()
 created = []
-skip = hasher()
 helpers = dict()  # Preserve this between passes # was our
 ### logprof ends
 
@@ -1868,9 +1859,7 @@ def set_logfile(filename):
 
 def do_logprof_pass(logmark='', passno=0, pid=pid):
     # set up variables for this pass
-#    t = hasher()
 #    transitions = hasher()
-#    seen = hasher()  # XXX global?
     global log
     log = []
     global existing_profiles
@@ -1879,7 +1868,6 @@ def do_logprof_pass(logmark='', passno=0, pid=pid):
 #    profile_changes = hasher()
 #     prelog = hasher()
 #     changed = dict()
-#    skip = hasher()  # XXX global?
 #    filelist = hasher()
 
     aaui.UI_Info(_('Reading log entries from %s.') % logfile)
