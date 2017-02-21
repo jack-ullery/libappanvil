@@ -64,8 +64,8 @@ def get_translated_hotkey(translated, cmsg=''):
     msg = 'PromptUser: ' + _('Invalid hotkey for')
 
     # Originally (\S) was used but with translations it would not work :(
-    if re.search('\((\S+)\)', translated, re.LOCALE):
-        return re.search('\((\S+)\)', translated, re.LOCALE).groups()[0]
+    if re.search('\((\S+)\)', translated):
+        return re.search('\((\S+)\)', translated).groups()[0]
     else:
         if cmsg:
             raise AppArmorException(cmsg)
