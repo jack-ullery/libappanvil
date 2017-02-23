@@ -243,6 +243,8 @@ class ReadLog:
         if e['operation'] == 'change_hat':
             if aamode != 'HINT' and aamode != 'PERMITTING':
                 return None
+            if e['error_code'] == 1 and e['info'] == 'unconfined can not change_hat':
+                return None
             profile = e['name2']
             #hat = None
             if '//' in e['name2']:
