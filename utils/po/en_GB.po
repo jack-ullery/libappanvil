@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: AppArmor list <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2016-03-17 17:48+0000\n"
-"Last-Translator: Andi Chandler <Unknown>\n"
+"PO-Revision-Date: 2017-02-24 21:02+0000\n"
+"Last-Translator: Anthony Harrington 😁 <untaintableangel@ubuntu.com>\n"
 "Language-Team: English (United Kingdom) <en_GB@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2016-06-01 05:15+0000\n"
-"X-Generator: Launchpad (build 18053)\n"
+"X-Launchpad-Export-Date: 2017-02-25 05:28+0000\n"
+"X-Generator: Launchpad (build 18328)\n"
 "Language: en_GB\n"
 
 #: ../aa-genprof:56
@@ -798,6 +798,7 @@ msgstr ""
 msgid ""
 "Syntax Error: Unexpected unix entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntax Error: Unexpected unix entry found in file: %(file)s line: %(line)s"
 
 #: ../apparmor/aa.py:3140
 #, python-format
@@ -830,7 +831,7 @@ msgstr "Warning: invalid \"REPOSITORY:\" line in %s, ignoring."
 #: ../apparmor/aa.py:3198
 #, python-format
 msgid "Syntax Error: Unknown line found in file: %(file)s line: %(line)s"
-msgstr ""
+msgstr "Syntax Error: Unknown line found in file: %(file)s line: %(line)s"
 
 #: ../apparmor/aa.py:3211
 #, python-format
@@ -838,17 +839,20 @@ msgid ""
 "Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside "
 "profile %(profile)s"
 msgstr ""
+"Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside "
+"profile %(profile)s"
 
 #: ../apparmor/aa.py:3277
 #, python-format
 msgid "Redefining existing variable %(variable)s: %(value)s in %(file)s"
-msgstr ""
+msgstr "Redefining existing variable %(variable)s: %(value)s in %(file)s"
 
 #: ../apparmor/aa.py:3282
 #, python-format
 msgid ""
 "Values added to a non-existing variable %(variable)s: %(value)s in %(file)s"
 msgstr ""
+"Values added to a non-existing variable %(variable)s: %(value)s in %(file)s"
 
 #: ../apparmor/aa.py:3284
 #, python-format
@@ -856,25 +860,27 @@ msgid ""
 "Unknown variable operation %(operation)s for variable %(variable)s in "
 "%(file)s"
 msgstr ""
+"Unknown variable operation %(operation)s for variable %(variable)s in "
+"%(file)s"
 
 #: ../apparmor/aa.py:3343
 #, python-format
 msgid "Invalid allow string: %(allow)s"
-msgstr ""
+msgstr "Invalid allow string: %(allow)s"
 
 #: ../apparmor/aa.py:3778
 msgid "Can't find existing profile to modify"
-msgstr ""
+msgstr "Can't find existing profile to modify"
 
 #: ../apparmor/aa.py:4347
 #, python-format
 msgid "Writing updated profile for %s."
-msgstr ""
+msgstr "Writing updated profile for %s."
 
 #: ../apparmor/aa.py:4481
 #, python-format
 msgid "File Not Found: %s"
-msgstr ""
+msgstr "File Not Found: %s"
 
 #: ../apparmor/aa.py:4591
 #, python-format
@@ -890,7 +896,7 @@ msgstr ""
 #: ../apparmor/logparser.py:127 ../apparmor/logparser.py:132
 #, python-format
 msgid "Log contains unknown mode %s"
-msgstr ""
+msgstr "Log contains unknown mode %s"
 
 #: ../apparmor/tools.py:84 ../apparmor/tools.py:126
 #, python-format
@@ -905,34 +911,36 @@ msgstr ""
 #: ../apparmor/tools.py:86 ../apparmor/tools.py:102 ../apparmor/tools.py:128
 #, python-format
 msgid "%s does not exist, please double-check the path."
-msgstr ""
+msgstr "%s does not exist, please double-check the path."
 
 #: ../apparmor/tools.py:100
 msgid ""
 "The given program cannot be found, please try with the fully qualified path "
 "name of the program: "
 msgstr ""
+"The given program cannot be found, please try with the fully qualified path "
+"name of the program: "
 
 #: ../apparmor/tools.py:113 ../apparmor/tools.py:137 ../apparmor/tools.py:157
 #: ../apparmor/tools.py:175 ../apparmor/tools.py:193
 #, python-format
 msgid "Profile for %s not found, skipping"
-msgstr ""
+msgstr "Profile for %s not found, skipping"
 
 #: ../apparmor/tools.py:140
 #, python-format
 msgid "Disabling %s."
-msgstr ""
+msgstr "Disabling %s."
 
 #: ../apparmor/tools.py:198
 #, python-format
 msgid "Setting %s to audit mode."
-msgstr ""
+msgstr "Setting %s to audit mode."
 
 #: ../apparmor/tools.py:200
 #, python-format
 msgid "Removing audit mode from %s."
-msgstr ""
+msgstr "Removing audit mode from %s."
 
 #: ../apparmor/tools.py:212
 #, python-format
@@ -940,6 +948,8 @@ msgid ""
 "Please pass an application to generate a profile for, not a profile itself - "
 "skipping %s."
 msgstr ""
+"Please pass an application to generate a profile for, not a profile itself - "
+"skipping %s."
 
 #: ../apparmor/tools.py:220
 #, python-format
@@ -983,15 +993,15 @@ msgstr ""
 
 #: ../apparmor/ui.py:223
 msgid "(A)llow"
-msgstr ""
+msgstr "(A)llow"
 
 #: ../apparmor/ui.py:224
 msgid "(M)ore"
-msgstr ""
+msgstr "(M)ore"
 
 #: ../apparmor/ui.py:225
 msgid "Audi(t)"
-msgstr ""
+msgstr "Audi(t)"
 
 #: ../apparmor/ui.py:226
 msgid "Audi(t) off"
@@ -999,31 +1009,31 @@ msgstr ""
 
 #: ../apparmor/ui.py:227
 msgid "Audit (A)ll"
-msgstr ""
+msgstr "Audit (A)ll"
 
 #: ../apparmor/ui.py:229
 msgid "(O)wner permissions on"
-msgstr ""
+msgstr "(O)wner permissions on"
 
 #: ../apparmor/ui.py:230
 msgid "(O)wner permissions off"
-msgstr ""
+msgstr "(O)wner permissions off"
 
 #: ../apparmor/ui.py:231
 msgid "(D)eny"
-msgstr ""
+msgstr "(D)eny"
 
 #: ../apparmor/ui.py:232
 msgid "Abo(r)t"
-msgstr ""
+msgstr "Abo(r)t"
 
 #: ../apparmor/ui.py:233
 msgid "(F)inish"
-msgstr ""
+msgstr "(F)inish"
 
 #: ../apparmor/ui.py:234
 msgid "(I)nherit"
-msgstr ""
+msgstr "(I)nherit"
 
 #: ../apparmor/ui.py:235
 msgid "(P)rofile"
