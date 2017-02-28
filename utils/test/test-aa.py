@@ -784,8 +784,8 @@ class AaTest_get_file_perms_2(AATest):
         ('/dev/null',                               {'allow': {'all': {'r', 'w', 'k'},  'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/dev/null'}                                  }),
         ('/foo/bar',                                {'allow': {'all': {'r', 'w'},       'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/foo/bar'}                                   }),  # exec perms not included
         ('/no/thing',                               {'allow': {'all': set(),            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': set()                                          }),
-        ('/usr/lib/ispell/',                        {'allow': {'all': {'r'},            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/lib/ispell/', '/usr/lib{,32,64}/**'}    }),  # from abstractions/enchant
-        ('/usr/lib/aspell/*.so',                    {'allow': {'all': {'m', 'r'},       'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/lib/aspell/*', '/usr/lib/aspell/*.so', '/usr/lib{,32,64}/**'} }),  # from abstractions/aspell via abstractions/enchant
+        ('/usr/lib/ispell/',                        {'allow': {'all': {'r'},            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/lib/ispell/', '/{usr/,}lib{,32,64}/**'}    }),  # from abstractions/enchant
+        ('/usr/lib/aspell/*.so',                    {'allow': {'all': {'m', 'r'},       'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/lib/aspell/*', '/usr/lib/aspell/*.so', '/{usr/,}lib{,32,64}/**'} }),  # from abstractions/aspell via abstractions/enchant
     ]
 
     def _run_test(self, params, expected):
@@ -820,8 +820,8 @@ class AaTest_propose_file_rules(AATest):
         (['/usr/share/common-licenses/foo/bar', 'w'],   ['/usr/share/common*/foo/* rw,', '/usr/share/common-licenses/** rw,', '/usr/share/common-licenses/foo/bar rw,']         ),
         (['/dev/null',                          'wk'],  ['/dev/null rwk,']                                                                                                      ),
         (['/foo/bar',                           'rw'],  ['/foo/bar rw,']                                                                                                        ),
-        (['/usr/lib/ispell/',                   'w'],   ['/usr/lib{,32,64}/** rw,', '/usr/lib/ispell/ rw,']                                                                     ),
-        (['/usr/lib/aspell/some.so',            'k'],   ['/usr/lib/aspell/* mrk,', '/usr/lib/aspell/*.so mrk,', '/usr/lib{,32,64}/** mrk,', '/usr/lib/aspell/some.so mrk,']     ),
+        (['/usr/lib/ispell/',                   'w'],   ['/{usr/,}lib{,32,64}/** rw,', '/usr/lib/ispell/ rw,']                                                                     ),
+        (['/usr/lib/aspell/some.so',            'k'],   ['/usr/lib/aspell/* mrk,', '/usr/lib/aspell/*.so mrk,', '/{usr/,}lib{,32,64}/** mrk,', '/usr/lib/aspell/some.so mrk,']     ),
     ]
 
     def _run_test(self, params, expected):
