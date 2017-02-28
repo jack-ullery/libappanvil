@@ -89,6 +89,10 @@ class DbusTestParse(DbusTest):
         ('dbus peer=(, label = bar,  name = foo  ),'    , exp(False, False, False, '',        None  ,               True ,  None,       True,   None,           True,   None,       True,   None,       True,   None,   True,   'foo',      False,  'bar,',     False)),  # XXX peerlabel includes the comma
         ('dbus peer=(  label = bar , name = foo  ),'    , exp(False, False, False, '',        None  ,               True ,  None,       True,   None,           True,   None,       True,   None,       True,   None,   True,   'foo',      False,  'bar',      False)),
         ('dbus peer=(  label = "bar"  name = "foo" ),'  , exp(False, False, False, '',        None  ,               True ,  None,       True,   None,           True,   None,       True,   None,       True,   None,   True,   'foo',      False,  'bar',      False)),
+        ('dbus path=/foo/bar bus=session,'              , exp(False, False, False, '',        None  ,               True ,  'session',  False,  '/foo/bar',     False,  None,       True,   None,       True,   None,   True,   None,       True,   None,       True)),
+        ('dbus bus=system path=/foo/bar bus=session,'   , exp(False, False, False, '',        None  ,               True ,  'session',  False,  '/foo/bar',     False,  None,       True,   None,       True,   None,   True,   None,       True,   None,       True)),  # XXX bus= specified twice, last one wins
+        ('dbus send peer=(label="foo") bus=session,'    , exp(False, False, False, '',        {'send'},             False,  'session',  False,  None,           True,   None,       True,   None,       True,   None,   True,   None,       True,   'foo',      False)),
+        ('dbus bus=1 bus=2 bus=3 bus=4 bus=5 bus=6,'    , exp(False, False, False, '',        None  ,               True ,  '6',        False,  None,           True,   None,       True,   None,       True,   None,   True,   None,       True,   None,       True)),  # XXX bus= specified multiple times, last one wins
     ]
 
     def _run_test(self, rawrule, expected):
@@ -108,6 +112,8 @@ class DbusTestParseInvalid(DbusTest):
         ('dbus peer=(label=foo) path=,'  , AppArmorException),
         ('dbus (invalid),'               , AppArmorException),
         ('dbus peer=,'                   , AppArmorException),
+        ('dbus bus=session bind bus=system,', AppArmorException),
+        ('dbus bus=1 bus=2 bus=3 bus=4 bus=5 bus=6 bus=7,', AppArmorException),
     ]
 
     def _run_test(self, rawrule, expected):

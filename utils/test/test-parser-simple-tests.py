@@ -52,6 +52,7 @@ exception_not_raised = [
     'change_profile/onx_conflict_unsafe1.sd',
     'change_profile/onx_conflict_unsafe2.sd',
 
+    'dbus/bad_modifier_2.sd',
     'dbus/bad_regex_01.sd',
     'dbus/bad_regex_02.sd',
     'dbus/bad_regex_03.sd',
@@ -154,6 +155,8 @@ exception_not_raised = [
     'vars/vars_dbus_bad_01.sd',
     'vars/vars_dbus_bad_02.sd',
     'vars/vars_dbus_bad_03.sd',
+    'vars/vars_dbus_bad_04.sd',
+    'vars/vars_dbus_bad_05.sd',
     'vars/vars_dbus_bad_06.sd',
     'vars/vars_dbus_bad_07.sd',
     'vars/vars_file_evaluation_7.sd',
@@ -261,11 +264,6 @@ syntax_failure = [
     'file/ok_quoted_4.sd',  # quoted string including \"
     'xtrans/simple_ok_pix_1.sd',  # Invalid mode pIx
     'xtrans/simple_ok_pux_1.sd',  # Invalid mode rPux
-
-    # dbus regex mismatch
-    'vars/vars_dbus_4.sd',
-    'vars/vars_dbus_9.sd',
-    'vars/vars_dbus_2.sd',
 
     # misc
     'vars/vars_dbus_8.sd',  # Path doesn't start with / or variable: {/@{TLDS}/foo,/com/@{DOMAINS}}

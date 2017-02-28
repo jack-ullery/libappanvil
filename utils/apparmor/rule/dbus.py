@@ -37,14 +37,16 @@ RE_ACCESS_KEYWORDS = ( joint_access_keyword +  # one of the access_keyword or
 RE_FLAG         = '(?P<%s>(\S+|"[^"]+"|\(\s*\S+\s*\)|\(\s*"[^"]+"\)\s*))'    # string without spaces, or quoted string, optionally wrapped in (...). %s is the match group name
 # plaintext version:      | * | "* "  | (    *    ) | (  " *   " )    |
 
+# XXX this regex will allow repeated parameters, last one wins
+# XXX (the parser will reject such rules)
 RE_DBUS_DETAILS  = re.compile(
     '^' +
     '(\s+(?P<access>'       + RE_ACCESS_KEYWORDS + '))?' +  # optional access keyword(s)
-    '(\s+(bus\s*=\s*'       + RE_FLAG % 'bus'       + '))?' +  # optional bus= system | session | AARE, (...) optional
-    '(\s+(path\s*=\s*'      + RE_FLAG % 'path'      + '))?' +  # optional path=AARE, (...) optional
-    '(\s+(name\s*=\s*'      + RE_FLAG % 'name'      + '))?' +  # optional name=AARE, (...) optional
-    '(\s+(interface\s*=\s*' + RE_FLAG % 'interface' + '))?' +  # optional interface=AARE, (...) optional
-    '(\s+(member\s*=\s*'    + RE_FLAG % 'member'    + '))?' +  # optional member=AARE, (...) optional
+    '((\s+(bus\s*=\s*'      + RE_FLAG % 'bus'       + '))?|' +  # optional bus= system | session | AARE, (...) optional
+    '(\s+(path\s*=\s*'      + RE_FLAG % 'path'      + '))?|' +  # optional path=AARE, (...) optional
+    '(\s+(name\s*=\s*'      + RE_FLAG % 'name'      + '))?|' +  # optional name=AARE, (...) optional
+    '(\s+(interface\s*=\s*' + RE_FLAG % 'interface' + '))?|' +  # optional interface=AARE, (...) optional
+    '(\s+(member\s*=\s*'    + RE_FLAG % 'member'    + '))?|' +  # optional member=AARE, (...) optional
     '(\s+(peer\s*=\s*\((,|\s)*'    +  # optional peer=( name=AARE and/or label=AARE ), (...) required
             '(' +
                 '(' + '(,|\s)*' + ')' +  # empty peer=()
@@ -57,7 +59,7 @@ RE_DBUS_DETAILS  = re.compile(
                 '|'  # or
                 '(' + 'label\s*=\s*' + RE_PROFILE_NAME % 'peerlabel3' + '(,|\s)+' + 'name\s*=\s*'  + RE_PROFILE_NAME % 'peername3'  + ')' +  # peer label + name (match name peername3/peerlabel3)
             ')'
-        '(,|\s)*\)))?'
+        '(,|\s)*\)))?){0,6}'
     '\s*$')
 
 
