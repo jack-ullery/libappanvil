@@ -18,6 +18,8 @@ import sys
 import tempfile
 import unittest
 
+import apparmor.easyprof as easyprof
+
 topdir = None
 debugging = False
 
@@ -2673,40 +2675,16 @@ POLICYGROUPS_DIR="%s/templates"
 # Main
 #
 if __name__ == '__main__':
-    def cleanup(files):
-        for f in files:
-            if os.path.exists(f):
-                os.unlink(f)
-
     absfn = os.path.abspath(sys.argv[0])
     topdir = os.path.dirname(os.path.dirname(absfn))
 
     if len(sys.argv) > 1 and (sys.argv[1] == '-d' or sys.argv[1] == '--debug'):
         debugging = True
 
-    created = []
-
-    # Create the necessary files to import aa-easyprof
-    init = os.path.join(os.path.dirname(absfn), '__init__.py')
-    if not os.path.exists(init):
-        open(init, 'a').close()
-        created.append(init)
-
-    symlink = os.path.join(os.path.dirname(absfn), 'easyprof.py')
-    if not os.path.exists(symlink):
-        os.symlink(os.path.join(topdir, 'apparmor', 'easyprof.py'), symlink)
-        created.append(symlink)
-        created.append(symlink + 'c')
-
-    # Now that we have everything we need, import aa-easyprof
-    import easyprof
-
     # run the tests
     suite = unittest.TestSuite()
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(T))
     rc = unittest.TextTestRunner(verbosity=2).run(suite)
-
-    cleanup(created)
 
     if not rc.wasSuccessful():
         sys.exit(1)
