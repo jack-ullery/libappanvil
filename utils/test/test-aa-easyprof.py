@@ -173,6 +173,13 @@ TEMPLATES_DIR="%s/templates"
         if base:
             self.full_args.append('--base=%s' % base)
 
+        # Check __AA_PARSER, which may be set by the Makefile, to see if
+        # we should use a non-default apparmor_parser path to verify
+        # policy
+        parser = os.getenv('__AA_PARSER')
+        if parser:
+            self.full_args.append('--parser=%s' % parser)
+
         if debugging:
             self.full_args.append('-d')
 
