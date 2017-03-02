@@ -3754,11 +3754,11 @@ if cfg['settings'].get('default_owner_prompt', False):
 
 profile_dir = conf.find_first_dir(cfg['settings'].get('profiledir')) or '/etc/apparmor.d'
 if not os.path.isdir(profile_dir):
-    raise AppArmorException('Can\'t find AppArmor profiles')
+    raise AppArmorException('Can\'t find AppArmor profiles in %s' % (profile_dir))
 
 extra_profile_dir = conf.find_first_dir(cfg['settings'].get('inactive_profiledir')) or '/usr/share/apparmor/extra-profiles/'
 
 parser = conf.find_first_file(cfg['settings'].get('parser')) or '/sbin/apparmor_parser'
 if not os.path.isfile(parser) or not os.access(parser, os.EX_OK):
-    raise AppArmorException('Can\'t find apparmor_parser')
+    raise AppArmorException('Can\'t find apparmor_parser at %s' % (parser))
 
