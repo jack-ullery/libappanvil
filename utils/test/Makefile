@@ -24,12 +24,14 @@ ifdef USE_SYSTEM
     LD_LIBRARY_PATH=
     PYTHONPATH=
     CONFDIR=
+    BASEDIR=
 else
     # PYTHON_DIST_BUILD_PATH based on libapparmor/swig/python/test/Makefile.am
     PYTHON_DIST_BUILD_PATH = ../../libraries/libapparmor/swig/python/build/$$($(PYTHON) -c "import distutils.util; import platform; print(\"lib.%s-%s\" %(distutils.util.get_platform(), platform.python_version()[:3]))")
     LD_LIBRARY_PATH=../../libraries/libapparmor/src/.libs/
     PYTHONPATH=..:$(PYTHON_DIST_BUILD_PATH)
     CONFDIR=$(CURDIR)
+    BASEDIR=../../profiles/apparmor.d
 endif
 
 .PHONY: __libapparmor
@@ -64,10 +66,10 @@ clean:
 	rm -rf __pycache__/ .coverage htmlcov
 
 check: __libapparmor
-	export PYTHONPATH=$(PYTHONPATH) LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) LC_ALL=C __AA_CONFDIR=$(CONFDIR) ; $(foreach test, $(wildcard test-*.py), echo ; echo === $(test) === ; $(call pyalldo, $(test)))
+	export PYTHONPATH=$(PYTHONPATH) LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) LC_ALL=C __AA_CONFDIR=$(CONFDIR) __AA_BASEDIR=$(BASEDIR) ; $(foreach test, $(wildcard test-*.py), echo ; echo === $(test) === ; $(call pyalldo, $(test)))
 
 .coverage: $(wildcard ../aa-* ../apparmor/*.py test-*.py) __libapparmor
-	export PYTHONPATH=$(PYTHONPATH) LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) LC_ALL=C __AA_CONFDIR=$(CONFDIR) ; $(COVERAGE_IGNORE_FAILURES_CMD) ; $(foreach test, $(wildcard test-*.py), echo ; echo === $(test) === ; $(PYTHON) -m coverage run --branch -p $(test); )
+	export PYTHONPATH=$(PYTHONPATH) LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) LC_ALL=C __AA_CONFDIR=$(CONFDIR) __AA_BASEDIR=$(BASEDIR) ; $(COVERAGE_IGNORE_FAILURES_CMD) ; $(foreach test, $(wildcard test-*.py), echo ; echo === $(test) === ; $(PYTHON) -m coverage run --branch -p $(test); )
 	$(PYTHON) -m coverage combine
 
 coverage: .coverage

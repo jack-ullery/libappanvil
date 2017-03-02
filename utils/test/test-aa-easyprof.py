@@ -163,6 +163,16 @@ TEMPLATES_DIR="%s/templates"
         self.binary = "/opt/bin/foo"
         self.full_args = ['-c', self.conffile, self.binary]
 
+        # Check __AA_BASEDIR, which may be set by the Makefile, to see if
+        # we should use a non-default base directory path to find
+        # abstraction files
+        #
+        # NOTE: Individual tests can append another --base path to the
+        #       args list and override a base path set here
+        base = os.getenv('__AA_BASEDIR')
+        if base:
+            self.full_args.append('--base=%s' % base)
+
         if debugging:
             self.full_args.append('-d')
 
