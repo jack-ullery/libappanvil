@@ -57,6 +57,12 @@ for supported policy groups. The available policy groups are in
 AppArmor rules or policies. They are similar to AppArmor abstractions, but
 usually encompass more policy rules.
 
+=item --parser PATH
+
+Specify the PATH of the apparmor_parser binary to use when verifying
+policy. If this option is not specified, aa-easyprof will attempt to
+locate the path starting with /sbin/apparmor_parser.
+
 =item -a ABSTRACTIONS, --abstractions=ABSTRACTIONS
 
 Specify ABSTRACTIONS as a comma-separated list of AppArmor abstractions. It is

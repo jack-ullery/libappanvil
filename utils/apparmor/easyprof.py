@@ -259,14 +259,11 @@ def open_file_read(path):
     return orig
 
 
-def verify_policy(policy, base=None, include=None):
+def verify_policy(policy, exe, base=None, include=None):
     '''Verify policy compiles'''
-    exe = "/sbin/apparmor_parser"
-    if not os.path.exists(exe):
-        rc, exe = cmd(['which', 'apparmor_parser'])
-        if rc != 0:
-            warn("Could not find apparmor_parser. Skipping verify")
-            return True
+    if not exe:
+        warn("Could not find apparmor_parser. Skipping verify")
+        return True
 
     fn = ""
     # if policy starts with '/' and is one line, assume it is a path
@@ -308,6 +305,14 @@ class AppArmorEasyProfile:
         self.dirs = dict()
         if os.path.isfile(self.conffile):
             self._get_defaults()
+
+        self.parser_path = '/sbin/apparmor_parser'
+        if opt.parser_path:
+            self.parser_path = opt.parser_path
+        elif not os.path.exists(self.parser_path):
+            rc, self.parser_path = cmd(['which', 'apparmor_parser'])
+            if rc != 0:
+                self.parser_path = None
 
         self.parser_base = "/etc/apparmor.d"
         if opt.parser_base:
@@ -680,7 +685,7 @@ class AppArmorEasyProfile:
 
         if no_verify:
             debug("Skipping policy verification")
-        elif not verify_policy(policy, self.parser_base, self.parser_include):
+        elif not verify_policy(policy, self.parser_path, self.parser_base, self.parser_include):
             msg("\n" + policy)
             raise AppArmorException("Invalid policy")
 
@@ -823,6 +828,10 @@ def check_for_manifest_arg_append(option, opt_str, value, parser):
 
 def add_parser_policy_args(parser):
     '''Add parser arguments'''
+    parser.add_option("--parser",
+                      dest="parser_path",
+                      help="The path to the profile parser used for verification",
+                      metavar="PATH")
     parser.add_option("-a", "--abstractions",
                       action="callback",
                       callback=check_for_manifest_arg,
