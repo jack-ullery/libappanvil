@@ -66,6 +66,7 @@ args = parser.parse_args()
 profiling = args.program
 profiledir = args.dir
 
+apparmor.init_aa()
 apparmor.set_logfile(args.file)
 
 aa_mountpoint = apparmor.check_for_apparmor()

@@ -16,6 +16,7 @@ import apparmor.aa as apparmor
 
 class Prof(object):
     def __init__(self, filename):
+        apparmor.init_aa()
         self.aa = apparmor.aa
         self.filelist = apparmor.filelist
         self.include = apparmor.include

@@ -11,7 +11,7 @@
 
 import apparmor.aa as aa
 import unittest
-from common_test import AATest, setup_all_loops
+from common_test import AATest, setup_all_loops, setup_aa
 from apparmor.common import AppArmorBug, AppArmorException
 
 from apparmor.regex import ( strip_parenthesis, strip_quotes, parse_profile_start_line, re_match_include,
@@ -502,6 +502,7 @@ class TestStripQuotes(AATest):
 
 
 
+setup_aa(aa)
 setup_all_loops(__name__)
 if __name__ == '__main__':
     # these two are not converted to a tests[] loop yet

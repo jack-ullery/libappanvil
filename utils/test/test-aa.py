@@ -10,7 +10,7 @@
 # ------------------------------------------------------------------
 
 import unittest
-from common_test import AATest, setup_all_loops
+from common_test import AATest, setup_all_loops, setup_aa
 from common_test import read_file, write_file
 
 import os
@@ -855,6 +855,7 @@ class AaTest_propose_file_rules(AATest):
         proposals = propose_file_rules(profile, rule_obj)
         self.assertEqual(proposals, expected)
 
+setup_aa(apparmor.aa)
 setup_all_loops(__name__)
 if __name__ == '__main__':
     unittest.main(verbosity=2)

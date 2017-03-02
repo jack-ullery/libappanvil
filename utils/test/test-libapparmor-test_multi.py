@@ -10,7 +10,7 @@
 # ------------------------------------------------------------------
 
 import unittest
-from common_test import AATest, setup_all_loops, read_file
+from common_test import AATest, setup_all_loops, setup_aa, read_file
 
 import os
 from apparmor.common import open_file_read
@@ -267,6 +267,7 @@ print('Testing libapparmor test_multi tests...')
 TestLibapparmorTestMulti.tests = find_test_multi('../../libraries/libapparmor/testsuite/test_multi/')
 TestLogToProfile.tests = find_test_multi('../../libraries/libapparmor/testsuite/test_multi/')
 
+setup_aa(apparmor.aa)
 setup_all_loops(__name__)
 if __name__ == '__main__':
     unittest.main(verbosity=1)  # reduced verbosity due to the big number of tests

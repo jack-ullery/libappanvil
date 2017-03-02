@@ -10,7 +10,7 @@
 # ------------------------------------------------------------------
 
 import unittest
-from common_test import AATest, setup_all_loops
+from common_test import AATest, setup_all_loops, setup_aa
 import apparmor.aa as apparmor
 
 import os
@@ -397,6 +397,7 @@ def find_and_setup_test_profiles(profile_dir):
     print('Running %s parser simple_tests...' % len(TestParseParserTests.tests))
 
 
+setup_aa(apparmor)
 find_and_setup_test_profiles('../../parser/tst/simple_tests/')
 
 setup_all_loops(__name__)

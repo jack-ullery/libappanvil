@@ -43,6 +43,8 @@ args = parser.parse_args()
 
 args.other = None
 
+apparmor.aa.init_aa()
+
 profiles = args.files
 
 profiledir = args.dir

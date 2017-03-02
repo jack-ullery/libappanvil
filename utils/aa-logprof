@@ -34,6 +34,7 @@ args = parser.parse_args()
 profiledir = args.dir
 logmark = args.mark or ''
 
+apparmor.init_aa()
 apparmor.set_logfile(args.file)
 
 aa_mountpoint = apparmor.check_for_apparmor()

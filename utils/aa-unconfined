@@ -40,6 +40,7 @@ args = parser.parse_args()
 
 paranoid = args.paranoid
 
+aa.init_aa()
 aa_mountpoint = aa.check_for_apparmor()
 if not aa_mountpoint:
     raise aa.AppArmorException(_("It seems AppArmor was not started. Please enable AppArmor and try again."))

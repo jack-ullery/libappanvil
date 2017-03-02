@@ -73,14 +73,14 @@ _ = init_translation()
 # Setup logging incase of debugging is enabled
 debug_logger = DebugLogger('aa')
 
-CONFDIR = '/etc/apparmor'
-
 # The database for severity
 sev_db = None
 # The file to read log messages from
 ### Was our
 logfile = None
 
+CONFDIR = None
+conf = None
 cfg = None
 repo_cfg = None
 
@@ -3741,24 +3741,33 @@ def logger_path():
 
 ######Initialisations######
 
-conf = apparmor.config.Config('ini', CONFDIR)
-cfg = conf.read_config('logprof.conf')
+def init_aa(confdir="/etc/apparmor"):
+    global CONFDIR
+    global conf
+    global cfg
+    global profile_dir
+    global extra_profile_dir
+    global parser
 
-# prevent various failures if logprof.conf doesn't exist
-if not cfg.sections():
-    cfg.add_section('settings')
-    cfg.add_section('required_hats')
+    CONFDIR = confdir
+    conf = apparmor.config.Config('ini', CONFDIR)
+    cfg = conf.read_config('logprof.conf')
 
-if cfg['settings'].get('default_owner_prompt', False):
-    cfg['settings']['default_owner_prompt'] = ''
+    # prevent various failures if logprof.conf doesn't exist
+    if not cfg.sections():
+        cfg.add_section('settings')
+        cfg.add_section('required_hats')
 
-profile_dir = conf.find_first_dir(cfg['settings'].get('profiledir')) or '/etc/apparmor.d'
-if not os.path.isdir(profile_dir):
-    raise AppArmorException('Can\'t find AppArmor profiles in %s' % (profile_dir))
+    if cfg['settings'].get('default_owner_prompt', False):
+        cfg['settings']['default_owner_prompt'] = ''
 
-extra_profile_dir = conf.find_first_dir(cfg['settings'].get('inactive_profiledir')) or '/usr/share/apparmor/extra-profiles/'
+    profile_dir = conf.find_first_dir(cfg['settings'].get('profiledir')) or '/etc/apparmor.d'
+    if not os.path.isdir(profile_dir):
+        raise AppArmorException('Can\'t find AppArmor profiles in %s' % (profile_dir))
 
-parser = conf.find_first_file(cfg['settings'].get('parser')) or '/sbin/apparmor_parser'
-if not os.path.isfile(parser) or not os.access(parser, os.EX_OK):
-    raise AppArmorException('Can\'t find apparmor_parser at %s' % (parser))
+    extra_profile_dir = conf.find_first_dir(cfg['settings'].get('inactive_profiledir')) or '/usr/share/apparmor/extra-profiles/'
+
+    parser = conf.find_first_file(cfg['settings'].get('parser')) or '/sbin/apparmor_parser'
+    if not os.path.isfile(parser) or not os.access(parser, os.EX_OK):
+        raise AppArmorException('Can\'t find apparmor_parser at %s' % (parser))
 
