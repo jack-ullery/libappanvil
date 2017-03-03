@@ -24,14 +24,14 @@ _ = init_translation()
 
 class aa_tools:
     def __init__(self, tool_name, args):
+        apparmor.init_aa()
+
         self.name = tool_name
         self.profiledir = args.dir
         self.profiling = args.program
         self.check_profile_dir()
         self.silent = None
         self.do_reload = args.do_reload
-
-        apparmor.init_aa()
 
         if tool_name in ['audit']:
             self.remove = args.remove

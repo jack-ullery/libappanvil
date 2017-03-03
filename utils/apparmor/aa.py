@@ -3749,6 +3749,9 @@ def init_aa(confdir="/etc/apparmor"):
     global extra_profile_dir
     global parser
 
+    if CONFDIR:
+        return  # config already initialized (and possibly changed afterwards), so don't overwrite the config variables
+
     CONFDIR = confdir
     conf = apparmor.config.Config('ini', CONFDIR)
     cfg = conf.read_config('logprof.conf')
