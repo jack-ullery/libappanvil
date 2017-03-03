@@ -30,9 +30,6 @@ skip_startswith = (
     'generated_x/ambiguous-',
     'generated_x/dominate-',
 
-    # permissions before path
-    'generated_perms_leading/',
-
     # 'safe' and 'unsafe' keywords
     'generated_perms_safe/',
 
@@ -259,11 +256,75 @@ syntax_failure = [
     'file/ok_5.sd',  # Invalid mode UX
     'file/ok_2.sd',  # Invalid mode RWM
     'file/ok_4.sd',  # Invalid mode iX
+    'xtrans/simple_ok_pix_1.sd',  # Invalid mode pIx
+    'xtrans/simple_ok_pux_1.sd',  # Invalid mode rPux
+
+    # unexpected uppercase vs. lowercase in *x rules - generated_perms_leading directory
+    'generated_perms_leading/exact-re-Puxtarget.sd',
+    'generated_perms_leading/dominate-ownerCuxtarget2.sd',
+    'generated_perms_leading/ambiguous-Cux.sd',
+    'generated_perms_leading/dominate-ownerPux.sd',
+    'generated_perms_leading/exact-re-ownerPux.sd',
+    'generated_perms_leading/overlap-ownerCuxtarget.sd',
+    'generated_perms_leading/exact-re-ownerCuxtarget.sd',
+    'generated_perms_leading/dominate-Puxtarget2.sd',
+    'generated_perms_leading/dominate-ownerCuxtarget.sd',
+    'generated_perms_leading/dominate-ownerPuxtarget.sd',
+    'generated_perms_leading/ambiguous-Pux.sd',
+    'generated_perms_leading/ambiguous-Cuxtarget2.sd',
+    'generated_perms_leading/exact-Puxtarget2.sd',
+    'generated_perms_leading/ambiguous-ownerCux.sd',
+    'generated_perms_leading/exact-ownerPux.sd',
+    'generated_perms_leading/ambiguous-ownerPuxtarget.sd',
+    'generated_perms_leading/exact-re-ownerPuxtarget.sd',
+    'generated_perms_leading/exact-re-Cuxtarget.sd',
+    'generated_perms_leading/exact-re-Puxtarget2.sd',
+    'generated_perms_leading/dominate-Cux.sd',
+    'generated_perms_leading/exact-re-ownerCuxtarget2.sd',
+    'generated_perms_leading/ambiguous-ownerCuxtarget.sd',
+    'generated_perms_leading/exact-re-Cuxtarget2.sd',
+    'generated_perms_leading/ambiguous-Puxtarget.sd',
+    'generated_perms_leading/overlap-Puxtarget.sd',
+    'generated_perms_leading/ambiguous-Puxtarget2.sd',
+    'generated_perms_leading/overlap-Puxtarget2.sd',
+    'generated_perms_leading/exact-Puxtarget.sd',
+    'generated_perms_leading/overlap-ownerPuxtarget.sd',
+    'generated_perms_leading/exact-ownerCuxtarget.sd',
+    'generated_perms_leading/exact-re-ownerCux.sd',
+    'generated_perms_leading/exact-ownerPuxtarget2.sd',
+    'generated_perms_leading/exact-ownerCux.sd',
+    'generated_perms_leading/overlap-Cuxtarget2.sd',
+    'generated_perms_leading/ambiguous-Cuxtarget.sd',
+    'generated_perms_leading/ambiguous-ownerPuxtarget2.sd',
+    'generated_perms_leading/dominate-ownerCux.sd',
+    'generated_perms_leading/exact-Pux.sd',
+    'generated_perms_leading/exact-Cuxtarget.sd',
+    'generated_perms_leading/overlap-ownerCuxtarget2.sd',
+    'generated_perms_leading/overlap-Pux.sd',
+    'generated_perms_leading/overlap-ownerPux.sd',
+    'generated_perms_leading/ambiguous-ownerCuxtarget2.sd',
+    'generated_perms_leading/exact-re-Cux.sd',
+    'generated_perms_leading/exact-re-Pux.sd',
+    'generated_perms_leading/overlap-Cuxtarget.sd',
+    'generated_perms_leading/exact-re-ownerPuxtarget2.sd',
+    'generated_perms_leading/exact-Cuxtarget2.sd',
+    'generated_perms_leading/exact-Cux.sd',
+    'generated_perms_leading/overlap-Cux.sd',
+    'generated_perms_leading/overlap-ownerCux.sd',
+    'generated_perms_leading/exact-ownerPuxtarget.sd',
+    'generated_perms_leading/dominate-Pux.sd',
+    'generated_perms_leading/exact-ownerCuxtarget2.sd',
+    'generated_perms_leading/dominate-Puxtarget.sd',
+    'generated_perms_leading/ambiguous-ownerPux.sd',
+    'generated_perms_leading/overlap-ownerPuxtarget2.sd',
+    'generated_perms_leading/dominate-Cuxtarget2.sd',
+    'generated_perms_leading/dominate-Cuxtarget.sd',
+    'generated_perms_leading/dominate-ownerPuxtarget2.sd',
+
+    # escaping with \
     'file/ok_embedded_spaces_4.sd',  # \-escaped space
     'file/file/ok_embedded_spaces_4.sd',  # \-escaped space
     'file/ok_quoted_4.sd',  # quoted string including \"
-    'xtrans/simple_ok_pix_1.sd',  # Invalid mode pIx
-    'xtrans/simple_ok_pux_1.sd',  # Invalid mode rPux
 
     # misc
     'vars/vars_dbus_8.sd',  # Path doesn't start with / or variable: {/@{TLDS}/foo,/com/@{DOMAINS}}
