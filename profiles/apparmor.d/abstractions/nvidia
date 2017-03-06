@@ -8,7 +8,9 @@
   /etc/vdpau_wrapper.cfg r,
 
   # device files
-  /dev/nvidia*    rw,
+  /dev/nvidiactl rw,
+  /dev/nvidia-modeset rw,
+  /dev/nvidia[0-9]* rw,
 
   @{PROC}/interrupts r,
   @{PROC}/sys/vm/max_map_count r,
