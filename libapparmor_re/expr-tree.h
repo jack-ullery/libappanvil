@@ -672,7 +672,7 @@ public:
 
 	~hashedNodeVec()
 	{
-		delete nodes;
+		delete [] nodes;
 	}
 
 	unsigned long size()const { return len; }
