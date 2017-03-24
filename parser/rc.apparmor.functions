@@ -451,34 +451,7 @@ __apparmor_restart() {
 
 	configure_owlsm
 	parse_profiles reload
-	# Clean out running profiles not associated with the current profile
-	# set, excluding the libvirt dynamically generated profiles.
-	# Note that we reverse sort the list of profiles to remove to
-	# ensure that child profiles (e.g. hats) are removed before the
-	# parent. We *do* need to remove the child profile and not rely
-	# on removing the parent profile when the profile has had its
-	# child profile names changed.
-	profiles_names_list | awk '
-BEGIN {
-  while (getline < "'${SFS_MOUNTPOINT}'/profiles" ) {
-    str = sub(/ \((enforce|complain)\)$/, "", $0);
-    if (match($0, /^libvirt-[0-9a-f\-]+$/) == 0)
-      arr[$str] = $str
-  }
-}
 
-{ if (length(arr[$0]) > 0) { delete arr[$0] } }
-
-END {
-  for (key in arr)
-    if (length(arr[key]) > 0) {
-      printf("%s\n", arr[key])
-    }
-}
-' | LC_COLLATE=C sort -r | while IFS= read profile ; do
-		echo -n "$profile" > "$SFS_MOUNTPOINT/.remove"
-	done
-	# will not catch all errors, but still better than nothing
 	rc=$?
 	aa_log_end_msg $rc
 	return $rc
