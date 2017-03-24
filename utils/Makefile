@@ -24,7 +24,7 @@ PERLTOOLS = aa-notify
 PYTOOLS = aa-easyprof aa-genprof aa-logprof aa-cleanprof aa-mergeprof \
           aa-autodep aa-audit aa-complain aa-enforce aa-disable \
 	  aa-status aa-unconfined
-TOOLS = ${PERLTOOLS} ${PYTOOLS} aa-decode
+TOOLS = ${PERLTOOLS} ${PYTOOLS} aa-decode aa-remove-unknown
 PYSETUP = python-tools-setup.py
 PYMODULES = $(wildcard apparmor/*.py apparmor/rule/*.py)
 
