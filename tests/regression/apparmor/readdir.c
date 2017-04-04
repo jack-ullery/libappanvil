@@ -6,6 +6,7 @@
  *	published by the Free Software Foundation, version 2 of the
  *	License.
  */
+#define _GNU_SOURCE
 
 #include <stdio.h>
 #include <unistd.h>
@@ -20,7 +21,11 @@
 int main(int argc, char *argv[])
 {
 	int fd;
+#if defined(SYS_getdents64)
+	struct dirent64 dir;
+#else
 	struct dirent dir;
+#endif
 
 	if (argc != 2){
 		fprintf(stderr, "usage: %s dir\n",
@@ -42,7 +47,11 @@ int main(int argc, char *argv[])
 	*/
 
 	/* getdents isn't exported by glibc, so must use syscall() */
+#if defined(SYS_getdents64)
+	if (syscall(SYS_getdents64, fd, &dir, sizeof(struct dirent64)) == -1){
+#else
 	if (syscall(SYS_getdents, fd, &dir, sizeof(struct dirent)) == -1){
+#endif
 		printf("FAIL - getdents  %s\n", strerror(errno));
 		return 1;
 	}
