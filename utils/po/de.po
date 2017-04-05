@@ -7,14 +7,14 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2016-05-06 20:27+0000\n"
-"Last-Translator: Christian Boltz <Unknown>\n"
+"PO-Revision-Date: 2017-03-31 10:43+0000\n"
+"Last-Translator: Tobias Bannert <tobannert@gmail.com>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2016-06-01 05:15+0000\n"
-"X-Generator: Launchpad (build 18053)\n"
+"X-Launchpad-Export-Date: 2017-04-05 05:23+0000\n"
+"X-Generator: Launchpad (build 18335)\n"
 "Language: de\n"
 
 #: ../aa-genprof:56
@@ -141,7 +141,7 @@ msgstr "Protokolleinträge verarbeiten, um Profile zu erstellen"
 
 #: ../aa-logprof:27
 msgid "mark in the log to start processing after"
-msgstr "Verarbeitung ab dieser Markierung in der Protokolldatei starten"
+msgstr ""
 
 #: ../aa-cleanprof:23
 msgid "Cleanup the profiles for the given programs"
@@ -427,11 +427,11 @@ msgstr "Alle Änderungen verworfen."
 
 #: ../apparmor/aa.py:464
 msgid "Connecting to repository..."
-msgstr ""
+msgstr "Zu Paketquelle wird verbunden …"
 
 #: ../apparmor/aa.py:470
 msgid "WARNING: Error fetching profiles from the repository"
-msgstr ""
+msgstr "ACHTUNG: Fehler beim Abrufen der Profile von der Paketquelle"
 
 #: ../apparmor/aa.py:550
 #, python-format
@@ -449,6 +449,8 @@ msgid ""
 "WARNING: Error synchronizing profiles with the repository:\n"
 "%s\n"
 msgstr ""
+"ACHTUNG: Fehler beim Synchronisieren der Profile mit der Paketquelle:\n"
+"%s\n"
 
 #: ../apparmor/aa.py:744
 #, python-format
@@ -456,6 +458,8 @@ msgid ""
 "WARNING: Error synchronizing profiles with the repository\n"
 "%s"
 msgstr ""
+"ACHTUNG: Fehler beim Synchronisieren der Profile mit der Paketquelle:\n"
+"%s"
 
 #: ../apparmor/aa.py:832 ../apparmor/aa.py:883
 #, python-format
@@ -468,7 +472,7 @@ msgstr ""
 
 #: ../apparmor/aa.py:833
 msgid "Uploaded changes to repository."
-msgstr ""
+msgstr "Änderungen wurden zur Paketquelle hochgeladen."
 
 #: ../apparmor/aa.py:865
 msgid "Changelog Entry: "
@@ -481,6 +485,10 @@ msgid ""
 "information is required to upload profiles to the repository.\n"
 "These changes could not be sent."
 msgstr ""
+"Paketquellenfehler\n"
+"Registrieren oder Anmelden ist fehlgeschlagen. Benutzerzugangsdaten\n"
+"sind erforderlich, um die Profile in die Paketquelle zu übertragen.\n"
+"Diese Änderungen konnten nicht übertragen werden."
 
 #: ../apparmor/aa.py:995
 msgid "Default Hat"
@@ -831,6 +839,7 @@ msgstr "Fehler: Mehrfache Definition für hat %(hat)s im Profil %(profile)s."
 #, python-format
 msgid "Warning: invalid \"REPOSITORY:\" line in %s, ignoring."
 msgstr ""
+"ACHTUNG: ungültige Paketquellenzeile »REPOSITORY:« in %s, wird übergangen."
 
 #: ../apparmor/aa.py:3198
 #, python-format
@@ -1009,7 +1018,7 @@ msgstr "(A)bbrechen"
 
 #: ../apparmor/ui.py:223
 msgid "(A)llow"
-msgstr "Erl(a)uben"
+msgstr ""
 
 #: ../apparmor/ui.py:224
 msgid "(M)ore"
@@ -1037,7 +1046,7 @@ msgstr "(B)esitzerberechtigungen aus"
 
 #: ../apparmor/ui.py:231
 msgid "(D)eny"
-msgstr "A(b)lehnen"
+msgstr ""
 
 #: ../apparmor/ui.py:232
 msgid "Abo(r)t"
@@ -1045,7 +1054,7 @@ msgstr "Abb(r)echen"
 
 #: ../apparmor/ui.py:233
 msgid "(F)inish"
-msgstr "En(d)e"
+msgstr ""
 
 #: ../apparmor/ui.py:234
 msgid "(I)nherit"
@@ -1053,7 +1062,7 @@ msgstr "(E)rben"
 
 #: ../apparmor/ui.py:235
 msgid "(P)rofile"
-msgstr "(P)rofil"
+msgstr ""
 
 #: ../apparmor/ui.py:236
 msgid "(P)rofile Clean Exec"
