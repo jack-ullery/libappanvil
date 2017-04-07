@@ -7,14 +7,14 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2017-03-31 10:43+0000\n"
-"Last-Translator: Tobias Bannert <tobannert@gmail.com>\n"
+"PO-Revision-Date: 2017-04-05 17:20+0000\n"
+"Last-Translator: Christian Boltz <Unknown>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2017-04-05 05:23+0000\n"
-"X-Generator: Launchpad (build 18335)\n"
+"X-Launchpad-Export-Date: 2017-04-07 05:20+0000\n"
+"X-Generator: Launchpad (build 18343)\n"
 "Language: de\n"
 
 #: ../aa-genprof:56
@@ -427,11 +427,11 @@ msgstr "Alle Änderungen verworfen."
 
 #: ../apparmor/aa.py:464
 msgid "Connecting to repository..."
-msgstr "Zu Paketquelle wird verbunden …"
+msgstr "Zum Repository wird verbunden..."
 
 #: ../apparmor/aa.py:470
 msgid "WARNING: Error fetching profiles from the repository"
-msgstr "ACHTUNG: Fehler beim Abrufen der Profile von der Paketquelle"
+msgstr "ACHTUNG: Fehler beim Abrufen der Profile vom Repository"
 
 #: ../apparmor/aa.py:550
 #, python-format
@@ -449,7 +449,7 @@ msgid ""
 "WARNING: Error synchronizing profiles with the repository:\n"
 "%s\n"
 msgstr ""
-"ACHTUNG: Fehler beim Synchronisieren der Profile mit der Paketquelle:\n"
+"ACHTUNG: Fehler beim Synchronisieren der Profile mit dem Repository:\n"
 "%s\n"
 
 #: ../apparmor/aa.py:744
@@ -458,7 +458,7 @@ msgid ""
 "WARNING: Error synchronizing profiles with the repository\n"
 "%s"
 msgstr ""
-"ACHTUNG: Fehler beim Synchronisieren der Profile mit der Paketquelle:\n"
+"ACHTUNG: Fehler beim Synchronisieren der Profile mit dem Repository:\n"
 "%s"
 
 #: ../apparmor/aa.py:832 ../apparmor/aa.py:883
@@ -472,7 +472,7 @@ msgstr ""
 
 #: ../apparmor/aa.py:833
 msgid "Uploaded changes to repository."
-msgstr "Änderungen wurden zur Paketquelle hochgeladen."
+msgstr "Änderungen wurden zum Repository hochgeladen."
 
 #: ../apparmor/aa.py:865
 msgid "Changelog Entry: "
@@ -485,9 +485,9 @@ msgid ""
 "information is required to upload profiles to the repository.\n"
 "These changes could not be sent."
 msgstr ""
-"Paketquellenfehler\n"
+"Repository-Fehler\n"
 "Registrieren oder Anmelden ist fehlgeschlagen. Benutzerzugangsdaten\n"
-"sind erforderlich, um die Profile in die Paketquelle zu übertragen.\n"
+"sind erforderlich, um die Profile ins Repository zu übertragen.\n"
 "Diese Änderungen konnten nicht übertragen werden."
 
 #: ../apparmor/aa.py:995
@@ -839,7 +839,7 @@ msgstr "Fehler: Mehrfache Definition für hat %(hat)s im Profil %(profile)s."
 #, python-format
 msgid "Warning: invalid \"REPOSITORY:\" line in %s, ignoring."
 msgstr ""
-"ACHTUNG: ungültige Paketquellenzeile »REPOSITORY:« in %s, wird übergangen."
+"ACHTUNG: ungültige Repository-Zeile »REPOSITORY:« in %s, wird übergangen."
 
 #: ../apparmor/aa.py:3198
 #, python-format
