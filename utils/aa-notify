@@ -341,7 +341,7 @@ sub send_message {
 
         # 'system' uses execvp() so no shell metacharacters here.
         # $notify_exe is an absolute path so execvp won't search PATH.
-        system "$notify_exe", "-i", "gtk-dialog-warning", "-u", "critical", "--", "AppArmor Message", "$msg";
+        system "$notify_exe", "-i", "gtk-dialog-warning", "-u", "normal", "--", "AppArmor Message", "$msg";
         my $exit_code = $? >> 8;
         exit($exit_code);
     }
