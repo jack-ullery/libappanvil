@@ -82,6 +82,7 @@
   @{PROC}/meminfo                r,
   @{PROC}/stat                   r,
   @{PROC}/cpuinfo                r,
+  /sys/devices/system/cpu/       r,
   /sys/devices/system/cpu/online r,
 
   # glibc's *printf protections read the maps file
