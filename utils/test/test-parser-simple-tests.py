@@ -49,6 +49,15 @@ exception_not_raised = [
     'change_profile/onx_conflict_unsafe1.sd',
     'change_profile/onx_conflict_unsafe2.sd',
 
+    # duplicated conditionals aren't detected by the tools
+    'generated_dbus/duplicated-conditionals-45127.sd',
+    'generated_dbus/duplicated-conditionals-45131.sd',
+    'generated_dbus/duplicated-conditionals-45124.sd',
+    'generated_dbus/duplicated-conditionals-45130.sd',
+    'generated_dbus/duplicated-conditionals-45125.sd',
+    'generated_dbus/duplicated-conditionals-45128.sd',
+    'generated_dbus/duplicated-conditionals-45129.sd',
+
     'dbus/bad_modifier_2.sd',
     'dbus/bad_regex_01.sd',
     'dbus/bad_regex_02.sd',
