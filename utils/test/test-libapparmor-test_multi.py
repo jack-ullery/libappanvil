@@ -66,6 +66,8 @@ class TestLibapparmorTestMulti(AATest):
                     pass
                 elif parsed_items['operation'] == 'exec' and label in ['sock_type', 'family', 'protocol']:
                     pass  # XXX 'exec' + network? really?
+                elif parsed_items['operation'] == 'ptrace' and label == 'name2' and params.endswith('/ptrace_garbage_lp1689667_1'):
+                    pass  # libapparmor would better qualify this case as invalid event
                 elif not parsed_items.get(label, None):
                     raise Exception('parsed_items[%s] not set' % label)
                 elif not expected.get(label, None):

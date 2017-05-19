@@ -338,6 +338,10 @@ class ReadLog:
             return(e['pid'], e['parent'], 'unknown_hat',
                              [profile, hat, aamode, hat])
         elif e['operation'] == 'ptrace':
+            if not e['peer']:
+                self.debug_logger.debug('ignored garbage ptrace event with empty peer')
+                return None
+
             return(e['pid'], e['parent'], 'ptrace',
                              [profile, hat, prog, aamode, e['denied_mask'], e['peer']])
         elif e['operation'] == 'signal':
