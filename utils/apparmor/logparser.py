@@ -341,6 +341,9 @@ class ReadLog:
             if not e['peer']:
                 self.debug_logger.debug('ignored garbage ptrace event with empty peer')
                 return None
+            if not e['denied_mask']:
+                self.debug_logger.debug('ignored garbage ptrace event with empty denied_mask')
+                return None
 
             return(e['pid'], e['parent'], 'ptrace',
                              [profile, hat, prog, aamode, e['denied_mask'], e['peer']])
