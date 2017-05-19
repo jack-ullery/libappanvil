@@ -2,6 +2,7 @@ apparmor-*
 parser/po/*.mo
 parser/af_names.h
 parser/cap_names.h
+parser/tst_lib
 parser/tst_misc
 parser/tst_regex
 parser/tst_symtab
@@ -19,6 +20,7 @@ parser/*.7.html
 parser/*.5.html
 parser/*.8.html
 parser/apparmor_parser
+parser/libapparmor_re/parse.cc
 parser/libapparmor_re/regexp.cc
 parser/techdoc.aux
 parser/techdoc.log
