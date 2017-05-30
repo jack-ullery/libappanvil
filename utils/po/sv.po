@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: AppArmor list <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2017-03-15 10:21+0000\n"
-"Last-Translator: Jonatan Nyberg <Unknown>\n"
+"PO-Revision-Date: 2017-05-29 10:35+0000\n"
+"Last-Translator: Anders Jonsson <Unknown>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2017-03-19 05:19+0000\n"
-"X-Generator: Launchpad (build 18332)\n"
+"X-Launchpad-Export-Date: 2017-05-30 05:23+0000\n"
+"X-Generator: Launchpad (build 18391)\n"
 "Language: sv\n"
 
 #: ../aa-genprof:56
@@ -26,15 +26,15 @@ msgstr "Generera profil för det givna programet"
 #: ../aa-autodep:25 ../aa-audit:25 ../aa-complain:24 ../aa-enforce:24
 #: ../aa-disable:24
 msgid "path to profiles"
-msgstr "Sökväg till profiler"
+msgstr "sökväg till profiler"
 
 #: ../aa-genprof:58 ../aa-logprof:26
 msgid "path to logfile"
-msgstr "Sökväg till loggfiler"
+msgstr "sökväg till loggfil"
 
 #: ../aa-genprof:59
 msgid "name of program to profile"
-msgstr "Programets namn att profilera"
+msgstr "namn på program att profilera"
 
 #: ../aa-genprof:69 ../aa-logprof:37
 #, python-format
