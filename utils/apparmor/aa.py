@@ -443,10 +443,7 @@ def profile_storage(profilename, hat, calledby):
     # d) other: external, flags, name, profile, attachment, initial_comment, filename, info,
     #           profile_keyword, header_comment (these two are currently only set by set_profile_flags())
 
-    # Note that this function doesn't explicitely init all those keys (yet).
-    # It will be extended over time, with the final goal to get rid of hasher().
-
-    profile = hasher()
+    profile = dict()
 
     # profile['info'] isn't used anywhere, but can be helpful in debugging.
     profile['info'] = {'profile': profilename, 'hat': hat, 'calledby': calledby}
@@ -460,8 +457,35 @@ def profile_storage(profilename, hat, calledby):
     profile['rlimit']           = RlimitRuleset()
     profile['signal']           = SignalRuleset()
 
-    profile['allow']['mount'] = list()
+    profile['alias']            = dict()
+    profile['include']          = dict()
+    profile['localinclude']     = dict()
+    profile['repo']             = dict()
+    profile['lvar']             = dict()
+
+    profile['filename']         = ''
+    profile['name']             = ''
+    profile['attachment']       = ''
+    profile['flags']            = ''
+    profile['external']         = False
+    profile['header_comment']   = ''
+    profile['initial_comment']  = ''
+    profile['profile_keyword']  = False
+    profile['profile']          = False  # profile or hat?
+
+    profile['allow'] = dict()
+    profile['deny'] = dict()
+
+    profile['allow']['link']    = hasher()
+    profile['deny']['link']     = hasher()
+
+    # mount, pivot_root, unix have a .get() fallback to list() - initialize them nevertheless
+    profile['allow']['mount']   = list()
+    profile['deny']['mount']    = list()
     profile['allow']['pivot_root'] = list()
+    profile['deny']['pivot_root']  = list()
+    profile['allow']['unix']    = list()
+    profile['deny']['unix']     = list()
 
     return profile
 
@@ -3035,7 +3059,7 @@ def serialize_profile(profile_data, name, options):
                 profile_data[name]['repo']['id']):
             repo = profile_data[name]['repo']
             string += '# REPOSITORY: %s %s %s\n' % (repo['url'], repo['user'], repo['id'])
-        elif profile_data[name]['repo']['neversubmit']:
+        elif profile_data[name]['repo'].get('neversubmit'):
             string += '# REPOSITORY: NEVERSUBMIT\n'
 
 #     if profile_data[name].get('initial_comment', False):
