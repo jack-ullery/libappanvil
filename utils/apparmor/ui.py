@@ -14,7 +14,6 @@
 import sys
 import re
 import readline
-from apparmor.yasti import yastLog, SendDataToYast, GetDataFromYast
 
 from apparmor.common import readkey, AppArmorException, DebugLogger
 
@@ -47,18 +46,11 @@ def UI_Info(text):
     debug_logger.info(text)
     if UI_mode == 'text':
         sys.stdout.write(text + '\n')
-    else:
-        yastLog(text)
 
 def UI_Important(text):
     debug_logger.debug(text)
     if UI_mode == 'text':
         sys.stdout.write('\n' + text + '\n')
-    else:
-        SendDataToYast({'type': 'dialog-error',
-                        'message': text
-                        })
-        path, yarg = GetDataFromYast()
 
 def get_translated_hotkey(translated, cmsg=''):
     msg = 'PromptUser: ' + _('Invalid hotkey for')
@@ -105,15 +97,6 @@ def UI_YesNo(text, default):
                     continue  # If user presses any other button ask again
             else:
                 ans = default
-
-    else:
-        SendDataToYast({'type': 'dialog-yesno',
-                        'question': text
-                        })
-        ypath, yarg = GetDataFromYast()
-        ans = yarg['answer']
-        if not ans:
-            ans = default
     return ans
 
 def UI_YesNoCancel(text, default):
@@ -160,14 +143,6 @@ def UI_YesNoCancel(text, default):
                         default = 'c'
             else:
                 ans = default
-    else:
-        SendDataToYast({'type': 'dialog-yesnocancel',
-                        'question': text
-                        })
-        ypath, yarg = GetDataFromYast()
-        ans = yarg['answer']
-        if not ans:
-            ans = default
     return ans
 
 def UI_GetString(text, default):
@@ -181,13 +156,6 @@ def UI_GetString(text, default):
             string = ''
         finally:
             readline.set_startup_hook()
-    else:
-        SendDataToYast({'type': 'dialog-getstring',
-                        'label': text,
-                        'default': default
-                        })
-        ypath, yarg = GetDataFromYast()
-        string = yarg['string']
     return string.strip()
 
 def UI_GetFile(file):
@@ -196,29 +164,15 @@ def UI_GetFile(file):
     if UI_mode == 'text':
         sys.stdout.write(file['description'] + '\n')
         filename = sys.stdin.read()
-    else:
-        file['type'] = 'dialog-getfile'
-        SendDataToYast(file)
-        ypath, yarg = GetDataFromYast()
-        if yarg['answer'] == 'okay':
-            filename = yarg['filename']
     return filename
 
 def UI_BusyStart(message):
     debug_logger.debug('UI_BusyStart: %s' % UI_mode)
     if UI_mode == 'text':
         UI_Info(message)
-    else:
-        SendDataToYast({'type': 'dialog-busy-start',
-                        'message': message
-                        })
-        ypath, yarg = GetDataFromYast()
 
 def UI_BusyStop():
     debug_logger.debug('UI_BusyStop: %s' % UI_mode)
-    if UI_mode != 'text':
-        SendDataToYast({'type': 'dialog-busy-stop'})
-        ypath, yarg = GetDataFromYast()
 
 CMDS = {'CMD_ALLOW': _('(A)llow'),
         'CMD_OTHER': _('(M)ore'),
@@ -302,13 +256,6 @@ class PromptQuestion(object):
         arg = None
         if UI_mode == 'text':
             cmd, arg = self.Text_PromptUser()
-        else:
-            self.type = 'wizard'
-            SendDataToYast(self)
-            ypath, yarg = GetDataFromYast()
-            if not cmd:
-                cmd = 'CMD_ABORT'
-            arg = yarg['selected']
         if cmd == 'CMD_ABORT':
             confirm_and_abort()
             cmd = 'XXXINVALIDXXX'
@@ -447,24 +394,7 @@ def confirm_and_abort():
     ans = UI_YesNo(_('Are you sure you want to abandon this set of profile changes and exit?'), 'n')
     if ans == 'y':
         UI_Info(_('Abandoning all changes.'))
-        #shutdown_yast()
-        #for prof in created:
-        #    delete_profile(prof)
         sys.exit(0)
-
-def UI_ShortMessage(title, message):
-    SendDataToYast({'type': 'short-dialog-message',
-                    'headline': title,
-                    'message': message
-                    })
-    ypath, yarg = GetDataFromYast()
-
-def UI_LongMessage(title, message):
-    SendDataToYast({'type': 'long-dialog-message',
-                    'headline': title,
-                    'message': message
-                    })
-    ypath, yarg = GetDataFromYast()
 
 def is_number(number):
     try:

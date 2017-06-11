@@ -14,7 +14,6 @@
 # ----------------------------------------------------------------------
 # No old version logs, only 2.6 + supported
 from __future__ import division, with_statement
-import inspect
 import os
 import re
 import shutil
@@ -63,8 +62,6 @@ from apparmor.rule.signal     import SignalRuleset,    SignalRule
 from apparmor.rule import quote_if_needed
 
 ruletypes = ['capability', 'change_profile', 'dbus', 'file', 'network', 'ptrace', 'rlimit', 'signal']
-
-from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -146,15 +143,9 @@ def fatal_error(message):
     # Add the traceback to message
     message = tb_stack + '\n\n' + message
     debug_logger.error(message)
-    caller = inspect.stack()[1][3]
-
-    # If caller is SendDataToYast or GetDatFromYast simply exit
-    if caller == 'SendDataToYast' or caller == 'GetDatFromYast':
-        sys.exit(1)
 
     # Else tell user what happened
     aaui.UI_Important(message)
-    shutdown_yast()
     sys.exit(1)
 
 def check_for_apparmor(filesystem='/proc/filesystems', mounts='/proc/mounts'):
@@ -539,7 +530,6 @@ def confirm_and_abort():
     ans = aaui.UI_YesNo(_('Are you sure you want to abandon this set of profile changes and exit?'), 'n')
     if ans == 'y':
         aaui.UI_Info(_('Abandoning all changes.'))
-        shutdown_yast()
         for prof in created:
             delete_profile(prof)
         sys.exit(0)
@@ -601,20 +591,12 @@ def get_profile(prof_name):
         p = profile_hash[options[arg]]
         q.selected = options.index(options[arg])
         if ans == 'CMD_VIEW_PROFILE':
-            if aaui.UI_mode == 'yast':
-                SendDataToYast({'type': 'dialogue-view-profile',
-                                'user': options[arg],
-                                'profile': p['profile'],
-                                'profile_type': p['profile_type']
-                                })
-                ypath, yarg = GetDataFromYast()
-            else:
-                pager = get_pager()
-                proc = subprocess.Popen(pager, stdin=subprocess.PIPE)
+            pager = get_pager()
+            proc = subprocess.Popen(pager, stdin=subprocess.PIPE)
             #    proc.communicate('Profile submitted by %s:\n\n%s\n\n' %
             #                     (options[arg], p['profile']))
-                proc.communicate(p['profile'].encode())
-                proc.kill()
+            proc.communicate(p['profile'].encode())
+            proc.kill()
         elif ans == 'CMD_USE_PROFILE':
             if p['profile_type'] == 'INACTIVE_LOCAL':
                 profile_data = p['profile_data']
@@ -864,76 +846,16 @@ def fetch_profiles_by_user(url, distro, user):
 def submit_created_profiles(new_profiles):
     #url = cfg['repository']['url']
     if new_profiles:
-        if aaui.UI_mode == 'yast':
-            title = 'New Profiles'
-            message = 'Please select the newly created profiles that you would like to store in the repository'
-            yast_select_and_upload_profiles(title, message, new_profiles)
-        else:
-            title = 'Submit newly created profiles to the repository'
-            message = 'Would you like to upload newly created profiles?'
-            console_select_and_upload_profiles(title, message, new_profiles)
+        title = 'Submit newly created profiles to the repository'
+        message = 'Would you like to upload newly created profiles?'
+        console_select_and_upload_profiles(title, message, new_profiles)
 
 def submit_changed_profiles(changed_profiles):
     #url = cfg['repository']['url']
     if changed_profiles:
-        if aaui.UI_mode == 'yast':
-            title = 'Changed Profiles'
-            message = 'Please select which of the changed profiles would you like to upload to the repository'
-            yast_select_and_upload_profiles(title, message, changed_profiles)
-        else:
-            title = 'Submit changed profiles to the repository'
-            message = 'The following profiles from the repository were changed.\nWould you like to upload your changes?'
-            console_select_and_upload_profiles(title, message, changed_profiles)
-
-def yast_select_and_upload_profiles(title, message, profiles_up):
-    url = cfg['repository']['url']
-    profile_changes = hasher()
-    profs = profiles_up[:]
-    for p in profs:
-        profile_changes[p[0]] = get_profile_diff(p[2], p[1])
-    SendDataToYast({'type': 'dialog-select-profiles',
-                    'title': title,
-                    'explanation': message,
-                    'default_select': 'false',
-                    'disable_ask_upload': 'true',
-                    'profiles': profile_changes
-                    })
-    ypath, yarg = GetDataFromYast()
-    selected_profiles = []
-    changelog = None
-    changelogs = None
-    single_changelog = False
-    if yarg['STATUS'] == 'cancel':
-        return
-    else:
-        selected_profiles = yarg['PROFILES']
-        changelogs = yarg['CHANGELOG']
-        if changelogs.get('SINGLE_CHANGELOG', False):
-            changelog = changelogs['SINGLE_CHANGELOG']
-            single_changelog = True
-    user, passw = get_repo_user_pass()
-    for p in selected_profiles:
-        profile_string = serialize_profile(aa[p], p)
-        if not single_changelog:
-            changelog = changelogs[p]
-        status_ok, ret = upload_profile(url, user, passw, cfg['repository']['distro'],
-                                        p, profile_string, changelog)
-        if status_ok:
-            newprofile = ret
-            newid = newprofile['id']
-            set_repo_info(aa[p][p], url, user, newid)
-            write_profile_ui_feedback(p)
-        else:
-            if not ret:
-                ret = 'UNKNOWN ERROR'
-            aaui.UI_Important(_('WARNING: An error occurred while uploading the profile %(profile)s\n%(ret)s') % { 'profile': p, 'ret': ret })
-    aaui.UI_Info(_('Uploaded changes to repository.'))
-    if yarg.get('NEVER_ASK_AGAIN'):
-        unselected_profiles = []
-        for p in profs:
-            if p[0] not in selected_profiles:
-                unselected_profiles.append(p[0])
-        set_profiles_local_only(unselected_profiles)
+        title = 'Submit changed profiles to the repository'
+        message = 'The following profiles from the repository were changed.\nWould you like to upload your changes?'
+        console_select_and_upload_profiles(title, message, changed_profiles)
 
 def upload_profile(url, user, passw, distro, p, profile_string, changelog):
     # To-Do
@@ -1925,10 +1847,6 @@ def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
 
     ask_the_questions(log_dict)
 
-    if aaui.UI_mode == 'yast':
-        # To-Do
-        pass
-
     finishing = False
     # Check for finished
     save_profiles()
@@ -1958,78 +1876,50 @@ def save_profiles():
     changed_list = sorted(changed.keys())
 
     if changed_list:
-
-        if aaui.UI_mode == 'yast':
-            # To-Do
-            # selected_profiles = []  # XXX selected_profiles_ref?
-            profile_changes = dict()
-            for prof in changed_list:
-                oldprofile = serialize_profile(original_aa[prof], prof)
-                newprofile = serialize_profile(aa[prof], prof)
-                profile_changes[prof] = get_profile_diff(oldprofile, newprofile)
-            explanation = _('Select which profile changes you would like to save to the\nlocal profile set.')
-            title = _('Local profile changes')
-            SendDataToYast({'type': 'dialog-select-profiles',
-                            'title': title,
-                            'explanation': explanation,
-                            'dialog_select': 'true',
-                            'get_changelog': 'false',
-                            'profiles': profile_changes
-                            })
-            ypath, yarg = GetDataFromYast()
-            if yarg['STATUS'] == 'cancel':
-                return None
-            else:
-                selected_profiles_ref = yarg['PROFILES']
-                for profile_name in selected_profiles_ref:
-                    write_profile_ui_feedback(profile_name)
-                    reload_base(profile_name)
-
-        else:
-            q = aaui.PromptQuestion()
-            q.title = 'Changed Local Profiles'
-            q.explanation = _('The following local profiles were changed. Would you like to save them?')
-            q.functions = ['CMD_SAVE_CHANGES', 'CMD_SAVE_SELECTED', 'CMD_VIEW_CHANGES', 'CMD_VIEW_CHANGES_CLEAN', 'CMD_ABORT']
-            q.default = 'CMD_VIEW_CHANGES'
-            q.options = changed
-            q.selected = 0
-            ans = ''
-            arg = None
-            while ans != 'CMD_SAVE_CHANGES':
-                if not changed:
-                    return
-                ans, arg = q.promptUser()
-                if ans == 'CMD_SAVE_SELECTED':
-                    profile_name = list(changed.keys())[arg]
-                    write_profile_ui_feedback(profile_name)
-                    reload_base(profile_name)
-
-                elif ans == 'CMD_VIEW_CHANGES':
-                    which = list(changed.keys())[arg]
-                    oldprofile = None
-                    if aa[which][which].get('filename', False):
-                        oldprofile = aa[which][which]['filename']
-                    else:
-                        oldprofile = get_profile_filename(which)
-
-                    try:
-                        newprofile = serialize_profile_from_old_profile(aa[which], which, '')
-                    except AttributeError:
-                        # see https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/1528139
-                        newprofile = "###\n###\n### Internal error while generating diff, please use '%s' instead\n###\n###\n" % _('View Changes b/w (C)lean profiles')
-
-                    display_changes_with_comments(oldprofile, newprofile)
-
-                elif ans == 'CMD_VIEW_CHANGES_CLEAN':
-                    which = list(changed.keys())[arg]
-                    oldprofile = serialize_profile(original_aa[which], which, '')
-                    newprofile = serialize_profile(aa[which], which, '')
-
-                    display_changes(oldprofile, newprofile)
-
-            for profile_name in sorted(changed.keys()):
+        q = aaui.PromptQuestion()
+        q.title = 'Changed Local Profiles'
+        q.explanation = _('The following local profiles were changed. Would you like to save them?')
+        q.functions = ['CMD_SAVE_CHANGES', 'CMD_SAVE_SELECTED', 'CMD_VIEW_CHANGES', 'CMD_VIEW_CHANGES_CLEAN', 'CMD_ABORT']
+        q.default = 'CMD_VIEW_CHANGES'
+        q.options = changed
+        q.selected = 0
+        ans = ''
+        arg = None
+        while ans != 'CMD_SAVE_CHANGES':
+            if not changed:
+                return
+            ans, arg = q.promptUser()
+            if ans == 'CMD_SAVE_SELECTED':
+                profile_name = list(changed.keys())[arg]
                 write_profile_ui_feedback(profile_name)
                 reload_base(profile_name)
+
+            elif ans == 'CMD_VIEW_CHANGES':
+                which = list(changed.keys())[arg]
+                oldprofile = None
+                if aa[which][which].get('filename', False):
+                    oldprofile = aa[which][which]['filename']
+                else:
+                    oldprofile = get_profile_filename(which)
+
+                try:
+                    newprofile = serialize_profile_from_old_profile(aa[which], which, '')
+                except AttributeError:
+                    # see https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/1528139
+                    newprofile = "###\n###\n### Internal error while generating diff, please use '%s' instead\n###\n###\n" % _('View Changes b/w (C)lean profiles')
+
+                display_changes_with_comments(oldprofile, newprofile)
+
+            elif ans == 'CMD_VIEW_CHANGES_CLEAN':
+                which = list(changed.keys())[arg]
+                oldprofile = serialize_profile(original_aa[which], which, '')
+                newprofile = serialize_profile(aa[which], which, '')
+
+                display_changes(oldprofile, newprofile)
+
+        for profile_name in sorted(changed.keys()):
+            write_profile_ui_feedback(profile_name)
+            reload_base(profile_name)
 
 def get_pager():
     return 'less'
@@ -2065,33 +1955,26 @@ def get_profile_diff(oldprofile, newprofile):
     return ''.join(diff)
 
 def display_changes(oldprofile, newprofile):
-    if aaui.UI_mode == 'yast':
-        aaui.UI_LongMessage(_('Profile Changes'), get_profile_diff(oldprofile, newprofile))
-    else:
-        difftemp = generate_diff(oldprofile, newprofile)
-        subprocess.call('less %s' % difftemp.name, shell=True)
-        difftemp.delete = True
-        difftemp.close()
+    difftemp = generate_diff(oldprofile, newprofile)
+    subprocess.call('less %s' % difftemp.name, shell=True)
+    difftemp.delete = True
+    difftemp.close()
 
 def display_changes_with_comments(oldprofile, newprofile):
     """Compare the new profile with the existing profile inclusive of all the comments"""
     if not os.path.exists(oldprofile):
         raise AppArmorException(_("Can't find existing profile %s to compare changes.") % oldprofile)
-    if aaui.UI_mode == 'yast':
-        #To-Do
-        pass
-    else:
-        newtemp = tempfile.NamedTemporaryFile('w')
-        newtemp.write(newprofile)
-        newtemp.flush()
+    newtemp = tempfile.NamedTemporaryFile('w')
+    newtemp.write(newprofile)
+    newtemp.flush()
 
-        difftemp = tempfile.NamedTemporaryFile('w')
+    difftemp = tempfile.NamedTemporaryFile('w')
 
-        subprocess.call('diff -u -p %s %s > %s' % (oldprofile, newtemp.name, difftemp.name), shell=True)
+    subprocess.call('diff -u -p %s %s > %s' % (oldprofile, newtemp.name, difftemp.name), shell=True)
 
-        newtemp.close()
-        subprocess.call('less %s' % difftemp.name, shell=True)
-        difftemp.close()
+    newtemp.close()
+    subprocess.call('less %s' % difftemp.name, shell=True)
+    difftemp.close()
 
 def set_process(pid, profile):
     # If process not running don't do anything
