@@ -61,7 +61,11 @@ parser = argparse.ArgumentParser(description=_('Generate profile for the given p
 parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))
 parser.add_argument('-f', '--file', type=str, help=_('path to logfile'))
 parser.add_argument('program', type=str, help=_('name of program to profile'))
+parser.add_argument('-j', '--json', action="store_true", help=_('Input and Output in JSON'))
 args = parser.parse_args()
+
+if args.json:
+    aaui.set_json_mode()
 
 profiling = args.program
 profiledir = args.dir

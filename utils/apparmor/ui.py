@@ -1,5 +1,7 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
+#    Copyright (C) 2017 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2017 SUSE Linux
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -11,6 +13,8 @@
 #    GNU General Public License for more details.
 #
 # ----------------------------------------------------------------------
+
+import json
 import sys
 import re
 import readline
@@ -24,13 +28,31 @@ _ = init_translation()
 # Set up UI logger for separate messages from UI module
 debug_logger = DebugLogger('UI')
 
-# The operating mode: yast or text, text by default
-UI_mode = 'text'
-
 # If Python3, wrap input in raw_input so make check passes
 if not 'raw_input' in dir(__builtins__): raw_input = input
 
 ARROWS = {'A': 'UP', 'B': 'DOWN', 'C': 'RIGHT', 'D': 'LEFT'}
+
+UI_mode = 'text'
+
+def write_json(jsonout):
+   print(json.dumps(jsonout, sort_keys=False, separators=(',', ': ')))
+   sys.stdout.flush()
+
+def set_json_mode():
+    global UI_mode
+    UI_mode = 'json'
+    jsonout = {'dialog': 'apparmor-json-version', 'data': '2.12'}
+    write_json(jsonout)
+
+# reads the response on command line for json and verifies the response
+# for the dialog type
+def json_response(dialog_type):
+    string = raw_input('\n')
+    rh = json.loads(string.strip())
+    if rh["dialog"] != dialog_type:
+        raise AppArmorException('Expected response %s got %s.' % (dialog_type, string))
+    return rh
 
 def getkey():
     key = readkey()
@@ -44,12 +66,18 @@ def getkey():
 
 def UI_Info(text):
     debug_logger.info(text)
-    if UI_mode == 'text':
+    if UI_mode == 'json':
+        jsonout = {'dialog': 'info', 'data': text}
+        write_json(jsonout)
+    else:  # text mode
         sys.stdout.write(text + '\n')
 
 def UI_Important(text):
     debug_logger.debug(text)
-    if UI_mode == 'text':
+    if UI_mode == 'json':
+        jsonout = {'dialog': 'important', 'data': text}
+        write_json(jsonout)
+    else:  # text mode
         sys.stdout.write('\n' + text + '\n')
 
 def get_translated_hotkey(translated, cmsg=''):
@@ -67,14 +95,18 @@ def get_translated_hotkey(translated, cmsg=''):
 def UI_YesNo(text, default):
     debug_logger.debug('UI_YesNo: %s: %s %s' % (UI_mode, text, default))
     default = default.lower()
-    ans = None
-    if UI_mode == 'text':
-        yes = CMDS['CMD_YES']
-        no = CMDS['CMD_NO']
-        yeskey = get_translated_hotkey(yes).lower()
-        nokey = get_translated_hotkey(no).lower()
-        ans = 'XXXINVALIDXXX'
-        while ans not in ['y', 'n']:
+    yes = CMDS['CMD_YES']
+    no = CMDS['CMD_NO']
+    yeskey = get_translated_hotkey(yes).lower()
+    nokey = get_translated_hotkey(no).lower()
+    ans = 'XXXINVALIDXXX'
+    while ans not in ['y', 'n']:
+        if UI_mode == 'json':
+            jsonout = {'dialog': 'yesno', 'text': text, 'default': default}
+            write_json(jsonout)
+            hm = json_response('yesno')
+            ans = hm['response_key']
+        else:  # text mode
             sys.stdout.write('\n' + text + '\n')
             if default == 'y':
                 sys.stdout.write('\n[%s] / %s\n' % (yes, no))
@@ -102,18 +134,22 @@ def UI_YesNo(text, default):
 def UI_YesNoCancel(text, default):
     debug_logger.debug('UI_YesNoCancel: %s: %s %s' % (UI_mode, text, default))
     default = default.lower()
-    ans = None
-    if UI_mode == 'text':
-        yes = CMDS['CMD_YES']
-        no = CMDS['CMD_NO']
-        cancel = CMDS['CMD_CANCEL']
+    yes = CMDS['CMD_YES']
+    no = CMDS['CMD_NO']
+    cancel = CMDS['CMD_CANCEL']
 
-        yeskey = get_translated_hotkey(yes).lower()
-        nokey = get_translated_hotkey(no).lower()
-        cancelkey = get_translated_hotkey(cancel).lower()
+    yeskey = get_translated_hotkey(yes).lower()
+    nokey = get_translated_hotkey(no).lower()
+    cancelkey = get_translated_hotkey(cancel).lower()
 
-        ans = 'XXXINVALIDXXX'
-        while ans not in ['c', 'n', 'y']:
+    ans = 'XXXINVALIDXXX'
+    while ans not in ['c', 'n', 'y']:
+        if UI_mode == 'json':
+            jsonout = {'dialog': 'yesnocancel', 'text': text, 'default': default}
+            write_json(jsonout)
+            hm = json_response('yesnocancel')
+            ans = hm['response_key']
+        else:  # text mode
             sys.stdout.write('\n' + text + '\n')
             if default == 'y':
                 sys.stdout.write('\n[%s] / %s / %s\n' % (yes, no, cancel))
@@ -148,7 +184,11 @@ def UI_YesNoCancel(text, default):
 def UI_GetString(text, default):
     debug_logger.debug('UI_GetString: %s: %s %s' % (UI_mode, text, default))
     string = default
-    if UI_mode == 'text':
+    if UI_mode == 'json':
+        jsonout = {'dialog': 'getstring', 'text': text, 'default': default}
+        write_json(jsonout)
+        string = json_response('getstring')["response"]
+    else:  # text mode
         readline.set_startup_hook(lambda: readline.insert_text(default))
         try:
             string = raw_input('\n' + text)
@@ -161,15 +201,18 @@ def UI_GetString(text, default):
 def UI_GetFile(file):
     debug_logger.debug('UI_GetFile: %s' % UI_mode)
     filename = None
-    if UI_mode == 'text':
+    if UI_mode == 'json':
+        jsonout = {'dialog': 'getfile', 'text': file['description']}
+        write_json(jsonout)
+        filename = json_response('getfile')["response"]
+    else:  # text mode
         sys.stdout.write(file['description'] + '\n')
         filename = sys.stdin.read()
     return filename
 
 def UI_BusyStart(message):
     debug_logger.debug('UI_BusyStart: %s' % UI_mode)
-    if UI_mode == 'text':
-        UI_Info(message)
+    UI_Info(message)
 
 def UI_BusyStop():
     debug_logger.debug('UI_BusyStop: %s' % UI_mode)
@@ -254,8 +297,7 @@ class PromptQuestion(object):
     def promptUser(self, params=''):
         cmd = None
         arg = None
-        if UI_mode == 'text':
-            cmd, arg = self.Text_PromptUser()
+        cmd, arg = self.Text_PromptUser()
         if cmd == 'CMD_ABORT':
             confirm_and_abort()
             cmd = 'XXXINVALIDXXX'
@@ -324,6 +366,17 @@ class PromptQuestion(object):
         function_regexp += ')$'
 
         ans = 'XXXINVALIDXXX'
+        hdict = dict()
+        jsonprompt = {
+            'dialog': 'promptuser',
+            'title': title,
+            'headers': hdict,
+            'explanation': explanation,
+            'options': options,
+            'menu_items': menu_items,
+            'default_key': default_key,
+        }
+
         while not re.search(function_regexp, ans, flags=re.IGNORECASE):
 
             prompt = '\n'
@@ -335,6 +388,7 @@ class PromptQuestion(object):
                 while header_copy:
                     header = header_copy.pop(0)
                     value = header_copy.pop(0)
+                    hdict[header] = value
                     prompt += formatstr % (header + ':', value)
                 prompt += '\n'
 
@@ -352,9 +406,14 @@ class PromptQuestion(object):
 
             prompt += ' / '.join(menu_items)
 
-            sys.stdout.write(prompt + '\n')
-
-            ans = getkey().lower()
+            if UI_mode == 'json':
+                write_json(jsonprompt)
+                hm = json_response('promptuser')
+                ans = hm["response_key"]
+                selected = hm["selected"]
+            else:  # text mode
+                sys.stdout.write(prompt + '\n')
+                ans = getkey().lower()
 
             if ans:
                 if ans == 'up':
@@ -381,7 +440,7 @@ class PromptQuestion(object):
                         selected = ans - 1
                     ans = 'XXXINVALIDXXX'
 
-            if keys.get(ans, False) == 'CMD_HELP':
+            if keys.get(ans, False) == 'CMD_HELP' and UI_mode != 'json':
                 sys.stdout.write('\n%s\n' % helptext)
                 ans = 'again'
 
