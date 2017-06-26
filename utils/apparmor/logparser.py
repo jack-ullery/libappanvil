@@ -195,31 +195,13 @@ class ReadLog:
             (pid, parent, mode, details) = e
             self.add_to_tree(pid, parent, mode, details)
 
-    def map_log_type(self, log_type):
-            if re.search('(UNKNOWN\[1501\]|APPARMOR_AUDIT|1501)', log_type):
-                aamode = 'AUDIT'
-            elif re.search('(UNKNOWN\[1502\]|APPARMOR_ALLOWED|1502)', log_type):
-                aamode = 'PERMITTING'
-            elif re.search('(UNKNOWN\[1503\]|APPARMOR_DENIED|1503)', log_type):
-                aamode = 'REJECTING'
-            elif re.search('(UNKNOWN\[1504\]|APPARMOR_HINT|1504)', log_type):
-                aamode = 'HINT'
-            elif re.search('(UNKNOWN\[1505\]|APPARMOR_STATUS|1505)', log_type):
-                aamode = 'STATUS'
-            elif re.search('(UNKNOWN\[1506\]|APPARMOR_ERROR|1506)', log_type):
-                aamode = 'ERROR'
-            else:
-                aamode = 'UNKNOWN'
-
-            return aamode
-
     def parse_event_for_tree(self, e):
         aamode = e.get('aamode', 'UNKNOWN')
 
-        if e.get('type', False):
-            aamode = self.map_log_type(e['type'])
+        if aamode == 'UNKNOWN':
+            raise AppArmorBug('aamode is UNKNOWN - %s' % e['type'])  # should never happen
 
-        if aamode in ['UNKNOWN', 'AUDIT', 'STATUS', 'ERROR']:
+        if aamode in ['AUDIT', 'STATUS', 'ERROR']:
             return None
 
         if 'profile_set' in e['operation']:
