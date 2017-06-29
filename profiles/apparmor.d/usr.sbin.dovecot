@@ -12,7 +12,7 @@
 
 #include <tunables/global>
 
-/usr/sbin/dovecot {
+/usr/sbin/dovecot flags=(attach_disconnected) {
   #include <abstractions/authentication>
   #include <abstractions/base>
   #include <abstractions/dovecot-common>
