@@ -32,7 +32,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <dirent.h>
 
 #include <unordered_map>
 #include <string>
@@ -120,7 +119,7 @@ struct cb_struct {
 	const char *filename;
 };
 
-static int include_dir_cb(DIR *dir unused, const char *name, struct stat *st,
+static int include_dir_cb(int dirfd unused, const char *name, struct stat *st,
 			  void *data)
 {
 	struct cb_struct *d = (struct cb_struct *) data;
@@ -179,7 +178,7 @@ void include_filename(char *filename, int search)
 		struct cb_struct data = { fullpath, filename };
 		fclose(include_file);
 		include_file = NULL;
-		if (dirat_for_each(NULL, fullpath, &data, include_dir_cb)) {
+		if (dirat_for_each(AT_FDCWD, fullpath, &data, include_dir_cb)) {
 			yyerror(_("Could not process include directory"
 				  " '%s' in '%s'"), fullpath, filename);;
 		}
@@ -193,6 +192,7 @@ OPEN_BRACE 	\{
 CLOSE_BRACE 	\}
 SLASH		\/
 COLON		:
+AMPERSAND	&
 END_OF_RULE	[,]
 RANGE		-
 MODE_CHARS 	([RrWwaLlMmkXx])|(([Pp]|[Cc])[Xx])|(([Pp]|[Cc])?([IiUu])[Xx])
@@ -226,8 +226,8 @@ SET_VAR_PREFIX  @
 SET_VARIABLE	{SET_VAR_PREFIX}(\{{VARIABLE_NAME}\}|{VARIABLE_NAME})
 BOOL_VARIABLE	$(\{{VARIABLE_NAME}\}|{VARIABLE_NAME})
 
-PATHNAME	(\/|{SET_VARIABLE}{POST_VAR_ID}){ID}*
-QPATHNAME	\"(\/|{SET_VAR_PREFIX})([^\0"]|\\\")*\"
+LABEL		(\/|{SET_VARIABLE}{POST_VAR_ID}|{COLON}|{AMPERSAND}){ID}*
+QUOTED_LABEL	\"(\/|{SET_VAR_PREFIX}|{COLON}|{AMPERSAND})([^\0"]|\\\")*\"
 
 OPEN_PAREN 	\(
 CLOSE_PAREN	\)
@@ -239,6 +239,7 @@ LT_EQUAL	<=
 
 /* IF adding new state please update state_names table at eof */
 %x SUB_ID
+%x SUB_ID_WS
 %x SUB_VALUE
 %x EXTCOND_MODE
 %x EXTCONDLIST_MODE
@@ -268,7 +269,7 @@ LT_EQUAL	<=
 	}
 %}
 
-<INITIAL,INCLUDE,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE>{
+<INITIAL,SUB_ID_WS,INCLUDE,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE>{
 	{WS}+	{  DUMP_PREPROCESS; /* Ignoring whitespace */ }
 }
 
@@ -321,7 +322,7 @@ LT_EQUAL	<=
 	}
 }
 
-<SUB_ID>{
+<SUB_ID,SUB_ID_WS>{
 	({IDS}|{QUOTED_ID}) {
 		/* Go into separate state to match generic ID strings */
 		yylval.id =  processid(yytext, yyleng);
@@ -439,16 +440,25 @@ LT_EQUAL	<=
 }
 
 <CHANGE_PROFILE_MODE>{
-	{ARROW}		{ RETURN_TOKEN(TOK_ARROW); }
+	safe		{ RETURN_TOKEN(TOK_SAFE); }
+	unsafe		{ RETURN_TOKEN(TOK_UNSAFE); }
+
+	{ARROW} {
+		/**
+		 * Push state so that we can return TOK_ID even when the
+		 * change_profile target is 'safe' or 'unsafe'.
+		 */
+		PUSH_AND_RETURN(SUB_ID_WS, TOK_ARROW);
+	}
 
 	({IDS}|{QUOTED_ID}) {
 		yylval.id = processid(yytext, yyleng);
-		POP_AND_RETURN(TOK_ID);
+		RETURN_TOKEN(TOK_ID);
 	}
 }
 
 <RLIMIT_MODE>{
-	-?{NUMBER}[[:alpha:]]*  {
+	-?{NUMBER} {
 	        yylval.var_val = strdup(yytext);
 		RETURN_TOKEN(TOK_VALUE);
 	}
@@ -511,7 +521,7 @@ LT_EQUAL	<=
 }
 
 <MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE>{
-	({IDS_NOEQ}|{PATHNAME}|{QUOTED_ID}) {
+	({IDS_NOEQ}|{LABEL}|{QUOTED_ID}) {
 		yylval.id = processid(yytext, yyleng);
 		RETURN_TOKEN(TOK_ID);
 	}
@@ -520,7 +530,14 @@ LT_EQUAL	<=
 #include/.*\r?\n	{
 	/* Don't use PUSH() macro here as we don't want #include echoed out.
 	 * It needs to be handled specially
-	 */ 
+	 */
+	yy_push_state(INCLUDE);
+}
+
+include/{WS}	{
+	/* Don't use PUSH() macro here as we don't want #include echoed out.
+	 * It needs to be handled specially
+	 */
 	yy_push_state(INCLUDE);
 }
 
@@ -551,7 +568,7 @@ LT_EQUAL	<=
 
 {CLOSE_BRACE}	{ RETURN_TOKEN(TOK_CLOSE); }
 
-({PATHNAME}|{QPATHNAME}) {
+({LABEL}|{QUOTED_LABEL}) {
 	yylval.id = processid(yytext, yyleng);
 	RETURN_TOKEN(TOK_ID);
 }
@@ -625,7 +642,7 @@ LT_EQUAL	<=
 	}
 }
 
-<INITIAL,SUB_ID,SUB_VALUE,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE>{
+<INITIAL,SUB_ID,SUB_ID_WS,SUB_VALUE,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE>{
 	[^\n]	{
 		DUMP_PREPROCESS;
 		/* Something we didn't expect */
@@ -640,6 +657,7 @@ LT_EQUAL	<=
 unordered_map<int, string> state_names = {
 	STATE_TABLE_ENT(INITIAL),
 	STATE_TABLE_ENT(SUB_ID),
+	STATE_TABLE_ENT(SUB_ID_WS),
 	STATE_TABLE_ENT(SUB_VALUE),
 	STATE_TABLE_ENT(EXTCOND_MODE),
 	STATE_TABLE_ENT(EXTCONDLIST_MODE),

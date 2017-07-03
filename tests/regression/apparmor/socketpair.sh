@@ -19,6 +19,8 @@ bin=$pwd
 
 . $bin/prologue.inc
 
+requires_kernel_features network/af_unix
+
 do_test()
 {
 	local desc="SOCKETPAIR ($1)"

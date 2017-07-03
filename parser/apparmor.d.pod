@@ -46,13 +46,21 @@ to the policy; this behaviour is modelled after cpp(1).
 
 B<PROFILE FILE> = ( [ I<PREAMBLE> ] [ I<PROFILE> ] )*
 
-B<PREAMBLE> = ( I<COMMENT> | I<VARIABLE ASSIGNMENT> | I<INCLUDE> )* (variable assignment must come before the profile)
+B<PREAMBLE> = ( I<COMMENT> | I<VARIABLE ASSIGNMENT> | I<ALIAS RULE> | I<INCLUDE> )*
+  Variable assignment and alias rules must come before the profile.
+
+B<VARIABLE ASSIGNMENT> = I<VARIABLE> ('=' | '+=') (space separated values)
+
+B<VARIABLE> = '@{' I<ALPHA> [ ( I<ALPHANUMERIC> | '_' ) ... ] '}'
+
+B<ALIAS RULE> = 'alias' I<ABS PATH> '-E<gt>' I<REWRITTEN ABS PATH> ','
 
 B<INCLUDE> = '#include' ( I<ABS PATH> | I<MAGIC PATH> )
 
 B<ABS PATH> = '"' path '"' (the path is passed to open(2))
 
-B<MAGIC PATH> = 'E<lt>' relative path 'E<gt>' (the path is relative to F</etc/apparmor.d/>)
+B<MAGIC PATH> = 'E<lt>' relative path 'E<gt>'
+  The path is relative to F</etc/apparmor.d/>.
 
 B<COMMENT> = '#' I<TEXT> [ '\r' ] '\n'
 
@@ -78,7 +86,7 @@ B<RULES> = [ ( I<LINE RULES> | I<COMMA RULES> ',' | I<BLOCK RULES> )
 
 B<LINE RULES> = ( I<COMMENT> | I<INCLUDE> ) [ '\r' ] '\n'
 
-B<COMMA RULES> = ( I<CAPABILITY RULE> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<UNIX RULE> | I<FILE RULE> | I<LINK RULE> | I<CHANGE_PROFILE RULE> | I<RLIMIT RULE> | I<ALIAS RULE> | I<DBUS RULE> )
+B<COMMA RULES> = ( I<CAPABILITY RULE> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<UNIX RULE> | I<FILE RULE> | I<LINK RULE> | I<CHANGE_PROFILE RULE> | I<RLIMIT RULE> | I<DBUS RULE> )
 
 B<BLOCK RULES> = ( I<SUBPROFILE> | I<HAT> | I<QUALIFIER BLOCK> )
 
@@ -86,7 +94,7 @@ B<SUBPROFILE> = 'profile' I<PROFILE NAME> [ I<ATTACHMENT SPECIFICATION> ] [ I<PR
 
 B<HAT> = ('hat' | '^') I<HATNAME> [ I<PROFILE FLAG CONDS> ] '{' ( I<RULES> )* '}'
 
-B<HATNAME> = ( must start with alphanumeric character. see aa_change_hat(2) for a description of how this "hat" is used. IF '^' is used to start a hat then there is no space between the '^' and I<HATNAME>)
+B<HATNAME> = (must start with alphanumeric character. See aa_change_hat(2) for a description of how this "hat" is used. If '^' is used to start a hat then there is no space between the '^' and I<HATNAME>)
 
 B<QUALIFIER BLOCK> = I<QUALIFIERS> I<BLOCK>
 
@@ -101,9 +109,9 @@ B<CAPABILITY LIST> = ( I<CAPABILITY> )+
 B<CAPABILITY> = (lowercase capability name without 'CAP_' prefix; see
 capabilities(7))
 
-B<NETWORK RULE> = [ I<QUALIFIERS> 'network' [ [ I<DOMAIN> [ I<TYPE> | I<PROTOCOL> ] ] | [ I<PROTOCOL> ] ]
+B<NETWORK RULE> = [ I<QUALIFIERS> ] 'network' [ I<DOMAIN> ] [ I<TYPE> | I<PROTOCOL> ]
 
-B<DOMAIN> = ( 'inet' | 'ax25' | 'ipx' | 'appletalk' | 'netrom' | 'bridge' | 'atmpvc' | 'x25' | 'inet6' | 'rose' | 'netbeui' | 'security' | 'key' | 'packet' | 'ash' | 'econet' | 'atmsvc' | 'sna' | 'irda' | 'pppox' | 'wanpipe' | 'bluetooth' | 'netlink' | 'unix' | 'rds' | 'llc' | 'can' | 'tipc' | 'iucv' | 'rxrpc' | 'isdn' | 'phonet' | 'ieee802154' | 'caif' | 'alg' | 'nfc' | 'vsock' ) ','
+B<DOMAIN> = ( 'inet' | 'ax25' | 'ipx' | 'appletalk' | 'netrom' | 'bridge' | 'atmpvc' | 'x25' | 'inet6' | 'rose' | 'netbeui' | 'security' | 'key' | 'packet' | 'ash' | 'econet' | 'atmsvc' | 'sna' | 'irda' | 'pppox' | 'wanpipe' | 'bluetooth' | 'netlink' | 'unix' | 'rds' | 'llc' | 'can' | 'tipc' | 'iucv' | 'rxrpc' | 'isdn' | 'phonet' | 'ieee802154' | 'caif' | 'alg' | 'nfc' | 'vsock' | 'mpls' | 'ib' | 'kcm' ) ','
 
 B<TYPE> = ( 'stream' | 'dgram' | 'seqpacket' |  'rdm' | 'raw' | 'packet' )
 
@@ -111,7 +119,7 @@ B<PROTOCOL> = ( 'tcp' | 'udp' | 'icmp' )
 
 B<MOUNT RULE> = ( I<MOUNT> | I<REMOUNT> | I<UMOUNT> )
 
-B<MOUNT> = [ I<QUALIFIERS> ] 'mount' [ I<MOUNT CONDITIONS> ] [ I<SOURCE FILEGLOB> ] [ -E<gt> [ I<MOUNTPOINT FILEGLOB> ]
+B<MOUNT> = [ I<QUALIFIERS> ] 'mount' [ I<MOUNT CONDITIONS> ] [ I<SOURCE FILEGLOB> ] [ '-E<gt>' [ I<MOUNTPOINT FILEGLOB> ]
 
 B<REMOUNT> = [ I<QUALIFIERS> ] 'remount' [ I<MOUNT CONDITIONS> ] I<MOUNTPOINT FILEGLOB>
 
@@ -131,7 +139,7 @@ B<MOUNT FLAGS> = ( 'ro' | 'rw' | 'nosuid' | 'suid' | 'nodev' | 'dev' | 'noexec' 
 
 B<MOUNT EXPRESSION> = ( I<ALPHANUMERIC> | I<AARE> ) ...
 
-B<PIVOT ROOT RULE> = [ I<QUALIFIERS> ] pivot_root [ oldroot=I<OLD PUT FILEGLOB> ] [ I<NEW ROOT FILEGLOB> ] [ -E<gt> I<PROFILE NAME> ]
+B<PIVOT ROOT RULE> = [ I<QUALIFIERS> ] pivot_root [ oldroot=I<OLD PUT FILEGLOB> ] [ I<NEW ROOT FILEGLOB> ] [ '-E<gt>' I<PROFILE NAME> ]
 
 B<SOURCE FILEGLOB> = I<FILEGLOB>
 
@@ -161,7 +169,7 @@ B<SIGNAL SET> = 'set' '=' '(' I<SIGNAL LIST> ')'
 
 B<SIGNAL LIST> = Comma or space separated list of I<SIGNALS>
 
-B<SIGNALS> = ( 'hup' | 'int' | 'quit' | 'ill' | 'trap' | 'abrt' | 'bus' | 'fpe' | 'kill' | 'usr1' | 'segv' | 'usr2' | 'pipe' | 'alrm' | 'term' | 'stkflt' | 'chld' | 'cont' | 'stop' | 'stp' | 'ttin' | 'ttou' | 'urg' | 'xcpu' | 'xfsz' | 'vtalrm' | 'prof' | 'winch' | 'io' | 'pwr' | 'sys' | 'emt' | 'exists' )
+B<SIGNALS> = ( 'hup' | 'int' | 'quit' | 'ill' | 'trap' | 'abrt' | 'bus' | 'fpe' | 'kill' | 'usr1' | 'segv' | 'usr2' | 'pipe' | 'alrm' | 'term' | 'stkflt' | 'chld' | 'cont' | 'stop' | 'stp' | 'ttin' | 'ttou' | 'urg' | 'xcpu' | 'xfsz' | 'vtalrm' | 'prof' | 'winch' | 'io' | 'pwr' | 'sys' | 'emt' | 'exists' | 'rtmin+0' ... 'rtmin+32' )
 
 B<SIGNAL PEER> = 'peer' '=' I<AARE>
 
@@ -193,31 +201,33 @@ B<DBUS LABEL> = 'label' '=' '(' '"' I<AARE> '"' | I<AARE> ')'
 
 B<DBUS ACCESS LIST> = Comma separated list of I<DBUS ACCESS>
 
-B<DBUS ACCESS> = ( 'send' | 'receive' | 'bind' | 'eavesdrop' )  (some accesses are incompatible with some rules; see below.)
+B<DBUS ACCESS> = ( 'send' | 'receive' | 'bind' | 'eavesdrop' | 'r' | 'read' | 'w' | 'write' | 'rw' )
+  Some accesses are incompatible with some rules; see below.
 
-B<AARE> = B<?*[]{}^> (see below for meanings)
+B<AARE> = B<?*[]{}^>
+  See below for meanings.
 
 B<UNIX RULE> = [ I<QUALIFIERS> ] 'unix' [ I<UNIX ACCESS EXPR> ] [ I<UNIX RULE CONDS> ] [ I<UNIX LOCAL EXPR> ] [ I<UNIX PEER EXPR> ]
 
 B<UNIX ACCESS EXPR> = ( I<UNIX ACCESS> | I<UNIX ACCESS LIST> )
 
 B<UNIX ACCESS> = ( 'create' | 'bind' | 'listen' | 'accept' | 'connect' | 'shutdown' | 'getattr' | 'setattr' | 'getopt' | 'setopt' | 'send' | 'receive' | 'r' | 'w' | 'rw' )
- (some access modes are incompatible with some rules or require additional parameters)
+  Some access modes are incompatible with some rules or require additional parameters.
 
 B<UNIX ACCESS LIST> = '(' I<UNIX ACCESS> ( [','] I<UNIX ACCESS> )* ')'
 
 B<UNIX RULE CONDS> = ( I<TYPE COND> | I<PROTO COND> )
- each cond can appear at most once
+  Each cond can appear at most once.
 
 B<TYPE COND> = 'type' '='  ( I<AARE> | '(' ( '"' I<AARE> '"' | I<AARE> )+ ')' )
 
 B<PROTO COND> = 'protocol' '='  ( I<AARE> | '(' ( '"' I<AARE> '"' | I<AARE> )+ ')' )
 
 B<UNIX LOCAL EXPR> = ( I<UNIX ADDRESS COND> | I<UNIX LABEL COND> | I<UNIX ATTR COND> | I<UNIX OPT COND> )*
- each cond can appear at most once
+  Each cond can appear at most once.
 
 B<UNIX PEER EXPR> = 'peer' '=' ( I<UNIX ADDRESS COND> | I<UNIX LABEL COND> )+
- each cond can appear at most once
+  Each cond can appear at most once.
 
 B<UNIX ADDRESS COND> 'addr' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
@@ -231,15 +241,21 @@ B<RLIMIT RULE> = 'set' 'rlimit' [I<RLIMIT> 'E<lt>=' I<RLIMIT VALUE> ]
 
 B<RLIMIT> = ( 'cpu' | 'fsize' | 'data' | 'stack' | 'core' | 'rss' | 'nofile' | 'ofile' | 'as' | 'nproc' | 'memlock' | 'locks' | 'sigpending' | 'msgqueue' | 'nice' | 'rtprio' | 'rttime' )
 
-B<RLIMIT VALUE> = ( I<RLIMIT SIZE> | I<RLIMIT NUMBER> | I<RLIMIT NICE> )
+B<RLIMIT VALUE> = ( I<RLIMIT SIZE> | I<RLIMIT NUMBER> | I<RLIMIT TIME> | I<RLIMIT NICE> )
 
-B<RLIMIT SIZE> = I<NUMBER> ( 'K' | 'M' | 'G' ) Only applies to RLIMIT of 'fsize', 'data', 'stack', 'core', 'rss', 'as', 'memlock', 'msgqueue'.
+B<RLIMIT SIZE> = I<NUMBER> ( 'K' | 'M' | 'G' )
+  Only applies to RLIMIT of 'fsize', 'data', 'stack', 'core', 'rss', 'as', 'memlock', 'msgqueue'.
 
-B<RLIMIT NUMBER> = number from 0 to max rlimit value. Only applies ot RLIMIT of 'nofile', 'locks', 'sigpending', 'nproc', 'rtprio', 'cpu'
+B<RLIMIT NUMBER> = number from 0 to max rlimit value.
+  Only applies to RLIMIT of 'ofile', 'nofile', 'locks', 'sigpending', 'nproc', 'rtprio'.
 
-B<RLIMIT NICE> = a number between -20 and 19. Only applies to RLIMIT of 'nice'
+B<RLIMIT TIME> = I<NUMBER> ( 'us' | 'microsecond' | 'microseconds' | 'ms' | 'millisecond' | 'milliseconds' | 's' | 'sec' | 'second' | 'seconds' | 'min' | 'minute' | 'minutes' | 'h' | 'hour' | 'hours' | 'd' | 'day' | 'days' | 'week' | 'weeks' )
+  Only applies to RLIMIT of 'cpu' and 'rttime'. RLIMIT 'cpu' only allows units E<gt>= 'seconds'.
 
-B<FILE RULE> = [ I<QUALIFIERS> ] [ 'owner' ] ( 'file' | [ 'file' ] ( I<FILEGLOB> I<ACCESS>  | I<ACCESS> I<FILEGLOB> ) [ -E<gt> I<EXEC TARGET> ] )
+B<RLIMIT NICE> = a number between -20 and 19.
+  Only applies to RLIMIT of 'nice'.
+
+B<FILE RULE> = [ I<QUALIFIERS> ] [ 'owner' ] ( 'file' | [ 'file' ] ( I<FILEGLOB> I<ACCESS>  | I<ACCESS> I<FILEGLOB> ) [ '-E<gt>' I<EXEC TARGET> ] )
 
 B<FILEGLOB> = ( I<QUOTED FILEGLOB> | I<UNQUOTED FILEGLOB> )
 
@@ -249,23 +265,21 @@ B<UNQUOTED FILEGLOB> = (must start with '/' (after variable expansion), B<AARE> 
 
 B<ACCESS> = ( 'r' | 'w' | 'a' | 'l' | 'k' | 'm' | I<EXEC TRANSITION> )+  (not all combinations are allowed; see below.)
 
-B<EXEC TRANSITION> =  ( 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'cx' | 'Cx' | 'pix' | 'Pix' | 'cix' | 'Cix' | 'pux' | 'PUx' | 'cux' | 'CUx' )
+B<EXEC TRANSITION> =  ( 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'cx' | 'Cx' | 'pix' | 'Pix' | 'cix' | 'Cix' | 'pux' | 'PUx' | 'cux' | 'CUx' | 'x' )
+  A bare 'x' is only allowed in rules with the deny qualifier, everything else only without the deny qualifier.
 
-B<EXEC TARGET> = name  (requires I<EXEC TRANSITION> specified)
+B<EXEC TARGET> = name
+  Requires I<EXEC TRANSITION> specified.
 
 B<LINK RULE> = I<QUALIFIERS> [ 'owner' ] 'link' [ 'subset' ] I<FILEGLOB> ( 'to' | '-E<gt>' ) I<FILEGLOB>
-
-B<VARIABLE> = '@{' I<ALPHA> [ ( I<ALPHANUMERIC> | '_' ) ... ] '}'
-
-B<VARIABLE ASSIGNMENT> = I<VARIABLE> ('=' | '+=') (space separated values)
-
-B<ALIAS RULE> = I<ABS PATH> '-E<gt>' I<REWRITTEN ABS PATH>
 
 B<ALPHA> = ('a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
 B<ALPHANUMERIC> = ('0', '1', '2', ... '9', 'a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
-B<CHANGE_PROFILE RULE> = 'change_profile' [ I<EXEC COND> ] [ -E<gt> I<PROFILE NAME> ]
+B<CHANGE_PROFILE RULE> = 'change_profile' [ [ I<EXEC MODE> ] I<EXEC COND> ] [ '-E<gt>' I<PROFILE NAME> ]
+
+B<EXEC_MODE> = ( 'safe' | 'unsafe' )
 
 B<EXEC COND> = I<FILEGLOB>
 
@@ -360,9 +374,13 @@ modes:
 
 - transition to subprofile on execute with fallback to unconfined
 
-=item B<Cux>
+=item B<CUx>
 
 - transition to subprofile on execute with fallback to unconfined -- scrub the environment
+
+=item B<deny x>
+
+- disallow execute (in rules with the deny qualifier)
 
 =item B<m>
 
@@ -423,7 +441,7 @@ over the callee.  Use this mode only if the child absolutely must be
 run unconfined and LD_PRELOAD must be used. Any profile using this mode
 provides negligible security. Use at your own risk.
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<Ux - unconfined execute -- scrub the environment>
 
@@ -437,7 +455,7 @@ designated child processes to be run without any AppArmor protection.
 Use this mode only if the child absolutely must be run unconfined. Use
 at your own risk.
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<px - Discrete Profile execute mode>
 
@@ -449,7 +467,7 @@ B<WARNING> 'px' does not scrub the environment of variables such as
 LD_PRELOAD; as a result, the calling domain may have an undue amount of
 influence over the callee.
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<Px - Discrete Profile execute mode -- scrub the environment>
 
@@ -458,7 +476,7 @@ will invoke the Linux Kernel's B<unsafe_exec> routines to scrub
 the environment, similar to setuid programs. (See ld.so(8) for some
 information on setuid/setgid environment scrubbing.)
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<cx - Transition to Subprofile execute mode>
 
@@ -470,7 +488,7 @@ B<WARNING> 'cx' does not scrub the environment of variables such as
 LD_PRELOAD; as a result, the calling domain may have an undue amount of
 influence over the callee.
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<Cx - Transition to Subprofile execute mode -- scrub the environment>
 
@@ -479,7 +497,7 @@ will invoke the Linux Kernel's B<unsafe_exec> routines to scrub
 the environment, similar to setuid programs. (See ld.so(8) for some
 information on setuid/setgid environment scrubbing.)
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<ix - Inherit execute mode>
 
@@ -493,7 +511,7 @@ profile, or losing the permissions of the current profile. There is no
 version to scrub the environment because 'ix' executions don't change
 privileges.
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<Profile transition with inheritance fallback execute mode>
 
@@ -507,7 +525,7 @@ the 'ix' transition mode.
   'Cix' == 'Cx' with fallback to 'ix'
   'cix' == 'cx' with fallback to 'ix'
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
 
 =item B<Profile transition with unconfined fallback execute mode>
 
@@ -522,7 +540,14 @@ if 'PUx', 'CUx' is used.
   'CUx' == 'Cx' with fallback to 'Ux'
   'cux' == 'cx' with fallback to 'ux'
 
-Incompatible with other exec transition modes.
+Incompatible with other exec transition modes and the deny qualifier.
+
+=item B<deny x - Deny execute>
+
+For rules including the deny modifier, only 'x' is allowed to deny execute.
+
+The 'ix', 'Px', 'px', 'Cx', 'cx' and the fallback modes conflict with the deny
+modifier.
 
 =item B<Directed profile transitions>
 
@@ -962,6 +987,9 @@ Example AppArmor signal rules:
     # Allow us to signal ourselves using the built-in @{profile_name} variable
     signal peer=@{profile_name},
 
+    # Allow two real-time signals
+    signal set=(rtmin+0 rtmin+32),
+
 =head2 DBus rules
 
 AppArmor supports DBus mediation. The mediation is performed in conjunction
@@ -980,6 +1008,9 @@ Some AppArmor DBus permissions are not compatible with all AppArmor DBus rules.
 The 'bind' permission cannot be used in message rules. The 'send' and 'receive'
 permissions cannot be used in service rules. The 'eavesdrop' permission cannot
 be used in rules containing any conditionals outside of the 'bus' conditional.
+
+'r' and 'read' are synonyms for 'receive'. 'w' and 'write' are synonyms for
+'send'. 'rw' is a synonym for both 'send' and 'receive'.
 
 AppArmor DBus permissions are implied when a rule does not explicitly state an
 access list. By default, all DBus permissions are implied. Only message
@@ -1182,6 +1213,20 @@ rule set.  Eg.
   /bin/bash Px -> new_profile1,
   change_profile /bin/bash -> {new_profile1,new_profile2,new_profile3},
 
+The exec mode dictates whether or not the Linux Kernel's B<unsafe_exec>
+routines should be used to scrub the environment, similar to setuid programs.
+(See ld.so(8) for some information on setuid/setgid environment scrubbing.) The
+B<safe> mode sets up environment scrubbing to occur when the new application is
+executed and B<unsafe> mode disables AppArmor's requirement for environment
+scrubbing (the kernel and/or libc may still require environment scrubbing). An
+exec mode can only be specified when an exec condition is present.
+
+  change_profile safe /bin/bash -> new_profile,
+
+Not all kernels support B<safe> mode and the parser will downgrade rules to
+B<unsafe> mode in that situation. If no exec mode is specified, the default is
+B<safe> mode in kernels that support it.
+
 =head2 rlimit rules
 
 AppArmor can set and control the resource limits associated with a
@@ -1218,7 +1263,8 @@ must be made before the start of the profile.
 
 The parser will automatically expand variables to include all values
 that they have been assigned; it is an error to reference a variable
-without setting at least one value.
+without setting at least one value. You can use empty quotes ("") to
+explicitly add an empty value.
 
 At the time of this writing, the following variables are defined in the
 provided AppArmor policy:
@@ -1227,8 +1273,10 @@ provided AppArmor policy:
   @{HOMEDIRS}
   @{multiarch}
   @{pid}
+  @{pids}
   @{PROC}
   @{securityfs}
+  @{apparmorfs}
   @{sys}
   @{tid}
   @{XDG_DESKTOP_DIR}

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
 #    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
@@ -17,18 +16,18 @@
 import re
 
 from apparmor.regex import RE_PROFILE_NETWORK
-from apparmor.common import AppArmorBug, AppArmorException
-from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers
+from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.rule import BaseRule, BaseRuleset, logprof_value_or_all, parse_modifiers
 
 # setup module translations
 from apparmor.translations import init_translation
 _ = init_translation()
 
 
-network_domain_keywords   = [ 'unix', 'inet', 'ax25', 'ipx', 'appletalk', 'netrom', 'bridge', 'atmpvc', 'x25', 'inet6',
+network_domain_keywords   = [ 'unspec', 'unix', 'inet', 'ax25', 'ipx', 'appletalk', 'netrom', 'bridge', 'atmpvc', 'x25', 'inet6',
                               'rose', 'netbeui', 'security', 'key', 'netlink', 'packet', 'ash', 'econet', 'atmsvc', 'rds', 'sna',
                               'irda', 'pppox', 'wanpipe', 'llc', 'can', 'tipc', 'bluetooth', 'iucv', 'rxrpc', 'isdn', 'phonet',
-                              'ieee802154', 'caif', 'alg', 'nfc', 'vsock' ]
+                              'ieee802154', 'caif', 'alg', 'nfc', 'vsock', 'mpls', 'ib', 'kcm' ]
 
 network_type_keywords     = ['stream', 'dgram', 'seqpacket', 'rdm', 'raw', 'packet']
 network_protocol_keywords = ['tcp', 'udp', 'icmp']
@@ -39,12 +38,10 @@ RE_NETWORK_TYPE     = '(' + '|'.join(network_type_keywords) + ')'
 RE_NETWORK_PROTOCOL = '(' + '|'.join(network_protocol_keywords) + ')'
 
 RE_NETWORK_DETAILS  = re.compile(
-    '^\s*(' +
-        '(?P<domain>' + RE_NETWORK_DOMAIN + ')' + # domain and ...
-            '(\s+(?P<type_or_protocol>' + RE_NETWORK_TYPE + '|' + RE_NETWORK_PROTOCOL + '))?' + # ... optional type or protocol
-        '|' + # or
-        '(?P<protocol>' + RE_NETWORK_PROTOCOL + ')' + # protocol only
-    ')\s*$')
+    '^\s*' +
+    '(?P<domain>' + RE_NETWORK_DOMAIN + ')?' +  # optional domain
+    '(\s+(?P<type_or_protocol>' + RE_NETWORK_TYPE + '|' + RE_NETWORK_PROTOCOL + '))?' +  # optional type or protocol
+    '\s*$')
 
 
 class NetworkRule(BaseRule):
@@ -57,12 +54,10 @@ class NetworkRule(BaseRule):
 
     ALL = __NetworkAll
 
+    rule_name = 'network'
+
     def __init__(self, domain, type_or_protocol, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
-
-        '''
-           NETWORK RULE = 'network' [ [ DOMAIN [ TYPE | PROTOCOL ] ] | [ PROTOCOL ] ] ','
-        '''
 
         super(NetworkRule, self).__init__(audit=audit, deny=deny,
                                              allow_keyword=allow_keyword,
@@ -73,7 +68,7 @@ class NetworkRule(BaseRule):
         self.all_domains = False
         if domain == NetworkRule.ALL:
             self.all_domains = True
-        elif type(domain) == str:
+        elif type_is_str(domain):
             if domain in network_domain_keywords:
                 self.domain = domain
             else:
@@ -85,12 +80,10 @@ class NetworkRule(BaseRule):
         self.all_type_or_protocols = False
         if type_or_protocol == NetworkRule.ALL:
             self.all_type_or_protocols = True
-        elif type(type_or_protocol) == str:
+        elif type_is_str(type_or_protocol):
             if type_or_protocol in network_protocol_keywords:
                 self.type_or_protocol = type_or_protocol
             elif type_or_protocol in network_type_keywords:
-                if self.all_domains:
-                    raise AppArmorException('Passing type %s to NetworkRule without specifying a domain keyword is not allowed' % type_or_protocol)
                 self.type_or_protocol = type_or_protocol
             else:
                 raise AppArmorBug('Passed unknown type_or_protocol to NetworkRule: %s' % type_or_protocol)
@@ -113,7 +106,7 @@ class NetworkRule(BaseRule):
 
         rule_details = ''
         if matches.group('details'):
-            rule_details = matches.group('details').strip()
+            rule_details = matches.group('details')
 
         if rule_details:
             details = RE_NETWORK_DETAILS.search(rule_details)
@@ -127,8 +120,6 @@ class NetworkRule(BaseRule):
 
             if details.group('type_or_protocol'):
                 type_or_protocol = details.group('type_or_protocol')
-            elif details.group('protocol'):
-                type_or_protocol = details.group('protocol')
             else:
                 type_or_protocol = NetworkRule.ALL
         else:
@@ -162,28 +153,16 @@ class NetworkRule(BaseRule):
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
 
-        if not other_rule.domain and not other_rule.all_domains:
-            raise AppArmorBug('No domain specified in other network rule')
+        if not self._is_covered_plain(self.domain, self.all_domains, other_rule.domain, other_rule.all_domains, 'domain'):
+            return False
 
-        if not other_rule.type_or_protocol and not other_rule.all_type_or_protocols:
-            raise AppArmorBug('No type or protocol specified in other network rule')
-
-        if not self.all_domains:
-            if other_rule.all_domains:
-                return False
-            if other_rule.domain != self.domain:
-                return False
-
-        if not self.all_type_or_protocols:
-            if other_rule.all_type_or_protocols:
-                return False
-            if other_rule.type_or_protocol != self.type_or_protocol:
-                return False
+        if not self._is_covered_plain(self.type_or_protocol, self.all_type_or_protocols, other_rule.type_or_protocol, other_rule.all_type_or_protocols, 'type or protocol'):
+            return False
 
         # still here? -> then it is covered
         return True
 
-    def is_equal_localvars(self, rule_obj):
+    def is_equal_localvars(self, rule_obj, strict):
         '''compare if rule-specific variables are equal'''
 
         if not type(rule_obj) == NetworkRule:
@@ -200,15 +179,8 @@ class NetworkRule(BaseRule):
         return True
 
     def logprof_header_localvars(self):
-        if self.all_domains:
-            family = _('ALL')
-        else:
-            family = self.domain
-
-        if self.all_type_or_protocols:
-            sock_type = _('ALL')
-        else:
-            sock_type = self.type_or_protocol
+        family      = logprof_value_or_all(self.domain,             self.all_domains)
+        sock_type   = logprof_value_or_all(self.type_or_protocol,   self.all_type_or_protocols)
 
         return [
             _('Network Family'), family,

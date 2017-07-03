@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 # ----------------------------------------------------------------------
 #    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
 #
@@ -48,6 +48,7 @@ class NetworkTestParse(NetworkTest):
         ('network inet stream,'                 , exp(False, False, False, ''           , 'inet',   False, 'stream' , False)),
         ('deny network inet stream, # comment'  , exp(False, False, True , ' # comment' , 'inet',   False, 'stream' , False)),
         ('audit allow network tcp,'             , exp(True , True , False, ''           , None  ,   True , 'tcp'    , False)),
+        ('network stream,'                      , exp(False, False, False, ''           , None  ,   True , 'stream' , False)),
     ]
 
     def _run_test(self, rawrule, expected):
@@ -58,7 +59,6 @@ class NetworkTestParse(NetworkTest):
 
 class NetworkTestParseInvalid(NetworkTest):
     tests = [
-        ('network stream,'                  , AppArmorException), # domain missing
         ('network foo,'                     , AppArmorException),
         ('network foo bar,'                 , AppArmorException),
         ('network foo tcp,'                 , AppArmorException),
@@ -118,6 +118,7 @@ class NetworkFromInit(NetworkTest):
         (NetworkRule('inet', NetworkRule.ALL)           , exp(False, False, False, ''           , 'inet',   False, None     , True )),
         (NetworkRule(NetworkRule.ALL, NetworkRule.ALL)  , exp(False, False, False, ''           , None  ,   True , None     , True )),
         (NetworkRule(NetworkRule.ALL, 'tcp')            , exp(False, False, False, ''           , None  ,   True , 'tcp'    , False)),
+        (NetworkRule(NetworkRule.ALL, 'stream')         , exp(False, False, False, ''           , None  ,   True , 'stream' , False)),
     ]
 
     def _run_test(self, obj, expected):
@@ -137,7 +138,6 @@ class InvalidNetworkInit(AATest):
         ([None  , 'tcp'            ]    , AppArmorBug), # wrong type for domain
         (['inet', dict()           ]    , AppArmorBug), # wrong type for type_or_protocol
         (['inet', None             ]    , AppArmorBug), # wrong type for type_or_protocol
-        ([NetworkRule.ALL, 'stream']    , AppArmorException), # stream requires a domain
     ]
 
     def _run_test(self, params, expected):
@@ -353,6 +353,15 @@ class NetworkLogprofHeaderTest(AATest):
         obj = NetworkRule._parse(params)
         self.assertEqual(obj.logprof_header(), expected)
 
+class NetworkRuleReprTest(AATest):
+    tests = [
+        (NetworkRule('inet', 'stream'),                             '<NetworkRule> network inet stream,'),
+        (NetworkRule.parse(' allow  network  inet  stream, # foo'), '<NetworkRule> allow  network  inet  stream, # foo'),
+    ]
+    def _run_test(self, params, expected):
+        self.assertEqual(str(params), expected)
+
+
 ## --- tests for NetworkRuleset --- #
 
 class NetworkRulesTest(AATest):
@@ -432,12 +441,23 @@ class NetworkGlobTestAATest(AATest):
     #     self.assertEqual(self.ruleset.get_glob('network inet raw,'), 'network inet,')
 
     def test_glob_ext(self):
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(NotImplementedError):
             # get_glob_ext is not available for network rules
             self.ruleset.get_glob_ext('network inet raw,')
 
 class NetworkDeleteTestAATest(AATest):
     pass
+
+class NetworkRulesetReprTest(AATest):
+    def test_network_ruleset_repr(self):
+        obj = NetworkRuleset()
+        obj.add(NetworkRule('inet', 'stream'))
+        obj.add(NetworkRule.parse(' allow  network  inet  stream, # foo'))
+
+        expected = '<NetworkRuleset>\n  network inet stream,\n  allow  network  inet  stream, # foo\n</NetworkRuleset>'
+        self.assertEqual(str(obj), expected)
+
+
 
 setup_all_loops(__name__)
 if __name__ == '__main__':

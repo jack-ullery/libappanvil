@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/python3
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2005-2006 Novell/SUSE
@@ -10,7 +10,21 @@
 #
 # ------------------------------------------------------------------
 
-import re, os, sys
+import re, os, sys, errno, json
+
+# PLEASE NOTE: we try to keep aa-status as minimal as possible, for
+# environments where installing all of the python utils and python
+# apparmor module may not make sense. Please think carefully before
+# importing anything from apparmor; see how the apparmor.fail import is
+# handled below.
+
+# setup exception handling
+try:
+    from apparmor.fail import enable_aa_exception_handler
+    enable_aa_exception_handler()
+except ImportError:
+    # just let normal python exceptions happen (LP: #1480492)
+    pass
 
 def cmd_enabled():
     '''Returns error code if AppArmor is not enabled'''
@@ -68,6 +82,42 @@ def cmd_verbose():
     if profiles == {}:
         sys.exit(2)
 
+def cmd_json(pretty_output=False):
+    '''Outputs multiple data points about loaded profile set in a machine-readable JSON format'''
+    global verbose
+    profiles = get_profiles()
+    processes = get_processes(profiles)
+
+    i = {
+        'version': '1',
+        'profiles': {},
+        'processes': {}
+    }
+
+    for status in ('enforce', 'complain'):
+        filtered_profiles = filter_profiles(profiles, status)
+        for item in filtered_profiles:
+            i['profiles'][item] = status
+
+    for status in ('enforce', 'complain', 'unconfined'):
+        filtered_processes = filter_processes(processes, status)
+        for (pid, process) in filtered_processes:
+            if process not in i['processes']:
+                i['processes'][process] = []
+
+            i['processes'][process].append({
+                'pid': pid,
+                'status': status
+            })
+
+    if pretty_output:
+        sys.stdout.write(json.dumps(i, sort_keys=True, indent=4, separators=(',', ': ')))
+    else:
+        sys.stdout.write(json.dumps(i))
+
+def cmd_pretty_json():
+    cmd_json(True)
+
 def get_profiles():
     '''Fetch loaded profiles'''
 
@@ -85,13 +135,20 @@ def get_profiles():
         sys.exit(3)
 
     apparmor_profiles = os.path.join(apparmorfs, "profiles")
-    if not os.access(apparmor_profiles, os.R_OK):
-        errormsg("You do not have enough privilege to read the profile set.")
+    try:
+        f = open(apparmor_profiles)
+    except IOError as e:
+        if e.errno == errno.EACCES:
+            errormsg("You do not have enough privilege to read the profile set.")
+        else:
+            errormsg("Could not open %s: %s" % (apparmor_profiles, os.strerror(e.errno)))
         sys.exit(4)
 
-    for p in open(apparmor_profiles).readlines():
+    for p in f.readlines():
         match = re.search("^([^\(]+)\s+\((\w+)\)$", p)
         profiles[match.group(1)] = match.group(2)
+
+    f.close()
 
     return profiles
 
@@ -161,6 +218,8 @@ OPTIONS (one only):
   --profiled      prints the number of loaded policies
   --enforced      prints the number of loaded enforcing policies
   --complaining   prints the number of loaded non-enforcing policies
+  --json          displays multiple data points in machine-readable JSON format
+  --pretty-json   same data as --json, formatted for human consumption as well
   --verbose       (default) displays multiple data points about loaded policy set
   --help          this message
 ''' % sys.argv[0])
@@ -184,6 +243,8 @@ commands = {
     '--profiled'     : cmd_profiled,
     '--enforced'     : cmd_enforced,
     '--complaining'  : cmd_complaining,
+    '--json'         : cmd_json,
+    '--pretty-json'  : cmd_pretty_json,
     '--verbose'      : cmd_verbose,
     '-v'             : cmd_verbose,
     '--help'         : print_usage,

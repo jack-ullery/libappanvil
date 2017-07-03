@@ -15,25 +15,10 @@
 import unittest
 import inspect
 import os
-import re
 import shutil
 import sys
 import tempfile
 
-import apparmor.common
-import apparmor.config
-
-class Test(unittest.TestCase):
-
-
-    def test_RegexParser(self):
-        tests = apparmor.config.Config('ini')
-        tests.CONF_DIR = '.'
-        regex_tests = tests.read_config('regex_tests.ini')
-        for regex in regex_tests.sections():
-            parsed_regex = re.compile(apparmor.common.convert_regexp(regex))
-            for regex_testcase in regex_tests.options(regex):
-                self.assertEqual(bool(parsed_regex.search(regex_testcase)), eval(regex_tests[regex][regex_testcase]), 'Incorrectly Parsed regex: %s' %regex)
 
     #def test_readkey(self):
     #    print("Please press the Y button on the keyboard.")
@@ -102,7 +87,7 @@ def setup_tests_loop(test_class):
         def stub_test(self, test_data=test_data, expected=expected):
             self._run_test(test_data, expected)
 
-        stub_test.__doc__ = "test '%s'" % (test_data)
+        stub_test.__doc__ = "test '%s'" % str(test_data)
         setattr(test_class, 'test_%d' % (i), stub_test)
 
 
@@ -117,6 +102,17 @@ def setup_regex_tests(test_class):
 
         stub_test.__doc__ = "test '%s': %s" % (line, desc)
         setattr(test_class, 'test_%d' % (i), stub_test)
+
+def setup_aa(aa):
+    confdir = os.getenv('__AA_CONFDIR')
+    try:
+        if confdir:
+            aa.init_aa(confdir=confdir)
+        else:
+            aa.init_aa()
+    except AttributeError:
+        # apparmor.aa module versions <= 2.11 do not have the init_aa() method
+        pass
 
 def write_file(directory, file, contents):
     '''construct path, write contents to it, and return the constructed path'''

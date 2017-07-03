@@ -212,9 +212,9 @@ querytest "QUERY dbus (svc receive)" fail $dbus_svc_query
 
 genqueryprofile "file,"
 expect allow
-perms file exec,write,read,append,link,lock
-querytest "QUERY file (all base perms #1)" pass /anything
-querytest "QUERY file (all base perms #2)" pass /everything
+perms file exec,write,read,append,create,delete,setattr,getattr,chmod,chown,link,linksubset,lock,exec_mmap
+querytest "QUERY file (all base perms #1)" xpass /anything
+querytest "QUERY file (all base perms #2)" xpass /everything
 
 genqueryprofile "/etc/passwd r,"
 expect allow

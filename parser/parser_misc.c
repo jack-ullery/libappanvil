@@ -53,7 +53,7 @@
 
 int is_blacklisted(const char *name, const char *path)
 {
-	int retval = _aa_is_blacklisted(name, path);
+	int retval = _aa_is_blacklisted(name);
 
 	if (retval == -1)
 		PERROR("Ignoring: '%s'\n", path ? path : name);
@@ -569,7 +569,155 @@ int parse_X_mode(const char *X, int valid, const char *str_mode, int *mode, int 
 	return 1;
 }
 
-struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id)
+/**
+ * parse_label - break a label down to the namespace and profile name
+ * @stack: Will be true if the first char in @label is '&' to indicate stacking
+ * @ns: Will point to the first char in the namespace upon return or NULL
+ *      if no namespace is present
+ * @ns_len: Number of chars in the namespace string or 0 if no namespace
+ *          is present
+ * @name: Will point to the first char in the profile name upon return
+ * @name_len: Number of chars in the name string
+ * @label: The label to parse into namespace and profile name
+ *
+ * The returned pointers will point to locations within the original
+ * @label string. No new strings are allocated.
+ *
+ * Returns 0 upon success or non-zero with @ns, @ns_len, @name, and
+ * @name_len undefined upon error. Error codes are:
+ *
+ * 1) Namespace is not terminated despite @label starting with ':'
+ * 2) Namespace is empty meaning @label starts with "::"
+ * 3) Profile name is empty
+ */
+static int _parse_label(bool *stack,
+			char **ns, size_t *ns_len,
+			char **name, size_t *name_len,
+			const char *label)
+{
+	const char *name_start = NULL;
+	const char *ns_start = NULL;
+	const char *ns_end = NULL;
+
+	if (label[0] == '&') {
+		/**
+		 * Leading ampersand means that the current profile should
+		 * be stacked with the rest of the label
+		 */
+		*stack = true;
+		label++;
+	} else {
+		*stack = false;
+	}
+
+	if (label[0] != ':') {
+		/* There is no namespace specified in the label */
+		name_start = label;
+	} else {
+		/* A leading ':' indicates that a namespace is specified */
+		ns_start = label + 1;
+		ns_end = strstr(ns_start, ":");
+
+		if (!ns_end)
+			return 1;
+
+		/**
+		 * Handle either of the two namespace formats:
+		 *  1) :ns:name
+		 *  2) :ns://name
+		 */
+		name_start = ns_end + 1;
+		if (!strncmp(name_start, "//", 2))
+			name_start += 2;
+	}
+
+	/**
+	 * The casts below are to allow @label to be const, signifying
+	 * that this function doesn't modify it, while allowing callers to
+	 * decide if they want to pass in pointers to const or non-const
+	 * strings.
+	 */
+	*ns = (char *)ns_start;
+	*name = (char *)name_start;
+	*ns_len = ns_end - ns_start;
+	*name_len = strlen(name_start);
+
+	if (*ns && *ns_len == 0)
+		return 2;
+	else if (*name_len == 0)
+		return 3;
+
+	return 0;
+}
+
+bool label_contains_ns(const char *label)
+{
+	bool stack = false;
+	char *ns = NULL;
+	char *name = NULL;
+	size_t ns_len = 0;
+	size_t name_len = 0;
+
+	return _parse_label(&stack, &ns, &ns_len, &name, &name_len, label) == 0 && ns;
+}
+
+bool parse_label(bool *_stack, char **_ns, char **_name,
+		 const char *label, bool yyerr)
+{
+	const char *err = NULL;
+	char *ns = NULL;
+	char *name = NULL;
+	size_t ns_len = 0;
+	size_t name_len = 0;
+	int res;
+
+	res = _parse_label(_stack, &ns, &ns_len, &name, &name_len, label);
+	if (res == 1) {
+		err = _("Namespace not terminated: %s\n");
+	} else if (res == 2) {
+		err = _("Empty namespace: %s\n");
+	} else if (res == 3) {
+		err = _("Empty named transition profile name: %s\n");
+	} else if (res != 0) {
+		err = _("Unknown error while parsing label: %s\n");
+	}
+
+	if (err) {
+		if (yyerr)
+			yyerror(err, label);
+		else
+			fprintf(stderr, err, label);
+
+		return false;
+	}
+
+	if (ns) {
+		*_ns = strndup(ns, ns_len);
+		if (!*_ns)
+			goto alloc_fail;
+	} else {
+		*_ns = NULL;
+	}
+
+	*_name = strndup(name, name_len);
+	if (!*_name) {
+		free(*_ns);
+		goto alloc_fail;
+	}
+
+	return true;
+
+alloc_fail:
+	err = _("Memory allocation error.");
+	if (yyerr)
+		yyerror(err);
+	else
+		fprintf(stderr, "%s", err);
+
+	return false;
+}
+
+struct cod_entry *new_entry(char *id, int mode, char *link_id)
 {
 	struct cod_entry *entry = NULL;
 
@@ -577,7 +725,6 @@ struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id)
 	if (!entry)
 		return NULL;
 
-	entry->ns = ns;
 	entry->name = id;
 	entry->link_name = link_id;
 	entry->mode = mode;
@@ -601,9 +748,9 @@ struct cod_entry *copy_cod_entry(struct cod_entry *orig)
 	if (!entry)
 		return NULL;
 
-	DUP_STRING(orig, entry, ns, err);
 	DUP_STRING(orig, entry, name, err);
 	DUP_STRING(orig, entry, link_name, err);
+	DUP_STRING(orig, entry, nt_name, err);
 	entry->mode = orig->mode;
 	entry->audit = orig->audit;
 	entry->deny = orig->deny;
@@ -627,8 +774,6 @@ void free_cod_entries(struct cod_entry *list)
 		return;
 	if (list->next)
 		free_cod_entries(list->next);
-	if (list->ns)
-		free(list->ns);
 	if (list->name)
 		free(list->name);
 	if (list->link_name)
@@ -665,9 +810,6 @@ void debug_cod_entries(struct cod_entry *list)
 	printf("--- Entries ---\n");
 
 	list_for_each(list, item) {
-		if (!item)
-			printf("Item is NULL!\n");
-
 		printf("Mode:\t");
 		if (HAS_CHANGE_PROFILE(item->mode))
 			printf(" change_profile");
@@ -680,9 +822,6 @@ void debug_cod_entries(struct cod_entry *list)
 			printf("\tName:\t(%s)\n", item->name);
 		else
 			printf("\tName:\tNULL\n");
-
-		if (item->ns)
-			printf("\tNs:\t(%s)\n", item->ns);
 
 		if (AA_LINK_BITS & item->mode)
 			printf("\tlink:\t(%s)\n", item->link_name ? item->link_name : "/**");
@@ -724,7 +863,7 @@ static const char *capnames[] = {
 	"audit_write",
 	"audit_control",
 	"setfcap",
-	"mac_override"
+	"mac_override",
 	"syslog",
 };
 
@@ -867,6 +1006,54 @@ void print_cond_entry(struct cond_entry *ent)
 	}
 }
 
+
+struct time_units {
+	const char *str;
+	long long value;
+};
+
+static struct time_units time_units[] = {
+	{ "us", 1LL },
+	{ "microsecond", 1LL },
+	{ "microseconds", 1LL },
+	{ "ms", 1000LL },
+	{ "millisecond", 1000LL },
+	{ "milliseconds", 1000LL },
+	{ "s", 1000LL * 1000LL },
+	{ "sec", SECONDS_P_MS },
+	{ "second", SECONDS_P_MS },
+	{ "seconds", SECONDS_P_MS },
+	{ "min" , 60LL * SECONDS_P_MS },
+	{ "minute", 60LL * SECONDS_P_MS },
+	{ "minutes", 60LL * SECONDS_P_MS },
+	{ "h", 60LL * 60LL * SECONDS_P_MS },
+	{ "hour", 60LL * 60LL * SECONDS_P_MS },
+	{ "hours", 60LL * 60LL * SECONDS_P_MS },
+	{ "d", 24LL * 60LL * 60LL * SECONDS_P_MS },
+	{ "day", 24LL * 60LL * 60LL * SECONDS_P_MS },
+	{ "days", 24LL * 60LL * 60LL * SECONDS_P_MS },
+	{ "week", 7LL * 24LL * 60LL * 60LL * SECONDS_P_MS },
+	{ "weeks", 7LL * 24LL * 60LL * 60LL * SECONDS_P_MS },
+	{ NULL, 0 }
+};
+
+long long convert_time_units(long long value, long long base, const char *units)
+{
+	struct time_units *ent;
+	if (!units)
+		/* default to base if no units */
+		return value;
+
+	for (ent = time_units; ent->str; ent++) {
+		if (strcmp(ent->str, units) == 0) {
+			if (value * ent->value < base)
+				return -1LL;
+			return value * ent->value / base;
+		}
+	}
+	return -2LL;
+}
+
 #ifdef UNIT_TEST
 
 #include "unit_test.h"
@@ -891,85 +1078,40 @@ int test_str_to_boolean(void)
 	return rc;
 }
 
+#define MY_TEST_UNQUOTED(input, expected, description) \
+	do { 										\
+		char *result_str = NULL;						\
+		char *output_str = NULL;						\
+											\
+		result_str = processunquoted((input), strlen((input)));			\
+		asprintf(&output_str, "processunquoted: %s\tinput = '%s'\texpected = '%s'\tresult = '%s'", \
+				(description), (input), (expected), result_str);	\
+		MY_TEST(strcmp((expected), result_str) == 0, output_str);		\
+											\
+		free(output_str);							\
+		free(result_str); 							\
+	}										\
+	while(0)
+
 int test_processunquoted(void)
 {
 	int rc = 0;
-	const char *teststring;
-	const char *resultstring;
 
-	teststring = "";
-	MY_TEST(strcmp(teststring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on empty string");
-
-	teststring = "\\1";
-	resultstring = "\001";
-	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on one digit octal");
-
-	teststring = "\\8";
-	resultstring = "\\8";
-	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on invalid octal digit \\8");
-
-	teststring = "\\18";
-	resultstring = "\0018";
-	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on one digit octal followed by invalid octal digit");
-
-	teststring = "\\1a";
-	resultstring = "\001a";
-	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on one digit octal followed by hex digit a");
-
-	teststring = "\\1z";
-	resultstring = "\001z";
-	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on one digit octal follow by char z");
-
-	teststring = "\\11";
-	resultstring = "\011";
-	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on two digit octal");
-
-	teststring = "\\118";
-	resultstring = "\0118";
-	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on two digit octal followed by invalid octal digit");
-
-	teststring = "\\11a";
-	resultstring = "\011a";
-	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on two digit octal followed by hex digit a");
-
-	teststring = "\\11z";
-	resultstring = "\011z";
-	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on two digit octal followed by char z");
-
-	teststring = "\\111";
-	resultstring = "\111";
-	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on three digit octal");
-
-	teststring = "\\378";
-	resultstring = "\0378";
-	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on three digit octal two large, taken as 2 digit octal plus trailing char");
-
-	teststring = "123\\421123";
-	resultstring = "123\0421123";
-	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on two character octal followed by valid octal digit \\421");
-
-	teststring = "123\\109123";
-	resultstring = "123\109123";
-	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on octal 109");
-
-	teststring = "123\\1089123";
-	resultstring = "123\1089123";
-	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on octal 108");
+	MY_TEST_UNQUOTED("", "", "empty string");
+	MY_TEST_UNQUOTED("\\1", "\001", "one digit octal");
+	MY_TEST_UNQUOTED("\\8", "\\8", "invalid octal digit \\8");
+	MY_TEST_UNQUOTED("\\18", "\0018", "one digit octal followed by invalid octal digit");
+	MY_TEST_UNQUOTED("\\1a", "\001a", "one digit octal followed by hex digit a");
+	MY_TEST_UNQUOTED("\\1z", "\001z", "one digit octal follow by char z");
+	MY_TEST_UNQUOTED("\\11", "\011", "two digit octal");
+	MY_TEST_UNQUOTED("\\118", "\0118", "two digit octal followed by invalid octal digit");
+	MY_TEST_UNQUOTED("\\11a", "\011a", "two digit octal followed by hex digit a");
+	MY_TEST_UNQUOTED("\\11z", "\011z", "two digit octal followed by char z");
+	MY_TEST_UNQUOTED("\\111", "\111", "three digit octal");
+	MY_TEST_UNQUOTED("\\378", "\0378", "three digit octal two large, taken as 2 digit octal plus trailing char");
+	MY_TEST_UNQUOTED("123\\421123", "123\0421123", "two character octal followed by valid octal digit \\421");
+	MY_TEST_UNQUOTED("123\\109123", "123\109123", "octal 109");
+	MY_TEST_UNQUOTED("123\\1089123", "123\1089123", "octal 108");
 
 	return rc;
 }
@@ -1068,12 +1210,14 @@ int test_processquoted(void)
 	out = processquoted(teststring, strlen(teststring));
 	MY_TEST(strcmp(processedstring, out) == 0,
 			"processquoted passthrough quoted one digit trailing octal \\4");
+	free(out);
 
 	teststring = "\"abcdefg\\04\"";
 	processedstring = "abcdefg\004";
 	out = processquoted(teststring, strlen(teststring));
 	MY_TEST(strcmp(processedstring, out) == 0,
 			"processquoted passthrough quoted two digit trailing octal \\04");
+	free(out);
 
 	teststring = "\"abcdefg\\004\"";
 	processedstring = "abcdefg\004";
@@ -1081,6 +1225,50 @@ int test_processquoted(void)
 	MY_TEST(strcmp(processedstring, out) == 0,
 			"processquoted passthrough quoted three digit trailing octal \\004");
 	free(out);
+
+	return rc;
+}
+
+#define TIME_TEST(V, B, U, R)					\
+MY_TEST(convert_time_units((V), (B), U) == (R),		\
+	"convert " #V " with base of " #B ", " #U " units")
+
+int test_convert_time_units()
+{
+	int rc = 0;
+
+	TIME_TEST(1LL, 1LL, NULL, 1LL);
+	TIME_TEST(12345LL, 1LL, NULL, 12345LL);
+	TIME_TEST(10LL, 10LL, NULL, 10LL);
+	TIME_TEST(123450LL, 10LL, NULL, 123450LL);
+
+	TIME_TEST(12345LL, 1LL, "us", 12345LL);
+	TIME_TEST(12345LL, 1LL, "microsecond", 12345LL);
+	TIME_TEST(12345LL, 1LL, "microseconds", 12345LL);
+
+	TIME_TEST(12345LL, 1LL, "ms", 12345LL*1000LL);
+	TIME_TEST(12345LL, 1LL, "millisecond", 12345LL*1000LL);
+	TIME_TEST(12345LL, 1LL, "milliseconds", 12345LL*1000LL);
+
+	TIME_TEST(12345LL, 1LL, "s", 12345LL*1000LL*1000LL);
+	TIME_TEST(12345LL, 1LL, "sec", 12345LL*1000LL*1000LL);
+	TIME_TEST(12345LL, 1LL, "second", 12345LL*1000LL*1000LL);
+	TIME_TEST(12345LL, 1LL, "seconds", 12345LL*1000LL*1000LL);
+
+	TIME_TEST(12345LL, 1LL, "min", 12345LL*1000LL*1000LL*60LL);
+	TIME_TEST(12345LL, 1LL, "minute", 12345LL*1000LL*1000LL*60LL);
+	TIME_TEST(12345LL, 1LL, "minutes", 12345LL*1000LL*1000LL*60LL);
+
+	TIME_TEST(12345LL, 1LL, "h", 12345LL*1000LL*1000LL*60LL*60LL);
+	TIME_TEST(12345LL, 1LL, "hour", 12345LL*1000LL*1000LL*60LL*60LL);
+	TIME_TEST(12345LL, 1LL, "hours", 12345LL*1000LL*1000LL*60LL*60LL);
+
+	TIME_TEST(12345LL, 1LL, "d", 12345LL*1000LL*1000LL*60LL*60LL*24LL);
+	TIME_TEST(12345LL, 1LL, "day", 12345LL*1000LL*1000LL*60LL*60LL*24LL);
+	TIME_TEST(12345LL, 1LL, "days", 12345LL*1000LL*1000LL*60LL*60LL*24LL);
+
+	TIME_TEST(12345LL, 1LL, "week", 12345LL*1000LL*1000LL*60LL*60LL*24LL*7LL);
+	TIME_TEST(12345LL, 1LL, "weeks", 12345LL*1000LL*1000LL*60LL*60LL*24LL*7LL);
 
 	return rc;
 }
@@ -1099,6 +1287,10 @@ int main(void)
 		rc = retval;
 
 	retval = test_processquoted();
+	if (retval != 0)
+		rc = retval;
+
+	retval = test_convert_time_units();
 	if (retval != 0)
 		rc = retval;
 

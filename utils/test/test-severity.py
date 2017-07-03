@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
 #    Copyright (C) 2014 Canonical, Ltd.
@@ -25,13 +25,13 @@ class SeverityBaseTest(AATest):
     def AASetup(self):
         self.sev_db = severity.Severity('severity.db', 'unknown')
 
-    def _simple_severity_test(self, path, expected_rank):
-        rank = self.sev_db.rank(path)
+    def _capability_severity_test(self, cap, expected_rank):
+        rank = self.sev_db.rank_capability(cap)
         self.assertEqual(rank, expected_rank,
                          'expected rank %s, got %s' % (expected_rank, rank))
 
     def _simple_severity_w_perm(self, path, perm, expected_rank):
-        rank = self.sev_db.rank(path, perm)
+        rank = self.sev_db.rank_path(path, perm)
         self.assertEqual(rank, expected_rank,
                          'expected rank %s, got %s' % (expected_rank, rank))
 
@@ -68,8 +68,7 @@ class SeverityTestCap(SeverityBaseTest):
     ]
 
     def _run_test(self, params, expected):
-        cap_with_prefix = 'CAP_%s' % params
-        self._simple_severity_test(cap_with_prefix, expected)
+        self._capability_severity_test(params, expected)
 
         rank = self.sev_db.rank_capability(params)
         self.assertEqual(rank, expected, 'expected rank %s, got %s' % (expected, rank))

@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2015-2016 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -17,7 +17,7 @@ import re
 import sys
 import time
 import LibAppArmor
-from apparmor.common import AppArmorException, open_file_read, DebugLogger
+from apparmor.common import AppArmorException, AppArmorBug, open_file_read, DebugLogger
 
 from apparmor.aamode import validate_log_mode, log_str_to_mode, hide_log_mode, AA_MAY_EXEC
 
@@ -26,24 +26,22 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 class ReadLog:
-    RE_LOG_v2_6_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?(audit:\s+)?type=\d+\s+audit\([\d\.\:]+\):\s+apparmor=')
-    RE_LOG_v2_6_audit = re.compile('type=AVC\s+(msg=)?audit\([\d\.\:]+\):\s+apparmor=')
-    # Used by netdomain to identify the operation types
-    # New socket names
-    OPERATION_TYPES = {'create': 'net',
-                       'post_create': 'net',
-                       'bind': 'net',
-                       'connect': 'net',
-                       'listen': 'net',
-                       'accept': 'net',
-                       'sendmsg': 'net',
-                       'recvmsg': 'net',
-                       'getsockname': 'net',
-                       'getpeername': 'net',
-                       'getsockopt': 'net',
-                       'setsockopt': 'net',
-                       'sock_shutdown': 'net'
-                       }
+    RE_audit_time_id = '(msg=)?audit\([\d\.\:]+\):\s+'  # 'audit(1282626827.320:411): '
+    RE_kernel_time = '\[[\d\.\s]+\]'    # '[ 1612.746129]'
+    RE_type_num = '1[45][0-9][0-9]'     # 1400..1599
+    RE_aa_or_op = '(apparmor=|operation=)'
+
+    RE_log_parts = [
+        'kernel:\s+(' + RE_kernel_time + '\s+)?(audit:\s+)?type=' + RE_type_num + '\s+' + RE_audit_time_id + RE_aa_or_op,  # v2_6 syslog
+        'kernel:\s+(' + RE_kernel_time + '\s+)?' + RE_audit_time_id + 'type=' + RE_type_num + '\s+' + RE_aa_or_op,
+        'type=(AVC|APPARMOR[_A-Z]*|' + RE_type_num + ')\s+' + RE_audit_time_id + '(type=' + RE_type_num + '\s+)?' + RE_aa_or_op,  # v2_6 audit and dmesg
+        'type=USER_AVC\s+' + RE_audit_time_id + '.*apparmor=',  # dbus
+        'type=UNKNOWN\[' + RE_type_num + '\]\s+' + RE_audit_time_id + RE_aa_or_op,
+        'dbus\[[0-9]+\]:\s+apparmor=',  # dbus
+    ]
+
+    # used to pre-filter log lines so that we hand over only relevant lines to LibAppArmor parsing
+    RE_LOG_ALL = re.compile('(' + '|'.join(RE_log_parts) + ')')
 
     def __init__(self, pid, filename, existing_profiles, profile_dir, log):
         self.filename = filename
@@ -61,7 +59,7 @@ class ReadLog:
         if self.next_log_entry:
             sys.stderr.out('A log entry already present: %s' % self.next_log_entry)
         self.next_log_entry = self.LOG.readline()
-        while not self.RE_LOG_v2_6_syslog.search(self.next_log_entry) and not self.RE_LOG_v2_6_audit.search(self.next_log_entry) and not (self.logmark and self.logmark in self.next_log_entry):
+        while not self.RE_LOG_ALL.search(self.next_log_entry) and not (self.logmark and self.logmark in self.next_log_entry):
             self.next_log_entry = self.LOG.readline()
             if not self.next_log_entry:
                 break
@@ -116,10 +114,22 @@ class ReadLog:
         ev['denied_mask'] = event.denied_mask
         ev['request_mask'] = event.requested_mask
         ev['magic_token'] = event.magic_token
-        if ev['operation'] and self.op_type(ev['operation']) == 'net':
-            ev['family'] = event.net_family
-            ev['protocol'] = event.net_protocol
-            ev['sock_type'] = event.net_sock_type
+        ev['family'] = event.net_family
+        ev['protocol'] = event.net_protocol
+        ev['sock_type'] = event.net_sock_type
+
+        if ev['operation'] and ev['operation'] == 'signal':
+            ev['signal'] = event.signal
+            ev['peer'] = event.peer
+        elif ev['operation'] and ev['operation'] == 'ptrace':
+            ev['peer'] = event.peer
+        elif ev['operation'] and ev['operation'].startswith('dbus_'):
+            ev['peer_profile'] = event.peer_profile
+            ev['bus'] = event.dbus_bus
+            ev['path'] = event.dbus_path
+            ev['interface'] = event.dbus_interface
+            ev['member'] = event.dbus_member
+
         LibAppArmor.free_record(event)
 
         if not ev['time']:
@@ -180,24 +190,18 @@ class ReadLog:
         #print("log",self.log)
 
     def add_event_to_tree(self, e):
-        aamode = e.get('aamode', 'UNKNOWN')
-        if e.get('type', False):
-            if re.search('(UNKNOWN\[1501\]|APPARMOR_AUDIT|1501)', e['type']):
-                aamode = 'AUDIT'
-            elif re.search('(UNKNOWN\[1502\]|APPARMOR_ALLOWED|1502)', e['type']):
-                aamode = 'PERMITTING'
-            elif re.search('(UNKNOWN\[1503\]|APPARMOR_DENIED|1503)', e['type']):
-                aamode = 'REJECTING'
-            elif re.search('(UNKNOWN\[1504\]|APPARMOR_HINT|1504)', e['type']):
-                aamode = 'HINT'
-            elif re.search('(UNKNOWN\[1505\]|APPARMOR_STATUS|1505)', e['type']):
-                aamode = 'STATUS'
-            elif re.search('(UNKNOWN\[1506\]|APPARMOR_ERROR|1506)', e['type']):
-                aamode = 'ERROR'
-            else:
-                aamode = 'UNKNOWN'
+        e = self.parse_event_for_tree(e)
+        if e is not None:
+            (pid, parent, mode, details) = e
+            self.add_to_tree(pid, parent, mode, details)
 
-        if aamode in ['UNKNOWN', 'AUDIT', 'STATUS', 'ERROR']:
+    def parse_event_for_tree(self, e):
+        aamode = e.get('aamode', 'UNKNOWN')
+
+        if aamode == 'UNKNOWN':
+            raise AppArmorBug('aamode is UNKNOWN - %s' % e['type'])  # should never happen
+
+        if aamode in ['AUDIT', 'STATUS', 'ERROR']:
             return None
 
         if 'profile_set' in e['operation']:
@@ -221,10 +225,12 @@ class ReadLog:
         if e['operation'] == 'change_hat':
             if aamode != 'HINT' and aamode != 'PERMITTING':
                 return None
-            profile = e['name']
+            if e['error_code'] == 1 and e['info'] == 'unconfined can not change_hat':
+                return None
+            profile = e['name2']
             #hat = None
-            if '//' in e['name']:
-                profile, hat = e['name'].split('//')[:2]
+            if '//' in e['name2']:
+                profile, hat = e['name2'].split('//')[:2]
 
         if not hat:
             hat = profile
@@ -240,28 +246,24 @@ class ReadLog:
             e['request_mask'], e['name2'] = log_str_to_mode(e['profile'], e['request_mask'], e['name2'])
 
             if e.get('info', False) and e['info'] == 'mandatory profile missing':
-                self.add_to_tree(e['pid'], e['parent'], 'exec',
+                return(e['pid'], e['parent'], 'exec',
                                  [profile, hat, aamode, 'PERMITTING', e['denied_mask'], e['name'], e['name2']])
             elif (e.get('name2', False) and '//null-' in e['name2']) or e.get('name', False):
-                self.add_to_tree(e['pid'], e['parent'], 'exec',
+                return(e['pid'], e['parent'], 'exec',
                                  [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
             else:
-                self.debug_logger.debug('add_event_to_tree: dropped exec event in %s' % e['profile'])
+                self.debug_logger.debug('parse_event_for_tree: dropped exec event in %s' % e['profile'])
 
-        elif ( e['operation'].startswith('file_') or e['operation'].startswith('inode_') or
-            e['operation'] in ['open', 'truncate', 'mkdir', 'mknod', 'chmod', 'rename_src',
-                                'rename_dest', 'unlink', 'rmdir', 'symlink_create', 'link',
-                                'sysctl', 'getattr', 'setattr', 'xattr'] ):
-
-            # Map c (create) to a and d (delete) to w (logging is more detailed than the profile language)
+        elif self.op_type(e) == 'file':
+            # Map c (create) and d (delete) to w (logging is more detailed than the profile language)
             rmask = e['request_mask']
-            rmask = rmask.replace('c', 'a')
+            rmask = rmask.replace('c', 'w')
             rmask = rmask.replace('d', 'w')
             if not validate_log_mode(hide_log_mode(rmask)):
                 raise AppArmorException(_('Log contains unknown mode %s') % rmask)
 
             dmask = e['denied_mask']
-            dmask = dmask.replace('c', 'a')
+            dmask = dmask.replace('c', 'w')
             dmask = dmask.replace('d', 'w')
             if not validate_log_mode(hide_log_mode(dmask)):
                 raise AppArmorException(_('Log contains unknown mode %s') % dmask)
@@ -281,14 +283,14 @@ class ReadLog:
                         self.throw_away_next_log_entry()
 
             if is_domain_change:
-                self.add_to_tree(e['pid'], e['parent'], 'exec',
+                return(e['pid'], e['parent'], 'exec',
                                  [profile, hat, prog, aamode, e['denied_mask'], e['name'], e['name2']])
             else:
-                self.add_to_tree(e['pid'], e['parent'], 'path',
+                return(e['pid'], e['parent'], 'path',
                                  [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
 
         elif e['operation'] == 'capable':
-            self.add_to_tree(e['pid'], e['parent'], 'capability',
+            return(e['pid'], e['parent'], 'capability',
                              [profile, hat, prog, aamode, e['name'], ''])
 
         elif e['operation'] == 'clone':
@@ -311,12 +313,28 @@ class ReadLog:
 #                 self.log += [arrayref]
 #             self.pid[child] = arrayref
 
-        elif self.op_type(e['operation']) == 'net':
-            self.add_to_tree(e['pid'], e['parent'], 'netdomain',
+        elif self.op_type(e) == 'net':
+            return(e['pid'], e['parent'], 'netdomain',
                              [profile, hat, prog, aamode, e['family'], e['sock_type'], e['protocol']])
         elif e['operation'] == 'change_hat':
-            self.add_to_tree(e['pid'], e['parent'], 'unknown_hat',
+            return(e['pid'], e['parent'], 'unknown_hat',
                              [profile, hat, aamode, hat])
+        elif e['operation'] == 'ptrace':
+            if not e['peer']:
+                self.debug_logger.debug('ignored garbage ptrace event with empty peer')
+                return None
+            if not e['denied_mask']:
+                self.debug_logger.debug('ignored garbage ptrace event with empty denied_mask')
+                return None
+
+            return(e['pid'], e['parent'], 'ptrace',
+                             [profile, hat, prog, aamode, e['denied_mask'], e['peer']])
+        elif e['operation'] == 'signal':
+            return(e['pid'], e['parent'], 'signal',
+                             [profile, hat, prog, aamode, e['denied_mask'], e['signal'], e['peer']])
+        elif e['operation'].startswith('dbus_'):
+            return(e['pid'], e['parent'], 'dbus',
+                             [profile, hat, prog, aamode, e['denied_mask'], e['bus'], e['path'], e['name'], e['interface'], e['member'], e['peer_profile']])
         else:
             self.debug_logger.debug('UNHANDLED: %s' % e)
 
@@ -350,15 +368,69 @@ class ReadLog:
             event = self.parse_log_record(line)
             #print(event)
             if event:
-                self.add_event_to_tree(event)
+                try:
+                    self.add_event_to_tree(event)
+                except AppArmorException as e:
+                    ex_msg = ('%(msg)s\n\nThis error was caused by the log line:\n%(logline)s' %
+                            {'msg': e.value, 'logline': line})
+                    # when py3 only: Drop the original AppArmorException by passing None as the parent exception
+                    raise AppArmorBug(ex_msg)  # py3-only: from None
+
         self.LOG.close()
         self.logmark = ''
         return self.log
 
-    def op_type(self, operation):
+    # operation types that can be network or file operations
+    # (used by op_type() which checks some event details to decide)
+    OP_TYPE_FILE_OR_NET = {
+        # Note: op_type() also uses some startswith() checks which are not listed here!
+       'create',
+       'post_create',
+       'bind',
+       'connect',
+       'listen',
+       'accept',
+       'sendmsg',
+       'recvmsg',
+       'getsockname',
+       'getpeername',
+       'getsockopt',
+       'setsockopt',
+       'socket_create',
+       'sock_shutdown',
+       'open',
+       'truncate',
+       'mkdir',
+       'mknod',
+       'chmod',
+       'chown',
+       'rename_src',
+       'rename_dest',
+       'unlink',
+       'rmdir',
+       'symlink_create',
+       'link',
+       'sysctl',
+       'getattr',
+       'setattr',
+       'xattr',
+    }
+
+    def op_type(self, event):
         """Returns the operation type if known, unkown otherwise"""
-        operation_type = self.OPERATION_TYPES.get(operation, 'unknown')
-        return operation_type
+
+        if ( event['operation'].startswith('file_') or event['operation'].startswith('inode_') or event['operation'] in self.OP_TYPE_FILE_OR_NET ):
+            # file or network event?
+            if event['family'] and event['protocol'] and event['sock_type']:
+                # 'unix' events also use keywords like 'connect', but protocol is 0 and should therefore be filtered out
+                return 'net'
+            elif event['denied_mask']:
+                return 'file'
+            else:
+                raise AppArmorException('unknown file or network event type')
+
+        else:
+            return 'unknown'
 
     def profile_exists(self, program):
         """Returns True if profile exists, False otherwise"""

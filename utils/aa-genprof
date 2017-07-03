@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/python3
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
 #
@@ -22,6 +22,10 @@ import sys
 import apparmor.aa as apparmor
 import apparmor.ui as aaui
 from apparmor.common import warn
+
+# setup exception handling
+from apparmor.fail import enable_aa_exception_handler
+enable_aa_exception_handler()
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -57,11 +61,16 @@ parser = argparse.ArgumentParser(description=_('Generate profile for the given p
 parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))
 parser.add_argument('-f', '--file', type=str, help=_('path to logfile'))
 parser.add_argument('program', type=str, help=_('name of program to profile'))
+parser.add_argument('-j', '--json', action="store_true", help=_('Input and Output in JSON'))
 args = parser.parse_args()
+
+if args.json:
+    aaui.set_json_mode()
 
 profiling = args.program
 profiledir = args.dir
 
+apparmor.init_aa()
 apparmor.set_logfile(args.file)
 
 aa_mountpoint = apparmor.check_for_apparmor()
@@ -132,7 +141,7 @@ while not done_profiling:
         logmark = subprocess.check_output(['date | md5sum'], shell=True)
         logmark = logmark.decode('ascii').strip()
         logmark = re.search('^([0-9a-f]+)', logmark).groups()[0]
-        t=subprocess.call("%s -p kern.warn 'GenProf: %s'"%(apparmor.logger, logmark), shell=True)
+        t=subprocess.call("%s -p kern.warn 'GenProf: %s'"%(apparmor.logger_path(), logmark), shell=True)
 
     else:
         logmark = last_audit_entry_time()

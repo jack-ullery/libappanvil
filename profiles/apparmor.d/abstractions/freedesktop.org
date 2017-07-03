@@ -10,15 +10,10 @@
 # ------------------------------------------------------------------
 
   # system configuration
-  /usr/{,local/}share/applications/               r,
-  /usr/{,local/}share/applications/defaults.list  r,
-  /usr/{,local/}share/applications/mimeinfo.cache r,
-  /usr/{,local/}share/applications/*.desktop      r,
-  # there can be subdirs of applications folder
-  /usr/{,local/}share/applications/*/               r,
-  /usr/{,local/}share/applications/*/defaults.list  r,
-  /usr/{,local/}share/applications/*/mimeinfo.cache r,
-  /usr/{,local/}share/applications/*/*.desktop      r,
+  /usr/{,local/}share/applications/{*/,}               r,
+  /usr/{,local/}share/applications/{*/,}defaults.list  r,
+  /usr/{,local/}share/applications/{*/,}mimeinfo.cache r,
+  /usr/{,local/}share/applications/{*/,}*.desktop      r,
   /usr/share/icons/               r,
   /usr/share/icons/**             r,
   /usr/share/pixmaps/             r,

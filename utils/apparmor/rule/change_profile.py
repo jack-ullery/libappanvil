@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
 #    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
@@ -15,8 +14,8 @@
 # ----------------------------------------------------------------------
 
 from apparmor.regex import RE_PROFILE_CHANGE_PROFILE, strip_quotes
-from apparmor.common import AppArmorBug, AppArmorException
-from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers, quote_if_needed
+from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers, logprof_value_or_all, quote_if_needed
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -33,11 +32,15 @@ class ChangeProfileRule(BaseRule):
 
     ALL = __ChangeProfileAll
 
-    def __init__(self, execcond, targetprofile, audit=False, deny=False, allow_keyword=False,
+    rule_name = 'change_profile'
+
+    equiv_execmodes = [ 'safe', '', None ]
+
+    def __init__(self, execmode, execcond, targetprofile, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
         '''
-            CHANGE_PROFILE RULE = 'change_profile' [ EXEC COND ] [ -> PROGRAMCHILD ]
+            CHANGE_PROFILE RULE = 'change_profile' [ [ EXEC MODE ] EXEC COND ] [ -> PROGRAMCHILD ]
         '''
 
         super(ChangeProfileRule, self).__init__(audit=audit, deny=deny,
@@ -45,11 +48,18 @@ class ChangeProfileRule(BaseRule):
                                              comment=comment,
                                              log_event=log_event)
 
+        if execmode:
+            if execmode != 'safe' and execmode != 'unsafe':
+                raise AppArmorBug('Unknown exec mode (%s) in change_profile rule' % execmode)
+            elif not execcond or execcond == ChangeProfileRule.ALL:
+                raise AppArmorException('Exec condition is required when unsafe or safe keywords are present')
+        self.execmode = execmode
+
         self.execcond = None
         self.all_execconds = False
         if execcond == ChangeProfileRule.ALL:
             self.all_execconds = True
-        elif type(execcond) == str:
+        elif type_is_str(execcond):
             if not execcond.strip():
                 raise AppArmorBug('Empty exec condition in change_profile rule')
             elif execcond.startswith('/') or execcond.startswith('@'):
@@ -63,7 +73,7 @@ class ChangeProfileRule(BaseRule):
         self.all_targetprofiles = False
         if targetprofile == ChangeProfileRule.ALL:
             self.all_targetprofiles = True
-        elif type(targetprofile) == str:
+        elif type_is_str(targetprofile):
             if targetprofile.strip():
                 self.targetprofile = targetprofile
             else:
@@ -85,6 +95,8 @@ class ChangeProfileRule(BaseRule):
 
         audit, deny, allow_keyword, comment = parse_modifiers(matches)
 
+        execmode = matches.group('execmode')
+
         if matches.group('execcond'):
             execcond = strip_quotes(matches.group('execcond'))
         else:
@@ -95,13 +107,18 @@ class ChangeProfileRule(BaseRule):
         else:
             targetprofile = ChangeProfileRule.ALL
 
-        return ChangeProfileRule(execcond, targetprofile,
+        return ChangeProfileRule(execmode, execcond, targetprofile,
                            audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
         '''return rule (in clean/default formatting)'''
 
         space = '  ' * depth
+
+        if self.execmode:
+            execmode = ' %s' % self.execmode
+        else:
+            execmode = ''
 
         if self.all_execconds:
             execcond = ''
@@ -117,38 +134,36 @@ class ChangeProfileRule(BaseRule):
         else:
             raise AppArmorBug('Empty target profile in change_profile rule')
 
-        return('%s%schange_profile%s%s,%s' % (space, self.modifiers_str(), execcond, targetprofile, self.comment))
+        return('%s%schange_profile%s%s%s,%s' % (space, self.modifiers_str(), execmode, execcond, targetprofile, self.comment))
 
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
 
-        if not other_rule.execcond and not other_rule.all_execconds:
-            raise AppArmorBug('No execcond specified in other change_profile rule')
+        if self.execmode != other_rule.execmode and \
+           (self.execmode not in ChangeProfileRule.equiv_execmodes or \
+            other_rule.execmode not in ChangeProfileRule.equiv_execmodes):
+            return False
 
-        if not other_rule.targetprofile and not other_rule.all_targetprofiles:
-            raise AppArmorBug('No target profile specified in other change_profile rule')
+        if not self._is_covered_plain(self.execcond, self.all_execconds, other_rule.execcond, other_rule.all_execconds, 'exec condition'):
+            # TODO: honor globbing and variables
+            return False
 
-        if not self.all_execconds:
-            if other_rule.all_execconds:
-                return False
-            if other_rule.execcond != self.execcond:
-                # TODO: honor globbing and variables
-                return False
-
-        if not self.all_targetprofiles:
-            if other_rule.all_targetprofiles:
-                return False
-            if other_rule.targetprofile != self.targetprofile:
-                return False
+        if not self._is_covered_plain(self.targetprofile, self.all_targetprofiles, other_rule.targetprofile, other_rule.all_targetprofiles, 'target profile'):
+            return False
 
         # still here? -> then it is covered
         return True
 
-    def is_equal_localvars(self, rule_obj):
+    def is_equal_localvars(self, rule_obj, strict):
         '''compare if rule-specific variables are equal'''
 
         if not type(rule_obj) == ChangeProfileRule:
             raise AppArmorBug('Passed non-change_profile rule: %s' % str(rule_obj))
+
+        if self.execmode != rule_obj.execmode and \
+           (self.execmode not in ChangeProfileRule.equiv_execmodes or \
+            rule_obj.execmode not in ChangeProfileRule.equiv_execmodes):
+            return False
 
         if (self.execcond != rule_obj.execcond
                 or self.all_execconds != rule_obj.all_execconds):
@@ -161,17 +176,15 @@ class ChangeProfileRule(BaseRule):
         return True
 
     def logprof_header_localvars(self):
-        if self.all_execconds:
-            execcond_txt = _('ALL')
-        else:
-            execcond_txt = self.execcond
+        headers = []
 
-        if self.all_targetprofiles:
-            targetprofiles_txt = _('ALL')
-        else:
-            targetprofiles_txt = self.targetprofile
+        if self.execmode:
+            headers += [_('Exec Mode'), self.execmode]
 
-        return [
+        execcond_txt        = logprof_value_or_all(self.execcond,       self.all_execconds)
+        targetprofiles_txt  = logprof_value_or_all(self.targetprofile,  self.all_targetprofiles)
+
+        return headers + [
             _('Exec Condition'), execcond_txt,
             _('Target Profile'), targetprofiles_txt,
         ]

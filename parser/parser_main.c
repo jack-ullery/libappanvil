@@ -28,7 +28,6 @@
 #include <getopt.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <dirent.h>
 
 /* enable the following line to get voluminous debug info */
 /* #define DEBUG */
@@ -37,7 +36,10 @@
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
+
 #include <sys/apparmor.h>
+
 
 #include "lib.h"
 #include "features.h"
@@ -77,6 +79,24 @@ int abort_on_error = 0;			/* stop processing profiles if error */
 int skip_bad_cache_rebuild = 0;
 int mru_skip_cache = 1;
 int debug_cache = 0;
+
+/* for jobs_max and jobs
+ * LONG_MAX : no limit
+ * 0  : auto  = detect system processing cores
+ * n  : use that number of processes/threads to compile policy
+ */
+#define JOBS_AUTO 0
+long jobs_max = -8;			/* 8 * cpus */
+long jobs = JOBS_AUTO;			/* default: number of processor cores */
+long njobs = 0;
+long jobs_scale = 0;			/* number of chance to resample online
+					 * cpus. This allows jobs spawning to
+					 * scale when scheduling policy is
+					 * taking cpus off line, and brings
+					 * them back with load
+					 */
+bool debug_jobs = false;
+
 struct timespec cache_tstamp, mru_policy_tstamp;
 
 static char *apparmorfs = NULL;
@@ -85,7 +105,7 @@ static char *cacheloc = NULL;
 static aa_features *features = NULL;
 
 /* Make sure to update BOTH the short and long_options */
-static const char *short_options = "adf:h::rRVvI:b:BCD:NSm:M:qQn:XKTWkL:O:po:";
+static const char *short_options = "ad::f:h::rRVvI:b:BCD:NSm:M:qQn:XKTWkL:O:po:j:";
 struct option long_options[] = {
 	{"add", 		0, 0, 'a'},
 	{"binary",		0, 0, 'B'},
@@ -117,7 +137,7 @@ struct option long_options[] = {
 	{"purge-cache",		0, 0, 130},	/* no short option */
 	{"create-cache-dir",	0, 0, 131},	/* no short option */
 	{"cache-loc",		1, 0, 'L'},
-	{"debug",		0, 0, 'd'},
+	{"debug",		2, 0, 'd'},
 	{"dump",		1, 0, 'D'},
 	{"Dump",		1, 0, 'D'},
 	{"optimize",		1, 0, 'O'},
@@ -127,6 +147,8 @@ struct option long_options[] = {
 	{"skip-bad-cache-rebuild",	0, 0, 133},	/* no short option */
 	{"warn",		1, 0, 134},	/* no short option */
 	{"debug-cache",		0, 0, 135},	/* no short option */
+	{"jobs",		1, 0, 'j'},
+	{"max-jobs",		1, 0, 136},	/* no short option */
 	{NULL, 0, 0, 0},
 };
 
@@ -171,11 +193,13 @@ static void display_usage(const char *command)
 	       "-v, --verbose		Show profile names as they load\n"
 	       "-Q, --skip-kernel-load	Do everything except loading into kernel\n"
 	       "-V, --version		Display version info and exit\n"
-	       "-d, --debug 		Debug apparmor definitions\n"
+	       "-d [n], --debug 	Debug apparmor definitions OR [n]\n"
 	       "-p, --preprocess	Dump preprocessed profile\n"
 	       "-D [n], --dump		Dump internal info for debugging\n"
 	       "-O [n], --Optimize	Control dfa optimizations\n"
 	       "-h [cmd], --help[=cmd]  Display this text or info about cmd\n"
+	       "-j n, --jobs n		Set the number of compile threads\n"
+	       "--max-jobs n		Hard cap on --jobs. Default 8*cpus\n"
 	       "--abort-on-error	Abort processing of profiles on first error\n"
 	       "--skip-bad-cache-rebuild Do not try rebuilding the cache if it is rejected by the kernel\n"
 	       "--warn n		Enable warnings (see --help=warn)\n"
@@ -269,6 +293,32 @@ static int getopt_long_file(FILE *f, const struct option *longopts,
 	return 0;
 }
 
+static long process_jobs_arg(const char *arg, const char *val) {
+	char *end;
+	long n;
+
+	if (!val || strcmp(val, "auto") == 0)
+		n = JOBS_AUTO;
+	else if (strcmp(val, "max") == 0)
+		n = LONG_MAX;
+	else {
+		bool multiple = false;
+		if (*val == 'x') {
+			multiple = true;
+			val++;
+		}
+		n = strtol(val, &end, 0);
+		if (!(*val && val != end && *end == '\0')) {
+			PERROR("%s: Invalid option %s=%s%s\n", progname, arg, multiple ? "x" : "", val);
+			exit(1);
+		}
+		if (multiple)
+			n = -n;
+	}
+
+	return n;
+}
+
 /* process a single argment from getopt_long
  * Returns: 1 if an action arg, else 0
  */
@@ -287,8 +337,17 @@ static int process_arg(int c, char *optarg)
 		option = OPTION_ADD;
 		break;
 	case 'd':
-		debug++;
-		skip_read_cache = 1;
+		if (!optarg) {
+			debug++;
+			skip_read_cache = 1;
+		} else if (strcmp(optarg, "jobs") == 0 ||
+			   strcmp(optarg, "j") == 0) {
+			debug_jobs = true;
+		} else {
+			PERROR("%s: Invalid --debug option '%s'\n",
+			       progname, optarg);
+			exit(1);
+		}
 		break;
 	case 'h':
 		if (!optarg) {
@@ -398,7 +457,7 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'M':
-		if (aa_features_new(&features, optarg)) {
+		if (aa_features_new(&features, AT_FDCWD, optarg)) {
 			fprintf(stderr,
 				"Failed to load features from '%s': %m\n",
 				optarg);
@@ -470,6 +529,12 @@ static int process_arg(int c, char *optarg)
 		break;
 	case 135:
 		debug_cache = 1;
+		break;
+	case 'j':
+		jobs = process_jobs_arg("-j", optarg);
+		break;
+	case 136:
+		jobs_max = process_jobs_arg("max-jobs", optarg);
 		break;
 	default:
 		display_usage(progname);
@@ -579,6 +644,8 @@ static void set_supported_features(void)
 						       "policy/set_load");
 	kernel_supports_diff_encode = aa_features_supports(features,
 							   "policy/diff_encode");
+	kernel_supports_stacking = aa_features_supports(features,
+							"domain/stack");
 
 	if (aa_features_supports(features, "policy/versions/v7"))
 		kernel_abi_version = 7;
@@ -601,7 +668,7 @@ int process_binary(int option, aa_kernel_interface *kernel_interface,
 	if (kernel_load) {
 		if (option == OPTION_ADD) {
 			retval = profilename ?
-				 aa_kernel_interface_load_policy_from_file(kernel_interface, profilename) :
+				 aa_kernel_interface_load_policy_from_file(kernel_interface, AT_FDCWD, profilename) :
 				 aa_kernel_interface_load_policy_from_fd(kernel_interface, 0);
 			if (retval == -1) {
 				retval = errno;
@@ -611,7 +678,7 @@ int process_binary(int option, aa_kernel_interface *kernel_interface,
 			}
 		} else if (option == OPTION_REPLACE) {
 			retval = profilename ?
-				 aa_kernel_interface_replace_policy_from_file(kernel_interface, profilename) :
+				 aa_kernel_interface_replace_policy_from_file(kernel_interface, AT_FDCWD, profilename) :
 				 aa_kernel_interface_replace_policy_from_fd(kernel_interface, 0);
 			if (retval == -1) {
 				retval = errno;
@@ -652,7 +719,6 @@ void reset_parser(const char *filename)
 	free_aliases();
 	free_symtabs();
 	free_policies();
-	reset_regex();
 	reset_include_stack(filename);
 }
 
@@ -805,6 +871,137 @@ out:
 	return retval;
 }
 
+/* Do not call directly, this is a helper for work_sync, which can handle
+ * single worker cases and cases were the work queue is optimized away
+ *
+ * call only if there are work children to wait on
+ */
+#define work_sync_one(RESULT)						\
+do {									\
+	int status;							\
+	wait(&status);							\
+	if (WIFEXITED(status))						\
+		RESULT(WEXITSTATUS(status));				\
+	else								\
+		RESULT(ECHILD);						\
+	/* TODO: do we need to handle traced */				\
+	njobs--;							\
+	if (debug_jobs)							\
+		fprintf(stderr, "    JOBS SYNC ONE: result %d, jobs left %ld\n", status, njobs);							\
+} while (0)
+
+#define work_sync(RESULT)						\
+do {									\
+	if (debug_jobs)							\
+		fprintf(stderr, "JOBS SYNC: jobs left %ld\n", njobs);	\
+	while (njobs)							\
+		work_sync_one(RESULT);					\
+} while (0)
+
+#define work_spawn(WORK, RESULT)					\
+do {									\
+	/* what to do to avoid fork() overhead when single threaded	\
+	if (jobs == 1) {						\
+		// no parallel work so avoid fork() overhead		\
+		RESULT(WORK);						\
+		break;							\
+	}*/								\
+	if (jobs_scale) {						\
+		long n = sysconf(_SC_NPROCESSORS_ONLN);			\
+		if (n > jobs_max)					\
+			n = jobs_max;					\
+		if (n > jobs) {						\
+			/* reset sample chances - potentially reduce to 0 */ \
+			jobs_scale = jobs_max - n;			\
+			jobs = n;					\
+		} else							\
+			/* reduce scaling chance by 1 */		\
+			jobs_scale--;					\
+	}								\
+	if (njobs == jobs) {						\
+		/* wait for a child */					\
+		if (debug_jobs)						\
+			fprintf(stderr, "    JOBS SPAWN: waiting (jobs %ld == max %ld) ...\n", njobs, jobs);						\
+		work_sync_one(RESULT);					\
+	}								\
+									\
+	pid_t child = fork();						\
+	if (child == 0) {						\
+		/* child - exit work unit with returned value */	\
+		exit(WORK);						\
+	} else if (child > 0) {						\
+		/* parent */						\
+		njobs++;						\
+		if (debug_jobs)						\
+			fprintf(stderr, "    JOBS SPAWN: created %ld ...\n", njobs);									\
+	} else {							\
+		/* error */						\
+		if (debug_jobs)						\
+			fprintf(stderr, "    JOBS SPAWN: failed error: %d) ...\n", errno);								\
+		RESULT(errno);						\
+	}								\
+} while (0)
+
+
+/* sadly C forces us to do this with exit, long_jump or returning error
+ * from work_spawn and work_sync. We could throw a C++ exception, is it
+ * worth doing it to avoid the exit here.
+ *
+ * atm not all resources maybe cleanedup at exit
+ */
+int last_error = 0;
+void handle_work_result(int retval)
+{
+	if (retval) {
+		last_error = retval;
+		if (abort_on_error) {
+			/* already in abort mode we don't need subsequent
+			 * syncs to do this too
+			 */
+			abort_on_error = 0;
+			work_sync(handle_work_result);
+			exit(last_error);
+
+		}
+	}
+}
+
+static long compute_jobs(long n, long j)
+{
+	if (j == JOBS_AUTO)
+		j = n;
+	else if (j < 0)
+		j = n * j * -1;
+	return j;
+}
+
+static void setup_parallel_compile(void)
+{
+	/* jobs and paralell_max set by default, config or args */
+	long n = sysconf(_SC_NPROCESSORS_ONLN);
+	long maxn = sysconf(_SC_NPROCESSORS_CONF);
+	if (n == -1)
+		/* unable to determine number of processors, default to 1 */
+		n = 1;
+	if (maxn == -1)
+		/* unable to determine number of processors, default to 1 */
+		maxn = 1;
+	jobs = compute_jobs(n, jobs);
+	jobs_max = compute_jobs(maxn, jobs_max);
+
+	if (jobs > jobs_max) {
+		pwarn("%s: Warning capping number of jobs to %ld * # of cpus == '%ld'",
+		      progname, jobs_max, jobs);
+		jobs = jobs_max;
+	} else if (jobs < jobs_max)
+		/* the bigger the difference the more sample chances given */
+		jobs_scale = jobs_max + 1 - n;
+
+	njobs = 0;
+	if (debug_jobs)
+		fprintf(stderr, "jobs: %ld\n", jobs);
+}
+
 struct dir_cb_data {
 	aa_kernel_interface *kernel_interface;
 	const char *dirname;	/* name of the parent dir */
@@ -812,7 +1009,7 @@ struct dir_cb_data {
 };
 
 /* data - pointer to a dir_cb_data */
-static int profile_dir_cb(DIR *dir unused, const char *name, struct stat *st,
+static int profile_dir_cb(int dirfd unused, const char *name, struct stat *st,
 			  void *data)
 {
 	int rc = 0;
@@ -822,14 +1019,15 @@ static int profile_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 		autofree char *path = NULL;
 		if (asprintf(&path, "%s/%s", cb_data->dirname, name) < 0)
 			PERROR(_("Out of memory"));
-		rc = process_profile(option, cb_data->kernel_interface, path,
-				     cb_data->cachedir);
+		work_spawn(process_profile(option, cb_data->kernel_interface,
+					   path, cb_data->cachedir),
+			   handle_work_result);
 	}
 	return rc;
 }
 
 /* data - pointer to a dir_cb_data */
-static int binary_dir_cb(DIR *dir unused, const char *name, struct stat *st,
+static int binary_dir_cb(int dirfd unused, const char *name, struct stat *st,
 			 void *data)
 {
 	int rc = 0;
@@ -839,7 +1037,9 @@ static int binary_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 		autofree char *path = NULL;
 		if (asprintf(&path, "%s/%s", cb_data->dirname, name) < 0)
 			PERROR(_("Out of memory"));
-		rc = process_binary(option, cb_data->kernel_interface, path);
+		work_spawn(process_binary(option, cb_data->kernel_interface,
+					   path),
+			    handle_work_result);
 	}
 	return rc;
 }
@@ -862,8 +1062,8 @@ static void setup_flags(void)
 int main(int argc, char *argv[])
 {
 	aa_kernel_interface *kernel_interface = NULL;
-	aa_policy_cache *policy_cache;
-	int retval, last_error;
+	aa_policy_cache *policy_cache = NULL;
+	int retval;
 	int i;
 	int optind;
 
@@ -874,6 +1074,8 @@ int main(int argc, char *argv[])
 
 	process_config_file("/etc/apparmor/parser.conf");
 	optind = process_args(argc, argv);
+
+	setup_parallel_compile();
 
 	setlocale(LC_MESSAGES, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
@@ -899,13 +1101,15 @@ int main(int argc, char *argv[])
 
 	if ((!skip_cache && (write_cache || !skip_read_cache)) ||
 	    force_clear_cache) {
+		uint16_t max_caches = write_cache && cond_clear_cache ? 1 : 0;
+
 		if (!cacheloc && asprintf(&cacheloc, "%s/cache", basedir) == -1) {
 			PERROR(_("Memory allocation error."));
 			return 1;
 		}
 
 		if (force_clear_cache) {
-			if (aa_policy_cache_remove(cacheloc)) {
+			if (aa_policy_cache_remove(AT_FDCWD, cacheloc)) {
 				PERROR(_("Failed to clear cache files (%s): %s\n"),
 				       cacheloc, strerror(errno));
 				return 1;
@@ -917,31 +1121,25 @@ int main(int argc, char *argv[])
 		if (create_cache_dir)
 			pwarn(_("The --create-cache-dir option is deprecated. Please use --write-cache.\n"));
 
-		retval = aa_policy_cache_new(&policy_cache, features, cacheloc,
-					     write_cache);
+		retval = aa_policy_cache_new(&policy_cache, features,
+					     AT_FDCWD, cacheloc, max_caches);
 		if (retval) {
-			if (errno != ENOENT) {
+			if (errno != ENOENT && errno != EEXIST) {
 				PERROR(_("Failed setting up policy cache (%s): %s\n"),
 				       cacheloc, strerror(errno));
 				return 1;
 			}
 
-			write_cache = 0;
-			skip_read_cache = 0;
-		} else if (!aa_policy_cache_is_valid(policy_cache)) {
-			if (write_cache && cond_clear_cache &&
-			    aa_policy_cache_create(policy_cache)) {
-				if (show_cache)
+			if (show_cache) {
+				if (max_caches > 0)
 					PERROR("Cache write disabled: Cannot create cache '%s': %m\n",
 					       cacheloc);
-				write_cache = 0;
-				skip_read_cache = 1;
-			} else if (!write_cache || !cond_clear_cache) {
-				if (show_cache)
+				else
 					PERROR("Cache read/write disabled: Policy cache is invalid\n");
-				write_cache = 0;
-				skip_read_cache = 1;
 			}
+
+			write_cache = 0;
+			skip_read_cache = 1;
 		}
 	}
 
@@ -966,38 +1164,38 @@ int main(int argc, char *argv[])
 		}
 
 		if (profilename && S_ISDIR(stat_file.st_mode)) {
-			int (*cb)(DIR *dir, const char *name, struct stat *st,
+			int (*cb)(int dirfd, const char *name, struct stat *st,
 				  void *data);
 			struct dir_cb_data cb_data;
 
+			memset(&cb_data, 0, sizeof(struct dir_cb_data));
 			cb_data.dirname = profilename;
 			cb_data.cachedir = cacheloc;
+			cb_data.kernel_interface = kernel_interface;
 			cb = binary_input ? binary_dir_cb : profile_dir_cb;
-			if ((retval = dirat_for_each(NULL, profilename,
+			if ((retval = dirat_for_each(AT_FDCWD, profilename,
 						     &cb_data, cb))) {
 				PDEBUG("Failed loading profiles from %s\n",
 				       profilename);
 			}
 		} else if (binary_input) {
-			retval = process_binary(option, kernel_interface,
-						profilename);
+			work_spawn(process_binary(option, kernel_interface,
+						  profilename),
+				   handle_work_result);
 		} else {
-			retval = process_profile(option, kernel_interface,
-						 profilename, cacheloc);
+			work_spawn(process_profile(option, kernel_interface,
+						   profilename, cacheloc),
+				   handle_work_result);
 		}
 
 		if (profilename) free(profilename);
 		profilename = NULL;
-
-		if (retval) {
-			last_error = retval;
-			if (abort_on_error)
-				break;
-		}
 	}
+	work_sync(handle_work_result);
 
 	if (ofile)
 		fclose(ofile);
+	aa_policy_cache_unref(policy_cache);
 
 	return last_error;
 }

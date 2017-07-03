@@ -50,7 +50,7 @@ CFLAGS = -g -pg -fprofile-arcs -ftest-coverage
 endif
 endif #CFLAGS
 
-EXTRA_CXXFLAGS = ${CFLAGS} ${CXX_WARNINGS} -std=gnu++0x -D_GNU_SOURCE
+EXTRA_CXXFLAGS = ${CFLAGS} ${CPPFLAGS} ${CXX_WARNINGS} -std=gnu++0x -D_GNU_SOURCE
 EXTRA_CFLAGS = ${EXTRA_CXXFLAGS} ${CPP_WARNINGS}
 
 #LEXLIB	:= -lfl
@@ -86,7 +86,7 @@ OBJECTS = $(patsubst %.cc, %.o, $(SRCS:.c=.o))
 AAREDIR= libapparmor_re
 AAREOBJECT = ${AAREDIR}/libapparmor_re.a
 AAREOBJECTS = $(AAREOBJECT)
-AARE_LDFLAGS = -static-libgcc -static-libstdc++ -L.
+AARE_LDFLAGS = -static-libgcc -static-libstdc++ -L. $(LDFLAGS)
 AALIB = -Wl,-Bstatic -lapparmor -Wl,-Bdynamic -lpthread
 
 ifdef USE_SYSTEM
@@ -95,7 +95,7 @@ ifdef USE_SYSTEM
   INCLUDE_APPARMOR =
   APPARMOR_H =
 else
-  LIBAPPARMOR_SRC = ../libraries/libapparmor/
+  LIBAPPARMOR_SRC = ../libraries/libapparmor
   LOCAL_LIBAPPARMOR_INCLUDE = $(LIBAPPARMOR_SRC)/include
   LOCAL_LIBAPPARMOR_LDPATH = $(LIBAPPARMOR_SRC)/src/.libs
 
@@ -161,7 +161,8 @@ htmlmanpages:	$(HTMLMANPAGES)
 
 pdf:	techdoc.pdf
 
-docs:	manpages htmlmanpages pdf
+docs:	manpages htmlmanpages
+extra_docs: pdf
 
 indep: docs
 	$(Q)$(MAKE) -C po all
@@ -213,7 +214,7 @@ parser_include.o: parser_include.c parser.h parser_include.h
 parser_merge.o: parser_merge.c parser.h profile.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_regex.o: parser_regex.c parser.h profile.h libapparmor_re/apparmor_re.h $(APPARMOR_H)
+parser_regex.o: parser_regex.c parser.h profile.h libapparmor_re/apparmor_re.h libapparmor_re/aare_rules.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_symtab.o: parser_symtab.c parser.h
@@ -368,7 +369,7 @@ install-arch: $(INSTALLDEPS)
 	install -m 755 ${TOOLS} $(DESTDIR)/sbin
 
 .PHONY: install-indep
-install-indep:
+install-indep: indep
 	install -m 755 -d $(INSTALL_CONFDIR)
 	install -m 644 subdomain.conf $(INSTALL_CONFDIR)
 	install -m 644 parser.conf $(INSTALL_CONFDIR)

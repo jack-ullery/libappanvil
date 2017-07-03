@@ -49,6 +49,15 @@ requires_kernel_features()
 	fi
 }
 
+requires_namespace_interface()
+{
+	if [ ! -e "/sys/kernel/security/apparmor/policy/namespaces" ]
+	then
+		echo "Namespaces in apparmorfs policy interface not supported. Skipping tests ..."
+		exit 0
+	fi
+}
+
 requires_query_interface()
 {
 	if [ ! -e "/sys/kernel/security/apparmor/.access" ]
@@ -60,7 +69,7 @@ requires_query_interface()
 
 parser_supports()
 {
-	for R in $@ ; do
+	for R in "$@" ; do
 		echo "/test { $R }" | $subdomain ${parser_args} -qQT 2>/dev/null 1>/dev/null
 		if [ $? -ne 0 ] ; then
 			echo "Compiler does not support rule '$R'"

@@ -96,13 +96,13 @@ ostream &operator<<(ostream &os, Node &node);
 /* An abstract node in the syntax tree. */
 class Node {
 public:
-	Node(): nullable(false) { child[0] = child[1] = 0; }
-	Node(Node *left): nullable(false)
+	Node(): nullable(false), label(0) { child[0] = child[1] = 0; }
+	Node(Node *left): nullable(false), label(0)
 	{
 		child[0] = left;
 		child[1] = 0;
 	}
-	Node(Node *left, Node *right): nullable(false)
+	Node(Node *left, Node *right): nullable(false), label(0)
 	{
 		child[0] = left;
 		child[1] = right;
@@ -672,7 +672,7 @@ public:
 
 	~hashedNodeVec()
 	{
-		delete nodes;
+		delete [] nodes;
 	}
 
 	unsigned long size()const { return len; }

@@ -8,10 +8,10 @@
     #include <abstractions/php5>
     #include <abstractions/python>
 
-    /bin/dash ixr,
-    /bin/df ixr,
-    /bin/mount ixr,
-    /bin/uname ixr,
+    /{,usr/}bin/dash ixr,
+    /{,usr/}bin/df ixr,
+    /{,usr/}bin/mount ixr,
+    /{,usr/}bin/uname ixr,
     /dev/bus/usb/ r,
     /dev/bus/usb/** r,
     /etc/debian_version r,

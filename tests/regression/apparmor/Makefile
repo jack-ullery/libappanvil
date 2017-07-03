@@ -18,7 +18,7 @@ ifdef USE_SYSTEM
 				echo -lapparmor ; \
 			fi )
   ifeq ($(strip $(LIBAPPARMOR)),)
-    ERROR_MESSAGE = $(error ${nl}\
+    LIBAPPARMOR_ERROR_MESSAGE = $(error ${nl}\
 ************************************************************************${nl}\
 Unable to find libapparmor installed on this system; either${nl}\
 install libapparmor devel packages, set the LIBAPPARMOR variable${nl}\
@@ -27,18 +27,39 @@ manually, or build against in-tree libapparmor.${nl}\
   endif # LIBAPPARMOR not set
   LDLIBS += $(LIBAPPARMOR)
 
+  AA_EXEC = $(shell which aa-exec)
+  ifeq ($(AA_EXEC),)
+    AA_EXEC_ERROR_MESSAGE = $(error ${nl}\
+************************************************************************${nl}\
+Unable to find aa-exec installed on this system; either install the${nl}\
+apparmor package, set the AA_EXEC variable manually, or use the in-tree${nl}\
+aa-exec.${nl}\
+************************************************************************${nl})
+  endif # AA_EXEC not set
+
 else # !USE_SYSTEM
   # use in-tree versions
   LIBAPPARMOR_SRC := ../../../libraries/libapparmor/
   LIBAPPARMOR_INCLUDE = $(LIBAPPARMOR_SRC)/include
   LIBAPPARMOR_PATH := $(LIBAPPARMOR_SRC)/src/.libs/
   ifeq ($(realpath $(LIBAPPARMOR_PATH)/libapparmor.a),)
-        ERROR_MESSAGE = $(error ${nl}\
+        LIBAPPARMOR_ERROR_MESSAGE = $(error ${nl}\
 ************************************************************************${nl}\
 $(LIBAPPARMOR_PATH)/libapparmor.a is missing; either build against${nl}\
 the in-tree libapparmor by building it first and then trying again${nl}\
 (see the top-level README for help) or build against the system${nl}\
 libapparmor by adding USE_SYSTEM=1 to your make command.${nl}\
+************************************************************************${nl})
+  endif
+
+  BINUTILS_SRC := ../../../binutils
+  AA_EXEC = $(BINUTILS_SRC)/aa-exec
+  ifeq ($(realpath $(AA_EXEC)),)
+        AA_EXEC_ERROR_MESSAGE = $(error ${nl}\
+************************************************************************${nl}\
+$(AA_EXEC) is missing; either build the $(BINUTILS_SRC) directory${nl}\
+and then try again (see the top-level README for help) or use the${nl}\
+system aa-exec by adding USE_SYSTEM=1 to your make command.${nl}\
 ************************************************************************${nl})
   endif
 
@@ -49,9 +70,9 @@ endif # USE_SYSTEM
 CFLAGS += -g -O0 -Wall -Wstrict-prototypes
 
 SRC=access.c \
+    at_secure.c \
     introspect.c \
     changeprofile.c \
-    onexec.c \
     changehat.c \
     changehat_fork.c \
     changehat_misc.c \
@@ -112,6 +133,7 @@ SRC=access.c \
     syscall_sysctl.c \
     sysctl_proc.c \
     tcp.c \
+    transition.c \
     unix_fd_client.c \
     unix_fd_server.c \
     unix_socket.c \
@@ -135,24 +157,37 @@ Install libdbus-1-dev or equivalent package to build and run these tests${nl}\
 ************************************************************************${nl})
 endif
 
+TRANSITION_CFLAGS=
 ifdef USE_SYSTEM
   ifneq (,$(shell pkg-config --atleast-version 2.10 libapparmor && echo TRUE))
     SRC+=aa_policy_cache.c
-    AA_POLICY_CACHE_TEST=aa_policy_cache
+    CONDITIONAL_TESTS+=aa_policy_cache
   else
     $(warning ${nl}\
     ************************************************************************${nl}\
     Skipping aa_policy_cache tests: requires libapparmor 2.10 or newer ...${nl}\
     ************************************************************************${nl})
   endif
+
+  ifneq (,$(shell pkg-config --atleast-version 2.10.95 libapparmor && echo TRUE))
+    CONDITIONAL_TESTS+=exec_stack stackonexec stackprofile
+  else
+    $(warning ${nl}\
+    ************************************************************************${nl}\
+    Skipping stacking tests: requires libapparmor 2.11 Beta 1 or newer ...${nl}\
+    ************************************************************************${nl})
+    TRANSITION_CFLAGS=-DWITHOUT_STACKING
+  endif
 else
   SRC+=aa_policy_cache.c
-  AA_POLICY_CACHE_TEST=aa_policy_cache
+  CONDITIONAL_TESTS+=exec_stack aa_policy_cache stackonexec stackprofile
 endif
 
 EXEC=$(SRC:%.c=%)
 
-TESTS=access \
+TESTS=aa_exec \
+      access \
+      at_secure \
       introspect \
       capabilities \
       changeprofile \
@@ -178,6 +213,7 @@ TESTS=access \
       mount \
       mult_mount \
       named_pipe \
+      namespaces \
       net_raw \
       open \
       openat \
@@ -210,16 +246,18 @@ ifneq (,$(shell pkg-config --exists dbus-1 && echo TRUE))
 TESTS+=dbus_eavesdrop dbus_message dbus_service dbus_unrequested_reply
 endif
 
-TESTS+=$(AA_POLICY_CACHE_TEST)
+TESTS+=$(CONDITIONAL_TESTS)
 
 # Tests that can crash the kernel should be placed here
 RISKY_TESTS=
 
 .PHONY: libapparmor_check
 .SILENT: libapparmor_check
-libapparmor_check: ; $(ERROR_MESSAGE)
+libapparmor_check: ; $(LIBAPPARMOR_ERROR_MESSAGE)
 
-all: libapparmor_check $(EXEC) changehat.h uservars.inc
+aa_exec_check: ; $(AA_EXEC_ERROR_MESSAGE)
+
+all: libapparmor_check aa_exec_check $(EXEC) changehat.h uservars.inc
 
 uservars.inc: uservars.inc.source uservars.inc.system
 ifdef USE_SYSTEM
@@ -227,6 +265,9 @@ ifdef USE_SYSTEM
 else # !USE_SYSTEM
 	cp uservars.inc.source uservars.inc
 endif # USE_SYSTEM
+
+at_secure: at_secure.c transition
+	${CC} ${CFLAGS} ${LDFLAGS} $< -o $@ ${LDLIBS}
 
 changehat_pthread: changehat_pthread.c changehat.h
 	${CC} ${CFLAGS} ${LDFLAGS} $< -o $@ ${LDLIBS} -pthread
@@ -245,6 +286,9 @@ dbus_service: dbus_message dbus_service.c dbus_common.o
 
 dbus_unrequested_reply: dbus_service dbus_unrequested_reply.c dbus_common.o
 	${CC} ${CFLAGS} ${LDFLAGS} $(filter-out dbus_service, $^) -o $@ ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
+
+transition: transition.c
+	${CC} ${CFLAGS} ${TRANSITION_CFLAGS} ${LDFLAGS} $< -o $@ ${LDLIBS}
 
 unix_socket_common.o: unix_socket_common.c unix_socket_common.h
 	${CC} ${CFLAGS} ${LDFLAGS} $< -c ${LDLIBS}

@@ -45,7 +45,7 @@ define nl
 
 endef
 
-REPO_VERSION_CMD=([ -x /usr/bin/bzr ] && /usr/bin/bzr version-info . 2> /dev/null || awk '{ print "revno: "$2 }' common/.stamp_rev) | awk '/^revno:/ { print $2 }'
+REPO_VERSION_CMD=[ -x /usr/bin/bzr ] && /usr/bin/bzr version-info --custom --template="{revno}" . 2> /dev/null || awk '{ print $2 }' common/.stamp_rev
 
 ifndef PYTHON_VERSIONS
 PYTHON_VERSIONS = $(call map, pathsearch, python2 python3)
@@ -66,7 +66,7 @@ version:
 .PHONY: repo_version
 .SILENT: repo_version
 repo_version:
-	 $(value REPO_VERSION_CMD)
+	echo $(shell $(value REPO_VERSION_CMD))
 
 .PHONY: pod_clean
 ifndef VERBOSE
@@ -82,7 +82,7 @@ pod_clean:
 # =====================
 
 # emits defined capabilities in a simple list, e.g. "CAP_NAME CAP_NAME2"
-CAPABILITIES=$(shell echo "\#include <linux/capability.h>" | cpp -dM | LC_ALL=C sed -n -e '/CAP_EMPTY_SET/d' -e 's/^\#define[ \t]\+CAP_\([A-Z0-9_]\+\)[ \t]\+\([0-9xa-f]\+\)\(.*\)$$/CAP_\1/p' | sort)
+CAPABILITIES=$(shell echo "\#include <linux/capability.h>" | cpp -dM | LC_ALL=C sed -n -e '/CAP_EMPTY_SET/d' -e 's/^\#define[ \t]\+CAP_\([A-Z0-9_]\+\)[ \t]\+\([0-9xa-f]\+\)\(.*\)$$/CAP_\1/p' | LC_ALL=C sort)
 
 .PHONY: list_capabilities
 list_capabilities: /usr/include/linux/capability.h
@@ -98,7 +98,7 @@ list_capabilities: /usr/include/linux/capability.h
 # to mediate. We use PF_ here since that is what is required in
 # bits/socket.h, but we will rewrite these as AF_.
 
-FILTER_FAMILIES=PF_UNSPEC PF_UNIX
+FILTER_FAMILIES=PF_UNIX
 
 __FILTER=$(shell echo $(strip $(FILTER_FAMILIES)) | sed -e 's/ /\\\|/g')
 

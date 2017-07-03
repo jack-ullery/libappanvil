@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2009 Novell/SUSE
-#    Copyright (C) 2010 Canonical Ltd.
+#    Copyright (C) 2010-2016 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -20,7 +20,7 @@
 # Makefile for LSM-based AppArmor profiles
 
 NAME=apparmor-profiles
-all: local
+all: local docs
 COMMONDIR=../common/
 
 include $(COMMONDIR)/Make.rules
@@ -75,17 +75,18 @@ ifndef LOGPROF
 LOGPROF=PYTHONPATH=../utils $(PYTHON) ../utils/aa-logprof
 endif
 
+.PHONY: docs
+# docs: should we have some here?
+docs:
+
 IGNORE_FILES=${EXTRAS_SOURCE}/README
 CHECK_PROFILES=$(filter-out ${IGNORE_FILES} ${SUBDIRS}, $(wildcard ${PROFILES_SOURCE}/*) $(wildcard ${EXTRAS_SOURCE}/*))
 
-# check-logprof is disabled here because it has not kept up with
-# advances in the apparmor policy language. Re-enable when it is
-# updated.
 .PHONY: check
-check: check-parser
+check: check-parser check-logprof
 
 .PHONY: check-parser
-check-parser:
+check-parser: local
 	@echo "*** Checking profiles from ${PROFILES_SOURCE} and ${EXTRAS_SOURCE} against apparmor_parser"
 	$(Q)for profile in ${CHECK_PROFILES} ; do \
 	        [ -n "${VERBOSE}" ] && echo "Testing $${profile}" ; \
@@ -93,6 +94,6 @@ check-parser:
 	done
 
 .PHONY: check-logprof
-check-logprof:
+check-logprof: local
 	@echo "*** Checking profiles from ${PROFILES_SOURCE} against logprof"
 	$(Q)${LOGPROF} -d ${PROFILES_SOURCE} -f /dev/null || exit 1

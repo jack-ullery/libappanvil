@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 # ----------------------------------------------------------------------
 #    Copyright (C) 2014 Christian Boltz <apparmor@cboltz.de>
 #
@@ -118,7 +118,10 @@ class CapabilityTest(AATest):
             'task': 0,
             'attr': None,
             'name2': None,
-            'name': 'net_raw'
+            'name': 'net_raw',
+            'family': None,
+            'protocol': None,
+            'sock_type': None,
         })
 
         obj = CapabilityRule(parsed_event['name'], log_event=parsed_event)
@@ -635,7 +638,7 @@ class CapabilityGlobTest(AATest):
         self.assertEqual(self.ruleset.get_glob('capability net_raw,'), 'capability,')
 
     def test_glob_ext(self):
-        with self.assertRaises(AppArmorBug):
+        with self.assertRaises(NotImplementedError):
             self.ruleset.get_glob_ext('capability net_raw,')
 
 class CapabilityDeleteTest(AATest):
@@ -817,7 +820,6 @@ class CapabilityDeleteTest(AATest):
             inc.add(CapabilityRule.parse(rule))
 
         expected_raw = [
-            '  allow capability sys_admin,',  # XXX huh? should be deleted!
             '  deny capability chgrp, # example comment',
             '',
         ]
@@ -825,11 +827,9 @@ class CapabilityDeleteTest(AATest):
         expected_clean = [
             '  deny capability chgrp, # example comment',
             '',
-            '  allow capability sys_admin,',  # XXX huh? should be deleted!
-            '',
         ]
 
-        self.assertEqual(self.ruleset.delete_duplicates(inc), 1)
+        self.assertEqual(self.ruleset.delete_duplicates(inc), 2)
         self.assertEqual(expected_raw, self.ruleset.get_raw(1))
         self.assertEqual(expected_clean, self.ruleset.get_clean(1))
 

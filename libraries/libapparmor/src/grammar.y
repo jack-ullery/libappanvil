@@ -166,6 +166,11 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_SYSLOG_KERNEL
 %token TOK_SYSLOG_USER
 
+%destructor { free($$); } TOK_QUOTED_STRING TOK_ID TOK_MODE TOK_DMESG_STAMP
+%destructor { free($$); } TOK_AUDIT_DIGITS TOK_DATE_MONTH TOK_DATE TOK_TIME
+%destructor { free($$); } TOK_HEXSTRING TOK_TYPE_OTHER TOK_MSG_REST
+%destructor { free($$); } TOK_IP_ADDR
+
 %%
 
 log_message: audit_type
@@ -201,7 +206,7 @@ other_audit: TOK_TYPE_OTHER audit_msg TOK_MSG_REST
 	;
 
 dmesg_type: TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id key_list
-	{ ret_record->version = AA_RECORD_SYNTAX_V2; }
+	{ ret_record->version = AA_RECORD_SYNTAX_V2; free($1); }
 	;
 
 syslog_type:
@@ -420,7 +425,6 @@ _parse_yacc(char *str)
 	/* yydebug = 1;  */
 	YY_BUFFER_STATE lex_buf;
 	yyscan_t scanner;
-	int parser_return;
 
 	ret_record = NULL;
 	ret_record = malloc(sizeof(aa_log_record));
@@ -436,7 +440,8 @@ _parse_yacc(char *str)
 
 	aalogparse_lex_init(&scanner);
 	lex_buf = aalogparse__scan_string(str, scanner);
-	parser_return = aalogparse_parse(scanner);
+	/* Ignore return value to return an AA_RECORD_INVALID event */
+	(void)aalogparse_parse(scanner);
 	aalogparse__delete_buffer(lex_buf, scanner);
 	aalogparse_lex_destroy(scanner);
 	return ret_record;

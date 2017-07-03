@@ -20,6 +20,7 @@
 
   @{PROC}/sys/kernel/{ostype,osrelease} r,
   @{PROC}/@{pid}/net/arp r,
+  @{PROC}/@{pid}/net/dev r,
   owner @{PROC}/@{pid}/auxv r,
   owner @{PROC}/@{pid}/cmdline r,
   owner @{PROC}/@{pid}/fd/ r,

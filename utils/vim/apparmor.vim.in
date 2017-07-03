@@ -147,9 +147,9 @@ syn match  sdNetworkDanger         /\v^\s*@@auditdeny@@network@@EOL@@/ contains=
 
 
 " Change Profile
-" TODO: audit and deny support will be added (JJ, 2011-01-11)
-syn match   sdEntryChangeProfile    /\v^\s*change_profile\s+-\>\s+\S+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-
+syn match   sdEntryChangeProfile    /\v^\s*@@auditdeny@@change_profile\s+(safe\s+[/@]\S+|unsafe\s+[/@]\S+|[/@]\S+)?\s*(-\>\s*\S+)?@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
+" bare change_profile rule
+syn match   sdEntryChangeProfile    /\v^\s*@@auditdeny@@change_profile@@EOL@@/ contains=sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
 
 " rlimit
 " TODO: audit and deny support will be added (JJ, 2011-01-11)

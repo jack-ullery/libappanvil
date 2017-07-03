@@ -14,7 +14,7 @@
 
 #include <tunables/global>
 
-/bin/netstat {
+profile netstat /{usr/,}bin/netstat {
   #include <abstractions/base>
   #include <abstractions/consoles>
   #include <abstractions/nameservice>
@@ -23,7 +23,7 @@
   capability dac_read_search,
   deny capability sys_ptrace,
 
-  /bin/netstat rmix,
+  /{usr/,}bin/netstat rmix,
   /etc/networks r,
   @{PROC} r,
   @{PROC}/@{pids}/cmdline r,

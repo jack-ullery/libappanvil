@@ -24,6 +24,8 @@ _ = init_translation()
 
 class aa_tools:
     def __init__(self, tool_name, args):
+        apparmor.init_aa()
+
         self.name = tool_name
         self.profiledir = args.dir
         self.profiling = args.program
@@ -82,7 +84,7 @@ class aa_tools:
 
             yield (program, profile)
 
-    def act(self):
+    def cleanprof_act(self):
         # used by aa-cleanprof
         apparmor.read_profiles()
 
@@ -98,20 +100,7 @@ class aa_tools:
                     sys.exit(1)
 
             if program and apparmor.profile_exists(program):
-                if self.name == 'cleanprof':
-                    self.clean_profile(program)
-
-                else:
-                    filename = apparmor.get_profile_filename(program)
-
-                    if not os.path.isfile(filename) or apparmor.is_skippable_file(filename):
-                        aaui.UI_Info(_('Profile for %s not found, skipping') % program)
-
-                    else:
-                        # One simply does not walk in here!
-                        raise apparmor.AppArmorException('Unknown tool: %s' % self.name)
-
-                    self.reload_profile(profile)
+                self.clean_profile(program)
 
             else:
                 if '/' not in program:

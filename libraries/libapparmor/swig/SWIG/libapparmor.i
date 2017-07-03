@@ -3,11 +3,29 @@
 %{
 #include <aalogparse.h>
 #include <sys/apparmor.h>
+#include <sys/apparmor_private.h>
 
 %}
 
 %include "typemaps.i"
 %include <aalogparse.h>
+
+/**
+ * swig doesn't like the macro magic we do in apparmor.h and apparmor_private.h
+ * so the function prototypes must be manually inserted.
+ *
+ * Functions that return a negative int and set errno upon error use a special
+ * %exception directive and must be listed after the %exception below. All
+ * other functions go here.
+ */
+
+/* apparmor.h */
+
+extern char *aa_splitcon(char *con, char **mode);
+
+/* apparmor_private.h */
+
+extern int _aa_is_blacklisted(const char *name);
 
 #ifdef SWIGPYTHON
 %exception {
@@ -19,9 +37,9 @@
 }
 #endif
 
-/* swig doesn't like the macro magic we do in apparmor.h so the fn prototypes
- * are manually inserted here
- */
+/* Functions that return a negative int and set errno upon error go here. */
+
+/* apparmor.h */
 
 extern int aa_is_enabled(void);
 extern int aa_find_mountpoint(char **mnt);
@@ -30,6 +48,8 @@ extern int aa_change_profile(const char *profile);
 extern int aa_change_onexec(const char *profile);
 extern int aa_change_hatv(const char *subprofiles[], unsigned long token);
 extern int aa_change_hat_vargs(unsigned long token, int count, ...);
+extern int aa_stack_profile(const char *profile);
+extern int aa_stack_onexec(const char *profile);
 extern int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len,
 			      char **mode);
 extern int aa_getprocattr(pid_t tid, const char *attr, char **buf, char **mode);

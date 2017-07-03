@@ -66,13 +66,6 @@ struct prefixes {
 	int owner;
 };
 
-
-struct named_transition {
-	int present;
-	char *ns;
-	char *name;
-};
-
 struct cod_pattern {
 	char *regex;		// posix regex
 };
@@ -98,9 +91,11 @@ struct cond_entry_list {
 };
 
 struct cod_entry {
-	char *ns;
 	char *name;
-	char *link_name;
+	union {
+		char *link_name;
+		char *onexec;
+	};
 	char *nt_name;
 	Profile *prof;		 	/* Special profile defined
 					 * just for this executable */
@@ -303,6 +298,7 @@ extern int kernel_supports_dbus;
 extern int kernel_supports_signal;
 extern int kernel_supports_ptrace;
 extern int kernel_supports_unix;
+extern int kernel_supports_stacking;
 extern int conf_verbose;
 extern int conf_quiet;
 extern int names_only;
@@ -358,8 +354,6 @@ extern int clear_and_convert_entry(std::string& buffer, char *entry);
 extern int process_regex(Profile *prof);
 extern int post_process_entry(struct cod_entry *entry);
 
-extern void reset_regex(void);
-
 extern int process_policydb(Profile *prof);
 
 extern int process_policy_ents(Profile *prof);
@@ -392,7 +386,10 @@ extern int get_rlimit(const char *name);
 extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
 extern int parse_X_mode(const char *X, int valid, const char *str_mode, int *mode, int fail);
-extern struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id);
+bool label_contains_ns(const char *label);
+bool parse_label(bool *_stack, char **_ns, char **_name,
+		 const char *label, bool yyerr);
+extern struct cod_entry *new_entry(char *id, int mode, char *link_id);
 
 /* returns -1 if value != true or false, otherwise 0 == false, 1 == true */
 extern int str_to_boolean(const char* str);
@@ -400,6 +397,9 @@ extern struct cod_entry *copy_cod_entry(struct cod_entry *cod);
 extern void free_cod_entries(struct cod_entry *list);
 extern void __debug_capabilities(uint64_t capset, const char *name);
 void debug_cod_entries(struct cod_entry *list);
+
+#define SECONDS_P_MS (1000LL * 1000LL)
+long long convert_time_units(long long value, long long base, const char *units);
 
 
 /* parser_symtab.c */

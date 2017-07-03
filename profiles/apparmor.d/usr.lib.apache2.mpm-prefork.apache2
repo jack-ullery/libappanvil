@@ -42,6 +42,7 @@
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
+  capability chown,
   capability kill,
   capability net_bind_service,
   capability setgid,

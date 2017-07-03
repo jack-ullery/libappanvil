@@ -35,13 +35,13 @@
 #include "../immunix.h"
 
 
-
 aare_rules::~aare_rules(void)
 {
 	if (root)
 		root->release();
 
-	aare_reset_matchflags();
+	unique_perms.clear();
+	expr_map.clear();
 }
 
 bool aare_rules::add_rule(const char *rule, int deny, uint32_t perms,
@@ -50,123 +50,20 @@ bool aare_rules::add_rule(const char *rule, int deny, uint32_t perms,
 	return add_rule_vec(deny, perms, audit, 1, &rule, flags);
 }
 
-#define FLAGS_WIDTH 2
-#define MATCH_FLAGS_SIZE (sizeof(uint32_t) * 8 - 1)
-MatchFlag *match_flags[FLAGS_WIDTH][MATCH_FLAGS_SIZE];
-DenyMatchFlag *deny_flags[FLAGS_WIDTH][MATCH_FLAGS_SIZE];
-#define EXEC_MATCH_FLAGS_SIZE (AA_EXEC_COUNT *2 * 2 * 2)	/* double for each of ix pux, unsafe x bits * u::o */
-MatchFlag *exec_match_flags[FLAGS_WIDTH][EXEC_MATCH_FLAGS_SIZE];	/* mods + unsafe + ix + pux * u::o */
-ExactMatchFlag *exact_match_flags[FLAGS_WIDTH][EXEC_MATCH_FLAGS_SIZE];	/* mods + unsafe + ix + pux *u::o */
-
-void aare_reset_matchflags(void)
-{
-	uint32_t i, j;
-#define RESET_FLAGS(group, size) { \
-	for (i = 0; i < FLAGS_WIDTH; i++) { \
-		for (j = 0; j < size; j++) { \
-		    if ((group)[i][j]) delete (group)[i][j];	\
-			(group)[i][j] = NULL; \
-		} \
-	} \
-}
-	RESET_FLAGS(match_flags, MATCH_FLAGS_SIZE);
-	RESET_FLAGS(deny_flags, MATCH_FLAGS_SIZE);
-	RESET_FLAGS(exec_match_flags, EXEC_MATCH_FLAGS_SIZE);
-	RESET_FLAGS(exact_match_flags, EXEC_MATCH_FLAGS_SIZE);
-#undef RESET_FLAGS
-}
-
 void aare_rules::add_to_rules(Node *tree, Node *perms)
 {
 	if (reverse)
 		flip_tree(tree);
-	if (root)
-		root = new AltNode(root, new CatNode(tree, perms));
+	Node *base = expr_map[perms];
+	if (base)
+		expr_map[perms] = new AltNode(base, tree);
 	else
-		root = new CatNode(tree, perms);
+		expr_map[perms] = tree;
 }
 
 static Node *cat_with_null_seperator(Node *l, Node *r)
 {
 	return new CatNode(new CatNode(l, new CharNode(0)), r);
-}
-
-static Node *convert_file_perms(int deny, uint32_t perms, uint32_t audit,
-				bool exact_match)
-{
-	Node *accept;
-
-	assert(perms != 0);
-
-/* 0x7f == 4 bits x mods + 1 bit unsafe mask + 1 bit ix, + 1 pux after shift */
-#define EXTRACT_X_INDEX(perm, shift) (((perm) >> (shift + 7)) & 0x7f)
-
-
-	/* the permissions set is assumed to be non-empty if any audit
-	 * bits are specified */
-	accept = NULL;
-	for (unsigned int n = 0; perms && n < (sizeof(perms) * 8); n++) {
-		uint32_t mask = 1 << n;
-
-		if (!(perms & mask))
-			continue;
-
-		int ai = audit & mask ? 1 : 0;
-		perms &= ~mask;
-
-		Node *flag;
-		if (mask & ALL_AA_EXEC_TYPE)
-			/* these cases are covered by EXEC_BITS */
-			continue;
-		if (deny) {
-			if (deny_flags[ai][n]) {
-				flag = deny_flags[ai][n];
-			} else {
-//fprintf(stderr, "Adding deny ai %d mask 0x%x audit 0x%x\n", ai, mask, audit & mask);
-				deny_flags[ai][n] = new DenyMatchFlag(mask, audit & mask);
-				flag = deny_flags[ai][n];
-			}
-		} else if (mask & AA_EXEC_BITS) {
-			uint32_t eperm = 0;
-			uint32_t index = 0;
-			if (mask & AA_USER_EXEC) {
-				eperm = mask | (perms & AA_USER_EXEC_TYPE);
-				index = EXTRACT_X_INDEX(eperm, AA_USER_SHIFT);
-			} else {
-				eperm = mask | (perms & AA_OTHER_EXEC_TYPE);
-				index = EXTRACT_X_INDEX(eperm, AA_OTHER_SHIFT) + (AA_EXEC_COUNT << 2);
-			}
-//fprintf(stderr, "index %d eperm 0x%x\n", index, eperm);
-			if (exact_match) {
-				if (exact_match_flags[ai][index]) {
-					flag = exact_match_flags[ai][index];
-				} else {
-					exact_match_flags[ai][index] = new ExactMatchFlag(eperm, audit & mask);
-					flag = exact_match_flags[ai][index];
-				}
-			} else {
-				if (exec_match_flags[ai][index]) {
-					flag = exec_match_flags[ai][index];
-				} else {
-					exec_match_flags[ai][index] = new MatchFlag(eperm, audit & mask);
-					flag = exec_match_flags[ai][index];
-				}
-			}
-		} else {
-			if (match_flags[ai][n]) {
-				flag = match_flags[ai][n];
-			} else {
-				match_flags[ai][n] = new MatchFlag(mask, audit & mask);
-				flag = match_flags[ai][n];
-			}
-		}
-		if (accept)
-			accept = new AltNode(accept, flag);
-		else
-			accept = flag;
-	} /* for ... */
-
-	return accept;
 }
 
 bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
@@ -202,7 +99,7 @@ bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
 	if (reverse)
 		flip_tree(tree);
 
-	accept = convert_file_perms(deny, perms, audit, exact_match);
+	accept = unique_perms.insert(deny, perms, audit, exact_match);
 
 	if (flags & DFA_DUMP_RULE_EXPR) {
 		cerr << "rule: ";
@@ -235,6 +132,30 @@ void *aare_rules::create_dfa(size_t *size, dfaflags_t flags)
 {
 	char *buffer = NULL;
 
+	/* finish constructing the expr tree from the different permission
+	 * set nodes */
+	PermExprMap::iterator i = expr_map.begin();
+	if (i != expr_map.end()) {
+		if (flags & DFA_CONTROL_TREE_SIMPLE) {
+			Node *tmp = simplify_tree(i->second, flags);
+			root = new CatNode(tmp, i->first);
+		} else
+			root = new CatNode(i->second, i->first);
+		for (i++; i != expr_map.end(); i++) {
+			Node *tmp;
+			if (flags & DFA_CONTROL_TREE_SIMPLE) {
+				tmp = simplify_tree(i->second, flags);
+			} else
+				tmp = i->second;
+			root = new AltNode(root, new CatNode(tmp, i->first));
+		}
+	}
+
+	/* dumping of the none simplified tree without -O no-expr-simplify
+	 * is broken because we need to build the tree above first, and
+	 * simplification is woven into the build. Reevaluate how to fix
+	 * this debug dump.
+	 */
 	label_nodes(root);
 	if (flags & DFA_DUMP_TREE) {
 		cerr << "\nDFA: Expression Tree\n";
@@ -243,7 +164,13 @@ void *aare_rules::create_dfa(size_t *size, dfaflags_t flags)
 	}
 
 	if (flags & DFA_CONTROL_TREE_SIMPLE) {
-		root = simplify_tree(root, flags);
+		/* This is old total tree, simplification point
+		 * For now just do simplification up front. It gets most
+		 * of the benefit running on the smaller chains, and is
+		 * overall faster because there are less nodes. Reevaluate
+		 * once tree simplification is rewritten
+		 */
+		//root = simplify_tree(root, flags);
 
 		if (flags & DFA_DUMP_SIMPLE_TREE) {
 			cerr << "\nDFA: Simplified Expression Tree\n";

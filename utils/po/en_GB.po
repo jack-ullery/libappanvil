@@ -6,16 +6,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor\n"
-"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"Report-Msgid-Bugs-To: AppArmor list <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2014-10-22 22:09+0000\n"
+"PO-Revision-Date: 2016-03-17 17:48+0000\n"
 "Last-Translator: Andi Chandler <Unknown>\n"
 "Language-Team: English (United Kingdom) <en_GB@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2015-03-11 05:08+0000\n"
-"X-Generator: Launchpad (build 17389)\n"
+"X-Launchpad-Export-Date: 2016-03-18 05:17+0000\n"
+"X-Generator: Launchpad (build 17947)\n"
+"Language: en_GB\n"
 
 #: ../aa-genprof:56
 msgid "Generate profile for the given program"
@@ -97,6 +98,15 @@ msgid ""
 "opportunity to choose whether the access should be \n"
 "allowed or denied."
 msgstr ""
+"Please start the application to be profiled in\n"
+"another window and exercise its functionality now.\n"
+"\n"
+"Once completed, select the \"Scan\" option below in \n"
+"order to scan the system logs for AppArmor events. \n"
+"\n"
+"For each AppArmor event, you will be given the \n"
+"opportunity to choose whether the access should be \n"
+"allowed or denied."
 
 #: ../aa-genprof:147
 msgid "Profiling"
@@ -224,7 +234,7 @@ msgstr "Severity"
 #: ../apparmor/aa.py:1857
 #, python-format
 msgid "Adding %s to profile."
-msgstr ""
+msgstr "Adding %s to profile."
 
 #: ../aa-mergeprof:282 ../apparmor/aa.py:1627
 #, python-format
@@ -243,156 +253,156 @@ msgstr "(owner permissions off)"
 
 #: ../aa-mergeprof:444 ../apparmor/aa.py:1781
 msgid "(force new perms to owner)"
-msgstr ""
+msgstr "(force new perms to owner)"
 
 #: ../aa-mergeprof:447 ../apparmor/aa.py:1784
 msgid "(force all rule perms to owner)"
-msgstr ""
+msgstr "(force all rule perms to owner)"
 
 #: ../aa-mergeprof:459 ../apparmor/aa.py:1796
 msgid "Old Mode"
-msgstr ""
+msgstr "Old Mode"
 
 #: ../aa-mergeprof:460 ../apparmor/aa.py:1797
 msgid "New Mode"
-msgstr ""
+msgstr "New Mode"
 
 #: ../aa-mergeprof:475 ../apparmor/aa.py:1812
 msgid "(force perms to owner)"
-msgstr ""
+msgstr "(force perms to owner)"
 
 #: ../aa-mergeprof:478 ../apparmor/aa.py:1815
 msgid "Mode"
-msgstr ""
+msgstr "Mode"
 
 #: ../aa-mergeprof:556
 #, python-format
 msgid "Adding %(path)s %(mod)s to profile"
-msgstr ""
+msgstr "Adding %(path)s %(mod)s to profile"
 
 #: ../aa-mergeprof:574 ../apparmor/aa.py:1915
 msgid "Enter new path: "
-msgstr ""
+msgstr "Enter new path: "
 
 #: ../aa-mergeprof:630 ../aa-mergeprof:657 ../apparmor/aa.py:1959
 #: ../apparmor/aa.py:1995
 msgid "Network Family"
-msgstr ""
+msgstr "Network Family"
 
 #: ../aa-mergeprof:631 ../aa-mergeprof:658 ../apparmor/aa.py:1960
 #: ../apparmor/aa.py:1996
 msgid "Socket Type"
-msgstr ""
+msgstr "Socket Type"
 
 #: ../aa-mergeprof:673 ../apparmor/aa.py:2010
 #, python-format
 msgid "Adding %s to profile"
-msgstr ""
+msgstr "Adding %s to profile"
 
 #: ../aa-mergeprof:683 ../apparmor/aa.py:2020
 #, python-format
 msgid "Adding network access %(family)s %(type)s to profile."
-msgstr ""
+msgstr "Adding network access %(family)s %(type)s to profile."
 
 #: ../aa-mergeprof:689 ../apparmor/aa.py:2026
 #, python-format
 msgid "Denying network access %(family)s %(type)s to profile"
-msgstr ""
+msgstr "Denying network access %(family)s %(type)s to profile"
 
 #: ../aa-autodep:23
 msgid "Generate a basic AppArmor profile by guessing requirements"
-msgstr ""
+msgstr "Generate a basic AppArmor profile by guessing requirements"
 
 #: ../aa-autodep:24
 msgid "overwrite existing profile"
-msgstr ""
+msgstr "overwrite existing profile"
 
 #: ../aa-audit:24
 msgid "Switch the given programs to audit mode"
-msgstr ""
+msgstr "Switch the given programs to audit mode"
 
 #: ../aa-audit:26
 msgid "remove audit mode"
-msgstr ""
+msgstr "remove audit mode"
 
 #: ../aa-audit:28
 msgid "Show full trace"
-msgstr ""
+msgstr "Show full trace"
 
 #: ../aa-complain:23
 msgid "Switch the given program to complain mode"
-msgstr ""
+msgstr "Switch the given program to complain mode"
 
 #: ../aa-enforce:23
 msgid "Switch the given program to enforce mode"
-msgstr ""
+msgstr "Switch the given program to enforce mode"
 
 #: ../aa-disable:23
 msgid "Disable the profile for the given programs"
-msgstr ""
+msgstr "Disable the profile for the given programs"
 
 #: ../aa-unconfined:28
 msgid "Lists unconfined processes having tcp or udp ports"
-msgstr ""
+msgstr "Lists unconfined processes having TCP or UDP ports"
 
 #: ../aa-unconfined:29
 msgid "scan all processes from /proc"
-msgstr ""
+msgstr "scan all processes from /proc"
 
 #: ../aa-unconfined:81
 #, python-format
 msgid "%(pid)s %(program)s (%(commandline)s) not confined"
-msgstr ""
+msgstr "%(pid)s %(program)s (%(commandline)s) not confined"
 
 #: ../aa-unconfined:85
 #, python-format
 msgid "%(pid)s %(program)s%(pname)s not confined"
-msgstr ""
+msgstr "%(pid)s %(program)s%(pname)s not confined"
 
 #: ../aa-unconfined:90
 #, python-format
 msgid "%(pid)s %(program)s (%(commandline)s) confined by '%(attribute)s'"
-msgstr ""
+msgstr "%(pid)s %(program)s (%(commandline)s) confined by '%(attribute)s'"
 
 #: ../aa-unconfined:94
 #, python-format
 msgid "%(pid)s %(program)s%(pname)s confined by '%(attribute)s'"
-msgstr ""
+msgstr "%(pid)s %(program)s%(pname)s confined by '%(attribute)s'"
 
 #: ../apparmor/aa.py:196
 #, python-format
 msgid "Followed too many links while resolving %s"
-msgstr ""
+msgstr "Followed too many links while resolving %s"
 
 #: ../apparmor/aa.py:252 ../apparmor/aa.py:259
 #, python-format
 msgid "Can't find %s"
-msgstr ""
+msgstr "Can't find %s"
 
 #: ../apparmor/aa.py:264 ../apparmor/aa.py:548
 #, python-format
 msgid "Setting %s to complain mode."
-msgstr ""
+msgstr "Setting %s to complain mode."
 
 #: ../apparmor/aa.py:271
 #, python-format
 msgid "Setting %s to enforce mode."
-msgstr ""
+msgstr "Setting %s to enforce mode."
 
 #: ../apparmor/aa.py:286
 #, python-format
 msgid "Unable to find basename for %s."
-msgstr ""
+msgstr "Unable to find basename for %s."
 
 #: ../apparmor/aa.py:301
 #, python-format
 msgid "Could not create %(link)s symlink to %(filename)s."
-msgstr ""
+msgstr "Could not create %(link)s symlink to %(filename)s."
 
 #: ../apparmor/aa.py:314
 #, python-format
 msgid "Unable to read first line from %s: File Not Found"
-msgstr ""
+msgstr "Unable to read first line from %s: File Not Found"
 
 #: ../apparmor/aa.py:328
 #, python-format
@@ -400,33 +410,36 @@ msgid ""
 "Unable to fork: %(program)s\n"
 "\t%(error)s"
 msgstr ""
+"Unable to fork: %(program)s\n"
+"\t%(error)s"
 
 #: ../apparmor/aa.py:449 ../apparmor/ui.py:303
 msgid ""
 "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr ""
+"Are you sure you want to abandon this set of profile changes and exit?"
 
 #: ../apparmor/aa.py:451 ../apparmor/ui.py:305
 msgid "Abandoning all changes."
-msgstr ""
+msgstr "Abandoning all changes."
 
 #: ../apparmor/aa.py:464
 msgid "Connecting to repository..."
-msgstr ""
+msgstr "Connecting to repository..."
 
 #: ../apparmor/aa.py:470
 msgid "WARNING: Error fetching profiles from the repository"
-msgstr ""
+msgstr "WARNING: Error fetching profiles from the repository"
 
 #: ../apparmor/aa.py:550
 #, python-format
 msgid "Error activating profiles: %s"
-msgstr ""
+msgstr "Error activating profiles: %s"
 
 #: ../apparmor/aa.py:605
 #, python-format
 msgid "%s contains no profile"
-msgstr ""
+msgstr "%s contains no profile"
 
 #: ../apparmor/aa.py:706
 #, python-format
@@ -434,6 +447,8 @@ msgid ""
 "WARNING: Error synchronizing profiles with the repository:\n"
 "%s\n"
 msgstr ""
+"WARNING: Error synchronising profiles with the repository:\n"
+"%s\n"
 
 #: ../apparmor/aa.py:744
 #, python-format
@@ -441,6 +456,8 @@ msgid ""
 "WARNING: Error synchronizing profiles with the repository\n"
 "%s"
 msgstr ""
+"WARNING: Error synchronising profiles with the repository\n"
+"%s"
 
 #: ../apparmor/aa.py:832 ../apparmor/aa.py:883
 #, python-format
@@ -448,14 +465,16 @@ msgid ""
 "WARNING: An error occurred while uploading the profile %(profile)s\n"
 "%(ret)s"
 msgstr ""
+"WARNING: An error occurred while uploading the profile %(profile)s\n"
+"%(ret)s"
 
 #: ../apparmor/aa.py:833
 msgid "Uploaded changes to repository."
-msgstr ""
+msgstr "Uploaded changes to repository."
 
 #: ../apparmor/aa.py:865
 msgid "Changelog Entry: "
-msgstr ""
+msgstr "Changelog Entry: "
 
 #: ../apparmor/aa.py:885
 msgid ""
@@ -464,40 +483,44 @@ msgid ""
 "information is required to upload profiles to the repository.\n"
 "These changes could not be sent."
 msgstr ""
+"Repository Error\n"
+"Registration or Signin was unsuccessful. User login\n"
+"information is required to upload profiles to the repository.\n"
+"These changes could not be sent."
 
 #: ../apparmor/aa.py:995
 msgid "Default Hat"
-msgstr ""
+msgstr "Default Hat"
 
 #: ../apparmor/aa.py:997
 msgid "Requested Hat"
-msgstr ""
+msgstr "Requested Hat"
 
 #: ../apparmor/aa.py:1218
 #, python-format
 msgid "%s has transition name but not transition mode"
-msgstr ""
+msgstr "%s has transition name but not transition mode"
 
 #: ../apparmor/aa.py:1232
 #, python-format
 msgid "Target profile exists: %s\n"
-msgstr ""
+msgstr "Target profile exists: %s\n"
 
 #: ../apparmor/aa.py:1254
 msgid "Program"
-msgstr ""
+msgstr "Program"
 
 #: ../apparmor/aa.py:1257
 msgid "Execute"
-msgstr ""
+msgstr "Execute"
 
 #: ../apparmor/aa.py:1287
 msgid "Are you specifying a transition to a local profile?"
-msgstr ""
+msgstr "Are you specifying a transition to a local profile?"
 
 #: ../apparmor/aa.py:1299
 msgid "Enter profile name to transition to: "
-msgstr ""
+msgstr "Enter profile name to transition to: "
 
 #: ../apparmor/aa.py:1308
 msgid ""
@@ -508,6 +531,12 @@ msgid ""
 "but some applications depend on the presence\n"
 "of LD_PRELOAD or LD_LIBRARY_PATH."
 msgstr ""
+"Should AppArmor sanitise the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitising environment is more secure,\n"
+"but some applications depend on the presence\n"
+"of LD_PRELOAD or LD_LIBRARY_PATH."
 
 #: ../apparmor/aa.py:1310
 msgid ""
@@ -519,6 +548,13 @@ msgid ""
 "or LD_LIBRARY_PATH and sanitising the environment\n"
 "could cause functionality problems."
 msgstr ""
+"Should AppArmor sanitise the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitising environment is more secure,\n"
+"but this application appears to be using LD_PRELOAD\n"
+"or LD_LIBRARY_PATH and sanitising the environment\n"
+"could cause functionality problems."
 
 #: ../apparmor/aa.py:1318
 #, python-format
@@ -529,6 +565,11 @@ msgid ""
 "Are you absolutely certain you wish to remove all\n"
 "AppArmor protection when executing %s ?"
 msgstr ""
+"Launching processes in an unconfined state is a very\n"
+"dangerous operation and can cause serious security holes.\n"
+"\n"
+"Are you absolutely certain you wish to remove all\n"
+"AppArmor protection when executing %s ?"
 
 #: ../apparmor/aa.py:1320
 msgid ""
@@ -539,6 +580,12 @@ msgid ""
 "a program opens up significant security holes\n"
 "and should be avoided if at all possible."
 msgstr ""
+"Should AppArmor sanitise the environment when\n"
+"running this program unconfined?\n"
+"\n"
+"Not sanitising the environment when unconfining\n"
+"a program opens up significant security holes\n"
+"and should be avoided if at all possible."
 
 #: ../apparmor/aa.py:1396 ../apparmor/aa.py:1414
 #, python-format
@@ -546,24 +593,26 @@ msgid ""
 "A profile for %s does not exist.\n"
 "Do you want to create one?"
 msgstr ""
+"A profile for %s does not exist.\n"
+"Do you want to create one?"
 
 #: ../apparmor/aa.py:1523
 msgid "Complain-mode changes:"
-msgstr ""
+msgstr "Complain-mode changes:"
 
 #: ../apparmor/aa.py:1525
 msgid "Enforce-mode changes:"
-msgstr ""
+msgstr "Enforce-mode changes:"
 
 #: ../apparmor/aa.py:1528
 #, python-format
 msgid "Invalid mode found: %s"
-msgstr ""
+msgstr "Invalid mode found: %s"
 
 #: ../apparmor/aa.py:1897
 #, python-format
 msgid "Adding %(path)s %(mode)s to profile"
-msgstr ""
+msgstr "Adding %(path)s %(mode)s to profile"
 
 #: ../apparmor/aa.py:1918
 #, python-format
@@ -574,46 +623,54 @@ msgid ""
 "  Entered Path:  %(ans)s\n"
 "Do you really want to use this path?"
 msgstr ""
+"The specified path does not match this log entry:\n"
+"\n"
+"  Log Entry: %(path)s\n"
+"  Entered Path:  %(ans)s\n"
+"Do you really want to use this path?"
 
 #: ../apparmor/aa.py:2251
 #, python-format
 msgid "Reading log entries from %s."
-msgstr ""
+msgstr "Reading log entries from %s."
 
 #: ../apparmor/aa.py:2254
 #, python-format
 msgid "Updating AppArmor profiles in %s."
-msgstr ""
+msgstr "Updating AppArmor profiles in %s."
 
 #: ../apparmor/aa.py:2323
 msgid ""
 "Select which profile changes you would like to save to the\n"
 "local profile set."
 msgstr ""
+"Select which profile changes you would like to save to the\n"
+"local profile set."
 
 #: ../apparmor/aa.py:2324
 msgid "Local profile changes"
-msgstr ""
+msgstr "Local profile changes"
 
 #: ../apparmor/aa.py:2418
 msgid "Profile Changes"
-msgstr ""
+msgstr "Profile Changes"
 
 #: ../apparmor/aa.py:2428
 #, python-format
 msgid "Can't find existing profile %s to compare changes."
-msgstr ""
+msgstr "Can't find existing profile %s to compare changes."
 
 #: ../apparmor/aa.py:2566 ../apparmor/aa.py:2581
 #, python-format
 msgid "Can't read AppArmor profiles in %s"
-msgstr ""
+msgstr "Can't read AppArmor profiles in %s"
 
 #: ../apparmor/aa.py:2677
 #, python-format
 msgid ""
 "%(profile)s profile in %(file)s contains syntax errors in line: %(line)s."
 msgstr ""
+"%(profile)s profile in %(file)s contains syntax errors in line: %(line)s."
 
 #: ../apparmor/aa.py:2734
 #, python-format
@@ -621,6 +678,8 @@ msgid ""
 "Syntax Error: Unexpected End of Profile reached in file: %(file)s line: "
 "%(line)s"
 msgstr ""
+"Syntax Error: Unexpected End of Profile reached in file: %(file)s line: "
+"%(line)s"
 
 #: ../apparmor/aa.py:2749
 #, python-format
@@ -628,12 +687,15 @@ msgid ""
 "Syntax Error: Unexpected capability entry found in file: %(file)s line: "
 "%(line)s"
 msgstr ""
+"Syntax Error: Unexpected capability entry found in file: %(file)s line: "
+"%(line)s"
 
 #: ../apparmor/aa.py:2770
 #, python-format
 msgid ""
 "Syntax Error: Unexpected link entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntax Error: Unexpected link entry found in file: %(file)s line: %(line)s"
 
 #: ../apparmor/aa.py:2798
 #, python-format
@@ -641,12 +703,15 @@ msgid ""
 "Syntax Error: Unexpected change profile entry found in file: %(file)s line: "
 "%(line)s"
 msgstr ""
+"Syntax Error: Unexpected change profile entry found in file: %(file)s line: "
+"%(line)s"
 
 #: ../apparmor/aa.py:2820
 #, python-format
 msgid ""
 "Syntax Error: Unexpected rlimit entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntax Error: Unexpected rlimit entry found in file: %(file)s line: %(line)s"
 
 #: ../apparmor/aa.py:2831
 #, python-format
@@ -654,6 +719,8 @@ msgid ""
 "Syntax Error: Unexpected boolean definition found in file: %(file)s line: "
 "%(line)s"
 msgstr ""
+"Syntax Error: Unexpected boolean definition found in file: %(file)s line: "
+"%(line)s"
 
 #: ../apparmor/aa.py:2871
 #, python-format
@@ -661,52 +728,61 @@ msgid ""
 "Syntax Error: Unexpected bare file rule found in file: %(file)s line: "
 "%(line)s"
 msgstr ""
+"Syntax Error: Unexpected bare file rule found in file: %(file)s line: "
+"%(line)s"
 
 #: ../apparmor/aa.py:2894
 #, python-format
 msgid ""
 "Syntax Error: Unexpected path entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntax Error: Unexpected path entry found in file: %(file)s line: %(line)s"
 
 #: ../apparmor/aa.py:2922
 #, python-format
 msgid "Syntax Error: Invalid Regex %(path)s in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntax Error: Invalid Regex %(path)s in file: %(file)s line: %(line)s"
 
 #: ../apparmor/aa.py:2925
 #, python-format
 msgid "Invalid mode %(mode)s in file: %(file)s line: %(line)s"
-msgstr ""
+msgstr "Invalid mode %(mode)s in file: %(file)s line: %(line)s"
 
 #: ../apparmor/aa.py:2977
 #, python-format
 msgid ""
 "Syntax Error: Unexpected network entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntax Error: Unexpected network entry found in file: %(file)s line: %(line)s"
 
 #: ../apparmor/aa.py:3007
 #, python-format
 msgid ""
 "Syntax Error: Unexpected dbus entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntax Error: Unexpected dbus entry found in file: %(file)s line: %(line)s"
 
 #: ../apparmor/aa.py:3030
 #, python-format
 msgid ""
 "Syntax Error: Unexpected mount entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntax Error: Unexpected mount entry found in file: %(file)s line: %(line)s"
 
 #: ../apparmor/aa.py:3052
 #, python-format
 msgid ""
 "Syntax Error: Unexpected signal entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntax Error: Unexpected signal entry found in file: %(file)s line: %(line)s"
 
 #: ../apparmor/aa.py:3074
 #, python-format
 msgid ""
 "Syntax Error: Unexpected ptrace entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntax Error: Unexpected ptrace entry found in file: %(file)s line: %(line)s"
 
 #: ../apparmor/aa.py:3096
 #, python-format
@@ -714,6 +790,8 @@ msgid ""
 "Syntax Error: Unexpected pivot_root entry found in file: %(file)s line: "
 "%(line)s"
 msgstr ""
+"Syntax Error: Unexpected pivot_root entry found in file: %(file)s line: "
+"%(line)s"
 
 #: ../apparmor/aa.py:3118
 #, python-format
@@ -727,6 +805,8 @@ msgid ""
 "Syntax Error: Unexpected change hat declaration found in file: %(file)s "
 "line: %(line)s"
 msgstr ""
+"Syntax Error: Unexpected change hat declaration found in file: %(file)s "
+"line: %(line)s"
 
 #: ../apparmor/aa.py:3152
 #, python-format
@@ -734,16 +814,18 @@ msgid ""
 "Syntax Error: Unexpected hat definition found in file: %(file)s line: "
 "%(line)s"
 msgstr ""
+"Syntax Error: Unexpected hat definition found in file: %(file)s line: "
+"%(line)s"
 
 #: ../apparmor/aa.py:3168
 #, python-format
 msgid "Error: Multiple definitions for hat %(hat)s in profile %(profile)s."
-msgstr ""
+msgstr "Error: Multiple definitions for hat %(hat)s in profile %(profile)s."
 
 #: ../apparmor/aa.py:3185
 #, python-format
 msgid "Warning: invalid \"REPOSITORY:\" line in %s, ignoring."
-msgstr ""
+msgstr "Warning: invalid \"REPOSITORY:\" line in %s, ignoring."
 
 #: ../apparmor/aa.py:3198
 #, python-format

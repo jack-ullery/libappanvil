@@ -1,4 +1,4 @@
-#=DESCRIPTON simple stress test nested ifs
+#=DESCRIPTION simple stress test nested ifs
 #=EXRESULT PASS
 $a1 = true
 $a2 = true

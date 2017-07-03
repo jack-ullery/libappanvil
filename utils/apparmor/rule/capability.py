@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
 #    Copyright (C) 2014 Christian Boltz <apparmor@cboltz.de>
@@ -14,10 +13,11 @@
 #
 # ----------------------------------------------------------------------
 
-from apparmor.regex import RE_PROFILE_CAP
-from apparmor.common import AppArmorBug, AppArmorException
-from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers
 import re
+
+from apparmor.regex import RE_PROFILE_CAP
+from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.rule import BaseRule, BaseRuleset, logprof_value_or_all, parse_modifiers
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -34,6 +34,8 @@ class CapabilityRule(BaseRule):
 
     ALL = __CapabilityAll
 
+    rule_name = 'capability'
+
     def __init__(self, cap_list, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
@@ -48,7 +50,7 @@ class CapabilityRule(BaseRule):
             self.all_caps = True
             self.capability = set()
         else:
-            if type(cap_list) == str:
+            if type_is_str(cap_list):
                 self.capability = {cap_list}
             elif type(cap_list) == list and len(cap_list) > 0:
                 self.capability = set(cap_list)
@@ -102,19 +104,13 @@ class CapabilityRule(BaseRule):
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
 
-        if not other_rule.capability and not other_rule.all_caps:
-            raise AppArmorBug('No capability specified')
-
-        if not self.all_caps:
-            if other_rule.all_caps:
-                return False
-            if not other_rule.capability.issubset(self.capability):
-                return False
+        if not self._is_covered_list(self.capability, self.all_caps, other_rule.capability, other_rule.all_caps, 'capability'):
+            return False
 
         # still here? -> then it is covered
         return True
 
-    def is_equal_localvars(self, rule_obj):
+    def is_equal_localvars(self, rule_obj, strict):
         '''compare if rule-specific variables are equal'''
 
         if not type(rule_obj) == CapabilityRule:
@@ -142,10 +138,7 @@ class CapabilityRule(BaseRule):
         return severity
 
     def logprof_header_localvars(self):
-        if self.all_caps:
-            cap_txt = _('ALL')
-        else:
-            cap_txt = ' '.join(sorted(self.capability))
+        cap_txt = logprof_value_or_all(self.capability, self.all_caps)
 
         return [
             _('Capability'), cap_txt,

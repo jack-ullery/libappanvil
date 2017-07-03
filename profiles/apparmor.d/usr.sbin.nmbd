@@ -20,6 +20,8 @@
   /var/{cache,lib}/samba/smb_tmp_krb5.* rw,
   /var/{cache,lib}/samba/sync.* rw,
   /var/{cache,lib}/samba/unexpected rw,
+  /var/cache/samba/msg/ rw,
+  /var/cache/samba/msg/* w,
 
   /{,var/}run/samba/** rwk,
 

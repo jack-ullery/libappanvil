@@ -15,8 +15,8 @@
   capability setgid,
   capability setuid,
 
-  /bin/bash ixr,
-  /bin/cat ix,
+  /{usr/,}bin/bash ixr,
+  /{usr/,}bin/cat ix,
 
   /usr/bin/foomatic-rip ixr,
   /etc/foomatic/** r,

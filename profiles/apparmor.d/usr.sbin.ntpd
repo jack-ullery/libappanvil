@@ -27,6 +27,8 @@
   capability sys_time,
   capability sys_nice,
 
+  network unspec dgram,
+
   /drift/ntp.drift rwl,
   /drift/ntp.drift.TEMP rwl,
   /etc/ntp.conf r,
@@ -37,6 +39,7 @@
   /etc/ntpd.conf.tmp r,
 
   /tmp/ntp* rwl,
+  /{usr/,usr/local/,}{s,}bin/ r,
   /usr/sbin/ntpd rmix,
   /var/lib/ntp/drift rwl,
   /var/lib/ntp/drift.TEMP rwl,

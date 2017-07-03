@@ -114,10 +114,11 @@ class Config(object):
     def find_first_file(self, file_list):
         """Returns name of first matching file None otherwise"""
         filename = None
-        for f in file_list.split():
-            if os.path.isfile(f):
-                filename = f
-                break
+        if file_list:
+            for f in file_list.split():
+                if os.path.isfile(f):
+                    filename = f
+                    break
         return filename
 
     def find_first_dir(self, dir_list):

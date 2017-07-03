@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/python3
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2014 Canonical Ltd.
@@ -11,7 +11,7 @@
 
 import apparmor.aa as aa
 import unittest
-from common_test import AAParseTest, setup_regex_tests
+from common_test import AAParseTest, setup_regex_tests, setup_aa
 
 class AAParseUnixTest(AAParseTest):
 
@@ -34,6 +34,7 @@ class AAParseUnixTest(AAParseTest):
             'complex unix rule'),
     ]
 
+setup_aa(aa)
 if __name__ == '__main__':
     setup_regex_tests(AAParseUnixTest)
     unittest.main(verbosity=2)

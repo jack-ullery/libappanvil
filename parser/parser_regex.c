@@ -121,7 +121,7 @@ pattern_t convert_aaregex_to_pcre(const char *aare, int anchor, int glob,
 	BOOL bEscape = 0;	/* flag to indicate escape */
 	int ingrouping = 0;	/* flag to indicate {} context */
 	int incharclass = 0;	/* flag to indicate [ ] context */
-	int grouping_count[MAX_ALT_DEPTH];
+	int grouping_count[MAX_ALT_DEPTH] = {0};
 
 	error = e_no_error;
 	ptype = ePatternBasic;	/* assume no regex */
@@ -494,6 +494,23 @@ static int process_profile_name_xmatch(Profile *prof)
 
 static int warn_change_profile = 1;
 
+static bool is_change_profile_mode(int mode)
+{
+	/**
+	 * A change_profile entry will have the AA_CHANGE_PROFILE bit set.
+	 * It could also have the (AA_EXEC_BITS | ALL_AA_EXEC_UNSAFE) bits
+	 * set by the frontend parser. That means that it is incorrect to
+	 * identify change_profile modes using a test like this:
+	 *
+	 *   (mode & ~AA_CHANGE_PROFILE)
+	 *
+	 * The above test would incorrectly return true on a
+	 * change_profile mode that has the
+	 * (AA_EXEC_BITS | ALL_AA_EXEC_UNSAFE) bits set.
+	 */
+	return mode & AA_CHANGE_PROFILE;
+}
+
 static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 {
 	std::string tbuf;
@@ -504,7 +521,7 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 		return TRUE;
 
 
-	if (entry->mode & ~AA_CHANGE_PROFILE)
+	if (!is_change_profile_mode(entry->mode))
 		filter_slashes(entry->name);
 	ptype = convert_aaregex_to_pcre(entry->name, 0, glob_default, tbuf, &pos);
 	if (ptype == ePatternInvalid)
@@ -530,12 +547,14 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 	 * TODO: split link and change_profile entries earlier
 	 */
 	if (entry->deny) {
-		if ((entry->mode & ~(AA_LINK_BITS | AA_CHANGE_PROFILE)) &&
+		if ((entry->mode & ~AA_LINK_BITS) &&
+		    !is_change_profile_mode(entry->mode) &&
 		    !dfarules->add_rule(tbuf.c_str(), entry->deny,
-					entry->mode & ~AA_LINK_BITS,
-					entry->audit & ~AA_LINK_BITS, dfaflags))
+					entry->mode & ~(AA_LINK_BITS | AA_CHANGE_PROFILE),
+					entry->audit & ~(AA_LINK_BITS | AA_CHANGE_PROFILE),
+					dfaflags))
 			return FALSE;
-	} else if (entry->mode & ~AA_CHANGE_PROFILE) {
+	} else if (!is_change_profile_mode(entry->mode)) {
 		if (!dfarules->add_rule(tbuf.c_str(), entry->deny, entry->mode,
 					entry->audit, dfaflags))
 			return FALSE;
@@ -562,10 +581,13 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 		if (!dfarules->add_rule_vec(entry->deny, perms, entry->audit & AA_LINK_BITS, 2, vec, dfaflags))
 			return FALSE;
 	}
-	if (entry->mode & AA_CHANGE_PROFILE) {
+	if (is_change_profile_mode(entry->mode)) {
 		const char *vec[3];
-		std::string lbuf;
+		std::string lbuf, xbuf;
+		autofree char *ns = NULL;
+		autofree char *name = NULL;
 		int index = 1;
+		uint32_t onexec_perms = AA_ONEXEC;
 
 		if ((warnflags & WARN_RULE_DOWNGRADED) && entry->audit && warn_change_profile) {
 			/* don't have profile name here, so until this code
@@ -575,23 +597,55 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 			warn_change_profile = 0;
 		}
 
-		/* allow change_profile for all execs */
-		vec[0] = "/[^\\x00]*";
+		if (entry->onexec) {
+			ptype = convert_aaregex_to_pcre(entry->onexec, 0, glob_default, xbuf, &pos);
+			if (ptype == ePatternInvalid)
+				return FALSE;
+			vec[0] = xbuf.c_str();
+		} else
+			/* allow change_profile for all execs */
+			vec[0] = "/[^/\\x00][^\\x00]*";
 
-		if (entry->ns) {
-			int pos;
-			ptype = convert_aaregex_to_pcre(entry->ns, 0, glob_default, lbuf, &pos);
-			vec[index++] = lbuf.c_str();
+		if (!kernel_supports_stacking) {
+			bool stack;
+
+			if (!parse_label(&stack, &ns, &name,
+					 tbuf.c_str(), false)) {
+				return FALSE;
+			}
+
+			if (stack) {
+				fprintf(stderr,
+					_("The current kernel does not support stacking of named transitions: %s\n"),
+					tbuf.c_str());
+				return FALSE;
+			}
+
+			if (ns)
+				vec[index++] = ns;
+			vec[index++] = name;
+		} else {
+			vec[index++] = tbuf.c_str();
 		}
-		vec[index++] = tbuf.c_str();
 
 		/* regular change_profile rule */
-		if (!dfarules->add_rule_vec(entry->deny, AA_CHANGE_PROFILE | AA_ONEXEC, 0, index - 1, &vec[1], dfaflags))
+		if (!dfarules->add_rule_vec(entry->deny,
+					    AA_CHANGE_PROFILE | onexec_perms,
+					    0, index - 1, &vec[1], dfaflags))
 			return FALSE;
+
 		/* onexec rules - both rules are needed for onexec */
-		if (!dfarules->add_rule_vec(entry->deny, AA_ONEXEC, 0, 1, vec, dfaflags))
+		if (!dfarules->add_rule_vec(entry->deny, onexec_perms,
+					    0, 1, vec, dfaflags))
 			return FALSE;
-		if (!dfarules->add_rule_vec(entry->deny, AA_ONEXEC, 0, index, vec, dfaflags))
+
+		/**
+		 * pick up any exec bits, from the frontend parser, related to
+		 * unsafe exec transitions
+		 */
+		onexec_perms |= (entry->mode & (AA_EXEC_BITS | ALL_AA_EXEC_UNSAFE));
+		if (!dfarules->add_rule_vec(entry->deny, onexec_perms,
+					    0, index, vec, dfaflags))
 			return FALSE;
 	}
 	return TRUE;
@@ -772,8 +826,6 @@ int process_profile_policydb(Profile *prof)
 		prof->policy.rules = NULL;
 	}
 
-	aare_reset_matchflags();
-
 	error = 0;
 
 out:
@@ -783,55 +835,44 @@ out:
 	return error;
 }
 
-void reset_regex(void)
-{
-	aare_reset_matchflags();
-}
-
 #ifdef UNIT_TEST
 
 #include "unit_test.h"
 
+#define MY_FILTER_TEST(input, expected_str)	\
+	do {												\
+		char *test_string = NULL;								\
+		char *output_string = NULL;								\
+													\
+		test_string = strdup((input)); 								\
+		filter_slashes(test_string); 								\
+		asprintf(&output_string, "simple filter / conversion for '%s'\texpected = '%s'\tresult = '%s'", \
+				(input), (expected_str), test_string);					\
+		MY_TEST(strcmp(test_string, (expected_str)) == 0, output_string);			\
+													\
+		free(test_string);									\
+		free(output_string);									\
+	}												\
+	while (0)
+
 static int test_filter_slashes(void)
 {
 	int rc = 0;
-	char *test_string;
 
-	test_string = strdup("///foo//////f//oo////////////////");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/foo/f/oo/") == 0, "simple tests");
+	MY_FILTER_TEST("///foo//////f//oo////////////////", "/foo/f/oo/");
+	MY_FILTER_TEST("/foo/f/oo", "/foo/f/oo");
+	MY_FILTER_TEST("/", "/");
+	MY_FILTER_TEST("", "");
 
-	test_string = strdup("/foo/f/oo");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/foo/f/oo") == 0, "simple test for no changes");
+	/* tests for "//" namespace */
+	MY_FILTER_TEST("//usr", "//usr");
+	MY_FILTER_TEST("//", "//");
 
-	test_string = strdup("/");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/") == 0, "simple test for '/'");
+	/* tests for not "//" namespace */
+	MY_FILTER_TEST("///usr", "/usr");
+	MY_FILTER_TEST("///", "/");
 
-	test_string = strdup("");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "") == 0, "simple test for ''");
-
-	test_string = strdup("//usr");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "//usr") == 0, "simple test for // namespace");
-
-	test_string = strdup("//");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "//") == 0, "simple test 2 for // namespace");
-
-	test_string = strdup("///usr");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/usr") == 0, "simple test for ///usr");
-
-	test_string = strdup("///");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/") == 0, "simple test for ///");
-
-	test_string = strdup("/a/");
-	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/a/") == 0, "simple test for /a/");
+	MY_FILTER_TEST("/a/", "/a/");
 
 	return rc;
 }

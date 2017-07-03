@@ -15,6 +15,7 @@ from __future__ import with_statement
 import os
 import re
 from apparmor.common import AppArmorException, open_file_read, warn, convert_regexp  # , msg, error, debug
+from apparmor.regex import re_match_include
 
 class Severity(object):
     def __init__(self, dbname=None, default_rank=10):
@@ -87,6 +88,15 @@ class Severity(object):
         warn("unknown capability: %s" % resource)
         return self.severity['DEFAULT_RANK']
 
+    def rank_path(self, path, mode=None):
+        """Returns the rank for the given path"""
+        if '@' in path:    # path contains variable
+            return self.handle_variable_rank(path, mode)
+        elif path[0] == '/':    # file resource
+            return self.handle_file(path, mode)
+        else:
+            raise AppArmorException("Unexpected path input: %s" % path)
+
     def check_subtree(self, tree, mode, sev, segments):
         """Returns the max severity from the regex tree"""
         if len(segments) == 0:
@@ -132,17 +142,6 @@ class Severity(object):
         else:
             return sev
 
-    def rank(self, resource, mode=None):
-        """Returns the rank for the resource file/capability"""
-        if '@' in resource:    # path contains variable
-            return self.handle_variable_rank(resource, mode)
-        elif resource[0] == '/':    # file resource
-            return self.handle_file(resource, mode)
-        elif resource[0:4] == 'CAP_':    # capability resource
-            return self.rank_capability(resource[4:])
-        else:
-            raise AppArmorException("Unexpected rank input: %s" % resource)
-
     def handle_variable_rank(self, resource, mode):
         """Returns the max possible rank for file resources containing variables"""
         regex_variable = re.compile('@{([^{.]*)}')
@@ -179,16 +178,14 @@ class Severity(object):
 
     def load_variables(self, prof_path):
         """Loads the variables for the given profile"""
-        regex_include = re.compile('^#?include\s*<(\S*)>')
         if os.path.isfile(prof_path):
             with open_file_read(prof_path) as f_in:
                 for line in f_in:
                     line = line.strip()
                     # If any includes, load variables from them first
-                    match = regex_include.search(line)
+                    match = re_match_include(line)
                     if match:
-                        new_path = match.groups()[0]
-                        new_path = self.PROF_DIR + '/' + new_path
+                        new_path = self.PROF_DIR + '/' + match
                         self.load_variables(new_path)
                     else:
                         # Remove any comments

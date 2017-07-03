@@ -334,6 +334,24 @@ sub gen_flag($) {
   }
 }
 
+sub gen_change_profile($) {
+    my $rule = shift;
+    my @rules = split (/:/, $rule);
+    if (@rules == 2) {
+	if ($rules[1] =~ /^ALL$/) {
+            push (@{$output_rules{$hat}}, "  change_profile,\n",);
+	} else {
+            push (@{$output_rules{$hat}}, "  change_profile -> $rules[1],\n",);
+	}
+    } elsif (@rules == 3) {
+        push (@{$output_rules{$hat}}, "  change_profile $rules[1] -> $rules[2],\n",);
+    } elsif (@rules == 4) {
+        push (@{$output_rules{$hat}}, "  change_profile $rules[1] $rules[2] -> $rules[3],\n",);
+    } else {
+        (!$nowarn) && print STDERR "Warning: invalid change_profile description '$rule', ignored\n";
+    }
+}
+
 sub gen_hat($) {
   my $rule = shift;
   my @rules = split (/:/, $rule);
@@ -406,6 +424,8 @@ sub gen_from_args() {
       gen_flag($rule);
     } elsif ($rule =~ /^hat:/) {
       gen_hat($rule);
+    } elsif ($rule =~ /^change_profile:/) {
+      gen_change_profile($rule);
     } elsif ($rule =~ /^addimage:/) {
       gen_addimage($rule);
       $addimage = 1;

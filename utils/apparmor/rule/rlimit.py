@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
 #    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
@@ -17,7 +16,7 @@
 import re
 
 from apparmor.regex import RE_PROFILE_RLIMIT, strip_quotes
-from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.common import AppArmorBug, AppArmorException, type_is_str
 from apparmor.rule import BaseRule, BaseRuleset, parse_comment, quote_if_needed
 
 # setup module translations
@@ -26,14 +25,14 @@ _ = init_translation()
 
 rlimit_size     = ['fsize', 'data', 'stack', 'core', 'rss', 'as', 'memlock', 'msgqueue']  # NUMBER ( 'K' | 'M' | 'G' )
 rlimit_number   = ['ofile', 'nofile', 'locks', 'sigpending', 'nproc', 'rtprio']
-rlimit_time     = ['cpu', 'rttime']  # number + time unit (cpu in seconds+, rttime in ms+)
+rlimit_time     = ['cpu', 'rttime']  # number + time unit (cpu in seconds+, rttime in us+)
 rlimit_nice     = ['nice']  # a number between -20 and 19.
 
 rlimit_all      = rlimit_size + rlimit_number + rlimit_time + rlimit_nice
 
-RE_NUMBER_UNIT  = re.compile('^(?P<number>[0-9]+)(?P<unit>[a-zA-Z]*)$')
+RE_NUMBER_UNIT  = re.compile('^(?P<number>[0-9]+)\s*(?P<unit>[a-zA-Z]*)$')
 RE_NUMBER       = re.compile('^[0-9]+$')
-RE_UNIT_SIZE    = re.compile('^[0-9]+([KMG]B?)?$')
+RE_UNIT_SIZE    = re.compile('^[0-9]+\s*([KMG]B?)?$')
 RE_NICE         = re.compile('^(-20|-[01]?[0-9]|[01]?[0-9])$')
 
 
@@ -47,6 +46,8 @@ class RlimitRule(BaseRule):
 
     ALL = __RlimitAll
 
+    rule_name = 'rlimit'
+
     def __init__(self, rlimit, value, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
@@ -58,7 +59,7 @@ class RlimitRule(BaseRule):
         if audit or deny or allow_keyword:
             raise AppArmorBug('The audit, allow or deny keywords are not allowed in rlimit rules.')
 
-        if type(rlimit) == str:
+        if type_is_str(rlimit):
             if rlimit in rlimit_all:
                 self.rlimit = rlimit
             else:
@@ -71,7 +72,7 @@ class RlimitRule(BaseRule):
         self.all_values = False
         if value == RlimitRule.ALL:
             self.all_values = True
-        elif type(value) == str:
+        elif type_is_str(value):
             if not value.strip():
                 raise AppArmorBug('Empty value in rlimit rule')
 
@@ -89,18 +90,13 @@ class RlimitRule(BaseRule):
                 if not RE_NUMBER_UNIT.match(value):
                     raise AppArmorException('Invalid value in rlimit %s %s rule' % (rlimit, value))
                 number, unit = split_unit(value)
-                if unit == 'm' and rlimit == 'rttime':
-                    raise AppArmorException('Ambiguous value %s in rlimit %s rule - use "ms" or "minutes"' % (value, rlimit))
-                if unit != '' and not ('seconds'.startswith(unit) or 'minutes'.startswith(unit) or 'hours'.startswith(unit) or
-                        (unit == 'ms' and rlimit == 'rttime') ):
-                    raise AppArmorException('Invalid unit in rlimit %s %s rule' % (rlimit, value))
 
                 if rlimit == 'rttime':
-                    self.value_as_int = self.time_to_int(value, 'ms')
+                    self.value_as_int = self.time_to_int(value, 'us')
                 else:
                     self.value_as_int = self.time_to_int(value, 'seconds')
 
-            elif rlimit in rlimit_nice:
+            elif rlimit in rlimit_nice:  # pragma: no branch - "if rlimit in rlimit_all:" above avoids the need for an "else:" branch
                 if not RE_NICE.match(value):
                     raise AppArmorException('Invalid value or unit in rlimit %s %s rule' % (rlimit, value))
                 self.value_as_int = 0 - int(value)  # lower numbers mean a higher limit for nice
@@ -127,7 +123,7 @@ class RlimitRule(BaseRule):
         if matches.group('rlimit'):
             rlimit = strip_quotes(matches.group('rlimit'))
         else:
-            raise AppArmorException(_("Invalid rlimit rule '%s' - keyword missing") % raw_rule)
+            raise AppArmorException(_("Invalid rlimit rule '%s' - keyword missing") % raw_rule)  # pragma: no cover - would need breaking the regex
 
         if matches.group('value'):
             if matches.group('value') == 'infinity':
@@ -135,7 +131,7 @@ class RlimitRule(BaseRule):
             else:
                 value = strip_quotes(matches.group('value'))
         else:
-            raise AppArmorException(_("Invalid rlimit rule '%s' - value missing") % raw_rule)
+            raise AppArmorException(_("Invalid rlimit rule '%s' - value missing") % raw_rule)  # pragma: no cover - would need breaking the regex
 
         return RlimitRule(rlimit, value,
                            comment=comment)
@@ -181,14 +177,24 @@ class RlimitRule(BaseRule):
         if unit == '':
             unit = default_unit
 
-        if unit == 'ms':
+        if unit in ['us', 'microsecond', 'microseconds']:
+            number = number / 1000000.0
+            if default_unit == 'seconds':
+                raise AppArmorException(_('Invalid unit in rlimit cpu %s rule') % value)
+        elif unit in ['ms', 'millisecond', 'milliseconds']:
             number = number / 1000.0
-        elif 'seconds'.startswith(unit):
+            if default_unit == 'seconds':
+                raise AppArmorException(_('Invalid unit in rlimit cpu %s rule') % value)
+        elif unit in ['s', 'sec', 'second', 'seconds']: # manpage doesn't list sec
             pass
-        elif 'minutes'.startswith(unit):
+        elif unit in ['min', 'minute', 'minutes']:
             number = number * 60
-        elif 'hours'.startswith(unit):
+        elif unit in ['h', 'hour', 'hours']:
             number = number * 60 * 60
+        elif unit in ['d', 'day', 'days']: # manpage doesn't list 'd'
+            number = number * 60 * 60 * 24
+        elif unit in ['week', 'weeks']:
+            number = number * 60 * 60 * 24 * 7
         else:
             raise AppArmorException('Unknown unit %s in rlimit %s %s' % (unit, self.rlimit, value))
 
@@ -197,14 +203,11 @@ class RlimitRule(BaseRule):
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
 
-        if not other_rule.rlimit:
-            raise AppArmorBug('No rlimit specified in other rlimit rule')
+        if not self._is_covered_plain(self.rlimit, False, other_rule.rlimit, False, 'rlimit'):  # rlimit can't be ALL, therefore using False
+            return False
 
         if not other_rule.value and not other_rule.all_values:
             raise AppArmorBug('No target profile specified in other rlimit rule')
-
-        if other_rule.rlimit != self.rlimit:
-            return False
 
         if not self.all_values:
             if other_rule.all_values:
@@ -215,7 +218,7 @@ class RlimitRule(BaseRule):
         # still here? -> then it is covered
         return True
 
-    def is_equal_localvars(self, rule_obj):
+    def is_equal_localvars(self, rule_obj, strict):
         '''compare if rule-specific variables are equal'''
 
         if not type(rule_obj) == RlimitRule:

@@ -10,7 +10,7 @@
 
 #include <tunables/global>
 
-/sbin/rpc.lockd {
+profile rpc.lockd /{usr/,}sbin/rpc.lockd {
   #include <abstractions/base>
-  /sbin/rpc.lockd	rmix,
+  /{usr/,}sbin/rpc.lockd	rmix,
 }

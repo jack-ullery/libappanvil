@@ -57,7 +57,7 @@
  * numbers where supported.
  */
 uint32_t policy_version = 2;
-uint32_t parser_abi_version = 1;
+uint32_t parser_abi_version = 2;
 uint32_t kernel_abi_version = 5;
 
 int force_complain = 0;
@@ -73,6 +73,7 @@ int kernel_supports_dbus = 0;		/* kernel supports dbus rules */
 int kernel_supports_diff_encode = 0;	/* kernel supports diff_encode */
 int kernel_supports_signal = 0;		/* kernel supports signal rules */
 int kernel_supports_ptrace = 0;		/* kernel supports ptrace rules */
+int kernel_supports_stacking = 0;	/* kernel supports stacking */
 int conf_verbose = 0;
 int conf_quiet = 0;
 int names_only = 0;
