@@ -2415,10 +2415,6 @@ def parse_profile_data(data, file, do_include):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected network entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            # init rule class (if not done yet)
-            if not profile_data[profile][hat].get('network', False):
-                profile_data[profile][hat]['network'] = NetworkRuleset()
-
             profile_data[profile][hat]['network'].add(NetworkRule.parse(line))
 
         elif DbusRule.match(line):
