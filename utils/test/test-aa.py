@@ -768,7 +768,7 @@ class AaTest_get_file_perms_1(AATest):
         self.profile_dir = '%s/profiles' % self.tmpdir
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
-        profile = apparmor.aa.profile_storage('/test', '/test', 'test-aa.py')
+        profile = apparmor.aa.ProfileStorage('/test', '/test', 'test-aa.py')
 
         # simple profile without any includes
         profile['file'].add(FileRule.parse('owner /usr/share/common-licenses/**  w,'))
@@ -802,7 +802,7 @@ class AaTest_get_file_perms_2(AATest):
         apparmor.aa.load_include('abstractions/enchant')
         apparmor.aa.load_include('abstractions/aspell')
 
-        profile = apparmor.aa.profile_storage('/test', '/test', 'test-aa.py')
+        profile = apparmor.aa.ProfileStorage('/test', '/test', 'test-aa.py')
         profile['include']['abstractions/base'] = True
         profile['include']['abstractions/bash'] = True
         profile['include']['abstractions/enchant'] = True  # includes abstractions/aspell
@@ -842,7 +842,7 @@ class AaTest_propose_file_rules(AATest):
         apparmor.aa.user_globs['/usr/share/common*/foo/*'] = AARE('/usr/share/common*/foo/*', True)
         apparmor.aa.user_globs['/no/thi*ng'] = AARE('/no/thi*ng', True)
 
-        profile = apparmor.aa.profile_storage('/test', '/test', 'test-aa.py')
+        profile = apparmor.aa.ProfileStorage('/test', '/test', 'test-aa.py')
         profile['include']['abstractions/base'] = True
         profile['include']['abstractions/bash'] = True
         profile['include']['abstractions/enchant'] = True  # includes abstractions/aspell

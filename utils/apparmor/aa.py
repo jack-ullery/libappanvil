@@ -426,7 +426,7 @@ def get_inactive_profile(local_profile):
         return {local_profile: extras[local_profile]}
     return dict()
 
-def profile_storage(profilename, hat, calledby):
+def ProfileStorage(profilename, hat, calledby):
     # keys used in aa[profile][hat]:
     # a) rules (as dict): alias, include, lvar
     # b) rules (as hasher): allow, deny
@@ -482,7 +482,7 @@ def profile_storage(profilename, hat, calledby):
 
 def create_new_profile(localfile, is_stub=False):
     local_profile = hasher()
-    local_profile[localfile] = profile_storage('NEW', localfile, 'create_new_profile()')
+    local_profile[localfile] = ProfileStorage('NEW', localfile, 'create_new_profile()')
     local_profile[localfile]['flags'] = 'complain'
     local_profile[localfile]['include']['abstractions/base'] = 1
 
@@ -506,7 +506,7 @@ def create_new_profile(localfile, is_stub=False):
         if re.search(hatglob, localfile):
             for hat in sorted(cfg['required_hats'][hatglob].split()):
                 if not local_profile.get(hat, False):
-                    local_profile[hat] = profile_storage('NEW', hat, 'create_new_profile() required_hats')
+                    local_profile[hat] = ProfileStorage('NEW', hat, 'create_new_profile() required_hats')
                 local_profile[hat]['flags'] = 'complain'
 
     if not is_stub:
@@ -1032,7 +1032,7 @@ def handle_children(profile, hat, root):
 
                 if ans == 'CMD_ADDHAT':
                     hat = uhat
-                    aa[profile][hat] = profile_storage(profile, hat, 'handle_children addhat')
+                    aa[profile][hat] = ProfileStorage(profile, hat, 'handle_children addhat')
                     aa[profile][hat]['flags'] = aa[profile][profile]['flags']
                     changed[profile] = True
                 elif ans == 'CMD_USEDEFAULT':
@@ -1320,7 +1320,7 @@ def handle_children(profile, hat, root):
                             if ynans == 'y':
                                 hat = exec_target
                                 if not aa[profile].get(hat, False):
-                                    aa[profile][hat] = profile_storage(profile, hat, 'handle_children()')
+                                    aa[profile][hat] = ProfileStorage(profile, hat, 'handle_children()')
                                 aa[profile][hat]['profile'] = True
 
                                 if profile != hat:
@@ -1454,7 +1454,7 @@ def ask_the_questions(log_dict):
                     if aamode != 'merge':
                         # Ignore log events for a non-existing profile or child profile. Such events can occour
                         # after deleting a profile or hat manually, or when processing a foreign log.
-                        # (Checking for 'file' is a simplified way to check if it's a profile_storage() struct.)
+                        # (Checking for 'file' is a simplified way to check if it's a ProfileStorage.)
                         debug_logger.debug("Ignoring events for non-existing profile %s" % combine_name(profile, hat))
                         continue
 
@@ -1483,10 +1483,10 @@ def ask_the_questions(log_dict):
                         continue  # don't ask about individual rules if the user doesn't want the additional subprofile/hat
 
                     if log_dict[aamode][profile][hat]['profile']:
-                        aa[profile][hat] = profile_storage(profile, hat, 'mergeprof ask_the_questions() - missing subprofile')
+                        aa[profile][hat] = ProfileStorage(profile, hat, 'mergeprof ask_the_questions() - missing subprofile')
                         aa[profile][hat]['profile'] = True
                     else:
-                        aa[profile][hat] = profile_storage(profile, hat, 'mergeprof ask_the_questions() - missing hat')
+                        aa[profile][hat] = ProfileStorage(profile, hat, 'mergeprof ask_the_questions() - missing hat')
                         aa[profile][hat]['profile'] = False
 
                 #Add the includes from the other profile to the user profile
@@ -2017,7 +2017,7 @@ def collapse_log():
         for profile in prelog[aamode].keys():
             for hat in prelog[aamode][profile].keys():
 
-                log_dict[aamode][profile][hat] = profile_storage(profile, hat, 'collapse_log()')
+                log_dict[aamode][profile][hat] = ProfileStorage(profile, hat, 'collapse_log()')
 
                 for path in prelog[aamode][profile][hat]['path'].keys():
                     mode = prelog[aamode][profile][hat]['path'][path]
@@ -2228,7 +2228,7 @@ def parse_profile_data(data, file, do_include):
     if do_include:
         profile = file
         hat = file
-        profile_data[profile][hat] = profile_storage(profile, hat, 'parse_profile_data() do_include')
+        profile_data[profile][hat] = ProfileStorage(profile, hat, 'parse_profile_data() do_include')
         profile_data[profile][hat]['filename'] = file
 
     for lineno, line in enumerate(data):
@@ -2247,7 +2247,7 @@ def parse_profile_data(data, file, do_include):
                 raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
                     { 'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat) })
 
-            profile_data[profile][hat] = profile_storage(profile, hat, 'parse_profile_data() profile_start')
+            profile_data[profile][hat] = ProfileStorage(profile, hat, 'parse_profile_data() profile_start')
 
             if attachment:
                 profile_data[profile][hat]['attachment'] = attachment
@@ -2523,7 +2523,7 @@ def parse_profile_data(data, file, do_include):
             # if hat is already known, the filelist check some lines below will error out.
             # nevertheless, just to be sure, don't overwrite existing profile_data.
             if not profile_data[profile].get(hat, False):
-                profile_data[profile][hat] = profile_storage(profile, hat, 'parse_profile_data() hat_def')
+                profile_data[profile][hat] = ProfileStorage(profile, hat, 'parse_profile_data() hat_def')
                 profile_data[profile][hat]['filename'] = file
 
             flags = matches.group('flags')
@@ -2580,7 +2580,7 @@ def parse_profile_data(data, file, do_include):
                 if re.search(hatglob, parsed_prof):
                     for hat in cfg['required_hats'][hatglob].split():
                         if not profile_data[parsed_prof].get(hat, False):
-                            profile_data[parsed_prof][hat] = profile_storage(parsed_prof, hat, 'parse_profile_data() required_hats')
+                            profile_data[parsed_prof][hat] = ProfileStorage(parsed_prof, hat, 'parse_profile_data() required_hats')
 
     # End of file reached but we're stuck in a profile
     if profile and not do_include:
