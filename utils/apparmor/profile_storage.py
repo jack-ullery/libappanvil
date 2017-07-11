@@ -25,6 +25,17 @@ from apparmor.rule.ptrace           import PtraceRuleset
 from apparmor.rule.rlimit           import RlimitRuleset
 from apparmor.rule.signal           import SignalRuleset
 
+ruletypes = {
+    'capability':       {'ruleset': CapabilityRuleset},
+    'change_profile':   {'ruleset': ChangeProfileRuleset},
+    'dbus':             {'ruleset': DbusRuleset},
+    'file':             {'ruleset': FileRuleset},
+    'network':          {'ruleset': NetworkRuleset},
+    'ptrace':           {'ruleset': PtraceRuleset},
+    'rlimit':           {'ruleset': RlimitRuleset},
+    'signal':           {'ruleset': SignalRuleset},
+}
+
 class ProfileStorage:
     '''class to store the content (header, rules, comments) of a profilename
 
@@ -37,14 +48,8 @@ class ProfileStorage:
         # self.data['info'] isn't used anywhere, but can be helpful in debugging.
         data['info'] = {'profile': profilename, 'hat': hat, 'calledby': calledby}
 
-        data['capability']       = CapabilityRuleset()
-        data['dbus']             = DbusRuleset()
-        data['file']             = FileRuleset()
-        data['change_profile']   = ChangeProfileRuleset()
-        data['network']          = NetworkRuleset()
-        data['ptrace']           = PtraceRuleset()
-        data['rlimit']           = RlimitRuleset()
-        data['signal']           = SignalRuleset()
+        for rule in ruletypes:
+            data[rule] = ruletypes[rule]['ruleset']()
 
         data['alias']            = dict()
         data['include']          = dict()

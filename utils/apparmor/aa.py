@@ -49,7 +49,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
                             strip_quotes, parse_profile_start_line, re_match_include )
 
-from apparmor.profile_storage import ProfileStorage
+from apparmor.profile_storage import ProfileStorage, ruletypes
 
 import apparmor.rules as aarules
 
@@ -62,8 +62,6 @@ from apparmor.rule.ptrace           import PtraceRule
 from apparmor.rule.rlimit           import RlimitRule
 from apparmor.rule.signal           import SignalRule
 from apparmor.rule import quote_if_needed
-
-ruletypes = ['capability', 'change_profile', 'dbus', 'file', 'network', 'ptrace', 'rlimit', 'signal']
 
 # setup module translations
 from apparmor.translations import init_translation
