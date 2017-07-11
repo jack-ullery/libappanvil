@@ -49,16 +49,18 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
                             strip_quotes, parse_profile_start_line, re_match_include )
 
+from apparmor.profile_storage import ProfileStorage
+
 import apparmor.rules as aarules
 
-from apparmor.rule.capability import CapabilityRuleset, CapabilityRule
-from apparmor.rule.change_profile import ChangeProfileRuleset, ChangeProfileRule
-from apparmor.rule.dbus       import DbusRuleset,       DbusRule
-from apparmor.rule.file       import FileRuleset,       FileRule
-from apparmor.rule.network    import NetworkRuleset,    NetworkRule
-from apparmor.rule.ptrace     import PtraceRuleset,    PtraceRule
-from apparmor.rule.rlimit     import RlimitRuleset,    RlimitRule
-from apparmor.rule.signal     import SignalRuleset,    SignalRule
+from apparmor.rule.capability       import CapabilityRule
+from apparmor.rule.change_profile   import ChangeProfileRule
+from apparmor.rule.dbus             import DbusRule
+from apparmor.rule.file             import FileRule
+from apparmor.rule.network          import NetworkRule
+from apparmor.rule.ptrace           import PtraceRule
+from apparmor.rule.rlimit           import RlimitRule
+from apparmor.rule.signal           import SignalRule
 from apparmor.rule import quote_if_needed
 
 ruletypes = ['capability', 'change_profile', 'dbus', 'file', 'network', 'ptrace', 'rlimit', 'signal']
@@ -425,60 +427,6 @@ def get_inactive_profile(local_profile):
     if extras.get(local_profile, False):
         return {local_profile: extras[local_profile]}
     return dict()
-
-def ProfileStorage(profilename, hat, calledby):
-    # keys used in aa[profile][hat]:
-    # a) rules (as dict): alias, include, lvar
-    # b) rules (as hasher): allow, deny
-    # c) one for each rule class
-    # d) other: external, flags, name, profile, attachment, initial_comment, filename, info,
-    #           profile_keyword, header_comment (these two are currently only set by set_profile_flags())
-
-    profile = dict()
-
-    # profile['info'] isn't used anywhere, but can be helpful in debugging.
-    profile['info'] = {'profile': profilename, 'hat': hat, 'calledby': calledby}
-
-    profile['capability']       = CapabilityRuleset()
-    profile['dbus']             = DbusRuleset()
-    profile['file']             = FileRuleset()
-    profile['change_profile']   = ChangeProfileRuleset()
-    profile['network']          = NetworkRuleset()
-    profile['ptrace']           = PtraceRuleset()
-    profile['rlimit']           = RlimitRuleset()
-    profile['signal']           = SignalRuleset()
-
-    profile['alias']            = dict()
-    profile['include']          = dict()
-    profile['localinclude']     = dict()
-    profile['repo']             = dict()
-    profile['lvar']             = dict()
-
-    profile['filename']         = ''
-    profile['name']             = ''
-    profile['attachment']       = ''
-    profile['flags']            = ''
-    profile['external']         = False
-    profile['header_comment']   = ''
-    profile['initial_comment']  = ''
-    profile['profile_keyword']  = False
-    profile['profile']          = False  # profile or hat?
-
-    profile['allow'] = dict()
-    profile['deny'] = dict()
-
-    profile['allow']['link']    = hasher()
-    profile['deny']['link']     = hasher()
-
-    # mount, pivot_root, unix have a .get() fallback to list() - initialize them nevertheless
-    profile['allow']['mount']   = list()
-    profile['deny']['mount']    = list()
-    profile['allow']['pivot_root'] = list()
-    profile['deny']['pivot_root']  = list()
-    profile['allow']['unix']    = list()
-    profile['deny']['unix']     = list()
-
-    return profile
 
 def create_new_profile(localfile, is_stub=False):
     local_profile = hasher()
