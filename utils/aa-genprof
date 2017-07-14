@@ -126,8 +126,6 @@ atexit.register(restore_ratelimit)
 
 aaui.UI_Info(_('\nBefore you begin, you may wish to check if a\nprofile already exists for the application you\nwish to confine. See the following wiki page for\nmore information:')+'\nhttp://wiki.apparmor.net/index.php/Profiles')
 
-aaui.UI_Important(_('Please start the application to be profiled in\nanother window and exercise its functionality now.\n\nOnce completed, select the "Scan" option below in \norder to scan the system logs for AppArmor events. \n\nFor each AppArmor event, you will be given the \nopportunity to choose whether the access should be \nallowed or denied.'))
-
 syslog = True
 logmark = ''
 done_profiling = False
@@ -150,6 +148,7 @@ while not done_profiling:
     q.headers = [_('Profiling'), program]
     q.functions = ['CMD_SCAN', 'CMD_FINISHED']
     q.default = 'CMD_SCAN'
+    q.explanation = _('Please start the application to be profiled in\nanother window and exercise its functionality now.\n\nOnce completed, select the "Scan" option below in \norder to scan the system logs for AppArmor events. \n\nFor each AppArmor event, you will be given the \nopportunity to choose whether the access should be \nallowed or denied.')
     ans, arg = q.promptUser('noexit')
 
     if ans == 'CMD_SCAN':
