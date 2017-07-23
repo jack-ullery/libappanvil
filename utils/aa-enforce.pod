@@ -27,7 +27,7 @@ being disabled or I<complain> mode.
 
 =head1 SYNOPSIS
 
-B<< aa-enforce I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...] [I<-d /path/to/profiles>] >>
+B<aa-enforce I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...] [I<-d /path/to/profiles>] [I<--no-reload>]>
 
 =head1 OPTIONS
 
@@ -36,12 +36,15 @@ B<-d --dir / path/to/profiles>
    Specifies where to look for the AppArmor security profile set.
    Defaults to /etc/apparmor.d.
 
+B<--no-reload>
+   Do not reload the profile after modifying it.
+
 =head1 DESCRIPTION
 
 B<aa-enforce> is used to set one or more profiles to I<enforce> mode.
 This command is only relevant in conjunction with the I<aa-complain> utility
 which sets a profile to complain mode and the I<aa-disable> utility which
-unloads and disables a profile. 
+unloads and disables a profile.
 The default mode for a security policy is enforce and the I<aa-complain>
 utility must be run to change this behavior.
 

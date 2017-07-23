@@ -26,7 +26,7 @@ aa-disable - disable an AppArmor security profile
 
 =head1 SYNOPSIS
 
-B<aa-disable I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...] [I<-d /path/to/profiles>] [I<-r>]>
+B<aa-disable I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...] [I<-d /path/to/profiles>] [I<--no-reload>] [I<-r>]>
 
 =head1 OPTIONS
 
@@ -35,11 +35,14 @@ B<-d --dir  /path/to/profiles>
    Specifies where to look for the AppArmor security profile set.
    Defaults to /etc/apparmor.d.
 
+B<--no-reload>
+   Do not unreload the profile after modifying it.
+
 =head1 DESCRIPTION
 
-B<aa-disable> is used to I<disable> one or more profiles. 
+B<aa-disable> is used to I<disable> one or more profiles.
 This command will unload the profile from the kernel and prevent the
-profile from being loaded on AppArmor startup. 
+profile from being loaded on AppArmor startup.
 The I<aa-enforce> and I<aa-complain> utilities may be used to to change
 this behavior.
 
