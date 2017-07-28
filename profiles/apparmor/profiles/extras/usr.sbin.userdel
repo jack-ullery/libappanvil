@@ -44,7 +44,6 @@
   /usr/sbin/userdel rmix,
   /usr/sbin/userdel-post.local rmix,
   /usr/sbin/userdel-pre.local rmix,
-  /usr/sbin/userdel rmix,
   # XXX
   /{,var/}run/nscd.pid r,
   /var/spool/mail/* wl,
