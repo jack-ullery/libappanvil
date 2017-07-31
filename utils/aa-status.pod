@@ -91,13 +91,9 @@ displays a short usage statement.
 
 =back
 
-=head1 BUGS
+=head1 EXIT STATUS
 
-B<aa-status> must be run as root to read the state of the loaded
-policy from the apparmor module. It uses the /proc filesystem to determine
-which processes are confined and so is susceptible to race conditions.
-
-Upon exiting, B<aa-status> will set its return value to the
+Upon exiting, B<aa-status> will set its exit status to the
 following values:
 
 =over 4
@@ -124,6 +120,12 @@ if the user running the script doesn't have enough privileges to read
 the apparmor control files.
 
 =back
+
+=head1 BUGS
+
+B<aa-status> must be run as root to read the state of the loaded
+policy from the apparmor module. It uses the /proc filesystem to determine
+which processes are confined and so is susceptible to race conditions.
 
 If you find any additional bugs, please report them at
 L<https://bugs.launchpad.net/apparmor/+filebug>.
