@@ -102,23 +102,23 @@ following values:
 
 =over 4
 
-=item 0
+=item B<0>
 
 if apparmor is enabled and policy is loaded.
 
-=item 1
+=item B<1>
 
 if apparmor is not enabled/loaded.
 
-=item 2
+=item B<2>
 
 if apparmor is enabled but no policy is loaded.
 
-=item 3
+=item B<3>
 
 if the apparmor control files aren't available under /sys/kernel/security/.
 
-=item 4
+=item B<4>
 
 if the user running the script doesn't have enough privileges to read
 the apparmor control files.
