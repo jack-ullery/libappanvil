@@ -1266,23 +1266,15 @@ def handle_children(profile, hat, root):
                             if ynans == 'y':
                                 hat = exec_target
                                 if not aa[profile].get(hat, False):
-                                    aa[profile][hat] = ProfileStorage(profile, hat, 'handle_children()')
+                                    stub_profile = create_new_profile(hat, True)
+                                    aa[profile][hat] = stub_profile[hat][hat]
+
                                 aa[profile][hat]['profile'] = True
 
                                 if profile != hat:
                                     aa[profile][hat]['flags'] = aa[profile][profile]['flags']
 
-                                stub_profile = create_new_profile(hat, True)
-
                                 aa[profile][hat]['flags'] = 'complain'
-
-                                aa[profile][hat]['allow']['path'] = hasher()
-                                if stub_profile[hat][hat]['allow'].get('path', False):
-                                    aa[profile][hat]['allow']['path'] = stub_profile[hat][hat]['allow']['path']
-
-                                aa[profile][hat]['include'] = hasher()
-                                if stub_profile[hat][hat].get('include', False):
-                                    aa[profile][hat]['include'] = stub_profile[hat][hat]['include']
 
                                 file_name = aa[profile][profile]['filename']
                                 filelist[file_name]['profiles'][profile][hat] = True
