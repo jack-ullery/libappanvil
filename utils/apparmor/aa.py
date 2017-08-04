@@ -3415,6 +3415,9 @@ def get_file_perms(profile, path, audit, deny):
                     for perm in incperms[allow_or_deny][owner_or_all]:
                         perms[allow_or_deny][owner_or_all].add(perm)
 
+                    if 'a' in perms[allow_or_deny][owner_or_all] and 'w' in perms[allow_or_deny][owner_or_all]:
+                        perms[allow_or_deny][owner_or_all].remove('a')  # a is a subset of w, so remove it
+
             for incpath in incperms['paths']:
                 perms['paths'].add(incpath)
 
@@ -3438,6 +3441,9 @@ def propose_file_rules(profile_obj, rule_obj):
     for perm in existing_perms['allow']['all']:  # XXX also handle owner-only perms
         merged_rule_obj.perms.add(perm)
         merged_rule_obj.raw_rule = None
+
+    if 'a' in merged_rule_obj.perms and 'w' in merged_rule_obj.perms:
+        merged_rule_obj.perms.remove('a')  # a is a subset of w, so remove it
 
     pathlist = {original_path} | existing_perms['paths'] | set(glob_common(original_path))
 

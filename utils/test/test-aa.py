@@ -781,6 +781,7 @@ class AaTest_get_file_perms_1(AATest):
 class AaTest_get_file_perms_2(AATest):
     tests = [
         ('/usr/share/common-licenses/foo/bar',      {'allow': {'all': {'r'},            'owner': {'w'}  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/share/common-licenses/**'}              }),
+        ('/usr/share/common-licenses/what/ever',    {'allow': {'all': {'r'},            'owner': {'w'}  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/share/common-licenses/**', '/usr/share/common-licenses/what/ever'}      }),
         ('/dev/null',                               {'allow': {'all': {'r', 'w', 'k'},  'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/dev/null'}                                  }),
         ('/foo/bar',                                {'allow': {'all': {'r', 'w'},       'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/foo/bar'}                                   }),  # exec perms not included
         ('/no/thing',                               {'allow': {'all': set(),            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': set()                                          }),
@@ -808,6 +809,7 @@ class AaTest_get_file_perms_2(AATest):
         profile['include']['abstractions/enchant'] = True  # includes abstractions/aspell
 
         profile['file'].add(FileRule.parse('owner /usr/share/common-licenses/**  w,'))
+        profile['file'].add(FileRule.parse('owner /usr/share/common-licenses/what/ever a,'))  # covered by the above 'w' rule, so 'a' should be ignored
         profile['file'].add(FileRule.parse('/dev/null rwk,'))
         profile['file'].add(FileRule.parse('/foo/bar rwix,'))
 
@@ -822,6 +824,7 @@ class AaTest_propose_file_rules(AATest):
         (['/foo/bar',                           'rw'],  ['/foo/bar rw,']                                                                                                        ),
         (['/usr/lib/ispell/',                   'w'],   ['/{usr/,}lib{,32,64}/** rw,', '/usr/lib/ispell/ rw,']                                                                     ),
         (['/usr/lib/aspell/some.so',            'k'],   ['/usr/lib/aspell/* mrk,', '/usr/lib/aspell/*.so mrk,', '/{usr/,}lib{,32,64}/** mrk,', '/usr/lib/aspell/some.so mrk,']     ),
+        (['/foo/log',                           'w'],   ['/foo/log w,']                                                                                                            ),
     ]
 
     def _run_test(self, params, expected):
@@ -850,6 +853,7 @@ class AaTest_propose_file_rules(AATest):
         profile['file'].add(FileRule.parse('owner /usr/share/common-licenses/**  w,'))
         profile['file'].add(FileRule.parse('/dev/null rwk,'))
         profile['file'].add(FileRule.parse('/foo/bar rwix,'))
+        profile['file'].add(FileRule.parse('/foo/log a,'))  # will be replaced with '/foo/log w,' (not 'wa')
 
         rule_obj = FileRule(params[0], params[1], None, FileRule.ALL, owner=False, log_event=True)
         proposals = propose_file_rules(profile, rule_obj)
