@@ -13,7 +13,6 @@
 /usr/lib/postfix/trivial-rewrite {
   #include <abstractions/base>
   #include <abstractions/nameservice>
-  #include <abstractions/kerberosclient>
   #include <abstractions/postfix-common>
 
   /usr/lib/postfix/trivial-rewrite            rmix,
