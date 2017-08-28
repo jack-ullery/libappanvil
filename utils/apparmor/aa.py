@@ -1766,7 +1766,7 @@ def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
     ##    if not repo_cfg['repository'].get('enabled', False) or repo_cfg['repository]['enabled'] not in ['yes', 'no']:
     ##    UI_ask_to_enable_repo()
 
-    log_reader = apparmor.logparser.ReadLog(log_pid, logfile, existing_profiles, profile_dir, [])
+    log_reader = apparmor.logparser.ReadLog(log_pid, logfile, existing_profiles, profile_dir)
     log = log_reader.read_log(logmark)
     #read_log(logmark)
 

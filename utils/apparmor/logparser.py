@@ -43,12 +43,12 @@ class ReadLog:
     # used to pre-filter log lines so that we hand over only relevant lines to LibAppArmor parsing
     RE_LOG_ALL = re.compile('(' + '|'.join(RE_log_parts) + ')')
 
-    def __init__(self, pid, filename, existing_profiles, profile_dir, log):
+    def __init__(self, pid, filename, existing_profiles, profile_dir):
         self.filename = filename
         self.profile_dir = profile_dir
         self.pid = pid
         self.existing_profiles = existing_profiles
-        self.log = log
+        self.log = []
         self.debug_logger = DebugLogger('ReadLog')
         self.LOG = None
         self.logmark = ''

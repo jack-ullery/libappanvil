@@ -135,7 +135,7 @@ class FileTestNonMatch(AATest):
 
 class FileTestParseFromLog(FileTest):
     def test_file_from_log(self):
-        parser = ReadLog('', '', '', '', '')
+        parser = ReadLog('', '', '', '')
         event = 'Nov 11 07:33:07 myhost kernel: [50812.879558] type=1502 audit(1236774787.169:369): operation="inode_permission" requested_mask="::r" denied_mask="::r" fsuid=1000 name="/bin/dash" pid=13726 profile="/bin/foobar"'
 
         parsed_event = parser.parse_event(event)

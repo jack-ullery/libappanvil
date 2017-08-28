@@ -18,7 +18,7 @@ from apparmor.logparser import ReadLog
 
 class TestParseEvent(unittest.TestCase):
     def setUp(self):
-        self.parser = ReadLog('', '', '', '', '')
+        self.parser = ReadLog('', '', '', '')
 
     def test_parse_event_audit_1(self):
         event = 'type=AVC msg=audit(1345027352.096:499): apparmor="ALLOWED" operation="rename_dest" parent=6974 profile="/usr/sbin/httpd2-prefork//vhost_foo" name=2F686F6D652F7777772F666F6F2E6261722E696E2F68747470646F63732F61707061726D6F722F696D616765732F746573742F696D61676520312E6A7067 pid=20143 comm="httpd2-prefork" requested_mask="wc" denied_mask="wc" fsuid=30 ouid=30'

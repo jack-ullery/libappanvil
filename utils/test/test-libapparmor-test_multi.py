@@ -37,7 +37,7 @@ class TestLibapparmorTestMulti(AATest):
 
         self.assertEqual(len(loglines2), 1, '%s.in should only contain one line!' % params)
 
-        parser = ReadLog('', '', '', '', '')
+        parser = ReadLog('', '', '', '')
         parsed_event = parser.parse_event(loglines2[0])
 
         if parsed_event and expected:
@@ -195,7 +195,7 @@ class TestLogToProfile(AATest):
         profile_dummy_file = 'AATest_does_exist'
 
         # we need to find out the profile name and aamode (complain vs. enforce mode) so that the test can access the correct place in storage
-        parser = ReadLog('', '', '', '', '')
+        parser = ReadLog('', '', '', '')
         parsed_event = parser.parse_event(read_file(logfile))
 
         if not parsed_event:  # AA_RECORD_INVALID
@@ -224,7 +224,7 @@ class TestLogToProfile(AATest):
 
         apparmor.aa.existing_profiles = {profile: profile_dummy_file}
 
-        log_reader = ReadLog(dict(), logfile, apparmor.aa.existing_profiles, '', [])
+        log_reader = ReadLog(dict(), logfile, apparmor.aa.existing_profiles, '')
         log = log_reader.read_log('')
 
         for root in log:

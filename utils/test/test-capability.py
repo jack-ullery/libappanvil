@@ -96,7 +96,7 @@ class CapabilityTest(AATest):
     #        })
 
     def test_cap_from_log(self):
-        parser = ReadLog('', '', '', '', '')
+        parser = ReadLog('', '', '', '')
         event = 'type=AVC msg=audit(1415403814.628:662): apparmor="ALLOWED" operation="capable" profile="/bin/ping" pid=15454 comm="ping" capability=13  capname="net_raw"'
 
         parsed_event = parser.parse_event(event)
@@ -138,7 +138,7 @@ class CapabilityTest(AATest):
         self.assertEqual(obj.get_raw(1), '  capability net_raw,')
 
 #    def test_cap_from_invalid_log(self):
-#        parser = ReadLog('', '', '', '', '')
+#        parser = ReadLog('', '', '', '')
 #        # invalid log entry, name= should contain the capability name
 #        event = 'type=AVC msg=audit(1415403814.628:662): apparmor="ALLOWED" operation="capable" profile="/bin/ping" pid=15454 comm="ping" capability=13  capname=""'
 #
@@ -153,7 +153,7 @@ class CapabilityTest(AATest):
 #            obj.get_raw(1)
 #
 #    def test_cap_from_non_cap_log(self):
-#        parser = ReadLog('', '', '', '', '')
+#        parser = ReadLog('', '', '', '')
 #        # log entry for different rule type
 #        event = 'type=AVC msg=audit(1415403814.973:667): apparmor="ALLOWED" operation="setsockopt" profile="/home/sys-tmp/ping" pid=15454 comm="ping" lport=1 family="inet" sock_type="raw" protocol=1'
 #
@@ -611,7 +611,7 @@ class CapabilityRulesCoveredTest(AATest):
 #    def _test_log_covered(self, expected, capability):
 #        event_base = 'type=AVC msg=audit(1415403814.628:662): apparmor="ALLOWED" operation="capable" profile="/bin/ping" pid=15454 comm="ping" capability=13  capname="%s"'
 
-#        parser = ReadLog('', '', '', '', '')
+#        parser = ReadLog('', '', '', '')
 #        self.assertEqual(expected, self.ruleset.is_log_covered(parser.parse_event(event_base%capability)))
 #
 #    def test_ruleset_is_log_covered_1(self):
@@ -627,7 +627,7 @@ class CapabilityRulesCoveredTest(AATest):
 #    def test_ruleset_is_log_covered_6(self):
 #        event_base = 'type=AVC msg=audit(1415403814.628:662): apparmor="ALLOWED" operation="capable" profile="/bin/ping" pid=15454 comm="ping" capability=13  capname="%s"'
 #
-#        parser = ReadLog('', '', '', '', '')
+#        parser = ReadLog('', '', '', '')
 #        self.assertEqual(True, self.ruleset.is_log_covered(parser.parse_event(event_base%'chgrp'), False))  # ignores allow/deny
 
 class CapabilityGlobTest(AATest):
