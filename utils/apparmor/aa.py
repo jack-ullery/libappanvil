@@ -101,7 +101,6 @@ aa = hasher()  # Profiles originally in sd, replace by aa
 original_aa = hasher()
 extras = hasher()  # Inactive profiles from extras
 ### end our
-log = []
 log_pid = dict()  # handed over to ReadLog, gets filled in logparser.py. The only case the previous content of this variable _might_(?) be used is aa-genprof (multiple do_logprof_pass() runs)
 
 profile_changes = hasher()
@@ -1744,8 +1743,6 @@ def set_logfile(filename):
 def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
     # set up variables for this pass
 #    transitions = hasher()
-    global log
-    log = []
     global existing_profiles
     global sev_db
 #    aa = hasher()
@@ -1769,7 +1766,7 @@ def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
     ##    if not repo_cfg['repository'].get('enabled', False) or repo_cfg['repository]['enabled'] not in ['yes', 'no']:
     ##    UI_ask_to_enable_repo()
 
-    log_reader = apparmor.logparser.ReadLog(log_pid, logfile, existing_profiles, profile_dir, log)
+    log_reader = apparmor.logparser.ReadLog(log_pid, logfile, existing_profiles, profile_dir, [])
     log = log_reader.read_log(logmark)
     #read_log(logmark)
 
