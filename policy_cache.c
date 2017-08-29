@@ -35,16 +35,17 @@
 
 const char header_string[] = "\004\010\000version\000\002";
 #define HEADER_STRING_SIZE 12
+#define VERSION_STRING_SIZE 4
 bool valid_cached_file_version(const char *cachename)
 {
-	char buffer[16];
+	char buffer[HEADER_STRING_SIZE + VERSION_STRING_SIZE];
 	autofclose FILE *f;
 	if (!(f = fopen(cachename, "r"))) {
 		PERROR("Error: Could not read cache file '%s', skipping...\n", cachename);
 		return false;
 	}
-	size_t res = fread(buffer, 1, 16, f);
-	if (res < 16) {
+	size_t res = fread(buffer, 1, HEADER_STRING_SIZE + VERSION_STRING_SIZE, f);
+	if (res < HEADER_STRING_SIZE + VERSION_STRING_SIZE) {
 		if (debug_cache)
 			pwarn("%s: cache file '%s' invalid size\n", progname, cachename);
 		return false;
@@ -61,7 +62,7 @@ bool valid_cached_file_version(const char *cachename)
 						      policy_version,
 						      parser_abi_version,
 						      kernel_abi_version));
-	if (memcmp(buffer + 12, &version, 4) != 0) {
+	if (memcmp(buffer + HEADER_STRING_SIZE, &version, VERSION_STRING_SIZE) != 0) {
 		if (debug_cache)
 			pwarn("%s: cache file '%s' has wrong version\n", progname, cachename);
 		return false;
