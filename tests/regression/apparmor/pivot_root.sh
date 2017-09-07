@@ -156,10 +156,10 @@ genprofile $cur $cap "pivot_root:oldroot=$put_old $bad"
 do_test "put_old, bad new_root" fail "$put_old" "$new_root" "$test"
 
 if [ "$(kernel_features_istrue namespaces/pivot_root)" != "true" ] ; then
-    echo "	kernel does not support pivot_root domain transitions skipping tests ..."
+    echo "	kernel does not support pivot_root domain transitions - skipping tests ..."
 elif [ "$(parser_supports 'pivot_root -> foo,')"  != "true" ] ; then
     #pivot_root domain transitions not supported
-    echo "	parser does not support pivot root domain transitions skipping tests ..."
+    echo "	parser does not support pivot root domain transitions - skipping tests ..."
 else
     # Give sufficient perms and perform a profile transition
     genprofile $cap "pivot_root:-> $new_prof" -- image=$new_prof $cur
