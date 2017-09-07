@@ -22,6 +22,30 @@
 # For this file, functions are first, entry point code is at end, see "MAIN"
 
 #use $() to retreive the failure message or "true" if success
+
+kernel_features_istrue()
+{
+	if [ ! -e "/sys/kernel/security/apparmor/features/" ] ; then
+		echo "Kernel feature masks not supported."
+		return 1;
+	fi
+
+	for f in $@ ; do
+		if [ ! -e "/sys/kernel/security/apparmor/features/$f" ] ; then
+			echo "Required feature '$f' not available."
+			return 2;
+		fi
+		if [ ! -f "/sys/kernel/security/apparmor/features/$f" -o \
+		     `cat "/sys/kernel/security/apparmor/features/$f"` == 'no' ] ; then
+			echo "Required feature '$f' not available."
+			return 3;
+		fi
+        done
+
+	echo "true"
+	return 0;
+}
+
 kernel_features()
 {
 	if [ ! -e "/sys/kernel/security/apparmor/features/" ] ; then

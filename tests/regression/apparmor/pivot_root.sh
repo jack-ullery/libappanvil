@@ -155,34 +155,42 @@ do_test "bad put_old, new_root" fail "$put_old" "$new_root" "$test"
 genprofile $cur $cap "pivot_root:oldroot=$put_old $bad"
 do_test "put_old, bad new_root" fail "$put_old" "$new_root" "$test"
 
-# Give sufficient perms and perform a profile transition
-genprofile $cap "pivot_root:-> $new_prof" -- image=$new_prof $cur
-do_test "transition" pass "$put_old" "$new_root" "$new_prof"
+if [ "$(kernel_features_istrue namespaces/pivot_root)" != "true" ] ; then
+    echo "	kernel does not support pivot_root domain transitions skipping tests ..."
+elif [ "$(parser_supports 'pivot_root -> foo,')"  != "true" ] ; then
+    #pivot_root domain transitions not supported
+    echo "	parser does not support pivot root domain transitions skipping tests ..."
+else
+    # Give sufficient perms and perform a profile transition
+    genprofile $cap "pivot_root:-> $new_prof" -- image=$new_prof $cur
+    do_test "transition" pass "$put_old" "$new_root" "$new_prof"
 
-# Ensure failure when the the new profile can't read /proc/<PID>/attr/current
-genprofile $cap "pivot_root:-> $new_prof" -- image=$new_prof
-do_test "transition, no perms" fail "$put_old" "$new_root" "$new_prof"
+    # Ensure failure when the the new profile can't read /proc/<PID>/attr/current
+    genprofile $cap "pivot_root:-> $new_prof" -- image=$new_prof
+    do_test "transition, no perms" fail "$put_old" "$new_root" "$new_prof"
 
-# Ensure failure when the new profile doesn't exist
-genprofile $cap "pivot_root:-> $bad" -- image=$new_prof $cur
-do_test "bad transition" fail "$put_old" "$new_root" "$new_prof"
+    # Ensure failure when the new profile doesn't exist
+    genprofile $cap "pivot_root:-> $bad" -- image=$new_prof $cur
+    do_test "bad transition" fail "$put_old" "$new_root" "$new_prof"
 
-# Ensure the test binary is accurately doing post pivot_root profile verification
-genprofile $cap "pivot_root:-> $new_prof" -- image=$new_prof $cur
-do_test "bad transition comparison" fail "$put_old" "$new_root" "$test"
+    # Ensure the test binary is accurately doing post pivot_root profile verification
+    genprofile $cap "pivot_root:-> $new_prof" -- image=$new_prof $cur
+    do_test "bad transition comparison" fail "$put_old" "$new_root" "$test"
 
-# Give sufficient perms with new_root and a transition
-genprofile $cap "pivot_root:$new_root -> $new_prof" -- image=$new_prof $cur
-do_test "new_root, transition" pass "$put_old" "$new_root" "$new_prof"
+    # Give sufficient perms with new_root and a transition
+    genprofile $cap "pivot_root:$new_root -> $new_prof" -- image=$new_prof $cur
+    do_test "new_root, transition" pass "$put_old" "$new_root" "$new_prof"
 
-# Ensure failure when the new profile doesn't exist and new_root is specified
-genprofile $cap "pivot_root:$new_root -> $bad" -- image=$new_prof $cur
-do_test "new_root, bad transition" fail "$put_old" "$new_root" "$new_prof"
+    # Ensure failure when the new profile doesn't exist and new_root is specified
+    genprofile $cap "pivot_root:$new_root -> $bad" -- image=$new_prof $cur
+    do_test "new_root, bad transition" fail "$put_old" "$new_root" "$new_prof"
 
-# Give sufficient perms with new_root, put_old, and a transition
-genprofile $cap "pivot_root:oldroot=$put_old $new_root -> $new_prof" -- image=$new_prof $cur
-do_test "put_old, new_root, transition" pass "$put_old" "$new_root" "$new_prof"
+    # Give sufficient perms with new_root, put_old, and a transition
+    genprofile $cap "pivot_root:oldroot=$put_old $new_root -> $new_prof" -- image=$new_prof $cur
+    do_test "put_old, new_root, transition" pass "$put_old" "$new_root" "$new_prof"
 
-# Ensure failure when the new profile doesn't exist and new_root and put_old are specified
-genprofile $cap "pivot_root:oldroot=$put_old $new_root -> $bad" -- image=$new_prof $cur
-do_test "put_old, new_root, bad transition" fail "$put_old" "$new_root" "$new_prof"
+    # Ensure failure when the new profile doesn't exist and new_root and put_old are specified
+    genprofile $cap "pivot_root:oldroot=$put_old $new_root -> $bad" -- image=$new_prof $cur
+    do_test "put_old, new_root, bad transition" fail "$put_old" "$new_root" "$new_prof"
+
+fi
