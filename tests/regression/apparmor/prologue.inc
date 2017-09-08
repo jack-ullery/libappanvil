@@ -23,6 +23,12 @@
 
 #use $() to retreive the failure message or "true" if success
 
+# kernel_features_istrue() - test whether boolean files are true
+# $@: path(s) to test if true
+# Returns: 0 and "true" if all specified paths exist and are true
+#          1 and error message if features directory is not available
+#          2 and error message if feature file does not exist
+#          3 and error message if feature path is not a file
 kernel_features_istrue()
 {
 	if [ ! -e "/sys/kernel/security/apparmor/features/" ] ; then
@@ -46,6 +52,11 @@ kernel_features_istrue()
 	return 0;
 }
 
+# kernel_features - test whether path(s) are present
+# $@: feature path(s) to test
+# Returns: 0 and outputs "true" if all paths exist
+#          1 and error message if features dir is not available
+#          2 and error message if path does not exist
 kernel_features()
 {
 	if [ ! -e "/sys/kernel/security/apparmor/features/" ] ; then
@@ -64,6 +75,8 @@ kernel_features()
 	return 0;
 }
 
+# requires_kernel_features() - exit if kernel feature does not exist
+# $@: feature path(s) to test
 requires_kernel_features()
 {
 	local res=$(kernel_features $@)
@@ -73,6 +86,7 @@ requires_kernel_features()
 	fi
 }
 
+# requires_namespace_interface() - exit if namespace interface is not available
 requires_namespace_interface()
 {
 	if [ ! -e "/sys/kernel/security/apparmor/policy/namespaces" ]
@@ -82,6 +96,7 @@ requires_namespace_interface()
 	fi
 }
 
+# requires_query_interface() - exit if the query interface is not available
 requires_query_interface()
 {
 	if [ ! -e "/sys/kernel/security/apparmor/.access" ]
@@ -91,6 +106,10 @@ requires_query_interface()
 	fi
 }
 
+# parser_supports() - test if the parser supports the following rules
+# $@: rules to test, use quotes if the rule contains whitespace
+# Returns: 0 and output "true" if all rules supported
+#          1 and error message if compiler does not support rule
 parser_supports()
 {
 	for R in "$@" ; do
@@ -105,6 +124,8 @@ parser_supports()
 	return 0;
 }
 
+#requires_parser_support() - exit if the parser does not support the rules
+# $@: rules to test
 requires_parser_support()
 {
 	local res=$(parser_supports $@)
