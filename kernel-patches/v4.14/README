@@ -1,0 +1,4 @@
+This series is based on what is currently in linux-next scheduled for
+inclusion in 4.14
+
+af_unix-mediation is the last remaining patch that is out of tree
