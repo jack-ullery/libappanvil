@@ -1,7 +1,7 @@
 # Author: Marc Deslauriers <marc.deslauriers@ubuntu.com>
 
 #include <tunables/global>
-/usr/sbin/apache2 {
+/usr/sbin/apache2 flags=(attach_disconnected) {
 
   # This profile is completely permissive.
   # It is designed to target specific applications using mod_apparmor,
@@ -84,7 +84,7 @@
   /** mrwlkix,
 
 
-  ^DEFAULT_URI {
+  ^DEFAULT_URI flags=(attach_disconnected) {
     #include <abstractions/base>
     #include <abstractions/apache2-common>
 
@@ -92,7 +92,7 @@
     /** mrwlkix,
   }
 
-  ^HANDLING_UNTRUSTED_INPUT {
+  ^HANDLING_UNTRUSTED_INPUT flags=(attach_disconnected) {
     #include <abstractions/apache2-common>
 
     / rw,
