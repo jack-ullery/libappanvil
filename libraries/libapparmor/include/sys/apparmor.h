@@ -22,7 +22,9 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-__BEGIN_DECLS
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * Class of public mediation types in the AppArmor policy db
@@ -191,6 +193,8 @@ extern int aa_policy_cache_remove(int dirfd, const char *path);
 extern int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
 				       aa_kernel_interface *kernel_interface);
 
-__END_DECLS
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* sys/apparmor.h */
