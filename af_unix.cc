@@ -196,16 +196,20 @@ static void writeu16(std::ostringstream &o, int v)
 #define CMD_OPT		4
 
 void unix_rule::downgrade_rule(Profile &prof) {
+	unsigned int mask = (unsigned int) -1;
+
 	if (!prof.net.allow && !prof.alloc_net_table())
 		yyerror(_("Memory allocation error."));
+	if (sock_type_n != -1)
+		mask = 1 << sock_type_n;
 	if (deny) {
-		prof.net.deny[AF_UNIX] |= 1 << sock_type_n;
+		prof.net.deny[AF_UNIX] |= mask;
 		if (!audit)
-			prof.net.quiet[AF_UNIX] |= 1 << sock_type_n;
+			prof.net.quiet[AF_UNIX] |= mask;
 	} else {
-		prof.net.allow[AF_UNIX] |= 1 << sock_type_n;
+		prof.net.allow[AF_UNIX] |= mask;
 		if (audit)
-			prof.net.audit[AF_UNIX] |= 1 << sock_type_n;
+			prof.net.audit[AF_UNIX] |= mask;
 	}
 }
 

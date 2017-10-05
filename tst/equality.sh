@@ -460,9 +460,23 @@ verify_binary_equality "Deny of ungranted perm" \
 
 verify_binary_equality "change_profile == change_profile -> **" \
 		       "/t { change_profile, }" \
-		       "/t { change_profile -> **, }" \
+		       "/t { change_profile -> **, }"
+
+verify_binary_equality "change_profile /** == change_profile /** -> **" \
 		       "/t { change_profile /**, }" \
 		       "/t { change_profile /** -> **, }"
+
+verify_binary_equality "change_profile /** == change_profile /** -> **" \
+		       "/t { change_profile unsafe /**, }" \
+		       "/t { change_profile unsafe /** -> **, }"
+
+verify_binary_equality "change_profile /** == change_profile /** -> **" \
+		       "/t { change_profile /**, }" \
+		       "/t { change_profile safe /** -> **, }"
+
+verify_binary_inequality "change_profile /** == change_profile /** -> **" \
+			 "/t { change_profile /**, }" \
+			 "/t { change_profile unsafe /**, }"
 
 verify_binary_equality "profile name is hname in rule" \
 	":ns:/hname { signal peer=/hname, }" \
