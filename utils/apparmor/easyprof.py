@@ -259,14 +259,11 @@ def open_file_read(path):
     return orig
 
 
-def verify_policy(policy):
+def verify_policy(policy, exe, base=None, include=None):
     '''Verify policy compiles'''
-    exe = "/sbin/apparmor_parser"
-    if not os.path.exists(exe):
-        rc, exe = cmd(['which', 'apparmor_parser'])
-        if rc != 0:
-            warn("Could not find apparmor_parser. Skipping verify")
-            return True
+    if not exe:
+        warn("Could not find apparmor_parser. Skipping verify")
+        return True
 
     fn = ""
     # if policy starts with '/' and is one line, assume it is a path
@@ -279,7 +276,14 @@ def verify_policy(policy):
         os.write(f, policy)
         os.close(f)
 
-    rc, out = cmd([exe, '-QTK', fn])
+    command = [exe, '-QTK']
+    if base:
+        command.extend(['-b', base])
+    if include:
+        command.extend(['-I', include])
+    command.append(fn)
+
+    rc, out = cmd(command)
     os.unlink(fn)
     if rc == 0:
         return True
@@ -301,6 +305,22 @@ class AppArmorEasyProfile:
         self.dirs = dict()
         if os.path.isfile(self.conffile):
             self._get_defaults()
+
+        self.parser_path = '/sbin/apparmor_parser'
+        if opt.parser_path:
+            self.parser_path = opt.parser_path
+        elif not os.path.exists(self.parser_path):
+            rc, self.parser_path = cmd(['which', 'apparmor_parser'])
+            if rc != 0:
+                self.parser_path = None
+
+        self.parser_base = "/etc/apparmor.d"
+        if opt.parser_base:
+            self.parser_base = opt.parser_base
+
+        self.parser_include = None
+        if opt.parser_include:
+            self.parser_include = opt.parser_include
 
         if opt.templates_dir and os.path.isdir(opt.templates_dir):
             self.dirs['templates'] = os.path.abspath(opt.templates_dir)
@@ -349,8 +369,6 @@ class AppArmorEasyProfile:
             raise AppArmorException("Could not find templates directory")
         if not 'policygroups' in self.dirs:
             raise AppArmorException("Could not find policygroups directory")
-
-        self.aa_topdir = "/etc/apparmor.d"
 
         self.binary = binary
         if binary:
@@ -506,9 +524,15 @@ class AppArmorEasyProfile:
 
     def gen_abstraction_rule(self, abstraction):
         '''Generate an abstraction rule'''
-        p = os.path.join(self.aa_topdir, "abstractions", abstraction)
-        if not os.path.exists(p):
-            raise AppArmorException("%s does not exist" % p)
+        base = os.path.join(self.parser_base, "abstractions", abstraction)
+        if not os.path.exists(base):
+            if not self.parser_include:
+                raise AppArmorException("%s does not exist" % base)
+
+            include = os.path.join(self.parser_include, "abstractions", abstraction)
+            if not os.path.exists(include):
+                raise AppArmorException("Neither %s nor %s exist" % (base, include))
+
         return "#include <abstractions/%s>" % abstraction
 
     def gen_variable_declaration(self, dec):
@@ -661,7 +685,7 @@ class AppArmorEasyProfile:
 
         if no_verify:
             debug("Skipping policy verification")
-        elif not verify_policy(policy):
+        elif not verify_policy(policy, self.parser_path, self.parser_base, self.parser_include):
             msg("\n" + policy)
             raise AppArmorException("Invalid policy")
 
@@ -804,6 +828,10 @@ def check_for_manifest_arg_append(option, opt_str, value, parser):
 
 def add_parser_policy_args(parser):
     '''Add parser arguments'''
+    parser.add_option("--parser",
+                      dest="parser_path",
+                      help="The path to the profile parser used for verification",
+                      metavar="PATH")
     parser.add_option("-a", "--abstractions",
                       action="callback",
                       callback=check_for_manifest_arg,
@@ -811,6 +839,14 @@ def add_parser_policy_args(parser):
                       dest="abstractions",
                       help="Comma-separated list of abstractions",
                       metavar="ABSTRACTIONS")
+    parser.add_option("-b", "--base",
+                      dest="parser_base",
+                      help="Set the base directory for resolving abstractions",
+                      metavar="DIR")
+    parser.add_option("-I", "--Include",
+                      dest="parser_include",
+                      help="Add a directory to the search path when resolving abstractions",
+                      metavar="DIR")
     parser.add_option("--read-path",
                       action="callback",
                       callback=check_for_manifest_arg_append,

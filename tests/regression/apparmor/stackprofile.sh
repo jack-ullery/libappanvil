@@ -20,7 +20,7 @@ bin=$pwd
 . $bin/prologue.inc
 
 requires_kernel_features domain/stack
-settest stacking
+settest transition
 
 file=$tmpdir/file
 otherfile=$tmpdir/file2
@@ -70,8 +70,8 @@ runchecktest_errno EACCES "STACKPROFILE (stacked with unconfined - file)" fail -
 runchecktest "STACKPROFILE (stacked with unconfined - otherfile)" pass -p $othertest -f $otherfile
 runchecktest "STACKPROFILE (stacked with unconfined - sharedfile)" pass -p $othertest -f $sharedfile
 
-runchecktest "STACKPROFILE (stacked with unconfined - okcon)" pass -p $othertest -l "unconfined//&${othertest}" -m mixed
-runchecktest "STACKPROFILE (stacked with unconfined - bad label)" fail -p $othertest -l "${test}//&${othertest}" -m mixed
+runchecktest "STACKPROFILE (stacked with unconfined - okcon)" pass -p $othertest -l "unconfined//&${othertest}" -m enforce
+runchecktest "STACKPROFILE (stacked with unconfined - bad label)" fail -p $othertest -l "${test}//&${othertest}" -m enforce
 runchecktest "STACKPROFILE (stacked with unconfined - bad mode)" fail -p $othertest -l "unconfined//&${othertest}" -m '(null)'
 
 removeprofile

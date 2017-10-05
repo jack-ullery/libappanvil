@@ -25,8 +25,8 @@
   capability dac_read_search,
   capability sys_resource,
 
-  /bin/cat rmix,
-  /bin/bash rmix,
+  /{usr/,}bin/cat rmix,
+  /{usr/,}bin/bash rmix,
   /dev/log w,
   /etc/.pwd.lock rwk,
   /etc/cron.deny r,
@@ -44,7 +44,6 @@
   /usr/sbin/userdel rmix,
   /usr/sbin/userdel-post.local rmix,
   /usr/sbin/userdel-pre.local rmix,
-  /usr/sbin/userdel rmix,
   # XXX
   /{,var/}run/nscd.pid r,
   /var/spool/mail/* wl,

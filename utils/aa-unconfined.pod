@@ -27,14 +27,29 @@ not have AppArmor profiles loaded
 
 =head1 SYNOPSIS
 
-B<aa-unconfined [I<--paranoid>]>
+B<aa-unconfined [I<--paranoid>] [I<--with-ss> | I<--with-netstat>]>
 
 =head1 OPTIONS
 
-B<--paranoid>
+=over 4
 
-   Displays all processes from F</proc> filesystem with tcp or udp ports
-   that do not have AppArmor profiles loaded.
+=item B<--paranoid>
+
+Displays all processes from F</proc> filesystem with tcp or udp ports
+that do not have AppArmor profiles loaded.
+
+=item B<--with-ss>
+
+Use the ss(8) command to find processes listening on network sockets
+(the default).
+
+=item B<--with-netstat>
+
+Use the netstat(8) command to find processes listening on network
+sockets. This is also what aa-unconfined will fall back to when ss(8)
+is not available.
+
+=back
 
 =head1 DESCRIPTION
 
@@ -58,7 +73,7 @@ L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 
-netstat(8), apparmor(7), apparmor.d(5), aa_change_hat(2), and
+ss(8), netstat(8), apparmor(7), apparmor.d(5), aa_change_hat(2), and
 L<http://wiki.apparmor.net>.
 
 =cut

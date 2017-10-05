@@ -69,6 +69,10 @@
 
 #define CAP_TO_MASK(x) (1ull << (x))
 
+#define EXEC_MODE_EMPTY		0
+#define EXEC_MODE_UNSAFE	1
+#define EXEC_MODE_SAFE		2
+
 int parser_token = 0;
 
 struct cod_entry *do_file_rule(char *id, int mode, char *link_id, char *nt);
@@ -241,7 +245,6 @@ void add_local_entry(Profile *prof);
 %type <flags>	flagval
 %type <cap>	caps
 %type <cap>	capability
-%type <id>	change_profile_head
 %type <user_entry> change_profile
 %type <set_var> TOK_SET_VAR
 %type <bool_var> TOK_BOOL_VAR
@@ -276,7 +279,7 @@ void add_local_entry(Profile *prof);
 %type <unix_entry>	unix_rule
 %type <id>	opt_target
 %type <id>	opt_named_transition
-%type <boolean> opt_unsafe
+%type <boolean> opt_exec_mode
 %type <boolean> opt_file
 %%
 
@@ -1060,9 +1063,9 @@ opt_named_transition: { /* nothing */ $$ = NULL; }
 rule: file_rule { $$ = $1; }
 	| link_rule { $$ = $1; }
 
-opt_unsafe: { /* nothing */ $$ = 0; }
-	| TOK_UNSAFE { $$ = 1; };
-	| TOK_SAFE { $$ = 2; };
+opt_exec_mode: { /* nothing */ $$ = EXEC_MODE_EMPTY; }
+	| TOK_UNSAFE { $$ = EXEC_MODE_UNSAFE; };
+	| TOK_SAFE { $$ = EXEC_MODE_SAFE; };
 
 opt_file: { /* nothing */ $$ = 0; }
 	| TOK_FILE { $$ = 1; }
@@ -1104,22 +1107,22 @@ file_rule: TOK_FILE TOK_END_OF_RULE
 	| opt_file file_rule_tail { $$ = $2; }
 
 
-file_rule_tail: opt_unsafe frule
+file_rule_tail: opt_exec_mode frule
 	{
-		if ($1) {
+		if ($1 != EXEC_MODE_EMPTY) {
 			if (!($2->mode & AA_EXEC_BITS))
 				yyerror(_("unsafe rule missing exec permissions"));
-			if ($1 == 1) {
+			if ($1 == EXEC_MODE_UNSAFE) {
 				$2->mode |= (($2->mode & AA_EXEC_BITS) << 8) &
 					 ALL_AA_EXEC_UNSAFE;
 			}
-			else if ($1 == 2)
+			else if ($1 == EXEC_MODE_SAFE)
 				$2->mode &= ~ALL_AA_EXEC_UNSAFE;
 		}
 		$$ = $2;
 	};
 
-file_rule_tail: opt_unsafe id_or_var file_mode id_or_var
+file_rule_tail: opt_exec_mode id_or_var file_mode id_or_var
 	{
 		/* Oopsie, we appear to be missing an EOL marker. If we
 		 * were *smart*, we could work around it. Since we're
@@ -1475,28 +1478,46 @@ file_mode: TOK_MODE
 		free($1);
 	}
 
-change_profile_head: TOK_CHANGE_PROFILE opt_id
-	{
-		if ($2 && !($2[0] == '/' || strncmp($2, "@{", 2) == 0))
-			yyerror(_("Exec condition must begin with '/'."));
-		$$ = $2;
-	}
-
-change_profile: change_profile_head opt_named_transition TOK_END_OF_RULE
+change_profile: TOK_CHANGE_PROFILE opt_exec_mode opt_id opt_named_transition TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
+		int mode = AA_CHANGE_PROFILE;
+		int exec_mode = $2;
+		char *exec = $3;
+		char *target = $4;
 
-		if ($2) {
-			PDEBUG("Matched change_profile: tok_id (%s)\n", $2);
-			entry = new_entry($2, AA_CHANGE_PROFILE, $1);
+		if (exec) {
+			/* exec bits required to trigger rule conflict if
+			 * for overlapping safe and unsafe exec rules
+			 */
+			mode |= AA_EXEC_BITS;
+			if (exec_mode == EXEC_MODE_UNSAFE)
+				mode |= ALL_AA_EXEC_UNSAFE;
+			else if (exec_mode == EXEC_MODE_SAFE &&
+				 !kernel_supports_stacking &&
+				 warnflags & WARN_RULE_DOWNGRADED) {
+				pwarn("downgrading change_profile safe rule to unsafe due to lack of necessary kernel support\n");
+				/**
+				 * No need to do anything because 'unsafe' exec
+				 * mode is the only supported mode of
+				 * change_profile rules in non-stacking kernels
+				 */
+			}
+		} else if (exec_mode != EXEC_MODE_EMPTY)
+			yyerror(_("Exec condition is required when unsafe or safe keywords are present"));
+		if (exec && !(exec[0] == '/' || strncmp(exec, "@{", 2) == 0))
+			yyerror(_("Exec condition must begin with '/'."));
+
+		if (target) {
+			PDEBUG("Matched change_profile: tok_id (%s)\n", target);
 		} else {
-			char *rule = strdup("**");
-			if (!rule)
-				yyerror(_("Memory allocation error."));
-
 			PDEBUG("Matched change_profile,\n");
-			entry = new_entry(rule, AA_CHANGE_PROFILE, $1);
+			target = strdup("**");
+			if (!target)
+				yyerror(_("Memory allocation error."));
 		}
+
+		entry = new_entry(target, mode, exec);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 

@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/python3
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
@@ -10,7 +10,7 @@
 # ------------------------------------------------------------------
 
 import unittest
-from common_test import AATest, setup_all_loops
+from common_test import AATest, setup_all_loops, setup_aa
 import apparmor.aa as apparmor
 
 import os
@@ -30,9 +30,6 @@ skip_startswith = (
     'generated_x/ambiguous-',
     'generated_x/dominate-',
 
-    # permissions before path
-    'generated_perms_leading/',
-
     # 'safe' and 'unsafe' keywords
     'generated_perms_safe/',
 
@@ -47,23 +44,30 @@ exception_not_raised = [
     'capability/bad_3.sd',
     'capability/bad_4.sd',
     'change_hat/bad_parsing.sd',
+
+    # The tools don't detect conflicting change_profile exec modes
+    'change_profile/onx_conflict_unsafe1.sd',
+    'change_profile/onx_conflict_unsafe2.sd',
+
+    # duplicated conditionals aren't detected by the tools
+    'generated_dbus/duplicated-conditionals-45127.sd',
+    'generated_dbus/duplicated-conditionals-45131.sd',
+    'generated_dbus/duplicated-conditionals-45124.sd',
+    'generated_dbus/duplicated-conditionals-45130.sd',
+    'generated_dbus/duplicated-conditionals-45125.sd',
+    'generated_dbus/duplicated-conditionals-45128.sd',
+    'generated_dbus/duplicated-conditionals-45129.sd',
+
+    'dbus/bad_modifier_2.sd',
     'dbus/bad_regex_01.sd',
     'dbus/bad_regex_02.sd',
     'dbus/bad_regex_03.sd',
     'dbus/bad_regex_04.sd',
     'dbus/bad_regex_05.sd',
     'dbus/bad_regex_06.sd',
-    'file/bad_append_1.sd',
-    'file/bad_append_2.sd',
-    'file/bad_embedded_spaces_1.sd',
+    'file/bad_re_brace_1.sd',
     'file/bad_re_brace_2.sd',
     'file/bad_re_brace_3.sd',
-    'file/file/bad_append_1.sd',
-    'file/file/bad_embedded_spaces_1.sd',
-    'file/file/owner/bad_3.sd',
-    'file/file/owner/bad_5.sd',
-    'file/owner/bad_3.sd',
-    'file/owner/bad_5.sd',
     'mount/bad_opt_10.sd',
     'mount/bad_opt_11.sd',
     'mount/bad_opt_12.sd',
@@ -157,6 +161,8 @@ exception_not_raised = [
     'vars/vars_dbus_bad_01.sd',
     'vars/vars_dbus_bad_02.sd',
     'vars/vars_dbus_bad_03.sd',
+    'vars/vars_dbus_bad_04.sd',
+    'vars/vars_dbus_bad_05.sd',
     'vars/vars_dbus_bad_06.sd',
     'vars/vars_dbus_bad_07.sd',
     'vars/vars_file_evaluation_7.sd',
@@ -189,17 +195,10 @@ exception_not_raised = [
     'xtrans/simple_bad_conflicting_x_11.sd',
     'xtrans/simple_bad_conflicting_x_12.sd',
     'xtrans/simple_bad_conflicting_x_13.sd',
-    'xtrans/simple_bad_conflicting_x_14.sd',
-    'xtrans/simple_bad_conflicting_x_15.sd',
-    'xtrans/simple_bad_conflicting_x_1.sd',
     'xtrans/simple_bad_conflicting_x_2.sd',
-    'xtrans/simple_bad_conflicting_x_3.sd',
     'xtrans/simple_bad_conflicting_x_4.sd',
-    'xtrans/simple_bad_conflicting_x_5.sd',
     'xtrans/simple_bad_conflicting_x_6.sd',
-    'xtrans/simple_bad_conflicting_x_7.sd',
     'xtrans/simple_bad_conflicting_x_8.sd',
-    'xtrans/simple_bad_conflicting_x_9.sd',
     'xtrans/x-conflict.sd',
 ]
 
@@ -212,11 +211,9 @@ unknown_line = [
     'file/ok_other_2.sd',
     'file/ok_other_3.sd',
 
-    # permissions before path
+    # 'unsafe' keyword
     'file/file/front_perms_ok_1.sd',
     'file/front_perms_ok_1.sd',
-    'profile/local/local_named_profile_ok1.sd',
-    'profile/local/local_profile_ok1.sd',
     'xtrans/simple_ok_cx_1.sd',
 
     # permissions before path and owner / audit {...} blocks
@@ -271,10 +268,72 @@ syntax_failure = [
     'xtrans/simple_ok_pix_1.sd',  # Invalid mode pIx
     'xtrans/simple_ok_pux_1.sd',  # Invalid mode rPux
 
-    # dbus regex mismatch
-    'vars/vars_dbus_4.sd',
-    'vars/vars_dbus_9.sd',
-    'vars/vars_dbus_2.sd',
+    # unexpected uppercase vs. lowercase in *x rules - generated_perms_leading directory
+    'generated_perms_leading/exact-re-Puxtarget.sd',
+    'generated_perms_leading/dominate-ownerCuxtarget2.sd',
+    'generated_perms_leading/ambiguous-Cux.sd',
+    'generated_perms_leading/dominate-ownerPux.sd',
+    'generated_perms_leading/exact-re-ownerPux.sd',
+    'generated_perms_leading/overlap-ownerCuxtarget.sd',
+    'generated_perms_leading/exact-re-ownerCuxtarget.sd',
+    'generated_perms_leading/dominate-Puxtarget2.sd',
+    'generated_perms_leading/dominate-ownerCuxtarget.sd',
+    'generated_perms_leading/dominate-ownerPuxtarget.sd',
+    'generated_perms_leading/ambiguous-Pux.sd',
+    'generated_perms_leading/ambiguous-Cuxtarget2.sd',
+    'generated_perms_leading/exact-Puxtarget2.sd',
+    'generated_perms_leading/ambiguous-ownerCux.sd',
+    'generated_perms_leading/exact-ownerPux.sd',
+    'generated_perms_leading/ambiguous-ownerPuxtarget.sd',
+    'generated_perms_leading/exact-re-ownerPuxtarget.sd',
+    'generated_perms_leading/exact-re-Cuxtarget.sd',
+    'generated_perms_leading/exact-re-Puxtarget2.sd',
+    'generated_perms_leading/dominate-Cux.sd',
+    'generated_perms_leading/exact-re-ownerCuxtarget2.sd',
+    'generated_perms_leading/ambiguous-ownerCuxtarget.sd',
+    'generated_perms_leading/exact-re-Cuxtarget2.sd',
+    'generated_perms_leading/ambiguous-Puxtarget.sd',
+    'generated_perms_leading/overlap-Puxtarget.sd',
+    'generated_perms_leading/ambiguous-Puxtarget2.sd',
+    'generated_perms_leading/overlap-Puxtarget2.sd',
+    'generated_perms_leading/exact-Puxtarget.sd',
+    'generated_perms_leading/overlap-ownerPuxtarget.sd',
+    'generated_perms_leading/exact-ownerCuxtarget.sd',
+    'generated_perms_leading/exact-re-ownerCux.sd',
+    'generated_perms_leading/exact-ownerPuxtarget2.sd',
+    'generated_perms_leading/exact-ownerCux.sd',
+    'generated_perms_leading/overlap-Cuxtarget2.sd',
+    'generated_perms_leading/ambiguous-Cuxtarget.sd',
+    'generated_perms_leading/ambiguous-ownerPuxtarget2.sd',
+    'generated_perms_leading/dominate-ownerCux.sd',
+    'generated_perms_leading/exact-Pux.sd',
+    'generated_perms_leading/exact-Cuxtarget.sd',
+    'generated_perms_leading/overlap-ownerCuxtarget2.sd',
+    'generated_perms_leading/overlap-Pux.sd',
+    'generated_perms_leading/overlap-ownerPux.sd',
+    'generated_perms_leading/ambiguous-ownerCuxtarget2.sd',
+    'generated_perms_leading/exact-re-Cux.sd',
+    'generated_perms_leading/exact-re-Pux.sd',
+    'generated_perms_leading/overlap-Cuxtarget.sd',
+    'generated_perms_leading/exact-re-ownerPuxtarget2.sd',
+    'generated_perms_leading/exact-Cuxtarget2.sd',
+    'generated_perms_leading/exact-Cux.sd',
+    'generated_perms_leading/overlap-Cux.sd',
+    'generated_perms_leading/overlap-ownerCux.sd',
+    'generated_perms_leading/exact-ownerPuxtarget.sd',
+    'generated_perms_leading/dominate-Pux.sd',
+    'generated_perms_leading/exact-ownerCuxtarget2.sd',
+    'generated_perms_leading/dominate-Puxtarget.sd',
+    'generated_perms_leading/ambiguous-ownerPux.sd',
+    'generated_perms_leading/overlap-ownerPuxtarget2.sd',
+    'generated_perms_leading/dominate-Cuxtarget2.sd',
+    'generated_perms_leading/dominate-Cuxtarget.sd',
+    'generated_perms_leading/dominate-ownerPuxtarget2.sd',
+
+    # escaping with \
+    'file/ok_embedded_spaces_4.sd',  # \-escaped space
+    'file/file/ok_embedded_spaces_4.sd',  # \-escaped space
+    'file/ok_quoted_4.sd',  # quoted string including \"
 
     # misc
     'vars/vars_dbus_8.sd',  # Path doesn't start with / or variable: {/@{TLDS}/foo,/com/@{DOMAINS}}
@@ -408,6 +467,7 @@ def find_and_setup_test_profiles(profile_dir):
     print('Running %s parser simple_tests...' % len(TestParseParserTests.tests))
 
 
+setup_aa(apparmor)
 find_and_setup_test_profiles('../../parser/tst/simple_tests/')
 
 setup_all_loops(__name__)

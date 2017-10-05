@@ -47,12 +47,14 @@ buf_max=4096			#standard x86 page size
 
 # change apparmor's path buffer to something less than buf_max so we can
 # actually test overflowing apparmor's max buffer
-if [ -f /sys/module/apparmor/parameters/path_max ] ; then
+if [ -f /sys/module/apparmor/parameters/path_max ] &&
+     (( (8#$(stat -c "%a" /sys/module/apparmor/parameters/path_max) & 0222) != 0 )) ; then
 	buf_max=2048			#standard x86 page size/2
 	old_max=`cat /sys/module/apparmor/parameters/path_max`
 	echo $buf_max > /sys/module/apparmor/parameters/path_max
 else
-	echo "WARNING: This version of AppArmor does not support changing buffer size."
+	echo "XFAIL: This version of AppArmor does not support changing buffer size."
+	exit 0
 fi
 
 # generate 255 character filename

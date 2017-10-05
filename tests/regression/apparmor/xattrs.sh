@@ -36,6 +36,8 @@ bin=$pwd
 
 . $bin/prologue.inc
 
+requires_kernel_features file/xattr
+
 tmpmount=$tmpdir/mountpoint
 diskimg=$tmpdir/disk.img
 file=$tmpmount/testfile

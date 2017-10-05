@@ -103,6 +103,17 @@ def setup_regex_tests(test_class):
         stub_test.__doc__ = "test '%s': %s" % (line, desc)
         setattr(test_class, 'test_%d' % (i), stub_test)
 
+def setup_aa(aa):
+    confdir = os.getenv('__AA_CONFDIR')
+    try:
+        if confdir:
+            aa.init_aa(confdir=confdir)
+        else:
+            aa.init_aa()
+    except AttributeError:
+        # apparmor.aa module versions <= 2.11 do not have the init_aa() method
+        pass
+
 def write_file(directory, file, contents):
     '''construct path, write contents to it, and return the constructed path'''
     path = os.path.join(directory, file)

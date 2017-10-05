@@ -11,7 +11,7 @@
 
 #include <tunables/global>
 
-/usr/lib/dovecot/log {
+/usr/lib/dovecot/log flags=(attach_disconnected) {
   #include <abstractions/base>
   #include <abstractions/dovecot-common>
 

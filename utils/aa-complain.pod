@@ -26,7 +26,7 @@ aa-complain - set an AppArmor security profile to I<complain> mode.
 
 =head1 SYNOPSIS
 
-B<< aa-complain I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...] [I<-d /path/to/profiles>] >>
+B<aa-complain I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...] [I<-d /path/to/profiles>] [I<--no-reload>]>
 
 =head1 OPTIONS
 
@@ -35,11 +35,16 @@ B<-d --dir  /path/to/profiles>
    Specifies where to look for the AppArmor security profile set.
    Defaults to /etc/apparmor.d.
 
+B<--no-reload>
+   Do not reload the profile after modifying it.
+
 =head1 DESCRIPTION
 
 B<aa-complain> is used to set the enforcement mode for one or more profiles to I<complain> mode.
 In this mode security policy is not enforced but rather access violations
 are logged to the system log.
+
+Note that 'deny' rules will be enforced even in complain mode.
 
 =head1 BUGS
 

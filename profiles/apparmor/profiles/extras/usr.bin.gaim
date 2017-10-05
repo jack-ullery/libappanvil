@@ -23,7 +23,7 @@
   #include <abstractions/gnome>
   #include <abstractions/user-tmp>
 
-  /bin/bash mixr,
+  /{usr/,}bin/bash mixr,
   /dev/random r,
   /etc/esd.conf r,
   /etc/pango/pango.modules r,

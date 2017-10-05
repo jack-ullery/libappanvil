@@ -2,6 +2,7 @@ apparmor-*
 parser/po/*.mo
 parser/af_names.h
 parser/cap_names.h
+parser/tst_lib
 parser/tst_misc
 parser/tst_regex
 parser/tst_symtab
@@ -19,6 +20,7 @@ parser/*.7.html
 parser/*.5.html
 parser/*.8.html
 parser/apparmor_parser
+parser/libapparmor_re/parse.cc
 parser/libapparmor_re/regexp.cc
 parser/techdoc.aux
 parser/techdoc.log
@@ -88,7 +90,7 @@ libraries/libapparmor/swig/perl/MYMETA.yml
 libraries/libapparmor/swig/perl/blib
 libraries/libapparmor/swig/perl/libapparmor_wrap.c
 libraries/libapparmor/swig/perl/pm_to_blib
-libraries/libapparmor/swig/python/__init__.py
+libraries/libapparmor/swig/python/LibAppArmor.py
 libraries/libapparmor/swig/python/build/
 libraries/libapparmor/swig/python/libapparmor_wrap.c
 libraries/libapparmor/swig/python/Makefile

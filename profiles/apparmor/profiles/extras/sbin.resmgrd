@@ -12,7 +12,7 @@
 
 #include <tunables/global>
 
-/sbin/resmgrd {
+profile resmgrd /{usr/,}sbin/resmgrd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
@@ -23,7 +23,7 @@
   /etc/resmgr.conf r,
   /etc/resmgr.conf.d/ r,
   /etc/resmgr.conf.d/*.conf r,
-  /sbin/resmgrd r,
+  /{usr/,}sbin/resmgrd r,
   /{,var/}run/.resmgr_socket lrw,
   /{,var/}run/resmgr.pid lrw,
   /{,var/}run/fence* lrw,

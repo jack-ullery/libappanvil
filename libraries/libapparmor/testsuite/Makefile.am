@@ -17,8 +17,8 @@ clean-local:
 	rm -rf tmp.err.* tmp.out.* site.exp site.bak test_multi/out
 	rm -f libaalogparse.log libaalogparse.sum
 
-check-local:
-	if ! test -f libaalogparse.log ; then echo '*** libaalogparse.log not found - is dejagnu installed? ***'; exit 1; fi
-	if grep ERROR libaalogparse.log ; then exit 1 ; fi
+check-local: check-DEJAGNU
+	@if ! test -f libaalogparse.log ; then echo '*** libaalogparse.log not found - is dejagnu installed? ***'; exit 1; fi
+	@if grep ERROR libaalogparse.log ; then exit 1 ; fi
 
 EXTRA_DIST = test_multi/*.in test_multi/*.out test_multi/*.err

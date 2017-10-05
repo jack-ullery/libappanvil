@@ -49,8 +49,8 @@
   # log files
   /var/log/lighttpd/*.log rw,
   # include_shell
-  /bin/bash mix,
-  /bin/zsh mix,
-  /bin/cat mix,
+  /{usr/,}bin/bash mix,
+  /{usr/,}bin/zsh mix,
+  /{usr/,}bin/cat mix,
 }
 

@@ -14,9 +14,9 @@
   #include <abstractions/base>
   #include <abstractions/bash>
   #include <abstractions/consoles>
-  /bin/basename         mixr,
-  /bin/bash             mixr,
-  /bin/grep             mixr,
+  /{usr/,}bin/basename         mixr,
+  /{usr/,}bin/bash             mixr,
+  /{usr/,}bin/grep             mixr,
   /etc/manpath.config   r,
   /usr/bin/apropos      rmix,
   /usr/bin/man          Px,

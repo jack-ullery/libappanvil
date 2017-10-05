@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (c) 1999, 2004-2009 NOVELL (All rights reserved)
-#    Copyright (c) 2010-2011 Canonical Ltd.
+#    Copyright (c) 2010-2016 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -24,15 +24,18 @@ PERLTOOLS = aa-notify
 PYTOOLS = aa-easyprof aa-genprof aa-logprof aa-cleanprof aa-mergeprof \
           aa-autodep aa-audit aa-complain aa-enforce aa-disable \
 	  aa-status aa-unconfined
-TOOLS = ${PERLTOOLS} ${PYTOOLS} aa-decode
+TOOLS = ${PERLTOOLS} ${PYTOOLS} aa-decode aa-remove-unknown
 PYSETUP = python-tools-setup.py
 PYMODULES = $(wildcard apparmor/*.py apparmor/rule/*.py)
 
 MANPAGES = ${TOOLS:=.8} logprof.conf.5
 
-all: ${MANPAGES} ${HTMLMANPAGES}
+all: docs
 	$(MAKE) -C po all
 	$(MAKE) -C vim all
+
+.PHONY: docs
+docs: ${MANPAGES} ${HTMLMANPAGES}
 
 # need some better way of determining this
 DESTDIR=/

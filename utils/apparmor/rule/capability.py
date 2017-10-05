@@ -13,10 +13,11 @@
 #
 # ----------------------------------------------------------------------
 
+import re
+
 from apparmor.regex import RE_PROFILE_CAP
 from apparmor.common import AppArmorBug, AppArmorException, type_is_str
 from apparmor.rule import BaseRule, BaseRuleset, logprof_value_or_all, parse_modifiers
-import re
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -109,7 +110,7 @@ class CapabilityRule(BaseRule):
         # still here? -> then it is covered
         return True
 
-    def is_equal_localvars(self, rule_obj):
+    def is_equal_localvars(self, rule_obj, strict):
         '''compare if rule-specific variables are equal'''
 
         if not type(rule_obj) == CapabilityRule:

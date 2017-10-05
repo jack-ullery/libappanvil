@@ -96,7 +96,7 @@ class RlimitRule(BaseRule):
                 else:
                     self.value_as_int = self.time_to_int(value, 'seconds')
 
-            elif rlimit in rlimit_nice:
+            elif rlimit in rlimit_nice:  # pragma: no branch - "if rlimit in rlimit_all:" above avoids the need for an "else:" branch
                 if not RE_NICE.match(value):
                     raise AppArmorException('Invalid value or unit in rlimit %s %s rule' % (rlimit, value))
                 self.value_as_int = 0 - int(value)  # lower numbers mean a higher limit for nice
@@ -123,7 +123,7 @@ class RlimitRule(BaseRule):
         if matches.group('rlimit'):
             rlimit = strip_quotes(matches.group('rlimit'))
         else:
-            raise AppArmorException(_("Invalid rlimit rule '%s' - keyword missing") % raw_rule)
+            raise AppArmorException(_("Invalid rlimit rule '%s' - keyword missing") % raw_rule)  # pragma: no cover - would need breaking the regex
 
         if matches.group('value'):
             if matches.group('value') == 'infinity':
@@ -131,7 +131,7 @@ class RlimitRule(BaseRule):
             else:
                 value = strip_quotes(matches.group('value'))
         else:
-            raise AppArmorException(_("Invalid rlimit rule '%s' - value missing") % raw_rule)
+            raise AppArmorException(_("Invalid rlimit rule '%s' - value missing") % raw_rule)  # pragma: no cover - would need breaking the regex
 
         return RlimitRule(rlimit, value,
                            comment=comment)
@@ -218,7 +218,7 @@ class RlimitRule(BaseRule):
         # still here? -> then it is covered
         return True
 
-    def is_equal_localvars(self, rule_obj):
+    def is_equal_localvars(self, rule_obj, strict):
         '''compare if rule-specific variables are equal'''
 
         if not type(rule_obj) == RlimitRule:

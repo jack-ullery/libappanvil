@@ -19,7 +19,7 @@
   #include <abstractions/kde>
   #include <abstractions/X>
 
-  /bin/bash            mix,
+  /{usr/,}bin/bash     mix,
   /usr/bin/cut         mix,
   /usr/NX/bin/nxclient rmix,
   /usr/NX/bin/nxssh    mix,

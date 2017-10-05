@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2015-2016 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -43,31 +43,12 @@ class ReadLog:
     # used to pre-filter log lines so that we hand over only relevant lines to LibAppArmor parsing
     RE_LOG_ALL = re.compile('(' + '|'.join(RE_log_parts) + ')')
 
-
-    # Used by netdomain to identify the operation types
-    # New socket names
-    OPERATION_TYPES = {'create': 'net',
-                       'post_create': 'net',
-                       'bind': 'net',
-                       'connect': 'net',
-                       'listen': 'net',
-                       'accept': 'net',
-                       'sendmsg': 'net',
-                       'recvmsg': 'net',
-                       'getsockname': 'net',
-                       'getpeername': 'net',
-                       'getsockopt': 'net',
-                       'setsockopt': 'net',
-                       'socket_create': 'net',
-                       'sock_shutdown': 'net'
-                       }
-
-    def __init__(self, pid, filename, existing_profiles, profile_dir, log):
+    def __init__(self, pid, filename, existing_profiles, profile_dir):
         self.filename = filename
         self.profile_dir = profile_dir
         self.pid = pid
         self.existing_profiles = existing_profiles
-        self.log = log
+        self.log = []
         self.debug_logger = DebugLogger('ReadLog')
         self.LOG = None
         self.logmark = ''
@@ -133,11 +114,11 @@ class ReadLog:
         ev['denied_mask'] = event.denied_mask
         ev['request_mask'] = event.requested_mask
         ev['magic_token'] = event.magic_token
-        if ev['operation'] and self.op_type(ev['operation']) == 'net':
-            ev['family'] = event.net_family
-            ev['protocol'] = event.net_protocol
-            ev['sock_type'] = event.net_sock_type
-        elif ev['operation'] and ev['operation'] == 'signal':
+        ev['family'] = event.net_family
+        ev['protocol'] = event.net_protocol
+        ev['sock_type'] = event.net_sock_type
+
+        if ev['operation'] and ev['operation'] == 'signal':
             ev['signal'] = event.signal
             ev['peer'] = event.peer
         elif ev['operation'] and ev['operation'] == 'ptrace':
@@ -214,31 +195,13 @@ class ReadLog:
             (pid, parent, mode, details) = e
             self.add_to_tree(pid, parent, mode, details)
 
-    def map_log_type(self, log_type):
-            if re.search('(UNKNOWN\[1501\]|APPARMOR_AUDIT|1501)', log_type):
-                aamode = 'AUDIT'
-            elif re.search('(UNKNOWN\[1502\]|APPARMOR_ALLOWED|1502)', log_type):
-                aamode = 'PERMITTING'
-            elif re.search('(UNKNOWN\[1503\]|APPARMOR_DENIED|1503)', log_type):
-                aamode = 'REJECTING'
-            elif re.search('(UNKNOWN\[1504\]|APPARMOR_HINT|1504)', log_type):
-                aamode = 'HINT'
-            elif re.search('(UNKNOWN\[1505\]|APPARMOR_STATUS|1505)', log_type):
-                aamode = 'STATUS'
-            elif re.search('(UNKNOWN\[1506\]|APPARMOR_ERROR|1506)', log_type):
-                aamode = 'ERROR'
-            else:
-                aamode = 'UNKNOWN'
-
-            return aamode
-
     def parse_event_for_tree(self, e):
         aamode = e.get('aamode', 'UNKNOWN')
 
-        if e.get('type', False):
-            aamode = self.map_log_type(e['type'])
+        if aamode == 'UNKNOWN':
+            raise AppArmorBug('aamode is UNKNOWN - %s' % e['type'])  # should never happen
 
-        if aamode in ['UNKNOWN', 'AUDIT', 'STATUS', 'ERROR']:
+        if aamode in ['AUDIT', 'STATUS', 'ERROR']:
             return None
 
         if 'profile_set' in e['operation']:
@@ -261,6 +224,8 @@ class ReadLog:
         # Filter out change_hat events that aren't from learning
         if e['operation'] == 'change_hat':
             if aamode != 'HINT' and aamode != 'PERMITTING':
+                return None
+            if e['error_code'] == 1 and e['info'] == 'unconfined can not change_hat':
                 return None
             profile = e['name2']
             #hat = None
@@ -289,25 +254,7 @@ class ReadLog:
             else:
                 self.debug_logger.debug('parse_event_for_tree: dropped exec event in %s' % e['profile'])
 
-        elif ( e['operation'].startswith('file_') or e['operation'].startswith('inode_') or
-            e['operation'] in ['open', 'truncate', 'mkdir', 'mknod', 'chmod', 'rename_src',
-                                'rename_dest', 'unlink', 'rmdir', 'symlink_create', 'link',
-                                'sysctl', 'getattr', 'setattr', 'xattr'] ):
-
-            # for some kernel-side reason, we get file-related log events without request_mask, see
-            # https://bugs.launchpad.net/apparmor/+bug/1466812/, https://bugs.launchpad.net/apparmor/+bug/1509030 and https://bugs.launchpad.net/apparmor/+bug/1540562
-            # request_mask can also be '', see https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/1525119
-            if not e['request_mask']:
-                self.debug_logger.debug('UNHANDLED (missing request_mask): %s' % e)
-                return None
-
-            # sometimes network events come with an e['operation'] that matches the list of file operations
-            # see https://bugs.launchpad.net/apparmor/+bug/1577051 and https://bugs.launchpad.net/apparmor/+bug/1582374
-            # XXX these events are network events, so we should map them as such
-            if e['request_mask'] in ('send', 'receive'):
-                self.debug_logger.debug('UNHANDLED (request_mask is send or receive): %s' % e)
-                return None
-
+        elif self.op_type(e) == 'file':
             # Map c (create) and d (delete) to w (logging is more detailed than the profile language)
             rmask = e['request_mask']
             rmask = rmask.replace('c', 'w')
@@ -366,13 +313,20 @@ class ReadLog:
 #                 self.log += [arrayref]
 #             self.pid[child] = arrayref
 
-        elif self.op_type(e['operation']) == 'net':
+        elif self.op_type(e) == 'net':
             return(e['pid'], e['parent'], 'netdomain',
                              [profile, hat, prog, aamode, e['family'], e['sock_type'], e['protocol']])
         elif e['operation'] == 'change_hat':
             return(e['pid'], e['parent'], 'unknown_hat',
                              [profile, hat, aamode, hat])
         elif e['operation'] == 'ptrace':
+            if not e['peer']:
+                self.debug_logger.debug('ignored garbage ptrace event with empty peer')
+                return None
+            if not e['denied_mask']:
+                self.debug_logger.debug('ignored garbage ptrace event with empty denied_mask')
+                return None
+
             return(e['pid'], e['parent'], 'ptrace',
                              [profile, hat, prog, aamode, e['denied_mask'], e['peer']])
         elif e['operation'] == 'signal':
@@ -426,10 +380,57 @@ class ReadLog:
         self.logmark = ''
         return self.log
 
-    def op_type(self, operation):
+    # operation types that can be network or file operations
+    # (used by op_type() which checks some event details to decide)
+    OP_TYPE_FILE_OR_NET = {
+        # Note: op_type() also uses some startswith() checks which are not listed here!
+       'create',
+       'post_create',
+       'bind',
+       'connect',
+       'listen',
+       'accept',
+       'sendmsg',
+       'recvmsg',
+       'getsockname',
+       'getpeername',
+       'getsockopt',
+       'setsockopt',
+       'socket_create',
+       'sock_shutdown',
+       'open',
+       'truncate',
+       'mkdir',
+       'mknod',
+       'chmod',
+       'chown',
+       'rename_src',
+       'rename_dest',
+       'unlink',
+       'rmdir',
+       'symlink_create',
+       'link',
+       'sysctl',
+       'getattr',
+       'setattr',
+       'xattr',
+    }
+
+    def op_type(self, event):
         """Returns the operation type if known, unkown otherwise"""
-        operation_type = self.OPERATION_TYPES.get(operation, 'unknown')
-        return operation_type
+
+        if ( event['operation'].startswith('file_') or event['operation'].startswith('inode_') or event['operation'] in self.OP_TYPE_FILE_OR_NET ):
+            # file or network event?
+            if event['family'] and event['protocol'] and event['sock_type']:
+                # 'unix' events also use keywords like 'connect', but protocol is 0 and should therefore be filtered out
+                return 'net'
+            elif event['denied_mask']:
+                return 'file'
+            else:
+                raise AppArmorException('unknown file or network event type')
+
+        else:
+            return 'unknown'
 
     def profile_exists(self, program):
         """Returns True if profile exists, False otherwise"""

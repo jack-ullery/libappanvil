@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/python3
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
@@ -10,19 +10,18 @@
 # ------------------------------------------------------------------
 
 import unittest
-from common_test import AATest, setup_all_loops
+from common_test import AATest, setup_all_loops, setup_aa, read_file
 
 import os
 from apparmor.common import open_file_read
 
+import apparmor.aa
 from apparmor.logparser import ReadLog
 
-# This testcase will parse all libraries/libapparmor/testsuite/test_multi tests
-# and compare the result with the *.out files
-
-
 class TestLibapparmorTestMulti(AATest):
-    tests = []  # filled by parse_test_profiles()
+    '''Parse all libraries/libapparmor/testsuite/test_multi tests and compare the result with the *.out files'''
+
+    tests = 'invalid'  # filled by parse_test_profiles()
 
     def _run_test(self, params, expected):
         # tests[][expected] is a dummy, replace it with the real values
@@ -38,7 +37,7 @@ class TestLibapparmorTestMulti(AATest):
 
         self.assertEqual(len(loglines2), 1, '%s.in should only contain one line!' % params)
 
-        parser = ReadLog('', '', '', '', '')
+        parser = ReadLog('', '', '', '')
         parsed_event = parser.parse_event(loglines2[0])
 
         if parsed_event and expected:
@@ -67,6 +66,8 @@ class TestLibapparmorTestMulti(AATest):
                     pass
                 elif parsed_items['operation'] == 'exec' and label in ['sock_type', 'family', 'protocol']:
                     pass  # XXX 'exec' + network? really?
+                elif parsed_items['operation'] == 'ptrace' and label == 'name2' and params.endswith('/ptrace_garbage_lp1689667_1'):
+                    pass  # libapparmor would better qualify this case as invalid event
                 elif not parsed_items.get(label, None):
                     raise Exception('parsed_items[%s] not set' % label)
                 elif not expected.get(label, None):
@@ -138,12 +139,116 @@ class TestLibapparmorTestMulti(AATest):
         return exresult
 
 
+# tests that do not produce the expected profile (checked with assertNotEqual)
+log_to_profile_known_failures = [
+    'testcase_dmesg_changeprofile_01',  # change_profile not yet supported in logparser
+    'testcase_changeprofile_01',        # change_profile not yet supported in logparser
+
+    'testcase_mount_01',  # mount rules not yet supported in logparser
+
+    'testcase_pivotroot_01',  # pivot_rot not yet supported in logparser
+
+    # exec events
+    'testcase01',
+    'testcase12',
+    'testcase13',
+
+    # null-* hats get ignored by handle_children() if it didn't see an exec event for that null-* hat
+    'syslog_datetime_01',
+    'syslog_datetime_02',
+    'syslog_datetime_03',
+    'syslog_datetime_04',
+    'syslog_datetime_05',
+    'syslog_datetime_06',
+    'syslog_datetime_07',
+    'syslog_datetime_08',
+    'syslog_datetime_09',
+    'syslog_datetime_10',
+    'syslog_datetime_11',
+    'syslog_datetime_12',
+    'syslog_datetime_13',
+    'syslog_datetime_14',
+    'syslog_datetime_15',
+    'syslog_datetime_16',
+    'syslog_datetime_17',
+    'syslog_datetime_18',
+    'testcase_network_send_receive',
+]
+
+# tests that cause crashes or need user interaction (will be skipped)
+log_to_profile_skip = [
+    'testcase31',  # XXX AppArmorBug: Log contains unknown mode mrwIxl
+
+    'testcase_dmesg_changehat_negative_error',   # fails in write_header -> quote_if_needed because data is None
+    'testcase_syslog_changehat_negative_error',  # fails in write_header -> quote_if_needed because data is None
+
+    'testcase_changehat_01',  # interactive, asks to add a hat
+]
+
+class TestLogToProfile(AATest):
+    '''Check if the libraries/libapparmor/testsuite/test_multi tests result in the expected profile'''
+
+    tests = 'invalid'  # filled by parse_test_profiles()
+
+    def _run_test(self, params, expected):
+        logfile = '%s.in' % params
+        profile_dummy_file = 'AATest_does_exist'
+
+        # we need to find out the profile name and aamode (complain vs. enforce mode) so that the test can access the correct place in storage
+        parser = ReadLog('', '', '', '')
+        parsed_event = parser.parse_event(read_file(logfile))
+
+        if not parsed_event:  # AA_RECORD_INVALID
+            return
+
+        if params.split('/')[-1] in log_to_profile_skip:
+            return
+
+        aamode = parsed_event['aamode']
+
+        if aamode in['AUDIT', 'STATUS', 'HINT']: # ignore some event types  # XXX maybe we shouldn't ignore AUDIT events?
+            return
+
+        if aamode not in ['PERMITTING', 'REJECTING']:
+            raise Exception('Unexpected aamode %s' % parsed_event['aamode'])
+
+        # cleanup apparmor.aa storage
+        apparmor.aa.log = dict()
+        apparmor.aa.aa = apparmor.aa.hasher()
+        apparmor.aa.prelog = apparmor.aa.hasher()
+
+        profile = parsed_event['profile']
+        hat = profile
+        if '//' in profile:
+            profile, hat = profile.split('//')
+
+        apparmor.aa.existing_profiles = {profile: profile_dummy_file}
+
+        log_reader = ReadLog(dict(), logfile, apparmor.aa.existing_profiles, '')
+        log = log_reader.read_log('')
+
+        for root in log:
+            apparmor.aa.handle_children('', '', root)  # interactive for exec events!
+
+        log_dict = apparmor.aa.collapse_log()
+
+        apparmor.aa.filelist = apparmor.aa.hasher()
+        apparmor.aa.filelist[profile_dummy_file]['profiles'][profile] = True
+
+        new_profile = apparmor.aa.serialize_profile(log_dict[aamode][profile], profile, None)
+
+        expected_profile = read_file('%s.profile' % params)
+
+        if params.split('/')[-1] in log_to_profile_known_failures:
+            self.assertNotEqual(new_profile, expected_profile)  # known failure
+        else:
+            self.assertEqual(new_profile, expected_profile)
+
+
 def find_test_multi(log_dir):
     '''find all log sniplets in the given log_dir'''
 
     log_dir = os.path.abspath(log_dir)
-
-    print('Testing libapparmor test_multi tests...')
 
     tests = []
     for root, dirs, files in os.walk(log_dir):
@@ -152,7 +257,7 @@ def find_test_multi(log_dir):
                 file_with_path = os.path.join(root, file[:-3])  # filename without '.in'
                 tests.append([file_with_path, True])  # True is a dummy testresult, parsing of the *.out files is done while running the tests
 
-            elif file.endswith('.out') or file.endswith('.err'):
+            elif file.endswith('.out') or file.endswith('.err') or file.endswith('.profile'):
                 pass
             else:
                 raise Exception('Found unknown file %s in libapparmor test_multi' % file)
@@ -160,8 +265,11 @@ def find_test_multi(log_dir):
     return tests
 
 
+print('Testing libapparmor test_multi tests...')
 TestLibapparmorTestMulti.tests = find_test_multi('../../libraries/libapparmor/testsuite/test_multi/')
+TestLogToProfile.tests = find_test_multi('../../libraries/libapparmor/testsuite/test_multi/')
 
+setup_aa(apparmor.aa)
 setup_all_loops(__name__)
 if __name__ == '__main__':
     unittest.main(verbosity=1)  # reduced verbosity due to the big number of tests

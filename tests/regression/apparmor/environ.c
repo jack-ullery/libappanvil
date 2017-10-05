@@ -63,6 +63,8 @@ int main(int argc, char *argv[])
 		if (retval == RET_CHLD_SUCCESS) {
 			printf("PASS\n");
 			retval = 0;
+		} else {
+			printf("FAIL: Child failed\n");
 		}
 
 	} else if (pid == 0) {

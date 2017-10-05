@@ -77,6 +77,9 @@
   # lxd-bridge pid and lease files
   /{,var/}run/lxd-bridge/dnsmasq.pid   rw,
   /var/lib/lxd-bridge/dnsmasq.*.leases rw,
+  /var/lib/lxd/networks/*/dnsmasq.* r,
+  /var/lib/lxd/networks/*/dnsmasq.leases rw,
+  /var/lib/lxd/networks/*/dnsmasq.pid rw,
 
   # NetworkManager integration
   /{,var/}run/nm-dns-dnsmasq.conf r,
@@ -88,6 +91,8 @@
     #include <abstractions/base>
 
     /etc/libnl-3/classid r,
+
+    /usr/lib{,64}/libvirt/libvirt_leaseshelper m,
 
     owner @{PROC}/@{pid}/net/psched r,
     owner @{PROC}/@{pid}/status r,

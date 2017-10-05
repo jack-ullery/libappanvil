@@ -7,6 +7,7 @@
 
   deny capability block_suspend,
 
+  capability dac_override,
   capability ipc_lock,
   capability setuid,
 
@@ -19,6 +20,7 @@
   @{PROC}/sys/kernel/core_pattern r,
   /tmp/.winbindd/ w,
   /tmp/krb5cc_* rwk,
+  /usr/lib*/samba/gensec/krb*.so mr,
   /usr/lib*/samba/idmap/*.so mr,
   /usr/lib*/samba/nss_info/*.so mr,
   /usr/lib*/samba/pdb/*.so mr,

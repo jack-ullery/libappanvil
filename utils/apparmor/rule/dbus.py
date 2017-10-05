@@ -37,14 +37,16 @@ RE_ACCESS_KEYWORDS = ( joint_access_keyword +  # one of the access_keyword or
 RE_FLAG         = '(?P<%s>(\S+|"[^"]+"|\(\s*\S+\s*\)|\(\s*"[^"]+"\)\s*))'    # string without spaces, or quoted string, optionally wrapped in (...). %s is the match group name
 # plaintext version:      | * | "* "  | (    *    ) | (  " *   " )    |
 
+# XXX this regex will allow repeated parameters, last one wins
+# XXX (the parser will reject such rules)
 RE_DBUS_DETAILS  = re.compile(
     '^' +
     '(\s+(?P<access>'       + RE_ACCESS_KEYWORDS + '))?' +  # optional access keyword(s)
-    '(\s+(bus\s*=\s*'       + RE_FLAG % 'bus'       + '))?' +  # optional bus= system | session | AARE, (...) optional
-    '(\s+(path\s*=\s*'      + RE_FLAG % 'path'      + '))?' +  # optional path=AARE, (...) optional
-    '(\s+(name\s*=\s*'      + RE_FLAG % 'name'      + '))?' +  # optional name=AARE, (...) optional
-    '(\s+(interface\s*=\s*' + RE_FLAG % 'interface' + '))?' +  # optional interface=AARE, (...) optional
-    '(\s+(member\s*=\s*'    + RE_FLAG % 'member'    + '))?' +  # optional member=AARE, (...) optional
+    '((\s+(bus\s*=\s*'      + RE_FLAG % 'bus'       + '))?|' +  # optional bus= system | session | AARE, (...) optional
+    '(\s+(path\s*=\s*'      + RE_FLAG % 'path'      + '))?|' +  # optional path=AARE, (...) optional
+    '(\s+(name\s*=\s*'      + RE_FLAG % 'name'      + '))?|' +  # optional name=AARE, (...) optional
+    '(\s+(interface\s*=\s*' + RE_FLAG % 'interface' + '))?|' +  # optional interface=AARE, (...) optional
+    '(\s+(member\s*=\s*'    + RE_FLAG % 'member'    + '))?|' +  # optional member=AARE, (...) optional
     '(\s+(peer\s*=\s*\((,|\s)*'    +  # optional peer=( name=AARE and/or label=AARE ), (...) required
             '(' +
                 '(' + '(,|\s)*' + ')' +  # empty peer=()
@@ -57,7 +59,7 @@ RE_DBUS_DETAILS  = re.compile(
                 '|'  # or
                 '(' + 'label\s*=\s*' + RE_PROFILE_NAME % 'peerlabel3' + '(,|\s)+' + 'name\s*=\s*'  + RE_PROFILE_NAME % 'peername3'  + ')' +  # peer label + name (match name peername3/peerlabel3)
             ')'
-        '(,|\s)*\)))?'
+        '(,|\s)*\)))?){0,6}'
     '\s*$')
 
 
@@ -238,32 +240,32 @@ class DbusRule(BaseRule):
         if not self._is_covered_list(self.access,       self.all_access,        other_rule.access,      other_rule.all_access,      'access'):
             return False
 
-        if not self._is_covered_aare(self.bus,          self.all_buses,         other_rule.bus,         other_rule.all_buses,       'bus'):
+        if not self._is_covered_aare_compat(self.bus,   self.all_buses,         other_rule.bus,         other_rule.all_buses,       'bus'):
             return False
 
-        if not self._is_covered_aare(self.path,         self.all_paths,         other_rule.path,        other_rule.all_paths,       'path'):
+        if not self._is_covered_aare_compat(self.path,  self.all_paths,         other_rule.path,        other_rule.all_paths,       'path'):
             return False
 
-        if not self._is_covered_aare(self.name,         self.all_names,         other_rule.name,        other_rule.all_names,       'name'):
+        if not self._is_covered_aare_compat(self.name,  self.all_names,         other_rule.name,        other_rule.all_names,       'name'):
             return False
 
-        if not self._is_covered_aare(self.interface,    self.all_interfaces,    other_rule.interface,   other_rule.all_interfaces,  'interface'):
+        if not self._is_covered_aare_compat(self.interface, self.all_interfaces, other_rule.interface,  other_rule.all_interfaces,  'interface'):
             return False
 
-        if not self._is_covered_aare(self.member,       self.all_members,       other_rule.member,      other_rule.all_members,     'member'):
+        if not self._is_covered_aare_compat(self.member, self.all_members,      other_rule.member,      other_rule.all_members,     'member'):
             return False
 
-        if not self._is_covered_aare(self.peername,     self.all_peernames,     other_rule.peername,    other_rule.all_peernames,   'peername'):
+        if not self._is_covered_aare_compat(self.peername, self.all_peernames,  other_rule.peername,    other_rule.all_peernames,   'peername'):
             return False
 
-        if not self._is_covered_aare(self.peerlabel,    self.all_peerlabels,    other_rule.peerlabel,   other_rule.all_peerlabels,  'peerlabel'):
+        if not self._is_covered_aare_compat(self.peerlabel, self.all_peerlabels, other_rule.peerlabel,  other_rule.all_peerlabels,  'peerlabel'):
             return False
 
         # still here? -> then it is covered
         return True
 
 
-    def is_equal_localvars(self, rule_obj):
+    def is_equal_localvars(self, rule_obj, strict):
         '''compare if rule-specific variables are equal'''
 
         if not type(rule_obj) == DbusRule:

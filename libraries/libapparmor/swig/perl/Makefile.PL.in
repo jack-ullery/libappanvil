@@ -13,5 +13,6 @@ WriteMakefile(
 	'INC' => q[@CPPFLAGS@ -I@top_srcdir@/include @CFLAGS@],
 	'LIBS' => q[-L@top_builddir@/src/.libs/ -lapparmor @LIBS@],
 	'OBJECT' => 'libapparmor_wrap.o', # $(OBJ_EXT)
+	'dynamic_lib' => { 'OTHERLDFLAGS' => q[@LDFLAGS@], },
 ) ;
 

@@ -22,9 +22,9 @@
 
   capability dac_override,
 
-  /bin/bash mix,
-  /bin/sed mixr,
-  /bin/true mixr,
+  /{usr/,}bin/bash mix,
+  /{usr/,}bin/sed mixr,
+  /{usr/,}bin/true mixr,
   /etc/SuSE-release r,
   /etc/X11/.qt_plugins_3.3rc.lock rw,
   /etc/X11/.qtrc.lock rw,

@@ -24,11 +24,11 @@
 
   capability dac_override,
 
-  /bin/basename mixr,
-  /bin/bash mix,
-  /bin/cat mixr,
-  /bin/grep mixr,
-  /bin/uname mixr,
+  /{usr/,}bin/basename mixr,
+  /{usr/,}bin/bash mix,
+  /{usr/,}bin/cat mixr,
+  /{usr/,}bin/grep mixr,
+  /{usr/,}bin/uname mixr,
   /etc/** r,
 
   @{HOME}/.adobe/** rw,

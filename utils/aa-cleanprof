@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/python3
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
 #
@@ -33,4 +33,4 @@ args = parser.parse_args()
 
 clean = apparmor.tools.aa_tools('cleanprof', args)
 
-clean.act()
+clean.cleanprof_act()

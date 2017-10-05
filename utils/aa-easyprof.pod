@@ -57,12 +57,28 @@ for supported policy groups. The available policy groups are in
 AppArmor rules or policies. They are similar to AppArmor abstractions, but
 usually encompass more policy rules.
 
+=item --parser PATH
+
+Specify the PATH of the apparmor_parser binary to use when verifying
+policy. If this option is not specified, aa-easyprof will attempt to
+locate the path starting with /sbin/apparmor_parser.
+
 =item -a ABSTRACTIONS, --abstractions=ABSTRACTIONS
 
 Specify ABSTRACTIONS as a comma-separated list of AppArmor abstractions. It is
 usually recommended you use policy groups instead, but this is provided as a
 convenience. AppArmor abstractions are located in /etc/apparmor.d/abstractions.
 See apparmor.d(5) for details.
+
+=item -b PATH, --base=PATH
+
+Set the base PATH for resolving abstractions specified by --abstractions.
+See the same option in apparmor_parser(8) for details.
+
+=item -I PATH, --Include=PATH
+
+Add PATH to the search paths used for resolving abstractions specified by
+--abstractions. See the same option in apparmor_parser(8) for details.
 
 =item -r PATH, --read-path=PATH
 

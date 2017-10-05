@@ -39,18 +39,18 @@ TAR_EXCLUSIONS=
 
 .PHONY: tarball
 tarball: clean
-	REPO_VERSION=`$(value REPO_VERSION_CMD)` ; \
-	make export_dir __EXPORT_DIR=${RELEASE_DIR} __REPO_VERSION=$${REPO_VERSION} ; \
-	make setup __SETUP_DIR=${RELEASE_DIR} ; \
+	REPO_VERSION=`$(value REPO_VERSION_CMD)` && \
+	make export_dir __EXPORT_DIR=${RELEASE_DIR} __REPO_VERSION=$${REPO_VERSION} && \
+	make setup __SETUP_DIR=${RELEASE_DIR} && \
 	tar ${TAR_EXCLUSIONS} -cvzf ${RELEASE_DIR}.tar.gz ${RELEASE_DIR}
 
 .PHONY: snapshot
 snapshot: clean
 	$(eval REPO_VERSION:=$(shell $(value REPO_VERSION_CMD)))
 	$(eval SNAPSHOT_NAME=apparmor-$(VERSION)~$(REPO_VERSION))
-	make export_dir __EXPORT_DIR=${SNAPSHOT_NAME} __REPO_VERSION=${REPO_VERSION} ; \
-	make setup __SETUP_DIR=${SNAPSHOT_NAME} ; \
-	tar ${TAR_EXCLUSIONS} -cvzf ${SNAPSHOT_NAME}.tar.gz ${SNAPSHOT_NAME} ;
+	make export_dir __EXPORT_DIR=${SNAPSHOT_NAME} __REPO_VERSION=${REPO_VERSION} && \
+	make setup __SETUP_DIR=${SNAPSHOT_NAME} && \
+	tar ${TAR_EXCLUSIONS} -cvzf ${SNAPSHOT_NAME}.tar.gz ${SNAPSHOT_NAME}
 
 .PHONY: coverity
 coverity: snapshot
@@ -75,6 +75,12 @@ clean:
 .PHONY: setup
 setup:
 	cd $(__SETUP_DIR)/libraries/libapparmor && ./autogen.sh
+	# parser has an extra doc to build
+	make -C $(__SETUP_DIR)/parser extra_docs
+	# libraries/libapparmor needs configure to have run before
+	# building docs
+	$(foreach dir, $(filter-out libraries/libapparmor tests, $(DIRS)), \
+		make -C $(__SETUP_DIR)/$(dir) docs;)
 
 .PHONY: tag
 tag:

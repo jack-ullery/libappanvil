@@ -39,6 +39,13 @@ class BaseRule(object):
     #   is_equal_localvars(self, other_rule)
     #     - equality check for the rule-specific fields
 
+    # decides if the (G)lob and Glob w/ (E)xt options are displayed
+    can_glob = False
+    can_glob_ext = False
+
+    # defines if the (N)ew option is displayed
+    can_edit = False
+
     def __init__(self, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
         '''initialize variables needed by all rule types'''
@@ -167,10 +174,10 @@ class BaseRule(object):
         # still here? -> then it is covered
         return True
 
-    def _is_covered_list(self, self_value, self_all, other_value, other_all, cond_name):
+    def _is_covered_list(self, self_value, self_all, other_value, other_all, cond_name, sanity_check=True):
         '''check if other_* is covered by self_* - for lists'''
 
-        if not other_value and not other_all:
+        if sanity_check and not other_value and not other_all:
             raise AppArmorBug('No %(cond_name)s specified in other %(rule_name)s rule' % {'cond_name': cond_name, 'rule_name': self.rule_name})
 
         if not self_all:
@@ -182,6 +189,15 @@ class BaseRule(object):
         # still here? -> then it is covered
         return True
 
+    def _is_covered_aare_compat(self, self_value, self_all, other_value, other_all, cond_name):
+        '''check if other_* is covered by self_* - for AARE
+           Note: this function checks against other_value.regex, which is not really correct, but avoids overly strict results when matching one regex against another
+        '''
+        if type(other_value) == AARE:
+           other_value = other_value.regex
+
+        return self._is_covered_aare(self_value, self_all, other_value, other_all, cond_name)
+
     def _is_covered_aare(self, self_value, self_all, other_value, other_all, cond_name):
         '''check if other_* is covered by self_* - for AARE'''
 
@@ -191,7 +207,7 @@ class BaseRule(object):
         if not self_all:
             if other_all:
                 return False
-            if not self_value.match(other_value.regex):  # XXX should check against other_value (without .regex) - but that gives different (more strict) results
+            if not self_value.match(other_value):
                 return False
 
         # still here? -> then it is covered
@@ -211,7 +227,7 @@ class BaseRule(object):
         ):
             return False
 
-        return self.is_equal_localvars(rule_obj)
+        return self.is_equal_localvars(rule_obj, strict)
 
     def _is_equal_aare(self, self_value, self_all, other_value, other_all, cond_name):
         '''check if other_* is the same as self_* - for AARE'''
@@ -229,7 +245,7 @@ class BaseRule(object):
         return True
 
     # @abstractmethod  FIXME - uncomment when python3 only
-    def is_equal_localvars(self, other_rule):
+    def is_equal_localvars(self, other_rule, strict):
         '''compare if rule-specific variables are equal'''
         raise NotImplementedError("'%s' needs to implement is_equal_localvars(), but didn't" % (str(self)))
 
@@ -269,6 +285,23 @@ class BaseRule(object):
            returns {'label1': 'value1', 'label2': 'value2'} '''
         raise NotImplementedError("'%s' needs to implement logprof_header(), but didn't" % (str(self)))
 
+    # @abstractmethod  FIXME - uncomment when python3 only
+    def edit_header(self):
+        '''return the prompt for, and the path to edit when using '(N)ew' '''
+        raise NotImplementedError("'%s' needs to implement edit_header(), but didn't" % (str(self)))
+
+    # @abstractmethod  FIXME - uncomment when python3 only
+    def validate_edit(self, newpath):
+        '''validate the new path.
+           Returns True if it covers the previous path, False if it doesn't.'''
+        raise NotImplementedError("'%s' needs to implement validate_edit(), but didn't" % (str(self)))
+
+    # @abstractmethod  FIXME - uncomment when python3 only
+    def store_edit(self, newpath):
+        '''store the changed path.
+           This is done even if the new path doesn't match the original one.'''
+        raise NotImplementedError("'%s' needs to implement store_edit(), but didn't" % (str(self)))
+
     def modifiers_str(self):
         '''return the allow/deny and audit keyword as string, including whitespace'''
 
@@ -291,6 +324,7 @@ class BaseRuleset(object):
     '''Base class to handle and store a collection of rules'''
 
     # decides if the (G)lob and Glob w/ (E)xt options are displayed
+    # XXX TODO: remove in all *Ruleset classes (moved to *Rule)
     can_glob = True
     can_glob_ext = False
 
@@ -311,9 +345,27 @@ class BaseRuleset(object):
         else:
             return '<%s (empty) />' % classname
 
-    def add(self, rule):
-        '''add a rule object'''
+    def add(self, rule, cleanup=False):
+        '''add a rule object
+           if cleanup is specified, delete rules that are covered by the new rule
+           (the difference to delete_duplicates() is: cleanup only deletes rules that
+           are covered by the new rule, but keeps other, unrelated superfluous rules)
+        '''
+        deleted = 0
+
+        if cleanup:
+            oldrules = self.rules
+            self.rules = []
+
+            for oldrule in oldrules:
+                if not rule.is_covered(oldrule):
+                    self.rules.append(oldrule)
+                else:
+                    deleted += 1
+
         self.rules.append(rule)
+
+        return deleted
 
     def get_raw(self, depth=0):
         '''return all raw rules (if possible/not modified in their original formatting).
@@ -397,10 +449,13 @@ class BaseRuleset(object):
 
         # delete rules that are covered by include files
         if include_rules:
-            for rule in self.rules:
-                if include_rules.is_covered(rule, True, True):
-                    self.delete(rule)
+            oldrules = self.rules
+            self.rules = []
+            for rule in oldrules:
+                if include_rules.is_covered(rule, True, False):
                     deleted += 1
+                else:
+                    self.rules.append(rule)
 
         # de-duplicate rules inside the profile
         deleted += self.delete_in_profile_duplicates()
@@ -431,14 +486,14 @@ class BaseRuleset(object):
         raise NotImplementedError("get_glob_ext is not available for this rule type!")
 
 
-def check_and_split_list(lst, allowed_keywords, all_obj, classname, keyword_name):
+def check_and_split_list(lst, allowed_keywords, all_obj, classname, keyword_name, allow_empty_list=False):
     '''check if lst is all_obj or contains only items listed in allowed_keywords'''
 
     if lst == all_obj:
         return None, True, None
     elif type_is_str(lst):
         result_list = {lst}
-    elif (type(lst) == list or type(lst) == tuple) and len(lst) > 0:
+    elif type(lst) in [list, tuple, set] and (len(lst) > 0 or allow_empty_list):
         result_list = set(lst)
     else:
         raise AppArmorBug('Passed unknown %(type)s object to %(classname)s: %(unknown_object)s' %

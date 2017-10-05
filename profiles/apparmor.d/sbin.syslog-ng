@@ -48,6 +48,7 @@ profile syslog-ng /{usr/,}sbin/syslog-ng {
   /{usr/,}sbin/syslog-ng mr,
   /sys/devices/system/cpu/online r,
   /usr/share/syslog-ng/** r,
+  /var/lib/syslog-ng/syslog-ng-?????.qf rw,
   # chrooted applications
   @{CHROOT_BASE}/var/lib/*/dev/log w,
   @{CHROOT_BASE}/var/lib/syslog-ng/syslog-ng.persist* rw,

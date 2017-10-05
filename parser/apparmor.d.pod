@@ -46,8 +46,14 @@ to the policy; this behaviour is modelled after cpp(1).
 
 B<PROFILE FILE> = ( [ I<PREAMBLE> ] [ I<PROFILE> ] )*
 
-B<PREAMBLE> = ( I<COMMENT> | I<VARIABLE ASSIGNMENT> | I<INCLUDE> )*
-  Variable assignment must come before the profile.
+B<PREAMBLE> = ( I<COMMENT> | I<VARIABLE ASSIGNMENT> | I<ALIAS RULE> | I<INCLUDE> )*
+  Variable assignment and alias rules must come before the profile.
+
+B<VARIABLE ASSIGNMENT> = I<VARIABLE> ('=' | '+=') (space separated values)
+
+B<VARIABLE> = '@{' I<ALPHA> [ ( I<ALPHANUMERIC> | '_' ) ... ] '}'
+
+B<ALIAS RULE> = 'alias' I<ABS PATH> '-E<gt>' I<REWRITTEN ABS PATH> ','
 
 B<INCLUDE> = '#include' ( I<ABS PATH> | I<MAGIC PATH> )
 
@@ -80,7 +86,7 @@ B<RULES> = [ ( I<LINE RULES> | I<COMMA RULES> ',' | I<BLOCK RULES> )
 
 B<LINE RULES> = ( I<COMMENT> | I<INCLUDE> ) [ '\r' ] '\n'
 
-B<COMMA RULES> = ( I<CAPABILITY RULE> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<UNIX RULE> | I<FILE RULE> | I<LINK RULE> | I<CHANGE_PROFILE RULE> | I<RLIMIT RULE> | I<ALIAS RULE> | I<DBUS RULE> )
+B<COMMA RULES> = ( I<CAPABILITY RULE> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<UNIX RULE> | I<FILE RULE> | I<LINK RULE> | I<CHANGE_PROFILE RULE> | I<RLIMIT RULE> | I<DBUS RULE> )
 
 B<BLOCK RULES> = ( I<SUBPROFILE> | I<HAT> | I<QUALIFIER BLOCK> )
 
@@ -105,7 +111,7 @@ capabilities(7))
 
 B<NETWORK RULE> = [ I<QUALIFIERS> ] 'network' [ I<DOMAIN> ] [ I<TYPE> | I<PROTOCOL> ]
 
-B<DOMAIN> = ( 'inet' | 'ax25' | 'ipx' | 'appletalk' | 'netrom' | 'bridge' | 'atmpvc' | 'x25' | 'inet6' | 'rose' | 'netbeui' | 'security' | 'key' | 'packet' | 'ash' | 'econet' | 'atmsvc' | 'sna' | 'irda' | 'pppox' | 'wanpipe' | 'bluetooth' | 'netlink' | 'unix' | 'rds' | 'llc' | 'can' | 'tipc' | 'iucv' | 'rxrpc' | 'isdn' | 'phonet' | 'ieee802154' | 'caif' | 'alg' | 'nfc' | 'vsock' | 'mpls' | 'ib' ) ','
+B<DOMAIN> = ( 'inet' | 'ax25' | 'ipx' | 'appletalk' | 'netrom' | 'bridge' | 'atmpvc' | 'x25' | 'inet6' | 'rose' | 'netbeui' | 'security' | 'key' | 'packet' | 'ash' | 'econet' | 'atmsvc' | 'sna' | 'irda' | 'pppox' | 'wanpipe' | 'bluetooth' | 'netlink' | 'unix' | 'rds' | 'llc' | 'can' | 'tipc' | 'iucv' | 'rxrpc' | 'isdn' | 'phonet' | 'ieee802154' | 'caif' | 'alg' | 'nfc' | 'vsock' | 'mpls' | 'ib' | 'kcm' | 'smc' ) ','
 
 B<TYPE> = ( 'stream' | 'dgram' | 'seqpacket' |  'rdm' | 'raw' | 'packet' )
 
@@ -195,7 +201,7 @@ B<DBUS LABEL> = 'label' '=' '(' '"' I<AARE> '"' | I<AARE> ')'
 
 B<DBUS ACCESS LIST> = Comma separated list of I<DBUS ACCESS>
 
-B<DBUS ACCESS> = ( 'send' | 'receive' | 'bind' | 'eavesdrop' )
+B<DBUS ACCESS> = ( 'send' | 'receive' | 'bind' | 'eavesdrop' | 'r' | 'read' | 'w' | 'write' | 'rw' )
   Some accesses are incompatible with some rules; see below.
 
 B<AARE> = B<?*[]{}^>
@@ -267,17 +273,13 @@ B<EXEC TARGET> = name
 
 B<LINK RULE> = I<QUALIFIERS> [ 'owner' ] 'link' [ 'subset' ] I<FILEGLOB> ( 'to' | '-E<gt>' ) I<FILEGLOB>
 
-B<VARIABLE> = '@{' I<ALPHA> [ ( I<ALPHANUMERIC> | '_' ) ... ] '}'
-
-B<VARIABLE ASSIGNMENT> = I<VARIABLE> ('=' | '+=') (space separated values)
-
-B<ALIAS RULE> = I<ABS PATH> '-E<gt>' I<REWRITTEN ABS PATH>
-
 B<ALPHA> = ('a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
 B<ALPHANUMERIC> = ('0', '1', '2', ... '9', 'a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
-B<CHANGE_PROFILE RULE> = 'change_profile' [ I<EXEC COND> ] [ '-E<gt>' I<PROFILE NAME> ]
+B<CHANGE_PROFILE RULE> = 'change_profile' [ [ I<EXEC MODE> ] I<EXEC COND> ] [ '-E<gt>' I<PROFILE NAME> ]
+
+B<EXEC_MODE> = ( 'safe' | 'unsafe' )
 
 B<EXEC COND> = I<FILEGLOB>
 
@@ -1007,6 +1009,9 @@ The 'bind' permission cannot be used in message rules. The 'send' and 'receive'
 permissions cannot be used in service rules. The 'eavesdrop' permission cannot
 be used in rules containing any conditionals outside of the 'bus' conditional.
 
+'r' and 'read' are synonyms for 'receive'. 'w' and 'write' are synonyms for
+'send'. 'rw' is a synonym for both 'send' and 'receive'.
+
 AppArmor DBus permissions are implied when a rule does not explicitly state an
 access list. By default, all DBus permissions are implied. Only message
 permissions are implied for message rules and only service permissions are
@@ -1207,6 +1212,20 @@ rule set.  Eg.
 
   /bin/bash Px -> new_profile1,
   change_profile /bin/bash -> {new_profile1,new_profile2,new_profile3},
+
+The exec mode dictates whether or not the Linux Kernel's B<unsafe_exec>
+routines should be used to scrub the environment, similar to setuid programs.
+(See ld.so(8) for some information on setuid/setgid environment scrubbing.) The
+B<safe> mode sets up environment scrubbing to occur when the new application is
+executed and B<unsafe> mode disables AppArmor's requirement for environment
+scrubbing (the kernel and/or libc may still require environment scrubbing). An
+exec mode can only be specified when an exec condition is present.
+
+  change_profile safe /bin/bash -> new_profile,
+
+Not all kernels support B<safe> mode and the parser will downgrade rules to
+B<unsafe> mode in that situation. If no exec mode is specified, the default is
+B<safe> mode in kernels that support it.
 
 =head2 rlimit rules
 

@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014-2016 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2017 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -14,7 +14,6 @@
 # ----------------------------------------------------------------------
 # No old version logs, only 2.6 + supported
 from __future__ import division, with_statement
-import inspect
 import os
 import re
 import shutil
@@ -31,40 +30,38 @@ import apparmor.severity
 
 from copy import deepcopy
 
+from apparmor.aare import AARE
+
 from apparmor.common import (AppArmorException, AppArmorBug, open_file_read, valid_path, hasher,
-                             open_file_write, convert_regexp, DebugLogger)
+                             open_file_write, DebugLogger)
 
 import apparmor.ui as aaui
 
-from apparmor.aamode import (str_to_mode, mode_to_str, contains, split_mode,
-                             mode_to_str_user, mode_contains, AA_OTHER,
-                             flatten_mode, owner_flatten_mode)
+from apparmor.aamode import str_to_mode, split_mode
 
 from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
                             RE_PROFILE_ALIAS,
                             RE_PROFILE_BOOLEAN, RE_PROFILE_VARIABLE, RE_PROFILE_CONDITIONAL,
                             RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
-                            RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY,
                             RE_PROFILE_CHANGE_HAT,
                             RE_PROFILE_HAT_DEF, RE_PROFILE_MOUNT,
                             RE_PROFILE_PIVOT_ROOT,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
                             strip_quotes, parse_profile_start_line, re_match_include )
 
+from apparmor.profile_storage import ProfileStorage, ruletypes
+
 import apparmor.rules as aarules
 
-from apparmor.rule.capability import CapabilityRuleset, CapabilityRule
-from apparmor.rule.change_profile import ChangeProfileRuleset, ChangeProfileRule
-from apparmor.rule.dbus       import DbusRuleset,       DbusRule
-from apparmor.rule.network    import NetworkRuleset,    NetworkRule
-from apparmor.rule.ptrace     import PtraceRuleset,    PtraceRule
-from apparmor.rule.rlimit     import RlimitRuleset,    RlimitRule
-from apparmor.rule.signal     import SignalRuleset,    SignalRule
-from apparmor.rule import parse_modifiers, quote_if_needed
-
-ruletypes = ['capability', 'change_profile', 'dbus', 'network', 'ptrace', 'rlimit', 'signal']
-
-from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
+from apparmor.rule.capability       import CapabilityRule
+from apparmor.rule.change_profile   import ChangeProfileRule
+from apparmor.rule.dbus             import DbusRule
+from apparmor.rule.file             import FileRule
+from apparmor.rule.network          import NetworkRule
+from apparmor.rule.ptrace           import PtraceRule
+from apparmor.rule.rlimit           import RlimitRule
+from apparmor.rule.signal           import SignalRule
+from apparmor.rule import quote_if_needed
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -73,16 +70,14 @@ _ = init_translation()
 # Setup logging incase of debugging is enabled
 debug_logger = DebugLogger('aa')
 
-CONFDIR = '/etc/apparmor'
-running_under_genprof = False
-unimplemented_warning = False
-
 # The database for severity
 sev_db = None
 # The file to read log messages from
 ### Was our
 logfile = None
 
+CONFDIR = None
+conf = None
 cfg = None
 repo_cfg = None
 
@@ -95,32 +90,23 @@ include = dict()
 
 existing_profiles = dict()
 
-seen_events = 0  # was our
 # To store the globs entered by users so they can be provided again
-user_globs = []
-
-# The key for representing bare "file," rules
-ALL = '\0ALL'
+# format: user_globs['/foo*'] = AARE('/foo*')
+user_globs = {}
 
 ## Variables used under logprof
-### Were our
-t = hasher()  # dict()
 transitions = hasher()
 
 aa = hasher()  # Profiles originally in sd, replace by aa
 original_aa = hasher()
 extras = hasher()  # Inactive profiles from extras
 ### end our
-log = []
-pid = dict()
+log_pid = dict()  # handed over to ReadLog, gets filled in logparser.py. The only case the previous content of this variable _might_(?) be used is aa-genprof (multiple do_logprof_pass() runs)
 
-seen = hasher()  # dir()
 profile_changes = hasher()
 prelog = hasher()
-log_dict = hasher()  # dict()
 changed = dict()
 created = []
-skip = hasher()
 helpers = dict()  # Preserve this between passes # was our
 ### logprof ends
 
@@ -156,15 +142,9 @@ def fatal_error(message):
     # Add the traceback to message
     message = tb_stack + '\n\n' + message
     debug_logger.error(message)
-    caller = inspect.stack()[1][3]
-
-    # If caller is SendDataToYast or GetDatFromYast simply exit
-    if caller == 'SendDataToYast' or caller == 'GetDatFromYast':
-        sys.exit(1)
 
     # Else tell user what happened
     aaui.UI_Important(message)
-    shutdown_yast()
     sys.exit(1)
 
 def check_for_apparmor(filesystem='/proc/filesystems', mounts='/proc/mounts'):
@@ -363,9 +343,9 @@ def get_reqs(file):
         raise AppArmorException('Can\'t find ldd')
 
     ret, ldd_out = get_output([ldd, file])
-    if ret == 0:
+    if ret == 0 or ret == 1:
         for line in ldd_out:
-            if 'not a dynamic executable' in line:
+            if 'not a dynamic executable' in line:  # comes with ret == 1
                 break
             if 'cannot read header' in line:
                 break
@@ -391,14 +371,16 @@ def handle_binfmt(profile, path):
             if get_reqs(library):
                 reqs += get_reqs(library)
             reqs_processed[library] = True
-        combined_mode = match_prof_incs_to_path(profile, 'allow', library)
-        if combined_mode:
-            continue
-        library = glob_common(library)
-        if not library:
-            continue
-        profile['allow']['path'][library]['mode'] = profile['allow']['path'][library].get('mode', set()) | str_to_mode('mr')
-        profile['allow']['path'][library]['audit'] |= profile['allow']['path'][library].get('audit', set())
+
+        library_rule = FileRule(library, 'mr', None, FileRule.ALL, owner=False, log_event=True)
+
+        if not is_known_rule(profile, 'file', library_rule):
+            globbed_library = glob_common(library)
+            if globbed_library:
+                # glob_common returns a list, just use the first element (typically '/lib/libfoo.so.*')
+                library_rule = FileRule(globbed_library[0], 'mr', None, FileRule.ALL, owner=False)
+
+            profile['file'].add(library_rule)
 
 def get_interpreter_and_abstraction(exec_target):
     '''Check if exec_target is a script.
@@ -443,39 +425,9 @@ def get_inactive_profile(local_profile):
         return {local_profile: extras[local_profile]}
     return dict()
 
-def profile_storage(profilename, hat, calledby):
-    # keys used in aa[profile][hat]:
-    # a) rules (as dict): alias, include, lvar
-    # b) rules (as hasher): allow, deny
-    # c) one for each rule class
-    # d) other: external, flags, name, profile, attachment, initial_comment, filename, info,
-    #           profile_keyword, header_comment (these two are currently only set by set_profile_flags())
-
-    # Note that this function doesn't explicitely init all those keys (yet).
-    # It will be extended over time, with the final goal to get rid of hasher().
-
-    profile = hasher()
-
-    # profile['info'] isn't used anywhere, but can be helpful in debugging.
-    profile['info'] = {'profile': profilename, 'hat': hat, 'calledby': calledby}
-
-    profile['capability']       = CapabilityRuleset()
-    profile['dbus']             = DbusRuleset()
-    profile['change_profile']   = ChangeProfileRuleset()
-    profile['network']          = NetworkRuleset()
-    profile['ptrace']           = PtraceRuleset()
-    profile['rlimit']           = RlimitRuleset()
-    profile['signal']           = SignalRuleset()
-
-    profile['allow']['path'] = hasher()
-    profile['allow']['mount'] = list()
-    profile['allow']['pivot_root'] = list()
-
-    return profile
-
 def create_new_profile(localfile, is_stub=False):
     local_profile = hasher()
-    local_profile[localfile] = profile_storage('NEW', localfile, 'create_new_profile()')
+    local_profile[localfile] = ProfileStorage('NEW', localfile, 'create_new_profile()')
     local_profile[localfile]['flags'] = 'complain'
     local_profile[localfile]['include']['abstractions/base'] = 1
 
@@ -483,23 +435,15 @@ def create_new_profile(localfile, is_stub=False):
         interpreter_path, abstraction = get_interpreter_and_abstraction(localfile)
 
         if interpreter_path:
-            local_profile[localfile]['allow']['path'][localfile]['mode'] = local_profile[localfile]['allow']['path'][localfile].get('mode', str_to_mode('r')) | str_to_mode('r')
-
-            local_profile[localfile]['allow']['path'][localfile]['audit'] = local_profile[localfile]['allow']['path'][localfile].get('audit', set())
-
-            local_profile[localfile]['allow']['path'][interpreter_path]['mode'] = local_profile[localfile]['allow']['path'][interpreter_path].get('mode', str_to_mode('ix')) | str_to_mode('ix')
-
-            local_profile[localfile]['allow']['path'][interpreter_path]['audit'] = local_profile[localfile]['allow']['path'][interpreter_path].get('audit', set())
+            local_profile[localfile]['file'].add(FileRule(localfile,        'r',  None, FileRule.ALL, owner=False))
+            local_profile[localfile]['file'].add(FileRule(interpreter_path, None, 'ix', FileRule.ALL, owner=False))
 
             if abstraction:
                 local_profile[localfile]['include'][abstraction] = True
 
             handle_binfmt(local_profile[localfile], interpreter_path)
         else:
-
-            local_profile[localfile]['allow']['path'][localfile]['mode'] = local_profile[localfile]['allow']['path'][localfile].get('mode', str_to_mode('mr')) | str_to_mode('mr')
-
-            local_profile[localfile]['allow']['path'][localfile]['audit'] = local_profile[localfile]['allow']['path'][localfile].get('audit', set())
+            local_profile[localfile]['file'].add(FileRule(localfile,        'mr', None, FileRule.ALL, owner=False))
 
             handle_binfmt(local_profile[localfile], localfile)
     # Add required hats to the profile if they match the localfile
@@ -507,7 +451,7 @@ def create_new_profile(localfile, is_stub=False):
         if re.search(hatglob, localfile):
             for hat in sorted(cfg['required_hats'][hatglob].split()):
                 if not local_profile.get(hat, False):
-                    local_profile[hat] = profile_storage('NEW', hat, 'create_new_profile() required_hats')
+                    local_profile[hat] = ProfileStorage('NEW', hat, 'create_new_profile() required_hats')
                 local_profile[hat]['flags'] = 'complain'
 
     if not is_stub:
@@ -531,7 +475,6 @@ def confirm_and_abort():
     ans = aaui.UI_YesNo(_('Are you sure you want to abandon this set of profile changes and exit?'), 'n')
     if ans == 'y':
         aaui.UI_Info(_('Abandoning all changes.'))
-        shutdown_yast()
         for prof in created:
             delete_profile(prof)
         sys.exit(0)
@@ -557,8 +500,11 @@ def get_profile(prof_name):
         inactive_profile[prof_name][prof_name].pop('filename')
         profile_hash[uname]['username'] = uname
         profile_hash[uname]['profile_type'] = 'INACTIVE_LOCAL'
-        profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name)
+        profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name, None)
         profile_hash[uname]['profile_data'] = inactive_profile
+
+        existing_profiles.pop(prof_name)  # remove profile filename from list to force storing in /etc/apparmor.d/ instead of extra_profile_dir
+
     # If no profiles in repo and no inactive profiles
     if not profile_hash.keys():
         return None
@@ -579,35 +525,23 @@ def get_profile(prof_name):
 
     q = aaui.PromptQuestion()
     q.headers = ['Profile', prof_name]
-    q.functions = ['CMD_VIEW_PROFILE', 'CMD_USE_PROFILE', 'CMD_CREATE_PROFILE',
-                      'CMD_ABORT', 'CMD_FINISHED']
+    q.functions = ['CMD_VIEW_PROFILE', 'CMD_USE_PROFILE', 'CMD_CREATE_PROFILE', 'CMD_ABORT']
     q.default = "CMD_VIEW_PROFILE"
     q.options = options
     q.selected = 0
 
     ans = ''
     while 'CMD_USE_PROFILE' not in ans and 'CMD_CREATE_PROFILE' not in ans:
-        if ans == 'CMD_FINISHED':
-            save_profiles()
-            return
-
         ans, arg = q.promptUser()
         p = profile_hash[options[arg]]
         q.selected = options.index(options[arg])
         if ans == 'CMD_VIEW_PROFILE':
-            if aaui.UI_mode == 'yast':
-                SendDataToYast({'type': 'dialogue-view-profile',
-                                'user': options[arg],
-                                'profile': p['profile'],
-                                'profile_type': p['profile_type']
-                                })
-                ypath, yarg = GetDataFromYast()
-            #else:
-            #    pager = get_pager()
-            #    proc = subprocess.Popen(pager, stdin=subprocess.PIPE)
+            pager = get_pager()
+            proc = subprocess.Popen(pager, stdin=subprocess.PIPE)
             #    proc.communicate('Profile submitted by %s:\n\n%s\n\n' %
             #                     (options[arg], p['profile']))
-            #    proc.kill()
+            proc.communicate(p['profile'].encode())
+            proc.kill()
         elif ans == 'CMD_USE_PROFILE':
             if p['profile_type'] == 'INACTIVE_LOCAL':
                 profile_data = p['profile_data']
@@ -658,6 +592,7 @@ def autodep(bin_name, pname=''):
     if not profile_data:
         profile_data = create_new_profile(pname)
     file = get_profile_filename(pname)
+    profile_data[pname][pname]['filename'] = None  # will be stored in /etc/apparmor.d when saving, so it shouldn't carry the extra_profile_dir filename
     attach_profile_data(aa, profile_data)
     attach_profile_data(original_aa, profile_data)
     if os.path.isfile(profile_dir + '/tunables/global'):
@@ -856,76 +791,16 @@ def fetch_profiles_by_user(url, distro, user):
 def submit_created_profiles(new_profiles):
     #url = cfg['repository']['url']
     if new_profiles:
-        if aaui.UI_mode == 'yast':
-            title = 'New Profiles'
-            message = 'Please select the newly created profiles that you would like to store in the repository'
-            yast_select_and_upload_profiles(title, message, new_profiles)
-        else:
-            title = 'Submit newly created profiles to the repository'
-            message = 'Would you like to upload newly created profiles?'
-            console_select_and_upload_profiles(title, message, new_profiles)
+        title = 'Submit newly created profiles to the repository'
+        message = 'Would you like to upload newly created profiles?'
+        console_select_and_upload_profiles(title, message, new_profiles)
 
 def submit_changed_profiles(changed_profiles):
     #url = cfg['repository']['url']
     if changed_profiles:
-        if aaui.UI_mode == 'yast':
-            title = 'Changed Profiles'
-            message = 'Please select which of the changed profiles would you like to upload to the repository'
-            yast_select_and_upload_profiles(title, message, changed_profiles)
-        else:
-            title = 'Submit changed profiles to the repository'
-            message = 'The following profiles from the repository were changed.\nWould you like to upload your changes?'
-            console_select_and_upload_profiles(title, message, changed_profiles)
-
-def yast_select_and_upload_profiles(title, message, profiles_up):
-    url = cfg['repository']['url']
-    profile_changes = hasher()
-    profs = profiles_up[:]
-    for p in profs:
-        profile_changes[p[0]] = get_profile_diff(p[2], p[1])
-    SendDataToYast({'type': 'dialog-select-profiles',
-                    'title': title,
-                    'explanation': message,
-                    'default_select': 'false',
-                    'disable_ask_upload': 'true',
-                    'profiles': profile_changes
-                    })
-    ypath, yarg = GetDataFromYast()
-    selected_profiles = []
-    changelog = None
-    changelogs = None
-    single_changelog = False
-    if yarg['STATUS'] == 'cancel':
-        return
-    else:
-        selected_profiles = yarg['PROFILES']
-        changelogs = yarg['CHANGELOG']
-        if changelogs.get('SINGLE_CHANGELOG', False):
-            changelog = changelogs['SINGLE_CHANGELOG']
-            single_changelog = True
-    user, passw = get_repo_user_pass()
-    for p in selected_profiles:
-        profile_string = serialize_profile(aa[p], p)
-        if not single_changelog:
-            changelog = changelogs[p]
-        status_ok, ret = upload_profile(url, user, passw, cfg['repository']['distro'],
-                                        p, profile_string, changelog)
-        if status_ok:
-            newprofile = ret
-            newid = newprofile['id']
-            set_repo_info(aa[p][p], url, user, newid)
-            write_profile_ui_feedback(p)
-        else:
-            if not ret:
-                ret = 'UNKNOWN ERROR'
-            aaui.UI_Important(_('WARNING: An error occurred while uploading the profile %(profile)s\n%(ret)s') % { 'profile': p, 'ret': ret })
-    aaui.UI_Info(_('Uploaded changes to repository.'))
-    if yarg.get('NEVER_ASK_AGAIN'):
-        unselected_profiles = []
-        for p in profs:
-            if p[0] not in selected_profiles:
-                unselected_profiles.append(p[0])
-        set_profiles_local_only(unselected_profiles)
+        title = 'Submit changed profiles to the repository'
+        message = 'The following profiles from the repository were changed.\nWould you like to upload your changes?'
+        console_select_and_upload_profiles(title, message, changed_profiles)
 
 def upload_profile(url, user, passw, distro, p, profile_string, changelog):
     # To-Do
@@ -1035,7 +910,6 @@ def handle_children(profile, hat, root):
     family = None
     sock_type = None
     protocol = None
-    global seen_events
     regex_nullcomplain = re.compile('^null(-complain)*-profile$')
 
     for entry in entries:
@@ -1093,9 +967,7 @@ def handle_children(profile, hat, root):
                     if aamode == 'PERMITTING':
                         q.default = 'CMD_ADDHAT'
 
-                    seen_events += 1
-
-                    ans = q.promptUser()
+                    ans = q.promptUser()[0]
 
                     if ans == 'CMD_FINISHED':
                         save_profiles()
@@ -1105,7 +977,9 @@ def handle_children(profile, hat, root):
 
                 if ans == 'CMD_ADDHAT':
                     hat = uhat
+                    aa[profile][hat] = ProfileStorage(profile, hat, 'handle_children addhat')
                     aa[profile][hat]['flags'] = aa[profile][profile]['flags']
+                    changed[profile] = True
                 elif ans == 'CMD_USEDEFAULT':
                     hat = default_hat
                 elif ans == 'CMD_DENY':
@@ -1163,19 +1037,6 @@ def handle_children(profile, hat, root):
                 if not profile or not hat or not detail:
                     continue
 
-                domainchange = 'nochange'
-                if typ == 'exec':
-                    domainchange = 'change'
-
-                # Escape special characters
-                detail = detail.replace('[', '\[')
-                detail = detail.replace(']', '\]')
-                detail = detail.replace('+', '\+')
-                detail = detail.replace('*', '\*')
-                detail = detail.replace('{', '\{')
-                detail = detail.replace('}', '\}')
-                detail = detail.replace('!', '\!')
-
                 # Give Execute dialog if x access requested for something that's not a directory
                 # For directories force an 'ix' Path dialog
                 do_execute = False
@@ -1188,8 +1049,9 @@ def handle_children(profile, hat, root):
                         raise AppArmorBug('exec permissions requested for %(exec_target)s, but mode is %(mode)s instead of exec. This should not happen - please open a bugreport!' % {'exec_target': exec_target, 'mode':mode})
                     else:
                         do_execute = True
+                        domainchange = 'change'
 
-                if mode:
+                if mode and mode != str_to_mode('x'):  # x is already handled in handle_children, so it must not become part of prelog
                     path = detail
 
                     if prelog[aamode][profile][hat]['path'].get(path, False):
@@ -1197,15 +1059,19 @@ def handle_children(profile, hat, root):
                     prelog[aamode][profile][hat]['path'][path] = mode
 
                 if do_execute:
-                    if profile_known_exec(aa[profile][hat], 'exec', exec_target):
+                    if not aa[profile][hat]:
+                        continue  # ignore log entries for non-existing profiles
+
+                    exec_event = FileRule(exec_target, None, FileRule.ANY_EXEC, FileRule.ALL, owner=False, log_event=True)
+                    if is_known_rule(aa[profile][hat], 'file', exec_event):
                         continue
 
                     p = update_repo_profile(aa[profile][profile])
                     if to_name:
-                        if UI_SelectUpdatedRepoProfile(profile, p) and profile_known_exec(aa[profile][hat], 'exec', to_name):
+                        if UI_SelectUpdatedRepoProfile(profile, p) and is_known_rule(aa[profile][hat], 'file', exec_event):  # we need an exec_event with target=to_name here
                             continue
                     else:
-                        if UI_SelectUpdatedRepoProfile(profile, p) and profile_known_exec(aa[profile][hat], 'exec', exec_target):
+                        if UI_SelectUpdatedRepoProfile(profile, p) and is_known_rule(aa[profile][hat], 'file', exec_event):  # we need an exec_event with target=exec_target here
                             continue
 
                     context_new = profile
@@ -1213,106 +1079,13 @@ def handle_children(profile, hat, root):
                         context_new = context_new + '^%s' % hat
                     context_new = context_new + ' -> %s' % exec_target
 
-                    combinedmode = set()
-                    combinedaudit = set()
-                    ## Check return Value Consistency
-                    # Check if path matches any existing regexps in profile
-                    cm, am, m = rematchfrag(aa[profile][hat], 'allow', exec_target)
-                    if cm:
-                        combinedmode |= cm
-                    if am:
-                        combinedaudit |= am
-
-                    if combinedmode & str_to_mode('x'):
-                        nt_name = None
-                        for entr in m:
-                            if aa[profile][hat]['allow']['path'].get(entr, False):
-                                nt_name = entr
-                                break
-                        if to_name and to_name != nt_name:
-                            pass
-                        elif nt_name:
-                            to_name = nt_name
-                    ## Check return value consistency
-                    # Check if the includes from profile match
-                    cm, am, m = match_prof_incs_to_path(aa[profile][hat], 'allow', exec_target)
-                    if cm:
-                        combinedmode |= cm
-                    if am:
-                        combinedaudit |= am
-                    if combinedmode & str_to_mode('x'):
-                        nt_name = None
-                        for entr in m:
-                            if aa[profile][hat]['allow']['path'][entry]['to']:
-                                nt_name = aa[profile][hat]['allow']['path'][entry]['to']
-                                break
-                        if to_name and to_name != nt_name:
-                            pass
-                        elif nt_name:
-                            to_name = nt_name
-
                     # nx is not used in profiles but in log files.
                     # Log parsing methods will convert it to its profile form
                     # nx is internally cx/px/cix/pix + to_name
                     exec_mode = False
-                    if contains(combinedmode, 'pix'):
-                        if to_name:
-                            ans = 'CMD_nix'
-                        else:
-                            ans = 'CMD_pix'
-                        exec_mode = str_to_mode('pixr')
-                    elif contains(combinedmode, 'cix'):
-                        if to_name:
-                            ans = 'CMD_nix'
-                        else:
-                            ans = 'CMD_cix'
-                        exec_mode = str_to_mode('cixr')
-                    elif contains(combinedmode, 'Pix'):
-                        if to_name:
-                            ans = 'CMD_nix_safe'
-                        else:
-                            ans = 'CMD_pix_safe'
-                        exec_mode = str_to_mode('Pixr')
-                    elif contains(combinedmode, 'Cix'):
-                        if to_name:
-                            ans = 'CMD_nix_safe'
-                        else:
-                            ans = 'CMD_cix_safe'
-                        exec_mode = str_to_mode('Cixr')
-                    elif contains(combinedmode, 'ix'):
-                        ans = 'CMD_ix'
-                        exec_mode = str_to_mode('ixr')
-                    elif contains(combinedmode, 'px'):
-                        if to_name:
-                            ans = 'CMD_nx'
-                        else:
-                            ans = 'CMD_px'
-                        exec_mode = str_to_mode('px')
-                    elif contains(combinedmode, 'cx'):
-                        if to_name:
-                            ans = 'CMD_nx'
-                        else:
-                            ans = 'CMD_cx'
-                        exec_mode = str_to_mode('cx')
-                    elif contains(combinedmode, 'ux'):
-                        ans = 'CMD_ux'
-                        exec_mode = str_to_mode('ux')
-                    elif contains(combinedmode, 'Px'):
-                        if to_name:
-                            ans = 'CMD_nx_safe'
-                        else:
-                            ans = 'CMD_px_safe'
-                        exec_mode = str_to_mode('Px')
-                    elif contains(combinedmode, 'Cx'):
-                        if to_name:
-                            ans = 'CMD_nx_safe'
-                        else:
-                            ans = 'CMD_cx_safe'
-                        exec_mode = str_to_mode('Cx')
-                    elif contains(combinedmode, 'Ux'):
-                        ans = 'CMD_ux_safe'
-                        exec_mode = str_to_mode('Ux')
-                    else:
+                    file_perm = None
+
+                    if True:
                         options = cfg['qualifiers'].get(exec_target, 'ipcnu')
                         if to_name:
                             fatal_error(_('%s has transition name but not transition mode') % entry)
@@ -1344,7 +1117,7 @@ def handle_children(profile, hat, root):
 
                         sev_db.unload_variables()
                         sev_db.load_variables(get_profile_filename(profile))
-                        severity = sev_db.rank(exec_target, 'x')
+                        severity = sev_db.rank_path(exec_target, 'x')
 
                         # Prompt portion starts
                         q = aaui.PromptQuestion()
@@ -1361,17 +1134,14 @@ def handle_children(profile, hat, root):
                         exec_toggle = False
                         q.functions += build_x_functions(default, options, exec_toggle)
 
-                        # options = '|'.join(options)
-                        seen_events += 1
-                        regex_options = re.compile('^CMD_(ix|px|cx|nx|pix|cix|nix|px_safe|cx_safe|nx_safe|pix_safe|cix_safe|nix_safe|ux|ux_safe|EXEC_TOGGLE|DENY)$')
-
+                        # ask user about the exec mode to use
                         ans = ''
-                        while not regex_options.search(ans):
-                            ans = q.promptUser()[0].strip()
+                        while ans not in ['CMD_ix', 'CMD_px', 'CMD_cx', 'CMD_nx', 'CMD_pix', 'CMD_cix', 'CMD_nix', 'CMD_ux', 'CMD_DENY']:  # add '(I)gnore'? (hotkey conflict with '(i)x'!)
+                            ans = q.promptUser()[0]
+
                             if ans.startswith('CMD_EXEC_IX_'):
                                 exec_toggle = not exec_toggle
-                                q.functions = []
-                                q.functions += build_x_functions(default, options, exec_toggle)
+                                q.functions = build_x_functions(default, options, exec_toggle)
                                 ans = ''
                                 continue
 
@@ -1397,70 +1167,61 @@ def handle_children(profile, hat, root):
 
                                 to_name = aaui.UI_GetString(_('Enter profile name to transition to: '), arg)
 
-                            regex_optmode = re.compile('CMD_(px|cx|nx|pix|cix|nix)')
                             if ans == 'CMD_ix':
-                                exec_mode = str_to_mode('ix')
-                            elif regex_optmode.search(ans):
-                                match = regex_optmode.search(ans).groups()[0]
-                                exec_mode = str_to_mode(match)
-                                px_default = 'n'
+                                exec_mode = 'ix'
+                            elif ans in ['CMD_px', 'CMD_cx', 'CMD_pix', 'CMD_cix']:
+                                exec_mode = ans.replace('CMD_', '')
                                 px_msg = _("Should AppArmor sanitise the environment when\nswitching profiles?\n\nSanitising environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH.")
                                 if parent_uses_ld_xxx:
                                     px_msg = _("Should AppArmor sanitise the environment when\nswitching profiles?\n\nSanitising environment is more secure,\nbut this application appears to be using LD_PRELOAD\nor LD_LIBRARY_PATH and sanitising the environment\ncould cause functionality problems.")
 
-                                ynans = aaui.UI_YesNo(px_msg, px_default)
+                                ynans = aaui.UI_YesNo(px_msg, 'y')
                                 if ynans == 'y':
                                     # Disable the unsafe mode
-                                    exec_mode = exec_mode - (apparmor.aamode.AA_EXEC_UNSAFE | AA_OTHER(apparmor.aamode.AA_EXEC_UNSAFE))
+                                    exec_mode = exec_mode.capitalize()
                             elif ans == 'CMD_ux':
-                                exec_mode = str_to_mode('ux')
+                                exec_mode = 'ux'
                                 ynans = aaui.UI_YesNo(_("Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s ?") % exec_target, 'n')
                                 if ynans == 'y':
                                     ynans = aaui.UI_YesNo(_("Should AppArmor sanitise the environment when\nrunning this program unconfined?\n\nNot sanitising the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."), 'y')
                                     if ynans == 'y':
                                         # Disable the unsafe mode
-                                        exec_mode = exec_mode - (apparmor.aamode.AA_EXEC_UNSAFE | AA_OTHER(apparmor.aamode.AA_EXEC_UNSAFE))
+                                        exec_mode = exec_mode.capitalize()
                                 else:
                                     ans = 'INVALID'
 
-                        regex_options = re.compile('CMD_(ix|px|cx|nx|pix|cix|nix)')
-                        if regex_options.search(ans):
+                        if exec_mode and 'i' in exec_mode:
                             # For inherit we need r
-                            if exec_mode & str_to_mode('i'):
-                                exec_mode |= str_to_mode('r')
+                            file_perm = 'r'
                         else:
                             if ans == 'CMD_DENY':
-                                aa[profile][hat]['deny']['path'][exec_target]['mode'] = aa[profile][hat]['deny']['path'][exec_target].get('mode', str_to_mode('x')) | str_to_mode('x')
-                                aa[profile][hat]['deny']['path'][exec_target]['audit'] = aa[profile][hat]['deny']['path'][exec_target].get('audit', set())
+                                aa[profile][hat]['file'].add(FileRule(exec_target, None, 'x', FileRule.ALL, owner=False, log_event=True, deny=True))
                                 changed[profile] = True
                                 # Skip remaining events if they ask to deny exec
                                 if domainchange == 'change':
                                     return None
 
                         if ans != 'CMD_DENY':
-                            prelog['PERMITTING'][profile][hat]['path'][exec_target] = prelog['PERMITTING'][profile][hat]['path'].get(exec_target, exec_mode) | exec_mode
-
-                            log_dict['PERMITTING'][profile] = hasher()
-
-                            aa[profile][hat]['allow']['path'][exec_target]['mode'] = aa[profile][hat]['allow']['path'][exec_target].get('mode', exec_mode)
-
-                            aa[profile][hat]['allow']['path'][exec_target]['audit'] = aa[profile][hat]['allow']['path'][exec_target].get('audit', set())
-
                             if to_name:
-                                aa[profile][hat]['allow']['path'][exec_target]['to'] = to_name
+                                rule_to_name = to_name
+                            else:
+                                rule_to_name = FileRule.ALL
+
+                            aa[profile][hat]['file'].add(FileRule(exec_target, file_perm, exec_mode, rule_to_name, owner=False, log_event=True))
 
                             changed[profile] = True
 
-                            if exec_mode & str_to_mode('i'):
+                            if 'i' in exec_mode:
                                 interpreter_path, abstraction = get_interpreter_and_abstraction(exec_target)
 
                                 if interpreter_path:
-                                    aa[profile][hat]['allow']['path'][interpreter_path]['mode'] = aa[profile][hat]['allow']['path'][interpreter_path].get('mode', str_to_mode('ix')) | str_to_mode('ix')
-
-                                    aa[profile][hat]['allow']['path'][interpreter_path]['audit'] = aa[profile][hat]['allow']['path'][interpreter_path].get('audit', set())
+                                    aa[profile][hat]['file'].add(FileRule(exec_target,      'r',  None, FileRule.ALL, owner=False))
+                                    aa[profile][hat]['file'].add(FileRule(interpreter_path, None, 'ix', FileRule.ALL, owner=False))
 
                                     if abstraction:
                                         aa[profile][hat]['include'][abstraction] = True
+
+                                    handle_binfmt(aa[profile][hat], interpreter_path)
 
                     # Update tracking info based on kind of change
 
@@ -1481,7 +1242,7 @@ def handle_children(profile, hat, root):
                         # Check profile exists for px
                         if not os.path.exists(get_profile_filename(exec_target)):
                             ynans = 'y'
-                            if exec_mode & str_to_mode('i'):
+                            if 'i' in exec_mode:
                                 ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
                             if ynans == 'y':
                                 helpers[exec_target] = 'enforce'
@@ -1499,28 +1260,20 @@ def handle_children(profile, hat, root):
 
                         if not aa[profile].get(exec_target, False):
                             ynans = 'y'
-                            if exec_mode & str_to_mode('i'):
+                            if 'i' in exec_mode:
                                 ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
                             if ynans == 'y':
                                 hat = exec_target
                                 if not aa[profile].get(hat, False):
-                                    aa[profile][hat] = profile_storage(profile, hat, 'handle_children()')
+                                    stub_profile = create_new_profile(hat, True)
+                                    aa[profile][hat] = stub_profile[hat][hat]
+
                                 aa[profile][hat]['profile'] = True
 
                                 if profile != hat:
                                     aa[profile][hat]['flags'] = aa[profile][profile]['flags']
 
-                                stub_profile = create_new_profile(hat, True)
-
                                 aa[profile][hat]['flags'] = 'complain'
-
-                                aa[profile][hat]['allow']['path'] = hasher()
-                                if stub_profile[hat][hat]['allow'].get('path', False):
-                                    aa[profile][hat]['allow']['path'] = stub_profile[hat][hat]['allow']['path']
-
-                                aa[profile][hat]['include'] = hasher()
-                                if stub_profile[hat][hat].get('include', False):
-                                    aa[profile][hat]['include'] = stub_profile[hat][hat]['include']
 
                                 file_name = aa[profile][profile]['filename']
                                 filelist[file_name]['profiles'][profile][hat] = True
@@ -1592,32 +1345,37 @@ def update_repo_profile(profile):
     # To-Do
     return None
 
-def order_globs(globs, path):
+def order_globs(globs, original_path):
     """Returns the globs in sorted order, more specific behind"""
     # To-Do
     # ATM its lexicographic, should be done to allow better matches later
-    return sorted(globs)
 
-def ask_the_questions():
-    found = 0
-    global seen_events
+    globs = sorted(globs)
+
+    # make sure the original path is always the last option
+    if original_path in globs:
+        globs.remove(original_path)
+    globs.append(original_path)
+
+    return globs
+
+def ask_the_questions(log_dict):
     for aamode in sorted(log_dict.keys()):
         # Describe the type of changes
         if aamode == 'PERMITTING':
             aaui.UI_Info(_('Complain-mode changes:'))
         elif aamode == 'REJECTING':
             aaui.UI_Info(_('Enforce-mode changes:'))
+        elif aamode == 'merge':
+            pass  # aa-mergeprof
         else:
-            # This is so wrong!
-            fatal_error(_('Invalid mode found: %s') % aamode)
+            raise AppArmorBug(_('Invalid mode found: %s') % aamode)
 
         for profile in sorted(log_dict[aamode].keys()):
             # Update the repo profiles
             p = update_repo_profile(aa[profile][profile])
             if p:
                 UI_SelectUpdatedRepoProfile(profile, p)
-
-            found += 1
 
             sev_db.unload_variables()
             sev_db.load_variables(get_profile_filename(profile))
@@ -1628,9 +1386,84 @@ def ask_the_questions():
                 hats = [profile] + hats
 
             for hat in hats:
+
+                if not aa[profile].get(hat, {}).get('file'):
+                    if aamode != 'merge':
+                        # Ignore log events for a non-existing profile or child profile. Such events can occour
+                        # after deleting a profile or hat manually, or when processing a foreign log.
+                        # (Checking for 'file' is a simplified way to check if it's a ProfileStorage.)
+                        debug_logger.debug("Ignoring events for non-existing profile %s" % combine_name(profile, hat))
+                        continue
+
+                    ans = ''
+                    while ans not in ['CMD_ADDHAT', 'CMD_ADDSUBPROFILE', 'CMD_DENY']:
+                        q = aaui.PromptQuestion()
+                        q.headers += [_('Profile'), profile]
+
+                        if log_dict[aamode][profile][hat]['profile']:
+                            q.headers += [_('Requested Subprofile'), hat]
+                            q.functions.append('CMD_ADDSUBPROFILE')
+                        else:
+                            q.headers += [_('Requested Hat'), hat]
+                            q.functions.append('CMD_ADDHAT')
+
+                        q.functions += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
+
+                        q.default = 'CMD_DENY'
+
+                        ans = q.promptUser()[0]
+
+                        if ans == 'CMD_FINISHED':
+                            return
+
+                    if ans == 'CMD_DENY':
+                        continue  # don't ask about individual rules if the user doesn't want the additional subprofile/hat
+
+                    if log_dict[aamode][profile][hat]['profile']:
+                        aa[profile][hat] = ProfileStorage(profile, hat, 'mergeprof ask_the_questions() - missing subprofile')
+                        aa[profile][hat]['profile'] = True
+                    else:
+                        aa[profile][hat] = ProfileStorage(profile, hat, 'mergeprof ask_the_questions() - missing hat')
+                        aa[profile][hat]['profile'] = False
+
+                #Add the includes from the other profile to the user profile
+                done = False
+
+                options = []
+                for inc in log_dict[aamode][profile][hat]['include'].keys():
+                    if not inc in aa[profile][hat]['include'].keys():
+                        options.append('#include <%s>' %inc)
+
+                default_option = 1
+
+                q = aaui.PromptQuestion()
+                q.options = options
+                q.selected = default_option - 1
+                q.headers = [_('File includes'), _('Select the ones you wish to add')]
+                q.functions = ['CMD_ALLOW', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
+                q.default = 'CMD_ALLOW'
+
+                while not done and options:
+                    ans, selected = q.promptUser()
+                    if ans == 'CMD_IGNORE_ENTRY':
+                        done = True
+                    elif ans == 'CMD_ALLOW':
+                        selection = options[selected]
+                        inc = re_match_include(selection)
+                        deleted = apparmor.aa.delete_duplicates(aa[profile][hat], inc)
+                        aa[profile][hat]['include'][inc] = True
+                        options.pop(selected)
+                        aaui.UI_Info(_('Adding %s to the file.') % selection)
+                        if deleted:
+                            aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
+                    elif ans == 'CMD_FINISHED':
+                        return
+
+                # check for and ask about conflicting exec modes
+                ask_conflict_mode(profile, hat, aa[profile][hat], log_dict[aamode][profile][hat])
+
                 for ruletype in ruletypes:
                     for rule_obj in log_dict[aamode][profile][hat][ruletype].rules:
-                        # XXX aa-mergeprof also has this code - if you change it, keep aa-mergeprof in sync!
 
                         if is_known_rule(aa[profile][hat], ruletype, rule_obj):
                             continue
@@ -1642,14 +1475,15 @@ def ask_the_questions():
                         if newincludes:
                             options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
 
-                        options.append(rule_obj.get_clean())
-                        q.options = options
-                        q.selected = default_option - 1
-
-                        seen_events += 1
+                        if ruletype == 'file' and rule_obj.path:
+                            options += propose_file_rules(aa[profile][hat], rule_obj)
+                        else:
+                            options.append(rule_obj.get_clean())
 
                         done = False
                         while not done:
+                            q.options = options
+                            q.selected = default_option - 1
                             q.headers = [_('Profile'), combine_name(profile, hat)]
                             q.headers += rule_obj.logprof_header()
 
@@ -1668,6 +1502,8 @@ def ask_the_questions():
                                 q.default = 'CMD_ALLOW'
 
                             ans, selected = q.promptUser()
+                            selection = options[selected]
+
                             if ans == 'CMD_IGNORE_ENTRY':
                                 done = True
                                 break
@@ -1683,14 +1519,11 @@ def ask_the_questions():
                                     rule_obj.audit = False
                                     rule_obj.raw_rule = None
 
-                                options[len(options) - 1] = rule_obj.get_clean()
-                                q.options = options
+                                options = set_options_audit_mode(rule_obj, options)
 
                             elif ans == 'CMD_ALLOW':
                                 done = True
                                 changed[profile] = True
-
-                                selection = options[selected]
 
                                 inc = re_match_include(selection)
                                 if inc:
@@ -1703,317 +1536,87 @@ def ask_the_questions():
                                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                 else:
-                                    aa[profile][hat][ruletype].add(rule_obj)
+                                    rule_obj = selection_to_rule_obj(rule_obj, selection)
+                                    deleted = aa[profile][hat][ruletype].add(rule_obj, cleanup=True)
 
                                     aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
-
-                            elif ans == 'CMD_DENY':
-                                done = True
-                                changed[profile] = True
-
-                                rule_obj.deny = True
-                                rule_obj.raw_rule = None  # reset raw rule after manually modifying rule_obj
-                                aa[profile][hat][ruletype].add(rule_obj)
-                                aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
-
-                            else:
-                                done = False
-                    # END of code (mostly) shared with aa-mergeprof
-
-                # Process all the path entries.
-                for path in sorted(log_dict[aamode][profile][hat]['allow']['path'].keys()):
-                    mode = log_dict[aamode][profile][hat]['allow']['path'][path]
-                    # Lookup modes from profile
-                    allow_mode = set()
-                    allow_audit = set()
-                    deny_mode = set()
-                    deny_audit = set()
-
-                    fmode, famode, fm = rematchfrag(aa[profile][hat], 'allow', path)
-                    if fmode:
-                        allow_mode |= fmode
-                    if famode:
-                        allow_audit |= famode
-
-                    cm, cam, m = rematchfrag(aa[profile][hat], 'deny', path)
-                    if cm:
-                        deny_mode |= cm
-                    if cam:
-                        deny_audit |= cam
-
-                    imode, iamode, im = match_prof_incs_to_path(aa[profile][hat], 'allow', path)
-                    if imode:
-                        allow_mode |= imode
-                    if iamode:
-                        allow_audit |= iamode
-
-                    cm, cam, m = match_prof_incs_to_path(aa[profile][hat], 'deny', path)
-                    if cm:
-                        deny_mode |= cm
-                    if cam:
-                        deny_audit |= cam
-
-                    if deny_mode & apparmor.aamode.AA_MAY_EXEC:
-                        deny_mode |= apparmor.aamode.ALL_AA_EXEC_TYPE
-
-                    # Mask off the denied modes
-                    mode = mode - deny_mode
-
-                    # If we get an exec request from some kindof event that generates 'PERMITTING X'
-                    # check if its already in allow_mode
-                    # if not add ix permission
-                    if mode & apparmor.aamode.AA_MAY_EXEC:
-                        # Remove all type access permission
-                        mode = mode - apparmor.aamode.ALL_AA_EXEC_TYPE
-                        if not allow_mode & apparmor.aamode.AA_MAY_EXEC:
-                            mode |= str_to_mode('ix')
-
-                    if not mode:
-                        continue
-
-                    matches = []
-
-                    if fmode:
-                        matches += fm
-
-                    if imode:
-                        matches += im
-
-                    if not mode_contains(allow_mode, mode):
-                        default_option = 1
-                        options = []
-                        newincludes = []
-                        include_valid = False
-
-                        for incname in include.keys():
-                            include_valid = False
-                            # If already present skip
-                            if aa[profile][hat]['include'].get(incname, False):
-                                continue
-                            if incname.startswith(profile_dir):
-                                incname = incname.replace(profile_dir + '/', '', 1)
-
-                            include_valid = valid_include('', incname)
-
-                            if not include_valid:
-                                continue
-
-                            cm, am, m = match_include_to_path(incname, 'allow', path)
-
-                            if cm and mode_contains(cm, mode):
-                                dm = match_include_to_path(incname, 'deny', path)[0]
-                                # If the mode is denied
-                                if not mode & dm:
-                                    if not list(filter(lambda s: '/**' == s, m)):
-                                        newincludes.append(incname)
-                        # Add new includes to the options
-                        if newincludes:
-                            options += list(map(lambda s: '#include <%s>' % s, sorted(set(newincludes))))
-                        # We should have literal the path in options list too
-                        options.append(path)
-                        # Add any the globs matching path from logprof
-                        globs = glob_common(path)
-                        if globs:
-                            matches += globs
-                        # Add any user entered matching globs
-                        for user_glob in user_globs:
-                            if matchliteral(user_glob, path):
-                                matches.append(user_glob)
-
-                        matches = list(set(matches))
-                        if path in matches:
-                            matches.remove(path)
-
-                        options += order_globs(matches, path)
-                        default_option = len(options)
-
-                        sev_db.unload_variables()
-                        sev_db.load_variables(get_profile_filename(profile))
-                        severity = sev_db.rank(path, mode_to_str(mode))
-                        sev_db.unload_variables()
-
-                        audit_toggle = 0
-                        owner_toggle = 0
-                        if cfg['settings']['default_owner_prompt']:
-                            owner_toggle = cfg['settings']['default_owner_prompt']
-                        done = False
-                        while not done:
-                            q = aaui.PromptQuestion()
-                            q.headers = [_('Profile'), combine_name(profile, hat),
-                                            _('Path'), path]
-
-                            if allow_mode:
-                                mode |= allow_mode
-                                tail = ''
-                                s = ''
-                                prompt_mode = None
-                                if owner_toggle == 0:
-                                    prompt_mode = flatten_mode(mode)
-                                    tail = '     ' + _('(owner permissions off)')
-                                elif owner_toggle == 1:
-                                    prompt_mode = mode
-                                elif owner_toggle == 2:
-                                    prompt_mode = allow_mode | owner_flatten_mode(mode - allow_mode)
-                                    tail = '     ' + _('(force new perms to owner)')
-                                else:
-                                    prompt_mode = owner_flatten_mode(mode)
-                                    tail = '     ' + _('(force all rule perms to owner)')
-
-                                if audit_toggle == 1:
-                                    s = mode_to_str_user(allow_mode)
-                                    if allow_mode:
-                                        s += ', '
-                                    s += 'audit ' + mode_to_str_user(prompt_mode - allow_mode) + tail
-                                elif audit_toggle == 2:
-                                    s = 'audit ' + mode_to_str_user(prompt_mode) + tail
-                                else:
-                                    s = mode_to_str_user(prompt_mode) + tail
-
-                                q.headers += [_('Old Mode'), mode_to_str_user(allow_mode),
-                                                 _('New Mode'), s]
-
-                            else:
-                                s = ''
-                                tail = ''
-                                prompt_mode = None
-                                if audit_toggle:
-                                    s = 'audit'
-                                if owner_toggle == 0:
-                                    prompt_mode = flatten_mode(mode)
-                                    tail = '     ' + _('(owner permissions off)')
-                                elif owner_toggle == 1:
-                                    prompt_mode = mode
-                                else:
-                                    prompt_mode = owner_flatten_mode(mode)
-                                    tail = '     ' + _('(force perms to owner)')
-
-                                s = mode_to_str_user(prompt_mode)
-                                q.headers += [_('Mode'), s]
-
-                            q.headers += [_('Severity'), severity]
-                            q.options = options
-                            q.selected = default_option - 1
-                            q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_GLOB',
-                                              'CMD_GLOBEXT', 'CMD_NEW', 'CMD_ABORT',
-                                              'CMD_FINISHED', 'CMD_OTHER']
-                            q.default = 'CMD_DENY'
-                            if aamode == 'PERMITTING':
-                                q.default = 'CMD_ALLOW'
-
-                            seen_events += 1
-
-                            ans, selected = q.promptUser()
-
-                            if ans == 'CMD_FINISHED':
-                                save_profiles()
-                                return
-
-                            if ans == 'CMD_IGNORE_ENTRY':
-                                done = True
-                                break
-
-                            if ans == 'CMD_OTHER':
-                                audit_toggle, owner_toggle = UI_ask_mode_toggles(audit_toggle, owner_toggle, allow_mode)
-                            elif ans == 'CMD_USER_TOGGLE':
-                                owner_toggle += 1
-                                if not allow_mode and owner_toggle == 2:
-                                    owner_toggle += 1
-                                if owner_toggle > 3:
-                                    owner_toggle = 0
-                            elif ans == 'CMD_ALLOW':
-                                path = options[selected]
-                                done = True
-                                match = re_match_include(path)  # .search('^#include\s+<(.+)>$', path)
-                                if match:
-                                    inc = match  # .groups()[0]
-                                    deleted = 0
-                                    deleted = delete_duplicates(aa[profile][hat], inc)
-                                    aa[profile][hat]['include'][inc] = True
-                                    changed[profile] = True
-                                    aaui.UI_Info(_('Adding %s to profile.') % path)
-                                    if deleted:
-                                        aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
-
-                                else:
-                                    if path in aa[profile][hat]['allow']['path']:
-                                        if aa[profile][hat]['allow']['path'][path].get('mode', False):
-                                            mode |= aa[profile][hat]['allow']['path'][path]['mode']
-                                    deleted = []
-                                    for entry in aa[profile][hat]['allow']['path'].keys():
-                                        if path == entry:
-                                            continue
-
-                                        if matchregexp(path, entry):
-                                            if mode_contains(mode, aa[profile][hat]['allow']['path'][entry]['mode']):
-                                                deleted.append(entry)
-                                    for entry in deleted:
-                                        aa[profile][hat]['allow']['path'].pop(entry)
-                                    deleted = len(deleted)
-
-                                    if owner_toggle == 0:
-                                        mode = flatten_mode(mode)
-                                    #elif owner_toggle == 1:
-                                    #    mode = mode
-                                    elif owner_toggle == 2:
-                                        mode = allow_mode | owner_flatten_mode(mode - allow_mode)
-                                    elif owner_toggle == 3:
-                                        mode = owner_flatten_mode(mode)
-
-                                    aa[profile][hat]['allow']['path'][path]['mode'] = aa[profile][hat]['allow']['path'][path].get('mode', set()) | mode
-
-                                    tmpmode = set()
-                                    if audit_toggle == 1:
-                                        tmpmode = mode - allow_mode
-                                    elif audit_toggle == 2:
-                                        tmpmode = mode
-
-                                    aa[profile][hat]['allow']['path'][path]['audit'] = aa[profile][hat]['allow']['path'][path].get('audit', set()) | tmpmode
-
-                                    changed[profile] = True
-
-                                    aaui.UI_Info(_('Adding %(path)s %(mode)s to profile') % { 'path': path, 'mode': mode_to_str_user(mode) })
                                     if deleted:
                                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                             elif ans == 'CMD_DENY':
-                                path = options[selected].strip()
-                                # Add new entry?
-                                aa[profile][hat]['deny']['path'][path]['mode'] = aa[profile][hat]['deny']['path'][path].get('mode', set()) | (mode - allow_mode)
+                                if re_match_include(selection):
+                                    aaui.UI_Important("Denying via an include file isn't supported by the AppArmor tools")
 
-                                aa[profile][hat]['deny']['path'][path]['audit'] = aa[profile][hat]['deny']['path'][path].get('audit', set())
+                                else:
+                                    done = True
+                                    changed[profile] = True
 
-                                changed[profile] = True
+                                    rule_obj = selection_to_rule_obj(rule_obj, selection)
+                                    rule_obj.deny = True
+                                    rule_obj.raw_rule = None  # reset raw rule after manually modifying rule_obj
+                                    deleted = aa[profile][hat][ruletype].add(rule_obj, cleanup=True)
+                                    aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
+                                    if deleted:
+                                        aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
-                                done = True
+                            elif ans == 'CMD_GLOB':
+                                if not re_match_include(selection):
+                                    globbed_rule_obj = selection_to_rule_obj(rule_obj, selection)
+                                    globbed_rule_obj.glob()
+                                    options, default_option = add_to_options(options, globbed_rule_obj.get_raw())
+
+                            elif ans == 'CMD_GLOBEXT':
+                                if not re_match_include(selection):
+                                    globbed_rule_obj = selection_to_rule_obj(rule_obj, selection)
+                                    globbed_rule_obj.glob_ext()
+                                    options, default_option = add_to_options(options, globbed_rule_obj.get_raw())
 
                             elif ans == 'CMD_NEW':
-                                arg = options[selected]
-                                if not re_match_include(arg):
-                                    ans = aaui.UI_GetString(_('Enter new path: '), arg)
-                                    if ans:
-                                        if not matchliteral(ans, path):
-                                            ynprompt = _('The specified path does not match this log entry:\n\n  Log Entry: %(path)s\n  Entered Path:  %(ans)s\nDo you really want to use this path?') % { 'path': path, 'ans': ans }
+                                if not re_match_include(selection):
+                                    edit_rule_obj = selection_to_rule_obj(rule_obj, selection)
+                                    prompt, oldpath = edit_rule_obj.edit_header()
+
+                                    newpath = aaui.UI_GetString(prompt, oldpath)
+                                    if newpath:
+                                        try:
+                                            input_matches_path = rule_obj.validate_edit(newpath)  # note that we check against the original rule_obj here, not edit_rule_obj (which might be based on a globbed path)
+                                        except AppArmorException:
+                                            aaui.UI_Important(_('The path you entered is invalid (not starting with / or a variable)!'))
+                                            continue
+
+                                        if not input_matches_path:
+                                            ynprompt = _('The specified path does not match this log entry:\n\n  Log Entry: %(path)s\n  Entered Path:  %(ans)s\nDo you really want to use this path?') % { 'path': oldpath, 'ans': newpath }
                                             key = aaui.UI_YesNo(ynprompt, 'n')
                                             if key == 'n':
                                                 continue
 
-                                        user_globs.append(ans)
-                                        options, default_option = add_to_options(options, ans)
+                                        edit_rule_obj.store_edit(newpath)
+                                        options, default_option = add_to_options(options, edit_rule_obj.get_raw())
+                                        user_globs[newpath] = AARE(newpath, True)
 
-                            elif ans == 'CMD_GLOB':
-                                newpath = options[selected].strip()
-                                if not re_match_include(newpath):
-                                    newpath = glob_path(newpath)
-                                    options, default_option = add_to_options(options, newpath)
+                            else:
+                                done = False
 
-                            elif ans == 'CMD_GLOBEXT':
-                                newpath = options[selected].strip()
-                                if not re_match_include(newpath):
-                                    newpath = glob_path_withext(newpath)
-                                    options, default_option = add_to_options(options, newpath)
+def selection_to_rule_obj(rule_obj, selection):
+    rule_type = type(rule_obj)
+    return rule_type.parse(selection)
 
-                            elif re.search('\d', ans):
-                                default_option = ans
+def set_options_audit_mode(rule_obj, options):
+    '''change audit state in options (proposed rules) to audit state in rule_obj.
+       #include options will be kept unchanged
+    '''
+    new_options = []
+
+    for rule in options:
+        if re_match_include(rule):
+            new_options.append(rule)
+        else:
+            parsed_rule = selection_to_rule_obj(rule_obj, rule)
+            parsed_rule.audit = rule_obj.audit
+            parsed_rule.raw_rule = None
+            new_options.append(parsed_rule.get_raw())
+
+    return new_options
 
 def available_buttons(rule_obj):
     buttons = []
@@ -2022,6 +1625,15 @@ def available_buttons(rule_obj):
         buttons += ['CMD_ALLOW']
 
     buttons += ['CMD_DENY', 'CMD_IGNORE_ENTRY']
+
+    if rule_obj.can_glob:
+        buttons += ['CMD_GLOB']
+
+    if rule_obj.can_glob_ext:
+        buttons += ['CMD_GLOBEXT']
+
+    if rule_obj.can_edit:
+        buttons += ['CMD_NEW']
 
     if rule_obj.audit:
         buttons += ['CMD_AUDIT_OFF']
@@ -2039,71 +1651,6 @@ def add_to_options(options, newpath):
     default_option = options.index(newpath) + 1
     return (options, default_option)
 
-def glob_path(newpath):
-    """Glob the given file path"""
-    if newpath[-1] == '/':
-        if newpath[-4:] == '/**/' or newpath[-3:] == '/*/':
-            # /foo/**/ and /foo/*/ => /**/
-            newpath = re.sub('/[^/]+/\*{1,2}/$', '/**/', newpath)  # re.sub('/[^/]+/\*{1,2}$/', '/\*\*/', newpath)
-        elif re.search('/[^/]+\*\*[^/]*/$', newpath):
-            # /foo**/ and /foo**bar/ => /**/
-            newpath = re.sub('/[^/]+\*\*[^/]*/$', '/**/', newpath)
-        elif re.search('/\*\*[^/]+/$', newpath):
-            # /**bar/ => /**/
-            newpath = re.sub('/\*\*[^/]+/$', '/**/', newpath)
-        else:
-            newpath = re.sub('/[^/]+/$', '/*/', newpath)
-    else:
-            if newpath[-3:] == '/**' or newpath[-2:] == '/*':
-                # /foo/** and /foo/* => /**
-                newpath = re.sub('/[^/]+/\*{1,2}$', '/**', newpath)
-            elif re.search('/[^/]*\*\*[^/]+$', newpath):
-                # /**foo and /foor**bar => /**
-                newpath = re.sub('/[^/]*\*\*[^/]+$', '/**', newpath)
-            elif re.search('/[^/]+\*\*$', newpath):
-                # /foo** => /**
-                newpath = re.sub('/[^/]+\*\*$', '/**', newpath)
-            else:
-                newpath = re.sub('/[^/]+$', '/*', newpath)
-    return newpath
-
-def glob_path_withext(newpath):
-    """Glob given file path with extension"""
-    # match /**.ext and /*.ext
-    match = re.search('/\*{1,2}(\.[^/]+)$', newpath)
-    if match:
-        # /foo/**.ext and /foo/*.ext => /**.ext
-        newpath = re.sub('/[^/]+/\*{1,2}\.[^/]+$', '/**' + match.groups()[0], newpath)
-    elif re.search('/[^/]+\*\*[^/]*\.[^/]+$', newpath):
-        # /foo**.ext and /foo**bar.ext => /**.ext
-        match = re.search('/[^/]+\*\*[^/]*(\.[^/]+)$', newpath)
-        newpath = re.sub('/[^/]+\*\*[^/]*\.[^/]+$', '/**' + match.groups()[0], newpath)
-    elif re.search('/\*\*[^/]+\.[^/]+$', newpath):
-        # /**foo.ext => /**.ext
-        match = re.search('/\*\*[^/]+(\.[^/]+)$', newpath)
-        newpath = re.sub('/\*\*[^/]+\.[^/]+$', '/**' + match.groups()[0], newpath)
-    else:
-        match = re.search('(\.[^/]+)$', newpath)
-        if match:
-            newpath = re.sub('/[^/]+(\.[^/]+)$', '/*' + match.groups()[0], newpath)
-    return newpath
-
-def delete_path_duplicates(profile, incname, allow):
-    deleted = []
-    for entry in profile[allow]['path'].keys():
-        if entry == '#include <%s>' % incname:
-            continue
-        # XXX Make this code smart enough to know that bare file rules
-        #     makes some path rules unnecessary. For example, "/dev/random r,"
-        #     would no longer be needed if "file," was present.
-        cm, am, m = match_include_to_path(incname, allow, entry)
-        if cm and mode_contains(cm, profile[allow]['path'][entry]['mode']) and mode_contains(am, profile[allow]['path'][entry]['audit']):
-            deleted.append(entry)
-
-    for entry in deleted:
-        profile[allow]['path'].pop(entry)
-    return len(deleted)
-
 def delete_duplicates(profile, incname):
     deleted = 0
     # Allow rules covered by denied rules shouldn't be deleted
@@ -2113,17 +1660,44 @@ def delete_duplicates(profile, incname):
         for rule_type in ruletypes:
             deleted += profile[rule_type].delete_duplicates(include[incname][incname][rule_type])
 
-        deleted += delete_path_duplicates(profile, incname, 'allow')
-        deleted += delete_path_duplicates(profile, incname, 'deny')
-
     elif filelist.get(incname, False):
         for rule_type in ruletypes:
             deleted += profile[rule_type].delete_duplicates(filelist[incname][incname][rule_type])
 
-        deleted += delete_path_duplicates(profile, incname, 'allow')
-        deleted += delete_path_duplicates(profile, incname, 'deny')
-
     return deleted
+
+def ask_conflict_mode(profile, hat, old_profile, merge_profile):
+    '''ask user about conflicting exec rules'''
+    for oldrule in old_profile['file'].rules:
+        conflictingrules = merge_profile['file'].get_exec_conflict_rules(oldrule)
+
+        if conflictingrules.rules:
+            q = aaui.PromptQuestion()
+            q.headers = [_('Path'), oldrule.path.regex]
+            q.headers += [_('Select the appropriate mode'), '']
+            options = []
+            options.append(oldrule.get_clean())
+            for rule in conflictingrules.rules:
+                options.append(rule.get_clean())
+            q.options = options
+            q.functions = ['CMD_ALLOW', 'CMD_ABORT']
+            done = False
+            while not done:
+                ans, selected = q.promptUser()
+                if ans == 'CMD_ALLOW':
+                    if selected == 0:
+                        pass  # just keep the existing rule
+                    elif selected > 0:
+                        # replace existing rule with merged one
+                        old_profile['file'].delete(oldrule)
+                        old_profile['file'].add(conflictingrules.rules[selected - 1])
+                    else:
+                        raise AppArmorException(_('Unknown selection'))
+
+                    for rule in conflictingrules.rules:
+                        merge_profile['file'].delete(rule)  # make sure aa-mergeprof doesn't ask to add conflicting rules later
+
+                    done = True
 
 def match_includes(profile, rule_type, rule_obj):
     newincludes = []
@@ -2166,21 +1740,15 @@ def set_logfile(filename):
     elif os.path.isdir(logfile):
         raise AppArmorException(_('%s is a directory. Please specify a file as logfile') % logfile)
 
-def do_logprof_pass(logmark='', passno=0, pid=pid):
+def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
     # set up variables for this pass
-#    t = hasher()
 #    transitions = hasher()
-#    seen = hasher()  # XXX global?
-    global log
-    log = []
     global existing_profiles
     global sev_db
 #    aa = hasher()
 #    profile_changes = hasher()
 #     prelog = hasher()
-#     log_dict = hasher()
 #     changed = dict()
-#    skip = hasher()  # XXX global?
 #    filelist = hasher()
 
     aaui.UI_Info(_('Reading log entries from %s.') % logfile)
@@ -2198,7 +1766,7 @@ def do_logprof_pass(logmark='', passno=0, pid=pid):
     ##    if not repo_cfg['repository'].get('enabled', False) or repo_cfg['repository]['enabled'] not in ['yes', 'no']:
     ##    UI_ask_to_enable_repo()
 
-    log_reader = apparmor.logparser.ReadLog(pid, logfile, existing_profiles, profile_dir, log)
+    log_reader = apparmor.logparser.ReadLog(log_pid, logfile, existing_profiles, profile_dir)
     log = log_reader.read_log(logmark)
     #read_log(logmark)
 
@@ -2210,13 +1778,9 @@ def do_logprof_pass(logmark='', passno=0, pid=pid):
     for pid in sorted(profile_changes.keys()):
         set_process(pid, profile_changes[pid])
 
-    collapse_log()
+    log_dict = collapse_log()
 
-    ask_the_questions()
-
-    if aaui.UI_mode == 'yast':
-        # To-Do
-        pass
+    ask_the_questions(log_dict)
 
     finishing = False
     # Check for finished
@@ -2247,81 +1811,53 @@ def save_profiles():
     changed_list = sorted(changed.keys())
 
     if changed_list:
-
-        if aaui.UI_mode == 'yast':
-            # To-Do
-            # selected_profiles = []  # XXX selected_profiles_ref?
-            profile_changes = dict()
-            for prof in changed_list:
-                oldprofile = serialize_profile(original_aa[prof], prof)
-                newprofile = serialize_profile(aa[prof], prof)
-                profile_changes[prof] = get_profile_diff(oldprofile, newprofile)
-            explanation = _('Select which profile changes you would like to save to the\nlocal profile set.')
-            title = _('Local profile changes')
-            SendDataToYast({'type': 'dialog-select-profiles',
-                            'title': title,
-                            'explanation': explanation,
-                            'dialog_select': 'true',
-                            'get_changelog': 'false',
-                            'profiles': profile_changes
-                            })
-            ypath, yarg = GetDataFromYast()
-            if yarg['STATUS'] == 'cancel':
-                return None
-            else:
-                selected_profiles_ref = yarg['PROFILES']
-                for profile_name in selected_profiles_ref:
-                    write_profile_ui_feedback(profile_name)
-                    reload_base(profile_name)
-
-        else:
-            q = aaui.PromptQuestion()
-            q.title = 'Changed Local Profiles'
-            q.explanation = _('The following local profiles were changed. Would you like to save them?')
-            q.functions = ['CMD_SAVE_CHANGES', 'CMD_SAVE_SELECTED', 'CMD_VIEW_CHANGES', 'CMD_VIEW_CHANGES_CLEAN', 'CMD_ABORT']
-            q.default = 'CMD_VIEW_CHANGES'
-            q.options = changed
-            q.selected = 0
-            ans = ''
-            arg = None
-            while ans != 'CMD_SAVE_CHANGES':
-                if not changed:
-                    return
-                ans, arg = q.promptUser()
-                if ans == 'CMD_SAVE_SELECTED':
-                    profile_name = list(changed.keys())[arg]
-                    write_profile_ui_feedback(profile_name)
-                    reload_base(profile_name)
-
-                elif ans == 'CMD_VIEW_CHANGES':
-                    which = list(changed.keys())[arg]
-                    oldprofile = None
-                    if aa[which][which].get('filename', False):
-                        oldprofile = aa[which][which]['filename']
-                    else:
-                        oldprofile = get_profile_filename(which)
-
-                    try:
-                        newprofile = serialize_profile_from_old_profile(aa[which], which, '')
-                    except AttributeError:
-                        # see https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/1528139
-                        newprofile = "###\n###\n### Internal error while generating diff, please use '%s' instead\n###\n###\n" % _('View Changes b/w (C)lean profiles')
-
-                    display_changes_with_comments(oldprofile, newprofile)
-
-                elif ans == 'CMD_VIEW_CHANGES_CLEAN':
-                    which = list(changed.keys())[arg]
-                    oldprofile = serialize_profile(original_aa[which], which, '')
-                    newprofile = serialize_profile(aa[which], which, '')
-
-                    display_changes(oldprofile, newprofile)
-
-            for profile_name in sorted(changed.keys()):
+        q = aaui.PromptQuestion()
+        q.title = 'Changed Local Profiles'
+        q.explanation = _('The following local profiles were changed. Would you like to save them?')
+        q.functions = ['CMD_SAVE_CHANGES', 'CMD_SAVE_SELECTED', 'CMD_VIEW_CHANGES', 'CMD_VIEW_CHANGES_CLEAN', 'CMD_ABORT']
+        q.default = 'CMD_VIEW_CHANGES'
+        q.options = changed
+        q.selected = 0
+        ans = ''
+        arg = None
+        while ans != 'CMD_SAVE_CHANGES':
+            if not changed:
+                return
+            ans, arg = q.promptUser()
+            if ans == 'CMD_SAVE_SELECTED':
+                profile_name = list(changed.keys())[arg]
                 write_profile_ui_feedback(profile_name)
                 reload_base(profile_name)
 
+            elif ans == 'CMD_VIEW_CHANGES':
+                which = list(changed.keys())[arg]
+                oldprofile = None
+                if aa[which][which].get('filename', False):
+                    oldprofile = aa[which][which]['filename']
+                else:
+                    oldprofile = get_profile_filename(which)
+
+                try:
+                    newprofile = serialize_profile_from_old_profile(aa[which], which, '')
+                except AttributeError:
+                    # see https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/1528139
+                    newprofile = "###\n###\n### Internal error while generating diff, please use '%s' instead\n###\n###\n" % _('View Changes b/w (C)lean profiles')
+
+                display_changes_with_comments(oldprofile, newprofile)
+
+            elif ans == 'CMD_VIEW_CHANGES_CLEAN':
+                which = list(changed.keys())[arg]
+                oldprofile = serialize_profile(original_aa[which], which, '')
+                newprofile = serialize_profile(aa[which], which, '')
+
+                display_changes(oldprofile, newprofile)
+
+        for profile_name in sorted(changed.keys()):
+            write_profile_ui_feedback(profile_name)
+            reload_base(profile_name)
+
 def get_pager():
-    pass
+    return 'less'
 
 def generate_diff(oldprofile, newprofile):
     oldtemp = tempfile.NamedTemporaryFile('w')
@@ -2354,33 +1890,26 @@ def get_profile_diff(oldprofile, newprofile):
     return ''.join(diff)
 
 def display_changes(oldprofile, newprofile):
-    if aaui.UI_mode == 'yast':
-        aaui.UI_LongMessage(_('Profile Changes'), get_profile_diff(oldprofile, newprofile))
-    else:
-        difftemp = generate_diff(oldprofile, newprofile)
-        subprocess.call('less %s' % difftemp.name, shell=True)
-        difftemp.delete = True
-        difftemp.close()
+    difftemp = generate_diff(oldprofile, newprofile)
+    subprocess.call('less %s' % difftemp.name, shell=True)
+    difftemp.delete = True
+    difftemp.close()
 
 def display_changes_with_comments(oldprofile, newprofile):
     """Compare the new profile with the existing profile inclusive of all the comments"""
     if not os.path.exists(oldprofile):
         raise AppArmorException(_("Can't find existing profile %s to compare changes.") % oldprofile)
-    if aaui.UI_mode == 'yast':
-        #To-Do
-        pass
-    else:
-        newtemp = tempfile.NamedTemporaryFile('w')
-        newtemp.write(newprofile)
-        newtemp.flush()
+    newtemp = tempfile.NamedTemporaryFile('w')
+    newtemp.write(newprofile)
+    newtemp.flush()
 
-        difftemp = tempfile.NamedTemporaryFile('w')
+    difftemp = tempfile.NamedTemporaryFile('w')
 
-        subprocess.call('diff -u -p %s %s > %s' % (oldprofile, newtemp.name, difftemp.name), shell=True)
+    subprocess.call('diff -u -p %s %s > %s' % (oldprofile, newtemp.name, difftemp.name), shell=True)
 
-        newtemp.close()
-        subprocess.call('less %s' % difftemp.name, shell=True)
-        difftemp.close()
+    newtemp.close()
+    subprocess.call('less %s' % difftemp.name, shell=True)
+    difftemp.close()
 
 def set_process(pid, profile):
     # If process not running don't do anything
@@ -2418,32 +1947,37 @@ def set_process(pid, profile):
     process.close()
 
 def collapse_log():
+    log_dict = hasher()
     for aamode in prelog.keys():
         for profile in prelog[aamode].keys():
             for hat in prelog[aamode][profile].keys():
 
-                log_dict[aamode][profile][hat] = profile_storage(profile, hat, 'collapse_log()')
+                log_dict[aamode][profile][hat] = ProfileStorage(profile, hat, 'collapse_log()')
 
                 for path in prelog[aamode][profile][hat]['path'].keys():
                     mode = prelog[aamode][profile][hat]['path'][path]
 
-                    combinedmode = set()
-                    # Is path in original profile?
-                    if aa[profile][hat]['allow']['path'].get(path, False):
-                        combinedmode |= aa[profile][hat]['allow']['path'][path]['mode']
+                    user, other = split_mode(mode)
 
-                    # Match path to regexps in profile
-                    combinedmode |= rematchfrag(aa[profile][hat], 'allow', path)[0]
+                    # logparser.py doesn't preserve 'owner' information, see https://bugs.launchpad.net/apparmor/+bug/1538340
+                    # XXX re-check this code after fixing this bug
+                    if other:
+                        owner = False
+                        mode = other
+                    else:
+                        owner = True
+                        mode = user
 
-                    # Match path from includes
+                    # python3 aa-logprof -f <(echo '[55826.822365] audit: type=1400 audit(1454355221.096:85479): apparmor="ALLOWED" operation="file_receive" profile="/usr/sbin/smbd" name="/foo.png" pid=28185 comm="smbd" requested_mask="w" denied_mask="w" fsuid=100 ouid=100')
+                    # happens via log_str_to_mode() called in logparser.py parse_event_for_tree()
+                    # XXX fix this in the log parsing!
+                    if 'a' in mode and 'w' in mode:
+                        mode.remove('a')
 
-                    combinedmode |= match_prof_incs_to_path(aa[profile][hat], 'allow', path)[0]
+                    file_event = FileRule(path, mode, None, FileRule.ALL, owner=owner, log_event=True)
 
-                    if not combinedmode or not mode_contains(combinedmode, mode):
-                        if log_dict[aamode][profile][hat]['allow']['path'].get(path, False):
-                            mode |= log_dict[aamode][profile][hat]['allow']['path'][path]
-
-                        log_dict[aamode][profile][hat]['allow']['path'][path] = mode
+                    if not is_known_rule(aa[profile][hat], 'file', file_event):
+                        log_dict[aamode][profile][hat]['file'].add(file_event)
 
                 for cap in prelog[aamode][profile][hat]['capability'].keys():
                     cap_event = CapabilityRule(cap, log_event=True)
@@ -2494,23 +2028,7 @@ def collapse_log():
                             if not is_known_rule(aa[profile][hat], 'signal', signal_event):
                                 log_dict[aamode][profile][hat]['signal'].add(signal_event)
 
-
-PROFILE_MODE_RE      = re.compile('^(r|w|l|m|k|a|ix|ux|px|pux|cx|pix|cix|cux|Ux|Px|PUx|Cx|Pix|Cix|CUx)+$')
-PROFILE_MODE_DENY_RE = re.compile('^(r|w|l|m|k|a|x)+$')
-
-def validate_profile_mode(mode, allow, nt_name=None):
-    if allow == 'deny':
-        if PROFILE_MODE_DENY_RE.search(mode):
-            return True
-        else:
-            return False
-
-    else:
-        if PROFILE_MODE_RE.search(mode):
-            return True
-        else:
-            return False
-
+    return log_dict
 
 def is_skippable_file(path):
     """Returns True if filename matches something to be skipped (rpm or dpkg backup files, hidden files etc.)
@@ -2560,7 +2078,7 @@ def read_inactive_profiles():
     except:
         fatal_error(_("Can't read AppArmor profiles in %s") % extra_profile_dir)
 
-    for file in os.listdir(profile_dir):
+    for file in os.listdir(extra_profile_dir):
         if os.path.isfile(extra_profile_dir + '/' + file):
             if is_skippable_file(file):
                 continue
@@ -2645,7 +2163,7 @@ def parse_profile_data(data, file, do_include):
     if do_include:
         profile = file
         hat = file
-        profile_data[profile][hat] = profile_storage(profile, hat, 'parse_profile_data() do_include')
+        profile_data[profile][hat] = ProfileStorage(profile, hat, 'parse_profile_data() do_include')
         profile_data[profile][hat]['filename'] = file
 
     for lineno, line in enumerate(data):
@@ -2664,7 +2182,7 @@ def parse_profile_data(data, file, do_include):
                 raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
                     { 'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat) })
 
-            profile_data[profile][hat] = profile_storage(profile, hat, 'parse_profile_data() profile_start')
+            profile_data[profile][hat] = ProfileStorage(profile, hat, 'parse_profile_data() profile_start')
 
             if attachment:
                 profile_data[profile][hat]['attachment'] = attachment
@@ -2807,86 +2325,6 @@ def parse_profile_data(data, file, do_include):
             # Conditional Boolean defined
             pass
 
-        elif RE_PROFILE_BARE_FILE_ENTRY.search(line):
-            matches = RE_PROFILE_BARE_FILE_ENTRY.search(line)
-
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected bare file rule found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            audit, deny, allow_keyword, comment = parse_modifiers(matches)
-            # TODO: honor allow_keyword and comment
-            if deny:
-                allow = 'deny'
-            else:
-                allow = 'allow'
-
-            mode = apparmor.aamode.AA_BARE_FILE_MODE
-            if not matches.group('owner'):
-                mode |= AA_OTHER(apparmor.aamode.AA_BARE_FILE_MODE)
-
-            path_rule = profile_data[profile][hat][allow]['path'][ALL]
-            path_rule['mode'] = mode
-            path_rule['audit'] = set()
-            if audit:
-                path_rule['audit'] = mode
-            path_rule['file_prefix'] = True
-
-        elif RE_PROFILE_PATH_ENTRY.search(line):
-            matches = RE_PROFILE_PATH_ENTRY.search(line).groups()
-
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected path entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            audit = False
-            if matches[0]:
-                audit = True
-
-            allow = 'allow'
-            if matches[1] and matches[1].strip() == 'deny':
-                allow = 'deny'
-
-            user = False
-            if matches[2]:
-                user = True
-
-            file_prefix = False
-            if matches[3]:
-                file_prefix = True
-
-            path = strip_quotes(matches[4].strip())
-            mode = matches[5]
-            nt_name = matches[7]
-            if nt_name:
-                nt_name = nt_name.strip()
-
-            p_re = convert_regexp(path)
-            try:
-                re.compile(p_re)
-            except:
-                raise AppArmorException(_('Syntax Error: Invalid Regex %(path)s in file: %(file)s line: %(line)s') % { 'path': path, 'file': file, 'line': lineno + 1 })
-
-            if not validate_profile_mode(mode, allow, nt_name):
-                raise AppArmorException(_('Invalid mode %(mode)s in file: %(file)s line: %(line)s') % {'mode': mode, 'file': file, 'line': lineno + 1 })
-
-            tmpmode = set()
-            if user:
-                tmpmode = str_to_mode('%s::' % mode)
-            else:
-                tmpmode = str_to_mode(mode)
-
-            profile_data[profile][hat][allow]['path'][path]['mode'] = profile_data[profile][hat][allow]['path'][path].get('mode', set()) | tmpmode
-
-            if file_prefix:
-                profile_data[profile][hat][allow]['path'][path]['file_prefix'] = True
-
-            if nt_name:
-                profile_data[profile][hat][allow]['path'][path]['to'] = nt_name
-
-            if audit:
-                profile_data[profile][hat][allow]['path'][path]['audit'] = profile_data[profile][hat][allow]['path'][path].get('audit', set()) | tmpmode
-            else:
-                profile_data[profile][hat][allow]['path'][path]['audit'] = set()
-
         elif re_match_include(line):
             # Include files
             include_name = re_match_include(line)
@@ -2911,10 +2349,6 @@ def parse_profile_data(data, file, do_include):
         elif NetworkRule.match(line):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected network entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            # init rule class (if not done yet)
-            if not profile_data[profile][hat].get('network', False):
-                profile_data[profile][hat]['network'] = NetworkRuleset()
 
             profile_data[profile][hat]['network'].add(NetworkRule.parse(line))
 
@@ -3024,7 +2458,7 @@ def parse_profile_data(data, file, do_include):
             # if hat is already known, the filelist check some lines below will error out.
             # nevertheless, just to be sure, don't overwrite existing profile_data.
             if not profile_data[profile].get(hat, False):
-                profile_data[profile][hat] = profile_storage(profile, hat, 'parse_profile_data() hat_def')
+                profile_data[profile][hat] = ProfileStorage(profile, hat, 'parse_profile_data() hat_def')
                 profile_data[profile][hat]['filename'] = file
 
             flags = matches.group('flags')
@@ -3057,6 +2491,13 @@ def parse_profile_data(data, file, do_include):
                 else:
                     initial_comment = initial_comment + line + '\n'
 
+        elif FileRule.match(line):
+            # leading permissions could look like a keyword, therefore handle file rules after everything else
+            if not profile:
+                raise AppArmorException(_('Syntax Error: Unexpected path entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
+
+            profile_data[profile][hat]['file'].add(FileRule.parse(line))
+
         elif not RE_RULE_HAS_COMMA.search(line):
             # Bah, line continues on to the next line
             if RE_HAS_COMMENT_SPLIT.search(line):
@@ -3074,7 +2515,7 @@ def parse_profile_data(data, file, do_include):
                 if re.search(hatglob, parsed_prof):
                     for hat in cfg['required_hats'][hatglob].split():
                         if not profile_data[parsed_prof].get(hat, False):
-                            profile_data[parsed_prof][hat] = profile_storage(parsed_prof, hat, 'parse_profile_data() required_hats')
+                            profile_data[parsed_prof][hat] = ProfileStorage(parsed_prof, hat, 'parse_profile_data() required_hats')
 
     # End of file reached but we're stuck in a profile
     if profile and not do_include:
@@ -3134,14 +2575,6 @@ def store_list_var(var, list_var, value, var_operation, filename):
             raise AppArmorException(_('Values added to a non-existing variable %(variable)s: %(value)s in %(file)s') % { 'variable': list_var, 'value': value, 'file': filename })
     else:
         raise AppArmorException(_('Unknown variable operation %(operation)s for variable %(variable)s in %(file)s') % { 'operation': var_operation, 'variable': list_var, 'file': filename })
-
-
-def escape(escape):
-    escape = strip_quotes(escape)
-    escape = re.sub('((?<!\\))"', r'\1\\', escape)
-    if re.search('(\s|^$|")', escape):
-        return '"%s"' % escape
-    return escape
 
 def write_header(prof_data, depth, name, embedded_hat, write_flags):
     pre = ' ' * int(depth * 2)
@@ -3353,76 +2786,10 @@ def write_links(prof_data, depth):
 
     return data
 
-def write_path_rules(prof_data, depth, allow):
-    pre = '  ' * depth
+def write_file(prof_data, depth):
     data = []
-    allowstr = set_allow_str(allow)
-
-    if prof_data[allow].get('path', False):
-        for path in sorted(prof_data[allow]['path'].keys()):
-            filestr = ''
-            if prof_data[allow]['path'][path].get('file_prefix', False):
-                filestr = 'file'
-            mode = prof_data[allow]['path'][path]['mode']
-            audit = prof_data[allow]['path'][path]['audit']
-            tail = ''
-            if prof_data[allow]['path'][path].get('to', False):
-                tail = ' -> %s' % prof_data[allow]['path'][path]['to']
-            user, other = split_mode(mode)
-            user_audit, other_audit = split_mode(audit)
-
-            while user or other:
-                ownerstr = ''
-                tmpmode = 0
-                tmpaudit = False
-                if user - other:
-                    # if no other mode set
-                    ownerstr = 'owner '
-                    tmpmode = user - other
-                    tmpaudit = user_audit
-                    user = user - tmpmode
-                else:
-                    if user_audit - other_audit & user:
-                        ownerstr = 'owner '
-                        tmpaudit = user_audit - other_audit & user
-                        tmpmode = user & tmpaudit
-                        user = user - tmpmode
-                    else:
-                        ownerstr = ''
-                        tmpmode = user | other
-                        tmpaudit = user_audit | other_audit
-                        user = user - tmpmode
-                        other = other - tmpmode
-
-                if path == ALL:
-                    path = ''
-
-                if tmpmode & tmpaudit:
-                    modestr = mode_to_str(tmpmode & tmpaudit)
-                    if modestr:
-                        modestr = ' ' + modestr
-                    path = quote_if_needed(path)
-                    if filestr and path:
-                        filestr += ' '
-                    data.append('%saudit %s%s%s%s%s%s,' % (pre, allowstr, ownerstr, filestr, path, modestr, tail))
-                    tmpmode = tmpmode - tmpaudit
-
-                if tmpmode:
-                    modestr = mode_to_str(tmpmode)
-                    if modestr:
-                        modestr = ' ' + modestr
-                    path = quote_if_needed(path)
-                    if filestr and path:
-                        filestr += ' '
-                    data.append('%s%s%s%s%s%s%s,' % (pre, allowstr, ownerstr, filestr, path, modestr, tail))
-
-        data.append('')
-    return data
-
-def write_paths(prof_data, depth):
-    data = write_path_rules(prof_data, depth, 'deny')
-    data += write_path_rules(prof_data, depth, 'allow')
-
+    if prof_data.get('file', False):
+        data = prof_data['file'].get_clean(depth)
     return data
 
 def write_rules(prof_data, depth):
@@ -3439,7 +2806,7 @@ def write_rules(prof_data, depth):
     data += write_pivot_root(prof_data, depth)
     data += write_unix(prof_data, depth)
     data += write_links(prof_data, depth)
-    data += write_paths(prof_data, depth)
+    data += write_file(prof_data, depth)
     data += write_change_profile(prof_data, depth)
 
     return data
@@ -3506,7 +2873,7 @@ def serialize_profile(profile_data, name, options):
                 profile_data[name]['repo']['id']):
             repo = profile_data[name]['repo']
             string += '# REPOSITORY: %s %s %s\n' % (repo['url'], repo['user'], repo['id'])
-        elif profile_data[name]['repo']['neversubmit']:
+        elif profile_data[name]['repo'].get('neversubmit'):
             string += '# REPOSITORY: NEVERSUBMIT\n'
 
 #     if profile_data[name].get('initial_comment', False):
@@ -3601,7 +2968,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                          'pivot_root': write_pivot_root,
                          'unix': write_unix,
                          'link': write_links,
-                         'path': write_paths,
+                         'file': write_file,
                          'change_profile': write_change_profile,
                          }
         default_write_order = [ 'alias',
@@ -3617,7 +2984,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                                 'pivot_root',
                                 'unix',
                                 'link',
-                                'path',
+                                'file',
                                 'change_profile',
                               ]
         # prof_correct = True  # XXX correct?
@@ -3634,7 +3001,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     'pivot_root': True, # not handled otherwise yet
                     'unix': True, # not handled otherwise yet
                     'link': False,
-                    'path': False,
+                    'file': False,
                     'change_profile': False,
                     'include_local_started': False, # unused
                     }
@@ -3884,78 +3251,6 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     #To-Do
                     pass
 
-            elif RE_PROFILE_BARE_FILE_ENTRY.search(line):
-                matches = RE_PROFILE_BARE_FILE_ENTRY.search(line).groups()
-
-                allow = 'allow'
-                if matches[1] and matches[1].strip() == 'deny':
-                    allow = 'deny'
-
-                mode = apparmor.aamode.AA_BARE_FILE_MODE
-                if not matches[2]:
-                    mode |= AA_OTHER(apparmor.aamode.AA_BARE_FILE_MODE)
-
-                audit = set()
-                if matches[0]:
-                    audit = mode
-
-                path_rule = write_prof_data[hat][allow]['path'][ALL]
-                if path_rule.get('mode', set()) & mode and \
-                   (not audit or path_rule.get('audit', set()) & audit) and \
-                   path_rule.get('file_prefix', set()):
-                    if not segments['path'] and True in segments.values():
-                        data += write_prior_segments(write_prof_data[name], segments, line)
-                    segments['path'] = True
-                    write_prof_data[hat][allow]['path'].pop(ALL)
-                    data.append(line)
-
-            elif RE_PROFILE_PATH_ENTRY.search(line):
-                matches = RE_PROFILE_PATH_ENTRY.search(line).groups()
-                audit = False
-                if matches[0]:
-                    audit = True
-                allow = 'allow'
-                if matches[1] and matches[1].split() == 'deny':
-                    allow = 'deny'
-
-                user = False
-                if matches[2]:
-                    user = True
-
-                path = strip_quotes(matches[4].strip())
-                mode = matches[5]
-                nt_name = matches[7]
-                if nt_name:
-                    nt_name = nt_name.strip()
-
-                tmpmode = set()
-                if user:
-                    tmpmode = str_to_mode('%s::' % mode)
-                else:
-                    tmpmode = str_to_mode(mode)
-
-                if not write_prof_data[hat][allow]['path'].get(path):
-                    correct = False
-                else:
-                    if not write_prof_data[hat][allow]['path'][path].get('mode', set()) & tmpmode:
-                        correct = False
-
-                    if nt_name and not write_prof_data[hat][allow]['path'][path].get('to', False) == nt_name:
-                        correct = False
-
-                    if audit and not write_prof_data[hat][allow]['path'][path].get('audit', set()) & tmpmode:
-                        correct = False
-
-                if correct:
-                    if not segments['path'] and True in segments.values():
-                        data += write_prior_segments(write_prof_data[name], segments, line)
-                    segments['path'] = True
-                    write_prof_data[hat][allow]['path'].pop(path)
-                    data.append(line)
-                else:
-                    #To-Do
-                    pass
-
             elif re_match_include(line):
                 include_name = re_match_include(line)
                 if profile:
@@ -3999,6 +3294,20 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 else:
                     #To-Do
                     pass
+            elif FileRule.match(line):
+                # leading permissions could look like a keyword, therefore handle file rules after everything else
+                file_obj = FileRule.parse(line)
+
+                if write_prof_data[hat]['file'].is_covered(file_obj, True, True):
+                    if not segments['file'] and True in segments.values():
+                        data += write_prior_segments(write_prof_data[name], segments, line)
+                    segments['file'] = True
+                    write_prof_data[hat]['file'].delete(file_obj)
+                    data.append(line)
+                else:
+                    #To-Do
+                    pass
+
             else:
                 if correct:
                     data.append(line)
@@ -4052,39 +3361,6 @@ def write_profile(profile):
 
     original_aa[profile] = deepcopy(aa[profile])
 
-def matchliteral(aa_regexp, literal):
-    p_regexp = '^' + convert_regexp(aa_regexp) + '$'
-    match = False
-    try:
-        match = re.search(p_regexp, literal)
-    except:
-        return None
-    return match
-
-def profile_known_exec(profile, typ, exec_target):
-    if typ == 'exec':
-        cm = None
-        am = None
-        m = []
-
-        cm, am, m = rematchfrag(profile, 'deny', exec_target)
-        if cm & apparmor.aamode.AA_MAY_EXEC:
-            return -1
-
-        cm, am, m = match_prof_incs_to_path(profile, 'deny', exec_target)
-        if cm & apparmor.aamode.AA_MAY_EXEC:
-            return -1
-
-        cm, am, m = rematchfrag(profile, 'allow', exec_target)
-        if cm & apparmor.aamode.AA_MAY_EXEC:
-            return 1
-
-        cm, am, m = match_prof_incs_to_path(profile, 'allow', exec_target)
-        if cm & apparmor.aamode.AA_MAY_EXEC:
-            return 1
-
-    return 0
-
 def is_known_rule(profile, rule_type, rule_obj):
     # XXX get rid of get() checks after we have a proper function to initialize a profile
     if profile.get(rule_type, False):
@@ -4110,6 +3386,84 @@ def is_known_rule(profile, rule_type, rule_obj):
                     includelist += [childinc]
 
     return False
+
+def get_file_perms(profile, path, audit, deny):
+    '''get the current permissions for the given path'''
+
+    perms = profile['file'].get_perms_for_path(path, audit, deny)
+
+    includelist = list(profile['include'].keys())
+    checked = []
+
+    while includelist:
+        incname = includelist.pop(0)
+
+        if incname in checked:
+            continue
+        checked.append(incname)
+
+        if os.path.isdir(profile_dir + '/' + incname):
+            includelist += include_dir_filelist(profile_dir, incname)
+        else:
+            incperms = include[incname][incname]['file'].get_perms_for_path(path, audit, deny)
+
+            for allow_or_deny in ['allow', 'deny']:
+                for owner_or_all in ['all', 'owner']:
+                    for perm in incperms[allow_or_deny][owner_or_all]:
+                        perms[allow_or_deny][owner_or_all].add(perm)
+
+                    if 'a' in perms[allow_or_deny][owner_or_all] and 'w' in perms[allow_or_deny][owner_or_all]:
+                        perms[allow_or_deny][owner_or_all].remove('a')  # a is a subset of w, so remove it
+
+            for incpath in incperms['paths']:
+                perms['paths'].add(incpath)
+
+            for childinc in include[incname][incname]['include'].keys():
+                if childinc not in checked:
+                    includelist += [childinc]
+
+    return perms
+
+def propose_file_rules(profile_obj, rule_obj):
+    '''Propose merged file rules based on the existing profile and the log events
+       - permissions get merged
+       - matching paths from existing rules, common_glob() and user_globs get proposed
+       - IMPORTANT: modifies rule_obj.original_perms and rule_obj.perms'''
+    options = []
+    original_path = rule_obj.path.regex
+
+    merged_rule_obj = deepcopy(rule_obj)   # make sure not to modify the original rule object (with exceptions, see end of this function)
+
+    existing_perms = get_file_perms(profile_obj, rule_obj.path, False, False)
+    for perm in existing_perms['allow']['all']:  # XXX also handle owner-only perms
+        merged_rule_obj.perms.add(perm)
+        merged_rule_obj.raw_rule = None
+
+    if 'a' in merged_rule_obj.perms and 'w' in merged_rule_obj.perms:
+        merged_rule_obj.perms.remove('a')  # a is a subset of w, so remove it
+
+    pathlist = {original_path} | existing_perms['paths'] | set(glob_common(original_path))
+
+    for user_glob in user_globs:
+        if user_globs[user_glob].match(original_path):
+            pathlist.add(user_glob)
+
+    pathlist = order_globs(pathlist, original_path)
+
+    # paths in existing rules that match the original path
+    for path in pathlist:
+        merged_rule_obj.store_edit(path)
+        merged_rule_obj.raw_rule = None
+        options.append(merged_rule_obj.get_clean())
+
+    merged_rule_obj.exec_perms = None
+
+    rule_obj.original_perms = existing_perms
+    if rule_obj.perms != merged_rule_obj.perms:
+        rule_obj.perms = merged_rule_obj.perms
+        rule_obj.raw_rule = None
+
+    return options
 
 def reload_base(bin_path):
     if not check_for_apparmor():
@@ -4169,65 +3523,6 @@ def load_include(incname):
 
     return 0
 
-def rematchfrag(frag, allow, path):
-    combinedmode = set()
-    combinedaudit = set()
-    matches = []
-    if not frag:
-        return combinedmode, combinedaudit, matches
-    for entry in frag[allow]['path'].keys():
-        match = matchliteral(entry, path)
-        if match:
-            #print(frag[allow]['path'][entry]['mode'])
-            combinedmode |= frag[allow]['path'][entry].get('mode', set())
-            combinedaudit |= frag[allow]['path'][entry].get('audit', set())
-            matches.append(entry)
-
-    return combinedmode, combinedaudit, matches
-
-def match_include_to_path(incname, allow, path):
-    combinedmode = set()
-    combinedaudit = set()
-    matches = []
-    includelist = [incname]
-    while includelist:
-        incfile = str(includelist.pop(0))
-        # ret = load_include(incfile)
-        load_include(incfile)
-        if not include.get(incfile, {}):
-            continue
-        cm, am, m = rematchfrag(include[incfile].get(incfile, {}), allow, path)
-        #print(incfile, cm, am, m)
-        if cm:
-            combinedmode |= cm
-            combinedaudit |= am
-            matches += m
-
-        if path in include[incfile][incfile][allow]['path']:
-            combinedmode |= include[incfile][incfile][allow]['path'][path]['mode']
-            combinedaudit |= include[incfile][incfile][allow]['path'][path]['audit']
-
-        if include[incfile][incfile]['include'].keys():
-            includelist += include[incfile][incfile]['include'].keys()
-
-    return combinedmode, combinedaudit, matches
-
-def match_prof_incs_to_path(frag, allow, path):
-    combinedmode = set()
-    combinedaudit = set()
-    matches = []
-
-    includelist = list(frag['include'].keys())
-    while includelist:
-        incname = includelist.pop(0)
-        cm, am, m = match_include_to_path(incname, allow, path)
-        if cm:
-            combinedmode |= cm
-            combinedaudit |= am
-            matches += m
-
-    return combinedmode, combinedaudit, matches
-
 def check_qualifiers(program):
     if cfg['qualifiers'].get(program, False):
         if cfg['qualifiers'][program] != 'p':
@@ -4282,42 +3577,6 @@ def combine_name(name1, name2):
     else:
         return '%s^%s' % (name1, name2)
 
-def commonprefix(new, old):
-    match = re.search(r'^([^\0]*)[^\0]*(\0\1[^\0]*)*$', '\0'.join([new, old]))
-    if match:
-        return match.groups()[0]
-    return match
-
-def commonsuffix(new, old):
-    match = commonprefix(new[-1::-1], old[-1::-1])
-    if match:
-        return match[-1::-1]
-
-def matchregexp(new, old):
-    if re.search('\{.*(\,.*)*\}', old):
-        return None
-
-#     if re.search('\[.+\]', old) or re.search('\*', old) or re.search('\?', old):
-#
-#         new_reg = convert_regexp(new)
-#         old_reg = convert_regexp(old)
-#
-#         pref = commonprefix(new, old)
-#         if pref:
-#             if convert_regexp('(*,**)$') in pref:
-#                 pref = pref.replace(convert_regexp('(*,**)$'), '')
-#             new = new.replace(pref, '', 1)
-#             old = old.replace(pref, '', 1)
-#
-#         suff = commonsuffix(new, old)
-#         if suffix:
-#             pass
-    new_reg = convert_regexp(new)
-    if re.search(new_reg, old):
-        return True
-
-    return None
-
 def logger_path():
     logger = conf.find_first_file(cfg['settings']['logger']) or '/bin/logger'
     if not os.path.isfile(logger) or not os.access(logger, os.EX_OK):
@@ -4326,24 +3585,36 @@ def logger_path():
 
 ######Initialisations######
 
-conf = apparmor.config.Config('ini', CONFDIR)
-cfg = conf.read_config('logprof.conf')
+def init_aa(confdir="/etc/apparmor"):
+    global CONFDIR
+    global conf
+    global cfg
+    global profile_dir
+    global extra_profile_dir
+    global parser
 
-# prevent various failures if logprof.conf doesn't exist
-if not cfg.sections():
-    cfg.add_section('settings')
-    cfg.add_section('required_hats')
+    if CONFDIR:
+        return  # config already initialized (and possibly changed afterwards), so don't overwrite the config variables
 
-if cfg['settings'].get('default_owner_prompt', False):
-    cfg['settings']['default_owner_prompt'] = ''
+    CONFDIR = confdir
+    conf = apparmor.config.Config('ini', CONFDIR)
+    cfg = conf.read_config('logprof.conf')
 
-profile_dir = conf.find_first_dir(cfg['settings'].get('profiledir')) or '/etc/apparmor.d'
-if not os.path.isdir(profile_dir):
-    raise AppArmorException('Can\'t find AppArmor profiles')
+    # prevent various failures if logprof.conf doesn't exist
+    if not cfg.sections():
+        cfg.add_section('settings')
+        cfg.add_section('required_hats')
 
-extra_profile_dir = conf.find_first_dir(cfg['settings'].get('inactive_profiledir')) or '/usr/share/apparmor/extra-profiles/'
+    if cfg['settings'].get('default_owner_prompt', False):
+        cfg['settings']['default_owner_prompt'] = ''
 
-parser = conf.find_first_file(cfg['settings'].get('parser')) or '/sbin/apparmor_parser'
-if not os.path.isfile(parser) or not os.access(parser, os.EX_OK):
-    raise AppArmorException('Can\'t find apparmor_parser')
+    profile_dir = conf.find_first_dir(cfg['settings'].get('profiledir')) or '/etc/apparmor.d'
+    if not os.path.isdir(profile_dir):
+        raise AppArmorException('Can\'t find AppArmor profiles in %s' % (profile_dir))
+
+    extra_profile_dir = conf.find_first_dir(cfg['settings'].get('inactive_profiledir')) or '/usr/share/apparmor/extra-profiles/'
+
+    parser = conf.find_first_file(cfg['settings'].get('parser')) or '/sbin/apparmor_parser'
+    if not os.path.isfile(parser) or not os.access(parser, os.EX_OK):
+        raise AppArmorException('Can\'t find apparmor_parser at %s' % (parser))
 

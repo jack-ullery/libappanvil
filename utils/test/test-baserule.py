@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/python3
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
@@ -43,7 +43,7 @@ class TestBaserule(AATest):
     def test_is_equal_localvars(self):
         obj = BaseRule()
         with self.assertRaises(NotImplementedError):
-            obj.is_equal_localvars(BaseRule())
+            obj.is_equal_localvars(BaseRule(), False)
 
     def test_is_covered_localvars(self):
         obj = BaseRule()
@@ -67,6 +67,21 @@ class TestBaserule(AATest):
         obj = BaseRule()
         with self.assertRaises(NotImplementedError):
             obj.logprof_header_localvars()
+
+    def test_edit_header_localvars(self):
+        obj = BaseRule()
+        with self.assertRaises(NotImplementedError):
+            obj.edit_header()
+
+    def test_validate_edit_localvars(self):
+        obj = BaseRule()
+        with self.assertRaises(NotImplementedError):
+            obj.validate_edit('/foo')
+
+    def test_store_edit_localvars(self):
+        obj = BaseRule()
+        with self.assertRaises(NotImplementedError):
+            obj.store_edit('/foo')
 
 
 setup_all_loops(__name__)

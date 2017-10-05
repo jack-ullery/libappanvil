@@ -13,10 +13,10 @@
 #
 # ----------------------------------------------------------------------
 import apparmor.aa as apparmor
-from apparmor.regex import re_match_include
 
 class Prof(object):
     def __init__(self, filename):
+        apparmor.init_aa()
         self.aa = apparmor.aa
         self.filelist = apparmor.filelist
         self.include = apparmor.include
@@ -71,39 +71,4 @@ class CleanProf(object):
                 else:
                     deleted += self.other.aa[program][hat][ruletype].delete_duplicates(None)
 
-            #Clean the duplicates of path in other profile
-            deleted += delete_path_duplicates(self.profile.aa[program][hat], self.other.aa[program][hat], 'allow', self.same_file)
-            deleted += delete_path_duplicates(self.profile.aa[program][hat], self.other.aa[program][hat], 'deny', self.same_file)
-
         return deleted
-
-def delete_path_duplicates(profile, profile_other, allow, same_profile=True):
-    deleted = []
-    # Check if any individual rule makes any rule superfluous
-    for rule in profile[allow]['path'].keys():
-        for entry in profile_other[allow]['path'].keys():
-            if rule == entry:
-                # Check the modes
-                cm = profile[allow]['path'][rule]['mode']
-                am = profile[allow]['path'][rule]['audit']
-                # If modes of rule are a superset of rules implied by entry we can safely remove it
-                if apparmor.mode_contains(cm, profile_other[allow]['path'][entry]['mode']) and apparmor.mode_contains(am, profile_other[allow]['path'][entry]['audit']):
-                    if not same_profile:
-                        deleted.append(entry)
-                continue
-            if re_match_include(rule) or re_match_include(entry):
-                continue
-            # Check if the rule implies entry
-            if apparmor.matchliteral(rule, entry):
-                # Check the modes
-                cm = profile[allow]['path'][rule]['mode']
-                am = profile[allow]['path'][rule]['audit']
-                # If modes of rule are a superset of rules implied by entry we can safely remove it
-                if apparmor.mode_contains(cm, profile_other[allow]['path'][entry]['mode']) and apparmor.mode_contains(am, profile_other[allow]['path'][entry]['audit']):
-                    deleted.append(entry)
-
-    for entry in deleted:
-        profile_other[allow]['path'].pop(entry)
-
-    return len(deleted)
-

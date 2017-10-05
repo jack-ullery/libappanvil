@@ -16,7 +16,7 @@ import shutil
 import subprocess
 import sys
 import unittest
-from common_test import AATest, setup_all_loops
+from common_test import AATest, setup_all_loops, setup_aa
 
 import apparmor.aa as apparmor
 from common_test import read_file
@@ -156,6 +156,7 @@ class MinitoolsTest(AATest):
         self.assertEqual(exp_content, real_content, 'Failed to cleanup profile properly')
 
 
+setup_aa(apparmor)
 setup_all_loops(__name__)
 if __name__ == '__main__':
     unittest.main(verbosity=2)

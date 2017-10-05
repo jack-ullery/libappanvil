@@ -1,5 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (c) 1999, 2004, 2005 NOVELL (All rights reserved)
+#    Copyright (c) 2016 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -54,7 +55,7 @@ libapparmor by adding USE_SYSTEM=1 to your make command.${nl}\
   AA_LDLIBS = -lapparmor
 endif
 EXTRA_CFLAGS=$(CFLAGS) $(CPPFLAGS) -fPIC -shared -Wall $(LIBAPPARMOR_INCLUDE)
-LINK_FLAGS=-Xlinker -x $(AA_LINK_FLAGS)
+LINK_FLAGS=-Xlinker -x $(AA_LINK_FLAGS) $(LDFLAGS)
 LIBS=-lpam $(AA_LDLIBS)
 OBJECTS=${NAME}.o get_options.o
 
@@ -62,7 +63,11 @@ OBJECTS=${NAME}.o get_options.o
 .SILENT: libapparmor_check
 libapparmor_check: ; $(ERROR_MESSAGE)
 
-all: libapparmor_check $(NAME).so
+all: libapparmor_check $(NAME).so docs
+
+.PHONY: docs
+# docs: we should have some
+docs:
 
 $(NAME).so: ${OBJECTS}
 	$(CC) $(EXTRA_CFLAGS) $(LINK_FLAGS) -o $@ ${OBJECTS} $(LIBS)

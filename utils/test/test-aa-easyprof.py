@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/python3
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2011-2015 Canonical Ltd.
@@ -17,6 +17,8 @@ import shutil
 import sys
 import tempfile
 import unittest
+
+import apparmor.easyprof as easyprof
 
 topdir = None
 debugging = False
@@ -162,6 +164,23 @@ TEMPLATES_DIR="%s/templates"
 
         self.binary = "/opt/bin/foo"
         self.full_args = ['-c', self.conffile, self.binary]
+
+        # Check __AA_BASEDIR, which may be set by the Makefile, to see if
+        # we should use a non-default base directory path to find
+        # abstraction files
+        #
+        # NOTE: Individual tests can append another --base path to the
+        #       args list and override a base path set here
+        base = os.getenv('__AA_BASEDIR')
+        if base:
+            self.full_args.append('--base=%s' % base)
+
+        # Check __AA_PARSER, which may be set by the Makefile, to see if
+        # we should use a non-default apparmor_parser path to verify
+        # policy
+        parser = os.getenv('__AA_PARSER')
+        if parser:
+            self.full_args.append('--parser=%s' % parser)
 
         if debugging:
             self.full_args.append('-d')
@@ -912,6 +931,94 @@ POLICYGROUPS_DIR="%s/templates"
             except Exception:
                 raise
             raise Exception ("abstraction '%s' should be invalid" % s)
+
+    def _create_tmp_base_dir(self, prefix='', abstractions=[], tunables=[]):
+        '''Create a temporary base dir layout'''
+        base_name = 'apparmor.d'
+        if prefix:
+            base_name = '%s-%s' % (prefix, base_name)
+        base_dir = os.path.join(self.tmpdir, base_name)
+        abstractions_dir = os.path.join(base_dir, 'abstractions')
+        tunables_dir = os.path.join(base_dir, 'tunables')
+
+        os.mkdir(base_dir)
+        os.mkdir(abstractions_dir)
+        os.mkdir(tunables_dir)
+
+        for f in abstractions:
+            contents = '''
+  # Abstraction file for testing
+  /%s r,
+''' % (f)
+            open(os.path.join(abstractions_dir, f), 'w').write(contents)
+
+        for f in tunables:
+            contents = '''
+# Tunable file for testing
+@{AA_TEST_%s}=foo
+''' % (f)
+            open(os.path.join(tunables_dir, f), 'w').write(contents)
+
+        return base_dir
+
+    def test_genpolicy_abstractions_custom_base(self):
+        '''Test genpolicy (custom base dir)'''
+        abstraction = "custom-base-dir-test-abstraction"
+        # The default template #includes the base abstraction and global
+        # tunable so we need to create placeholders
+        base = self._create_tmp_base_dir(abstractions=['base', abstraction], tunables=['global'])
+        args = ['--abstractions=%s' % abstraction, '--base=%s' % base]
+
+        p = self._gen_policy(extra_args=args)
+        search = "#include <abstractions/%s>" % abstraction
+        self.assertTrue(search in p, "Could not find '%s' in:\n%s" % (search, p))
+        inv_s = '###ABSTRACTIONS###'
+        self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
+
+    def test_genpolicy_abstractions_custom_base_bad(self):
+        '''Test genpolicy (custom base dir - bad base dirs)'''
+        abstraction = "custom-base-dir-test-abstraction"
+        bad = [ None, '/etc/apparmor.d', '/' ]
+        for base in bad:
+            try:
+                args = ['--abstractions=%s' % abstraction]
+                if base:
+                    args.append('--base=%s' % base)
+                self._gen_policy(extra_args=args)
+            except easyprof.AppArmorException:
+                continue
+            except Exception:
+                raise
+            raise Exception ("abstraction '%s' should be invalid" % abstraction)
+
+    def test_genpolicy_abstractions_custom_include(self):
+        '''Test genpolicy (custom include dir)'''
+        abstraction = "custom-include-dir-test-abstraction"
+        # No need to create placeholders for the base abstraction or global
+        # tunable since we're not adjusting the base directory
+        include = self._create_tmp_base_dir(abstractions=[abstraction])
+        args = ['--abstractions=%s' % abstraction, '--Include=%s' % include]
+        p = self._gen_policy(extra_args=args)
+        search = "#include <abstractions/%s>" % abstraction
+        self.assertTrue(search in p, "Could not find '%s' in:\n%s" % (search, p))
+        inv_s = '###ABSTRACTIONS###'
+        self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
+
+    def test_genpolicy_abstractions_custom_include_bad(self):
+        '''Test genpolicy (custom include dir - bad include dirs)'''
+        abstraction = "custom-include-dir-test-abstraction"
+        bad = [ None, '/etc/apparmor.d', '/' ]
+        for include in bad:
+            try:
+                args = ['--abstractions=%s' % abstraction]
+                if include:
+                    args.append('--Include=%s' % include)
+                self._gen_policy(extra_args=args)
+            except easyprof.AppArmorException:
+                continue
+            except Exception:
+                raise
+            raise Exception ("abstraction '%s' should be invalid" % abstraction)
 
     def test_genpolicy_profile_name_bad(self):
         '''Test genpolicy (profile name - bad values)'''
@@ -2568,40 +2675,16 @@ POLICYGROUPS_DIR="%s/templates"
 # Main
 #
 if __name__ == '__main__':
-    def cleanup(files):
-        for f in files:
-            if os.path.exists(f):
-                os.unlink(f)
-
     absfn = os.path.abspath(sys.argv[0])
     topdir = os.path.dirname(os.path.dirname(absfn))
 
     if len(sys.argv) > 1 and (sys.argv[1] == '-d' or sys.argv[1] == '--debug'):
         debugging = True
 
-    created = []
-
-    # Create the necessary files to import aa-easyprof
-    init = os.path.join(os.path.dirname(absfn), '__init__.py')
-    if not os.path.exists(init):
-        open(init, 'a').close()
-        created.append(init)
-
-    symlink = os.path.join(os.path.dirname(absfn), 'easyprof.py')
-    if not os.path.exists(symlink):
-        os.symlink(os.path.join(topdir, 'apparmor', 'easyprof.py'), symlink)
-        created.append(symlink)
-        created.append(symlink + 'c')
-
-    # Now that we have everything we need, import aa-easyprof
-    import easyprof
-
     # run the tests
     suite = unittest.TestSuite()
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(T))
     rc = unittest.TextTestRunner(verbosity=2).run(suite)
-
-    cleanup(created)
 
     if not rc.wasSuccessful():
         sys.exit(1)

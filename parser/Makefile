@@ -86,7 +86,7 @@ OBJECTS = $(patsubst %.cc, %.o, $(SRCS:.c=.o))
 AAREDIR= libapparmor_re
 AAREOBJECT = ${AAREDIR}/libapparmor_re.a
 AAREOBJECTS = $(AAREOBJECT)
-AARE_LDFLAGS = -static-libgcc -static-libstdc++ -L.
+AARE_LDFLAGS = -static-libgcc -static-libstdc++ -L. $(LDFLAGS)
 AALIB = -Wl,-Bstatic -lapparmor -Wl,-Bdynamic -lpthread
 
 ifdef USE_SYSTEM
@@ -161,7 +161,8 @@ htmlmanpages:	$(HTMLMANPAGES)
 
 pdf:	techdoc.pdf
 
-docs:	manpages htmlmanpages pdf
+docs:	manpages htmlmanpages
+extra_docs: pdf
 
 indep: docs
 	$(Q)$(MAKE) -C po all

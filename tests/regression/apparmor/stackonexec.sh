@@ -20,7 +20,7 @@ bin=$pwd
 . $bin/prologue.inc
 
 requires_kernel_features domain/stack
-settest stacking
+settest transition
 
 file=$tmpdir/file
 otherfile=$tmpdir/file2
@@ -71,9 +71,9 @@ runchecktest_errno EACCES "STACKONEXEC (stacked with unconfined - file)" fail -o
 runchecktest "STACKONEXEC (stacked with unconfined - otherfile)" pass -o $othertest -- $test -f $otherfile
 runchecktest "STACKONEXEC (stacked with unconfined - sharedfile)" pass -o $othertest -- $test -f $sharedfile
 
-runchecktest "STACKONEXEC (stacked with unconfined - okcon)" pass -o $othertest -- $test -l "unconfined//&${othertest}" -m mixed
-runchecktest "STACKONEXEC (stacked with unconfined - bad label)" fail -o $othertest -- $test -l "${test}//&${othertest}" -m mixed
-runchecktest "STACKONEXEC (stacked with unconfined - bad mode)" fail -o $othertest -- $test -l "unconfined//&${othertest}" -m enforce
+runchecktest "STACKONEXEC (stacked with unconfined - okcon)" pass -o $othertest -- $test -l "unconfined//&${othertest}" -m enforce
+runchecktest "STACKONEXEC (stacked with unconfined - bad label)" fail -o $othertest -- $test -l "${test}//&${othertest}" -m enforce
+runchecktest "STACKONEXEC (stacked with unconfined - bad mode)" fail -o $othertest -- $test -l "unconfined//&${othertest}" -m "(null)"
 
 removeprofile
 # Verify that stacking a nonexistent file is properly handled

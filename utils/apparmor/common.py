@@ -245,11 +245,12 @@ def user_perm(prof_dir):
         return False
     return True
 
+if sys.version_info[0] > 2:
+    unicode = str  # python 3 dropped the unicode type. To keep type_is_str() simple (and pyflakes3 happy), re-create it as alias of str.
+
 def type_is_str(var):
     ''' returns True if the given variable is a str (or unicode string when using python 2)'''
-    if type(var) == str:
-        return True
-    elif sys.version_info[0] < 3 and type(var) == unicode:  # python 2 sometimes uses the 'unicode' type
+    if type(var) in [str, unicode]:  # python 2 sometimes uses the 'unicode' type
         return True
     else:
         return False

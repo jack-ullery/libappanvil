@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 # ----------------------------------------------------------------------
 #    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
 #
@@ -25,7 +25,7 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 exp = namedtuple('exp', ['audit', 'allow_keyword', 'deny', 'comment',
-        'execcond', 'all_execconds', 'targetprofile', 'all_targetprofiles'])
+        'execmode', 'execcond', 'all_execconds', 'targetprofile', 'all_targetprofiles'])
 
 # --- tests for single ChangeProfileRule --- #
 
@@ -33,6 +33,7 @@ class ChangeProfileTest(AATest):
     def _compare_obj(self, obj, expected):
         self.assertEqual(expected.allow_keyword, obj.allow_keyword)
         self.assertEqual(expected.audit, obj.audit)
+        self.assertEqual(expected.execmode, obj.execmode)
         self.assertEqual(expected.execcond, obj.execcond)
         self.assertEqual(expected.targetprofile, obj.targetprofile)
         self.assertEqual(expected.all_execconds, obj.all_execconds)
@@ -42,29 +43,33 @@ class ChangeProfileTest(AATest):
 
 class ChangeProfileTestParse(ChangeProfileTest):
     tests = [
-        # rawrule                                            audit  allow  deny   comment        execcond  all?   targetprof  all?
-        ('change_profile,'                             , exp(False, False, False, ''           , None  ,   True , None     , True )),
-        ('change_profile /foo,'                        , exp(False, False, False, ''           , '/foo',   False, None     , True )),
-        ('change_profile /foo -> /bar,'                , exp(False, False, False, ''           , '/foo',   False, '/bar'   , False)),
-        ('deny change_profile /foo -> /bar, # comment' , exp(False, False, True , ' # comment' , '/foo',   False, '/bar'   , False)),
-        ('audit allow change_profile /foo,'            , exp(True , True , False, ''           , '/foo',   False, None     , True )),
-        ('change_profile -> /bar,'                     , exp(False, False, False, ''           , None  ,   True , '/bar'   , False)),
-        ('audit allow change_profile -> /bar,'         , exp(True , True , False, ''           , None  ,   True , '/bar'   , False)),
+        # rawrule                                            audit  allow  deny   comment        execmode    execcond  all?   targetprof  all?
+        ('change_profile,'                             , exp(False, False, False, ''           , None      , None  ,   True , None     , True )),
+        ('change_profile /foo,'                        , exp(False, False, False, ''           , None      , '/foo',   False, None     , True )),
+        ('change_profile safe /foo,'                   , exp(False, False, False, ''           , 'safe'    , '/foo',   False, None     , True )),
+        ('change_profile unsafe /foo,'                 , exp(False, False, False, ''           , 'unsafe'  , '/foo',   False, None     , True )),
+        ('change_profile /foo -> /bar,'                , exp(False, False, False, ''           , None      , '/foo',   False, '/bar'   , False)),
+        ('change_profile safe /foo -> /bar,'           , exp(False, False, False, ''           , 'safe'    , '/foo',   False, '/bar'   , False)),
+        ('change_profile unsafe /foo -> /bar,'         , exp(False, False, False, ''           , 'unsafe'  , '/foo',   False, '/bar'   , False)),
+        ('deny change_profile /foo -> /bar, # comment' , exp(False, False, True , ' # comment' , None      , '/foo',   False, '/bar'   , False)),
+        ('audit allow change_profile safe /foo,'       , exp(True , True , False, ''           , 'safe'    , '/foo',   False, None     , True )),
+        ('change_profile -> /bar,'                     , exp(False, False, False, ''           , None      , None  ,   True , '/bar'   , False)),
+        ('audit allow change_profile -> /bar,'         , exp(True , True , False, ''           , None      , None  ,   True , '/bar'   , False)),
         # quoted versions
-        ('change_profile "/foo",'                      , exp(False, False, False, ''           , '/foo',   False, None     , True )),
-        ('change_profile "/foo" -> "/bar",'            , exp(False, False, False, ''           , '/foo',   False, '/bar'   , False)),
-        ('deny change_profile "/foo" -> "/bar", # cmt' , exp(False, False, True, ' # cmt'      , '/foo',   False, '/bar'   , False)),
-        ('audit allow change_profile "/foo",'          , exp(True , True , False, ''           , '/foo',   False, None     , True )),
-        ('change_profile -> "/bar",'                   , exp(False, False, False, ''           , None  ,   True , '/bar'   , False)),
-        ('audit allow change_profile -> "/bar",'       , exp(True , True , False, ''           , None  ,   True , '/bar'   , False)),
+        ('change_profile "/foo",'                      , exp(False, False, False, ''           , None      , '/foo',   False, None     , True )),
+        ('change_profile "/foo" -> "/bar",'            , exp(False, False, False, ''           , None      , '/foo',   False, '/bar'   , False)),
+        ('deny change_profile "/foo" -> "/bar", # cmt' , exp(False, False, True, ' # cmt'      , None      , '/foo',   False, '/bar'   , False)),
+        ('audit allow change_profile "/foo",'          , exp(True , True , False, ''           , None      , '/foo',   False, None     , True )),
+        ('change_profile -> "/bar",'                   , exp(False, False, False, ''           , None      , None  ,   True , '/bar'   , False)),
+        ('audit allow change_profile -> "/bar",'       , exp(True , True , False, ''           , None      , None  ,   True , '/bar'   , False)),
         # with globbing and/or named profiles
-        ('change_profile,'                             , exp(False, False, False, ''           , None  ,   True , None     , True )),
-        ('change_profile /*,'                          , exp(False, False, False, ''           , '/*'  ,   False, None     , True )),
-        ('change_profile /* -> bar,'                   , exp(False, False, False, ''           , '/*'  ,   False, 'bar'    , False)),
-        ('deny change_profile /** -> bar, # comment'   , exp(False, False, True , ' # comment' , '/**' ,   False, 'bar'    , False)),
-        ('audit allow change_profile /**,'             , exp(True , True , False, ''           , '/**' ,   False, None     , True )),
-        ('change_profile -> "ba r",'                   , exp(False, False, False, ''           , None  ,   True , 'ba r'   , False)),
-        ('audit allow change_profile -> "ba r",'       , exp(True , True , False, ''           , None  ,   True , 'ba r'   , False)),
+        ('change_profile,'                             , exp(False, False, False, ''           , None      , None  ,   True , None     , True )),
+        ('change_profile /*,'                          , exp(False, False, False, ''           , None      , '/*'  ,   False, None     , True )),
+        ('change_profile /* -> bar,'                   , exp(False, False, False, ''           , None      , '/*'  ,   False, 'bar'    , False)),
+        ('deny change_profile /** -> bar, # comment'   , exp(False, False, True , ' # comment' , None      , '/**' ,   False, 'bar'    , False)),
+        ('audit allow change_profile /**,'             , exp(True , True , False, ''           , None      , '/**' ,   False, None     , True )),
+        ('change_profile -> "ba r",'                   , exp(False, False, False, ''           , None      , None  ,   True , 'ba r'   , False)),
+        ('audit allow change_profile -> "ba r",'       , exp(True , True , False, ''           , None      , None  ,   True , 'ba r'   , False)),
      ]
 
     def _run_test(self, rawrule, expected):
@@ -77,6 +82,8 @@ class ChangeProfileTestParseInvalid(ChangeProfileTest):
     tests = [
         ('change_profile -> ,'                     , AppArmorException),
         ('change_profile foo -> ,'                 , AppArmorException),
+        ('change_profile notsafe,'                 , AppArmorException),
+        ('change_profile safety -> /bar,'          , AppArmorException),
     ]
 
     def _run_test(self, rawrule, expected):
@@ -85,8 +92,8 @@ class ChangeProfileTestParseInvalid(ChangeProfileTest):
             ChangeProfileRule.parse(rawrule)
 
 class ChangeProfileTestParseFromLog(ChangeProfileTest):
-    def test_net_from_log(self):
-        parser = ReadLog('', '', '', '', '')
+    def test_change_profile_from_log(self):
+        parser = ReadLog('', '', '', '')
 
         event = 'type=AVC msg=audit(1428699242.551:386): apparmor="DENIED" operation="change_profile" profile="/foo/changeprofile" pid=3459 comm="changeprofile" target="/foo/rename"'
 
@@ -99,7 +106,6 @@ class ChangeProfileTestParseFromLog(ChangeProfileTest):
             'request_mask': None,
             'denied_mask': None,
             'error_code': 0,
-            #'family': 'inet',
             'magic_token': 0,
             'parent': 0,
             'profile': '/foo/changeprofile',
@@ -114,12 +120,15 @@ class ChangeProfileTestParseFromLog(ChangeProfileTest):
             'attr': None,
             'name2': '/foo/rename', # target
             'name': None,
+            'family': None,
+            'protocol': None,
+            'sock_type': None,
         })
 
-        obj = ChangeProfileRule(ChangeProfileRule.ALL, parsed_event['name2'], log_event=parsed_event)
+        obj = ChangeProfileRule(None, ChangeProfileRule.ALL, parsed_event['name2'], log_event=parsed_event)
 
-        #              audit  allow  deny   comment        execcond  all?   targetprof     all?
-        expected = exp(False, False, False, ''           , None,     True,  '/foo/rename', False)
+        #              audit  allow  deny   comment        execmode execcond  all?   targetprof     all?
+        expected = exp(False, False, False, ''           , None,    None,     True,  '/foo/rename', False)
 
         self._compare_obj(obj, expected)
 
@@ -128,13 +137,15 @@ class ChangeProfileTestParseFromLog(ChangeProfileTest):
 
 class ChangeProfileFromInit(ChangeProfileTest):
     tests = [
-        # ChangeProfileRule object                                  audit  allow  deny   comment        execcond    all?   targetprof  all?
-        (ChangeProfileRule('/foo', '/bar', deny=True)          , exp(False, False, True , ''           , '/foo',   False, '/bar'    , False)),
-        (ChangeProfileRule('/foo', '/bar')                     , exp(False, False, False, ''           , '/foo',   False, '/bar'    , False)),
-        (ChangeProfileRule('/foo', ChangeProfileRule.ALL)      , exp(False, False, False, ''           , '/foo',   False,  None     , True )),
-        (ChangeProfileRule(ChangeProfileRule.ALL, '/bar')      , exp(False, False, False, ''           , None  ,   True , '/bar'    , False)),
-        (ChangeProfileRule(ChangeProfileRule.ALL,
-                             ChangeProfileRule.ALL)            , exp(False, False, False, ''           , None  ,   True , None      , True )),
+        # ChangeProfileRule object                                             audit  allow  deny   comment        execmode execcond    all?   targetprof  all?
+        (ChangeProfileRule(None    , '/foo', '/bar', deny=True)          , exp(False, False, True , ''           , None    , '/foo',   False, '/bar'    , False)),
+        (ChangeProfileRule(None    , '/foo', '/bar')                     , exp(False, False, False, ''           , None    , '/foo',   False, '/bar'    , False)),
+        (ChangeProfileRule('safe'  , '/foo', '/bar')                     , exp(False, False, False, ''           , 'safe'  , '/foo',   False, '/bar'    , False)),
+        (ChangeProfileRule('unsafe', '/foo', '/bar')                     , exp(False, False, False, ''           , 'unsafe', '/foo',   False, '/bar'    , False)),
+        (ChangeProfileRule(None    , '/foo', ChangeProfileRule.ALL)      , exp(False, False, False, ''           , None  , '/foo',   False,  None     , True )),
+        (ChangeProfileRule(None    , ChangeProfileRule.ALL, '/bar')      , exp(False, False, False, ''           , None  , None  ,   True , '/bar'    , False)),
+        (ChangeProfileRule(None    , ChangeProfileRule.ALL,
+                             ChangeProfileRule.ALL)            , exp(False, False, False, ''           , None, None  ,   True , None      , True )),
     ]
 
     def _run_test(self, obj, expected):
@@ -144,20 +155,21 @@ class ChangeProfileFromInit(ChangeProfileTest):
 class InvalidChangeProfileInit(AATest):
     tests = [
         # init params                     expected exception
-        (['/foo', ''               ]    , AppArmorBug), # empty targetprofile
-        ([''    , '/bar'           ]    , AppArmorBug), # empty execcond
-        (['    ', '/bar'           ]    , AppArmorBug), # whitespace execcond
-        (['/foo', '   '            ]    , AppArmorBug), # whitespace targetprofile
-        (['xyxy', '/bar'           ]    , AppArmorException), # invalid execcond
-        ([dict(), '/bar'           ]    , AppArmorBug), # wrong type for execcond
-        ([None  , '/bar'           ]    , AppArmorBug), # wrong type for execcond
-        (['/foo', dict()           ]    , AppArmorBug), # wrong type for targetprofile
-        (['/foo', None             ]    , AppArmorBug), # wrong type for targetprofile
+        ([None    , '/foo', ''               ]    , AppArmorBug), # empty targetprofile
+        ([None    , ''    , '/bar'           ]    , AppArmorBug), # empty execcond
+        ([None    , '    ', '/bar'           ]    , AppArmorBug), # whitespace execcond
+        ([None    , '/foo', '   '            ]    , AppArmorBug), # whitespace targetprofile
+        ([None    , 'xyxy', '/bar'           ]    , AppArmorException), # invalid execcond
+        ([None    , dict(), '/bar'           ]    , AppArmorBug), # wrong type for execcond
+        ([None    , None  , '/bar'           ]    , AppArmorBug), # wrong type for execcond
+        ([None    , '/foo', dict()           ]    , AppArmorBug), # wrong type for targetprofile
+        ([None    , '/foo', None             ]    , AppArmorBug), # wrong type for targetprofile
+        (['maybe' , '/foo', '/bar'           ]    , AppArmorBug), # invalid keyword for execmode
     ]
 
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
-            ChangeProfileRule(params[0], params[1])
+            ChangeProfileRule(params[0], params[1], params[2])
 
     def test_missing_params_1(self):
         with self.assertRaises(TypeError):
@@ -184,14 +196,14 @@ class InvalidChangeProfileTest(AATest):
         self._check_invalid_rawrule('dbus,')  # not a change_profile rule
 
     def test_empty_net_data_1(self):
-        obj = ChangeProfileRule('/foo', '/bar')
+        obj = ChangeProfileRule(None, '/foo', '/bar')
         obj.execcond = ''
         # no execcond set, and ALL not set
         with self.assertRaises(AppArmorBug):
             obj.get_clean(1)
 
     def test_empty_net_data_2(self):
-        obj = ChangeProfileRule('/foo', '/bar')
+        obj = ChangeProfileRule(None, '/foo', '/bar')
         obj.targetprofile = ''
         # no targetprofile set, and ALL not set
         with self.assertRaises(AppArmorBug):
@@ -206,7 +218,7 @@ class WriteChangeProfileTestAATest(AATest):
         ('   deny change_profile         /foo      -> bar,# foo bar'   , 'deny change_profile /foo -> bar, # foo bar'),
         ('   deny change_profile         /foo      ,# foo bar'         , 'deny change_profile /foo, # foo bar'),
         ('   allow change_profile   ->    /bar     ,# foo bar'         , 'allow change_profile -> /bar, # foo bar'),
-        ('   allow change_profile   /** ->    /bar     ,# foo bar'     , 'allow change_profile /** -> /bar, # foo bar'),
+        ('   allow change_profile   unsafe  /** ->    /bar     ,# foo bar'     , 'allow change_profile unsafe /** -> /bar, # foo bar'),
         ('   allow change_profile   "/fo o" ->    "/b ar",'            , 'allow change_profile "/fo o" -> "/b ar",'),
     ]
 
@@ -220,7 +232,7 @@ class WriteChangeProfileTestAATest(AATest):
         self.assertEqual(rawrule.strip(), raw, 'unexpected raw rule')
 
     def test_write_manually(self):
-        obj = ChangeProfileRule('/foo', 'bar', allow_keyword=True)
+        obj = ChangeProfileRule(None, '/foo', 'bar', allow_keyword=True)
 
         expected = '    allow change_profile /foo -> bar,'
 
@@ -248,6 +260,8 @@ class ChangeProfileCoveredTest_01(ChangeProfileCoveredTest):
         #   rule                                        equal     strict equal    covered     covered exact
         ('           change_profile,'               , [ False   , False         , False     , False     ]),
         ('           change_profile /foo,'          , [ True    , True          , True      , True      ]),
+        ('           change_profile safe /foo,'     , [ True    , False         , True      , True      ]),
+        ('           change_profile unsafe /foo,'   , [ False   , False         , False     , False     ]),
         ('           change_profile /foo, # comment', [ True    , False         , True      , True      ]),
         ('     allow change_profile /foo,'          , [ True    , False         , True      , True      ]),
         ('           change_profile     /foo,'      , [ True    , False         , True      , True      ]),
@@ -269,6 +283,7 @@ class ChangeProfileCoveredTest_02(ChangeProfileCoveredTest):
         (      'change_profile /foo,'              , [ False   , False         , True      , False     ]),
         ('audit change_profile /foo,'              , [ True    , True          , True      , True      ]),
         (      'change_profile /foo -> /bar,'      , [ False   , False         , True      , False     ]),
+        (      'change_profile safe /foo -> /bar,' , [ False   , False         , True      , False     ]),
         ('audit change_profile /foo -> /bar,'      , [ False   , False         , True      , True      ]), # XXX is "covered exact" correct here?
         (      'change_profile,'                   , [ False   , False         , False     , False     ]),
         ('audit change_profile,'                   , [ False   , False         , False     , False     ]),
@@ -319,12 +334,23 @@ class ChangeProfileCoveredTest_05(ChangeProfileCoveredTest):
         (      'deny change_profile,'              , [ False   , False         , False     , False     ]),
     ]
 
+class ChangeProfileCoveredTest_06(ChangeProfileCoveredTest):
+    rule = 'change_profile safe /foo,'
+
+    tests = [
+        #   rule                                       equal     strict equal    covered     covered exact
+        (      'deny change_profile /foo,'         , [ False   , False         , False     , False     ]),
+        ('audit deny change_profile /foo,'         , [ False   , False         , False     , False     ]),
+        (           'change_profile /foo,'         , [ True    , False         , True      , True      ]),
+        (      'deny change_profile /bar,'         , [ False   , False         , False     , False     ]),
+        (      'deny change_profile,'              , [ False   , False         , False     , False     ]),
+    ]
 
 class ChangeProfileCoveredTest_Invalid(AATest):
     def test_borked_obj_is_covered_1(self):
         obj = ChangeProfileRule.parse('change_profile /foo,')
 
-        testobj = ChangeProfileRule('/foo', '/bar')
+        testobj = ChangeProfileRule(None, '/foo', '/bar')
         testobj.execcond = ''
 
         with self.assertRaises(AppArmorBug):
@@ -333,7 +359,7 @@ class ChangeProfileCoveredTest_Invalid(AATest):
     def test_borked_obj_is_covered_2(self):
         obj = ChangeProfileRule.parse('change_profile /foo,')
 
-        testobj = ChangeProfileRule('/foo', '/bar')
+        testobj = ChangeProfileRule(None, '/foo', '/bar')
         testobj.targetprofile = ''
 
         with self.assertRaises(AppArmorBug):
@@ -357,14 +383,14 @@ class ChangeProfileCoveredTest_Invalid(AATest):
 
 class ChangeProfileLogprofHeaderTest(AATest):
     tests = [
-        ('change_profile,',                         [                               _('Exec Condition'), _('ALL'),  _('Target Profile'), _('ALL'),   ]),
-        ('change_profile -> /bin/ping,',            [                               _('Exec Condition'), _('ALL'),  _('Target Profile'), '/bin/ping',]),
-        ('change_profile /bar -> /bin/bar,',        [                               _('Exec Condition'), '/bar',    _('Target Profile'), '/bin/bar', ]),
-        ('change_profile /foo,',                    [                               _('Exec Condition'), '/foo',    _('Target Profile'), _('ALL'),   ]),
-        ('audit change_profile -> /bin/ping,',      [_('Qualifier'), 'audit',       _('Exec Condition'), _('ALL'),  _('Target Profile'), '/bin/ping',]),
-        ('deny change_profile /bar -> /bin/bar,',   [_('Qualifier'), 'deny',        _('Exec Condition'), '/bar',    _('Target Profile'), '/bin/bar', ]),
-        ('allow change_profile /foo,',              [_('Qualifier'), 'allow',       _('Exec Condition'), '/foo',    _('Target Profile'), _('ALL'),   ]),
-        ('audit deny change_profile,',              [_('Qualifier'), 'audit deny',  _('Exec Condition'), _('ALL'),  _('Target Profile'), _('ALL'),   ]),
+        ('change_profile,',                         [                                                         _('Exec Condition'), _('ALL'),  _('Target Profile'), _('ALL'),   ]),
+        ('change_profile -> /bin/ping,',            [                                                         _('Exec Condition'), _('ALL'),  _('Target Profile'), '/bin/ping',]),
+        ('change_profile /bar -> /bin/bar,',        [                                                         _('Exec Condition'), '/bar',    _('Target Profile'), '/bin/bar', ]),
+        ('change_profile safe /foo,',                    [                          _('Exec Mode'), 'safe',   _('Exec Condition'), '/foo',    _('Target Profile'), _('ALL'),   ]),
+        ('audit change_profile -> /bin/ping,',      [_('Qualifier'), 'audit',                                 _('Exec Condition'), _('ALL'),  _('Target Profile'), '/bin/ping',]),
+        ('deny change_profile /bar -> /bin/bar,',   [_('Qualifier'), 'deny',                                  _('Exec Condition'), '/bar',    _('Target Profile'), '/bin/bar', ]),
+        ('allow change_profile unsafe /foo,',       [_('Qualifier'), 'allow',       _('Exec Mode'), 'unsafe', _('Exec Condition'), '/foo',    _('Target Profile'), _('ALL'),   ]),
+        ('audit deny change_profile,',              [_('Qualifier'), 'audit deny',                            _('Exec Condition'), _('ALL'),  _('Target Profile'), _('ALL'),   ]),
     ]
 
     def _run_test(self, params, expected):

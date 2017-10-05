@@ -46,11 +46,9 @@ profile sanitized_helper {
 
   # Allow exec of anything, but under this profile. Allow transition
   # to other profiles if they exist.
-  /bin/* Pixr,
-  /sbin/* Pixr,
-  /usr/bin/* Pixr,
+  /{usr/,}bin/* Pixr,
+  /{usr/,}sbin/* Pixr,
   /usr/local/bin/* Pixr,
-  /usr/sbin/* Pixr,
 
   # Allow exec of libexec applications in /usr/lib* and /usr/local/lib*
   /usr/{,local/}lib*/{,**/}* Pixr,
@@ -67,7 +65,7 @@ profile sanitized_helper {
   # require the santized_helper (ie, LD_PRELOAD will only use standard system
   # paths (man ld.so)).
   /usr/lib/chromium-browser/chromium-browser-sandbox PUxr,
-  /usr/lib/chromium-browser/chrome-sandbox PUxr,
+  /usr/lib/chromium{,-browser}/chrome-sandbox PUxr,
   /opt/google/chrome/chrome-sandbox PUxr,
   /opt/google/chrome/google-chrome Pixr,
   /opt/google/chrome/chrome Pixr,

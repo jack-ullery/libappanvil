@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 # ----------------------------------------------------------------------
 #    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
 #
@@ -89,6 +89,10 @@ class DbusTestParse(DbusTest):
         ('dbus peer=(, label = bar,  name = foo  ),'    , exp(False, False, False, '',        None  ,               True ,  None,       True,   None,           True,   None,       True,   None,       True,   None,   True,   'foo',      False,  'bar,',     False)),  # XXX peerlabel includes the comma
         ('dbus peer=(  label = bar , name = foo  ),'    , exp(False, False, False, '',        None  ,               True ,  None,       True,   None,           True,   None,       True,   None,       True,   None,   True,   'foo',      False,  'bar',      False)),
         ('dbus peer=(  label = "bar"  name = "foo" ),'  , exp(False, False, False, '',        None  ,               True ,  None,       True,   None,           True,   None,       True,   None,       True,   None,   True,   'foo',      False,  'bar',      False)),
+        ('dbus path=/foo/bar bus=session,'              , exp(False, False, False, '',        None  ,               True ,  'session',  False,  '/foo/bar',     False,  None,       True,   None,       True,   None,   True,   None,       True,   None,       True)),
+        ('dbus bus=system path=/foo/bar bus=session,'   , exp(False, False, False, '',        None  ,               True ,  'session',  False,  '/foo/bar',     False,  None,       True,   None,       True,   None,   True,   None,       True,   None,       True)),  # XXX bus= specified twice, last one wins
+        ('dbus send peer=(label="foo") bus=session,'    , exp(False, False, False, '',        {'send'},             False,  'session',  False,  None,           True,   None,       True,   None,       True,   None,   True,   None,       True,   'foo',      False)),
+        ('dbus bus=1 bus=2 bus=3 bus=4 bus=5 bus=6,'    , exp(False, False, False, '',        None  ,               True ,  '6',        False,  None,           True,   None,       True,   None,       True,   None,   True,   None,       True,   None,       True)),  # XXX bus= specified multiple times, last one wins
     ]
 
     def _run_test(self, rawrule, expected):
@@ -108,6 +112,8 @@ class DbusTestParseInvalid(DbusTest):
         ('dbus peer=(label=foo) path=,'  , AppArmorException),
         ('dbus (invalid),'               , AppArmorException),
         ('dbus peer=,'                   , AppArmorException),
+        ('dbus bus=session bind bus=system,', AppArmorException),
+        ('dbus bus=1 bus=2 bus=3 bus=4 bus=5 bus=6 bus=7,', AppArmorException),
     ]
 
     def _run_test(self, rawrule, expected):
@@ -117,7 +123,7 @@ class DbusTestParseInvalid(DbusTest):
 
 class DbusTestParseFromLog(DbusTest):
     def test_dbus_from_log(self):
-        parser = ReadLog('', '', '', '', '')
+        parser = ReadLog('', '', '', '')
         event = 'type=USER_AVC msg=audit(1375323372.644:157): pid=363 uid=102 auid=4294967295 ses=4294967295  msg=\'apparmor="DENIED" operation="dbus_method_call"  bus="system" name="org.freedesktop.DBus" path="/org/freedesktop/DBus" interface="org.freedesktop.DBus" member="Hello" mask="send" pid=2833 profile="/tmp/apparmor-2.8.0/tests/regression/apparmor/dbus_service" peer_profile="unconfined"  exe="/bin/dbus-daemon" sauid=102 hostname=? addr=? terminal=?\''
 
         parsed_event = parser.parse_event(event)
@@ -145,6 +151,9 @@ class DbusTestParseFromLog(DbusTest):
             'path': '/org/freedesktop/DBus',
             'interface': 'org.freedesktop.DBus',
             'member': 'Hello',
+            'family': None,
+            'protocol': None,
+            'sock_type': None,
         })
 
 # XXX send rules must not contain name conditional, but the log event includes it - how should we handle this in logparser.py?

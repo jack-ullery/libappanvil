@@ -38,6 +38,6 @@ aclocal
 echo "Running autoconf"
 autoconf --force
 echo "Running libtoolize"
-libtoolize --automake -c
+libtoolize --automake -c --force
 echo "Running automake"
 automake -ac

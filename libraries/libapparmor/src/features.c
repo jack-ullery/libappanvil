@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -42,7 +43,7 @@ struct aa_features {
 
 struct features_struct {
 	char *buffer;
-	int size;
+	size_t size;
 	char *pos;
 };
 
@@ -51,16 +52,29 @@ struct component {
 	size_t len;
 };
 
+static int features_buffer_remaining(struct features_struct *fst,
+				     size_t *remaining)
+{
+	ptrdiff_t offset = fst->pos - fst->buffer;
+
+	if (offset < 0 || fst->size < (size_t)offset) {
+		errno = EINVAL;
+		PERROR("Invalid features buffer offset (%td)\n", offset);
+		return -1;
+	}
+
+	*remaining = fst->size - offset;
+	return 0;
+}
+
 static int features_snprintf(struct features_struct *fst, const char *fmt, ...)
 {
 	va_list args;
-	int i, remaining = fst->size - (fst->pos - fst->buffer);
+	int i;
+	size_t remaining;
 
-	if (remaining < 0) {
-		errno = EINVAL;
-		PERROR("Invalid features buffer offset\n");
+	if (features_buffer_remaining(fst, &remaining) == -1)
 		return -1;
-	}
 
 	va_start(args, fmt);
 	i = vsnprintf(fst->pos, remaining, fmt, args);
@@ -70,7 +84,7 @@ static int features_snprintf(struct features_struct *fst, const char *fmt, ...)
 		errno = EIO;
 		PERROR("Failed to write to features buffer\n");
 		return -1;
-	} else if (i >= remaining) {
+	} else if ((size_t)i >= remaining) {
 		errno = ENOBUFS;
 		PERROR("Feature buffer full.");
 		return -1;
@@ -92,8 +106,8 @@ static int features_snprintf(struct features_struct *fst, const char *fmt, ...)
  * ENOBUFS indicating that @buffer was not large enough to contain all of the
  * file contents.
  */
-static int load_features_file(int dirfd, const char *path,
-			      char *buffer, size_t size)
+static ssize_t load_features_file(int dirfd, const char *path,
+				  char *buffer, size_t size)
 {
 	autoclose int file = -1;
 	char *pos = buffer;
@@ -156,8 +170,11 @@ static int features_dir_cb(int dirfd, const char *name, struct stat *st,
 		return -1;
 
 	if (S_ISREG(st->st_mode)) {
-		int len;
-		int remaining = fst->size - (fst->pos - fst->buffer);
+		ssize_t len;
+		size_t remaining;
+
+		if (features_buffer_remaining(fst, &remaining) == -1)
+			return -1;
 
 		len = load_features_file(dirfd, name, fst->pos, remaining);
 		if (len < 0)
@@ -175,8 +192,8 @@ static int features_dir_cb(int dirfd, const char *name, struct stat *st,
 	return 0;
 }
 
-static int load_features_dir(int dirfd, const char *path,
-			     char *buffer, int size)
+static ssize_t load_features_dir(int dirfd, const char *path,
+				 char *buffer, size_t size)
 {
 	struct features_struct fst = { buffer, size, buffer };
 
@@ -369,7 +386,7 @@ int aa_features_new(aa_features **features, int dirfd, const char *path)
 {
 	struct stat stat_file;
 	aa_features *f;
-	int retval;
+	ssize_t retval;
 
 	*features = NULL;
 

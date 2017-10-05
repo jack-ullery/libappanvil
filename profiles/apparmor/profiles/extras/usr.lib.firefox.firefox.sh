@@ -8,9 +8,9 @@
 
   deny capability sys_ptrace,
 
-  /bin/basename rix,
-  /bin/bash rix,
-  /bin/grep rix,
+  /{usr/,}bin/basename rix,
+  /{usr/,}bin/bash rix,
+  /{usr/,}bin/grep rix,
   /etc/magic r,
   /usr/bin/file rix,
   /usr/lib/firefox/firefox px,

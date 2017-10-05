@@ -23,9 +23,9 @@
   #include <abstractions/user-download>
   #include <abstractions/X>
 
-  /bin/bash mix,
-  /bin/sed mixr,
-  /bin/true mixr,
+  /{usr/,}bin/bash mix,
+  /{usr/,}bin/sed mixr,
+  /{usr/,}bin/true mixr,
   /etc/pango/pango.modules r,
   /usr/share/icons r,
   /usr/share/icons/** r,

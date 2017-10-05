@@ -2,6 +2,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
+#    Copyright (C) 2017 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -14,7 +15,7 @@
 
 #include <tunables/global>
 
-/bin/netstat {
+profile netstat /{usr/,}bin/netstat {
   #include <abstractions/base>
   #include <abstractions/consoles>
   #include <abstractions/nameservice>
@@ -23,19 +24,22 @@
   capability dac_read_search,
   deny capability sys_ptrace,
 
-  /bin/netstat rmix,
+  /{usr/,}bin/netstat rmix,
   /etc/networks r,
   @{PROC} r,
   @{PROC}/@{pids}/cmdline r,
-  @{PROC}/@{pids}/fd r,
   @{PROC}/net r,
   @{PROC}/net/* r,
   @{PROC}/@{pids}/fd/ r,
-  owner @{PROC}/@{pid}/net/raw r,
-  owner @{PROC}/@{pid}/net/raw6 r,
-  owner @{PROC}/@{pid}/net/tcp r,
-  owner @{PROC}/@{pid}/net/tcp6 r,
-  owner @{PROC}/@{pid}/net/udp r,
-  owner @{PROC}/@{pid}/net/udp6 r,
-  owner @{PROC}/@{pid}/net/unix r,
+  @{PROC}/@{pid}/net/netstat r,
+  @{PROC}/@{pid}/net/raw r,
+  @{PROC}/@{pid}/net/snmp r,
+  @{PROC}/@{pid}/net/raw6 r,
+  @{PROC}/@{pid}/net/tcp r,
+  @{PROC}/@{pid}/net/tcp6 r,
+  @{PROC}/@{pid}/net/udp r,
+  @{PROC}/@{pid}/net/udp6 r,
+  @{PROC}/@{pid}/net/udplite r,
+  @{PROC}/@{pid}/net/udplit6 r,
+  @{PROC}/@{pid}/net/unix r,
 }

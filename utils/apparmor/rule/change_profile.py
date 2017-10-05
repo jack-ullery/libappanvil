@@ -34,17 +34,26 @@ class ChangeProfileRule(BaseRule):
 
     rule_name = 'change_profile'
 
-    def __init__(self, execcond, targetprofile, audit=False, deny=False, allow_keyword=False,
+    equiv_execmodes = [ 'safe', '', None ]
+
+    def __init__(self, execmode, execcond, targetprofile, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
         '''
-            CHANGE_PROFILE RULE = 'change_profile' [ EXEC COND ] [ -> PROGRAMCHILD ]
+            CHANGE_PROFILE RULE = 'change_profile' [ [ EXEC MODE ] EXEC COND ] [ -> PROGRAMCHILD ]
         '''
 
         super(ChangeProfileRule, self).__init__(audit=audit, deny=deny,
                                              allow_keyword=allow_keyword,
                                              comment=comment,
                                              log_event=log_event)
+
+        if execmode:
+            if execmode != 'safe' and execmode != 'unsafe':
+                raise AppArmorBug('Unknown exec mode (%s) in change_profile rule' % execmode)
+            elif not execcond or execcond == ChangeProfileRule.ALL:
+                raise AppArmorException('Exec condition is required when unsafe or safe keywords are present')
+        self.execmode = execmode
 
         self.execcond = None
         self.all_execconds = False
@@ -86,6 +95,8 @@ class ChangeProfileRule(BaseRule):
 
         audit, deny, allow_keyword, comment = parse_modifiers(matches)
 
+        execmode = matches.group('execmode')
+
         if matches.group('execcond'):
             execcond = strip_quotes(matches.group('execcond'))
         else:
@@ -96,13 +107,18 @@ class ChangeProfileRule(BaseRule):
         else:
             targetprofile = ChangeProfileRule.ALL
 
-        return ChangeProfileRule(execcond, targetprofile,
+        return ChangeProfileRule(execmode, execcond, targetprofile,
                            audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
         '''return rule (in clean/default formatting)'''
 
         space = '  ' * depth
+
+        if self.execmode:
+            execmode = ' %s' % self.execmode
+        else:
+            execmode = ''
 
         if self.all_execconds:
             execcond = ''
@@ -118,10 +134,15 @@ class ChangeProfileRule(BaseRule):
         else:
             raise AppArmorBug('Empty target profile in change_profile rule')
 
-        return('%s%schange_profile%s%s,%s' % (space, self.modifiers_str(), execcond, targetprofile, self.comment))
+        return('%s%schange_profile%s%s%s,%s' % (space, self.modifiers_str(), execmode, execcond, targetprofile, self.comment))
 
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
+
+        if self.execmode != other_rule.execmode and \
+           (self.execmode not in ChangeProfileRule.equiv_execmodes or \
+            other_rule.execmode not in ChangeProfileRule.equiv_execmodes):
+            return False
 
         if not self._is_covered_plain(self.execcond, self.all_execconds, other_rule.execcond, other_rule.all_execconds, 'exec condition'):
             # TODO: honor globbing and variables
@@ -133,11 +154,16 @@ class ChangeProfileRule(BaseRule):
         # still here? -> then it is covered
         return True
 
-    def is_equal_localvars(self, rule_obj):
+    def is_equal_localvars(self, rule_obj, strict):
         '''compare if rule-specific variables are equal'''
 
         if not type(rule_obj) == ChangeProfileRule:
             raise AppArmorBug('Passed non-change_profile rule: %s' % str(rule_obj))
+
+        if self.execmode != rule_obj.execmode and \
+           (self.execmode not in ChangeProfileRule.equiv_execmodes or \
+            rule_obj.execmode not in ChangeProfileRule.equiv_execmodes):
+            return False
 
         if (self.execcond != rule_obj.execcond
                 or self.all_execconds != rule_obj.all_execconds):
@@ -150,10 +176,15 @@ class ChangeProfileRule(BaseRule):
         return True
 
     def logprof_header_localvars(self):
+        headers = []
+
+        if self.execmode:
+            headers += [_('Exec Mode'), self.execmode]
+
         execcond_txt        = logprof_value_or_all(self.execcond,       self.all_execconds)
         targetprofiles_txt  = logprof_value_or_all(self.targetprofile,  self.all_targetprofiles)
 
-        return [
+        return headers + [
             _('Exec Condition'), execcond_txt,
             _('Target Profile'), targetprofiles_txt,
         ]

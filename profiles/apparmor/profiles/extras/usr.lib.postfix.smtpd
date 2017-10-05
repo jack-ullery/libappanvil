@@ -13,7 +13,6 @@
 /usr/lib/postfix/smtpd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
-  #include <abstractions/kerberosclient>
   #include <abstractions/postfix-common>
   #include <abstractions/openssl>
 

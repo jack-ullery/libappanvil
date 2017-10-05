@@ -345,6 +345,8 @@ sub gen_change_profile($) {
 	}
     } elsif (@rules == 3) {
         push (@{$output_rules{$hat}}, "  change_profile $rules[1] -> $rules[2],\n",);
+    } elsif (@rules == 4) {
+        push (@{$output_rules{$hat}}, "  change_profile $rules[1] $rules[2] -> $rules[3],\n",);
     } else {
         (!$nowarn) && print STDERR "Warning: invalid change_profile description '$rule', ignored\n";
     }

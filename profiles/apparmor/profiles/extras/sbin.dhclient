@@ -21,7 +21,7 @@
 
 #include <tunables/global>
 
-/sbin/dhclient {
+profile dhclient /{usr/,}sbin/dhclient {
   #include <abstractions/base>
   #include <abstractions/bash>
   #include <abstractions/nameservice>
@@ -31,12 +31,12 @@
   network packet packet,
   network packet raw,
 
-  /sbin/dhclient              mrix,
+  /{usr/,}sbin/dhclient       mrix,
 
-  /bin/bash                   mrix,
-  /bin/df                     mrix,
-  /bin/netstat                Px,
-  /bin/ps                     mrix,
+  /{usr/,}bin/bash            mrix,
+  /{usr/,}bin/df              mrix,
+  /{usr/,}bin/netstat         Px,
+  /{usr/,}bin/ps              mrix,
   /dev/random                 r,
   /etc/dhclient.conf          r,
   @{PROC}/                    r,
@@ -45,7 +45,7 @@
   @{PROC}/rtc                 r,
   # following rule shouldn't work, self is a symlink
   @{PROC}/self/status         r,
-  /sbin/arp                   mrix,
+  /{usr/,}sbin/arp            mrix,
   /usr/bin/dig                mrix,
   /usr/bin/uptime             mrix,
   /usr/bin/vmstat             mrix,
@@ -65,14 +65,14 @@
   /var/spool/mail             r,
 
   # This one will need to be fleshed out depending on what the user is doing
-  /sbin/dhclient-script mrpix,
+  /{usr/,}sbin/dhclient-script mrpix,
 
-  /bin/grep mrix,
-  /bin/sleep mrix,
+  /{usr/,}bin/grep mrix,
+  /{usr/,}bin/sleep mrix,
   /etc/sysconfig/network/dhcp r,
   /etc/sysconfig/network/scripts/functions.common r,
   /etc/sysconfig/network/scripts/functions r,
-  /sbin/ip mrix,
+  /{usr/,}sbin/ip mrix,
   /usr/lib/NetworkManager/nm-dhcp-client.action mrix,
   /var/lib/dhcp/* rw,
   /{,var/}run/nm-dhclient-*.conf r,

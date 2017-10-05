@@ -16,12 +16,10 @@
 
   signal set=(abrt alrm bus chld fpe hup ill int kill pipe quit segv stkflt term trap usr1 usr2),
 
-  ptrace tracedby,
-
   unix (receive) type=dgram,
 
-  /home/*/** r,
-  /home/foo/** w,
+  allow /home/*/** r,
+  allow /home/foo/** w,
 
   change_profile,
 
@@ -34,7 +32,7 @@
   }
 }
 /usr/bin/other/cleanprof/test/profile {
-  /home/*/** rw,
-  /home/foo/bar r,
+  allow /home/*/** rw,
+  allow /home/foo/bar r,
 
 }

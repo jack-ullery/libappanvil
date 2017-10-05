@@ -22,7 +22,7 @@
   capability setgid,
   capability setuid,
 
-  /bin/pwd mixr,
+  /{usr/,}bin/pwd mixr,
   /etc/mail/spamassassin r,
   /etc/mail/spamassassin/* r,
   /etc/mtab r,

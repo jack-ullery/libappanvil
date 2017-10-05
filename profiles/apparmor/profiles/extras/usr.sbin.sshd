@@ -77,20 +77,20 @@
   /sys/fs/cgroup/*/user/*/[0-9]*/ rw,
   /sys/fs/cgroup/systemd/user.slice/user-[0-9]*.slice/session-c[0-9]*.scope/ rw,
 
-  /bin/ash      Uxr,
-  /bin/bash     Uxr,
-  /bin/bash2    Uxr,
-  /bin/bsh      Uxr,
-  /bin/csh      Uxr,
-  /bin/dash     Uxr,
-  /bin/ksh      Uxr,
-  /bin/sh       Uxr,
-  /bin/tcsh     Uxr,
-  /bin/zsh      Uxr,
-  /bin/zsh4     Uxr,
-  /bin/zsh5     Uxr,
-  /{,usr/}sbin/nologin Uxr,
-  /bin/false    Uxr,
+  /{usr/,}bin/ash      Uxr,
+  /{usr/,}bin/bash     Uxr,
+  /{usr/,}bin/bash2    Uxr,
+  /{usr/,}bin/bsh      Uxr,
+  /{usr/,}bin/csh      Uxr,
+  /{usr/,}bin/dash     Uxr,
+  /{usr/,}bin/ksh      Uxr,
+  /{usr/,}bin/sh       Uxr,
+  /{usr/,}bin/tcsh     Uxr,
+  /{usr/,}bin/zsh      Uxr,
+  /{usr/,}bin/zsh4     Uxr,
+  /{usr/,}bin/zsh5     Uxr,
+  /{usr/,}sbin/nologin Uxr,
+  /{usr/,}bin/false    Uxr,
 
   # XXX: this needs to be enabled otherwise we risk locking out a user
   # Call passwd for password change when expired
@@ -140,5 +140,5 @@
   /usr/lib/openssh/sftp-server PUx,
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/usr.sbin.sshd>
+  ## include <local/usr.sbin.sshd>
 }

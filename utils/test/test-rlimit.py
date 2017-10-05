@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 # ----------------------------------------------------------------------
 #    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
 #
@@ -96,7 +96,7 @@ class RlimitTestParseInvalid(RlimitTest):
 class RlimitTestParseFromLog(RlimitTest):
     pass
     # def test_net_from_log(self):
-    #   parser = ReadLog('', '', '', '', '')
+    #   parser = ReadLog('', '', '', '')
 
     #   event = 'type=AVC ...'
 

@@ -13,7 +13,6 @@
 /usr/lib/postfix/cleanup {
   #include <abstractions/base>
   #include <abstractions/nameservice>
-  #include <abstractions/kerberosclient>
   #include <abstractions/postfix-common>
 
   capability net_bind_service,

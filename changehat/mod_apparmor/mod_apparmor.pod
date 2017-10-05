@@ -65,7 +65,7 @@ provides the AAHatName and AADefaultHatName Apache configuration options.
 
 AAHatName allows you to specify a hat to be used for a given Apache
 E<lt>DirectoryE<gt>, E<lt>DirectoryMatchE<gt>, E<lt>LocationE<gt> or
-E<lt>LocationMatchE<gt> directive (see the Apache documenation for more
+E<lt>LocationMatchE<gt> directive (see the Apache documentation for more
 details). Note that mod_apparmor behavior can become confused if
 E<lt>Directory*E<gt> and E<lt>Location*E<gt> directives are intermingled
 and it is recommended to use one type of directive. If the hat specified by

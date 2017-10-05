@@ -311,7 +311,7 @@ it so that policy can't complete compilation due to size constraints
 take days or longer to compile).
 
 Note: The parser is set to use a balanced default set of flags, that
-will result in resonable compression but not take excessive amounts
+will result in reasonable compression but not take excessive amounts
 of time to complete.
 
 Use --help=optimize to see a full list of which optimization flags are
