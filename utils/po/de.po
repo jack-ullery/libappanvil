@@ -7,14 +7,14 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2016-05-06 20:27+0000\n"
+"PO-Revision-Date: 2017-04-20 12:04+0000\n"
 "Last-Translator: Christian Boltz <Unknown>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2016-05-07 04:31+0000\n"
-"X-Generator: Launchpad (build 18025)\n"
+"X-Launchpad-Export-Date: 2017-04-21 05:29+0000\n"
+"X-Generator: Launchpad (build 18359)\n"
 "Language: de\n"
 
 #: ../aa-genprof:56
@@ -427,11 +427,11 @@ msgstr "Alle Änderungen verworfen."
 
 #: ../apparmor/aa.py:464
 msgid "Connecting to repository..."
-msgstr ""
+msgstr "Zur Quelle wird verbunden …"
 
 #: ../apparmor/aa.py:470
 msgid "WARNING: Error fetching profiles from the repository"
-msgstr ""
+msgstr "ACHTUNG: Fehler beim Abrufen der Profile von der Quelle"
 
 #: ../apparmor/aa.py:550
 #, python-format
@@ -449,6 +449,8 @@ msgid ""
 "WARNING: Error synchronizing profiles with the repository:\n"
 "%s\n"
 msgstr ""
+"ACHTUNG: Fehler beim Synchronisieren der Profile mit der Quelle:\n"
+"%s\n"
 
 #: ../apparmor/aa.py:744
 #, python-format
@@ -456,6 +458,8 @@ msgid ""
 "WARNING: Error synchronizing profiles with the repository\n"
 "%s"
 msgstr ""
+"ACHTUNG: Fehler beim Synchronisieren der Profile mit der Quelle:\n"
+"%s"
 
 #: ../apparmor/aa.py:832 ../apparmor/aa.py:883
 #, python-format
@@ -468,7 +472,7 @@ msgstr ""
 
 #: ../apparmor/aa.py:833
 msgid "Uploaded changes to repository."
-msgstr ""
+msgstr "Änderungen wurden zur Quelle hochgeladen."
 
 #: ../apparmor/aa.py:865
 msgid "Changelog Entry: "
@@ -481,6 +485,11 @@ msgid ""
 "information is required to upload profiles to the repository.\n"
 "These changes could not be sent."
 msgstr ""
+"Quellfehler\n"
+"Registrieren oder Anmelden ist fehlgeschlagen.\n"
+"Benutzerzugangsdaten sind erforderlich,\n"
+"um die Profile in die Quelle zu übertragen.\n"
+"Diese Änderungen konnten nicht übertragen werden."
 
 #: ../apparmor/aa.py:995
 msgid "Default Hat"
@@ -830,7 +839,7 @@ msgstr "Fehler: Mehrfache Definition für hat %(hat)s im Profil %(profile)s."
 #: ../apparmor/aa.py:3185
 #, python-format
 msgid "Warning: invalid \"REPOSITORY:\" line in %s, ignoring."
-msgstr ""
+msgstr "ACHTUNG: ungültige Quellzeile »REPOSITORY:« in %s, wird übergangen."
 
 #: ../apparmor/aa.py:3198
 #, python-format
@@ -1193,11 +1202,11 @@ msgstr ""
 
 #: ../apparmor/ui.py:271
 msgid "(E)nable Repository"
-msgstr ""
+msgstr "Quelle (a)ktivieren"
 
 #: ../apparmor/ui.py:272
 msgid "(D)isable Repository"
-msgstr ""
+msgstr "Quelle (d)eaktivieren"
 
 #: ../apparmor/ui.py:273
 msgid "(N)ever Ask Again"

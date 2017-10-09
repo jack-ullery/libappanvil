@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: AppArmor list <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2016-03-17 17:48+0000\n"
-"Last-Translator: Andi Chandler <Unknown>\n"
+"PO-Revision-Date: 2017-02-26 19:25+0000\n"
+"Last-Translator: Anthony Harrington 😁 <untaintableangel@ubuntu.com>\n"
 "Language-Team: English (United Kingdom) <en_GB@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2016-03-18 05:17+0000\n"
-"X-Generator: Launchpad (build 17947)\n"
+"X-Launchpad-Export-Date: 2017-02-27 05:28+0000\n"
+"X-Generator: Launchpad (build 18328)\n"
 "Language: en_GB\n"
 
 #: ../aa-genprof:56
@@ -798,6 +798,7 @@ msgstr ""
 msgid ""
 "Syntax Error: Unexpected unix entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntax Error: Unexpected unix entry found in file: %(file)s line: %(line)s"
 
 #: ../apparmor/aa.py:3140
 #, python-format
@@ -830,7 +831,7 @@ msgstr "Warning: invalid \"REPOSITORY:\" line in %s, ignoring."
 #: ../apparmor/aa.py:3198
 #, python-format
 msgid "Syntax Error: Unknown line found in file: %(file)s line: %(line)s"
-msgstr ""
+msgstr "Syntax Error: Unknown line found in file: %(file)s line: %(line)s"
 
 #: ../apparmor/aa.py:3211
 #, python-format
@@ -838,17 +839,20 @@ msgid ""
 "Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside "
 "profile %(profile)s"
 msgstr ""
+"Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside "
+"profile %(profile)s"
 
 #: ../apparmor/aa.py:3277
 #, python-format
 msgid "Redefining existing variable %(variable)s: %(value)s in %(file)s"
-msgstr ""
+msgstr "Redefining existing variable %(variable)s: %(value)s in %(file)s"
 
 #: ../apparmor/aa.py:3282
 #, python-format
 msgid ""
 "Values added to a non-existing variable %(variable)s: %(value)s in %(file)s"
 msgstr ""
+"Values added to a non-existing variable %(variable)s: %(value)s in %(file)s"
 
 #: ../apparmor/aa.py:3284
 #, python-format
@@ -856,25 +860,27 @@ msgid ""
 "Unknown variable operation %(operation)s for variable %(variable)s in "
 "%(file)s"
 msgstr ""
+"Unknown variable operation %(operation)s for variable %(variable)s in "
+"%(file)s"
 
 #: ../apparmor/aa.py:3343
 #, python-format
 msgid "Invalid allow string: %(allow)s"
-msgstr ""
+msgstr "Invalid allow string: %(allow)s"
 
 #: ../apparmor/aa.py:3778
 msgid "Can't find existing profile to modify"
-msgstr ""
+msgstr "Can't find existing profile to modify"
 
 #: ../apparmor/aa.py:4347
 #, python-format
 msgid "Writing updated profile for %s."
-msgstr ""
+msgstr "Writing updated profile for %s."
 
 #: ../apparmor/aa.py:4481
 #, python-format
 msgid "File Not Found: %s"
-msgstr ""
+msgstr "File Not Found: %s"
 
 #: ../apparmor/aa.py:4591
 #, python-format
@@ -886,11 +892,17 @@ msgid ""
 "the corresponding entry in the [qualifiers] section in "
 "/etc/apparmor/logprof.conf."
 msgstr ""
+"%s is currently marked as a program that should not have its own\n"
+"profile.  Usually, programs are marked this way if creating a profile for \n"
+"them is likely to break the rest of the system.  If you know what you're\n"
+"doing and are certain you want to create a profile for this program, edit\n"
+"the corresponding entry in the [qualifiers] section in "
+"/etc/apparmor/logprof.conf."
 
 #: ../apparmor/logparser.py:127 ../apparmor/logparser.py:132
 #, python-format
 msgid "Log contains unknown mode %s"
-msgstr ""
+msgstr "Log contains unknown mode %s"
 
 #: ../apparmor/tools.py:84 ../apparmor/tools.py:126
 #, python-format
@@ -901,38 +913,45 @@ msgid ""
 "environment set up in order to find the fully-qualified path and\n"
 "use the full path as parameter."
 msgstr ""
+"Can't find %(program)s in the system path list. If the name of the "
+"application\n"
+"is correct, please run 'which %(program)s' as a user with correct PATH\n"
+"environment set up in order to find the fully-qualified path and\n"
+"use the full path as parameter."
 
 #: ../apparmor/tools.py:86 ../apparmor/tools.py:102 ../apparmor/tools.py:128
 #, python-format
 msgid "%s does not exist, please double-check the path."
-msgstr ""
+msgstr "%s does not exist, please double-check the path."
 
 #: ../apparmor/tools.py:100
 msgid ""
 "The given program cannot be found, please try with the fully qualified path "
 "name of the program: "
 msgstr ""
+"The given program cannot be found, please try with the fully qualified path "
+"name of the program: "
 
 #: ../apparmor/tools.py:113 ../apparmor/tools.py:137 ../apparmor/tools.py:157
 #: ../apparmor/tools.py:175 ../apparmor/tools.py:193
 #, python-format
 msgid "Profile for %s not found, skipping"
-msgstr ""
+msgstr "Profile for %s not found, skipping"
 
 #: ../apparmor/tools.py:140
 #, python-format
 msgid "Disabling %s."
-msgstr ""
+msgstr "Disabling %s."
 
 #: ../apparmor/tools.py:198
 #, python-format
 msgid "Setting %s to audit mode."
-msgstr ""
+msgstr "Setting %s to audit mode."
 
 #: ../apparmor/tools.py:200
 #, python-format
 msgid "Removing audit mode from %s."
-msgstr ""
+msgstr "Removing audit mode from %s."
 
 #: ../apparmor/tools.py:212
 #, python-format
@@ -940,11 +959,13 @@ msgid ""
 "Please pass an application to generate a profile for, not a profile itself - "
 "skipping %s."
 msgstr ""
+"Please pass an application to generate a profile for, not a profile itself - "
+"skipping %s."
 
 #: ../apparmor/tools.py:220
 #, python-format
 msgid "Profile for %s already exists - skipping."
-msgstr ""
+msgstr "Profile for %s already exists - skipping."
 
 #: ../apparmor/tools.py:232
 #, python-format
@@ -952,6 +973,8 @@ msgid ""
 "\n"
 "Deleted %s rules."
 msgstr ""
+"\n"
+"Deleted %s rules."
 
 #: ../apparmor/tools.py:240
 #, python-format
@@ -959,267 +982,269 @@ msgid ""
 "The local profile for %(program)s in file %(file)s was changed. Would you "
 "like to save it?"
 msgstr ""
+"The local profile for %(program)s in file %(file)s was changed. Would you "
+"like to save it?"
 
 #: ../apparmor/tools.py:260
 #, python-format
 msgid "The profile for %s does not exists. Nothing to clean."
-msgstr ""
+msgstr "The profile for %s does not exists. Nothing to clean."
 
 #: ../apparmor/ui.py:61
 msgid "Invalid hotkey for"
-msgstr ""
+msgstr "Invalid hotkey for"
 
 #: ../apparmor/ui.py:77 ../apparmor/ui.py:121 ../apparmor/ui.py:275
 msgid "(Y)es"
-msgstr ""
+msgstr "(Y)es"
 
 #: ../apparmor/ui.py:78 ../apparmor/ui.py:122 ../apparmor/ui.py:276
 msgid "(N)o"
-msgstr ""
+msgstr "(N)o"
 
 #: ../apparmor/ui.py:123
 msgid "(C)ancel"
-msgstr ""
+msgstr "(C)ancel"
 
 #: ../apparmor/ui.py:223
 msgid "(A)llow"
-msgstr ""
+msgstr "(A)llow"
 
 #: ../apparmor/ui.py:224
 msgid "(M)ore"
-msgstr ""
+msgstr "(M)ore"
 
 #: ../apparmor/ui.py:225
 msgid "Audi(t)"
-msgstr ""
+msgstr "Audi(t)"
 
 #: ../apparmor/ui.py:226
 msgid "Audi(t) off"
-msgstr ""
+msgstr "Audi(t) off"
 
 #: ../apparmor/ui.py:227
 msgid "Audit (A)ll"
-msgstr ""
+msgstr "Audit (A)ll"
 
 #: ../apparmor/ui.py:229
 msgid "(O)wner permissions on"
-msgstr ""
+msgstr "(O)wner permissions on"
 
 #: ../apparmor/ui.py:230
 msgid "(O)wner permissions off"
-msgstr ""
+msgstr "(O)wner permissions off"
 
 #: ../apparmor/ui.py:231
 msgid "(D)eny"
-msgstr ""
+msgstr "(D)eny"
 
 #: ../apparmor/ui.py:232
 msgid "Abo(r)t"
-msgstr ""
+msgstr "Abo(r)t"
 
 #: ../apparmor/ui.py:233
 msgid "(F)inish"
-msgstr ""
+msgstr "(F)inish"
 
 #: ../apparmor/ui.py:234
 msgid "(I)nherit"
-msgstr ""
+msgstr "(I)nherit"
 
 #: ../apparmor/ui.py:235
 msgid "(P)rofile"
-msgstr ""
+msgstr "(P)rofile"
 
 #: ../apparmor/ui.py:236
 msgid "(P)rofile Clean Exec"
-msgstr ""
+msgstr "(P)rofile Clean Exec"
 
 #: ../apparmor/ui.py:237
 msgid "(C)hild"
-msgstr ""
+msgstr "(C)hild"
 
 #: ../apparmor/ui.py:238
 msgid "(C)hild Clean Exec"
-msgstr ""
+msgstr "(C)hild Clean Exec"
 
 #: ../apparmor/ui.py:239
 msgid "(N)amed"
-msgstr ""
+msgstr "(N)amed"
 
 #: ../apparmor/ui.py:240
 msgid "(N)amed Clean Exec"
-msgstr ""
+msgstr "(N)amed Clean Exec"
 
 #: ../apparmor/ui.py:241
 msgid "(U)nconfined"
-msgstr ""
+msgstr "(U)nconfined"
 
 #: ../apparmor/ui.py:242
 msgid "(U)nconfined Clean Exec"
-msgstr ""
+msgstr "(U)nconfined Clean Exec"
 
 #: ../apparmor/ui.py:243
 msgid "(P)rofile Inherit"
-msgstr ""
+msgstr "(P)rofile Inherit"
 
 #: ../apparmor/ui.py:244
 msgid "(P)rofile Inherit Clean Exec"
-msgstr ""
+msgstr "(P)rofile Inherit Clean Exec"
 
 #: ../apparmor/ui.py:245
 msgid "(C)hild Inherit"
-msgstr ""
+msgstr "(C)hild Inherit"
 
 #: ../apparmor/ui.py:246
 msgid "(C)hild Inherit Clean Exec"
-msgstr ""
+msgstr "(C)hild Inherit Clean Exec"
 
 #: ../apparmor/ui.py:247
 msgid "(N)amed Inherit"
-msgstr ""
+msgstr "(N)amed Inherit"
 
 #: ../apparmor/ui.py:248
 msgid "(N)amed Inherit Clean Exec"
-msgstr ""
+msgstr "(N)amed Inherit Clean Exec"
 
 #: ../apparmor/ui.py:249
 msgid "(X) ix On"
-msgstr ""
+msgstr "(X) ix On"
 
 #: ../apparmor/ui.py:250
 msgid "(X) ix Off"
-msgstr ""
+msgstr "(X) ix Off"
 
 #: ../apparmor/ui.py:251 ../apparmor/ui.py:265
 msgid "(S)ave Changes"
-msgstr ""
+msgstr "(S)ave Changes"
 
 #: ../apparmor/ui.py:252
 msgid "(C)ontinue Profiling"
-msgstr ""
+msgstr "(C)ontinue Profiling"
 
 #: ../apparmor/ui.py:253
 msgid "(N)ew"
-msgstr ""
+msgstr "(N)ew"
 
 #: ../apparmor/ui.py:254
 msgid "(G)lob"
-msgstr ""
+msgstr "(G)lob"
 
 #: ../apparmor/ui.py:255
 msgid "Glob with (E)xtension"
-msgstr ""
+msgstr "Glob with (E)xtension"
 
 #: ../apparmor/ui.py:256
 msgid "(A)dd Requested Hat"
-msgstr ""
+msgstr "(A)dd Requested Hat"
 
 #: ../apparmor/ui.py:257
 msgid "(U)se Default Hat"
-msgstr ""
+msgstr "(U)se Default Hat"
 
 #: ../apparmor/ui.py:258
 msgid "(S)can system log for AppArmor events"
-msgstr ""
+msgstr "(S)can system log for AppArmor events"
 
 #: ../apparmor/ui.py:259
 msgid "(H)elp"
-msgstr ""
+msgstr "(H)elp"
 
 #: ../apparmor/ui.py:260
 msgid "(V)iew Profile"
-msgstr ""
+msgstr "(V)iew Profile"
 
 #: ../apparmor/ui.py:261
 msgid "(U)se Profile"
-msgstr ""
+msgstr "(U)se Profile"
 
 #: ../apparmor/ui.py:262
 msgid "(C)reate New Profile"
-msgstr ""
+msgstr "(C)reate New Profile"
 
 #: ../apparmor/ui.py:263
 msgid "(U)pdate Profile"
-msgstr ""
+msgstr "(U)pdate Profile"
 
 #: ../apparmor/ui.py:264
 msgid "(I)gnore Update"
-msgstr ""
+msgstr "(I)gnore Update"
 
 #: ../apparmor/ui.py:266
 msgid "Save Selec(t)ed Profile"
-msgstr ""
+msgstr "Save Selec(t)ed Profile"
 
 #: ../apparmor/ui.py:267
 msgid "(U)pload Changes"
-msgstr ""
+msgstr "(U)pload Changes"
 
 #: ../apparmor/ui.py:268
 msgid "(V)iew Changes"
-msgstr ""
+msgstr "(V)iew Changes"
 
 #: ../apparmor/ui.py:269
 msgid "View Changes b/w (C)lean profiles"
-msgstr ""
+msgstr "View Changes b/w (C)lean profiles"
 
 #: ../apparmor/ui.py:270
 msgid "(V)iew"
-msgstr ""
+msgstr "(V)iew"
 
 #: ../apparmor/ui.py:271
 msgid "(E)nable Repository"
-msgstr ""
+msgstr "(E)nable Repository"
 
 #: ../apparmor/ui.py:272
 msgid "(D)isable Repository"
-msgstr ""
+msgstr "(D)isable Repository"
 
 #: ../apparmor/ui.py:273
 msgid "(N)ever Ask Again"
-msgstr ""
+msgstr "(N)ever Ask Again"
 
 #: ../apparmor/ui.py:274
 msgid "Ask Me (L)ater"
-msgstr ""
+msgstr "Ask Me (L)ater"
 
 #: ../apparmor/ui.py:277
 msgid "Allow All (N)etwork"
-msgstr ""
+msgstr "Allow All (N)etwork"
 
 #: ../apparmor/ui.py:278
 msgid "Allow Network Fa(m)ily"
-msgstr ""
+msgstr "Allow Network Fa(m)ily"
 
 #: ../apparmor/ui.py:279
 msgid "(O)verwrite Profile"
-msgstr ""
+msgstr "(O)verwrite Profile"
 
 #: ../apparmor/ui.py:280
 msgid "(K)eep Profile"
-msgstr ""
+msgstr "(K)eep Profile"
 
 #: ../apparmor/ui.py:281
 msgid "(C)ontinue"
-msgstr ""
+msgstr "(C)ontinue"
 
 #: ../apparmor/ui.py:282
 msgid "(I)gnore"
-msgstr ""
+msgstr "(I)gnore"
 
 #: ../apparmor/ui.py:344
 #, python-format
 msgid "PromptUser: Unknown command %s"
-msgstr ""
+msgstr "PromptUser: Unknown command %s"
 
 #: ../apparmor/ui.py:351
 #, python-format
 msgid "PromptUser: Duplicate hotkey for %(command)s: %(menutext)s "
-msgstr ""
+msgstr "PromptUser: Duplicate hotkey for %(command)s: %(menutext)s "
 
 #: ../apparmor/ui.py:363
 msgid "PromptUser: Invalid hotkey in default item"
-msgstr ""
+msgstr "PromptUser: Invalid hotkey in default item"
 
 #: ../apparmor/ui.py:368
 #, python-format
 msgid "PromptUser: Invalid default %s"
-msgstr ""
+msgstr "PromptUser: Invalid default %s"
