@@ -4,5 +4,5 @@
 #
 
 profile foo {
-  dbus send peer=(label=spla{t,r ),
+  unix send peer=(label=spla{t,r ),
 }

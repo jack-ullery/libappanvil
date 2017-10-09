@@ -1,5 +1,5 @@
 #
-#=DESCRIPTION dbus bind with non-bind interface modifier
+#=DESCRIPTION unix bind with non-bind interface modifier
 #=EXRESULT FAIL
 #
 
