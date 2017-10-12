@@ -1816,13 +1816,15 @@ def save_profiles():
         q.explanation = _('The following local profiles were changed. Would you like to save them?')
         q.functions = ['CMD_SAVE_CHANGES', 'CMD_SAVE_SELECTED', 'CMD_VIEW_CHANGES', 'CMD_VIEW_CHANGES_CLEAN', 'CMD_ABORT']
         q.default = 'CMD_VIEW_CHANGES'
-        q.options = changed
         q.selected = 0
         ans = ''
         arg = None
         while ans != 'CMD_SAVE_CHANGES':
             if not changed:
                 return
+
+            q.options = sorted(changed.keys())
+
             ans, arg = q.promptUser()
             if ans == 'CMD_SAVE_SELECTED':
                 profile_name = list(changed.keys())[arg]
