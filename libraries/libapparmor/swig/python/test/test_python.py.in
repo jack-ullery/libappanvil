@@ -121,7 +121,7 @@ class AAPythonBindingsTests(unittest.TestCase):
                     continue
                 else:
                     new_record[key] = str(value)
-            elif record.__getattr__(key):
+            elif value or value == '':
                 new_record[key] = str(value)
 
         return new_record
