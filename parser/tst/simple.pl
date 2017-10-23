@@ -10,7 +10,7 @@ use Test::More;
 my %config;
 $config{'parser'} = "/sbin/apparmor_parser";
 $config{'profiledir'} = "./simple_tests/";
-$config{'timeout'} = 120; # in seconds
+$config{'timeout'} = 480; # in seconds
 
 my $help;
 my $pwd = `pwd`;
