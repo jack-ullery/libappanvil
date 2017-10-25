@@ -45,7 +45,7 @@ def write_json(jsonout):
 def set_json_mode():
     global UI_mode
     UI_mode = 'json'
-    jsonout = {'dialog': 'apparmor-json-version', 'data': '2.12'}
+    jsonout = {'dialog': 'apparmor-json-version', 'data': '2.13'}
     write_json(jsonout)
 
 # reads the response on command line for json and verifies the response
@@ -250,9 +250,16 @@ def generate_diff_with_comments(oldprofile, newprofile):
 def UI_Changes(oldprofile, newprofile, comments=False):
     if comments == False:
       difftemp = generate_diff(oldprofile, newprofile)
+      header = 'View Changes'
     else:
       difftemp = generate_diff_with_comments(oldprofile, newprofile)
-    subprocess.call('less %s' % difftemp.name, shell=True)
+      header = 'View Changes with comments'
+    if UI_mode == 'json':
+        jsonout = {'dialog': 'changes', 'header':header, 'filename': difftemp.name}
+        write_json(jsonout)
+        json_response('changes')["response"]  # response gets ignored, therefore not assigning to a variable
+    else:
+      subprocess.call('less %s' % difftemp.name, shell=True)
     difftemp.close()
 
 CMDS = {'CMD_ALLOW': _('(A)llow'),
