@@ -2997,11 +2997,11 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     'capability': False,
                     'network': False,
                     'dbus': False,
-                    'mount': True, # not handled otherwise yet
+                    'mount': False,
                     'signal': True, # not handled otherwise yet
                     'ptrace': True, # not handled otherwise yet
-                    'pivot_root': True, # not handled otherwise yet
-                    'unix': True, # not handled otherwise yet
+                    'pivot_root': False,
+                    'unix': False,
                     'link': False,
                     'file': False,
                     'change_profile': False,
