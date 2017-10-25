@@ -18,6 +18,9 @@ import json
 import sys
 import re
 import readline
+import os
+import tempfile
+import subprocess
 
 from apparmor.common import readkey, AppArmorException, DebugLogger
 
@@ -216,6 +219,41 @@ def UI_BusyStart(message):
 
 def UI_BusyStop():
     debug_logger.debug('UI_BusyStop: %s' % UI_mode)
+
+def diff(oldprofile, newprofile):
+    difftemp = tempfile.NamedTemporaryFile('w')
+    subprocess.call('diff -u -p %s %s > %s' % (oldprofile, newprofile, difftemp.name), shell=True)
+    return difftemp
+
+def write_profile_to_tempfile(profile):
+    temp = tempfile.NamedTemporaryFile('w')
+    temp.write(profile)
+    temp.flush()
+    return temp
+
+def generate_diff(oldprofile, newprofile):
+    oldtemp = write_profile_to_tempfile(oldprofile)
+    newtemp = write_profile_to_tempfile(newprofile)
+    difftemp = diff(oldtemp.name, newtemp.name)
+    oldtemp.close()
+    newtemp.close()
+    return difftemp
+
+def generate_diff_with_comments(oldprofile, newprofile):
+    if not os.path.exists(oldprofile):
+        raise AppArmorException(_("Can't find existing profile %s to compare changes.") % oldprofile)
+    newtemp = write_profile_to_tempfile(newprofile)
+    difftemp = diff(oldprofile, newtemp.name)
+    newtemp.close()
+    return difftemp
+
+def UI_Changes(oldprofile, newprofile, comments=False):
+    if comments == False:
+      difftemp = generate_diff(oldprofile, newprofile)
+    else:
+      difftemp = generate_diff_with_comments(oldprofile, newprofile)
+    subprocess.call('less %s' % difftemp.name, shell=True)
+    difftemp.close()
 
 CMDS = {'CMD_ALLOW': _('(A)llow'),
         'CMD_OTHER': _('(M)ore'),

@@ -128,7 +128,7 @@ def act(files, merging_profile):
                     apparmor.aa.original_aa[program] = apparmor.aa.deepcopy(apparmor.aa.aa[program])
                 #oldprofile = apparmor.serialize_profile(apparmor.original_aa[program], program, '')
                 newprofile = apparmor.aa.serialize_profile(mergeprofiles.user.aa[program], program, '')
-                apparmor.aa.display_changes_with_comments(mergeprofiles.user.filename, newprofile)
+                aaui.UI_Changes(mergeprofiles.user.filename, newprofile, comments=True)
             elif ans == 'CMD_IGNORE_ENTRY':
                 break
 

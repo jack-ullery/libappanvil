@@ -822,7 +822,7 @@ def console_select_and_upload_profiles(title, message, profiles_up):
     while 'CMD_UPLOAD_CHANGES' not in ans and 'CMD_ASK_NEVER' not in ans and 'CMD_ASK_LATER' not in ans:
         ans, arg = q.promptUser()
         if ans == 'CMD_VIEW_CHANGES':
-            display_changes(profs[arg][2], profs[arg][1])
+            aaui.UI_Changes(profs[arg][2], profs[arg][1])
     if ans == 'CMD_NEVER_ASK':
         set_profiles_local_only([i[0] for i in profs])
     elif ans == 'CMD_UPLOAD_CHANGES':
@@ -1845,14 +1845,14 @@ def save_profiles():
                     # see https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/1528139
                     newprofile = "###\n###\n### Internal error while generating diff, please use '%s' instead\n###\n###\n" % _('View Changes b/w (C)lean profiles')
 
-                display_changes_with_comments(oldprofile, newprofile)
+                aaui.UI_Changes(oldprofile, newprofile, comments=True)
 
             elif ans == 'CMD_VIEW_CHANGES_CLEAN':
                 which = list(changed.keys())[arg]
                 oldprofile = serialize_profile(original_aa[which], which, '')
                 newprofile = serialize_profile(aa[which], which, '')
 
-                display_changes(oldprofile, newprofile)
+                aaui.UI_Changes(oldprofile, newprofile)
 
         for profile_name in sorted(changed.keys()):
             write_profile_ui_feedback(profile_name)
@@ -1860,58 +1860,6 @@ def save_profiles():
 
 def get_pager():
     return 'less'
-
-def generate_diff(oldprofile, newprofile):
-    oldtemp = tempfile.NamedTemporaryFile('w')
-
-    oldtemp.write(oldprofile)
-    oldtemp.flush()
-
-    newtemp = tempfile.NamedTemporaryFile('w')
-    newtemp.write(newprofile)
-    newtemp.flush()
-
-    difftemp = tempfile.NamedTemporaryFile('w', delete=False)
-
-    subprocess.call('diff -u -p %s %s > %s' % (oldtemp.name, newtemp.name, difftemp.name), shell=True)
-
-    oldtemp.close()
-    newtemp.close()
-    return difftemp
-
-def get_profile_diff(oldprofile, newprofile):
-    difftemp = generate_diff(oldprofile, newprofile)
-    diff = []
-    with open_file_read(difftemp.name) as f_in:
-        for line in f_in:
-            if not (line.startswith('---') and line .startswith('+++') and line.startswith('@@')):
-                    diff.append(line)
-
-    difftemp.delete = True
-    difftemp.close()
-    return ''.join(diff)
-
-def display_changes(oldprofile, newprofile):
-    difftemp = generate_diff(oldprofile, newprofile)
-    subprocess.call('less %s' % difftemp.name, shell=True)
-    difftemp.delete = True
-    difftemp.close()
-
-def display_changes_with_comments(oldprofile, newprofile):
-    """Compare the new profile with the existing profile inclusive of all the comments"""
-    if not os.path.exists(oldprofile):
-        raise AppArmorException(_("Can't find existing profile %s to compare changes.") % oldprofile)
-    newtemp = tempfile.NamedTemporaryFile('w')
-    newtemp.write(newprofile)
-    newtemp.flush()
-
-    difftemp = tempfile.NamedTemporaryFile('w')
-
-    subprocess.call('diff -u -p %s %s > %s' % (oldprofile, newtemp.name, difftemp.name), shell=True)
-
-    newtemp.close()
-    subprocess.call('less %s' % difftemp.name, shell=True)
-    difftemp.close()
 
 def set_process(pid, profile):
     # If process not running don't do anything

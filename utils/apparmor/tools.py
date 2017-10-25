@@ -225,7 +225,7 @@ class aa_tools:
                     elif ans == 'CMD_VIEW_CHANGES':
                         #oldprofile = apparmor.serialize_profile(apparmor.original_aa[program], program, '')
                         newprofile = apparmor.serialize_profile(apparmor.aa[program], program, '')
-                        apparmor.display_changes_with_comments(filename, newprofile)
+                        aaui.UI_Changes(filename, newprofile, comments=True)
             else:
                 apparmor.write_profile_ui_feedback(program)
                 self.reload_profile(filename)
