@@ -68,6 +68,8 @@ owner /tmp/pulse-*/* rw,
 # openal
 /etc/openal/alsoft.conf r,
 owner @{HOME}/.alsoftrc r,
+/usr/{,local/}share/openal/hrtf/{,**} r,
+owner @{HOME}/.local/share/openal/hrtf/{,**} r,
 
 # wildmidi
 /etc/wildmidi/wildmidi.cfg r,
