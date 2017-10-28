@@ -45,6 +45,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <dirent.h>
+#include <limits.h>
 
 #include "lib.h"
 #include "parser.h"
