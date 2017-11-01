@@ -87,7 +87,7 @@ docs: ${MANPAGES} ${HTMLMANPAGES}
 install: ${TARGET} ${MANPAGES}
 	mkdir -p ${DESTDIR}/${APXS_INSTALL_DIR}
 	install -m 755 $< ${DESTDIR}/${APXS_INSTALL_DIR}
-	make install_manpages DESTDIR=${DESTDIR}
+	$(MAKE) install_manpages DESTDIR=${DESTDIR}
 
 .PHONY: clean
 clean: pod_clean

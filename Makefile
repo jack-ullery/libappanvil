@@ -40,23 +40,23 @@ TAR_EXCLUSIONS=
 .PHONY: tarball
 tarball: clean
 	REPO_VERSION=`$(value REPO_VERSION_CMD)` && \
-	make export_dir __EXPORT_DIR=${RELEASE_DIR} __REPO_VERSION=$${REPO_VERSION} && \
-	make setup __SETUP_DIR=${RELEASE_DIR} && \
+	$(MAKE) export_dir __EXPORT_DIR=${RELEASE_DIR} __REPO_VERSION=$${REPO_VERSION} && \
+	$(MAKE) setup __SETUP_DIR=${RELEASE_DIR} && \
 	tar ${TAR_EXCLUSIONS} -cvzf ${RELEASE_DIR}.tar.gz ${RELEASE_DIR}
 
 .PHONY: snapshot
 snapshot: clean
 	$(eval REPO_VERSION:=$(shell $(value REPO_VERSION_CMD)))
 	$(eval SNAPSHOT_NAME=apparmor-$(VERSION)~$(REPO_VERSION))
-	make export_dir __EXPORT_DIR=${SNAPSHOT_NAME} __REPO_VERSION=${REPO_VERSION} && \
-	make setup __SETUP_DIR=${SNAPSHOT_NAME} && \
+	$(MAKE) export_dir __EXPORT_DIR=${SNAPSHOT_NAME} __REPO_VERSION=${REPO_VERSION} && \
+	$(MAKE) setup __SETUP_DIR=${SNAPSHOT_NAME} && \
 	tar ${TAR_EXCLUSIONS} -cvzf ${SNAPSHOT_NAME}.tar.gz ${SNAPSHOT_NAME}
 
 .PHONY: coverity
 coverity: snapshot
 	cd $(SNAPSHOT_NAME)/libraries/libapparmor && ./configure --with-python
 	$(foreach dir, $(filter-out utils profiles tests, $(DIRS)), \
-		cov-build --dir $(COVERITY_DIR) -- make -C $(SNAPSHOT_NAME)/$(dir);)
+		cov-build --dir $(COVERITY_DIR) -- $(MAKE) -C $(SNAPSHOT_NAME)/$(dir);)
 	tar -cvzf $(SNAPSHOT_NAME)-$(COVERITY_DIR).tar.gz $(COVERITY_DIR)
 
 .PHONY: export_dir
@@ -69,18 +69,18 @@ export_dir:
 clean:
 	-rm -rf ${RELEASE_DIR} ./apparmor-${VERSION}~* ${COVERITY_DIR}
 	for dir in $(DIRS); do \
-		make -C $$dir clean; \
+		$(MAKE) -C $$dir clean; \
 	done
 
 .PHONY: setup
 setup:
 	cd $(__SETUP_DIR)/libraries/libapparmor && ./autogen.sh
 	# parser has an extra doc to build
-	make -C $(__SETUP_DIR)/parser extra_docs
+	$(MAKE) -C $(__SETUP_DIR)/parser extra_docs
 	# libraries/libapparmor needs configure to have run before
 	# building docs
 	$(foreach dir, $(filter-out libraries/libapparmor tests, $(DIRS)), \
-		make -C $(__SETUP_DIR)/$(dir) docs;)
+		$(MAKE) -C $(__SETUP_DIR)/$(dir) docs;)
 
 .PHONY: tag
 tag:
