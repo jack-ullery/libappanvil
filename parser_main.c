@@ -101,6 +101,7 @@ struct timespec cache_tstamp, mru_policy_tstamp;
 
 static char *apparmorfs = NULL;
 static char *cacheloc = NULL;
+static char *cachedir = NULL;
 static bool print_cache_dir = false;
 
 static aa_features *features = NULL;
@@ -1121,7 +1122,7 @@ int main(int argc, char *argv[])
 	    print_cache_dir || force_clear_cache) {
 		uint16_t max_caches = write_cache && cond_clear_cache ? 1 : 0;
 
-		if (!cacheloc && asprintf(&cacheloc, "%s/cache", basedir) == -1) {
+		if (!cacheloc && asprintf(&cacheloc, "%s/cache.d", basedir) == -1) {
 			PERROR(_("Memory allocation error."));
 			return 1;
 		}
@@ -1162,6 +1163,14 @@ int main(int argc, char *argv[])
 
 			write_cache = 0;
 			skip_read_cache = 1;
+		} else {
+			cachedir = aa_policy_cache_dir_path(policy_cache);
+			if (!cachedir) {
+				PERROR("Policy cache disabled: Cannot locate the policy cache directory: %m\n");
+
+				write_cache = 0;
+				skip_read_cache = 1;
+			}
 		}
 	}
 
@@ -1192,7 +1201,7 @@ int main(int argc, char *argv[])
 
 			memset(&cb_data, 0, sizeof(struct dir_cb_data));
 			cb_data.dirname = profilename;
-			cb_data.cachedir = cacheloc;
+			cb_data.cachedir = cachedir;
 			cb_data.kernel_interface = kernel_interface;
 			cb = binary_input ? binary_dir_cb : profile_dir_cb;
 			if ((retval = dirat_for_each(AT_FDCWD, profilename,
@@ -1206,7 +1215,7 @@ int main(int argc, char *argv[])
 				   handle_work_result);
 		} else {
 			work_spawn(process_profile(option, kernel_interface,
-						   profilename, cacheloc),
+						   profilename, cachedir),
 				   handle_work_result);
 		}
 
