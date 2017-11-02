@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2014
+ *   Copyright (c) 2014-2017
  *   Canonical, Ltd. (All rights reserved)
  *
  *   This program is free software; you can redistribute it and/or
@@ -20,6 +20,7 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -34,10 +35,12 @@
 
 #define FEATURES_FILE "/sys/kernel/security/apparmor/features"
 
+#define HASH_SIZE (8 + 1) /* 32 bits binary to hex + NUL terminator */
 #define STRING_SIZE 8192
 
 struct aa_features {
 	unsigned int ref_count;
+	char hash[HASH_SIZE];
 	char string[STRING_SIZE];
 };
 
@@ -199,6 +202,27 @@ static ssize_t load_features_dir(int dirfd, const char *path,
 
 	if (_aa_dirat_for_each(dirfd, path, &fst, features_dir_cb)) {
 		PDEBUG("Failed evaluating %s\n", path);
+		return -1;
+	}
+
+	return 0;
+}
+
+static int init_features_hash(aa_features *features)
+{
+	const char *string = features->string;
+	uint32_t hash = 5381;
+
+	/* djb2 - http://www.cse.yorku.ca/~oz/hash.html */
+	while (*string) {
+		/* hash * 33 + *string */
+		hash = ((hash << 5) + hash) + *(string++);
+	}
+
+	if (snprintf(features->hash, HASH_SIZE,
+		     "%08" PRIx32, hash) >= HASH_SIZE) {
+		errno = ENOBUFS;
+		PERROR("Hash buffer full.");
 		return -1;
 	}
 
@@ -408,6 +432,14 @@ int aa_features_new(aa_features **features, int dirfd, const char *path)
 		return -1;
 	}
 
+	if (init_features_hash(f) == -1) {
+		int save = errno;
+
+		aa_features_unref(f);
+		errno = save;
+		return -1;
+	}
+
 	*features = f;
 
 	return 0;
@@ -443,6 +475,15 @@ int aa_features_new_from_string(aa_features **features,
 
 	memcpy(f->string, string, size);
 	f->string[size] = '\0';
+
+	if (init_features_hash(f) == -1) {
+		int save = errno;
+
+		aa_features_unref(f);
+		errno = save;
+		return -1;
+	}
+
 	*features = f;
 
 	return 0;
