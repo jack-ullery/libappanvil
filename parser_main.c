@@ -101,6 +101,7 @@ struct timespec cache_tstamp, mru_policy_tstamp;
 
 static char *apparmorfs = NULL;
 static char *cacheloc = NULL;
+static bool print_cache_dir = false;
 
 static aa_features *features = NULL;
 
@@ -149,6 +150,7 @@ struct option long_options[] = {
 	{"debug-cache",		0, 0, 135},	/* no short option */
 	{"jobs",		1, 0, 'j'},
 	{"max-jobs",		1, 0, 136},	/* no short option */
+	{"print-cache-dir",	0, 0, 137},	/* no short option */
 	{NULL, 0, 0, 0},
 };
 
@@ -188,6 +190,7 @@ static void display_usage(const char *command)
 	       "    --skip-bad-cache	Don't clear cache if out of sync\n"
 	       "    --purge-cache	Clear cache regardless of its state\n"
 	       "    --debug-cache       Debug cache file checks\n"
+	       "    --print-cache_dir	Print the cache directory path\n"
 	       "-L, --cache-loc n	Set the location of the profile cache\n"
 	       "-q, --quiet		Don't emit warnings\n"
 	       "-v, --verbose		Show profile names as they load\n"
@@ -535,6 +538,10 @@ static int process_arg(int c, char *optarg)
 	case 136:
 		jobs_max = process_jobs_arg("max-jobs", optarg);
 		break;
+	case 137:
+		kernel_load = 0;
+		print_cache_dir = true;
+		break;
 	default:
 		/* 'unrecognized option' error message gets printed by getopt_long() */
 		exit(1);
@@ -652,6 +659,20 @@ static void set_supported_features(void)
 	if (!kernel_supports_diff_encode)
 		/* clear diff_encode because it is not supported */
 		dfaflags &= ~DFA_CONTROL_DIFF_ENCODE;
+}
+
+static bool do_print_cache_dir(aa_features *features, int dirfd, const char *path)
+{
+	autofree char *cache_dir = NULL;
+
+	cache_dir = aa_policy_cache_dir_path_preview(features, dirfd, path);
+	if (!cache_dir) {
+		PERROR(_("Unable to print the cache directory: %m\n"));
+		return false;
+	}
+
+	printf("%s\n", cache_dir);
+	return true;
 }
 
 int process_binary(int option, aa_kernel_interface *kernel_interface,
@@ -1097,13 +1118,17 @@ int main(int argc, char *argv[])
 	}
 
 	if ((!skip_cache && (write_cache || !skip_read_cache)) ||
-	    force_clear_cache) {
+	    print_cache_dir || force_clear_cache) {
 		uint16_t max_caches = write_cache && cond_clear_cache ? 1 : 0;
 
 		if (!cacheloc && asprintf(&cacheloc, "%s/cache", basedir) == -1) {
 			PERROR(_("Memory allocation error."));
 			return 1;
 		}
+
+		if (print_cache_dir)
+			return do_print_cache_dir(features, AT_FDCWD,
+						  cacheloc) ? 0 : 1;
 
 		if (force_clear_cache) {
 			if (aa_policy_cache_remove(AT_FDCWD, cacheloc)) {
