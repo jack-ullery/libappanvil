@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2014
+ *   Copyright (c) 2014-2017
  *   Canonical, Ltd. (All rights reserved)
  *
  *   This program is free software; you can redistribute it and/or
@@ -110,6 +110,49 @@ static int replace_all_cb(int dirfd unused, const char *name, struct stat *st,
 	}
 
 	return retval;
+}
+
+static char *path_from_fd(int fd)
+{
+	autofree char *proc_path = NULL;
+	autoclose int proc_fd = -1;
+	struct stat proc_stat;
+	char *path;
+	ssize_t path_len;
+
+	if (asprintf(&proc_path, "/proc/self/fd/%d", fd) == -1) {
+		proc_path = NULL;
+		errno = ENOMEM;
+		return NULL;
+	}
+
+	proc_fd = open(proc_path, O_RDONLY | O_CLOEXEC | O_PATH | O_NOFOLLOW);
+	if (proc_fd == -1)
+		return NULL;
+
+	if (fstat(proc_fd, &proc_stat) == -1)
+		return NULL;
+
+	if (!S_ISLNK(proc_stat.st_mode)) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	path = malloc(proc_stat.st_size + 1);
+	if (!path)
+		return NULL;
+
+	/**
+	 * Since 2.6.39, symlink file descriptors opened with
+	 * (O_PATH | O_NOFOLLOW) can be used as the dirfd with an empty string
+	 * as the path. readlinkat() will operate on the symlink inode.
+	 */
+	path_len = readlinkat(proc_fd, "", path, proc_stat.st_size);
+	if (path_len == -1)
+		return NULL;
+
+	path[path_len] = '\0';
+	return path;
 }
 
 /**
@@ -268,4 +311,21 @@ int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
 	aa_kernel_interface_unref(kernel_interface);
 
 	return retval;
+}
+
+/**
+ * aa_policy_cache_dir_path - returns the path to the aa_policy_cache directory
+ * @policy_cache: the policy_cache
+ *
+ * Returns: The path to the policy cache directory on success, NULL on
+ * error with errno set.
+ */
+char *aa_policy_cache_dir_path(aa_policy_cache *policy_cache)
+{
+	char *path = path_from_fd(policy_cache->dirfd);
+
+	if (!path)
+		PERROR("Can't return the path to the aa_policy_cache directory: %m\n");
+
+	return path;
 }

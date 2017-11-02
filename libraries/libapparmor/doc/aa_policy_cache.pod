@@ -34,6 +34,8 @@ aa_policy_cache_remove - removes all policy cache files under a path
 
 aa_policy_cache_replace_all - performs a kernel policy replacement of all cached policies
 
+aa_policy_cache_dir_path - returns the path to the aa_policy_cache directory
+
 =head1 SYNOPSIS
 
 B<#include E<lt>sys/apparmor.hE<gt>>
@@ -50,6 +52,8 @@ B<int aa_policy_cache_remove(int dirfd, const char *path);>
 
 B<int aa_policy_cache_replace_all(aa_policy_cache *policy_cache, aa_kernel_interface *kernel_interface);>
 
+B<char *aa_policy_cache_dir_path(aa_policy_cache *policy_cache);>
+
 Link with B<-lapparmor> when compiling.
 
 =head1 DESCRIPTION
@@ -60,18 +64,20 @@ human-readable AppArmor profile. The binary representation is the form that is
 loaded into the kernel.
 
 The aa_policy_cache_new() function creates an I<aa_policy_cache> object based
-upon a directory file descriptor and path. The I<path> must point to a
-directory. See the openat(2) man page for examples of I<dirfd> and I<path>. If
-I<kernel_features> is NULL, then the features of the current kernel are used.
-When specifying a valid I<kernel_features> object, it must be the compatible
-with the features of the kernel of interest. The value of I<max_caches> should
-be equal to the number of caches that should be allowed before old caches are
-automatically reaped. The definition of what is considered to be an old cache
-is private to libapparmor. Specifying 0 means that no new caches should be
-created and only existing, valid caches may be used. Specifying UINT16_MAX
-means that a new cache may be created and that the reaping of old caches is
-disabled. The allocated I<aa_policy_cache> object must be freed using
-aa_policy_cache_unref().
+upon a directory file descriptor and path. See the openat(2) man page for
+examples of I<dirfd> and I<path>. The I<path> must point to a directory and it
+will be used as the basis for the location of policy cache files. See
+I<aa_policy_cache_dir_path> to find out which directory will be used to store
+the binary policy cache files. If I<kernel_features> is NULL, then the features
+of the current kernel are used. When specifying a valid I<kernel_features>
+object, it must be the compatible with the features of the kernel of interest.
+The value of I<max_caches> should be equal to the number of caches that should
+be allowed before old caches are automatically reaped. The definition of what is
+considered to be an old cache is private to libapparmor. Specifying 0 means that
+no new caches should be created and only existing, valid caches may be used.
+Specifying UINT16_MAX means that a new cache may be created and that the reaping
+of old caches is disabled. The allocated I<aa_policy_cache> object must be freed
+using aa_policy_cache_unref().
 
 aa_policy_cache_ref() increments the reference count on the I<policy_cache>
 object.
@@ -90,6 +96,10 @@ the I<policy_cache> object. If I<kernel_interface> is NULL, then the current
 kernel interface is used. When specifying a valid I<kernel_interface> object,
 it must be the interface of the currently running kernel.
 
+The aa_policy_cache_dir_path() function provides the path to the cache directory
+for a I<policy_cache> object. Binary policy cache files will be located in the
+directory returned by this function.
+
 =head1 RETURN VALUE
 
 The aa_policy_cache_new() function returns 0 on success and I<*policy_cache>
@@ -102,15 +112,19 @@ aa_policy_cache_ref() returns the value of I<policy_cache>.
 aa_policy_cache_remove() and aa_policy_cache_replace_all() return 0 on success.
 -1 is returned on error, with errno set appropriately.
 
+aa_policy_cache_dir_path() returns a path string which must be freed by the
+caller. NULL is returned on error, with errnor set appropriately.
+
 =head1 ERRORS
 
 The errno value will be set according to the underlying error in the
-I<aa_policy_cache> family of functions that return -1 on error.
+I<aa_policy_cache> family of functions that return -1 or NULL on error.
 
 =head1 NOTES
 
-All aa_policy_cache functions described above are present in libapparmor
-version 2.10 and newer.
+All aa_policy_cache functions described above, except for
+aa_policy_cache_dir_path(), are present in libapparmor version 2.10. The
+aa_policy_cache_dir_path() function can be found in libapparmor version 2.12.
 
 aa_policy_cache_unref() saves the value of errno when called and restores errno
 before exiting in libapparmor version 2.12 and newer.

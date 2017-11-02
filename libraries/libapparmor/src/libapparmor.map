@@ -95,6 +95,13 @@ APPARMOR_2.11 {
         *;
 } APPARMOR_2.10;
 
+APPARMOR_2.12 {
+  global:
+        aa_policy_cache_dir_path;
+  local:
+        *;
+} APPARMOR_2.11;
+
 PRIVATE {
 	global:
 		_aa_is_blacklisted;
