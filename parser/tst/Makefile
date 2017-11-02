@@ -57,7 +57,7 @@ valgrind: $(PARSER) gen_xtrans gen_dbus
 	LANG=C ./valgrind_simple.py -p "$(PARSER)" -v simple_tests
 
 $(PARSER):
-	make -C $(PARSER_DIR) $(PARSER_BIN)
+	$(MAKE) -C $(PARSER_DIR) $(PARSER_BIN)
 
 clean:
 	find $(GEN_TRANS_DIRS) -type f | xargs rm -f
