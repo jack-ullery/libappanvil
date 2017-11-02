@@ -1,4 +1,5 @@
 apparmor-*
+cscope.*
 parser/po/*.mo
 parser/af_names.h
 parser/cap_names.h
