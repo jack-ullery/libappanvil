@@ -236,6 +236,13 @@ inconsistent state
 Set the location of the cache directory.  If not specified the cache location
 defaults to /etc/apparmor.d/cache
 
+=item --print-cache-dir
+
+Print the cache directory location. This path will be a subdirectory of the
+directory specified by --cache-loc. The subdirectory used will be influenced by
+the features available in the currently running kernel or by the features
+specified with the --match-string or --features-file options.
+
 =item -Q, --skip-kernel-load
 
 Perform all actions except the actual loading of a profile into the kernel.
