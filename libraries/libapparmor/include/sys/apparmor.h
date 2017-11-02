@@ -154,6 +154,7 @@ extern int aa_features_write_to_file(aa_features *features,
 extern bool aa_features_is_equal(aa_features *features1,
 				 aa_features *features2);
 extern bool aa_features_supports(aa_features *features, const char *str);
+extern char *aa_features_id(aa_features *features);
 
 typedef struct aa_kernel_interface aa_kernel_interface;
 extern int aa_kernel_interface_new(aa_kernel_interface **kernel_interface,

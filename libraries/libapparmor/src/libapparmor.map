@@ -99,6 +99,7 @@ APPARMOR_2.12 {
   global:
         aa_policy_cache_dir_path;
         aa_policy_cache_dir_path_preview;
+        aa_features_id;
   local:
         *;
 } APPARMOR_2.11;

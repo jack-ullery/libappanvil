@@ -40,6 +40,8 @@ aa_features_is_equal - equality test for two aa_features objects
 
 aa_features_supports - provides aa_features object support status
 
+aa_features_id - provides unique identifier for an aa_features object
+
 =head1 SYNOPSIS
 
 B<#include E<lt>sys/apparmor.hE<gt>>
@@ -61,6 +63,8 @@ B<int aa_features_write_to_file(aa_features *features, int dirfd, const char *pa
 B<bool aa_features_is_equal(aa_features *features1, aa_features *features2);>
 
 B<bool aa_features_supports(aa_features *features, const char *str);>
+
+B<char *aa_features_id(aa_features *features);>
 
 Link with B<-lapparmor> when compiling.
 
@@ -108,6 +112,12 @@ the path, relative to the "apparmor/features/" directory of securityfs, of the
 feature to query. For example, to test if policy version 6 is supported, I<str>
 would be "policy/versions/v6".
 
+The aa_features_id() function returns a string representation of an
+identifier that can be used to uniquely identify an I<aa_features> object.
+The mechanism for generating the string representation is internal to
+libapparmor and subject to change but an example implementation is
+applying a hash function to the features string.
+
 =head1 RETURN VALUE
 
 The aa_features_new() family of functions return 0 on success and I<*features>
@@ -126,15 +136,20 @@ and false if they are not equal.
 aa_features_supports() returns true if the feature represented by I<str> is
 supported and false if it is not supported.
 
+aa_features_id() returns a string identifying I<features> which must be
+freed by the caller. NULL is returned on error, with errno set
+appropriately.
+
 =head1 ERRORS
 
 The errno value will be set according to the underlying error in the
-I<aa_features> family of functions that return -1 on error.
+I<aa_features> family of functions that return -1 or NULL on error.
 
 =head1 NOTES
 
-All aa_features functions described above are present in libapparmor version
-2.10 and newer.
+All aa_features functions described above, except for aa_features_id(),
+are present in libapparmor version 2.10. The aa_features_id() function can be
+found in libapparmor version 2.12.
 
 aa_features_unref() saves the value of errno when called and restores errno
 before exiting in libapparmor version 2.12 and newer.

@@ -618,3 +618,21 @@ bool aa_features_supports(aa_features *features, const char *str)
 
 	return true;
 }
+
+/**
+ * aa_features_id - provides unique identifier for an aa_features object
+ * @features: the features
+ *
+ * Allocates and returns a string representation of an identifier that can
+ * be used to uniquely identify an aa_features object. The mechanism for
+ * generating the string representation is internal to libapparmor and
+ * subject to change but an example implementation is applying a hash
+ * function to the features string.
+ *
+ * Returns: a string identifying @features which must be freed by the
+ * caller or NULL, with errno set, upon error
+ */
+char *aa_features_id(aa_features *features)
+{
+	return strdup(features->hash);
+}
