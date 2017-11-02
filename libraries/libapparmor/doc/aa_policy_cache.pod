@@ -36,6 +36,8 @@ aa_policy_cache_replace_all - performs a kernel policy replacement of all cached
 
 aa_policy_cache_dir_path - returns the path to the aa_policy_cache directory
 
+aa_policy_cache_dir_path_preview - returns a preview of the path to the aa_policy_cache directory without an existing aa_policy_cache object
+
 =head1 SYNOPSIS
 
 B<#include E<lt>sys/apparmor.hE<gt>>
@@ -53,6 +55,8 @@ B<int aa_policy_cache_remove(int dirfd, const char *path);>
 B<int aa_policy_cache_replace_all(aa_policy_cache *policy_cache, aa_kernel_interface *kernel_interface);>
 
 B<char *aa_policy_cache_dir_path(aa_policy_cache *policy_cache);>
+
+B<char *aa_policy_cache_dir_path_preview(aa_features *kernel_features, int dirfd, const char *path);>
 
 Link with B<-lapparmor> when compiling.
 
@@ -115,6 +119,12 @@ aa_policy_cache_remove() and aa_policy_cache_replace_all() return 0 on success.
 aa_policy_cache_dir_path() returns a path string which must be freed by the
 caller. NULL is returned on error, with errnor set appropriately.
 
+aa_policy_cache_dir_path_preview() is the same as
+aa_policy_cache_dir_path() except that it doesn't require an existing
+I<aa_policy_cache> object. This is useful if the calling program cannot
+create an I<aa_policy_cache> object due to lack of privileges needed to
+create the cache directory.
+
 =head1 ERRORS
 
 The errno value will be set according to the underlying error in the
@@ -123,8 +133,10 @@ I<aa_policy_cache> family of functions that return -1 or NULL on error.
 =head1 NOTES
 
 All aa_policy_cache functions described above, except for
-aa_policy_cache_dir_path(), are present in libapparmor version 2.10. The
-aa_policy_cache_dir_path() function can be found in libapparmor version 2.12.
+aa_policy_cache_dir_path() and aa_policy_cache_dir_path_preview(), are
+present in libapparmor version 2.10. The aa_policy_cache_dir_path() and
+aa_policy_cache_dir_path_preview() functions can be found in libapparmor
+version 2.12.
 
 aa_policy_cache_unref() saves the value of errno when called and restores errno
 before exiting in libapparmor version 2.12 and newer.

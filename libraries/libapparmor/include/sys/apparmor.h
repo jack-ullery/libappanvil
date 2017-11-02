@@ -193,6 +193,8 @@ extern int aa_policy_cache_remove(int dirfd, const char *path);
 extern int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
 				       aa_kernel_interface *kernel_interface);
 extern char *aa_policy_cache_dir_path(aa_policy_cache *policy_cache);
+extern char *aa_policy_cache_dir_path_preview(aa_features *kernel_features,
+					      int dirfd, const char *path);
 
 #ifdef __cplusplus
 }

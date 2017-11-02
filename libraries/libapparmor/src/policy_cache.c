@@ -329,3 +329,52 @@ char *aa_policy_cache_dir_path(aa_policy_cache *policy_cache)
 
 	return path;
 }
+
+/**
+ * aa_policy_cache_dir_path_preview - returns the path to the aa_policy_cache directory
+ * @kernel_features: features representing a kernel (may be NULL if you want to
+ *                   use the features of the currently running kernel)
+ * @dirfd: directory file descriptor or AT_FDCWD (see openat(2))
+ * @path: path to the policy cache
+ *
+ * Returns: The path to the policy cache directory on success, NULL on
+ * error with errno set.
+ */
+char *aa_policy_cache_dir_path_preview(aa_features *kernel_features,
+				       int dirfd, const char *path)
+{
+	autofree char *cache_loc = NULL;
+	char *dir_path;
+
+	if (kernel_features) {
+		aa_features_ref(kernel_features);
+	} else if (aa_features_new_from_kernel(&kernel_features) == -1) {
+		return NULL;
+	}
+
+	/**
+	 * Leave cache_loc set to NULL if dirfd is AT_FDCWD and handle a
+	 * NULL cache_loc in the asprintf() below
+	 */
+	if (dirfd != AT_FDCWD) {
+		cache_loc = path_from_fd(dirfd);
+		if (!cache_loc) {
+			int save = errno;
+
+			PERROR("Can't return the path to the aa_policy_cache cache location: %m\n");
+			aa_features_unref(kernel_features);
+			errno = save;
+			return NULL;
+		}
+	}
+
+	aa_features_unref(kernel_features);
+
+	if (asprintf(&dir_path, "%s%s%s",
+		     cache_loc ? : "", cache_loc ? "/" : "", path) == -1) {
+		errno = ENOMEM;
+		return NULL;
+	}
+
+	return dir_path;
+}
