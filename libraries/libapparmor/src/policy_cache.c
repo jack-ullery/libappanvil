@@ -40,9 +40,18 @@ struct aa_policy_cache {
 static int clear_cache_cb(int dirfd, const char *path, struct stat *st,
 			  void *data unused)
 {
-	/* remove regular files */
-	if (S_ISREG(st->st_mode))
+	if (S_ISREG(st->st_mode)) {
+		/* remove regular files */
 		return unlinkat(dirfd, path, 0);
+	} else if (S_ISDIR(st->st_mode)) {
+		int retval;
+
+		retval = _aa_dirat_for_each(dirfd, path, NULL, clear_cache_cb);
+		if (retval)
+			return retval;
+
+		return unlinkat(dirfd, path, AT_REMOVEDIR);
+	}
 
 	/* do nothing with other file types */
 	return 0;
@@ -155,6 +164,24 @@ static char *path_from_fd(int fd)
 	return path;
 }
 
+static char *cache_dir_from_path_and_features(const char *path,
+					      aa_features *features)
+{
+	autofree const char *features_id;
+	char *cache_dir;
+
+	features_id = aa_features_id(features);
+	if (!features_id)
+		return NULL;
+
+	if (asprintf(&cache_dir, "%s/%s", path, features_id) == -1) {
+		errno = ENOMEM;
+		return NULL;
+	}
+
+	return cache_dir;
+}
+
 /**
  * aa_policy_cache_new - create a new aa_policy_cache object from a path
  * @policy_cache: will point to the address of an allocated and initialized
@@ -178,6 +205,8 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 {
 	aa_policy_cache *pc;
 	bool create = max_caches > 0;
+	autofree const char *features_id = NULL;
+	autofree char *cache_dir = NULL;
 
 	*policy_cache = NULL;
 
@@ -199,31 +228,59 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 	pc->dirfd = -1;
 	aa_policy_cache_ref(pc);
 
+	if (kernel_features) {
+		aa_features_ref(kernel_features);
+	} else if (aa_features_new_from_kernel(&kernel_features) == -1) {
+		int save = errno;
+
+		aa_policy_cache_unref(pc);
+		errno = save;
+		return -1;
+	}
+	pc->kernel_features = kernel_features;
+
+	cache_dir = cache_dir_from_path_and_features(path, kernel_features);
+	if (!cache_dir) {
+		int save = errno;
+
+		aa_policy_cache_unref(pc);
+		errno = save;
+		return -1;
+	}
+
 open:
-	pc->dirfd = openat(dirfd, path, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
+	pc->dirfd = openat(dirfd, cache_dir, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
 	if (pc->dirfd < 0) {
 		/* does the dir exist? */
 		if (create && errno == ENOENT) {
-			if (mkdirat(dirfd, path, 0700) == 0)
+			/**
+			 * 1) Attempt to create the cache location, such as
+			 *    /etc/apparmor.d/cache.d/
+			 * 2) Attempt to create the cache directory, for the
+			 *    passed in aa_features, such as
+			 *    /etc/apparmor.d/cache.d/<features_id>/
+			 * 3) Try to reopen the cache directory
+			 */
+			if (mkdirat(dirfd, path, 0700) == -1 &&
+			    errno != EEXIST) {
+				PERROR("Can't create cache location '%s': %m\n",
+				       path);
+			} else if (mkdirat(dirfd, cache_dir, 0700) == -1 &&
+				   errno != EEXIST) {
+				PERROR("Can't create cache directory '%s': %m\n",
+				       cache_dir);
+			} else {
 				goto open;
-			PERROR("Can't create cache directory '%s': %m\n", path);
+			}
 		} else if (create) {
-			PERROR("Can't update cache directory '%s': %m\n", path);
+			PERROR("Can't update cache directory '%s': %m\n", cache_dir);
 		} else {
-			PDEBUG("Cache directory '%s' does not exist\n", path);
+			PDEBUG("Cache directory '%s' does not exist\n", cache_dir);
 		}
 
 		aa_policy_cache_unref(pc);
 		return -1;
 	}
-
-	if (kernel_features) {
-		aa_features_ref(kernel_features);
-	} else if (aa_features_new_from_kernel(&kernel_features) == -1) {
-		aa_policy_cache_unref(pc);
-		return -1;
-	}
-	pc->kernel_features = kernel_features;
 
 	if (init_cache_features(pc, kernel_features, create)) {
 		aa_policy_cache_unref(pc);
@@ -344,6 +401,7 @@ char *aa_policy_cache_dir_path_preview(aa_features *kernel_features,
 				       int dirfd, const char *path)
 {
 	autofree char *cache_loc = NULL;
+	autofree char *cache_dir = NULL;
 	char *dir_path;
 
 	if (kernel_features) {
@@ -368,10 +426,20 @@ char *aa_policy_cache_dir_path_preview(aa_features *kernel_features,
 		}
 	}
 
+	cache_dir = cache_dir_from_path_and_features(path, kernel_features);
+	if (!cache_dir) {
+		int save = errno;
+
+		PERROR("Can't return the path to the aa_policy_cache directory: %m\n");
+		aa_features_unref(kernel_features);
+		errno = save;
+		return NULL;
+	}
+
 	aa_features_unref(kernel_features);
 
 	if (asprintf(&dir_path, "%s%s%s",
-		     cache_loc ? : "", cache_loc ? "/" : "", path) == -1) {
+		     cache_loc ? : "", cache_loc ? "/" : "", cache_dir) == -1) {
 		errno = ENOMEM;
 		return NULL;
 	}

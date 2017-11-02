@@ -234,7 +234,7 @@ inconsistent state
 =item -L, --cache-loc
 
 Set the location of the cache directory.  If not specified the cache location
-defaults to /etc/apparmor.d/cache
+defaults to /etc/apparmor.d/cache.d
 
 =item --print-cache-dir
 
