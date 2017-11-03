@@ -229,10 +229,7 @@ int aa_kernel_interface_new(aa_kernel_interface **kernel_interface,
 	if (kernel_features) {
 		aa_features_ref(kernel_features);
 	} else if (aa_features_new_from_kernel(&kernel_features) == -1) {
-		int save = errno;
-
 		aa_kernel_interface_unref(ki);
-		errno = save;
 		return -1;
 	}
 	ki->supports_setload = aa_features_supports(kernel_features, set_load);
@@ -240,11 +237,8 @@ int aa_kernel_interface_new(aa_kernel_interface **kernel_interface,
 
 	if (!apparmorfs) {
 		if (find_iface_dir(&alloced_apparmorfs) == -1) {
-			int save = errno;
-
 			alloced_apparmorfs = NULL;
 			aa_kernel_interface_unref(ki);
-			errno = save;
 			return -1;
 		}
 		/* alloced_apparmorfs will be autofree'ed */
@@ -253,10 +247,7 @@ int aa_kernel_interface_new(aa_kernel_interface **kernel_interface,
 
 	ki->dirfd = open(apparmorfs, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
 	if (ki->dirfd < 0) {
-		int save = errno;
-
 		aa_kernel_interface_unref(ki);
-		errno = save;
 		return -1;
 	}
 
@@ -283,12 +274,16 @@ aa_kernel_interface *aa_kernel_interface_ref(aa_kernel_interface *kernel_interfa
  */
 void aa_kernel_interface_unref(aa_kernel_interface *kernel_interface)
 {
+	int save = errno;
+
 	if (kernel_interface &&
 	    atomic_dec_and_test(&kernel_interface->ref_count)) {
 		if (kernel_interface->dirfd >= 0)
 			close(kernel_interface->dirfd);
 		free(kernel_interface);
 	}
+
+	errno = save;
 }
 
 /**
