@@ -159,8 +159,6 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 open:
 	pc->dirfd = openat(dirfd, path, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
 	if (pc->dirfd < 0) {
-		int save;
-
 		/* does the dir exist? */
 		if (create && errno == ENOENT) {
 			if (mkdirat(dirfd, path, 0700) == 0)
@@ -172,28 +170,20 @@ open:
 			PDEBUG("Cache directory '%s' does not exist\n", path);
 		}
 
-		save = errno;
 		aa_policy_cache_unref(pc);
-		errno = save;
 		return -1;
 	}
 
 	if (kernel_features) {
 		aa_features_ref(kernel_features);
 	} else if (aa_features_new_from_kernel(&kernel_features) == -1) {
-		int save = errno;
-
 		aa_policy_cache_unref(pc);
-		errno = save;
 		return -1;
 	}
 	pc->kernel_features = kernel_features;
 
 	if (init_cache_features(pc, kernel_features, create)) {
-		int save = errno;
-
 		aa_policy_cache_unref(pc);
-		errno = save;
 		return -1;
 	}
 
@@ -220,6 +210,8 @@ aa_policy_cache *aa_policy_cache_ref(aa_policy_cache *policy_cache)
  */
 void aa_policy_cache_unref(aa_policy_cache *policy_cache)
 {
+	int save = errno;
+
 	if (policy_cache && atomic_dec_and_test(&policy_cache->ref_count)) {
 		aa_features_unref(policy_cache->features);
 		aa_features_unref(policy_cache->kernel_features);
@@ -227,6 +219,8 @@ void aa_policy_cache_unref(aa_policy_cache *policy_cache)
 			close(policy_cache->dirfd);
 		free(policy_cache);
 	}
+
+	errno = save;
 }
 
 /**

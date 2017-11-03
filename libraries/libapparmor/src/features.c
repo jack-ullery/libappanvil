@@ -404,10 +404,7 @@ int aa_features_new(aa_features **features, int dirfd, const char *path)
 		 load_features_dir(dirfd, path, f->string, STRING_SIZE) :
 		 load_features_file(dirfd, path, f->string, STRING_SIZE);
 	if (retval == -1) {
-		int save = errno;
-
 		aa_features_unref(f);
-		errno = save;
 		return -1;
 	}
 
@@ -482,8 +479,12 @@ aa_features *aa_features_ref(aa_features *features)
  */
 void aa_features_unref(aa_features *features)
 {
+	int save = errno;
+
 	if (features && atomic_dec_and_test(&features->ref_count))
 		free(features);
+
+	errno = save;
 }
 
 /**

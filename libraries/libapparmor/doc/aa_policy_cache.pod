@@ -112,6 +112,9 @@ I<aa_policy_cache> family of functions that return -1 on error.
 All aa_policy_cache functions described above are present in libapparmor
 version 2.10 and newer.
 
+aa_policy_cache_unref() saves the value of errno when called and restores errno
+before exiting in libapparmor version 2.12 and newer.
+
 =head1 BUGS
 
 None known. If you find any, please report them at
