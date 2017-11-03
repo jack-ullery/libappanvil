@@ -23,8 +23,6 @@
 #define FALSE 0
 #define TRUE !FALSE
 
-#define max(x,y) (x) > (y) ? (x) : (y)
-
 #define MAX_FILES 5
 
 int (*pass)[MAX_FILES];
@@ -60,7 +58,12 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	num_files = max(argc - 1, MAX_FILES);
+	num_files = argc - 1;
+	if (num_files > MAX_FILES) {
+		fprintf(stderr, "ERROR: a maximum of %d files is supported\n",
+			MAX_FILES);
+		return 1;
+	}
 
 	shmid = shmget(IPC_PRIVATE, sizeof(int[2][MAX_FILES]), IPC_CREAT);
 	if (shmid == -1) {
@@ -81,11 +84,11 @@ int main(int argc, char *argv[])
 		int status;
 		int allpassed = TRUE;
 
-		test_files(argc - 1, &argv[1], 0);
+		test_files(num_files, &argv[1], 0);
 
 		while (wait(&status) != pid) ;
 
-		for (i = 0; i < argc - 1; i++) {
+		for (i = 0; i < num_files; i++) {
 			if (pass[0][i] != pass[1][i] ||
 			    pass[0][i] == -1 || pass[1][i] == -1) {
 				if (allpassed) {
@@ -108,7 +111,7 @@ int main(int argc, char *argv[])
 		shmctl(shmid, IPC_RMID, &shm_desc);
 
 	} else {
-		test_files(argc - 1, &argv[1], 1);
+		test_files(num_files, &argv[1], 1);
 	}
 
 	return 0;
