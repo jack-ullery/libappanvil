@@ -133,7 +133,7 @@ I<*kernel_interface> will point to an I<aa_kernel_interface> object that must
 be freed by aa_kernel_interface_unref(). -1 is returned on error, with errno
 set appropriately, and I<*kernel_interface> will be set to NULL.
 
-aa_kernel_features_ref() returns the value of I<kernel_features>.
+aa_kernel_interface_ref() returns the value of I<kernel_interface>.
 
 The aa_kernel_interface_load() family of functions, the
 aa_kernel_interface_replace() family of functions,
