@@ -31,7 +31,7 @@
 int main (int argc, char * argv[]) {
 	int sock, in_sock, fd;
 	struct sockaddr_un local, remote;
-	int len, exec_now, pfd_ret;
+	int len, pfd_ret;
 	socklen_t len2;
 	char comparison_buffer[17];
 	char inbound_buffer[17];
@@ -39,9 +39,6 @@ int main (int argc, char * argv[]) {
         struct msghdr mesg;
         struct cmsghdr *ctrl_mesg;
 	struct pollfd pfd;
-
-
-	exec_now = 0;
 
 	if (argc < 4 || argc > 5 || (argc == 5 && (strcmp(argv[4], "delete_file") != 0))) {
 		fprintf(stderr, "Usage: %s <file>\n", argv[0]);
