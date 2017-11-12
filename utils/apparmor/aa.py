@@ -1828,11 +1828,13 @@ def save_profiles():
 
             ans, arg = q.promptUser()
 
+            q.selected = arg  # remember selection
             which = options[arg]
 
             if ans == 'CMD_SAVE_SELECTED':
                 write_profile_ui_feedback(which)
                 reload_base(which)
+                q.selected = 0  # saving the selected profile removes it from the list, therefore reset selection
 
             elif ans == 'CMD_VIEW_CHANGES':
                 oldprofile = None
