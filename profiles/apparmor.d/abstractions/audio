@@ -49,7 +49,7 @@ owner @{HOME}/.cache/event-sound-cache.* rwk,
 
 # pulse
 /etc/pulse/ r,
-/etc/pulse/* r,
+/etc/pulse/** r,
 /{run,dev}/shm/ r,
 owner /{run,dev}/shm/pulse-shm* rwk,
 owner @{HOME}/.pulse-cookie rwk,
