@@ -38,7 +38,7 @@ sub check_po_for_shortcuts {
               $msgid = $_;
             } 
             if ( /^.*msgstr*/ && $looking_for_msgstr ) {
-                unless (/^.*msgstr.*\(\w{1}?\)*/) {
+                unless (/^.*msgstr.*\(\w{1}?\)*/ or /^msgstr ""$/) {
                     $errors->{$filename}{$line} =  {
                                              "msgid" => $msgid,
                                              "msgstr" => $_,
