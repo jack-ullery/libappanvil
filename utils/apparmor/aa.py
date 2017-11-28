@@ -2024,6 +2024,13 @@ def read_profiles():
                 read_profile(profile_dir + '/' + file, True)
 
 def read_inactive_profiles():
+    if hasattr(read_inactive_profiles, 'already_read'):
+        # each autodep() run calls read_inactive_profiles, but that's a) superfluous and b) triggers a conflict because the inactive profiles are already loaded
+        # therefore don't do anything if the inactive profiles were already loaded
+        return
+
+    read_inactive_profiles.already_read = True
+
     if not os.path.exists(extra_profile_dir):
         return None
     try:
