@@ -27,7 +27,8 @@ DRY_RUN=0
 usage() {
 	local progname="$1"
 	local rc="$2"
-	local msg="usage: ${progname} [options]\n
+	local msg="usage: ${progname} [options]
+
 Remove profiles unknown to the system
 
 Options:
