@@ -593,7 +593,7 @@ class FileCoveredTest_06(FileCoveredTest):
         ('/foo w,'                                      , [ False   , False         , False     , False     ]),
         ('/foo a,'                                      , [ False   , False         , False     , False     ]),
         ('deny /foo w,'                                 , [ True    , True          , True      , True      ]),
-        ('deny /foo a,'                                 , [ False   , False         , False     , False     ]),  # XXX should be covered
+        ('deny /foo a,'                                 , [ False   , False         , True      , True      ]),
     ]
 
 class FileCoveredTest_07(FileCoveredTest):
@@ -602,7 +602,7 @@ class FileCoveredTest_07(FileCoveredTest):
     tests = [
         #   rule                                            equal     strict equal    covered     covered exact
         ('/foo w,'                                      , [ True    , True          , True      , True      ]),
-        ('/foo a,'                                      , [ False   , False         , False     , False     ]),  # XXX should be covered
+        ('/foo a,'                                      , [ False   , False         , True      , True      ]),
         ('deny /foo w,'                                 , [ False   , False         , False     , False     ]),
         ('deny /foo a,'                                 , [ False   , False         , False     , False     ]),
     ]

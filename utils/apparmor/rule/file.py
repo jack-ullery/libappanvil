@@ -241,9 +241,9 @@ class FileRule(BaseRule):
         if not self._is_covered_aare(self.path,         self.all_paths,         other_rule.path,        other_rule.all_paths,           'path'):
             return False
 
-        # TODO: check 'a' vs. 'w'
         # perms can be empty if only exec_perms are specified, therefore disable the sanity check in _is_covered_list()...
-        if not self._is_covered_list(self.perms,        self.all_perms,         other_rule.perms,       other_rule.all_perms,           'perms', sanity_check=False):
+        # 'w' covers 'a', therefore use perms_with_a() to temporarily add 'a' if 'w' is present
+        if not self._is_covered_list(perms_with_a(self.perms), self.all_perms,  perms_with_a(other_rule.perms), other_rule.all_perms,   'perms', sanity_check=False):
             return False
 
         # ... and do our own sanity check
@@ -533,3 +533,15 @@ def split_perms(perm_string, deny):
             raise AppArmorException(_('permission contains unknown character(s) %s' % perm_string))
 
     return perms, exec_mode
+
+def perms_with_a(perms):
+    '''if perms includes 'w', add 'a' perms
+       - perms: the original permissions
+    '''
+    perms_with_a = set()
+    if perms:
+        perms_with_a = set(perms)
+        if 'w' in perms_with_a:
+            perms_with_a.add('a')
+
+    return perms_with_a
