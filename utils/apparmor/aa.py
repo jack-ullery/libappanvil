@@ -1191,8 +1191,8 @@ def handle_children(profile, hat, root):
                                     ans = 'INVALID'
 
                         if exec_mode and 'i' in exec_mode:
-                            # For inherit we need r
-                            file_perm = 'r'
+                            # For inherit we need mr
+                            file_perm = 'mr'
                         else:
                             if ans == 'CMD_DENY':
                                 aa[profile][hat]['file'].add(FileRule(exec_target, None, 'x', FileRule.ALL, owner=False, log_event=True, deny=True))
