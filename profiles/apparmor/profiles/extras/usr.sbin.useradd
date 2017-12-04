@@ -20,6 +20,7 @@
   #include <abstractions/nameservice>
   #include <abstractions/wutmp>
 
+  capability audit_write,
   capability chown,
   capability dac_override,
   capability fowner,
@@ -51,9 +52,22 @@
   /usr/lib*/pwdutils/*so* mr,
   /usr/sbin/adduser rmix,
   /usr/sbin/nscd rPix,
+  /{,usr/}sbin/pam_tally2 Cx -> pam_tally2,
   /usr/sbin/useradd rmix,
   /usr/sbin/useradd.local rmix,
   /var/log/faillog rw,
   /{,var/}run/nscd.pid rw,
   /var/spool/mail/* rw,
+
+  profile pam_tally2 {
+    #include <abstractions/base>
+    #include <abstractions/consoles>
+    #include <abstractions/nameservice>
+
+    capability audit_write,
+
+    /sbin/pam_tally2 mr,
+    /var/log/tallylog rw,
+
+  }
 }
