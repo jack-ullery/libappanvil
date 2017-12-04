@@ -79,16 +79,16 @@ $ make check
 $ make install
 
 
-Utilities:
-$ cd utils
-$ make
+parser:
+$ cd parser
+$ make		# depends on libapparmor having been built first
 $ make check
 $ make install
 
 
-parser:
-$ cd parser
-$ make		# depends on libapparmor having been built first
+Utilities:
+$ cd utils
+$ make
 $ make check
 $ make install
 
