@@ -36,7 +36,7 @@ else
     PARSER=../../parser/apparmor_parser
 endif
 
-.PHONY: __libapparmor
+.PHONY: __libapparmor __parser
 __libapparmor:
 ifndef USE_SYSTEM
 	@if [ ! -f $(LD_LIBRARY_PATH)libapparmor.so ]; then \
@@ -44,6 +44,16 @@ ifndef USE_SYSTEM
 		echo "  1) Build against the in-tree libapparmor by building it first and then trying again. See the top-level README for help." 1>&2; \
 		echo "  2) Build against the system libapparmor by adding USE_SYSTEM=1 to your make command." 1>&2; \
 		return 1; \
+	fi
+endif
+
+__parser:
+ifndef USE_SYSTEM
+	@if [ ! -f $(PARSER) ]; then \
+		echo "error: $(PARSER) is missing. Pick one of these possible solutions:" 1>&2; \
+		echo "  1) Test using the in-tree parser by building it first and then trying again. See the top-level README for help." 1>&2; \
+		echo "  2) Test using the system parser by adding USE_SYSTEM=1 to your make command." 1>&2; \
+		exit 1; \
 	fi
 endif
 
@@ -67,10 +77,10 @@ endif
 clean:
 	rm -rf __pycache__/ .coverage htmlcov
 
-check: __libapparmor
+check: __libapparmor __parser
 	export PYTHONPATH=$(PYTHONPATH) LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) LC_ALL=C __AA_CONFDIR=$(CONFDIR) __AA_BASEDIR=$(BASEDIR) __AA_PARSER=$(PARSER) ; $(foreach test, $(wildcard test-*.py), echo ; echo === $(test) === ; $(call pyalldo, $(test)))
 
-.coverage: $(wildcard ../aa-* ../apparmor/*.py test-*.py) __libapparmor
+.coverage: $(wildcard ../aa-* ../apparmor/*.py test-*.py) __libapparmor __parser
 	export PYTHONPATH=$(PYTHONPATH) LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) LC_ALL=C __AA_CONFDIR=$(CONFDIR) __AA_BASEDIR=$(BASEDIR) __AA_PARSER=$(PARSER) ; $(COVERAGE_IGNORE_FAILURES_CMD) ; $(foreach test, $(wildcard test-*.py), echo ; echo === $(test) === ; $(PYTHON) -m coverage run --branch -p $(test); )
 	$(PYTHON) -m coverage combine
 
