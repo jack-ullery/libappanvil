@@ -4,15 +4,15 @@
 # vim:syntax=apparmor
 #
 /usr/bin/foo {
-  allow /bin/a k,
-  allow /bin/b rk,
-  allow /bin/c wk,
-  allow /bin/d ak,
-  allow /bin/e lk,
-  allow /bin/e mk,
-  allow /bin/f pxk,
-  allow /bin/g Pxk,
-  allow /bin/h ixk,
-  allow /bin/i uxk,
-  allow /bin/j Uxk,
+  allow /{usr/,}bin/a k,
+  allow /{usr/,}bin/b rk,
+  allow /{usr/,}bin/c wk,
+  allow /{usr/,}bin/d ak,
+  allow /{usr/,}bin/e lk,
+  allow /{usr/,}bin/e mk,
+  allow /{usr/,}bin/f pxk,
+  allow /{usr/,}bin/g Pxk,
+  allow /{usr/,}bin/h ixk,
+  allow /{usr/,}bin/i uxk,
+  allow /{usr/,}bin/j Uxk,
 }
