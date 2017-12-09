@@ -4,12 +4,12 @@
 # vim:syntax=apparmor
 #
 /usr/bin/foo {
-  allow /bin/cat rm,
-  allow /bin/cat ix,
-  allow /bin/true px,
-  allow /bin/true m,
-  allow /bin/false m,
-  allow /bin/false ux,
+  allow /{usr/,}bin/cat rm,
+  allow /{usr/,}bin/cat ix,
+  allow /{usr/,}bin/true px,
+  allow /{usr/,}bin/true m,
+  allow /{usr/,}bin/false m,
+  allow /{usr/,}bin/false ux,
   allow /lib/libc.so rwl,
   allow /lib/libc.so m,
 }
