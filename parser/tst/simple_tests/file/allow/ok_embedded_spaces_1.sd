@@ -2,6 +2,6 @@
 #=EXRESULT PASS
 # vim:syntax=apparmor
 
-/bin/foo {
+/{usr/,}bin/foo {
   allow "/abc\ def" r,
 }

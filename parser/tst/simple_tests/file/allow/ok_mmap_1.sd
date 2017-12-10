@@ -4,10 +4,10 @@
 # vim:syntax=apparmor
 #
 /usr/bin/foo {
-  allow /bin/cat mix,
-  allow /bin/true mpx,
-  allow /bin/false mux,
+  allow /{usr/,}bin/cat mix,
+  allow /{usr/,}bin/true mpx,
+  allow /{usr/,}bin/false mux,
   allow /lib/libc.so rwlm,
-  allow /bin/less mUx,
-  allow /bin/more mPx,
+  allow /{usr/,}bin/less mUx,
+  allow /{usr/,}bin/more mPx,
 }
