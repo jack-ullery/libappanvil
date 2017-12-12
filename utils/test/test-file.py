@@ -585,6 +585,28 @@ class FileCoveredTest_05(FileCoveredTest):
         ('/foo mrwPx -> bar,'                           , [ False   , False         , False     , False     ]),
     ]
 
+class FileCoveredTest_06(FileCoveredTest):
+    rule = 'deny /foo w,'
+
+    tests = [
+        #   rule                                            equal     strict equal    covered     covered exact
+        ('/foo w,'                                      , [ False   , False         , False     , False     ]),
+        ('/foo a,'                                      , [ False   , False         , False     , False     ]),
+        ('deny /foo w,'                                 , [ True    , True          , True      , True      ]),
+        ('deny /foo a,'                                 , [ False   , False         , True      , True      ]),
+    ]
+
+class FileCoveredTest_07(FileCoveredTest):
+    rule = '/foo w,'
+
+    tests = [
+        #   rule                                            equal     strict equal    covered     covered exact
+        ('/foo w,'                                      , [ True    , True          , True      , True      ]),
+        ('/foo a,'                                      , [ False   , False         , True      , True      ]),
+        ('deny /foo w,'                                 , [ False   , False         , False     , False     ]),
+        ('deny /foo a,'                                 , [ False   , False         , False     , False     ]),
+    ]
+
 class FileCoveredTest_ManualOrInvalid(AATest):
     def AASetup(self):
         #FileRule#                 path,           perms,  exec_perms, target,         owner,  file_keyword,   leading_perms
