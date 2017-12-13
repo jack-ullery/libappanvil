@@ -118,6 +118,10 @@ class ReadLog:
         ev['protocol'] = event.net_protocol
         ev['sock_type'] = event.net_sock_type
 
+        if event.ouid != 18446744073709551615:  # 2^64 - 1
+            ev['fsuid'] = event.fsuid
+            ev['ouid'] = event.ouid
+
         if ev['operation'] and ev['operation'] == 'signal':
             ev['signal'] = event.signal
             ev['peer'] = event.peer
@@ -267,6 +271,13 @@ class ReadLog:
             dmask = dmask.replace('d', 'w')
             if not validate_log_mode(hide_log_mode(dmask)):
                 raise AppArmorException(_('Log contains unknown mode %s') % dmask)
+
+            if e.get('ouid') is not None and e['fsuid'] == e['ouid']:
+                # mark as "owner" event
+                if '::' not in rmask:
+                    rmask = '%s::' % rmask
+                if '::' not in dmask:
+                    dmask = '%s::' % dmask
 
             # convert rmask and dmask to mode arrays
             e['denied_mask'],  e['name2'] = log_str_to_mode(e['profile'], dmask, e['name2'])
