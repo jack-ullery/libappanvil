@@ -1521,6 +1521,16 @@ def ask_the_questions(log_dict):
 
                                 options = set_options_audit_mode(rule_obj, options)
 
+                            elif ans.startswith('CMD_USER_'):
+                                if ans == 'CMD_USER_ON':
+                                    rule_obj.owner = True
+                                    rule_obj.raw_rule = None
+                                else:
+                                    rule_obj.owner = False
+                                    rule_obj.raw_rule = None
+
+                                options = set_options_owner_mode(rule_obj, options)
+
                             elif ans == 'CMD_ALLOW':
                                 done = True
                                 changed[profile] = True
@@ -1655,6 +1665,12 @@ def available_buttons(rule_obj):
         buttons += ['CMD_AUDIT_OFF']
     else:
         buttons += ['CMD_AUDIT_NEW']
+
+    if rule_obj.can_owner:
+        if rule_obj.owner:
+            buttons += ['CMD_USER_OFF']
+        else:
+            buttons += ['CMD_USER_ON']
 
     buttons += ['CMD_ABORT', 'CMD_FINISHED']
 
