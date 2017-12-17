@@ -104,6 +104,7 @@ class FileRule(BaseRule):
         if type(owner) is not bool:
             raise AppArmorBug('non-boolean value passed to owner flag')
         self.owner = owner
+        self.can_owner = owner  # offer '(O)wner permissions on/off' buttons only if the rule has the owner flag
 
         if type(file_keyword) is not bool:
             raise AppArmorBug('non-boolean value passed to file keyword flag')
