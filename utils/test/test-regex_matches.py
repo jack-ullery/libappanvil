@@ -437,17 +437,27 @@ class TestInvalid_parse_profile_start_line(AATest):
 
 class Test_re_match_include(AATest):
     tests = [
-        ('#include <abstractions/base>',            'abstractions/base'         ),
+        ('#include <abstractions/base>',            'abstractions/base'         ),  # magic path
         ('#include <abstractions/base> # comment',  'abstractions/base'         ),
         ('#include<abstractions/base>#comment',     'abstractions/base'         ),
         ('   #include    <abstractions/base>  ',    'abstractions/base'         ),
-        ('include <abstractions/base>',             'abstractions/base'         ), # not supported by parser
-        # ('include foo',                           'foo'                       ), # XXX not supported in tools yet
-        # ('include /foo/bar',                      '/foo/bar'                  ), # XXX not supported in tools yet
-        # ('include "foo"',                         'foo'                       ), # XXX not supported in tools yet
-        # ('include "/foo/bar"',                    '/foo/bar'                  ), # XXX not supported in tools yet
-        (' some #include <abstractions/base>',      None,                       ),
+        ('#include "/foo/bar"',                     '/foo/bar'                  ),  # absolute path
+        ('#include "/foo/bar" # comment',           '/foo/bar'                  ),
+        ('#include "/foo/bar"#comment',             '/foo/bar'                  ),
+        ('   #include "/foo/bar"  ',                '/foo/bar'                  ),
+        ('include <abstractions/base>',            'abstractions/base'          ),  # magic path
+        ('include <abstractions/base> # comment',  'abstractions/base'          ),
+        ('include<abstractions/base>#comment',     'abstractions/base'          ),
+        ('   include    <abstractions/base>  ',    'abstractions/base'          ),
+        ('include "/foo/bar"',                     '/foo/bar'                   ),  # absolute path
+        ('include "/foo/bar" # comment',           '/foo/bar'                   ),
+        ('include "/foo/bar"#comment',             '/foo/bar'                   ),
+        ('   include "/foo/bar"  ',                '/foo/bar'                   ),
+
+        (' some #include <abstractions/base>',      None,                       ),  # non-matching
         ('  /etc/fstab r,',                         None,                       ),
+        ('/usr/include r,',                         None,                       ),
+        ('/include r,',                             None,                       ),
     ]
 
     def _run_test(self, params, expected):
@@ -455,8 +465,53 @@ class Test_re_match_include(AATest):
 
 class TestInvalid_re_match_include(AATest):
     tests = [
-        ('#include <>',                             AppArmorException   ),
+        ('#include <>',                             AppArmorException   ),  # '#include'
         ('#include <  >',                           AppArmorException   ),
+        ('#include ""',                             AppArmorException   ),
+        ('#include "  "',                           AppArmorException   ),
+        ('#include',                                AppArmorException   ),
+        ('#include  ',                              AppArmorException   ),
+        ('#include "foo"',                          AppArmorException   ),  # LP: 1738880 (relative)
+        ('#include "foo" # comment',                AppArmorException   ),
+        ('#include "foo"#comment',                  AppArmorException   ),
+        ('   #include "foo"  ',                     AppArmorException   ),
+        ('#include "foo/bar"',                      AppArmorException   ),
+        ('#include "foo/bar" # comment',            AppArmorException   ),
+        ('#include "foo/bar"#comment',              AppArmorException   ),
+        ('   #include "foo/bar"  ',                 AppArmorException   ),
+        ('#include foo',                            AppArmorException   ),  # LP: 1738879 (no quotes)
+        ('#include foo/bar',                        AppArmorException   ),
+        ('#include /foo/bar',                       AppArmorException   ),
+        ('#include foo bar',                        AppArmorException   ),  # LP: 1738877 (space in name)
+        ('#include foo bar/baz',                    AppArmorException   ),
+        ('#include "foo bar"',                      AppArmorException   ),
+        ('#include /foo bar',                       AppArmorException   ),
+        ('#include "/foo bar"',                     AppArmorException   ),
+        ('#include "foo bar/baz"',                  AppArmorException   ),
+
+        ('include <>',                              AppArmorException   ),  # 'include'
+        ('include <  >',                            AppArmorException   ),
+        ('include ""',                              AppArmorException   ),
+        ('include "  "',                            AppArmorException   ),
+        ('include',                                 AppArmorException   ),
+        ('include  ',                               AppArmorException   ),
+        ('include "foo"',                           AppArmorException   ),  # LP: 1738880 (relative)
+        ('include "foo" # comment',                 AppArmorException   ),
+        ('include "foo"#comment',                   AppArmorException   ),
+        ('   include "foo"  ',                      AppArmorException   ),
+        ('include "foo/bar"',                       AppArmorException   ),
+        ('include "foo/bar" # comment',             AppArmorException   ),
+        ('include "foo/bar"#comment',               AppArmorException   ),
+        ('   include "foo/bar"  ',                  AppArmorException   ),
+        ('include foo',                             AppArmorException   ),  # LP: 1738879 (no quotes)
+        ('include foo/bar',                         AppArmorException   ),
+        ('include /foo/bar',                        AppArmorException   ),
+        ('include foo bar',                         AppArmorException   ),  # LP: 1738877 (space in name)
+        ('include foo bar/baz',                     AppArmorException   ),
+        ('include "foo bar"',                       AppArmorException   ),
+        ('include /foo bar',                        AppArmorException   ),
+        ('include "/foo bar"',                      AppArmorException   ),
+        ('include "foo bar/baz"',                   AppArmorException   ),
     ]
 
     def _run_test(self, params, expected):

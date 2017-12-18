@@ -133,7 +133,7 @@ def parse_profile_start_line(line, filename):
     return result
 
 
-RE_INCLUDE = re.compile('^\s*#?include\s*<(?P<magicpath>.*)>' + RE_EOL)
+RE_INCLUDE = re.compile('^\s*#?include\s*(<(?P<magicpath>.*)>|"(?P<quotedpath>.*)"|(?P<unquotedpath>[^<>"]*))' + RE_EOL)
 
 def re_match_include(line):
     """Matches the path for include and returns the include path"""
@@ -142,10 +142,29 @@ def re_match_include(line):
     if not matches:
         return None
 
-    if not matches.group('magicpath').strip():
+    path = None
+    if matches.group('magicpath'):
+        path = matches.group('magicpath').strip()
+    elif matches.group('unquotedpath'):
+        # LP: #1738879 - parser doesn't handle unquoted paths everywhere
+        # path = matches.group('unquotedpath').strip()
+        raise AppArmorException(_('Syntax error: required quotes missing for #include'))
+    elif matches.group('quotedpath'):
+        path = matches.group('quotedpath').strip()
+        # LP: 1738880 - parser doesn't handle relative paths everywhere, and
+        # neither do we (see aa.py)
+        if len(path) > 0 and path[0] != '/':
+            raise AppArmorException(_('Syntax error: #include cannot be relative path'))
+
+    # if path is empty or the empty string
+    if path is None or path == "":
         raise AppArmorException(_('Syntax error: #include rule with empty filename'))
 
-    return matches.group('magicpath')
+    # LP: #1738877 - parser doesn't handle files with spaces in the name
+    if re.search('\s', path):
+        raise AppArmorException(_('Syntax error: #include rule filename cannot contain spaces'))
+
+    return path
 
 def strip_parenthesis(data):
     '''strips parenthesis from the given string and returns the strip()ped result.

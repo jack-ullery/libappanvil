@@ -859,6 +859,59 @@ class AaTest_propose_file_rules(AATest):
         proposals = propose_file_rules(profile, rule_obj)
         self.assertEqual(proposals, expected)
 
+
+class AaTest_propose_file_rules_with_absolute_includes(AATest):
+    tests = [
+        # log event path       and perms    expected proposals
+        (['/not/found/anywhere',    'r'],   ['/not/found/anywhere r,']),
+        (['/dev/null',              'w'],   ['/dev/null rw,']),
+        (['/some/random/include',   'r'],   ['/some/random/include rw,']),
+        (['/some/other/include',    'w'],   ['/some/other/* rw,', '/some/other/inc* rw,', '/some/other/include rw,']),
+    ]
+
+    def _run_test(self, params, expected):
+        self.createTmpdir()
+
+        #copy the local profiles to the test directory
+        self.profile_dir = '%s/profiles' % self.tmpdir
+        shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
+
+        # load the abstractions we need in the test
+        apparmor.aa.profiledir = self.profile_dir
+        apparmor.aa.load_include('abstractions/base')
+
+        abs_include1 = write_file(self.tmpdir, 'test-abs1', "/some/random/include rw,")
+        apparmor.aa.load_include(abs_include1)
+
+        abs_include2 = write_file(self.tmpdir, 'test-abs2', "/some/other/* rw,")
+        apparmor.aa.load_include(abs_include2)
+
+        abs_include3 = write_file(self.tmpdir, 'test-abs3', "/some/other/inc* rw,")
+        apparmor.aa.load_include(abs_include3)
+
+        profile = apparmor.aa.ProfileStorage('/test', '/test', 'test-aa.py')
+        profile['include']['abstractions/base'] = False
+        profile['include'][abs_include1] = False
+        profile['include'][abs_include2] = False
+        profile['include'][abs_include3] = False
+
+        rule_obj = FileRule(params[0], params[1], None, FileRule.ALL, owner=False, log_event=True)
+        proposals = propose_file_rules(profile, rule_obj)
+        self.assertEqual(proposals, expected)
+
+
+class AaTest_nonexistent_includes(AATest):
+    def test_bad_includes(self):
+        tests = [
+            "/nonexistent/absolute/path",
+            "nonexistent/relative/path",
+        ]
+
+        for i in tests:
+            with self.assertRaises(AppArmorException):
+                apparmor.aa.load_include(i)
+
+
 setup_aa(apparmor.aa)
 setup_all_loops(__name__)
 if __name__ == '__main__':

@@ -1432,7 +1432,10 @@ def ask_the_questions(log_dict):
                 options = []
                 for inc in log_dict[aamode][profile][hat]['include'].keys():
                     if not inc in aa[profile][hat]['include'].keys():
-                        options.append('#include <%s>' %inc)
+                        if inc.startswith('/'):
+                            options.append('#include "%s"' %inc)
+                        else:
+                            options.append('#include <%s>' %inc)
 
                 default_option = 1
 
@@ -1718,6 +1721,8 @@ def valid_include(profile, incname):
                 return True
 
     if incname.startswith('abstractions/') and os.path.isfile(profile_dir + '/' + incname):
+        return True
+    elif incname.startswith('/') and os.path.isfile(incname):
         return True
 
     return False
@@ -2298,7 +2303,11 @@ def parse_profile_data(data, file, do_include):
                     filelist[file] = hasher()
                 filelist[file]['include'][include_name] = True
             # If include is a directory
-            if os.path.isdir(profile_dir + '/' + include_name):
+            if include_name.startswith('/'):
+                dir = include_name
+            else:
+                dir = profile_dir + '/' + include_name
+            if os.path.isdir(dir):
                 for file_name in include_dir_filelist(profile_dir, include_name):
                     if not include.get(file_name, False):
                         load_include(file_name)
@@ -2568,7 +2577,13 @@ def write_single(prof_data, depth, allow, name, prefix, tail):
 
     if ref.get(name, False):
         for key in sorted(ref[name].keys()):
-            qkey = quote_if_needed(key)
+            if name == 'include':
+                if key.startswith('/'):
+                    qkey = '"%s"' % key
+                else:
+                    qkey = '<%s>' % quote_if_needed(key)
+            else:
+                qkey = quote_if_needed(key)
             data.append('%s%s%s%s%s' % (pre, allow, prefix, qkey, tail))
         if ref[name].keys():
             data.append('')
@@ -2607,7 +2622,7 @@ def write_pair(prof_data, depth, allow, name, prefix, sep, tail, fn):
     return data
 
 def write_includes(prof_data, depth):
-    return write_single(prof_data, depth, '', 'include', '#include <', '>')
+    return write_single(prof_data, depth, '', 'include', '#include ', '')
 
 def write_change_profile(prof_data, depth):
     data = []
@@ -3334,7 +3349,11 @@ def is_known_rule(profile, rule_type, rule_obj):
         incname = includelist.pop(0)
         checked.append(incname)
 
-        if os.path.isdir(profile_dir + '/' + incname):
+        if incname.startswith('/'):
+            dir = incname
+        else:
+            dir = profile_dir + '/' + incname
+        if os.path.isdir(dir):
             includelist += include_dir_filelist(profile_dir, incname)
         else:
             if include[incname][incname].get(rule_type, False):
@@ -3362,7 +3381,11 @@ def get_file_perms(profile, path, audit, deny):
             continue
         checked.append(incname)
 
-        if os.path.isdir(profile_dir + '/' + incname):
+        if incname.startswith('/'):
+            dir = incname
+        else:
+            dir = profile_dir + '/' + incname
+        if os.path.isdir(dir):
             includelist += include_dir_filelist(profile_dir, incname)
         else:
             incperms = include[incname][incname]['file'].get_perms_for_path(path, audit, deny)
@@ -3443,7 +3466,8 @@ def reload(bin_path):
 
 def get_include_data(filename):
     data = []
-    filename = profile_dir + '/' + filename
+    if not filename.startswith('/'):
+        filename = profile_dir + '/' + filename
     if os.path.exists(filename):
         with open_file_read(filename) as f_in:
             data = f_in.readlines()
@@ -3452,15 +3476,24 @@ def get_include_data(filename):
     return data
 
 def include_dir_filelist(profile_dir, include_name):
-    '''returns a list of files in the given profile_dir/include_name directory, except skippable files'''
+    '''returns a list of files in the given profile_dir/include_name directory,
+       except skippable files. If include_name is an absolute path, ignore
+       profile_dir.
+    '''
     files = []
-    for path in os.listdir(profile_dir + '/' + include_name):
+    if include_name.startswith('/'):
+        dir = include_name
+    else:
+        dir = profile_dir + '/' + include_name
+    for path in os.listdir(dir):
         path = path.strip()
         if is_skippable_file(path):
             continue
-        if os.path.isfile(profile_dir + '/' + include_name + '/' + path):
+        if os.path.isfile(dir + '/' + path):
             file_name = include_name + '/' + path
-            file_name = file_name.replace(profile_dir + '/', '')
+            # strip off profile_dir for non-absolute paths
+            if not include_name.startswith('/'):
+                file_name = file_name.replace(profile_dir + '/', '')
             files.append(file_name)
 
     return files
@@ -3469,17 +3502,20 @@ def load_include(incname):
     load_includeslist = [incname]
     while load_includeslist:
         incfile = load_includeslist.pop(0)
+        incfile_abs = incfile
+        if not incfile.startswith('/'):
+            incfile_abs = profile_dir + '/' + incfile
         if include.get(incfile, {}).get(incfile, False):
             pass  # already read, do nothing
-        elif os.path.isfile(profile_dir + '/' + incfile):
-            data = get_include_data(incfile)
+        elif os.path.isfile(incfile_abs):
+            data = get_include_data(incfile_abs)
             incdata = parse_profile_data(data, incfile, True)
             attach_profile_data(include, incdata)
         #If the include is a directory means include all subfiles
-        elif os.path.isdir(profile_dir + '/' + incfile):
+        elif os.path.isdir(incfile_abs):
             load_includeslist += include_dir_filelist(profile_dir, incfile)
         else:
-            raise AppArmorException("Include file %s not found" % (profile_dir + '/' + incfile) )
+            raise AppArmorException("Include file %s not found" % (incfile_abs))
 
     return 0
 
@@ -3577,4 +3613,3 @@ def init_aa(confdir="/etc/apparmor"):
     parser = conf.find_first_file(cfg['settings'].get('parser')) or '/sbin/apparmor_parser'
     if not os.path.isfile(parser) or not os.access(parser, os.EX_OK):
         raise AppArmorException('Can\'t find apparmor_parser at %s' % (parser))
-

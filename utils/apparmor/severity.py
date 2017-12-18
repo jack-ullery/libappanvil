@@ -185,7 +185,9 @@ class Severity(object):
                     # If any includes, load variables from them first
                     match = re_match_include(line)
                     if match:
-                        new_path = self.PROF_DIR + '/' + match
+                        new_path = match
+                        if not new_path.startswith('/'):
+                            new_path = self.PROF_DIR + '/' + match
                         self.load_variables(new_path)
                     else:
                         # Remove any comments
