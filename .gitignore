@@ -1,5 +1,10 @@
 apparmor-*
 cscope.*
+binutils/aa-enabled
+binutils/aa-enabled.1
+binutils/aa-exec
+binutils/aa-exec.1
+binutils/po/*.mo
 parser/po/*.mo
 parser/af_names.h
 parser/cap_names.h
