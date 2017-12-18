@@ -57,7 +57,14 @@ Building and Installing AppArmor Userspace
 ------------------------------------------
 
 To build and install AppArmor userspace on your system, build and install in
-the following order.
+the following order. Some systems may need to export various python-related
+environment variables to complete the build. For example, before building
+anything on these systems, use something along the lines of:
+
+$ export PYTHONPATH=$(realpath libraries/libapparmor/swig/python)
+$ export PYTHON=/usr/bin/python3
+$ export PYTHON_VERSION=3
+$ export PYTHON_VERSIONS=python3
 
 
 libapparmor:
