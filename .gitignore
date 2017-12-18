@@ -189,6 +189,10 @@ utils/apparmor/*.pyc
 utils/apparmor/rule/*.pyc
 utils/test/.coverage
 utils/test/htmlcov/
+utils/vim/apparmor.vim
+utils/vim/apparmor.vim.5
+utils/vim/apparmor.vim.5.html
+utils/vim/pod2htmd.tmp
 tests/regression/apparmor/access
 tests/regression/apparmor/changehat
 tests/regression/apparmor/changehat_fail
