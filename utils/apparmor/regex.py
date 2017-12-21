@@ -154,7 +154,7 @@ def re_match_include(line):
         # LP: 1738880 - parser doesn't handle relative paths everywhere, and
         # neither do we (see aa.py)
         if len(path) > 0 and path[0] != '/':
-            raise AppArmorException(_('Syntax error: #include cannot be relative path'))
+            raise AppArmorException(_('Syntax error: #include must use quoted path or <...>'))
 
     # if path is empty or the empty string
     if path is None or path == "":
