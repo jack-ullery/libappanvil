@@ -1702,6 +1702,11 @@ def ask_conflict_mode(profile, hat, old_profile, merge_profile):
 
                     done = True
 
+def get_include_path(incname):
+    if incname.startswith('/'):
+        return incname
+    return profile_dir + '/' + incname
+
 def match_includes(profile, rule_type, rule_obj):
     newincludes = []
     for incname in include.keys():
@@ -2303,11 +2308,7 @@ def parse_profile_data(data, file, do_include):
                     filelist[file] = hasher()
                 filelist[file]['include'][include_name] = True
             # If include is a directory
-            if include_name.startswith('/'):
-                include_name_abs = include_name
-            else:
-                include_name_abs = profile_dir + '/' + include_name
-            if os.path.isdir(include_name_abs):
+            if os.path.isdir(get_include_path(include_name)):
                 for file_name in include_dir_filelist(profile_dir, include_name):
                     if not include.get(file_name, False):
                         load_include(file_name)
@@ -3349,11 +3350,7 @@ def is_known_rule(profile, rule_type, rule_obj):
         incname = includelist.pop(0)
         checked.append(incname)
 
-        if incname.startswith('/'):
-            incname_abs = incname
-        else:
-            incname_abs = profile_dir + '/' + incname
-        if os.path.isdir(incname_abs):
+        if os.path.isdir(get_include_path(incname)):
             includelist += include_dir_filelist(profile_dir, incname)
         else:
             if include[incname][incname].get(rule_type, False):
@@ -3381,11 +3378,7 @@ def get_file_perms(profile, path, audit, deny):
             continue
         checked.append(incname)
 
-        if incname.startswith('/'):
-            incname_abs = incname
-        else:
-            incname_abs = profile_dir + '/' + incname
-        if os.path.isdir(incname_abs):
+        if os.path.isdir(get_include_path(incname)):
             includelist += include_dir_filelist(profile_dir, incname)
         else:
             incperms = include[incname][incname]['file'].get_perms_for_path(path, audit, deny)
@@ -3481,10 +3474,7 @@ def include_dir_filelist(profile_dir, include_name):
        profile_dir.
     '''
     files = []
-    if include_name.startswith('/'):
-        include_name_abs = include_name
-    else:
-        include_name_abs = profile_dir + '/' + include_name
+    include_name_abs = get_include_path(include_name)
     for path in os.listdir(include_name_abs):
         path = path.strip()
         if is_skippable_file(path):
@@ -3502,9 +3492,7 @@ def load_include(incname):
     load_includeslist = [incname]
     while load_includeslist:
         incfile = load_includeslist.pop(0)
-        incfile_abs = incfile
-        if not incfile.startswith('/'):
-            incfile_abs = profile_dir + '/' + incfile
+        incfile_abs = get_include_path(incfile)
         if include.get(incfile, {}).get(incfile, False):
             pass  # already read, do nothing
         elif os.path.isfile(incfile_abs):
