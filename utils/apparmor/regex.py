@@ -150,7 +150,7 @@ def re_match_include(line):
         # path = matches.group('unquotedpath').strip()
         raise AppArmorException(_('Syntax error: required quotes missing for #include'))
     elif matches.group('quotedpath'):
-        path = matches.group('quotedpath').strip()
+        path = matches.group('quotedpath')
         # LP: 1738880 - parser doesn't handle relative paths everywhere, and
         # neither do we (see aa.py)
         if len(path) > 0 and path[0] != '/':
