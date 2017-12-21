@@ -2304,10 +2304,10 @@ def parse_profile_data(data, file, do_include):
                 filelist[file]['include'][include_name] = True
             # If include is a directory
             if include_name.startswith('/'):
-                dir = include_name
+                include_name_abs = include_name
             else:
-                dir = profile_dir + '/' + include_name
-            if os.path.isdir(dir):
+                include_name_abs = profile_dir + '/' + include_name
+            if os.path.isdir(include_name_abs):
                 for file_name in include_dir_filelist(profile_dir, include_name):
                     if not include.get(file_name, False):
                         load_include(file_name)
@@ -3350,10 +3350,10 @@ def is_known_rule(profile, rule_type, rule_obj):
         checked.append(incname)
 
         if incname.startswith('/'):
-            dir = incname
+            incname_abs = incname
         else:
-            dir = profile_dir + '/' + incname
-        if os.path.isdir(dir):
+            incname_abs = profile_dir + '/' + incname
+        if os.path.isdir(incname_abs):
             includelist += include_dir_filelist(profile_dir, incname)
         else:
             if include[incname][incname].get(rule_type, False):
@@ -3382,10 +3382,10 @@ def get_file_perms(profile, path, audit, deny):
         checked.append(incname)
 
         if incname.startswith('/'):
-            dir = incname
+            incname_abs = incname
         else:
-            dir = profile_dir + '/' + incname
-        if os.path.isdir(dir):
+            incname_abs = profile_dir + '/' + incname
+        if os.path.isdir(incname_abs):
             includelist += include_dir_filelist(profile_dir, incname)
         else:
             incperms = include[incname][incname]['file'].get_perms_for_path(path, audit, deny)
@@ -3482,14 +3482,14 @@ def include_dir_filelist(profile_dir, include_name):
     '''
     files = []
     if include_name.startswith('/'):
-        dir = include_name
+        include_name_abs = include_name
     else:
-        dir = profile_dir + '/' + include_name
-    for path in os.listdir(dir):
+        include_name_abs = profile_dir + '/' + include_name
+    for path in os.listdir(include_name_abs):
         path = path.strip()
         if is_skippable_file(path):
             continue
-        if os.path.isfile(dir + '/' + path):
+        if os.path.isfile(include_name_abs + '/' + path):
             file_name = include_name + '/' + path
             # strip off profile_dir for non-absolute paths
             if not include_name.startswith('/'):
