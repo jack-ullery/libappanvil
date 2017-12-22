@@ -1315,10 +1315,6 @@ def UI_ask_to_upload_profiles():
     # To-Do
     pass
 
-def UI_ask_mode_toggles(audit_toggle, owner_toggle, oldmode):
-    # To-Do
-    return (audit_toggle, owner_toggle)
-
 def parse_repo_profile(fqdbin, repo_url, profile):
     # To-Do
     pass
