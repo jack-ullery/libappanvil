@@ -1,4 +1,4 @@
 /usr/sbin/cupsd {
-  /boot/ r,
+  owner /boot/ r,
 
 }

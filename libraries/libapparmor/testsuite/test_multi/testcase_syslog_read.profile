@@ -1,4 +1,4 @@
 /usr/sbin/vsftpd {
-  /home/bane/foo r,
+  owner /home/bane/foo r,
 
 }
