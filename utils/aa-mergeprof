@@ -165,7 +165,10 @@ class Merge(object):
         options = []
         for inc in other.filelist[other.filename]['include'].keys():
             if not inc in self.user.filelist[self.user.filename]['include'].keys():
-                options.append('#include <%s>' %inc)
+                if inc.startswith('/'):
+                    options.append('#include "%s"' %inc)
+                else:
+                    options.append('#include <%s>' %inc)
 
         default_option = 1
 
