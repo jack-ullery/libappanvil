@@ -22,7 +22,9 @@ profile netstat /{usr/,}bin/netstat {
 
   capability dac_override,
   capability dac_read_search,
-  deny capability sys_ptrace,
+  capability sys_ptrace,
+
+  ptrace (read),
 
   /{usr/,}bin/netstat rmix,
   /etc/networks r,
