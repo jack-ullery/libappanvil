@@ -148,7 +148,7 @@ def re_match_include(line):
     elif matches.group('unquotedpath'):
         # LP: #1738879 - parser doesn't handle unquoted paths everywhere
         # path = matches.group('unquotedpath').strip()
-        raise AppArmorException(_('Syntax error: required quotes missing for #include'))
+        raise AppArmorException(_('Syntax error: #include must use quoted path or <...>'))
     elif matches.group('quotedpath'):
         path = matches.group('quotedpath')
         # LP: 1738880 - parser doesn't handle relative paths everywhere, and
