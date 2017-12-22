@@ -1521,6 +1521,16 @@ def ask_the_questions(log_dict):
 
                                 options = set_options_audit_mode(rule_obj, options)
 
+                            elif ans.startswith('CMD_USER_'):
+                                if ans == 'CMD_USER_ON':
+                                    rule_obj.owner = True
+                                    rule_obj.raw_rule = None
+                                else:
+                                    rule_obj.owner = False
+                                    rule_obj.raw_rule = None
+
+                                options = set_options_owner_mode(rule_obj, options)
+
                             elif ans == 'CMD_ALLOW':
                                 done = True
                                 changed[profile] = True
@@ -1605,6 +1615,16 @@ def set_options_audit_mode(rule_obj, options):
     '''change audit state in options (proposed rules) to audit state in rule_obj.
        #include options will be kept unchanged
     '''
+    return set_options_mode(rule_obj, options, 'audit')
+
+def set_options_owner_mode(rule_obj, options):
+    '''change owner state in options (proposed rules) to owner state in rule_obj.
+       #include options will be kept unchanged
+    '''
+    return set_options_mode(rule_obj, options, 'owner')
+
+def set_options_mode(rule_obj, options, what):
+    ''' helper function for set_options_audit_mode() and set_options_owner_mode'''
     new_options = []
 
     for rule in options:
@@ -1612,7 +1632,13 @@ def set_options_audit_mode(rule_obj, options):
             new_options.append(rule)
         else:
             parsed_rule = selection_to_rule_obj(rule_obj, rule)
-            parsed_rule.audit = rule_obj.audit
+            if what == 'audit':
+                parsed_rule.audit = rule_obj.audit
+            elif what == 'owner':
+                parsed_rule.owner = rule_obj.owner
+            else:
+                raise AppArmorBug('Unknown "what" value given to set_options_mode: %s' % what)
+
             parsed_rule.raw_rule = None
             new_options.append(parsed_rule.get_raw())
 
@@ -1639,6 +1665,12 @@ def available_buttons(rule_obj):
         buttons += ['CMD_AUDIT_OFF']
     else:
         buttons += ['CMD_AUDIT_NEW']
+
+    if rule_obj.can_owner:
+        if rule_obj.owner:
+            buttons += ['CMD_USER_OFF']
+        else:
+            buttons += ['CMD_USER_ON']
 
     buttons += ['CMD_ABORT', 'CMD_FINISHED']
 

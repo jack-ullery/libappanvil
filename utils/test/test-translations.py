@@ -23,6 +23,10 @@ class TestHotkeyConflicts(AATest):
     tests = [
         (['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_GLOB', 'CMD_GLOBEXT', 'CMD_NEW', 'CMD_AUDIT_OFF', 'CMD_ABORT', 'CMD_FINISHED'], True),  # aa.py available_buttons() with CMD_AUDIT_OFF
         (['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_GLOB', 'CMD_GLOBEXT', 'CMD_NEW', 'CMD_AUDIT_NEW', 'CMD_ABORT', 'CMD_FINISHED'], True),  # aa.py available_buttons() with CMD_AUDIT_NEW
+        (['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_GLOB', 'CMD_GLOBEXT', 'CMD_NEW', 'CMD_AUDIT_OFF', 'CMD_USER_ON',  'CMD_ABORT', 'CMD_FINISHED'], True),  # aa.py available_buttons() with CMD_AUDIT_OFF and CMD_USER_ON
+        (['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_GLOB', 'CMD_GLOBEXT', 'CMD_NEW', 'CMD_AUDIT_OFF', 'CMD_USER_OFF', 'CMD_ABORT', 'CMD_FINISHED'], True),  # aa.py available_buttons() with CMD_AUDIT_OFF and CMD_USER_OFF
+        (['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_GLOB', 'CMD_GLOBEXT', 'CMD_NEW', 'CMD_AUDIT_NEW', 'CMD_USER_ON',  'CMD_ABORT', 'CMD_FINISHED'], True),  # aa.py available_buttons() with CMD_AUDIT_NEW and CMD_USER_ON
+        (['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_GLOB', 'CMD_GLOBEXT', 'CMD_NEW', 'CMD_AUDIT_NEW', 'CMD_USER_OFF', 'CMD_ABORT', 'CMD_FINISHED'], True),  # aa.py available_buttons() with CMD_AUDIT_NEW and CMD_USER_OFF
         (['CMD_SAVE_CHANGES', 'CMD_SAVE_SELECTED', 'CMD_VIEW_CHANGES', 'CMD_VIEW_CHANGES_CLEAN', 'CMD_ABORT'],                              True),  # aa.py save_profiles()
         (['CMD_VIEW_PROFILE', 'CMD_USE_PROFILE', 'CMD_CREATE_PROFILE', 'CMD_ABORT'],                                                        True),  # aa.py get_profile()
         (['CMD_UPLOAD_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ASK_LATER', 'CMD_ASK_NEVER', 'CMD_ABORT'],                                         True),  # aa.py console_select_and_upload_profiles()

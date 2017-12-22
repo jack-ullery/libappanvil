@@ -19,7 +19,7 @@ import sys
 
 import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
-     get_profile_flags, set_profile_flags, set_options_audit_mode, is_skippable_file, is_skippable_dir,
+     get_profile_flags, set_profile_flags, set_options_audit_mode, set_options_owner_mode, is_skippable_file, is_skippable_dir,
      parse_profile_start, parse_profile_data, separate_vars, store_list_var, write_header,
      var_transform, serialize_parse_profile_start, get_file_perms, propose_file_rules)
 from apparmor.aare import AARE
@@ -412,6 +412,20 @@ class AaTest_set_options_audit_mode(AATest):
     def _run_test(self, params, expected):
         rule_obj, options = params
         new_options = set_options_audit_mode(rule_obj, options)
+        self.assertEqual(new_options, expected)
+
+class AaTest_set_options_owner_mode(AATest):
+    tests = [
+        ((FileRule.parse('owner /foo/bar r,'),      ['/foo/bar r,', '/foo/* r,', '/** r,']                                  ), ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),
+        ((FileRule.parse('owner /foo/bar r,'),      ['/foo/bar r,', 'owner /foo/* r,', 'owner /** r,']                      ), ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),
+        ((FileRule.parse('/foo/bar r,'),            ['/foo/bar r,', '/foo/* r,', '/** r,']                                  ), ['/foo/bar r,', '/foo/* r,', '/** r,']),
+        ((FileRule.parse('/foo/bar r,'),            ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']                ), ['/foo/bar r,', '/foo/* r,', '/** r,']),
+        ((FileRule.parse('audit owner /foo/bar r,'),['audit /foo/bar r,', 'audit /foo/* r,', '#include <abstractions/base>']), ['audit owner /foo/bar r,', 'audit owner /foo/* r,', '#include <abstractions/base>']),
+    ]
+
+    def _run_test(self, params, expected):
+        rule_obj, options = params
+        new_options = set_options_owner_mode(rule_obj, options)
         self.assertEqual(new_options, expected)
 
 class AaTest_is_skippable_file(AATest):

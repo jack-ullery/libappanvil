@@ -46,6 +46,9 @@ class BaseRule(object):
     # defines if the (N)ew option is displayed
     can_edit = False
 
+    # defines if the '(O)wner permissions on/off' option is displayed
+    can_owner = False
+
     def __init__(self, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
         '''initialize variables needed by all rule types'''
