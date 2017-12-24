@@ -7,14 +7,14 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2017-04-20 12:04+0000\n"
-"Last-Translator: Christian Boltz <Unknown>\n"
+"PO-Revision-Date: 2017-12-20 02:04+0000\n"
+"Last-Translator: Tobias Bannert <tobannert@gmail.com>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2017-04-21 05:29+0000\n"
-"X-Generator: Launchpad (build 18359)\n"
+"X-Launchpad-Export-Date: 2017-12-21 05:12+0000\n"
+"X-Generator: Launchpad (build 18511)\n"
 "Language: de\n"
 
 #: ../aa-genprof:56
@@ -312,7 +312,7 @@ msgstr "Netzwerkzugriff %(family)s %(type)s wird dem Profil verweigert."
 
 #: ../aa-autodep:23
 msgid "Generate a basic AppArmor profile by guessing requirements"
-msgstr "Erstelle ein Basis AppArmor Profil nach erwarteten Anforderungen"
+msgstr "Ein Basis-AppArmor-Profil nach erwarteten Anforderungen erstellen"
 
 #: ../aa-autodep:24
 msgid "overwrite existing profile"
@@ -340,7 +340,7 @@ msgstr "Das angegebene Programm in den Erzwingenmodus versetzen"
 
 #: ../aa-disable:23
 msgid "Disable the profile for the given programs"
-msgstr "Deaktiviere das Profil für die genannten Programme"
+msgstr "Das Profil für die angegebenen Programme deaktivieren"
 
 #: ../aa-unconfined:28
 msgid "Lists unconfined processes having tcp or udp ports"
@@ -348,7 +348,7 @@ msgstr "Zeigt uneingeschränkte Prozesse mit tcp oder udp Ports"
 
 #: ../aa-unconfined:29
 msgid "scan all processes from /proc"
-msgstr "Durchsuche alle Prozesse von /proc"
+msgstr "alle Prozesse aus /proc durchsuchen"
 
 #: ../aa-unconfined:81
 #, python-format
@@ -394,7 +394,7 @@ msgstr "%s wird in den Erzwingen-Modus versetzt."
 #: ../apparmor/aa.py:286
 #, python-format
 msgid "Unable to find basename for %s."
-msgstr ""
+msgstr "Basisname für %s kann nicht gefunden werden."
 
 #: ../apparmor/aa.py:301
 #, python-format
@@ -640,7 +640,7 @@ msgstr "Protokolleinträge von %s werden gelesen."
 #: ../apparmor/aa.py:2254
 #, python-format
 msgid "Updating AppArmor profiles in %s."
-msgstr "Aktualisiere AppArmor-Profile in %s."
+msgstr "AppArmor-Profile in %s werden aktualisiert."
 
 #: ../apparmor/aa.py:2323
 msgid ""
@@ -1038,11 +1038,11 @@ msgstr ""
 
 #: ../apparmor/ui.py:229
 msgid "(O)wner permissions on"
-msgstr "(B)esitzerberechtigungen an"
+msgstr "Be(s)itzerberechtigungen an"
 
 #: ../apparmor/ui.py:230
 msgid "(O)wner permissions off"
-msgstr "(B)esitzerberechtigungen aus"
+msgstr "Be(s)itzerberechtigungen aus"
 
 #: ../apparmor/ui.py:231
 msgid "(D)eny"
