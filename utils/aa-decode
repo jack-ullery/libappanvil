@@ -70,7 +70,7 @@ fi
 while read line ; do
 
     # check if line contains encoded name= or profile=
-    if [[ "$line" =~ \ (name|profile)=[0-9a-fA-F] ]]; then
+    if [[ "$line" =~ \ (name|profile|proctitle)=[0-9a-fA-F] ]]; then
 
         # cut the encoded filename/profile name out of the line and decode it
         ne=`echo "$line" | sed 's/.* name=\([^ ]*\).*$/\\1/g'`
@@ -79,9 +79,13 @@ while read line ; do
         pe=`echo "$line" | sed 's/.* profile=\([^ ]*\).*$/\\1/g'`
         pd="$(decode ${pe/\'/\\\'})"
 
+        pce=`echo "$line" | sed 's/.* proctitle=\([^ ]*\).*$/\\1/g'`
+        pcd="$(decode ${pce/\'/\\\'})"
+
         # replace encoded name and profile with its decoded counterparts (only if it was encoded)
         test -n "$nd" && line="${line/name=$ne/name=\"$nd\"}"
         test -n "$pd" && line="${line/profile=$pe/profile=\"$pd\"}"
+        test -n "$pcd" && line="${line/proctitle=$pce/proctitle=\"$pcd\"}"
 
     fi
 
