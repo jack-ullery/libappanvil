@@ -147,13 +147,13 @@ int setup_cache_tmp(const char **cachetmpname, const char *cachename)
 	*cachetmpname = NULL;
 	if (write_cache) {
 		/* Otherwise, set up to save a cached copy */
-		if (asprintf(&tmpname, "%s-XXXXXX", cachename)<0) {
+		if (asprintf(&tmpname, "%s-XXXXXX", cachename) < 0) {
 			perror("asprintf");
-			exit(1);
+			return -1;
 		}
 		if ((cache_fd = mkstemp(tmpname)) < 0) {
 			perror("mkstemp");
-			exit(1);
+			return -1;
 		}
 		*cachetmpname = tmpname;
 	}
