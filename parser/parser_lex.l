@@ -144,7 +144,7 @@ static int include_dir_cb(int dirfd unused, const char *name, struct stat *st,
 	return 0;
 }
 
-void include_filename(char *filename, int search)
+void include_filename(char *filename, int search, bool if_exists)
 {
 	FILE *include_file = NULL;
 	struct stat my_stat;
@@ -161,11 +161,14 @@ void include_filename(char *filename, int search)
 		include_file = fopen(fullpath, "r");
 	}
 
-	if (!include_file)
+	if (!include_file) {
+		if (if_exists)
+			return;
 		yyerror(_("Could not open '%s'"),
                         fullpath ? fullpath: filename);
+	}
 
-        if (fstat(fileno(include_file), &my_stat))
+	if (fstat(fileno(include_file), &my_stat))
 		yyerror(_("fstat failed for '%s'"), fullpath);
 
         if (S_ISREG(my_stat.st_mode)) {
@@ -257,6 +260,7 @@ LT_EQUAL	<=
 %x UNIX_MODE
 %x CHANGE_PROFILE_MODE
 %x INCLUDE
+%x INCLUDE_EXISTS
 
 %%
 
@@ -269,25 +273,44 @@ LT_EQUAL	<=
 	}
 %}
 
-<INITIAL,SUB_ID_WS,INCLUDE,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE>{
+<INITIAL,SUB_ID_WS,INCLUDE,INCLUDE_EXISTS,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE>{
 	{WS}+	{  DUMP_PREPROCESS; /* Ignoring whitespace */ }
 }
 
-<INCLUDE>{
+<INCLUDE_EXISTS>{
 	(\<([^"\>\t\r\n]+)\>|{QUOTED_ID})	{ /* <filename> | "filename" */
 		autofree char *filename = strndup(yytext, yyleng - 1);
-		include_filename(filename + 1, *filename == '<');
+		include_filename(filename + 1, *filename == '<', true);
 		POP_NODUMP();
 	}
 
 	(\<{QUOTED_ID}\>)	{	/* <"filename"> */
 		autofree char *filename = strndup(yytext, yyleng - 2);
-		include_filename(filename + 2, true);
+		include_filename(filename + 2, true, true);
 		POP_NODUMP();
 	}
 
 	({IDS}|{QUOTED_ID}) {	/* filename */
-		include_filename(yytext, 0);
+		include_filename(yytext, 0, true);
+		POP_NODUMP();
+	}
+}
+
+<INCLUDE>{
+	(\<([^"\>\t\r\n]+)\>|{QUOTED_ID})	{ /* <filename> | "filename" */
+		autofree char *filename = strndup(yytext, yyleng - 1);
+		include_filename(filename + 1, *filename == '<', false);
+		POP_NODUMP();
+	}
+
+	(\<{QUOTED_ID}\>)	{	/* <"filename"> */
+		autofree char *filename = strndup(yytext, yyleng - 2);
+		include_filename(filename + 2, true, false);
+		POP_NODUMP();
+	}
+
+	({IDS}|{QUOTED_ID}) {	/* filename */
+		include_filename(yytext, 0, false);
 		POP_NODUMP();
 	}
 }
@@ -533,6 +556,20 @@ LT_EQUAL	<=
 	}
 }
 
+#include{WS}+if{WS}+exists/{WS}.*\r?\n	{
+	/* Don't use PUSH() macro here as we don't want #include echoed out.
+	 * It needs to be handled specially
+	 */
+	yy_push_state(INCLUDE_EXISTS);
+}
+
+include{WS}+if{WS}+exists/{WS}	{
+	/* Don't use PUSH() macro here as we don't want #include echoed out.
+	 * It needs to be handled specially
+	 */
+	yy_push_state(INCLUDE_EXISTS);
+}
+
 #include/.*\r?\n	{
 	/* Don't use PUSH() macro here as we don't want #include echoed out.
 	 * It needs to be handled specially
@@ -681,4 +718,5 @@ unordered_map<int, string> state_names = {
 	STATE_TABLE_ENT(UNIX_MODE),
 	STATE_TABLE_ENT(CHANGE_PROFILE_MODE),
 	STATE_TABLE_ENT(INCLUDE),
+	STATE_TABLE_ENT(INCLUDE_EXISTS),
 };
