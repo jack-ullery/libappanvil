@@ -93,122 +93,126 @@ querytest()
 	runchecktest "$desc" "$pf" "$expect" "$label" "$perms" $*
 }
 
-# Check querying of a label that the kernel doesn't know about
-# aa_query_label() should return an error
-expect anything
-perms dbus send
-querytest "QUERY no profile loaded" fail $dbus_msg_query
+if [ "$(kernel_features dbus)" == "true" ]; then
+    # Check querying of a label that the kernel doesn't know about
+    # aa_query_label() should return an error
+    expect anything
+    perms dbus send
+    querytest "QUERY no profile loaded" fail $dbus_msg_query
 
-# Check querying with an empty mask - aa_query_label() should error out
-genqueryprofile "dbus,"
-expect anything
-perms dbus # no perms
-querytest "QUERY empty mask" fail $dbus_msg_query
+    # Check querying with an empty mask - aa_query_label() should error out
+    genqueryprofile "dbus,"
+    expect anything
+    perms dbus # no perms
+    querytest "QUERY empty mask" fail $dbus_msg_query
 
-# Check dbus - allowed without auditing
-genqueryprofile "dbus,"
-expect allow
-perms dbus send
-querytest "QUERY dbus (msg send)" pass $dbus_msg_query
-perms dbus receive
-querytest "QUERY dbus (msg receive)" pass $dbus_msg_query
-perms dbus send receive
-querytest "QUERY dbus (msg send & receive)" pass $dbus_msg_query
-perms dbus bind
-querytest "QUERY dbus (svc)" pass $dbus_svc_query
+    # Check dbus - allowed without auditing
+    genqueryprofile "dbus,"
+    expect allow
+    perms dbus send
+    querytest "QUERY dbus (msg send)" pass $dbus_msg_query
+    perms dbus receive
+    querytest "QUERY dbus (msg receive)" pass $dbus_msg_query
+    perms dbus send receive
+    querytest "QUERY dbus (msg send & receive)" pass $dbus_msg_query
+    perms dbus bind
+    querytest "QUERY dbus (svc)" pass $dbus_svc_query
 
-# Check deny dbus - denied without auditing
-genqueryprofile "deny dbus,"
-expect # neither allow, nor audit
-perms dbus send
-querytest "QUERY deny dbus (msg send)" pass $dbus_msg_query
-perms dbus receive
-querytest "QUERY deny dbus (msg receive)" pass $dbus_msg_query
-perms dbus send receive
-querytest "QUERY deny dbus (msg send & receive)" pass $dbus_msg_query
-perms dbus bind
-querytest "QUERY deny dbus (svc)" pass $dbus_svc_query
+    # Check deny dbus - denied without auditing
+    genqueryprofile "deny dbus,"
+    expect # neither allow, nor audit
+    perms dbus send
+    querytest "QUERY deny dbus (msg send)" pass $dbus_msg_query
+    perms dbus receive
+    querytest "QUERY deny dbus (msg receive)" pass $dbus_msg_query
+    perms dbus send receive
+    querytest "QUERY deny dbus (msg send & receive)" pass $dbus_msg_query
+    perms dbus bind
+    querytest "QUERY deny dbus (svc)" pass $dbus_svc_query
 
-# Check audit dbus - allowed, but audited
-genqueryprofile "audit dbus,"
-expect allow audit
-perms dbus send
-querytest "QUERY audit dbus (msg send)" pass $dbus_msg_query
-perms dbus receive
-querytest "QUERY audit dbus (msg receive)" pass $dbus_msg_query
-perms dbus send receive
-querytest "QUERY audit dbus (msg send & receive)" pass $dbus_msg_query
-perms dbus bind
-querytest "QUERY audit dbus (svc)" pass $dbus_svc_query
+    # Check audit dbus - allowed, but audited
+    genqueryprofile "audit dbus,"
+    expect allow audit
+    perms dbus send
+    querytest "QUERY audit dbus (msg send)" pass $dbus_msg_query
+    perms dbus receive
+    querytest "QUERY audit dbus (msg receive)" pass $dbus_msg_query
+    perms dbus send receive
+    querytest "QUERY audit dbus (msg send & receive)" pass $dbus_msg_query
+    perms dbus bind
+    querytest "QUERY audit dbus (svc)" pass $dbus_svc_query
 
-# Check audit deny dbus - explicit deny without auditing
-genqueryprofile "audit deny dbus,"
-expect audit
-perms dbus send
-querytest "QUERY audit deny dbus (msg send)" pass $dbus_msg_query
-perms dbus receive
-querytest "QUERY audit deny dbus (msg receive)" pass $dbus_msg_query
-perms dbus send receive
-querytest "QUERY audit deny dbus (msg send & receive)" pass $dbus_msg_query
-perms dbus bind
-querytest "QUERY audit deny dbus (svc)" pass $dbus_svc_query
+    # Check audit deny dbus - explicit deny without auditing
+    genqueryprofile "audit deny dbus,"
+    expect audit
+    perms dbus send
+    querytest "QUERY audit deny dbus (msg send)" pass $dbus_msg_query
+    perms dbus receive
+    querytest "QUERY audit deny dbus (msg receive)" pass $dbus_msg_query
+    perms dbus send receive
+    querytest "QUERY audit deny dbus (msg send & receive)" pass $dbus_msg_query
+    perms dbus bind
+    querytest "QUERY audit deny dbus (svc)" pass $dbus_svc_query
 
-# Check dbus send - ensure that receive and bind bits aren't set
-genqueryprofile "dbus send,"
-expect allow
-perms dbus send
-querytest "QUERY dbus send (msg send)" pass $dbus_msg_query
-perms dbus receive
-querytest "QUERY dbus send (msg receive)" fail $dbus_msg_query
-perms dbus send receive
-querytest "QUERY dbus send (msg send & receive)" fail $dbus_msg_query
-perms dbus bind
-querytest "QUERY dbus send (msg bind)" fail $dbus_msg_query
-perms dbus send bind
-querytest "QUERY dbus send (msg send & bind)" fail $dbus_msg_query
+    # Check dbus send - ensure that receive and bind bits aren't set
+    genqueryprofile "dbus send,"
+    expect allow
+    perms dbus send
+    querytest "QUERY dbus send (msg send)" pass $dbus_msg_query
+    perms dbus receive
+    querytest "QUERY dbus send (msg receive)" fail $dbus_msg_query
+    perms dbus send receive
+    querytest "QUERY dbus send (msg send & receive)" fail $dbus_msg_query
+    perms dbus bind
+    querytest "QUERY dbus send (msg bind)" fail $dbus_msg_query
+    perms dbus send bind
+    querytest "QUERY dbus send (msg send & bind)" fail $dbus_msg_query
 
-# Check dbus receive - ensure that send and bind bits aren't set
-genqueryprofile "dbus receive,"
-expect allow
-perms dbus receive
-querytest "QUERY dbus receive (msg receive)" pass $dbus_msg_query
-perms dbus send
-querytest "QUERY dbus receive (msg send)" fail $dbus_msg_query
-perms dbus send receive
-querytest "QUERY dbus receive (msg send & receive)" fail $dbus_msg_query
-perms dbus bind
-querytest "QUERY dbus receive (msg bind)" fail $dbus_msg_query
-perms dbus receive bind
-querytest "QUERY dbus receive (msg receive & bind)" fail $dbus_msg_query
+    # Check dbus receive - ensure that send and bind bits aren't set
+    genqueryprofile "dbus receive,"
+    expect allow
+    perms dbus receive
+    querytest "QUERY dbus receive (msg receive)" pass $dbus_msg_query
+    perms dbus send
+    querytest "QUERY dbus receive (msg send)" fail $dbus_msg_query
+    perms dbus send receive
+    querytest "QUERY dbus receive (msg send & receive)" fail $dbus_msg_query
+    perms dbus bind
+    querytest "QUERY dbus receive (msg bind)" fail $dbus_msg_query
+    perms dbus receive bind
+    querytest "QUERY dbus receive (msg receive & bind)" fail $dbus_msg_query
 
-# Check dbus bind - ensure that send and receive bits aren't set
-genqueryprofile "dbus bind,"
-expect allow
-perms dbus bind
-querytest "QUERY dbus bind (svc bind)" pass $dbus_svc_query
-perms dbus send
-querytest "QUERY dbus bind (svc send)" fail $dbus_svc_query
-perms dbus send bind
-querytest "QUERY dbus bind (svc send & bind)" fail $dbus_svc_query
-perms dbus receive
-querytest "QUERY dbus bind (svc receive)" fail $dbus_svc_query
-perms dbus receive bind
-querytest "QUERY dbus bind (svc receive & bind)" fail $dbus_svc_query
+    # Check dbus bind - ensure that send and receive bits aren't set
+    genqueryprofile "dbus bind,"
+    expect allow
+    perms dbus bind
+    querytest "QUERY dbus bind (svc bind)" pass $dbus_svc_query
+    perms dbus send
+    querytest "QUERY dbus bind (svc send)" fail $dbus_svc_query
+    perms dbus send bind
+    querytest "QUERY dbus bind (svc send & bind)" fail $dbus_svc_query
+    perms dbus receive
+    querytest "QUERY dbus bind (svc receive)" fail $dbus_svc_query
+    perms dbus receive bind
+    querytest "QUERY dbus bind (svc receive & bind)" fail $dbus_svc_query
 
-# Check dbus - ensure that send and receive bits aren't set in service queries
-# and the bind bit isn't set in message queries
-genqueryprofile "dbus,"
-expect allow
-perms dbus send receive
-querytest "QUERY dbus (msg send & receive)" pass $dbus_msg_query
-perms dbus bind
-querytest "QUERY dbus (msg bind)" fail $dbus_msg_query
-perms dbus bind
-querytest "QUERY dbus (svc bind)" pass $dbus_svc_query
-perms dbus send
-querytest "QUERY dbus (svc send)" fail $dbus_svc_query
-perms dbus receive
-querytest "QUERY dbus (svc receive)" fail $dbus_svc_query
+    # Check dbus - ensure that send and receive bits aren't set in service queries
+    # and the bind bit isn't set in message queries
+    genqueryprofile "dbus,"
+    expect allow
+    perms dbus send receive
+    querytest "QUERY dbus (msg send & receive)" pass $dbus_msg_query
+    perms dbus bind
+    querytest "QUERY dbus (msg bind)" fail $dbus_msg_query
+    perms dbus bind
+    querytest "QUERY dbus (svc bind)" pass $dbus_svc_query
+    perms dbus send
+    querytest "QUERY dbus (svc send)" fail $dbus_svc_query
+    perms dbus receive
+    querytest "QUERY dbus (svc receive)" fail $dbus_svc_query
+else
+    echo "	required feature dbus missing, skipping dbus queries ..."
+fi
 
 genqueryprofile "file,"
 expect allow

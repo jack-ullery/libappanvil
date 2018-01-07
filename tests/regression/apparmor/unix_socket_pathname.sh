@@ -28,6 +28,8 @@ bin=$pwd
 
 . $bin/prologue.inc
 requires_kernel_features policy/versions/v6
+#af_mask for downgrade test af_unix for full test
+requires_kernel_features network/af_mask
 
 settest unix_socket
 
