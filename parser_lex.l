@@ -200,7 +200,7 @@ MODES		{MODE_CHARS}+
 WS		[[:blank:]]
 NUMBER		[[:digit:]]+
 
-ID_CHARS	[^ \t\n"!,]
+ID_CHARS	[^ \t\r\n"!,]
 ID 		{ID_CHARS}|(,{ID_CHARS}|\\[ ]|\\\t|\\\"|\\!|\\,)
 IDS		{ID}+
 POST_VAR_ID_CHARS	[^ \t\n"!,]{-}[=\+]
@@ -274,13 +274,19 @@ LT_EQUAL	<=
 }
 
 <INCLUDE>{
-	(\<([^\> \t\n]+)\>|\"([^\" \t\n]+)\")	{	/* <filename> */
+	(\<([^"\>\t\r\n]+)\>|{QUOTED_ID})	{ /* <filename> | "filename" */
 		autofree char *filename = strndup(yytext, yyleng - 1);
 		include_filename(filename + 1, *filename == '<');
 		POP_NODUMP();
 	}
 
-	[^\<\>\" \t\n]+ {	/* filename */
+	(\<{QUOTED_ID}\>)	{	/* <"filename"> */
+		autofree char *filename = strndup(yytext, yyleng - 2);
+		include_filename(filename + 2, true);
+		POP_NODUMP();
+	}
+
+	({IDS}|{QUOTED_ID}) {	/* filename */
 		include_filename(yytext, 0);
 		POP_NODUMP();
 	}
