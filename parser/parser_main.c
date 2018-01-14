@@ -1124,7 +1124,7 @@ int main(int argc, char *argv[])
 		retval = aa_policy_cache_new(&policy_cache, features,
 					     AT_FDCWD, cacheloc, max_caches);
 		if (retval) {
-			if (errno != ENOENT && errno != EEXIST) {
+			if (errno != ENOENT && errno != EEXIST && errno != EROFS) {
 				PERROR(_("Failed setting up policy cache (%s): %s\n"),
 				       cacheloc, strerror(errno));
 				return 1;
