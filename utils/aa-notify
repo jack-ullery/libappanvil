@@ -338,6 +338,9 @@ sub send_message {
 
         $notify_home ne "" and $ENV{'HOME'} = $notify_home;
         $notify_display ne "" and $ENV{'DISPLAY'} = $notify_display;
+        if (not defined($ENV{'DBUS_SESSION_BUS_ADDRESS'})) {
+            $ENV{'DBUS_SESSION_BUS_ADDRESS'} = "unix:path=/run/user/$>/bus";
+        }
 
         # 'system' uses execvp() so no shell metacharacters here.
         # $notify_exe is an absolute path so execvp won't search PATH.
