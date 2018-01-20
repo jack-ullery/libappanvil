@@ -4,6 +4,7 @@
   # user configurations
   owner @{HOME}/.gnupg/options     r,
   owner @{HOME}/.gnupg/pubring.gpg r,
+  owner @{HOME}/.gnupg/pubring.kbx r,
   owner @{HOME}/.gnupg/random_seed rw,
   owner @{HOME}/.gnupg/secring.gpg r,
   owner @{HOME}/.gnupg/so/*.x86_64 mr,
