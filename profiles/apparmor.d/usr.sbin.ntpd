@@ -53,6 +53,7 @@
   /var/lib/ntp/{,var/}run/ntp/ntpd.pid w,
   /var/log/ntp w,
   /var/log/ntp.log w,
+  /var/log/ntpstats/clockstats* lrw,
   /var/log/ntpstats/loopstats* lrw,
   /var/log/ntpstats/peerstats* lrw,
   /var/opt/novell/xad/rpc/xadsd rw,
