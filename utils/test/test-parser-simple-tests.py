@@ -230,6 +230,12 @@ unknown_line = [
     'profile/profile_ns_ok3.sd',  # profile keyword?
     'profile/re_named_ok4.sd',  # profile keyword
     'profile/re_ok4.sd',
+
+    # multiple rules in one line
+    'bare_include_tests/ok_14.sd',
+    'bare_include_tests/ok_19.sd',
+    'bare_include_tests/ok_64.sd',
+    'bare_include_tests/ok_69.sd',
 ]
 
 # testcases with various unexpected failures
