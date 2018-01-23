@@ -808,7 +808,7 @@ def upload_profile(url, user, passw, distro, p, profile_string, changelog):
 
 def console_select_and_upload_profiles(title, message, profiles_up):
     url = cfg['repository']['url']
-    profs = profiles_up[:]
+    profiles = profiles_up[:]
     q = aaui.PromptQuestion()
     q.title = title
     q.headers = ['Repository', url]
@@ -816,20 +816,20 @@ def console_select_and_upload_profiles(title, message, profiles_up):
     q.functions = ['CMD_UPLOAD_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ASK_LATER',
                       'CMD_ASK_NEVER', 'CMD_ABORT']
     q.default = 'CMD_VIEW_CHANGES'
-    q.options = [i[0] for i in profs]
+    q.options = [i[0] for i in profiles]
     q.selected = 0
     ans = ''
     while 'CMD_UPLOAD_CHANGES' not in ans and 'CMD_ASK_NEVER' not in ans and 'CMD_ASK_LATER' not in ans:
         ans, arg = q.promptUser()
         if ans == 'CMD_VIEW_CHANGES':
-            aaui.UI_Changes(profs[arg][2], profs[arg][1])
+            aaui.UI_Changes(profiles[arg][2], profiles[arg][1])
     if ans == 'CMD_NEVER_ASK':
-        set_profiles_local_only([i[0] for i in profs])
+        set_profiles_local_only([i[0] for i in profiles])
     elif ans == 'CMD_UPLOAD_CHANGES':
         changelog = aaui.UI_GetString(_('Changelog Entry: '), '')
         user, passw = get_repo_user_pass()
         if user and passw:
-            for p_data in profs:
+            for p_data in profiles:
                 prof = p_data[0]
                 prof_string = p_data[1]
                 status_ok, ret = upload_profile(url, user, passw,
@@ -848,10 +848,10 @@ def console_select_and_upload_profiles(title, message, profiles_up):
         else:
             aaui.UI_Important(_('Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the repository.\nThese changes could not be sent.'))
 
-def set_profiles_local_only(profs):
-    for p in profs:
-        aa[profs][profs]['repo']['neversubmit'] = True
-        write_profile_ui_feedback(profs)
+def set_profiles_local_only(profiles):
+    for p in profiles:
+        aa[profiles][profiles]['repo']['neversubmit'] = True
+        write_profile_ui_feedback(profiles)
 
 
 def build_x_functions(default, options, exec_toggle):
