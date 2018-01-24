@@ -103,7 +103,7 @@ extras = hasher()  # Inactive profiles from extras
 ### end our
 log_pid = dict()  # handed over to ReadLog, gets filled in logparser.py. The only case the previous content of this variable _might_(?) be used is aa-genprof (multiple do_logprof_pass() runs)
 
-profile_changes = hasher()
+profile_changes = dict()
 prelog = hasher()
 changed = dict()
 created = []
@@ -721,7 +721,7 @@ def sync_profile():
     repo_profiles = []
     changed_profiles = []
     new_profiles = []
-    serialize_opts = hasher()
+    serialize_opts = dict()
     status_ok, ret = fetch_profiles_by_user(cfg['repository']['url'],
                                             cfg['repository']['distro'], user)
     if not status_ok:
