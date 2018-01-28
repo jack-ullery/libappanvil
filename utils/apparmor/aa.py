@@ -2599,26 +2599,6 @@ def write_header(prof_data, depth, name, embedded_hat, write_flags):
 
     return data
 
-def write_single(prof_data, depth, allow, name, prefix, tail):
-    pre = '  ' * depth
-    data = []
-    ref, allow = set_ref_allow(prof_data, allow)
-
-    if ref.get(name, False):
-        for key in sorted(ref[name].keys()):
-            if name == 'include':
-                if key.startswith('/'):
-                    qkey = '"%s"' % key
-                else:
-                    qkey = '<%s>' % quote_if_needed(key)
-            else:
-                qkey = quote_if_needed(key)
-            data.append('%s%s%s%s%s' % (pre, allow, prefix, qkey, tail))
-        if ref[name].keys():
-            data.append('')
-
-    return data
-
 def set_allow_str(allow):
     if allow == 'deny':
         return 'deny '
@@ -2651,7 +2631,21 @@ def write_pair(prof_data, depth, allow, name, prefix, sep, tail, fn):
     return data
 
 def write_includes(prof_data, depth):
-    return write_single(prof_data, depth, '', 'include', '#include ', '')
+    pre = '  ' * depth
+    data = []
+
+    for key in sorted(prof_data['include'].keys()):
+        if key.startswith('/'):
+            qkey = '"%s"' % key
+        else:
+            qkey = '<%s>' % quote_if_needed(key)
+
+        data.append('%s#include %s' % (pre, qkey))
+
+    if data:
+        data.append('')
+
+    return data
 
 def write_change_profile(prof_data, depth):
     data = []
