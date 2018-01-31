@@ -70,9 +70,12 @@ with B<.> (except for the root B</>) so profiles are easier to manage
 (e.g. the F</usr/sbin/nscd> profile would be named F<usr.sbin.nscd>).
 
 Profiles are applied to a process at exec(3) time (as seen through the
-execve(2) system call); an already running process cannot be confined.
-However, once a profile is loaded for a program, that program will be
-confined on the next exec(3).
+execve(2) system call): once a profile is loaded for a program, that
+program will be confined on the next exec(3). If a process is already
+running under a profile, when one replaces that profile in the kernel,
+the updated profile is applied immediately to that process.
+On the other hand, a process that is already running unconfined cannot
+be confined.
 
 AppArmor supports the Linux kernel's securityfs filesystem, and makes
 available the list of the profiles currently loaded; to mount the
