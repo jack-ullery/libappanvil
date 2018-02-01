@@ -1,4 +1,4 @@
-From 9ef395833a0783ac47bb72a6283ebe3e83735128 Mon Sep 17 00:00:00 2001
+From 2e7f6d0dc0f1d3642950f529b451af73fa1baf9c Mon Sep 17 00:00:00 2001
 From: John Johansen <john.johansen@canonical.com>
 Date: Tue, 18 Jul 2017 23:27:23 -0700
 Subject: [PATCH 2/2] apparmor: af_unix mediation

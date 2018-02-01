@@ -1,4 +1,4 @@
-From 3de9004cf346b3f79065f51b9ecbd03bae92cb42 Mon Sep 17 00:00:00 2001
+From f34488a615da4b0dd68f697587f1cf13e4535e5d Mon Sep 17 00:00:00 2001
 From: John Johansen <john.johansen@canonical.com>
 Date: Tue, 18 Jul 2017 23:18:33 -0700
 Subject: [PATCH 1/2] apparmor: add base infastructure for socket mediation
@@ -44,8 +44,8 @@ Acked-by: Seth Arnold <seth.arnold@canonical.com>
  security/apparmor/lib.c            |   5 +-
  security/apparmor/lsm.c            | 387 +++++++++++++++++++++++++++++++++++++
  security/apparmor/net.c            | 184 ++++++++++++++++++
- security/apparmor/policy_unpack.c  |  47 ++++-
- 12 files changed, 840 insertions(+), 16 deletions(-)
+ security/apparmor/policy_unpack.c  |  51 ++++-
+ 12 files changed, 844 insertions(+), 16 deletions(-)
  create mode 100644 security/apparmor/include/net.h
  create mode 100644 security/apparmor/net.c
 
@@ -1046,7 +1046,7 @@ index 000000000000..33d54435f8d6
 +	return aa_label_sk_perm(label, op, request, sock->sk);
 +}
 diff --git a/security/apparmor/policy_unpack.c b/security/apparmor/policy_unpack.c
-index 4ede87c30f8b..5a2aec358322 100644
+index 4ede87c30f8b..e348f8dec45d 100644
 --- a/security/apparmor/policy_unpack.c
 +++ b/security/apparmor/policy_unpack.c
 @@ -275,6 +275,19 @@ static bool unpack_nameX(struct aa_ext *e, enum aa_code code, const char *name)
@@ -1078,7 +1078,7 @@ index 4ede87c30f8b..5a2aec358322 100644
  	struct rhashtable_params params = { 0 };
  	char *key = NULL;
  	struct aa_data *data;
-@@ -717,6 +730,38 @@ static struct aa_profile *unpack_profile(struct aa_ext *e, char **ns_name)
+@@ -717,6 +730,42 @@ static struct aa_profile *unpack_profile(struct aa_ext *e, char **ns_name)
  		goto fail;
  	}
  
@@ -1107,6 +1107,10 @@ index 4ede87c30f8b..5a2aec358322 100644
 +		}
 +		if (!unpack_nameX(e, AA_ARRAYEND, NULL))
 +			goto fail;
++	} else {
++		/* support policy pre AF socket mediation */
++		for (i = 0; i < AF_MAX; i++)
++			profile->net.allow[i] = 0xffff;
 +	}
 +	if (VERSION_LT(e->version, v7)) {
 +		/* pre v7 policy always allowed these */
