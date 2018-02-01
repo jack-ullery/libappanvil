@@ -1,4 +1,4 @@
-This series is based on what is currently in linux-next scheduled for
-inclusion in 4.14
+This is based on v4.14 final
 
-af_unix-mediation is the last remaining patch that is out of tree
+base socket mediation and af_unix-mediation are the last two remaining
+patches that are out of tree
