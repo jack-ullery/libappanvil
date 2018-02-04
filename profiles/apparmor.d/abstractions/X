@@ -10,6 +10,7 @@
 #
 # ------------------------------------------------------------------
 
+  #include <abstractions/dri-common>
 
 
   # .ICEauthority files required for X authentication, per user
@@ -44,14 +45,6 @@
 
   # EGL
   /usr/lib/@{multiarch}/egl/*.so* mr,
-
-  # DRI
-  /usr/lib{,32,64}/dri/**         mr,
-  /usr/lib/@{multiarch}/dri/**    mr,
-  /usr/lib/fglrx/dri/**           mr,
-  /dev/dri/**                     rw,
-  /etc/drirc                      r,
-  owner @{HOME}/.drirc            r,
 
   # Xcompose
   owner @{HOME}/.XCompose         r,
