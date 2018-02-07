@@ -17,6 +17,7 @@
   #include <abstractions/dbus>
   #include <abstractions/nameservice>
 
+  capability chown,
   capability net_bind_service,
   capability setgid,
   capability setuid,
