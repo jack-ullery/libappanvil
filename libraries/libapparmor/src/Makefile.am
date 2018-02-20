@@ -32,7 +32,7 @@ AA_LIB_AGE = 4
 
 SUFFIXES = .pc.in .pc
 
-BUILT_SOURCES = grammar.h scanner.h af_protos.h
+BUILT_SOURCES = grammar.h scanner.h af_protos.h PMurHash.h
 AM_LFLAGS = -v
 AM_YFLAGS = -d -p aalogparse_
 AM_CFLAGS = -Wall
@@ -46,9 +46,9 @@ af_protos.h: /usr/include/netinet/in.h
 	 LC_ALL=C  sed  -n -e "/IPPROTO_MAX/d"  -e "s/^\#define[ \\t]\\+IPPROTO_\\([A-Z0-9_]\\+\\)\\(.*\\)$$/AA_GEN_PROTO_ENT(\\UIPPROTO_\\1, \"\\L\\1\")/p" $< > $@
 
 lib_LTLIBRARIES = libapparmor.la
-noinst_HEADERS = grammar.h parser.h scanner.h af_protos.h private.h
+noinst_HEADERS = grammar.h parser.h scanner.h af_protos.h private.h PMurHash.h
 
-libapparmor_la_SOURCES = grammar.y libaalogparse.c kernel.c scanner.c private.c features.c kernel_interface.c policy_cache.c
+libapparmor_la_SOURCES = grammar.y libaalogparse.c kernel.c scanner.c private.c features.c kernel_interface.c policy_cache.c PMurHash.c
 libapparmor_la_LDFLAGS = -version-info $(AA_LIB_CURRENT):$(AA_LIB_REVISION):$(AA_LIB_AGE) -XCClinker -dynamic -pthread \
 	-Wl,--version-script=$(top_srcdir)/src/libapparmor.map
 

@@ -32,6 +32,7 @@
 #include <sys/apparmor.h>
 
 #include "private.h"
+#include "PMurHash.h"
 
 #define FEATURES_FILE "/sys/kernel/security/apparmor/features"
 
@@ -211,13 +212,15 @@ static ssize_t load_features_dir(int dirfd, const char *path,
 static int init_features_hash(aa_features *features)
 {
 	const char *string = features->string;
-	uint32_t hash = 5381;
+	uint32_t seed = 5381;
+	uint32_t hash = seed, carry = 0;
+	size_t len = strlen(string);
 
-	/* djb2 - http://www.cse.yorku.ca/~oz/hash.html */
-	while (*string) {
-		/* hash * 33 + *string */
-		hash = ((hash << 5) + hash) + *(string++);
-	}
+	/* portable murmur3 hash
+	 * https://github.com/aappleby/smhasher/wiki/MurmurHash3
+	 */
+	PMurHash32_Process(&hash, &carry, features, len);
+	hash = PMurHash32_Result(hash, carry, len);
 
 	if (snprintf(features->hash, HASH_SIZE,
 		     "%08" PRIx32, hash) >= HASH_SIZE) {
