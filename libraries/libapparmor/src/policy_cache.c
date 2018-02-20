@@ -231,20 +231,14 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 	if (kernel_features) {
 		aa_features_ref(kernel_features);
 	} else if (aa_features_new_from_kernel(&kernel_features) == -1) {
-		int save = errno;
-
 		aa_policy_cache_unref(pc);
-		errno = save;
 		return -1;
 	}
 	pc->kernel_features = kernel_features;
 
 	cache_dir = cache_dir_from_path_and_features(path, kernel_features);
 	if (!cache_dir) {
-		int save = errno;
-
 		aa_policy_cache_unref(pc);
-		errno = save;
 		return -1;
 	}
 
