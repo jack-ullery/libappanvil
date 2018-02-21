@@ -164,22 +164,43 @@ static char *path_from_fd(int fd)
 	return path;
 }
 
-static char *cache_dir_from_path_and_features(const char *path,
-					      aa_features *features)
+/* will return cache_path on error if there is a collision */
+static int cache_dir_from_path_and_features(char **cache_path,
+					    int dirfd, const char *path,
+					    aa_features *features)
 {
-	autofree const char *features_id;
+	autofree const char *features_id = NULL;
+	autofree aa_features *local_features = NULL; /* ingore ref count */
 	char *cache_dir;
+	size_t len;
+	int res;
 
 	features_id = aa_features_id(features);
 	if (!features_id)
-		return NULL;
+		return -1;
 
-	if (asprintf(&cache_dir, "%s/%s", path, features_id) == -1) {
+	len = asprintf(&cache_dir, "%s/%s/%s", path, features_id,
+		       CACHE_FEATURES_FILE);
+	if (len == -1) {
 		errno = ENOMEM;
-		return NULL;
+		return -1;
 	}
 
-	return cache_dir;
+	/* verify that cache dir .features matches */
+	res = aa_features_new(&local_features, dirfd, cache_dir);
+
+	/* drop /CACHE_FEATURES_FILE and return as dir */
+	cache_dir[len - 1 - strlen(CACHE_FEATURES_FILE)] = 0;
+	*cache_path = cache_dir;
+
+	if (!res) {
+		if (!aa_features_is_equal(local_features, features)) {
+			errno = EEXIST;
+			return -1;
+		}
+	}
+
+	return 0;
 }
 
 /**
@@ -236,8 +257,11 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 	}
 	pc->kernel_features = kernel_features;
 
-	cache_dir = cache_dir_from_path_and_features(path, kernel_features);
-	if (!cache_dir) {
+	if (cache_dir_from_path_and_features(&cache_dir, dirfd, path,
+					     kernel_features)) {
+		if (errno == EEXIST)
+			PERROR("Cache collision '%s'", cache_dir);
+
 		aa_policy_cache_unref(pc);
 		return -1;
 	}
@@ -420,8 +444,8 @@ char *aa_policy_cache_dir_path_preview(aa_features *kernel_features,
 		}
 	}
 
-	cache_dir = cache_dir_from_path_and_features(path, kernel_features);
-	if (!cache_dir) {
+	if (cache_dir_from_path_and_features(&cache_dir, dirfd, path,
+					     kernel_features)) {
 		int save = errno;
 
 		PERROR("Can't return the path to the aa_policy_cache directory: %m\n");
