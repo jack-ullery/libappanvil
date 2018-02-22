@@ -21,6 +21,7 @@
   /usr/bin/mlmmj-sub mr,
   /var/spool/mlmmj/*/control/ r,
   /var/spool/mlmmj/*/control/* r,
+  /var/spool/mlmmj/*/moderation/subscribe* rw,
   /var/spool/mlmmj/*/queue/ rw,
   /var/spool/mlmmj/*/queue/* rw,
   /var/spool/mlmmj/*/subconf/ rw,
