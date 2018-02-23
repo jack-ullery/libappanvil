@@ -330,18 +330,22 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
         self.assert_path_exists(self.cache_file, expected=False)
 
-    def test_cache_writing_updates_features(self):
-        '''test cache writing updates features'''
-
+    def test_cache_writing_collision_of_features(self):
+        '''test cache writing collision of features'''
+        # cache dir with different features causes a collision resulting
+        # in a new cache dir
         self.require_apparmorfs()
 
         features_file = testlib.write_file(self.cache_dir, '.features', 'monkey\n')
+        new_file = self.get_cache_dir()
+        new_features_file = new_file + '/.features';
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '--write-cache', '-r', self.profile])
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
         self.assert_path_exists(features_file)
-        self.compare_features_file(features_file)
+        self.assert_path_exists(new_features_file)
+        self.compare_features_file(new_features_file)
 
     def test_cache_writing_updates_cache_file(self):
         '''test cache writing updates cache file'''

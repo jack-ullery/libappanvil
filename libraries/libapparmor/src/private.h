@@ -17,6 +17,7 @@
 #ifndef _AA_PRIVATE_H
 #define _AA_PRIVATE_H 1
 
+#include <dirent.h>
 #include <stdbool.h>
 #include <sys/apparmor_private.h>
 
@@ -50,5 +51,8 @@ void print_debug(const char *fmt, ...);
 
 void atomic_inc(unsigned int *v);
 bool atomic_dec_and_test(unsigned int *v);
+
+int _aa_dirat_for_each2(int dirfd, const char *name, void *data,
+			int (* cb)(int, const struct dirent *, void *));
 
 #endif /* _AA_PRIVATE_H */

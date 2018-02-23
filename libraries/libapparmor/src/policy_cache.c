@@ -16,8 +16,11 @@
  *   Ltd.
  */
 
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <fnmatch.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -164,42 +167,139 @@ static char *path_from_fd(int fd)
 	return path;
 }
 
-/* will return cache_path on error if there is a collision */
-static int cache_dir_from_path_and_features(char **cache_path,
-					    int dirfd, const char *path,
-					    aa_features *features)
+static int cache_check_features(int dirfd, const char *cache_name,
+				aa_features *features)
 {
-	autofree const char *features_id = NULL;
 	autofree aa_features *local_features = NULL; /* ingore ref count */
-	char *cache_dir;
-	size_t len;
-	int res;
+	autofree char *name = NULL;
+	int len;
 
-	features_id = aa_features_id(features);
-	if (!features_id)
-		return -1;
-
-	len = asprintf(&cache_dir, "%s/%s/%s", path, features_id,
-		       CACHE_FEATURES_FILE);
+	len = asprintf(&name, "%s/%s", cache_name, CACHE_FEATURES_FILE);
 	if (len == -1) {
 		errno = ENOMEM;
 		return -1;
 	}
 
 	/* verify that cache dir .features matches */
-	res = aa_features_new(&local_features, dirfd, cache_dir);
-
-	/* drop /CACHE_FEATURES_FILE and return as dir */
-	cache_dir[len - 1 - strlen(CACHE_FEATURES_FILE)] = 0;
-	*cache_path = cache_dir;
-
-	if (!res) {
-		if (!aa_features_is_equal(local_features, features)) {
-			errno = EEXIST;
-			return -1;
-		}
+	if (aa_features_new(&local_features, dirfd, name)) {
+		PDEBUG("could not setup new features object for dirfd '%d' '%s'\n", dirfd, name);
+		return -1;
 	}
 
+	if (!aa_features_is_equal(local_features, features)) {
+		errno = EEXIST;
+		return -1;
+	}
+	return 0;
+}
+
+struct miss_cb_data {
+	aa_features *features;
+	const char *path;
+	char *pattern;
+	char *cache_name;	/* return */
+	long n;
+};
+
+/* called on cache collision or miss where cache isn't present */
+static int cache_miss_cb(int dirfd, const struct dirent *ent, void *arg)
+{
+	struct miss_cb_data *data = arg;
+	char *cache_name, *pos, *tmp;
+	long n;
+	int len;
+
+	/* TODO: update to tighter pattern match of just trailing #s */
+	if (fnmatch(data->pattern, ent->d_name, 0))
+		return 0;
+
+	/* entry matches <feature_id>.<n> pattern */
+	len = asprintf(&cache_name, "%s/%s", data->path, ent->d_name);
+	if (len == -1) {
+		errno = ENOMEM;
+		return -1;
+	}
+	if (!cache_check_features(dirfd, cache_name, data->features) || errno == ENOENT) {
+		/* found cache dir matching pattern */
+		data->cache_name = cache_name;
+		/* return 1 to stop iteration and signal dir found */
+		return 1;
+	}  else if (errno != EEXIST) {
+		PDEBUG("cache_check_features() failed for dirfd '%d' '%s'\n", dirfd, cache_name);
+		free(cache_name);
+		return -1;
+	}
+	free(cache_name);
+
+	/* check the cache dir # */
+	pos = strchr(ent->d_name, '.');
+	n = strtol(pos+1, &tmp, 10);
+	if (n == LONG_MIN || n == LONG_MAX || tmp == pos + 1)
+		return -1;
+	if (n > data->n)
+		data->n = n;
+
+	/* continue processing */
+	return 0;
+}
+
+/* will return cache_path on error if there is a collision */
+static int cache_dir_from_path_and_features(char **cache_path,
+					    int dirfd, const char *path,
+					    aa_features *features)
+{
+	autofree const char *features_id = NULL;
+	char *cache_dir;
+	size_t len;
+	int rc;
+
+	features_id = aa_features_id(features);
+	if (!features_id)
+		return -1;
+
+	len = asprintf(&cache_dir, "%s/%s.0", path, features_id);
+	if (len == -1)
+		return -1;
+
+	if (!cache_check_features(dirfd, cache_dir, features) || errno == ENOENT) {
+		PDEBUG("cache_dir_from_path_and_features() found '%s'\n", cache_dir);
+		*cache_path = cache_dir;
+		return 0;
+	} else if (errno != EEXIST) {
+		PDEBUG("cache_check_features() failed for dirfd '%d' %s\n", dirfd, cache_dir);
+		free(cache_dir);
+		return -1;
+	}
+
+	PDEBUG("Cache collision '%s' falling back to next dir on fd '%d' path %s", cache_dir, dirfd, path);
+	free(cache_dir);
+
+	struct miss_cb_data data = {
+		.features = features,
+		.path = path,
+		.cache_name = NULL,
+		.n = -1,
+	};
+
+	if (asprintf(&data.pattern, "%s.*", features_id) == -1)
+		return -1;
+
+	rc = _aa_dirat_for_each2(dirfd, path, &data, cache_miss_cb);
+	free(data.pattern);
+	if (rc == 1) {
+		/* found matching feature dir */
+		PDEBUG("cache_dir_from_path_and_features() callback found '%s'\n", data.cache_name);
+		*cache_path = data.cache_name;
+		return 0;
+	} else if (rc)
+		return -1;
+	/* no dir found use 1 higher than highest dir n searched */
+	len = asprintf(&cache_dir, "%s/%s.%d", path, features_id, data.n + 1);
+	if (len == -1)
+		return -1;
+
+	PDEBUG("Cache collision no dir found using %d + 1 = %s\n", data.n + 1, cache_dir);
+	*cache_path = cache_dir;
 	return 0;
 }
 
@@ -259,9 +359,6 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 
 	if (cache_dir_from_path_and_features(&cache_dir, dirfd, path,
 					     kernel_features)) {
-		if (errno == EEXIST)
-			PERROR("Cache collision '%s'", cache_dir);
-
 		aa_policy_cache_unref(pc);
 		return -1;
 	}
@@ -301,10 +398,12 @@ open:
 	}
 
 	if (init_cache_features(pc, kernel_features, create)) {
+		PDEBUG("%s: failed init_cache_features for dirfd '%d' name '%s' opened as pc->dirfd '%d'\n", __FUNCTION__, dirfd, cache_dir, pc->dirfd);
 		aa_policy_cache_unref(pc);
 		return -1;
 	}
 
+	PDEBUG("%s: created policy_cache for dirfd '%d' name '%s' opened as pc->dirfd '%d'\n", __FUNCTION__, dirfd, cache_dir, pc->dirfd);
 	*policy_cache = pc;
 
 	return 0;
@@ -444,6 +543,7 @@ char *aa_policy_cache_dir_path_preview(aa_features *kernel_features,
 		}
 	}
 
+	PDEBUG("Looking up cachedir path for AT_FDCWD\n");
 	if (cache_dir_from_path_and_features(&cache_dir, dirfd, path,
 					     kernel_features)) {
 		int save = errno;
@@ -462,5 +562,6 @@ char *aa_policy_cache_dir_path_preview(aa_features *kernel_features,
 		return NULL;
 	}
 
+	PDEBUG("aa_policy_cache_dir_path_preview() returning '%s'\n", dir_path);
 	return dir_path;
 }

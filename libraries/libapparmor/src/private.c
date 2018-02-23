@@ -182,6 +182,59 @@ static int dot_or_dot_dot_filter(const struct dirent *ent)
 	return 1;
 }
 
+
+/* stops on first error, can use errno or return value to communicate
+ * the goal is to use this to replace _aa_dirat_for_each, but that will
+ * be a different patch.
+ */
+int _aa_dirat_for_each2(int dirfd, const char *name, void *data,
+			int (* cb)(int, const struct dirent *, void *))
+{
+	autoclose int cb_dirfd = -1;
+	const struct dirent *ent;
+	DIR *dir;
+	int save, rc;
+
+	if (!cb || !name) {
+		errno = EINVAL;
+		return -1;
+	}
+	save = errno;
+
+	cb_dirfd = openat(dirfd, name, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
+	if (cb_dirfd == -1) {
+		PDEBUG("could not open directory fd '%d' '%s': %m\n", dirfd, name);
+		return -1;
+	}
+	dir = fdopendir(cb_dirfd);
+	if (!dir) {
+		PDEBUG("could not open directory '%s' from fd '%d': %m\n", name, cb_dirfd);
+		return -1;
+	}
+	/* dup cd_dirfd because fdopendir has claimed the fd passed to it */
+	cb_dirfd = dup(cb_dirfd);
+	if (!dir) {
+		PDEBUG("could not dup directory fd '%s': %m\n", name);
+		return -1;
+	}
+
+	while ((ent = readdir(dir))) {
+		if (cb) {
+			rc = (*cb)(cb_dirfd, ent, data);
+			if (rc) {
+				PDEBUG("dir_for_each callback failed for '%s'\n",
+				       ent->d_name);
+				goto out;
+			}
+		}
+	}
+	errno = save;
+
+out:
+	closedir(dir);
+	return rc;
+}
+
 /**
  * _aa_dirat_for_each: iterate over a directory calling cb for each entry
  * @dirfd: already opened directory
