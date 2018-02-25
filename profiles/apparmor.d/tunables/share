@@ -1,0 +1,5 @@
+# This file defines variables for /usr/share, ~/.local/share and other
+# paths that should be treated in the same way as those.
+
+@{usr_share} = /{usr,usr/local}/share
+@{home_local_share} = @{HOME}/.local/share
