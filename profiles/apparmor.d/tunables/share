@@ -1,5 +1,6 @@
 # This file defines variables for /usr/share, ~/.local/share and other
 # paths that should be treated in the same way as those.
 
-@{usr_share} = /{usr,usr/local}/share
-@{home_local_share} = @{HOME}/.local/share
+@{flatpak_exports_root} = {flatpak/exports,flatpak/{app,runtime}/*/*/*/*/export}
+@{usr_share} = /{usr,usr/local,var/lib/@{flatpak_exports_root}}/share
+@{home_local_share} = @{HOME}/.local/{,share/@{flatpak_exports_root}}/share
