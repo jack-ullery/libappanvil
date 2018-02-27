@@ -60,49 +60,6 @@ static int clear_cache_cb(int dirfd, const char *path, struct stat *st,
 	return 0;
 }
 
-static int create_cache(aa_policy_cache *policy_cache, aa_features *features)
-{
-	if (aa_policy_cache_remove(policy_cache->dirfd, "."))
-		return -1;
-
-	if (aa_features_write_to_file(features, policy_cache->dirfd,
-				      CACHE_FEATURES_FILE) == -1)
-		return -1;
-
-	aa_features_unref(policy_cache->features);
-	policy_cache->features = aa_features_ref(features);
-	return 0;
-}
-
-static int init_cache_features(aa_policy_cache *policy_cache,
-			       aa_features *kernel_features, bool create)
-{
-	bool call_create_cache = false;
-	aa_features *local_features;
-
-	if (aa_features_new(&local_features, policy_cache->dirfd,
-			    CACHE_FEATURES_FILE)) {
-		if (!create || errno != ENOENT)
-			return -1;
-
-		/* The cache directory needs to be created */
-		call_create_cache = true;
-	} else if (!aa_features_is_equal(local_features, kernel_features)) {
-		if (!create) {
-			aa_features_unref(local_features);
-			errno = EEXIST;
-			return -1;
-		}
-
-		/* The cache directory needs to be refreshed */
-		call_create_cache = true;
-	}
-
-	aa_features_unref(local_features);
-	return call_create_cache ?
-		create_cache(policy_cache, kernel_features) : 0;
-}
-
 struct replace_all_cb_data {
 	aa_policy_cache *policy_cache;
 	aa_kernel_interface *kernel_interface;
@@ -192,6 +149,49 @@ static int cache_check_features(int dirfd, const char *cache_name,
 		return -1;
 	}
 	return 0;
+}
+
+static int create_cache(aa_policy_cache *policy_cache, aa_features *features)
+{
+	if (aa_policy_cache_remove(policy_cache->dirfd, "."))
+		return -1;
+
+	if (aa_features_write_to_file(features, policy_cache->dirfd,
+				      CACHE_FEATURES_FILE) == -1)
+		return -1;
+
+	aa_features_unref(policy_cache->features);
+	policy_cache->features = aa_features_ref(features);
+	return 0;
+}
+
+static int init_cache_features(aa_policy_cache *policy_cache,
+			       aa_features *kernel_features, bool create)
+{
+	bool call_create_cache = false;
+	aa_features *local_features;
+
+	if (aa_features_new(&local_features, policy_cache->dirfd,
+			    CACHE_FEATURES_FILE)) {
+		if (!create || errno != ENOENT)
+			return -1;
+
+		/* The cache directory needs to be created */
+		call_create_cache = true;
+	} else if (!aa_features_is_equal(local_features, kernel_features)) {
+		if (!create) {
+			aa_features_unref(local_features);
+			errno = EEXIST;
+			return -1;
+		}
+
+		/* The cache directory needs to be refreshed */
+		call_create_cache = true;
+	}
+
+	aa_features_unref(local_features);
+	return call_create_cache ?
+		create_cache(policy_cache, kernel_features) : 0;
 }
 
 struct miss_cb_data {
