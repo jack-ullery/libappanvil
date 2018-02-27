@@ -78,18 +78,18 @@ static int init_cache_features(aa_policy_cache *policy_cache,
 			       aa_features *kernel_features, bool create)
 {
 	bool call_create_cache = false;
+	aa_features *local_features;
 
-	if (aa_features_new(&policy_cache->features, policy_cache->dirfd,
+	if (aa_features_new(&local_features, policy_cache->dirfd,
 			    CACHE_FEATURES_FILE)) {
-		policy_cache->features = NULL;
 		if (!create || errno != ENOENT)
 			return -1;
 
 		/* The cache directory needs to be created */
 		call_create_cache = true;
-	} else if (!aa_features_is_equal(policy_cache->features,
-					 kernel_features)) {
+	} else if (!aa_features_is_equal(local_features, kernel_features)) {
 		if (!create) {
+			aa_features_unref(local_features);
 			errno = EEXIST;
 			return -1;
 		}
@@ -98,6 +98,7 @@ static int init_cache_features(aa_policy_cache *policy_cache,
 		call_create_cache = true;
 	}
 
+	aa_features_unref(local_features);
 	return call_create_cache ?
 		create_cache(policy_cache, kernel_features) : 0;
 }
@@ -355,7 +356,7 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 		aa_policy_cache_unref(pc);
 		return -1;
 	}
-	pc->kernel_features = kernel_features;
+	pc->features = kernel_features;
 
 	if (cache_dir_from_path_and_features(&cache_dir, dirfd, path,
 					     kernel_features)) {
@@ -431,7 +432,6 @@ void aa_policy_cache_unref(aa_policy_cache *policy_cache)
 
 	if (policy_cache && atomic_dec_and_test(&policy_cache->ref_count)) {
 		aa_features_unref(policy_cache->features);
-		aa_features_unref(policy_cache->kernel_features);
 		if (policy_cache->dirfd != -1)
 			close(policy_cache->dirfd);
 		free(policy_cache);
@@ -471,7 +471,7 @@ int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
 	if (kernel_interface) {
 		aa_kernel_interface_ref(kernel_interface);
 	} else if (aa_kernel_interface_new(&kernel_interface,
-					   policy_cache->kernel_features,
+					   policy_cache->features,
 					   NULL) == -1) {
 		kernel_interface = NULL;
 		return -1;
