@@ -187,6 +187,8 @@ extern int aa_policy_cache_new(aa_policy_cache **policy_cache,
 			       aa_features *kernel_features,
 			       int dirfd, const char *path,
 			       uint16_t max_caches);
+extern int aa_policy_cache_add_ro_dir(aa_policy_cache *policy_cache, int dirfd,
+				      const char *path);
 extern aa_policy_cache *aa_policy_cache_ref(aa_policy_cache *policy_cache);
 extern void aa_policy_cache_unref(aa_policy_cache *policy_cache);
 

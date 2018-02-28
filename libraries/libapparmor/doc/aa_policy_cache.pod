@@ -46,6 +46,8 @@ B<typedef struct aa_policy_cache aa_policy_cache;>
 
 B<int aa_policy_cache_new(aa_policy_cache **policy_cache, aa_features *kernel_features, int dirfd, const char *path, uint16_t max_caches);>
 
+B<int aa_policy_cache_add_ro_dir(aa_policy_cache *policy_cache, int dirfd, const char *path);>
+
 B<aa_policy_cache *aa_policy_cache_ref(aa_policy_cache *policy_cache);>
 
 B<void aa_policy_cache_unref(aa_policy_cache *policy_cache);>
@@ -54,7 +56,7 @@ B<int aa_policy_cache_remove(int dirfd, const char *path);>
 
 B<int aa_policy_cache_replace_all(aa_policy_cache *policy_cache, aa_kernel_interface *kernel_interface);>
 
-B<char *aa_policy_cache_dir_path(aa_policy_cache *policy_cache);>
+B<char *aa_policy_cache_dir_path(aa_policy_cache *policy_cache, int level);>
 
 B<char *aa_policy_cache_dir_path_preview(aa_features *kernel_features, int dirfd, const char *path);>
 
@@ -67,21 +69,35 @@ policy cache files. The policy cache files are the binary representation of a
 human-readable AppArmor profile. The binary representation is the form that is
 loaded into the kernel.
 
-The aa_policy_cache_new() function creates an I<aa_policy_cache> object based
-upon a directory file descriptor and path. See the openat(2) man page for
-examples of I<dirfd> and I<path>. The I<path> must point to a directory and it
-will be used as the basis for the location of policy cache files. See
-I<aa_policy_cache_dir_path> to find out which directory will be used to store
-the binary policy cache files. If I<kernel_features> is NULL, then the features
-of the current kernel are used. When specifying a valid I<kernel_features>
-object, it must be the compatible with the features of the kernel of interest.
-The value of I<max_caches> should be equal to the number of caches that should
-be allowed before old caches are automatically reaped. The definition of what is
-considered to be an old cache is private to libapparmor. Specifying 0 means that
-no new caches should be created and only existing, valid caches may be used.
-Specifying UINT16_MAX means that a new cache may be created and that the reaping
-of old caches is disabled. The allocated I<aa_policy_cache> object must be freed
-using aa_policy_cache_unref().
+The aa_policy_cache_new() function creates an I<aa_policy_cache>
+object based upon a directory file descriptor and path. See the
+openat(2) man page for examples of I<dirfd> and I<path>. The I<path>
+must point to a directory and it will be used as the basis for the
+location of policy cache files. See I<aa_policy_cache_dir_path> to
+find out which directory will be used to store the binary policy cache
+files. If additional overlay cache directories are used (See
+I<aa_policy_cache_add_ro_dir> the directory directory used in
+I<aa_policy_cache_new> is the first directory searched and is the
+writable overlay. If I<kernel_features> is NULL, then the features of
+the current kernel are used. When specifying a valid
+I<kernel_features> object, it must be the compatible with the features
+of the kernel of interest.  The value of I<max_caches> should be equal
+to the number of caches that should be allowed before old caches are
+automatically reaped. The definition of what is considered to be an
+old cache is private to libapparmor. Specifying 0 means that no new
+caches should be created and only existing, valid caches may be used.
+Specifying UINT16_MAX means that a new cache may be created and that
+the reaping of old caches is disabled. The allocated
+I<aa_policy_cache> object must be freed using aa_policy_cache_unref().
+
+The aa_policy_cache_add_ro_dir() function adds an existing cache directory
+to the policy cache, as a readonly layer under the primary directory
+the cache was created with. When the cache is searched for an existing
+cache file the primary directory will be searched and then the readonly
+directories in the order that they were added to the policy cache.
+This allows the policy cache to be seeded with precompiled policy
+that can be updated by overlaying the read only cache file with one
+written to the primary cache dir.
 
 aa_policy_cache_ref() increments the reference count on the I<policy_cache>
 object.
@@ -100,9 +116,17 @@ the I<policy_cache> object. If I<kernel_interface> is NULL, then the current
 kernel interface is used. When specifying a valid I<kernel_interface> object,
 it must be the interface of the currently running kernel.
 
-The aa_policy_cache_dir_path() function provides the path to the cache directory
-for a I<policy_cache> object. Binary policy cache files will be located in the
-directory returned by this function.
+The aa_policy_cache_dir_path() function provides the path to the cache
+directory for a I<policy_cache> object at I<level> in the policy cache
+overlay of cache directories. A I<level> of 0 will always be present
+and is the first directory to search in an overlay of cache
+directories, and will also be the writable cache directory
+layer. Binary policy cache files will be located in the directory
+returned by this function.
+
+The aa_policy_cache_dir_levels() function provides access to the number
+of directories that are being overlayed to create the policy cache.
+
 
 =head1 RETURN VALUE
 
@@ -117,7 +141,10 @@ aa_policy_cache_remove() and aa_policy_cache_replace_all() return 0 on success.
 -1 is returned on error, with errno set appropriately.
 
 aa_policy_cache_dir_path() returns a path string which must be freed by the
-caller. NULL is returned on error, with errnor set appropriately.
+caller. NULL is returned on error, with errno set appropriately.
+
+aa_policy_cache_dir_levels() returns a number indicating the number of
+directory levels there are associated with the I<policy_cache>.
 
 aa_policy_cache_dir_path_preview() is the same as
 aa_policy_cache_dir_path() except that it doesn't require an existing

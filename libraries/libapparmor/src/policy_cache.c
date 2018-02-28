@@ -32,14 +32,14 @@
 #include "private.h"
 
 #define CACHE_FEATURES_FILE	".features"
-#define MAX_POLICY_CACHE_DIRS	4
+#define MAX_POLICY_CACHE_OVERLAY_DIRS	4
 
 struct aa_policy_cache {
 	unsigned int ref_count;
 	aa_features *features;
 	aa_features *kernel_features;
 	int n;
-	int dirfd[MAX_POLICY_CACHE_DIRS];
+	int dirfd[MAX_POLICY_CACHE_OVERLAY_DIRS];
 };
 
 static int clear_cache_cb(int dirfd, const char *path, struct stat *st,
@@ -295,6 +295,52 @@ static int cache_dir_from_path_and_features(char **cache_path,
 	return 0;
 }
 
+static int open_or_create_cache_dir(aa_features *features, int dirfd,
+				    const char *path, bool create)
+{
+	autofree char *cache_dir = NULL;
+	int fd;
+
+	if (cache_dir_from_path_and_features(&cache_dir, dirfd, path,
+					     features))
+		return -1;
+
+open:
+	fd = openat(dirfd, cache_dir, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
+	if (fd < 0) {
+		/* does the dir exist? */
+		if (create && errno == ENOENT) {
+			/**
+			 * 1) Attempt to create the cache location, such as
+			 *    /etc/apparmor.d/cache.d/
+			 * 2) Attempt to create the cache directory, for the
+			 *    passed in aa_features, such as
+			 *    /etc/apparmor.d/cache.d/<features_id>/
+			 * 3) Try to reopen the cache directory
+			 */
+			if (mkdirat(fd, path, 0700) == -1 &&
+			    errno != EEXIST) {
+				PERROR("Can't create cache location '%s': %m\n",
+				       path);
+			} else if (mkdirat(dirfd, cache_dir, 0700) == -1 &&
+				   errno != EEXIST) {
+				PERROR("Can't create cache directory '%s': %m\n",
+				       cache_dir);
+			} else {
+				goto open;
+			}
+		} else if (create) {
+			PERROR("Can't update cache directory '%s': %m\n", cache_dir);
+		} else {
+			PDEBUG("Cache directory '%s' does not exist\n", cache_dir);
+		}
+
+		return -1;
+	}
+
+	return fd;
+}
+
 /**
  * aa_policy_cache_new - create a new aa_policy_cache object from a path
  * @policy_cache: will point to the address of an allocated and initialized
@@ -319,8 +365,7 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 	aa_policy_cache *pc;
 	bool create = max_caches > 0;
 	autofree const char *features_id = NULL;
-	autofree char *cache_dir = NULL;
-	int i;
+	int i, fd;
 
 	*policy_cache = NULL;
 
@@ -340,7 +385,7 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 		return -1;
 	}
 	pc->n = 0;
-	for (i = 0; i < MAX_POLICY_CACHE_DIRS; i++)
+	for (i = 0; i < MAX_POLICY_CACHE_OVERLAY_DIRS; i++)
 		pc->dirfd[i] = -1;
 	aa_policy_cache_ref(pc);
 
@@ -352,45 +397,12 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 	}
 	pc->features = kernel_features;
 
-	if (cache_dir_from_path_and_features(&cache_dir, dirfd, path,
-					     kernel_features)) {
+	fd = open_or_create_cache_dir(kernel_features, dirfd, path, create);
+	if (fd == -1) {
 		aa_policy_cache_unref(pc);
 		return -1;
 	}
-
-open:
-	pc->dirfd[0] = openat(dirfd, cache_dir, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
-	if (pc->dirfd[0] < 0) {
-		/* does the dir exist? */
-		if (create && errno == ENOENT) {
-			/**
-			 * 1) Attempt to create the cache location, such as
-			 *    /etc/apparmor.d/cache.d/
-			 * 2) Attempt to create the cache directory, for the
-			 *    passed in aa_features, such as
-			 *    /etc/apparmor.d/cache.d/<features_id>/
-			 * 3) Try to reopen the cache directory
-			 */
-			if (mkdirat(dirfd, path, 0700) == -1 &&
-			    errno != EEXIST) {
-				PERROR("Can't create cache location '%s': %m\n",
-				       path);
-			} else if (mkdirat(dirfd, cache_dir, 0700) == -1 &&
-				   errno != EEXIST) {
-				PERROR("Can't create cache directory '%s': %m\n",
-				       cache_dir);
-			} else {
-				goto open;
-			}
-		} else if (create) {
-			PERROR("Can't update cache directory '%s': %m\n", cache_dir);
-		} else {
-			PDEBUG("Cache directory '%s' does not exist\n", cache_dir);
-		}
-
-		aa_policy_cache_unref(pc);
-		return -1;
-	}
+	pc->dirfd[0] = fd;
 	pc->n = 1;
 
 	if (init_cache_features(pc, kernel_features, create)) {
@@ -401,6 +413,33 @@ open:
 
 	PDEBUG("%s: created policy_cache for dirfd '%d' name '%s' opened as pc->dirfd '%d'\n", __FUNCTION__, dirfd, cache_dir, pc->dirfd);
 	*policy_cache = pc;
+
+	return 0;
+}
+
+/**
+ * aa_policy_cache_add_ro_dir - add an readonly dir layer to the policy cache
+ * @policy_cache: policy_cache to add the readonly dir to
+ * @dirfd: directory file descriptor or AT_FDCWD (see openat(2))
+ * @path: path to the readonly policy cache
+ *
+ * Returns: 0 on success, -1 on error with errno set
+ */
+
+int aa_policy_cache_add_ro_dir(aa_policy_cache *policy_cache, int dirfd,
+			       const char *path)
+{
+	int fd;
+
+	if (policy_cache->n >= MAX_POLICY_CACHE_OVERLAY_DIRS) {
+		errno = ENOSPC;
+		return -1;
+	}
+	fd = open_or_create_cache_dir(policy_cache->features, dirfd, path,
+				      false);
+	if (fd == -1)
+		return -1;
+	policy_cache->dirfd[policy_cache->n++] = fd;
 
 	return 0;
 }
@@ -427,7 +466,7 @@ void aa_policy_cache_unref(aa_policy_cache *policy_cache)
 
 	if (policy_cache && atomic_dec_and_test(&policy_cache->ref_count)) {
 		aa_features_unref(policy_cache->features);
-		for (i = 0; i < MAX_POLICY_CACHE_DIRS; i++) {
+		for (i = 0; i < MAX_POLICY_CACHE_OVERLAY_DIRS; i++) {
 			if (policy_cache->dirfd[i] != -1)
 				close(policy_cache->dirfd[i]);
 		}
