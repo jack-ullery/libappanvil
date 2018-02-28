@@ -1164,7 +1164,7 @@ int main(int argc, char *argv[])
 			write_cache = 0;
 			skip_read_cache = 1;
 		} else {
-			cachedir = aa_policy_cache_dir_path(policy_cache);
+			cachedir = aa_policy_cache_dir_path(policy_cache, 0);
 			if (!cachedir) {
 				PERROR("Policy cache disabled: Cannot locate the policy cache directory: %m\n");
 
