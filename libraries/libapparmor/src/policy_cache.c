@@ -32,12 +32,14 @@
 #include "private.h"
 
 #define CACHE_FEATURES_FILE	".features"
+#define MAX_POLICY_CACHE_DIRS	4
 
 struct aa_policy_cache {
 	unsigned int ref_count;
 	aa_features *features;
 	aa_features *kernel_features;
-	int dirfd;
+	int n;
+	int dirfd[MAX_POLICY_CACHE_DIRS];
 };
 
 static int clear_cache_cb(int dirfd, const char *path, struct stat *st,
@@ -75,7 +77,7 @@ static int replace_all_cb(int dirfd unused, const char *name, struct stat *st,
 
 		data = (struct replace_all_cb_data *) cb_data;
 		retval = aa_kernel_interface_replace_policy_from_file(data->kernel_interface,
-								      data->policy_cache->dirfd,
+								      data->policy_cache->dirfd[0],
 								      name);
 	}
 
@@ -157,10 +159,10 @@ static int cache_check_features(int dirfd, const char *cache_name,
 
 static int create_cache(aa_policy_cache *policy_cache, aa_features *features)
 {
-	if (aa_policy_cache_remove(policy_cache->dirfd, "."))
+	if (aa_policy_cache_remove(policy_cache->dirfd[0], "."))
 		return -1;
 
-	if (aa_features_write_to_file(features, policy_cache->dirfd,
+	if (aa_features_write_to_file(features, policy_cache->dirfd[0],
 				      CACHE_FEATURES_FILE) == -1)
 		return -1;
 
@@ -172,7 +174,8 @@ static int create_cache(aa_policy_cache *policy_cache, aa_features *features)
 static int init_cache_features(aa_policy_cache *policy_cache,
 			       aa_features *kernel_features, bool create)
 {
-	if (cache_check_features(policy_cache->dirfd, ".", kernel_features)) {
+	if (cache_check_features(policy_cache->dirfd[0], ".",
+				 kernel_features)) {
 		/* EEXIST must come before ENOENT for short circuit eval */
 		if (!create || errno == EEXIST || errno != ENOENT)
 			return -1;
@@ -317,6 +320,7 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 	bool create = max_caches > 0;
 	autofree const char *features_id = NULL;
 	autofree char *cache_dir = NULL;
+	int i;
 
 	*policy_cache = NULL;
 
@@ -335,7 +339,9 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 		errno = ENOMEM;
 		return -1;
 	}
-	pc->dirfd = -1;
+	pc->n = 0;
+	for (i = 0; i < MAX_POLICY_CACHE_DIRS; i++)
+		pc->dirfd[i] = -1;
 	aa_policy_cache_ref(pc);
 
 	if (kernel_features) {
@@ -353,8 +359,8 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 	}
 
 open:
-	pc->dirfd = openat(dirfd, cache_dir, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
-	if (pc->dirfd < 0) {
+	pc->dirfd[0] = openat(dirfd, cache_dir, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
+	if (pc->dirfd[0] < 0) {
 		/* does the dir exist? */
 		if (create && errno == ENOENT) {
 			/**
@@ -385,6 +391,7 @@ open:
 		aa_policy_cache_unref(pc);
 		return -1;
 	}
+	pc->n = 1;
 
 	if (init_cache_features(pc, kernel_features, create)) {
 		PDEBUG("%s: failed init_cache_features for dirfd '%d' name '%s' opened as pc->dirfd '%d'\n", __FUNCTION__, dirfd, cache_dir, pc->dirfd);
@@ -416,12 +423,14 @@ aa_policy_cache *aa_policy_cache_ref(aa_policy_cache *policy_cache)
  */
 void aa_policy_cache_unref(aa_policy_cache *policy_cache)
 {
-	int save = errno;
+	int i, save = errno;
 
 	if (policy_cache && atomic_dec_and_test(&policy_cache->ref_count)) {
 		aa_features_unref(policy_cache->features);
-		if (policy_cache->dirfd != -1)
-			close(policy_cache->dirfd);
+		for (i = 0; i < MAX_POLICY_CACHE_DIRS; i++) {
+			if (policy_cache->dirfd[i] != -1)
+				close(policy_cache->dirfd[i]);
+		}
 		free(policy_cache);
 	}
 
@@ -467,7 +476,7 @@ int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
 
 	cb_data.policy_cache = policy_cache;
 	cb_data.kernel_interface = kernel_interface;
-	retval = _aa_dirat_for_each(policy_cache->dirfd, ".", &cb_data,
+	retval = _aa_dirat_for_each(policy_cache->dirfd[0], ".", &cb_data,
 				    replace_all_cb);
 
 	aa_kernel_interface_unref(kernel_interface);
@@ -476,15 +485,34 @@ int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
 }
 
 /**
+ * aa_policy_cache_no_dirs - return the number of dirs making up the cache
+ * @policy_cache: the policy_cache
+ *
+ * Returns: The number of directories that the policy cache is composed of
+ */
+int aa_policy_cache_no_dirs(aa_policy_cache *policy_cache)
+{
+	return policy_cache->n;
+}
+
+/**
  * aa_policy_cache_dir_path - returns the path to the aa_policy_cache directory
  * @policy_cache: the policy_cache
+ * @dir: which dir in the policy cache to return the name of
  *
  * Returns: The path to the policy cache directory on success, NULL on
  * error with errno set.
  */
-char *aa_policy_cache_dir_path(aa_policy_cache *policy_cache)
+char *aa_policy_cache_dir_path(aa_policy_cache *policy_cache, int dir)
 {
-	char *path = path_from_fd(policy_cache->dirfd);
+	char *path = NULL;
+
+	if (dir < 0 || dir >= policy_cache->n) {
+		PERROR("aa_policy_cache directory: %d does not exist\n", dir);
+		errno = ERANGE;
+	} else {
+		path = path_from_fd(policy_cache->dirfd[dir]);
+	}
 
 	if (!path)
 		PERROR("Can't return the path to the aa_policy_cache directory: %m\n");
