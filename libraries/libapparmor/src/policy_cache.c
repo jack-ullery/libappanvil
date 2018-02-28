@@ -128,8 +128,9 @@ static char *path_from_fd(int fd)
 static int cache_check_features(int dirfd, const char *cache_name,
 				aa_features *features)
 {
-	autofree aa_features *local_features = NULL; /* ingore ref count */
+	aa_features *local_features = NULL;
 	autofree char *name = NULL;
+	bool rc;
 	int len;
 
 	len = asprintf(&name, "%s/%s", cache_name, CACHE_FEATURES_FILE);
@@ -144,10 +145,13 @@ static int cache_check_features(int dirfd, const char *cache_name,
 		return -1;
 	}
 
-	if (!aa_features_is_equal(local_features, features)) {
+	rc = aa_features_is_equal(local_features, features);
+	aa_features_unref(local_features);
+	if (!rc) {
 		errno = EEXIST;
 		return -1;
 	}
+
 	return 0;
 }
 
@@ -168,30 +172,14 @@ static int create_cache(aa_policy_cache *policy_cache, aa_features *features)
 static int init_cache_features(aa_policy_cache *policy_cache,
 			       aa_features *kernel_features, bool create)
 {
-	bool call_create_cache = false;
-	aa_features *local_features;
-
-	if (aa_features_new(&local_features, policy_cache->dirfd,
-			    CACHE_FEATURES_FILE)) {
-		if (!create || errno != ENOENT)
+	if (cache_check_features(policy_cache->dirfd, ".", kernel_features)) {
+		/* EEXIST must come before ENOENT for short circuit eval */
+		if (!create || errno == EEXIST || errno != ENOENT)
 			return -1;
+	} else
+		return 0;
 
-		/* The cache directory needs to be created */
-		call_create_cache = true;
-	} else if (!aa_features_is_equal(local_features, kernel_features)) {
-		if (!create) {
-			aa_features_unref(local_features);
-			errno = EEXIST;
-			return -1;
-		}
-
-		/* The cache directory needs to be refreshed */
-		call_create_cache = true;
-	}
-
-	aa_features_unref(local_features);
-	return call_create_cache ?
-		create_cache(policy_cache, kernel_features) : 0;
+	return create_cache(policy_cache, kernel_features);
 }
 
 struct miss_cb_data {
