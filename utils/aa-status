@@ -76,8 +76,10 @@ def cmd_verbose():
         # Sort by name, and then by pid
         filtered_processes.sort(key=lambda x: int(x[0]))
         filtered_processes.sort(key=lambda x: x[1])
-        for (pid, process) in filtered_processes:
-            stdmsg("   %s (%s) " % (process, pid))
+        for (pid, profile, exe) in filtered_processes:
+            if exe == profile:
+                profile = ""
+            stdmsg("   %s (%s) %s" % (exe, pid, profile))
 
     if profiles == {}:
         sys.exit(2)
@@ -101,11 +103,12 @@ def cmd_json(pretty_output=False):
 
     for status in ('enforce', 'complain', 'unconfined'):
         filtered_processes = filter_processes(processes, status)
-        for (pid, process) in filtered_processes:
-            if process not in i['processes']:
-                i['processes'][process] = []
+        for (pid, profile, exe) in filtered_processes:
+            if exe not in i['processes']:
+                i['processes'][exe] = []
 
-            i['processes'][process].append({
+            i['processes'][exe].append({
+                'profile': profile,
                 'pid': pid,
                 'status': status
             })
@@ -161,12 +164,15 @@ def get_processes(profiles):
             try:
                 for p in open("/proc/%s/attr/current" % filename).readlines():
                     match = re.search("^([^\(]+)\s+\((\w+)\)$", p)
+                    exe = os.path.realpath("/proc/%s/exe" % filename)
                     if match:
                         processes[filename] = { 'profile' : match.group(1), \
+                                                'exe': exe, \
                                                 'mode' : match.group(2) }
-                    elif os.path.realpath("/proc/%s/exe" % filename) in profiles:
+                    elif exe in profiles:
                         # keep only unconfined processes that have a profile defined
-                        processes[filename] = { 'profile' : os.path.realpath("/proc/%s/exe" % filename), \
+                        processes[filename] = { 'profile' : exe, \
+                                                'exe': exe, \
                                                 'mode' : 'unconfined' }
             except:
                 pass
@@ -186,7 +192,7 @@ def filter_processes(processes, status):
     filtered = []
     for key, value in list(processes.items()):
         if value['mode'] == status:
-            filtered.append([key, value['profile']])
+            filtered.append([key, value['profile'], value['exe']])
     return filtered
 
 def find_apparmorfs():
