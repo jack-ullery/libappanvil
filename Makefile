@@ -56,6 +56,8 @@ coverity: snapshot
 	cd $(SNAPSHOT_NAME)/libraries/libapparmor && ./configure --with-python
 	$(foreach dir, $(filter-out utils profiles tests, $(DIRS)), \
 		cov-build --dir $(COVERITY_DIR) -- $(MAKE) -C $(SNAPSHOT_NAME)/$(dir);)
+	$(foreach dir, libraries/libapparmor utils, \
+		cov-build --dir $(COVERITY_DIR) --no-command --fs-capture-search $(SNAPSHOT_NAME)/$(dir);)
 	tar -cvzf $(SNAPSHOT_NAME)-$(COVERITY_DIR).tar.gz $(COVERITY_DIR)
 
 .PHONY: export_dir
