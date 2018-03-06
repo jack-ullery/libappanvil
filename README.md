@@ -1,7 +1,7 @@
 # AppArmor
 
-[![Build status](https://gitlab.com/gitlab-org/gitlab-ce/badges/master/build.svg)](https://gitlab.com/gitlab-org/gitlab-ce/commits/master)
-[![Overall test coverage](https://gitlab.com/gitlab-org/gitlab-ce/badges/master/coverage.svg)](https://gitlab.com/gitlab-org/gitlab-ce/pipelines)
+[![Build status](https://gitlab.com/apparmor/apparmor/badges/master/build.svg)](https://gitlab.com/apparmor/apparmor/commits/master)
+[![Overall test coverage](https://gitlab.com/apparmor/apparmor/badges/master/coverage.svg)](https://gitlab.com/apparmor/apparmor/pipelines)
 [![Core Infrastructure Initiative Best Practices](https://bestpractices.coreinfrastructure.org/projects/1699/badge)](https://bestpractices.coreinfrastructure.org/projects/1699)
 
 ------------
