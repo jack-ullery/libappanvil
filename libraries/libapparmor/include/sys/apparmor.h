@@ -197,6 +197,10 @@ extern int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
 				       aa_kernel_interface *kernel_interface);
 extern int aa_policy_cache_no_dirs(aa_policy_cache *policy_cache);
 extern char *aa_policy_cache_dir_path(aa_policy_cache *policy_cache, int n);
+extern int aa_policy_cache_dirfd(aa_policy_cache *policy_cache, int dir);
+extern int aa_policy_cache_open(aa_policy_cache *policy_cache, const char *name,
+				int flags);
+extern char *aa_policy_cache_filename(aa_policy_cache *policy_cache, const char *name);
 extern char *aa_policy_cache_dir_path_preview(aa_features *kernel_features,
 					      int dirfd, const char *path);
 

@@ -34,6 +34,8 @@ int _aa_asprintf(char **strp, const char *fmt, ...);
 
 int _aa_dirat_for_each(int dirfd, const char *name, void *data,
 		       int (* cb)(int, const char *, struct stat *, void *));
+int _aa_overlaydirat_for_each(int dirfd[], int n, void *data,
+			int (* cb)(int, const char *, struct stat *, void *));
 
 #ifdef __cplusplus
 }

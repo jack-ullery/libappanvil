@@ -67,17 +67,29 @@ struct replace_all_cb_data {
 	aa_kernel_interface *kernel_interface;
 };
 
-static int replace_all_cb(int dirfd unused, const char *name, struct stat *st,
+static int replace_all_cb(int dirfd, const char *name, struct stat *st,
 			 void *cb_data)
 {
 	int retval = 0;
 
-	if (!S_ISDIR(st->st_mode) && !_aa_is_blacklisted(name)) {
+	if (S_ISLNK(st->st_mode)) {
+		/*
+		 * symlinks in that cache are used to track file merging.
+		 * In the scanned overlay situation they can be skipped
+		 * as the combined entry will be one of none skipped
+		 * entries
+		 */
+	} else if (S_ISREG(st->st_mode) && st->st_size == 0) {
+		/*
+		 * empty file in the cache dir is used as a whiteout
+		 * to hide files in a lower layer. skip
+		 */
+	} else if (!S_ISDIR(st->st_mode) && !_aa_is_blacklisted(name)) {
 		struct replace_all_cb_data *data;
 
 		data = (struct replace_all_cb_data *) cb_data;
 		retval = aa_kernel_interface_replace_policy_from_file(data->kernel_interface,
-								      data->policy_cache->dirfd[0],
+								      dirfd,
 								      name);
 	}
 
@@ -515,8 +527,8 @@ int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
 
 	cb_data.policy_cache = policy_cache;
 	cb_data.kernel_interface = kernel_interface;
-	retval = _aa_dirat_for_each(policy_cache->dirfd[0], ".", &cb_data,
-				    replace_all_cb);
+	retval = _aa_overlaydirat_for_each(policy_cache->dirfd, policy_cache->n,
+					   &cb_data, replace_all_cb);
 
 	aa_kernel_interface_unref(kernel_interface);
 
@@ -555,6 +567,56 @@ char *aa_policy_cache_dir_path(aa_policy_cache *policy_cache, int dir)
 
 	if (!path)
 		PERROR("Can't return the path to the aa_policy_cache directory: %m\n");
+
+	return path;
+}
+
+/**
+ * aa_policy_cache_dirfd - returns the dirfd for a aa_policy_cache directory
+ * @policy_cache: the policy_cache
+ * @dir: which dir in the policy cache to return the dirfd of
+ *
+ * Returns: The dirfd to the @dir policy cache directory on success, -1 on
+ * error with errno set.
+ *
+ * caller is responsible for closing the returned dirfd
+ */
+int aa_policy_cache_dirfd(aa_policy_cache *policy_cache, int dir)
+{
+	if (dir < 0 || dir >= policy_cache->n) {
+		PERROR("aa_policy_cache directory: %d does not exist\n", dir);
+		errno = ERANGE;
+		return -1;
+	}
+
+	return dup(policy_cache->dirfd[dir]);
+}
+
+/* open cache file corresponding to name */
+int aa_policy_cache_open(aa_policy_cache *policy_cache, const char *name,
+			 int flags)
+{
+	int i, fd;
+
+	for (i = 0; i < policy_cache->n; i++) {
+		fd = openat(policy_cache->dirfd[i], name, flags);
+		if (fd != -1)
+			return fd;
+	}
+
+	return -1;
+}
+
+char *aa_policy_cache_filename(aa_policy_cache *policy_cache, const char *name)
+{
+	char *path;
+	autoclose int fd = aa_policy_cache_open(policy_cache, name, O_RDONLY);
+
+	if (fd == -1)
+		return NULL;
+	path = path_from_fd(fd);
+	if (!path)
+		PERROR("Can't return the path to the aa_policy_cache cachename: %m\n");
 
 	return path;
 }

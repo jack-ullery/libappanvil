@@ -235,6 +235,128 @@ out:
 	return rc;
 }
 
+
+#define max(a, b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a > _b ? _a : _b; })
+#define CHUNK 32
+struct overlaydir {
+	int dirfd;
+	struct dirent *dent;
+};
+
+static int insert(struct overlaydir **overlayptr, int *max_size, int *size,
+		  int pos, int remaining, int dirfd, struct dirent *ent)
+{
+	struct overlaydir *overlay = *overlayptr;
+	int i, chunk = max(remaining, CHUNK);
+
+	if (size + 1 >= max_size) {
+		struct overlaydir *tmp = reallocarray(overlay,
+						      *max_size + chunk,
+						      sizeof(*overlay));
+		if (tmp == NULL)
+			return -1;
+		overlay = tmp;
+	}
+	*max_size += chunk;
+	(*size)++;
+	for (i = *size; i > pos; i--)
+		overlay[i] = overlay[i - 1];
+	overlay[pos].dirfd = dirfd;
+	overlay[pos].dent = ent;
+
+	*overlayptr = overlay;
+	return 0;
+}
+
+#define merge(overlay, n_overlay, max_size, list, n_list, dirfd)	\
+({									\
+	int i, j;							\
+	int rc = 0;							\
+									\
+	for (i = 0, j = 0; i < n_overlay && j < n_list; ) {		\
+		int res = strcmp(overlay[i].dent->d_name, list[j]->d_name);\
+		if (res < 0) {						\
+			i++;						\
+			continue;					\
+		} else if (res == 0) {					\
+			free(list[j]);					\
+			list[j] = NULL;					\
+			i++;						\
+			j++;						\
+		} else {						\
+			if ((rc = insert(&overlay, &max_size, &n_overlay, i,\
+					 n_list - j, dirfd, list[j])))	\
+				goto fail;				\
+			i++;						\
+			list[j++] = NULL;				\
+		}							\
+	}								\
+	while (j < n_list) {						\
+		if ((rc = insert(&overlay, &max_size, &n_overlay, i,	\
+				 n_list - j, dirfd,list[j])))		\
+			goto fail;					\
+		i++;							\
+		list[j++] = NULL;					\
+	}								\
+									\
+fail:									\
+	rc;								\
+})
+
+int _aa_overlaydirat_for_each(int dirfd[], int n, void *data,
+			int (* cb)(int, const char *, struct stat *, void *))
+{
+	autofree struct dirent **list = NULL;
+	autofree struct overlaydir *overlay = NULL;
+	int i, k;
+	int n_list, size = 0, max_size = 0;
+	int rc = 0;
+
+	for (i = 0; i < n; i++) {
+		n_list = scandirat(dirfd[i], ".", &list, dot_or_dot_dot_filter,
+				   alphasort);
+		if (n_list == -1) {
+			PDEBUG("scandirat of dirfd[%d] failed: %m\n", i);
+			return -1;
+		}
+		if (merge(overlay, size, max_size, list, n_list, dirfd[i])) {
+			for (k = 0; k < n_list; k++)
+				free(list[i]);
+			for (k = 0; k < size; k++)
+				free(overlay[k].dent);
+			return -1;
+		}
+	}
+
+	for (rc = 0, i = 0; i < size; i++) {
+		/* Must cycle through all dirs so that each one is autofreed */
+		autofree struct dirent *dent = overlay[i].dent;
+		struct stat my_stat;
+
+		if (rc)
+			continue;
+
+		if (fstatat(overlay[i].dirfd, dent->d_name, &my_stat,
+			    AT_SYMLINK_NOFOLLOW)) {
+			PDEBUG("stat failed for '%s': %m\n", dent->d_name);
+			rc = -1;
+			continue;
+		}
+
+		if (cb(overlay[i].dirfd, dent->d_name, &my_stat, data)) {
+			PDEBUG("dir_for_each callback failed for '%s'\n",
+			       dent->d_name);
+			rc = -1;
+			continue;
+		}
+	}
+
+	return rc;
+}
+
 /**
  * _aa_dirat_for_each: iterate over a directory calling cb for each entry
  * @dirfd: already opened directory

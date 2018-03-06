@@ -95,10 +95,14 @@ APPARMOR_2.11 {
         *;
 } APPARMOR_2.10;
 
-APPARMOR_2.12 {
+APPARMOR_2.15 {
   global:
         aa_policy_cache_dir_path;
         aa_policy_cache_dir_path_preview;
+	aa_policy_cache_no_dirs;
+	aa_policy_cache_dirfd;
+	aa_policy_cache_open;
+	aa_policy_cache_filename;
         aa_features_id;
   local:
         *;
