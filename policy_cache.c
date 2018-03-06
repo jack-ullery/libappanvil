@@ -95,13 +95,15 @@ void update_mru_tstamp(FILE *file, const char *name)
 	}
 }
 
-char *cache_filename(const char *cachedir, const char *basename)
+char *cache_filename(aa_policy_cache *pc, int dir, const char *basename)
 {
 	char *cachename;
+	autofree char *path;
 
-	if (asprintf(&cachename, "%s/%s", cachedir, basename) < 0) {
+	path = aa_policy_cache_dir_path(pc, dir);
+	if (!path || asprintf(&cachename, "%s/%s", path, basename) < 0) {
 		PERROR("Memory allocation error.");
-		exit(1);
+		return NULL;
 	}
 
 	return cachename;

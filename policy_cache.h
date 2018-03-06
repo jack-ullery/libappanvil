@@ -41,7 +41,7 @@ extern int debug_cache;
 void set_cache_tstamp(struct timespec t);
 void update_mru_tstamp(FILE *file, const char *path);
 bool valid_cached_file_version(const char *cachename);
-char *cache_filename(const char *cachedir, const char *basename);
+char *cache_filename(aa_policy_cache *pc, int dir, const char *basename);
 void valid_read_cache(const char *cachename);
 int cache_hit(const char *cachename);
 int setup_cache_tmp(const char **cachetmpname, const char *cachename);
