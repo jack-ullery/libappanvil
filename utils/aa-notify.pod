@@ -92,6 +92,12 @@ System-wide configuration for B<aa-notify> is done via
   # only people in use_group can use aa-notify
   use_group="admin"
 
+  # OPTIONAL - custom notification message body
+  message_body="This is a custom notification message."
+
+  # OPTIONAL - custom notification message footer
+  message_footer="For more information visit https://foo.com"
+
 Per-user configuration is done via ~/.apparmor/notify.conf:
 
   # set to 'yes' to enable AppArmor DENIED notifications
