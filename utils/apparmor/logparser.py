@@ -12,6 +12,7 @@
 #    GNU General Public License for more details.
 #
 # ----------------------------------------------------------------------
+import ctypes
 import os
 import re
 import sys
@@ -118,7 +119,7 @@ class ReadLog:
         ev['protocol'] = event.net_protocol
         ev['sock_type'] = event.net_sock_type
 
-        if event.ouid != 18446744073709551615:  # 2^64 - 1
+        if event.ouid != ctypes.c_ulong(-1).value:  # ULONG_MAX
             ev['fsuid'] = event.fsuid
             ev['ouid'] = event.ouid
 
