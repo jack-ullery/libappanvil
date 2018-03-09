@@ -103,7 +103,8 @@ static char *apparmorfs = NULL;
 static char *cacheloc = NULL;
 static bool print_cache_dir = false;
 
-static aa_features *features = NULL;
+static aa_features *compile_features = NULL;
+static aa_features *kernel_features = NULL;
 
 /* Make sure to update BOTH the short and long_options */
 static const char *short_options = "ad::f:h::rRVvI:b:BCD:NSm:M:qQn:XKTWkL:O:po:j:";
@@ -125,6 +126,7 @@ struct option long_options[] = {
 	{"ofile",		1, 0, 'o'},
 	{"match-string",	1, 0, 'm'},
 	{"features-file",	1, 0, 'M'},
+	{"kernel-features",	1, 0, 138},	/* no short option */
 	{"quiet",		0, 0, 'q'},
 	{"skip-kernel-load",	0, 0, 'Q'},
 	{"verbose",		0, 0, 'v'},
@@ -180,7 +182,8 @@ static void display_usage(const char *command)
 	       "-I n, --Include n	Add n to the search path\n"
 	       "-f n, --subdomainfs n	Set location of apparmor filesystem\n"
 	       "-m n, --match-string n  Use only features n\n"
-	       "-M n, --features-file n Use only features in file n\n"
+	       "-M n, --features-file n Compile features set in file n\n"
+	       "--kernel-features n     Kernel features set in file n\n"
 	       "-n n, --namespace n	Set Namespace for the profile\n"
 	       "-X, --readimpliesX	Map profile read permissions to mr\n"
 	       "-k, --show-cache	Report cache hit/miss details\n"
@@ -451,7 +454,7 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'm':
-		if (aa_features_new_from_string(&features,
+		if (aa_features_new_from_string(&compile_features,
 						optarg, strlen(optarg))) {
 			fprintf(stderr,
 				"Failed to parse features string: %m\n");
@@ -459,9 +462,17 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'M':
-		if (aa_features_new(&features, AT_FDCWD, optarg)) {
+		if (aa_features_new(&compile_features, AT_FDCWD, optarg)) {
 			fprintf(stderr,
 				"Failed to load features from '%s': %m\n",
+				optarg);
+			exit(1);
+		}
+		break;
+	case 138:
+		if (aa_features_new(&kernel_features, AT_FDCWD, optarg)) {
+			fprintf(stderr,
+				"Failed to load kernel features from '%s': %m\n",
 				optarg);
 			exit(1);
 		}
@@ -627,33 +638,37 @@ no_match:
 	perms_create = 1;
 }
 
-static void set_supported_features(void)
+static void set_supported_features(aa_features *kernel_features unused)
 {
 	/* has process_args() already assigned a match string? */
-	if (!features && aa_features_new_from_kernel(&features) == -1) {
+	if (!compile_features && aa_features_new_from_kernel(&compile_features) == -1) {
 		set_features_by_match_file();
 		return;
 	}
 
+	/*
+	 * TODO: intersect with actual kernel features to get proper
+	 * rule down grades for a give kernel
+	 */
 	perms_create = 1;
-	kernel_supports_policydb = aa_features_supports(features, "file");
-	kernel_supports_network = aa_features_supports(features, "network");
-	kernel_supports_unix = aa_features_supports(features,
+	kernel_supports_policydb = aa_features_supports(compile_features, "file");
+	kernel_supports_network = aa_features_supports(compile_features, "network");
+	kernel_supports_unix = aa_features_supports(compile_features,
 						    "network/af_unix");
-	kernel_supports_mount = aa_features_supports(features, "mount");
-	kernel_supports_dbus = aa_features_supports(features, "dbus");
-	kernel_supports_signal = aa_features_supports(features, "signal");
-	kernel_supports_ptrace = aa_features_supports(features, "ptrace");
-	kernel_supports_setload = aa_features_supports(features,
+	kernel_supports_mount = aa_features_supports(compile_features, "mount");
+	kernel_supports_dbus = aa_features_supports(compile_features, "dbus");
+	kernel_supports_signal = aa_features_supports(compile_features, "signal");
+	kernel_supports_ptrace = aa_features_supports(compile_features, "ptrace");
+	kernel_supports_setload = aa_features_supports(compile_features,
 						       "policy/set_load");
-	kernel_supports_diff_encode = aa_features_supports(features,
+	kernel_supports_diff_encode = aa_features_supports(compile_features,
 							   "policy/diff_encode");
-	kernel_supports_stacking = aa_features_supports(features,
+	kernel_supports_stacking = aa_features_supports(compile_features,
 							"domain/stack");
 
-	if (aa_features_supports(features, "policy/versions/v7"))
+	if (aa_features_supports(compile_features, "policy/versions/v7"))
 		kernel_abi_version = 7;
-	else if (aa_features_supports(features, "policy/versions/v6"))
+	else if (aa_features_supports(compile_features, "policy/versions/v6"))
 		kernel_abi_version = 6;
 
 	if (!kernel_supports_diff_encode)
@@ -1078,17 +1093,17 @@ static int binary_dir_cb(int dirfd unused, const char *name, struct stat *st,
 
 static void setup_flags(void)
 {
-	/* Get the match string to determine type of regex support needed */
-	set_supported_features();
-
 	/* Gracefully handle AppArmor kernel without compatibility patch */
-	if (!features) {
+	if (!kernel_features && aa_features_new_from_kernel(&kernel_features) == -1) {
 		PERROR("Cache read/write disabled: interface file missing. "
 			"(Kernel needs AppArmor 2.4 compatibility patch.)\n");
 		write_cache = 0;
 		skip_read_cache = 1;
 		return;
 	}
+
+	/* Get the match string to determine type of regex support needed */
+	set_supported_features(kernel_features);
 }
 
 int main(int argc, char *argv[])
@@ -1124,7 +1139,7 @@ int main(int argc, char *argv[])
 	setup_flags();
 
 	if (!(UNPRIVILEGED_OPS) &&
-	    aa_kernel_interface_new(&kernel_interface, features, apparmorfs) == -1) {
+	    aa_kernel_interface_new(&kernel_interface, kernel_features, apparmorfs) == -1) {
 		PERROR(_("Warning: unable to find a suitable fs in %s, is it "
 		       "mounted?\nUse --subdomainfs to override.\n"),
 		       MOUNTED_FS);
@@ -1141,7 +1156,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (print_cache_dir)
-			return do_print_cache_dir(features, AT_FDCWD,
+			return do_print_cache_dir(kernel_features, AT_FDCWD,
 						  cacheloc) ? 0 : 1;
 
 		if (force_clear_cache) {
@@ -1157,7 +1172,7 @@ int main(int argc, char *argv[])
 		if (create_cache_dir)
 			pwarn(_("The --create-cache-dir option is deprecated. Please use --write-cache.\n"));
 
-		retval = aa_policy_cache_new(&policy_cache, features,
+		retval = aa_policy_cache_new(&policy_cache, kernel_features,
 					     AT_FDCWD, cacheloc, max_caches);
 		if (retval) {
 			if (errno != ENOENT && errno != EEXIST && errno != EROFS) {
