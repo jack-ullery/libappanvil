@@ -233,8 +233,21 @@ inconsistent state
 
 =item -L, --cache-loc
 
-Set the location of the cache directory.  If not specified the cache location
-defaults to /etc/apparmor.d/cache.d
+Set the location(s) of the cache directory. This option can accept a
+comma separated list of directories, which will be searched in order
+to find a matching cache. The first matching cache file found is used
+even if a directory later in the search order may contain a newer cache
+file.
+
+If multiple directories are specified and --write-cache has been specified
+then cache writes will be made to the first directory in the list, all
+other directories will be treated as read only.
+
+If a cache directory name needs to have a comma as part of the name, it
+can be specified by using a backslash to escape the comma character in
+the directory name.
+
+If not specified the cache location defaults to /etc/apparmor.d/cache.d
 
 =item --print-cache-dir
 

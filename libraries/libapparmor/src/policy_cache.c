@@ -392,11 +392,7 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 		return -1;
 	}
 
-	if (max_caches > 1) {
-		errno = ENOTSUP;
-		return -1;
-	}
-
+	/* TODO: currently no reaping of caches in excess of max_caches */
 	pc = calloc(1, sizeof(*pc));
 	if (!pc) {
 		errno = ENOMEM;

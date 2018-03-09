@@ -97,10 +97,13 @@ long jobs_scale = 0;			/* number of chance to resample online
 					 */
 bool debug_jobs = false;
 
+#define MAX_CACHE_LOCS 4
+
 struct timespec cache_tstamp, mru_policy_tstamp;
 
 static char *apparmorfs = NULL;
-static char *cacheloc = NULL;
+static char *cacheloc[MAX_CACHE_LOCS];
+static int cacheloc_n = 0;
 static bool print_cache_dir = false;
 
 static aa_features *compile_features = NULL;
@@ -194,7 +197,7 @@ static void display_usage(const char *command)
 	       "    --purge-cache	Clear cache regardless of its state\n"
 	       "    --debug-cache       Debug cache file checks\n"
 	       "    --print-cache_dir	Print the cache directory path\n"
-	       "-L, --cache-loc n	Set the location of the profile cache\n"
+	       "-L, --cache-loc n	Set the location of the profile caches\n"
 	       "-q, --quiet		Don't emit warnings\n"
 	       "-v, --verbose		Show profile names as they load\n"
 	       "-Q, --skip-kernel-load	Do everything except loading into kernel\n"
@@ -226,6 +229,51 @@ void display_warn(const char *command)
 	       "--------\n"
 	       ,command);
 	print_flag_table(warnflag_table);
+}
+
+/* Parse comma separated cachelocations. Commas can be escaped by \, */
+static int parse_cacheloc(const char *arg, char **cacheloc, int max_size)
+{
+	const char *s = arg;
+	const char *p = arg;
+	int n = 0;
+
+	while(*p) {
+		if (*p == '\\') {
+			if (*(p + 1) != 0)
+				p++;
+		} else if (*p == ',') {
+			if (p != s) {
+				if (n == max_size) {
+					errno = E2BIG;
+					return -1;
+				}
+				cacheloc[n] = (char *) malloc(p - s + 1);
+				if (cacheloc[n] == NULL)
+					return -1;
+				memcpy(cacheloc[n], s, p - s);
+				cacheloc[n][p - s] = 0;
+				n++;
+			}
+			p++;
+			s = p;
+		} else
+			p++;
+	}
+	if (p != s) {
+		if (n == max_size) {
+			errno = E2BIG;
+			return -1;
+		}
+		cacheloc[n] = (char *) malloc(p - s + 1);
+		if (cacheloc[n] == NULL)
+			return -1;
+		memcpy(cacheloc[n], s, p - s);
+		cacheloc[n][p - s] = 0;
+		n++;
+	}
+
+	return n;
 }
 
 /* Treat conf file like options passed on command line
@@ -520,7 +568,11 @@ static int process_arg(int c, char *optarg)
 		skip_bad_cache_rebuild = 1;
 		break;
 	case 'L':
-		cacheloc = strdup(optarg);
+		cacheloc_n = parse_cacheloc(optarg, cacheloc, MAX_CACHE_LOCS);
+		if (cacheloc_n == -1) {
+			PERROR("%s: Invalid --cacheloc option '%s' %m\n", progname, optarg);
+			exit(1);
+		}
 		break;
 	case 'Q':
 		kernel_load = 0;
@@ -690,6 +742,19 @@ static bool do_print_cache_dir(aa_features *features, int dirfd, const char *pat
 	return true;
 }
 
+static bool do_print_cache_dirs(aa_features *features, char **cacheloc,
+				int cacheloc_n)
+{
+	int i;
+
+	for (i = 0; i < cacheloc_n; i++) {
+		if (!do_print_cache_dir(features, AT_FDCWD, cacheloc[i]))
+			return false;
+	}
+
+	return true;
+}
+
 int process_binary(int option, aa_kernel_interface *kernel_interface,
 		   const char *profilename)
 {
@@ -821,9 +886,14 @@ int process_profile(int option, aa_kernel_interface *kernel_interface,
 		if (!force_complain && pc) {
 			cachename = aa_policy_cache_filename(pc, basename);
 			if (!cachename) {
-				PERROR("Could not get cachename for '%s'\n", basename);
-			} else
+				autoclose int fd = aa_policy_cache_open(pc,
+								basename,
+								O_RDONLY);
+				if (fd != -1)
+					pwarn(_("Could not get cachename for '%s'\n"), basename);
+			} else {
 				valid_read_cache(cachename);
+			}
 		}
 
 	}
@@ -890,15 +960,15 @@ int process_profile(int option, aa_kernel_interface *kernel_interface,
 		goto out;
 	}
 
-	if (pc && write_cache) {
+	if (pc && write_cache && !force_complain) {
 		writecachename = cache_filename(pc, 0, basename);
 		if (!writecachename) {
-			PERROR("Cache write disabled: Cannot create cache file name '%s': %m\n", basename);
+			pwarn("Cache write disabled: Cannot create cache file name '%s': %m\n", basename);
 			write_cache = 0;
 		}
 		cachetmp = setup_cache_tmp(&cachetmpname, writecachename);
 		if (cachetmp == -1) {
-			PERROR("Cache write disabled: Cannot create setup tmp cache file '%s': %m\n", writecachename);
+			pwarn("Cache write disabled: Cannot create setup tmp cache file '%s': %m\n", writecachename);
 			write_cache = 0;
 		}
 	}
@@ -907,7 +977,7 @@ int process_profile(int option, aa_kernel_interface *kernel_interface,
 	if (retval == 0 && write_cache) {
 		if (cachetmp == -1) {
 			unlink(cachetmpname);
-			PERROR("Warning failed to create cache: %s\n",
+			pwarn("Warning failed to create cache: %s\n",
 			       basename);
 		} else {
 			install_cache(cachetmpname, writecachename);
@@ -1148,21 +1218,27 @@ int main(int argc, char *argv[])
 
 	if ((!skip_cache && (write_cache || !skip_read_cache)) ||
 	    print_cache_dir || force_clear_cache) {
-		uint16_t max_caches = write_cache && cond_clear_cache ? 1 : 0;
+		uint16_t max_caches = write_cache && cond_clear_cache ? (uint16_t) (-1) : 0;
 
-		if (!cacheloc && asprintf(&cacheloc, "%s/cache.d", basedir) == -1) {
-			PERROR(_("Memory allocation error."));
-			return 1;
+		if (!cacheloc[0]) {
+			char *tmp;
+
+			if (asprintf(&tmp, "%s/cache.d", basedir) == -1) {
+				PERROR(_("Memory allocation error."));
+				return 1;
+			}
+			cacheloc[0] = tmp;
+			cacheloc_n = 1;
 		}
-
 		if (print_cache_dir)
-			return do_print_cache_dir(kernel_features, AT_FDCWD,
-						  cacheloc) ? 0 : 1;
+			return do_print_cache_dirs(kernel_features, cacheloc,
+						   cacheloc_n) ? 0 : 1;
 
 		if (force_clear_cache) {
-			if (aa_policy_cache_remove(AT_FDCWD, cacheloc)) {
+			/* only ever write to the first cacheloc location */
+			if (aa_policy_cache_remove(AT_FDCWD, cacheloc[0])) {
 				PERROR(_("Failed to clear cache files (%s): %s\n"),
-				       cacheloc, strerror(errno));
+				       cacheloc[0], strerror(errno));
 				return 1;
 			}
 
@@ -1173,24 +1249,33 @@ int main(int argc, char *argv[])
 			pwarn(_("The --create-cache-dir option is deprecated. Please use --write-cache.\n"));
 
 		retval = aa_policy_cache_new(&policy_cache, kernel_features,
-					     AT_FDCWD, cacheloc, max_caches);
+					     AT_FDCWD, cacheloc[0], max_caches);
 		if (retval) {
 			if (errno != ENOENT && errno != EEXIST && errno != EROFS) {
 				PERROR(_("Failed setting up policy cache (%s): %s\n"),
-				       cacheloc, strerror(errno));
+				       cacheloc[0], strerror(errno));
 				return 1;
 			}
 
 			if (show_cache) {
 				if (max_caches > 0)
 					PERROR("Cache write disabled: Cannot create cache '%s': %m\n",
-					       cacheloc);
+					       cacheloc[0]);
 				else
-					PERROR("Cache read/write disabled: Policy cache is invalid\n");
+					PERROR("Cache read/write disabled: Policy cache is invalid: %m\n");
 			}
 
 			write_cache = 0;
-			skip_read_cache = 1;
+		} else {
+			if (show_cache)
+				PERROR("Cache: added primary location '%s'\n", cacheloc[0]);
+			for (i = 1; i < cacheloc_n; i++) {
+				if (aa_policy_cache_add_ro_dir(policy_cache, AT_FDCWD,
+							       cacheloc[i])) {
+					pwarn("Cache: failed to add read only location '%s', does not contain valid cache directory for the specified feature set\n", cacheloc[i]);
+				} else if (show_cache)
+					pwarn("Cache: added readonly location '%s'\n", cacheloc[i]);
+			}
 		}
 	}
 
