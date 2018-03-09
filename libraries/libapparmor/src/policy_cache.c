@@ -102,7 +102,7 @@ static char *path_from_fd(int fd)
 	autoclose int proc_fd = -1;
 	struct stat proc_stat;
 	char *path;
-	ssize_t path_len;
+	ssize_t size, path_len;
 
 	if (asprintf(&proc_path, "/proc/self/fd/%d", fd) == -1) {
 		proc_path = NULL;
@@ -122,7 +122,9 @@ static char *path_from_fd(int fd)
 		return NULL;
 	}
 
-	path = malloc(proc_stat.st_size + 1);
+	size = proc_stat.st_size;
+repeat:
+	path = malloc(size + 1);
 	if (!path)
 		return NULL;
 
@@ -131,10 +133,14 @@ static char *path_from_fd(int fd)
 	 * (O_PATH | O_NOFOLLOW) can be used as the dirfd with an empty string
 	 * as the path. readlinkat() will operate on the symlink inode.
 	 */
-	path_len = readlinkat(proc_fd, "", path, proc_stat.st_size);
+	path_len = readlinkat(proc_fd, "", path, size);
 	if (path_len == -1)
 		return NULL;
-
+	if (path_len == size) {
+		free(path);
+		size = size * 2;
+		goto repeat;
+	}
 	path[path_len] = '\0';
 	return path;
 }
