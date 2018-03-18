@@ -2,6 +2,8 @@
 #    Copyright (c) 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007
 #    NOVELL (All rights reserved)
 #
+#    Copyright (c) Christian Boltz 2018
+#
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
 #    License published by the Free Software Foundation.
@@ -22,6 +24,7 @@ include $(COMMONDIR)/Make.rules
 
 DESTDIR=/
 APPARMOR_BIN_PREFIX=${DESTDIR}/lib/apparmor
+SYSTEMD_UNIT_DIR=${DESTDIR}/usr/lib/systemd/system
 CONFDIR=/etc/apparmor
 INSTALL_CONFDIR=${DESTDIR}${CONFDIR}
 LOCALEDIR=/usr/share/locale
@@ -314,7 +317,7 @@ install-redhat:
 	install -m 755 rc.apparmor.$(subst install-,,$@) $(DESTDIR)/etc/init.d/apparmor
 
 .PHONY: install-suse
-install-suse:
+install-suse: install-systemd
 	install -m 755 -d $(DESTDIR)/sbin
 	ln -sf service $(DESTDIR)/sbin/rcapparmor
 
@@ -375,6 +378,14 @@ install-indep: indep
 	install -m 755 rc.apparmor.functions $(APPARMOR_BIN_PREFIX)
 	$(MAKE) -C po install NAME=${NAME} DESTDIR=${DESTDIR}
 	$(MAKE) install_manpages DESTDIR=${DESTDIR}
+
+.PHONY: install-systemd
+install-systemd:
+	install -m 755 -d $(SYSTEMD_UNIT_DIR)
+	install -m 644 apparmor.service $(SYSTEMD_UNIT_DIR)
+	install -m 644 apparmor.systemd $(APPARMOR_BIN_PREFIX)
+	install -m 755 -d $(DESTDIR)/sbin
+	install -m 755 aa-teardown $(DESTDIR)/sbin
 
 ifndef VERBOSE
 .SILENT: clean
