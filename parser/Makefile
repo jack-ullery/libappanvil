@@ -315,11 +315,8 @@ install-redhat:
 
 .PHONY: install-suse
 install-suse:
-	install -m 755 -d $(DESTDIR)/etc/init.d
-	install -m 755 rc.apparmor.$(subst install-,,$(@)) $(DESTDIR)/etc/init.d/boot.apparmor
 	install -m 755 -d $(DESTDIR)/sbin
-	ln -sf /etc/init.d/boot.apparmor $(DESTDIR)/sbin/rcapparmor
-	ln -sf rcapparmor $(DESTDIR)/sbin/rcsubdomain
+	ln -sf service $(DESTDIR)/sbin/rcapparmor
 
 .PHONY: install-slackware
 install-slackware:
