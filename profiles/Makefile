@@ -34,6 +34,9 @@ EXTRAS_SOURCE=./apparmor/profiles/extras/
 SUBDIRS=$(shell find ${PROFILES_SOURCE} -type d -print)
 TOPLEVEL_PROFILES=$(filter-out ${SUBDIRS}, $(wildcard ${PROFILES_SOURCE}/*))
 
+# $(PWD) is wrong when using "make -C profiles" - explicitely set it here to get the right value
+PWD=$(shell pwd)
+
 local:
 	for profile in ${TOPLEVEL_PROFILES}; do \
 		fn=$$(basename $$profile); \
