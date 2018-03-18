@@ -28,7 +28,7 @@ SYSTEMD_UNIT_DIR=${DESTDIR}/usr/lib/systemd/system
 CONFDIR=/etc/apparmor
 INSTALL_CONFDIR=${DESTDIR}${CONFDIR}
 LOCALEDIR=/usr/share/locale
-MANPAGES=apparmor.d.5 apparmor.7 apparmor_parser.8 subdomain.conf.5
+MANPAGES=apparmor.d.5 apparmor.7 apparmor_parser.8 subdomain.conf.5 aa-teardown.8
 
 YACC	:= /usr/bin/bison
 YFLAGS	:= -d
