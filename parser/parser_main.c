@@ -329,7 +329,7 @@ static int process_arg(int c, char *optarg)
 	switch (c) {
 	case 0:
 		PERROR("Assert, in getopt_long handling\n");
-		exit(0);
+		exit(1);
 		break;
 	case 'a':
 		count++;
