@@ -2,7 +2,7 @@
  *   Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
  *   NOVELL (All rights reserved)
  *
- *   Copyright (c) 2010 - 2013
+ *   Copyright (c) 2010 - 2018
  *   Canonical Ltd. (All rights reserved)
  *
  *   This program is free software; you can redistribute it and/or
@@ -60,7 +60,7 @@
 #define UNPRIVILEGED_OPS (!(PRIVILEGED_OPS))
 
 const char *parser_title	= "AppArmor parser";
-const char *parser_copyright	= "Copyright (C) 1999-2008 Novell Inc.\nCopyright 2009-2012 Canonical Ltd.";
+const char *parser_copyright	= "Copyright (C) 1999-2008 Novell Inc.\nCopyright 2009-2018 Canonical Ltd.";
 
 int opt_force_complain = 0;
 int binary_input = 0;
