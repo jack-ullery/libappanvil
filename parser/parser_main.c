@@ -329,7 +329,6 @@ static int process_arg(int c, char *optarg)
 	switch (c) {
 	case 0:
 		PERROR("Assert, in getopt_long handling\n");
-		display_usage(progname);
 		exit(0);
 		break;
 	case 'a':
@@ -537,7 +536,7 @@ static int process_arg(int c, char *optarg)
 		jobs_max = process_jobs_arg("max-jobs", optarg);
 		break;
 	default:
-		display_usage(progname);
+		/* 'unrecognized option' error message gets printed by getopt_long() */
 		exit(1);
 		break;
 	}
@@ -559,7 +558,6 @@ static int process_args(int argc, char *argv[])
 	if (count > 1) {
 		PERROR("%s: Too many actions given on the command line.\n",
 		       progname);
-		display_usage(progname);
 		exit(1);
 	}
 
@@ -592,7 +590,6 @@ int have_enough_privilege(void)
 	if (uid != 0 && euid != 0) {
 		PERROR(_("%s: Sorry. You need root privileges to run this program.\n\n"),
 		       progname);
-		display_usage(progname);
 		return EPERM;
 	}
 
