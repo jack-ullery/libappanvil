@@ -20,6 +20,13 @@ profile postfix-master /usr/lib/postfix/{sbin/,}master {
   capability kill,
   capability dac_override,
 
+  signal send peer=/usr/lib/postfix/*,
+  signal send peer=postfix-*,
+  signal peer=@{profile_name},
+
+  unix (send receive) type=stream peer=(label=/usr/lib/postfix/*),
+  unix (send receive) type=stream peer=(label=postfix-*),
+
   /etc/postfix/master.cf                       r,
   /{var/spool/postfix/,}pid/master.pid            rwk,
   /{var/spool/postfix/,}private/*                 wl,
