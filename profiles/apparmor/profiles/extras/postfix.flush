@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
+#    Copyright (C) 2018 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -10,7 +11,7 @@
 
 #include <tunables/global>
 
-/usr/lib/postfix/flush {
+profile postfix-flush /usr/lib/postfix/{sbin/,}flush {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
@@ -18,7 +19,7 @@
   capability setgid,
   capability setuid,
 
-  /usr/lib/postfix/flush                      rmix,
+  /usr/lib/postfix/{sbin/,}flush                  rmix,
 
   /{var/spool/postfix/,}deferred/                    r,
   /{var/spool/postfix/,}deferred/[0-9A-F]/[0-9A-F]/* rwl,

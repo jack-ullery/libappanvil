@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
+#    Copyright (C) 2018 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -10,7 +11,7 @@
 
 #include <tunables/global>
 
-/usr/lib/postfix/bounce {
+profile postfix-bounce /usr/lib/postfix/{sbin/,}bounce {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
@@ -18,7 +19,7 @@
   capability setgid,
   capability setuid,
 
-  /usr/lib/postfix/bounce                      rmix,
+  /usr/lib/postfix/{sbin/,}bounce                               rmix,
 
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/*                 rwl,
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/                  rwl,

@@ -1,25 +1,24 @@
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2002-2006 Novell/SUSE
+#    Copyright (C) 2002-2005 Novell/SUSE
+#    Copyright (C) 2018 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
+# vim:syntax=apparmor
+# Last Modified: Tue May 31 09:46:20 2005
 
 #include <tunables/global>
 
-/usr/lib/postfix/trivial-rewrite {
+profile postfix-scache /usr/lib/postfix/{sbin/,}scache {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  /usr/lib/postfix/trivial-rewrite            rmix,
+  /usr/lib/postfix/{sbin/,}scache rmix,
 
-  /etc/postfix/relocated.db                   r,
-  /etc/postfix/transport.db                   r,
-  /etc/postfix/virtual.db                     r,
-  /etc/{m,fs}tab                              r,
-  /var/spool/postfix/pid/unix.rewrite         rw,
+  /{,var/}run/nscd/group r,
 }

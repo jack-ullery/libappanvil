@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
+#    Copyright (C) 2018 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -10,15 +11,16 @@
 
 #include <tunables/global>
 
-/usr/lib/postfix/pickup {
+profile postfix-trivial-rewrite /usr/lib/postfix/{sbin/,}trivial-rewrite {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  /usr/lib/postfix/pickup                     rmix,
+  /usr/lib/postfix/{sbin/,}trivial-rewrite    rmix,
 
-  /{var/spool/postfix/,}public/cleanup           w,
-  /{var/spool/postfix/,}public/pickup            r,
-  /{var/spool/postfix/,}maildrop/                r,
-  /{var/spool/postfix/,}maildrop/*               rwl,
+  /etc/postfix/relocated.db                   r,
+  /etc/postfix/transport.db                   r,
+  /etc/postfix/virtual.db                     r,
+  /etc/{m,fs}tab                              r,
+  /var/spool/postfix/pid/unix.rewrite         rw,
 }

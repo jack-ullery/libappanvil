@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
+#    Copyright (C) 2018 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -10,7 +11,7 @@
 
 #include <tunables/global>
 
-/usr/lib/postfix/anvil {
+profile postfix-proxymap /usr/lib/postfix/{sbin/,}proxymap {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
@@ -18,10 +19,8 @@
   capability setgid,
   capability setuid,
 
-  /usr/lib/postfix/anvil                      rmix,
+  /usr/lib/postfix/{sbin/,}proxymap     rmix,
 
-  /etc/postfix/main.cf                        r,
-  /{var/spool/postfix/,}private/anvil         rw,
-  /{var/spool/postfix/,}pid/unix.anvil        rw,
-  @{PROC}/net/if_inet6                        r,
+  /etc/postfix/main.cf          r,
+  @{PROC}/net/if_inet6          r,
 }
