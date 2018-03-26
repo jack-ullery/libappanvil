@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
-#    Copyright (C) 2015 Canonical, Ltd.
+#    Copyright (C) 2015-2018 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -16,9 +16,9 @@
   capability            sys_chroot,
 
   # postfix's master can send us signals
-  signal receive peer=/usr/lib/postfix/master,
+  signal receive peer=postfix-master,
 
-  unix (send, receive) peer=(label=/usr/lib/postfix/master),
+  unix (send, receive) peer=(label=postfix-master),
 
   /etc/mailname         r,
   /etc/postfix/*.cf     r,
