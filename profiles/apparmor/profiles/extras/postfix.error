@@ -19,7 +19,6 @@ profile postfix-error /usr/lib/postfix/{sbin/,}error {
 
   /usr/lib/postfix/{sbin/,}error rmix,
 
-  @{PROC}/sys/kernel/ngroups_max r,
   owner /var/spool/postfix/active/* rwk,
   /var/spool/postfix/pid/unix.error rwk,
   /var/spool/postfix/pid/unix.retry rwk,

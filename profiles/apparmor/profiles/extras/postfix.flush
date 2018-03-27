@@ -16,9 +16,6 @@ profile postfix-flush /usr/lib/postfix/{sbin/,}flush {
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  capability setgid,
-  capability setuid,
-
   /usr/lib/postfix/{sbin/,}flush                  rmix,
 
   /{var/spool/postfix/,}deferred/                    r,
@@ -36,8 +33,6 @@ profile postfix-flush /usr/lib/postfix/{sbin/,}flush {
   /{var/spool/postfix/,}public/qmgr                  w,
   /{var/spool/postfix/,}pid/unix.flush               rw,
   /etc/mtab                                          r,
-  /etc/postfix/main.cf                        r,
-  /etc/postfix/virtual.db                     r,
 
   @{HOME}/.forward                            r,
 

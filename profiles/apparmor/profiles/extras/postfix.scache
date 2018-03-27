@@ -19,6 +19,4 @@ profile postfix-scache /usr/lib/postfix/{sbin/,}scache {
   #include <abstractions/postfix-common>
 
   /usr/lib/postfix/{sbin/,}scache rmix,
-
-  /{,var/}run/nscd/group r,
 }

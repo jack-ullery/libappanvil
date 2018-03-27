@@ -16,9 +16,6 @@ profile postfix-bounce /usr/lib/postfix/{sbin/,}bounce {
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  capability setgid,
-  capability setuid,
-
   /usr/lib/postfix/{sbin/,}bounce                               rmix,
 
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/*                 rwl,
@@ -40,7 +37,4 @@ profile postfix-bounce /usr/lib/postfix/{sbin/,}bounce {
   /{var/spool/postfix/,}pid/unix.bounce          rw,
   /{var/spool/postfix/,}pid/unix.defer           rw,
   /{var/spool/postfix/,}pid/unix.trace           rw,
-
-  /etc/postfix/main.cf                        r,
-  @{PROC}/net/if_inet6                        r,
 }

@@ -16,9 +16,6 @@ profile postfix-virtual /usr/lib/postfix/{sbin/,}virtual {
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  capability setgid,
-  capability setuid,
-
   /usr/lib/postfix/{sbin/,}virtual rmix,
 
   /var/spool/postfix/active/* rw,

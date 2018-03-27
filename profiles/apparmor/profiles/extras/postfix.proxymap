@@ -16,11 +16,5 @@ profile postfix-proxymap /usr/lib/postfix/{sbin/,}proxymap {
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  capability setgid,
-  capability setuid,
-
   /usr/lib/postfix/{sbin/,}proxymap     rmix,
-
-  /etc/postfix/main.cf          r,
-  @{PROC}/net/if_inet6          r,
 }

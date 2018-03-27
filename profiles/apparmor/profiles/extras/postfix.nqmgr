@@ -43,5 +43,4 @@ profile postfix-nqmgr /usr/lib/postfix/{sbin/,}nqmgr {
   /{var/spool/postfix/,}private/local                             w,
   /{var/spool/postfix/,}public/flush                              w,
   /{var/spool/postfix/,}public/qmgr                               r,
-  /etc/postfix/main.cf                       r,
 }
