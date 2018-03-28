@@ -20,5 +20,5 @@ profile postfix-anvil /usr/lib/postfix/{sbin/,}anvil {
 
   /etc/postfix/main.cf                        r,
   /{var/spool/postfix/,}private/anvil         rw,
-  /{var/spool/postfix/,}pid/unix.anvil        rw,
+  /{var/spool/postfix/,}pid/unix.anvil        rwk,
 }

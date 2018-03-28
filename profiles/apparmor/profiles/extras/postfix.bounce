@@ -34,7 +34,8 @@ profile postfix-bounce /usr/lib/postfix/{sbin/,}bounce {
   /{var/spool/postfix/,}trace/[0-9A-F]/[0-9A-F]/                   rwl,
   /{var/spool/postfix/,}trace/[0-9A-F]/                            rwl,
   /{var/spool/postfix/,}public/cleanup                             w,
-  /{var/spool/postfix/,}pid/unix.bounce          rw,
-  /{var/spool/postfix/,}pid/unix.defer           rw,
-  /{var/spool/postfix/,}pid/unix.trace           rw,
+
+  /{var/spool/postfix/,}pid/unix.bounce          rwk,
+  /{var/spool/postfix/,}pid/unix.defer           rwk,
+  /{var/spool/postfix/,}pid/unix.trace           rwk,
 }

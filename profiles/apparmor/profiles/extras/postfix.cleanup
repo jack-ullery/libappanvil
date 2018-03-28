@@ -27,7 +27,9 @@ profile postfix-cleanup /usr/lib/postfix/{sbin/,}cleanup {
   /{var/spool/postfix/,}private/{rewrite,bounce}          w,
   /{var/spool/postfix/,}public/qmgr                       w,
   /{var/spool/postfix/,}hold/[0-9A-F]*                    w,
-  /{var/spool/postfix/,}pid/unix.cleanup         rw,
+
+  /{var/spool/postfix/,}pid/unix.cleanup         rwk,
+
   /etc/{m,fs}tab                              r,
   /etc/postfix/*                              r,
 }
