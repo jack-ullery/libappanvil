@@ -122,6 +122,7 @@ skip_profile() {
 	     "${profile%.dpkg-old}" != "${profile}" -o \
 	     "${profile%.dpkg-dist}" != "${profile}" -o \
 	     "${profile%.dpkg-bak}" != "${profile}" -o \
+	     "${profile%.dpkg-remove}" != "${profile}" -o \
 	     "${profile%.pacsave}" != "${profile}" -o \
 	     "${profile%.pacnew}" != "${profile}" ] ; then
 		return 2

@@ -2031,7 +2031,7 @@ def is_skippable_file(path):
     if not basename or basename[0] == '.' or basename == 'README':
         return True
 
-    skippable_suffix = ('.dpkg-new', '.dpkg-old', '.dpkg-dist', '.dpkg-bak', '.pacsave', '.pacnew', '.rpmnew', '.rpmsave', '.orig', '.rej', '~')
+    skippable_suffix = ('.dpkg-new', '.dpkg-old', '.dpkg-dist', '.dpkg-bak', '.dpkg-remove', '.pacsave', '.pacnew', '.rpmnew', '.rpmsave', '.orig', '.rej', '~')
     if basename.endswith(skippable_suffix):
         return True
 
