@@ -117,11 +117,13 @@ skip_profile() {
 	     "${profile%\~}" != "${profile}" ] ; then
 		return 1
 	fi
-	# Silently ignore the dpkg files
+	# Silently ignore the dpkg and pacman files
 	if [ "${profile%.dpkg-new}" != "${profile}" -o \
 	     "${profile%.dpkg-old}" != "${profile}" -o \
 	     "${profile%.dpkg-dist}" != "${profile}" -o \
-	     "${profile%.dpkg-bak}" != "${profile}" ] ; then
+	     "${profile%.dpkg-bak}" != "${profile}" -o \
+	     "${profile%.pacsave}" != "${profile}" -o \
+	     "${profile%.pacnew}" != "${profile}" ] ; then
 		return 2
 	fi
 

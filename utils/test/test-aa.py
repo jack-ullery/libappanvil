@@ -452,22 +452,26 @@ class AaTest_is_skippable_file(AATest):
     def test_skippable_04(self):
         self.assertTrue(is_skippable_file('bin.ping..dpkg-bak'))
     def test_skippable_05(self):
-        self.assertTrue(is_skippable_file('bin.ping.rpmnew'))
+        self.assertTrue(is_skippable_file('bin.ping.pacsave'))
     def test_skippable_06(self):
-        self.assertTrue(is_skippable_file('bin.ping.rpmsave'))
+        self.assertTrue(is_skippable_file('bin.ping.pacnew'))
     def test_skippable_07(self):
-        self.assertTrue(is_skippable_file('bin.ping.orig'))
+        self.assertTrue(is_skippable_file('bin.ping.rpmnew'))
     def test_skippable_08(self):
-        self.assertTrue(is_skippable_file('bin.ping.rej'))
+        self.assertTrue(is_skippable_file('bin.ping.rpmsave'))
     def test_skippable_09(self):
-        self.assertTrue(is_skippable_file('bin.ping~'))
+        self.assertTrue(is_skippable_file('bin.ping.orig'))
     def test_skippable_10(self):
-        self.assertTrue(is_skippable_file('.bin.ping'))
-    def test_skippable_11(self):
-        self.assertTrue(is_skippable_file(''))  # empty filename
+        self.assertTrue(is_skippable_file('bin.ping.rej'))
+    def test_skippable_10(self):
+        self.assertTrue(is_skippable_file('bin.ping~'))
     def test_skippable_12(self):
-        self.assertTrue(is_skippable_file('/etc/apparmor.d/'))  # directory without filename
+        self.assertTrue(is_skippable_file('.bin.ping'))
     def test_skippable_13(self):
+        self.assertTrue(is_skippable_file(''))  # empty filename
+    def test_skippable_14(self):
+        self.assertTrue(is_skippable_file('/etc/apparmor.d/'))  # directory without filename
+    def test_skippable_15(self):
         self.assertTrue(is_skippable_file('README'))
 
 
