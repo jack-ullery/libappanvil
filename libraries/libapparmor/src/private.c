@@ -59,7 +59,7 @@ static struct ignored_suffix_t ignored_suffixes[] = {
 	{ ".dpkg-remove", 12, 1 },
 	/* Archlinux packaging files */
 	{ ".pacsave", 8, 1 },
-	{ ".pacnew", 7 1 },
+	{ ".pacnew", 7, 1 },
 	/* RPM packaging files have traditionally not been silently
            ignored */
 	{ ".rpmnew", 7, 0 },
