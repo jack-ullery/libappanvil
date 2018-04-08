@@ -2684,7 +2684,7 @@ if __name__ == '__main__':
     # run the tests
     suite = unittest.TestSuite()
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(T))
-    rc = unittest.TextTestRunner(verbosity=2).run(suite)
+    rc = unittest.TextTestRunner(verbosity=1).run(suite)
 
     if not rc.wasSuccessful():
         sys.exit(1)

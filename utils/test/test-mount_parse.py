@@ -44,4 +44,4 @@ if __name__ == '__main__':
     setup_regex_tests(AAParseMountTest)
     setup_regex_tests(AAParseRemountTest)
     setup_regex_tests(AAParseUmountTest)
-    unittest.main(verbosity=2)
+    unittest.main(verbosity=1)

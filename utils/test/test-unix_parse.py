@@ -37,4 +37,4 @@ class AAParseUnixTest(AAParseTest):
 setup_aa(aa)
 if __name__ == '__main__':
     setup_regex_tests(AAParseUnixTest)
-    unittest.main(verbosity=2)
+    unittest.main(verbosity=1)

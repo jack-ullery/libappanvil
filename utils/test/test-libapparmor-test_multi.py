@@ -272,4 +272,4 @@ TestLogToProfile.tests = find_test_multi('../../libraries/libapparmor/testsuite/
 setup_aa(apparmor.aa)
 setup_all_loops(__name__)
 if __name__ == '__main__':
-    unittest.main(verbosity=1)  # reduced verbosity due to the big number of tests
+    unittest.main(verbosity=1)

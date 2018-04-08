@@ -72,4 +72,4 @@ class TestHotkeyConflicts(AATest):
 
 setup_all_loops(__name__)
 if __name__ == '__main__':
-    unittest.main(verbosity=2)
+    unittest.main(verbosity=1)

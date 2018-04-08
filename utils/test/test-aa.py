@@ -936,4 +936,4 @@ class AaTest_nonexistent_includes(AATest):
 setup_aa(apparmor.aa)
 setup_all_loops(__name__)
 if __name__ == '__main__':
-    unittest.main(verbosity=2)
+    unittest.main(verbosity=1)
