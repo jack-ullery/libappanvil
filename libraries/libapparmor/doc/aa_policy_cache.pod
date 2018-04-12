@@ -75,12 +75,12 @@ openat(2) man page for examples of I<dirfd> and I<path>. The I<path>
 must point to a directory and it will be used as the basis for the
 location of policy cache files. See I<aa_policy_cache_dir_path> to
 find out which directory will be used to store the binary policy cache
-files. If additional overlay cache directories are used (See
-I<aa_policy_cache_add_ro_dir> the directory directory used in
+files. If additional overlay cache directories are used (see
+I<aa_policy_cache_add_ro_dir>) the directory specified in
 I<aa_policy_cache_new> is the first directory searched and is the
 writable overlay. If I<kernel_features> is NULL, then the features of
 the current kernel are used. When specifying a valid
-I<kernel_features> object, it must be the compatible with the features
+I<kernel_features> object, it must be compatible with the features
 of the kernel of interest.  The value of I<max_caches> should be equal
 to the number of caches that should be allowed before old caches are
 automatically reaped. The definition of what is considered to be an
@@ -159,11 +159,10 @@ I<aa_policy_cache> family of functions that return -1 or NULL on error.
 
 =head1 NOTES
 
-All aa_policy_cache functions described above, except for
-aa_policy_cache_dir_path() and aa_policy_cache_dir_path_preview(), are
-present in libapparmor version 2.10. The aa_policy_cache_dir_path() and
-aa_policy_cache_dir_path_preview() functions can be found in libapparmor
-version 2.12.
+All aa_policy_cache functions described above, except for the
+aa_policy_cache_dir_path() function was added in libapparmor version
+2.13. All the other aa_policy_cache functions described above are
+present in libapparmor version 2.10.
 
 aa_policy_cache_unref() saves the value of errno when called and restores errno
 before exiting in libapparmor version 2.12 and newer.
