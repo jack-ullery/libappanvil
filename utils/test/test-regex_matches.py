@@ -564,4 +564,4 @@ if __name__ == '__main__':
     setup_has_comma_testcases()
     setup_split_comment_testcases()
 
-    unittest.main(verbosity=2)
+    unittest.main(verbosity=1)
