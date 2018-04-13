@@ -2,7 +2,7 @@
  *   Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
  *   NOVELL (All rights reserved)
  *
- *   Copyright (c) 2010 - 2013
+ *   Copyright (c) 2010 - 2018
  *   Canonical Ltd. (All rights reserved)
  *
  *   This program is free software; you can redistribute it and/or
@@ -60,7 +60,7 @@
 #define UNPRIVILEGED_OPS (!(PRIVILEGED_OPS))
 
 const char *parser_title	= "AppArmor parser";
-const char *parser_copyright	= "Copyright (C) 1999-2008 Novell Inc.\nCopyright 2009-2012 Canonical Ltd.";
+const char *parser_copyright	= "Copyright (C) 1999-2008 Novell Inc.\nCopyright 2009-2018 Canonical Ltd.";
 
 int opt_force_complain = 0;
 int binary_input = 0;
@@ -329,8 +329,7 @@ static int process_arg(int c, char *optarg)
 	switch (c) {
 	case 0:
 		PERROR("Assert, in getopt_long handling\n");
-		display_usage(progname);
-		exit(0);
+		exit(1);
 		break;
 	case 'a':
 		count++;
@@ -537,7 +536,7 @@ static int process_arg(int c, char *optarg)
 		jobs_max = process_jobs_arg("max-jobs", optarg);
 		break;
 	default:
-		display_usage(progname);
+		/* 'unrecognized option' error message gets printed by getopt_long() */
 		exit(1);
 		break;
 	}
@@ -559,7 +558,6 @@ static int process_args(int argc, char *argv[])
 	if (count > 1) {
 		PERROR("%s: Too many actions given on the command line.\n",
 		       progname);
-		display_usage(progname);
 		exit(1);
 	}
 
@@ -592,7 +590,6 @@ int have_enough_privilege(void)
 	if (uid != 0 && euid != 0) {
 		PERROR(_("%s: Sorry. You need root privileges to run this program.\n\n"),
 		       progname);
-		display_usage(progname);
 		return EPERM;
 	}
 
