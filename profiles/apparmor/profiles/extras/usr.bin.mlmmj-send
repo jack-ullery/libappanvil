@@ -25,6 +25,7 @@
   /var/spool/mlmmj/*/subscribers.d/* r,
 
   /var/spool/mlmmj/*/digesters.d/ r,
+  /var/spool/mlmmj/*/digesters.d/* r,
 
   /var/spool/mlmmj/*/moderation/* rwk,
 
