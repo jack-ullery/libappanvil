@@ -612,9 +612,12 @@ def get_profile_flags(filename, program):
         for line in f_in:
             if RE_PROFILE_START.search(line):
                 matches = parse_profile_start_line(line, filename)
-                profile = matches['profile']
+                if (matches['attachment'] is not None):
+                    profile_glob = AARE(matches['attachment'], True)
+                else:
+                    profile_glob = AARE(matches['profile'], True)
                 flags = matches['flags']
-                if profile == program or program is None:
+                if (program is not None and profile_glob.match(program)) or program is None:
                     return flags
 
     raise AppArmorException(_('%s contains no profile') % filename)
@@ -667,8 +670,14 @@ def set_profile_flags(prof_filename, program, newflags):
                     space = matches['leadingspace'] or ''
                     profile = matches['profile']
 
-                    if profile == program or program is None:
+                    if (matches['attachment'] is not None):
+                        profile_glob = AARE(matches['attachment'], True)
+                    else:
+                        profile_glob = AARE(matches['profile'], True)
+                    if (program is not None and profile_glob.match(program)) or program is None:
                         found = True
+                        if program is not None and program != profile:
+                          aaui.UI_Info(_('Warning: profile %s represents multiple programs') % profile)
                         header_data = {
                             'attachment': matches['attachment'] or '',
                             'flags': newflags,
