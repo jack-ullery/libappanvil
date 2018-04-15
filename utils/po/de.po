@@ -7,14 +7,14 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2017-12-20 02:04+0000\n"
+"PO-Revision-Date: 2018-04-06 21:54+0000\n"
 "Last-Translator: Tobias Bannert <tobannert@gmail.com>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2017-12-21 05:12+0000\n"
-"X-Generator: Launchpad (build 18511)\n"
+"X-Launchpad-Export-Date: 2018-04-07 05:20+0000\n"
+"X-Generator: Launchpad (build 18599)\n"
 "Language: de\n"
 
 #: ../aa-genprof:56
@@ -320,15 +320,15 @@ msgstr "vorhandenes Profil überschreiben"
 
 #: ../aa-audit:24
 msgid "Switch the given programs to audit mode"
-msgstr "Das angegebene Programm in den Audit-Modus versetzen"
+msgstr "Das angegebene Programm in den Prüfmodus versetzen"
 
 #: ../aa-audit:26
 msgid "remove audit mode"
-msgstr "Audit-Modus entfernen"
+msgstr "Prüfmodus entfernen"
 
 #: ../aa-audit:28
 msgid "Show full trace"
-msgstr "Zeige die komplette Spur"
+msgstr "Die vollständige Spur anzeigen"
 
 #: ../aa-complain:23
 msgid "Switch the given program to complain mode"
@@ -662,12 +662,13 @@ msgstr "Profiländerungen"
 #, python-format
 msgid "Can't find existing profile %s to compare changes."
 msgstr ""
-"Kann kein existierendes Profil %s finden um Änderungen zu vergleichen."
+"Es kann kein vorhandenes Profil %s gefunden werden, um Änderungen zu "
+"vergleichen."
 
 #: ../apparmor/aa.py:2566 ../apparmor/aa.py:2581
 #, python-format
 msgid "Can't read AppArmor profiles in %s"
-msgstr "Kann AppArmor-Profile in %s nicht lesen"
+msgstr "AppArmor-Profile in %s können nicht gelesen werden"
 
 #: ../apparmor/aa.py:2677
 #, python-format
@@ -889,7 +890,7 @@ msgstr "Vorhandenes Profil kann nicht zum Verändern gefunden werden"
 #: ../apparmor/aa.py:4347
 #, python-format
 msgid "Writing updated profile for %s."
-msgstr "Schreibe aktualisiertes Profil für %s."
+msgstr "Aktualisiertes Profil für %s wird geschrieben."
 
 #: ../apparmor/aa.py:4481
 #, python-format
@@ -958,12 +959,12 @@ msgstr "%s wird deaktiviert."
 #: ../apparmor/tools.py:198
 #, python-format
 msgid "Setting %s to audit mode."
-msgstr "%s wird in den audit-Modus versetzt."
+msgstr "%s wird in den Prüfmodus versetzt."
 
 #: ../apparmor/tools.py:200
 #, python-format
 msgid "Removing audit mode from %s."
-msgstr "Audit-Modus wird von %s entfernt."
+msgstr "Prüfmodus wird von %s entfernt."
 
 #: ../apparmor/tools.py:212
 #, python-format
@@ -1002,7 +1003,7 @@ msgstr "Das Profil für %s existiert nicht. Nichts zu bereinigen."
 
 #: ../apparmor/ui.py:61
 msgid "Invalid hotkey for"
-msgstr "Ungültiger Hotkey für"
+msgstr "Ungültiges Tastenkürzel für"
 
 #: ../apparmor/ui.py:77 ../apparmor/ui.py:121 ../apparmor/ui.py:275
 msgid "(Y)es"
@@ -1034,7 +1035,7 @@ msgstr "Audi(t) aus"
 
 #: ../apparmor/ui.py:227
 msgid "Audit (A)ll"
-msgstr ""
+msgstr "(A)lle überprüfen"
 
 #: ../apparmor/ui.py:229
 msgid "(O)wner permissions on"
