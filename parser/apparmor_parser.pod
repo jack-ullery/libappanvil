@@ -356,6 +356,18 @@ This option tells the parser to not attempt to rebuild the cache on
 failure, instead the parser continues on with processing the remaining
 profiles.
 
+=item --confile-file
+
+Specify the config file to use instead of
+/etc/apparmor/parser.conf. This option must be the first option
+specified when invoking the parser, otherwise the parser will abort
+with an error.
+
+=item --print-config-file
+
+Print the config file location that will be used.
+
+
 =back
 
 =head1 CONFIG FILE
