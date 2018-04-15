@@ -384,8 +384,8 @@ install-systemd:
 	install -m 755 -d $(SYSTEMD_UNIT_DIR)
 	install -m 644 apparmor.service $(SYSTEMD_UNIT_DIR)
 	install -m 644 apparmor.systemd $(APPARMOR_BIN_PREFIX)
-	install -m 755 -d $(DESTDIR)/sbin
-	install -m 755 aa-teardown $(DESTDIR)/sbin
+	install -m 755 -d $(DESTDIR)/usr/sbin
+	install -m 755 aa-teardown $(DESTDIR)/usr/sbin
 
 ifndef VERBOSE
 .SILENT: clean
