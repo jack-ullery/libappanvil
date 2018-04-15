@@ -109,6 +109,9 @@ static bool print_cache_dir = false;
 static aa_features *compile_features = NULL;
 static aa_features *kernel_features = NULL;
 
+static const char *config_file = "/etc/apparmor/parser.conf";
+
+
 /* Make sure to update BOTH the short and long_options */
 static const char *short_options = "ad::f:h::rRVvI:b:BCD:NSm:M:qQn:XKTWkL:O:po:j:";
 struct option long_options[] = {
@@ -157,6 +160,8 @@ struct option long_options[] = {
 	{"jobs",		1, 0, 'j'},
 	{"max-jobs",		1, 0, 136},	/* no short option */
 	{"print-cache-dir",	0, 0, 137},	/* no short option */
+	{"config-file",		1, 0, 139},	/* early option */
+	{"print-config-file",	0, 0, 140},	/* no short option */
 	{NULL, 0, 0, 0},
 };
 
@@ -213,6 +218,8 @@ static void display_usage(const char *command)
 	       "--max-jobs n		Hard cap on --jobs. Default 8*cpus\n"
 	       "--abort-on-error	Abort processing of profiles on first error\n"
 	       "--skip-bad-cache-rebuild Do not try rebuilding the cache if it is rejected by the kernel\n"
+	       "--config-file n		Specify the parser config file location, Must be the first option.\n"
+	       "--print-config		Print config file location\n"
 	       "--warn n		Enable warnings (see --help=warn)\n"
 	       ,command);
 }
@@ -375,10 +382,11 @@ static long process_jobs_arg(const char *arg, const char *val) {
 	return n;
 }
 
+
 /* process a single argment from getopt_long
  * Returns: 1 if an action arg, else 0
  */
-static int process_arg(int c, char *optarg)
+static int process_arg(int c, char *optarg, int config_count)
 {
 	int count = 0;
 
@@ -626,6 +634,21 @@ static int process_arg(int c, char *optarg)
 		kernel_load = 0;
 		print_cache_dir = true;
 		break;
+	case 139:
+		if (optind - config_count != 1) {
+			PERROR("%s: --config-file=%s must be the first option specified\n", progname, optarg);
+			exit(1);
+		} else {
+			config_file = strdup(optarg);
+			if (!config_file) {
+				PERROR("%s: %m", progname);
+				exit(1);
+			}
+		}
+		break;
+	case 140:
+		printf("%s\n", config_file);
+		break;
 	default:
 		/* 'unrecognized option' error message gets printed by getopt_long() */
 		exit(1);
@@ -635,15 +658,36 @@ static int process_arg(int c, char *optarg)
 	return count;
 }
 
+static int process_early_args(int argc, char *argv[])
+{
+	int c, o, count = 1;
+
+	if (argc <= 1)
+		return 1;
+	if (strcmp("--config-file", argv[1]) == 0)
+		count = 2;
+	else if (strncmp("--config-file=", argv[1], 14) != 0)
+		return 1;
+
+	if ((c = getopt_long(argc, argv, short_options, long_options, &o)) != -1)
+	{
+		process_arg(c, optarg, count);
+	}
+
+	PDEBUG("optind = %d argc = %d\n", optind, argc);
+	return optind;
+}
+
 static int process_args(int argc, char *argv[])
 {
 	int c, o;
 	int count = 0;
 	option = OPTION_ADD;
 
+	opterr = 1;
 	while ((c = getopt_long(argc, argv, short_options, long_options, &o)) != -1)
 	{
-		count += process_arg(c, optarg);
+		count += process_arg(c, optarg, 0);
 	}
 
 	if (count > 1) {
@@ -663,11 +707,13 @@ static int process_config_file(const char *name)
 	int c, o;
 
 	f = fopen(name, "r");
-	if (!f)
+	if (!f) {
+		pwarn("config file '%s' not found\n", name);
 		return 0;
+	}
 
 	while ((c = getopt_long_file(f, long_options, &optarg, &o)) != -1)
-		process_arg(c, optarg);
+		process_arg(c, optarg, 0);
 	return 1;
 }
 
@@ -1209,7 +1255,8 @@ int main(int argc, char *argv[])
 
 	init_base_dir();
 
-	process_config_file("/etc/apparmor/parser.conf");
+	process_early_args(argc, argv);
+	process_config_file(config_file);
 	optind = process_args(argc, argv);
 
 	setup_parallel_compile();
