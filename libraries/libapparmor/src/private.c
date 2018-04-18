@@ -43,6 +43,17 @@
  #endif
 #endif
 
+/**
+ * Allow libapparmor to build on older glibcs and other libcs that do
+ * not support reallocarray.
+ */
+#ifndef HAVE_REALLOCARRY
+void *reallocarray(void *ptr, size_t nmemb, size_t size)
+{
+	return realloc(ptr, nmemb * size);
+}
+#endif
+
 struct ignored_suffix_t {
 	const char * text;
 	int len;
