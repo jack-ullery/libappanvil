@@ -340,7 +340,7 @@ open:
 			 *    /etc/apparmor.d/cache.d/<features_id>/
 			 * 3) Try to reopen the cache directory
 			 */
-			if (mkdirat(fd, path, 0700) == -1 &&
+			if (mkdirat(dirfd, path, 0700) == -1 &&
 			    errno != EEXIST) {
 				PERROR("Can't create cache location '%s': %m\n",
 				       path);
