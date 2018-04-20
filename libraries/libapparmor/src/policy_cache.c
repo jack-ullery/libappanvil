@@ -301,8 +301,10 @@ static int cache_dir_from_path_and_features(char **cache_path,
 		PDEBUG("cache_dir_from_path_and_features() callback found '%s'\n", data.cache_name);
 		*cache_path = data.cache_name;
 		return 0;
-	} else if (rc)
+	} else if (rc) {
+		PDEBUG("cache_dir_from_path_and_features() callback returned an error'%m'\n");
 		return -1;
+	}
 	/* no dir found use 1 higher than highest dir n searched */
 	len = asprintf(&cache_dir, "%s/%s.%d", path, features_id, data.n + 1);
 	if (len == -1)
@@ -313,18 +315,20 @@ static int cache_dir_from_path_and_features(char **cache_path,
 	return 0;
 }
 
+/* will return the cache_dir or NULL */
 static int open_or_create_cache_dir(aa_features *features, int dirfd,
-				    const char *path, bool create)
+				    const char *path, bool create,
+				    char **cache_dir)
 {
-	autofree char *cache_dir = NULL;
 	int fd;
 
-	if (cache_dir_from_path_and_features(&cache_dir, dirfd, path,
+	*cache_dir = NULL;
+	if (cache_dir_from_path_and_features(cache_dir, dirfd, path,
 					     features))
 		return -1;
 
 open:
-	fd = openat(dirfd, cache_dir, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
+	fd = openat(dirfd, *cache_dir, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
 	if (fd < 0) {
 		/* does the dir exist? */
 		if (create && errno == ENOENT) {
@@ -340,19 +344,20 @@ open:
 			    errno != EEXIST) {
 				PERROR("Can't create cache location '%s': %m\n",
 				       path);
-			} else if (mkdirat(dirfd, cache_dir, 0700) == -1 &&
+			} else if (mkdirat(dirfd, *cache_dir, 0700) == -1 &&
 				   errno != EEXIST) {
 				PERROR("Can't create cache directory '%s': %m\n",
-				       cache_dir);
+				       *cache_dir);
 			} else {
 				goto open;
 			}
 		} else if (create) {
-			PERROR("Can't update cache directory '%s': %m\n", cache_dir);
+			PERROR("Can't update cache directory '%s': %m\n", *cache_dir);
 		} else {
-			PDEBUG("Cache directory '%s' does not exist\n", cache_dir);
+			PDEBUG("Cache directory '%s' does not exist\n", *cache_dir);
 		}
 
+		PDEBUG("Could not open cache_dir: %m");
 		return -1;
 	}
 
@@ -380,6 +385,7 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 			aa_features *kernel_features,
 			int dirfd, const char *path, uint16_t max_caches)
 {
+	autofree char *cache_dir = NULL;
 	aa_policy_cache *pc;
 	bool create = max_caches > 0;
 	autofree const char *features_id = NULL;
@@ -407,13 +413,16 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 		aa_features_ref(kernel_features);
 	} else if (aa_features_new_from_kernel(&kernel_features) == -1) {
 		aa_policy_cache_unref(pc);
+		PDEBUG("%s: Failed to obtain features %m\n", __FUNCTION__);
 		return -1;
 	}
 	pc->features = kernel_features;
 
-	fd = open_or_create_cache_dir(kernel_features, dirfd, path, create);
+	fd = open_or_create_cache_dir(kernel_features, dirfd, path, create,
+				      &cache_dir);
 	if (fd == -1) {
 		aa_policy_cache_unref(pc);
+		PDEBUG("%s: Failed to open_or_create_dir %m\n", __FUNCTION__);
 		return -1;
 	}
 	pc->dirfd[0] = fd;
@@ -443,16 +452,20 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 int aa_policy_cache_add_ro_dir(aa_policy_cache *policy_cache, int dirfd,
 			       const char *path)
 {
+	autofree char *cache_dir = NULL;
 	int fd;
 
 	if (policy_cache->n >= MAX_POLICY_CACHE_OVERLAY_DIRS) {
 		errno = ENOSPC;
+		PDEBUG("%s: exceeded number of supported cache overlays\n", __FUNCTION__);
 		return -1;
 	}
 	fd = open_or_create_cache_dir(policy_cache->features, dirfd, path,
-				      false);
-	if (fd == -1)
+				      false, &cache_dir);
+	if (fd == -1) {
+		PDEBUG("%s: failed to open_or_create_cache_dir %m\n", __FUNCTION__);
 		return -1;
+	}
 	policy_cache->dirfd[policy_cache->n++] = fd;
 
 	return 0;
