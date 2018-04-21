@@ -129,6 +129,7 @@ struct option long_options[] = {
 	{"ofile",		1, 0, 'o'},
 	{"match-string",	1, 0, 'm'},
 	{"features-file",	1, 0, 'M'},
+	{"compile-features",	1, 0, 139},	/* no short option */
 	{"kernel-features",	1, 0, 138},	/* no short option */
 	{"quiet",		0, 0, 'q'},
 	{"skip-kernel-load",	0, 0, 'Q'},
@@ -185,7 +186,8 @@ static void display_usage(const char *command)
 	       "-I n, --Include n	Add n to the search path\n"
 	       "-f n, --subdomainfs n	Set location of apparmor filesystem\n"
 	       "-m n, --match-string n  Use only features n\n"
-	       "-M n, --features-file n Compile features set in file n\n"
+	       "-M n, --features-file n Set compile & kernel features to file n\n"
+	       "--compile-features n    Compile features set in file n\n"
 	       "--kernel-features n     Kernel features set in file n\n"
 	       "-n n, --namespace n	Set Namespace for the profile\n"
 	       "-X, --readimpliesX	Map profile read permissions to mr\n"
@@ -510,17 +512,34 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'M':
+		if (compile_features)
+			aa_features_unref(compile_features);
+		if (kernel_features)
+			aa_features_unref(kernel_features);
 		if (aa_features_new(&compile_features, AT_FDCWD, optarg)) {
 			fprintf(stderr,
 				"Failed to load features from '%s': %m\n",
 				optarg);
 			exit(1);
 		}
+		kernel_features = aa_features_ref(compile_features);
 		break;
 	case 138:
+		if (kernel_features)
+			aa_features_unref(kernel_features);
 		if (aa_features_new(&kernel_features, AT_FDCWD, optarg)) {
 			fprintf(stderr,
 				"Failed to load kernel features from '%s': %m\n",
+				optarg);
+			exit(1);
+		}
+		break;
+	case 139:
+		if (compile_features)
+			aa_features_unref(compile_features);
+		if (aa_features_new(&compile_features, AT_FDCWD, optarg)) {
+			fprintf(stderr,
+				"Failed to load compile features from '%s': %m\n",
 				optarg);
 			exit(1);
 		}
