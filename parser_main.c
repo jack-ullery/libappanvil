@@ -82,10 +82,10 @@ int debug_cache = 0;
 
 /* for jobs_max and jobs
  * LONG_MAX : no limit
- * 0  : auto  = detect system processing cores
+ * LONG_MIN  : auto  = detect system processing cores
  * n  : use that number of processes/threads to compile policy
  */
-#define JOBS_AUTO 0
+#define JOBS_AUTO LONG_MIN
 long jobs_max = -8;			/* 8 * cpus */
 long jobs = JOBS_AUTO;			/* default: number of processor cores */
 long njobs = 0;
@@ -597,6 +597,8 @@ static int process_arg(int c, char *optarg)
 		break;
 	case 'j':
 		jobs = process_jobs_arg("-j", optarg);
+		if (jobs == 0)
+			jobs_max = 0;
 		break;
 	case 136:
 		jobs_max = process_jobs_arg("max-jobs", optarg);
@@ -1017,12 +1019,11 @@ do {									\
 
 #define work_spawn(WORK, RESULT)					\
 do {									\
-	/* what to do to avoid fork() overhead when single threaded	\
-	if (jobs == 1) {						\
-		// no parallel work so avoid fork() overhead		\
+	if (jobs == 0) {						\
+		/* no parallel work so avoid fork() overhead */		\
 		RESULT(WORK);						\
 		break;							\
-	}*/								\
+	}								\
 	if (jobs_scale) {						\
 		long n = sysconf(_SC_NPROCESSORS_ONLN);			\
 		if (n > jobs_max)					\
