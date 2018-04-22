@@ -304,6 +304,7 @@ Use --help=dump to see a full list of which dump flags are supported
 Set the number of jobs used to compile the specified policy. Where n can
 be
 
+  0    - disable jobs and use the main process for all compilation
   #    - a specific number of jobs
   auto - the # of cpus in the in the system
   x#   - # * number of cpus
