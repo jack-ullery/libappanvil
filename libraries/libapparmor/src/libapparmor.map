@@ -108,6 +108,13 @@ APPARMOR_2.13 {
         *;
 } APPARMOR_2.11;
 
+APPARMOR_2.13.1 {
+  global:
+        aa_policy_cache_add_ro_dir;
+  local:
+        *;
+} APPARMOR_2.13;
+
 PRIVATE {
 	global:
 		_aa_is_blacklisted;
