@@ -38,8 +38,10 @@
 #ifndef HAVE_SECURE_GETENV
  #ifdef HAVE___SECURE_GETENV
   #define secure_getenv __secure_getenv
+ #elif ENABLE_DEBUG_OUTPUT
+  #error Debug output is not possible without a secure_getenv() implementation.
  #else
-  #error neither secure_getenv nor __secure_getenv is available
+  #define secure_getenv(env) NULL
  #endif
 #endif
 
