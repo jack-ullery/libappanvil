@@ -25,6 +25,8 @@
 #include "parser.h"
 #include "profile.h"
 
+typedef int (*comparison_fn_t)(const void *, const void *);
+
 struct alias_rule {
 	char *from;
 	char *to;

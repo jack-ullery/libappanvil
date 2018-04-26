@@ -25,6 +25,9 @@
 #include "immunix.h"
 #include "parser.h"
 
+typedef int (*comparison_fn_t)(const void *, const void *);
+typedef void (*__free_fn_t)(void *);
+
 enum var_type {
 	sd_boolean,
 	sd_set,
