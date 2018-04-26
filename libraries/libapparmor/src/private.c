@@ -186,16 +186,6 @@ int _aa_asprintf(char **strp, const char *fmt, ...)
 	return rc;
 }
 
-static int dot_or_dot_dot_filter(const struct dirent *ent)
-{
-	if (strcmp(ent->d_name, ".") == 0 ||
-	    strcmp(ent->d_name, "..") == 0)
-		return 0;
-
-	return 1;
-}
-
-
 /* stops on first error, can use errno or return value to communicate
  * the goal is to use this to replace _aa_dirat_for_each, but that will
  * be a different patch.
@@ -319,6 +309,65 @@ fail:									\
 	rc;								\
 })
 
+static ssize_t readdirfd(int dirfd, struct dirent ***out,
+			  int (*dircmp)(const struct dirent **, const struct dirent **))
+{
+	struct dirent **dents, *dent;
+	ssize_t n = 0;
+	size_t i;
+	DIR *dir;
+
+	*out = NULL;
+
+	/*
+	 * closedir(dir) will close the underlying fd, so we need
+	 * to dup first
+	 */
+	if ((dirfd = dup(dirfd)) < 0) {
+		PDEBUG("dup of dirfd failed: %m\n");
+		return -1;
+	}
+
+	if ((dir = fdopendir(dirfd)) == NULL) {
+		PDEBUG("fdopendir of dirfd failed: %m\n");
+		close(dirfd);
+		return -1;
+	}
+
+	/* Get number of directory entries */
+	while ((dent = readdir(dir)) != NULL) {
+		if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, ".."))
+			continue;
+		n++;
+	}
+	rewinddir(dir);
+
+	dents = calloc(n, sizeof(struct dirent *));
+	for (i = 0; i < n; ) {
+		if ((dent = readdir(dir)) == NULL) {
+			PDEBUG("readdir of entry[%d] failed: %m\n", i);
+			n = -1;
+			goto out;
+		}
+
+		if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, ".."))
+			continue;
+
+		dents[i] = malloc(sizeof(*dents[i]));
+		memcpy(dents[i], dent, sizeof(*dent));
+		i++;
+	}
+
+	if (dircmp)
+		qsort(dents, n, sizeof(*dent), (int (*)(const void *, const void *))dircmp);
+
+	*out = dents;
+
+out:
+	closedir(dir);
+	return n;
+}
+
 int _aa_overlaydirat_for_each(int dirfd[], int n, void *data,
 			int (* cb)(int, const char *, struct stat *, void *))
 {
@@ -329,8 +378,7 @@ int _aa_overlaydirat_for_each(int dirfd[], int n, void *data,
 	int rc = 0;
 
 	for (i = 0; i < n; i++) {
-		n_list = scandirat(dirfd[i], ".", &list, dot_or_dot_dot_filter,
-				   alphasort);
+		n_list = readdirfd(dirfd[i], &list, alphasort);
 		if (n_list == -1) {
 			PDEBUG("scandirat of dirfd[%d] failed: %m\n", i);
 			return -1;
@@ -411,8 +459,7 @@ int _aa_dirat_for_each(int dirfd, const char *name, void *data,
 		return -1;
 	}
 
-	num_dirs = scandirat(cb_dirfd, ".", &namelist,
-			     dot_or_dot_dot_filter, NULL);
+	num_dirs = readdirfd(cb_dirfd, &namelist, NULL);
 	if (num_dirs == -1) {
 		PDEBUG("scandirat of directory '%s' failed: %m\n", name);
 		return -1;
