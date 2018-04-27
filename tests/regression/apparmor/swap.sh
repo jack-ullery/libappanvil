@@ -41,6 +41,7 @@ swap_file=$tmpdir/swapfile
 # ppc64el wants this to be larger than 640KiB
 # arm/small machines want this as small as possible
 dd if=/dev/zero of=${swap_file} bs=1024 count=768 2> /dev/null
+chmod 600 ${swap_file}
 /sbin/mkswap -f ${swap_file} > /dev/null
 
 # TEST 1.  Make sure can enable and disable swap unconfined
