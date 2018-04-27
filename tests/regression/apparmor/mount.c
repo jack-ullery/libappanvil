@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (strcmp(argv[1], "mount") == 0) {
-		if (mount(argv[2], argv[3], "ext2", 0xc0ed0000 | MS_MANDLOCK, NULL ) == -1) {
+		if (mount(argv[2], argv[3], "ext2", 0xc0ed0000 | MS_NODEV, NULL ) == -1) {
 			fprintf(stderr, "FAIL: mount %s on %s failed - %s\n",
 				argv[2], argv[3], 
 				strerror(errno));
