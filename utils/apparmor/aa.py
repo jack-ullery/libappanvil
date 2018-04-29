@@ -2048,7 +2048,7 @@ def is_skippable_file(path):
     return False
 
 def is_skippable_dir(path):
-    if re.search('^(.*/)?(disable|cache|force-complain|lxc|\.git)/?$', path):
+    if re.search('^(.*/)?(disable|cache|cache\.d|force-complain|lxc|\.git)/?$', path):
         return True
     return False
 
