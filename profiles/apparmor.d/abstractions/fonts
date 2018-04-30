@@ -18,7 +18,9 @@
   /usr/share/fonts/**                   r,
 
   /etc/fonts/**                         r,
-  /usr/share/fontconfig/conf.avail/**   r,
+  # Debian, openSUSE paths are different
+  /usr/share/{fontconfig,fonts-config,*-fonts}/conf.avail/{,**} r,
+  /usr/share/ghostscript/fonts/{,**}    r,
 
   /opt/kde3/share/fonts/**              r,
 
