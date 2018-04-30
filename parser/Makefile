@@ -24,6 +24,8 @@ include $(COMMONDIR)/Make.rules
 
 DESTDIR=/
 APPARMOR_BIN_PREFIX=${DESTDIR}/lib/apparmor
+SBINDIR=${DESTDIR}/sbin
+USR_SBINDIR=${DESTDIR}/usr/sbin
 SYSTEMD_UNIT_DIR=${DESTDIR}/usr/lib/systemd/system
 CONFDIR=/etc/apparmor
 INSTALL_CONFDIR=${DESTDIR}${CONFDIR}
@@ -318,8 +320,8 @@ install-redhat:
 
 .PHONY: install-suse
 install-suse: install-systemd
-	install -m 755 -d $(DESTDIR)/sbin
-	ln -sf service $(DESTDIR)/sbin/rcapparmor
+	install -m 755 -d $(SBINDIR)
+	ln -sf service $(SBINDIR)/rcapparmor
 
 .PHONY: install-slackware
 install-slackware:
@@ -365,8 +367,8 @@ install: install-indep install-arch
 
 .PHONY: install-arch
 install-arch: $(INSTALLDEPS)
-	install -m 755 -d $(DESTDIR)/sbin
-	install -m 755 ${TOOLS} $(DESTDIR)/sbin
+	install -m 755 -d $(SBINDIR)
+	install -m 755 ${TOOLS} $(SBINDIR)
 
 .PHONY: install-indep
 install-indep: indep
@@ -384,8 +386,8 @@ install-systemd:
 	install -m 755 -d $(SYSTEMD_UNIT_DIR)
 	install -m 644 apparmor.service $(SYSTEMD_UNIT_DIR)
 	install -m 755 apparmor.systemd $(APPARMOR_BIN_PREFIX)
-	install -m 755 -d $(DESTDIR)/usr/sbin
-	install -m 755 aa-teardown $(DESTDIR)/usr/sbin
+	install -m 755 -d $(USR_SBINDIR)
+	install -m 755 aa-teardown $(USR_SBINDIR)
 
 ifndef VERBOSE
 .SILENT: clean
