@@ -32,7 +32,7 @@ AA_LIB_AGE = 5
 
 SUFFIXES = .pc.in .pc
 
-BUILT_SOURCES = grammar.h scanner.h af_protos.h PMurHash.h
+BUILT_SOURCES = grammar.h scanner.h af_protos.h
 AM_LFLAGS = -v
 AM_YFLAGS = -d -p aalogparse_
 AM_CFLAGS = -Wall
