@@ -2841,11 +2841,11 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
             if not profile_data[hat]['external']:
                 data.append('')
                 if profile_data[hat]['profile']:
-                    data += list(map(str, write_header(profile_data[hat], depth + 1, hat, True, write_flags)))
+                    data += write_header(profile_data[hat], depth + 1, hat, True, write_flags)
                 else:
-                    data += list(map(str, write_header(profile_data[hat], depth + 1, '^' + hat, True, write_flags)))
+                    data += write_header(profile_data[hat], depth + 1, '^' + hat, True, write_flags)
 
-                data += list(map(str, write_rules(profile_data[hat], depth + 2)))
+                data += write_rules(profile_data[hat], depth + 2)
 
                 data.append('%s}' % pre2)
 
