@@ -13,6 +13,7 @@ import unittest
 from common_test import AATest, setup_all_loops, setup_aa, read_file
 
 import os
+import sys
 from apparmor.common import open_file_read
 
 import apparmor.aa
@@ -192,50 +193,13 @@ class TestLogToProfile(AATest):
 
     def _run_test(self, params, expected):
         logfile = '%s.in' % params
-        profile_dummy_file = 'AATest_does_exist'
-
-        # we need to find out the profile name and aamode (complain vs. enforce mode) so that the test can access the correct place in storage
-        parser = ReadLog('', '', '', '')
-        parsed_event = parser.parse_event(read_file(logfile))
-
-        if not parsed_event:  # AA_RECORD_INVALID
-            return
 
         if params.split('/')[-1] in log_to_profile_skip:
             return
 
-        aamode = parsed_event['aamode']
-
-        if aamode in['AUDIT', 'STATUS', 'HINT']: # ignore some event types  # XXX maybe we shouldn't ignore AUDIT events?
+        profile, new_profile = logfile_to_profile(logfile)
+        if profile is None:
             return
-
-        if aamode not in ['PERMITTING', 'REJECTING']:
-            raise Exception('Unexpected aamode %s' % parsed_event['aamode'])
-
-        # cleanup apparmor.aa storage
-        apparmor.aa.log = dict()
-        apparmor.aa.aa = apparmor.aa.hasher()
-        apparmor.aa.prelog = apparmor.aa.hasher()
-
-        profile = parsed_event['profile']
-        hat = profile
-        if '//' in profile:
-            profile, hat = profile.split('//')
-
-        apparmor.aa.existing_profiles = {profile: profile_dummy_file}
-
-        log_reader = ReadLog(dict(), logfile, apparmor.aa.existing_profiles, '')
-        log = log_reader.read_log('')
-
-        for root in log:
-            apparmor.aa.handle_children('', '', root)  # interactive for exec events!
-
-        log_dict = apparmor.aa.collapse_log()
-
-        apparmor.aa.filelist = apparmor.aa.hasher()
-        apparmor.aa.filelist[profile_dummy_file]['profiles'][profile] = True
-
-        new_profile = apparmor.aa.serialize_profile(log_dict[aamode][profile], profile, None)
 
         expected_profile = read_file('%s.profile' % params)
 
@@ -244,6 +208,51 @@ class TestLogToProfile(AATest):
         else:
             self.assertEqual(new_profile, expected_profile)
 
+
+def logfile_to_profile(logfile):
+    profile_dummy_file = 'AATest_does_exist'
+
+    # we need to find out the profile name and aamode (complain vs. enforce mode) so that the test can access the correct place in storage
+    parser = ReadLog('', '', '', '')
+    parsed_event = parser.parse_event(read_file(logfile))
+
+    if not parsed_event:  # AA_RECORD_INVALID
+        return None, 'INVALID'
+
+    aamode = parsed_event['aamode']
+
+    if aamode in['AUDIT', 'STATUS', 'HINT']: # ignore some event types  # XXX maybe we shouldn't ignore AUDIT events?
+        return None, aamode
+
+    if aamode not in ['PERMITTING', 'REJECTING']:
+        raise Exception('Unexpected aamode %s' % parsed_event['aamode'])
+
+    # cleanup apparmor.aa storage
+    apparmor.aa.log = dict()
+    apparmor.aa.aa = apparmor.aa.hasher()
+    apparmor.aa.prelog = apparmor.aa.hasher()
+
+    profile = parsed_event['profile']
+    hat = profile
+    if '//' in profile:
+        profile, hat = profile.split('//')
+
+    apparmor.aa.existing_profiles = {profile: profile_dummy_file}
+
+    log_reader = ReadLog(dict(), logfile, apparmor.aa.existing_profiles, '')
+    log = log_reader.read_log('')
+
+    for root in log:
+        apparmor.aa.handle_children('', '', root)  # interactive for exec events!
+
+    log_dict = apparmor.aa.collapse_log()
+
+    apparmor.aa.filelist = apparmor.aa.hasher()
+    apparmor.aa.filelist[profile_dummy_file]['profiles'][profile] = True
+
+    new_profile = apparmor.aa.serialize_profile(log_dict[aamode][profile], profile, None)
+
+    return profile, new_profile
 
 def find_test_multi(log_dir):
     '''find all log sniplets in the given log_dir'''
@@ -264,7 +273,12 @@ def find_test_multi(log_dir):
 
     return tests
 
+# if a logfile is given as parameter, print the resulting profile and exit (with $? = 42 to make sure tests break if the caller accidently hands over a parameter)
+if __name__ == '__main__' and len(sys.argv) == 2:
+    print(logfile_to_profile(sys.argv[1])[1])
+    exit(42)
 
+# still here? That means a normal test run
 print('Testing libapparmor test_multi tests...')
 TestLibapparmorTestMulti.tests = find_test_multi('../../libraries/libapparmor/testsuite/test_multi/')
 TestLogToProfile.tests = find_test_multi('../../libraries/libapparmor/testsuite/test_multi/')
