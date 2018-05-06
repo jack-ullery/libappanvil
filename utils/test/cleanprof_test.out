@@ -18,6 +18,8 @@
 
   unix (receive) type=dgram,
 
+  link subset /alpha/beta -> /tmp/**,
+
   allow /home/*/** r,
   allow /home/foo/** w,
 

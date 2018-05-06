@@ -2777,7 +2777,7 @@ def write_link_rules(prof_data, depth, allow):
             to_name = prof_data[allow]['link'][path]['to']
             subset = ''
             if prof_data[allow]['link'][path]['mode'] & apparmor.aamode.AA_LINK_SUBSET:
-                subset = 'subset'
+                subset = 'subset '
             audit = ''
             if prof_data[allow]['link'][path].get('audit', False):
                 audit = 'audit '

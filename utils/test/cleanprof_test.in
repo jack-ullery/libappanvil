@@ -41,6 +41,8 @@
     ^foo, # hat declarations are obsolete and will be removed when aa-cleanprof or aa-logprof writes the profile
 
 
+	link subset /alpha/beta -> /tmp/**,
+
 	allow /home/foo/bar r,
 	allow /home/foo/** w,
 }
