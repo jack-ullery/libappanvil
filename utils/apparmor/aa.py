@@ -2279,8 +2279,9 @@ def parse_profile_data(data, file, do_include):
             from_name = strip_quotes(matches[0])
             to_name = strip_quotes(matches[1])
 
-            if profile:
-                profile_data[profile][hat]['alias'][from_name] = to_name
+            if profile and not do_include:
+                raise AppArmorException(_('Syntax Error: Unexpected alias definition found inside profile in file: %(file)s line: %(line)s') % {
+                        'file': file, 'line': lineno + 1 })
             else:
                 if not filelist.get(file, False):
                     filelist[file] = hasher()
