@@ -1,6 +1,8 @@
 # A simple test comment which will persist
 #include <tunables/global>
 
+		alias /foo    ->    /bar	,
+
 /usr/bin/a/simple/cleanprof/test/profile {
 	# Just for the heck of it, this comment wont see the day of light
 	#include <abstractions/base>

@@ -1,3 +1,5 @@
+alias /foo -> /bar,
+
 #include <tunables/global>
 
 # A simple test comment which will persist
