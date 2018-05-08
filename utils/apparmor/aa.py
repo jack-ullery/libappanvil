@@ -2665,7 +2665,16 @@ def write_change_profile(prof_data, depth):
     return data
 
 def write_alias(prof_data, depth):
-    return write_pair(prof_data, depth, '', 'alias', 'alias ', ' -> ', ',', quote_if_needed)
+    pre = '  ' * depth
+    data = []
+
+    if prof_data['alias']:
+        for key in sorted(prof_data['alias'].keys()):
+            data.append('%salias %s -> %s,' % (pre, quote_if_needed(key), quote_if_needed(prof_data['alias'][key])))
+
+        data.append('')
+
+    return data
 
 def write_rlimits(prof_data, depth):
     data = []
