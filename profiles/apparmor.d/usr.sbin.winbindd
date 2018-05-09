@@ -31,6 +31,7 @@
   /{var/,}run/samba/winbindd.pid rwk,
   /{var/,}run/samba/winbindd/ rw,
   /{var/,}run/samba/winbindd/pipe w,
+  /{var/,}run/user/*/krb5cc/* rwk,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.winbindd>
