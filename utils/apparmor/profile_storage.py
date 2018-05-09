@@ -113,6 +113,51 @@ class ProfileStorage:
         else:
             raise AppArmorBug('attempt to read unknown key %s' % key)
 
+    def get_rules_clean(self, depth):
+        '''return all clean rules of a profile (with default formatting, and leading whitespace as specified in the depth parameter)
+
+           Note that the profile header and the closing "}" are _not_ included.
+        '''
+
+        # "old" write functions for rule types not implemented as *Rule class yet
+        write_functions = {
+            'alias': write_alias,
+            'include': write_includes,
+            'links': write_links,
+            'lvar': write_list_vars,
+            'mount': write_mount,
+            'pivot_root': write_pivot_root,
+            'unix': write_unix,
+        }
+
+        write_order = [
+            'alias',
+            'lvar',
+            'include',
+            'rlimit',
+            'capability',
+            'network',
+            'dbus',
+            'mount',
+            'signal',
+            'ptrace',
+            'pivot_root',
+            'unix',
+            'links',
+            'file',
+            'change_profile',
+        ]
+
+        data = []
+
+        for ruletype in write_order:
+            if write_functions.get(ruletype):
+                data += write_functions[ruletype](self.data, depth)
+            else:
+                data += self.data[ruletype].get_clean(depth)
+
+        return data
+
 
 def set_allow_str(allow):
     if allow == 'deny':

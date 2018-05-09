@@ -2661,23 +2661,16 @@ def write_file(prof_data, depth):
     return data
 
 def write_rules(prof_data, depth):
-    data = write_alias(prof_data, depth)
-    data += write_list_vars(prof_data, depth)
-    data += write_includes(prof_data, depth)
-    data += write_rlimits(prof_data, depth)
-    data += write_capabilities(prof_data, depth)
-    data += write_netdomain(prof_data, depth)
-    data += write_dbus(prof_data, depth)
-    data += write_mount(prof_data, depth)
-    data += write_signal(prof_data, depth)
-    data += write_ptrace(prof_data, depth)
-    data += write_pivot_root(prof_data, depth)
-    data += write_unix(prof_data, depth)
-    data += write_links(prof_data, depth)
-    data += write_file(prof_data, depth)
-    data += write_change_profile(prof_data, depth)
+    if type(prof_data) is not ProfileStorage:
+        # TODO: find out why prof_data is not a ProfileStorage object in 37 of the libapparmor test_multi testcases
+        #       (mostly seems to affect profiles with child profiles, which could mean the libapparmor test code
+        #       doesn't initialize empty parent profiles.)
+        #       "normal" aa-logprof usage doesn't seem to trigger this
 
-    return data
+        print('*** WARNING: prof_data is not a ProfileStorage object ***')
+        return []
+
+    return prof_data.get_rules_clean(depth)
 
 def write_piece(profile_data, depth, name, nhat, write_flags):
     pre = '  ' * depth
