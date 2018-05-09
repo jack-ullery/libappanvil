@@ -14,7 +14,9 @@
 # ----------------------------------------------------------------------
 
 
-from apparmor.common import AppArmorBug, hasher
+from apparmor.aamode import AA_LINK_SUBSET
+
+from apparmor.common import AppArmorBug, AppArmorException, hasher
 
 from apparmor.rule.capability       import CapabilityRuleset
 from apparmor.rule.change_profile   import ChangeProfileRuleset
@@ -24,6 +26,12 @@ from apparmor.rule.network          import NetworkRuleset
 from apparmor.rule.ptrace           import PtraceRuleset
 from apparmor.rule.rlimit           import RlimitRuleset
 from apparmor.rule.signal           import SignalRuleset
+
+from apparmor.rule import quote_if_needed
+
+# setup module translations
+from apparmor.translations import init_translation
+_ = init_translation()
 
 ruletypes = {
     'capability':       {'ruleset': CapabilityRuleset},
@@ -104,3 +112,155 @@ class ProfileStorage:
             return self.data.get(key, fallback)
         else:
             raise AppArmorBug('attempt to read unknown key %s' % key)
+
+
+def set_allow_str(allow):
+    if allow == 'deny':
+        return 'deny '
+    elif allow == 'allow':
+        return ''
+    elif allow == '':
+        return ''
+    else:
+        raise AppArmorException(_("Invalid allow string: %(allow)s"))
+
+def set_ref_allow(prof_data, allow):
+    if allow:
+        return prof_data[allow], set_allow_str(allow)
+    else:
+        return prof_data, ''
+
+def write_pair(prof_data, depth, allow, name, prefix, sep, tail, fn):
+    pre = '  ' * depth
+    data = []
+    ref, allow = set_ref_allow(prof_data, allow)
+
+    if ref.get(name, False):
+        for key in sorted(ref[name].keys()):
+            value = fn(ref[name][key])  # eval('%s(%s)' % (fn, ref[name][key]))
+            data.append('%s%s%s%s%s%s%s' % (pre, allow, prefix, key, sep, value, tail))
+        if ref[name].keys():
+            data.append('')
+
+    return data
+
+def write_alias(prof_data, depth):
+    pre = '  ' * depth
+    data = []
+
+    if prof_data['alias']:
+        for key in sorted(prof_data['alias'].keys()):
+            data.append('%salias %s -> %s,' % (pre, quote_if_needed(key), quote_if_needed(prof_data['alias'][key])))
+
+        data.append('')
+
+    return data
+
+def write_includes(prof_data, depth):
+    pre = '  ' * depth
+    data = []
+
+    for key in sorted(prof_data['include'].keys()):
+        if key.startswith('/'):
+            qkey = '"%s"' % key
+        else:
+            qkey = '<%s>' % quote_if_needed(key)
+
+        data.append('%s#include %s' % (pre, qkey))
+
+    if data:
+        data.append('')
+
+    return data
+
+def var_transform(ref):
+    data = []
+    for value in ref:
+        if not value:
+            value = '""'
+        data.append(quote_if_needed(value))
+    return ' '.join(data)
+
+def write_list_vars(prof_data, depth):
+    return write_pair(prof_data, depth, '', 'lvar', '', ' = ', '', var_transform)
+
+def write_link_rules(prof_data, depth, allow):
+    pre = '  ' * depth
+    data = []
+    allowstr = set_allow_str(allow)
+
+    if prof_data[allow].get('link', False):
+        for path in sorted(prof_data[allow]['link'].keys()):
+            to_name = prof_data[allow]['link'][path]['to']
+            subset = ''
+            if prof_data[allow]['link'][path]['mode'] & AA_LINK_SUBSET:
+                subset = 'subset '
+            audit = ''
+            if prof_data[allow]['link'][path].get('audit', False):
+                audit = 'audit '
+            path = quote_if_needed(path)
+            to_name = quote_if_needed(to_name)
+            data.append('%s%s%slink %s%s -> %s,' % (pre, audit, allowstr, subset, path, to_name))
+        data.append('')
+
+    return data
+
+def write_links(prof_data, depth):
+    data = write_link_rules(prof_data, depth, 'deny')
+    data += write_link_rules(prof_data, depth, 'allow')
+
+    return data
+
+def write_mount_rules(prof_data, depth, allow):
+    pre = '  ' * depth
+    data = []
+
+    # no mount rules, so return
+    if not prof_data[allow].get('mount', False):
+        return data
+
+    for mount_rule in prof_data[allow]['mount']:
+        data.append('%s%s' % (pre, mount_rule.serialize()))
+    data.append('')
+    return data
+
+def write_mount(prof_data, depth):
+    data = write_mount_rules(prof_data, depth, 'deny')
+    data += write_mount_rules(prof_data, depth, 'allow')
+    return data
+
+def write_pivot_root_rules(prof_data, depth, allow):
+    pre = '  ' * depth
+    data = []
+
+    # no pivot_root rules, so return
+    if not prof_data[allow].get('pivot_root', False):
+        return data
+
+    for pivot_root_rule in prof_data[allow]['pivot_root']:
+        data.append('%s%s' % (pre, pivot_root_rule.serialize()))
+    data.append('')
+    return data
+
+def write_pivot_root(prof_data, depth):
+    data = write_pivot_root_rules(prof_data, depth, 'deny')
+    data += write_pivot_root_rules(prof_data, depth, 'allow')
+    return data
+
+def write_unix(prof_data, depth):
+    data = write_unix_rules(prof_data, depth, 'deny')
+    data += write_unix_rules(prof_data, depth, 'allow')
+    return data
+
+def write_unix_rules(prof_data, depth, allow):
+    pre = '  ' * depth
+    data = []
+
+    # no unix rules, so return
+    if not prof_data[allow].get('unix', False):
+        return data
+
+    for unix_rule in prof_data[allow]['unix']:
+        data.append('%s%s' % (pre, unix_rule.serialize()))
+    data.append('')
+    return data

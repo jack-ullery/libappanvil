@@ -21,7 +21,7 @@ import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
      get_profile_flags, set_profile_flags, set_options_audit_mode, set_options_owner_mode, is_skippable_file, is_skippable_dir,
      parse_profile_start, parse_profile_data, separate_vars, store_list_var, write_header,
-     var_transform, serialize_parse_profile_start, get_file_perms, propose_file_rules)
+     serialize_parse_profile_start, get_file_perms, propose_file_rules)
 from apparmor.aare import AARE
 from apparmor.common import AppArmorException, AppArmorBug
 from apparmor.rule.file import FileRule
@@ -676,17 +676,6 @@ class AaTest_write_header(AATest):
 
         result = write_header(prof_data, depth, name, embedded_hat, write_flags)
         self.assertEqual(result, [expected])
-
-class AaTest_var_transform(AATest):
-    tests = [
-        (['foo', ''],           'foo ""'        ),
-        (['foo', 'bar'],        'foo bar'       ),
-        ([''],                  '""'            ),
-        (['bar baz', 'foo'],    '"bar baz" foo' ),
-    ]
-
-    def _run_test(self, params, expected):
-        self.assertEqual(var_transform(params), expected)
 
 class AaTest_serialize_parse_profile_start(AATest):
     def _parse(self, line, profile, hat, prof_data_profile, prof_data_external):
