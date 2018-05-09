@@ -42,6 +42,11 @@
 
     ^foo, # hat declarations are obsolete and will be removed when aa-cleanprof or aa-logprof writes the profile
 
+	mount options=(rw,suid) /c -> /3,
+
+	pivot_root oldroot=/mnt/root/old/,
+
+	unix shutdown addr=@HypotheticalServiceDaemon,
 
 	link subset /alpha/beta -> /tmp/**,
 

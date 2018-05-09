@@ -16,9 +16,14 @@ alias /foo -> /bar,
 
   dbus send bus=session,
 
+  mount options=(rw,suid) /c -> /3,
+
   signal set=(abrt alrm bus chld fpe hup ill int kill pipe quit segv stkflt term trap usr1 usr2),
 
+  pivot_root oldroot=/mnt/root/old/,
+
   unix (receive) type=dgram,
+  unix shutdown addr=@HypotheticalServiceDaemon,
 
   link subset /alpha/beta -> /tmp/**,
 
