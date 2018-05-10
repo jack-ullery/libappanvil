@@ -2662,7 +2662,7 @@ def write_file(prof_data, depth):
 
 def write_rules(prof_data, depth):
     if type(prof_data) is not ProfileStorage:
-        # TODO: find out why prof_data is not a ProfileStorage object in 37 of the libapparmor test_multi testcases
+        # TODO: find out why prof_data is not a ProfileStorage object in 11 of the libapparmor test_multi testcases
         #       (mostly seems to affect profiles with child profiles, which could mean the libapparmor test code
         #       doesn't initialize empty parent profiles.)
         #       "normal" aa-logprof usage doesn't seem to trigger this
