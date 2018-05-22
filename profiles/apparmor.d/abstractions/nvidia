@@ -4,6 +4,8 @@
   # configuration queries
   capability ipc_lock,
 
+  /usr/share/nvidia/nvidia-application-profiles* r,
+
   # libvdpau config file for nvidia workarounds
   /etc/vdpau_wrapper.cfg r,
 
