@@ -1749,7 +1749,7 @@ def match_includes(profile, rule_type, rule_obj):
     newincludes = []
     for incname in include.keys():
         # XXX type check should go away once we init all profiles correctly
-        if valid_include(profile, incname) and include[incname][incname].get(rule_type, False) and include[incname][incname][rule_type].is_covered(rule_obj):
+        if valid_include(profile, incname) and include[incname][incname][rule_type].is_covered(rule_obj):
             newincludes.append(incname)
 
     return newincludes
@@ -3395,9 +3395,8 @@ def is_known_rule(profile, rule_type, rule_obj):
         if os.path.isdir(get_include_path(incname)):
             includelist += include_dir_filelist(profile_dir, incname)
         else:
-            if include[incname][incname].get(rule_type, False):
-                if include[incname][incname][rule_type].is_covered(rule_obj, False):
-                    return True
+            if include[incname][incname][rule_type].is_covered(rule_obj, False):
+                return True
 
             for childinc in include[incname][incname]['include'].keys():
                 if childinc not in checked:
