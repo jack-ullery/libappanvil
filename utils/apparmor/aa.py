@@ -49,7 +49,9 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
                             strip_quotes, parse_profile_start_line, re_match_include )
 
-from apparmor.profile_storage import ProfileStorage, ruletypes
+from apparmor.profile_storage import (ProfileStorage, ruletypes, write_alias,
+                            write_includes, write_links, write_list_vars, write_mount,
+                            write_pivot_root, write_unix)
 
 import apparmor.rules as aarules
 
@@ -2610,70 +2612,10 @@ def write_header(prof_data, depth, name, embedded_hat, write_flags):
 
     return data
 
-def set_allow_str(allow):
-    if allow == 'deny':
-        return 'deny '
-    elif allow == 'allow':
-        return ''
-    elif allow == '':
-        return ''
-    else:
-        raise AppArmorException(_("Invalid allow string: %(allow)s"))
-
-def set_ref_allow(prof_data, allow):
-    if allow:
-        return prof_data[allow], set_allow_str(allow)
-    else:
-        return prof_data, ''
-
-
-def write_pair(prof_data, depth, allow, name, prefix, sep, tail, fn):
-    pre = '  ' * depth
-    data = []
-    ref, allow = set_ref_allow(prof_data, allow)
-
-    if ref.get(name, False):
-        for key in sorted(ref[name].keys()):
-            value = fn(ref[name][key])  # eval('%s(%s)' % (fn, ref[name][key]))
-            data.append('%s%s%s%s%s%s%s' % (pre, allow, prefix, key, sep, value, tail))
-        if ref[name].keys():
-            data.append('')
-
-    return data
-
-def write_includes(prof_data, depth):
-    pre = '  ' * depth
-    data = []
-
-    for key in sorted(prof_data['include'].keys()):
-        if key.startswith('/'):
-            qkey = '"%s"' % key
-        else:
-            qkey = '<%s>' % quote_if_needed(key)
-
-        data.append('%s#include %s' % (pre, qkey))
-
-    if data:
-        data.append('')
-
-    return data
-
 def write_change_profile(prof_data, depth):
     data = []
     if prof_data.get('change_profile', False):
         data = prof_data['change_profile'].get_clean(depth)
-    return data
-
-def write_alias(prof_data, depth):
-    pre = '  ' * depth
-    data = []
-
-    if prof_data['alias']:
-        for key in sorted(prof_data['alias'].keys()):
-            data.append('%salias %s -> %s,' % (pre, quote_if_needed(key), quote_if_needed(prof_data['alias'][key])))
-
-        data.append('')
-
     return data
 
 def write_rlimits(prof_data, depth):
@@ -2681,17 +2623,6 @@ def write_rlimits(prof_data, depth):
     if prof_data.get('rlimit', False):
         data = prof_data['rlimit'].get_clean(depth)
     return data
-
-def var_transform(ref):
-    data = []
-    for value in ref:
-        if not value:
-            value = '""'
-        data.append(quote_if_needed(value))
-    return ' '.join(data)
-
-def write_list_vars(prof_data, depth):
-    return write_pair(prof_data, depth, '', 'lvar', '', ' = ', '', var_transform)
 
 def write_capabilities(prof_data, depth):
     data = []
@@ -2711,24 +2642,6 @@ def write_dbus(prof_data, depth):
         data = prof_data['dbus'].get_clean(depth)
     return data
 
-def write_mount_rules(prof_data, depth, allow):
-    pre = '  ' * depth
-    data = []
-
-    # no mount rules, so return
-    if not prof_data[allow].get('mount', False):
-        return data
-
-    for mount_rule in prof_data[allow]['mount']:
-        data.append('%s%s' % (pre, mount_rule.serialize()))
-    data.append('')
-    return data
-
-def write_mount(prof_data, depth):
-    data = write_mount_rules(prof_data, depth, 'deny')
-    data += write_mount_rules(prof_data, depth, 'allow')
-    return data
-
 def write_signal(prof_data, depth):
     data = []
     if prof_data.get('signal', False):
@@ -2741,69 +2654,6 @@ def write_ptrace(prof_data, depth):
         data = prof_data['ptrace'].get_clean(depth)
     return data
 
-def write_pivot_root_rules(prof_data, depth, allow):
-    pre = '  ' * depth
-    data = []
-
-    # no pivot_root rules, so return
-    if not prof_data[allow].get('pivot_root', False):
-        return data
-
-    for pivot_root_rule in prof_data[allow]['pivot_root']:
-        data.append('%s%s' % (pre, pivot_root_rule.serialize()))
-    data.append('')
-    return data
-
-def write_pivot_root(prof_data, depth):
-    data = write_pivot_root_rules(prof_data, depth, 'deny')
-    data += write_pivot_root_rules(prof_data, depth, 'allow')
-    return data
-
-def write_unix_rules(prof_data, depth, allow):
-    pre = '  ' * depth
-    data = []
-
-    # no unix rules, so return
-    if not prof_data[allow].get('unix', False):
-        return data
-
-    for unix_rule in prof_data[allow]['unix']:
-        data.append('%s%s' % (pre, unix_rule.serialize()))
-    data.append('')
-    return data
-
-def write_unix(prof_data, depth):
-    data = write_unix_rules(prof_data, depth, 'deny')
-    data += write_unix_rules(prof_data, depth, 'allow')
-    return data
-
-def write_link_rules(prof_data, depth, allow):
-    pre = '  ' * depth
-    data = []
-    allowstr = set_allow_str(allow)
-
-    if prof_data[allow].get('link', False):
-        for path in sorted(prof_data[allow]['link'].keys()):
-            to_name = prof_data[allow]['link'][path]['to']
-            subset = ''
-            if prof_data[allow]['link'][path]['mode'] & apparmor.aamode.AA_LINK_SUBSET:
-                subset = 'subset '
-            audit = ''
-            if prof_data[allow]['link'][path].get('audit', False):
-                audit = 'audit '
-            path = quote_if_needed(path)
-            to_name = quote_if_needed(to_name)
-            data.append('%s%s%slink %s%s -> %s,' % (pre, audit, allowstr, subset, path, to_name))
-        data.append('')
-
-    return data
-
-def write_links(prof_data, depth):
-    data = write_link_rules(prof_data, depth, 'deny')
-    data += write_link_rules(prof_data, depth, 'allow')
-
-    return data
-
 def write_file(prof_data, depth):
     data = []
     if prof_data.get('file', False):
@@ -2811,23 +2661,16 @@ def write_file(prof_data, depth):
     return data
 
 def write_rules(prof_data, depth):
-    data = write_alias(prof_data, depth)
-    data += write_list_vars(prof_data, depth)
-    data += write_includes(prof_data, depth)
-    data += write_rlimits(prof_data, depth)
-    data += write_capabilities(prof_data, depth)
-    data += write_netdomain(prof_data, depth)
-    data += write_dbus(prof_data, depth)
-    data += write_mount(prof_data, depth)
-    data += write_signal(prof_data, depth)
-    data += write_ptrace(prof_data, depth)
-    data += write_pivot_root(prof_data, depth)
-    data += write_unix(prof_data, depth)
-    data += write_links(prof_data, depth)
-    data += write_file(prof_data, depth)
-    data += write_change_profile(prof_data, depth)
+    if type(prof_data) is not ProfileStorage:
+        # TODO: find out why prof_data is not a ProfileStorage object in 11 of the libapparmor test_multi testcases
+        #       (mostly seems to affect profiles with child profiles, which could mean the libapparmor test code
+        #       doesn't initialize empty parent profiles.)
+        #       "normal" aa-logprof usage doesn't seem to trigger this
 
-    return data
+        print('*** WARNING: prof_data is not a ProfileStorage object ***')
+        return []
+
+    return prof_data.get_rules_clean(depth)
 
 def write_piece(profile_data, depth, name, nhat, write_flags):
     pre = '  ' * depth

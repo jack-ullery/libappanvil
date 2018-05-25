@@ -13,7 +13,7 @@ import unittest
 from common_test import AATest, setup_all_loops
 
 from apparmor.common import AppArmorBug
-from apparmor.profile_storage import ProfileStorage
+from apparmor.profile_storage import ProfileStorage, var_transform
 
 class TestUnknownKey(AATest):
     def AASetup(self):
@@ -34,6 +34,17 @@ class TestUnknownKey(AATest):
     def test_set(self):
         with self.assertRaises(AppArmorBug):
             self.storage['foo'] = 'bar'
+
+class AaTest_var_transform(AATest):
+    tests = [
+        (['foo', ''],           'foo ""'        ),
+        (['foo', 'bar'],        'foo bar'       ),
+        ([''],                  '""'            ),
+        (['bar baz', 'foo'],    '"bar baz" foo' ),
+    ]
+
+    def _run_test(self, params, expected):
+        self.assertEqual(var_transform(params), expected)
 
 
 setup_all_loops(__name__)

@@ -247,6 +247,16 @@ def logfile_to_profile(logfile):
 
     log_dict = apparmor.aa.collapse_log()
 
+    if profile != hat:
+        # log event for a child profile means log_dict only contains the child profile
+        # initialize parent profile in log_dict as ProfileStorage to ensure writing the profile doesn't fail
+        # (in "normal" usage outside of this test, log_dict will not be handed over to serialize_profile())
+
+        if log_dict[aamode][profile][profile] != {}:
+            raise Exception('event for child profile, but parent profile was initialized nevertheless. Logfile: %s' % logfile)
+
+        log_dict[aamode][profile][profile] = apparmor.aa.ProfileStorage('TEST DUMMY for empty parent profile', profile_dummy_file, 'logfile_to_profile()')
+
     apparmor.aa.filelist = apparmor.aa.hasher()
     apparmor.aa.filelist[profile_dummy_file]['profiles'][profile] = True
 
