@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/apparmor.h>
+#include <sys/types.h>
 #include <unistd.h>
 #define _(s) gettext(s)
 
@@ -33,6 +34,7 @@ static const char *opt_namespace = NULL;
 static bool opt_debug = false;
 static bool opt_immediate = false;
 static bool opt_verbose = false;
+static pid_t pid = 0;
 
 static void usage(const char *name, bool error)
 {
@@ -60,7 +62,7 @@ static void usage(const char *name, bool error)
 	exit(status);
 }
 
-#define error(fmt, args...) _error(_("aa-exec: ERROR: " fmt "\n"), ## args)
+#define error(fmt, args...) _error(_("[%ld] aa-exec: ERROR: " fmt "\n"), (long)pid, ## args)
 static void _error(const char *fmt, ...)
 {
 	va_list args;
@@ -71,7 +73,7 @@ static void _error(const char *fmt, ...)
 	exit(EXIT_FAILURE);
 }
 
-#define debug(fmt, args...) _debug(_("aa-exec: DEBUG: " fmt "\n"), ## args)
+#define debug(fmt, args...) _debug(_("[%ld] aa-exec: DEBUG: " fmt "\n"), (long)pid, ## args)
 static void _debug(const char *fmt, ...)
 {
 	va_list args;
@@ -84,7 +86,7 @@ static void _debug(const char *fmt, ...)
 	va_end(args);
 }
 
-#define verbose(fmt, args...) _verbose(_(fmt "\n"), ## args)
+#define verbose(fmt, args...) _verbose(_("[%ld] " fmt "\n"), (long)pid, ## args)
 static void _verbose(const char *fmt, ...)
 {
 	va_list args;
@@ -102,7 +104,7 @@ static void verbose_print_argv(char **argv)
 	if (!opt_verbose)
 		return;
 
-	fprintf(stderr, _("exec"));
+	fprintf(stderr, _("[%ld] exec"), (long)pid);
 	for (; *argv; argv++)
 		fprintf(stderr, " %s", *argv);
 	fprintf(stderr, "\n");
@@ -182,6 +184,11 @@ int main(int argc, char **argv)
 {
 	char name[PATH_MAX];
 	int rc = 0;
+
+	/* IMPORTANT: pid must be initialized before doing anything else since
+	 * it is used in a global context when printing messages
+	 */
+	pid = getpid();
 
 	argv = parse_args(argc, argv);
 
