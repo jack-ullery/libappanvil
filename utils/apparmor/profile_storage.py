@@ -169,23 +169,15 @@ def set_allow_str(allow):
     else:
         raise AppArmorException(_("Invalid allow string: %(allow)s"))
 
-def write_list_vars(prof_data, depth):
-    allow = ''
+def write_list_vars(ref, depth):
     name = 'lvar'
-    prefix = ''
-    sep = ' = '
-    tail = ''
-    fn = var_transform
-
     pre = '  ' * depth
     data = []
-    ref = prof_data
-    allow = ''
 
     if ref.get(name, False):
         for key in sorted(ref[name].keys()):
-            value = fn(ref[name][key])  # eval('%s(%s)' % (fn, ref[name][key]))
-            data.append('%s%s%s%s%s%s%s' % (pre, allow, prefix, key, sep, value, tail))
+            value = var_transform(ref[name][key])
+            data.append('%s%s = %s' % (pre, key, value))
         if ref[name].keys():
             data.append('')
 
