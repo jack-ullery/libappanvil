@@ -202,7 +202,7 @@ int main(int argc, char **argv)
 
 	if (rc) {
 		if (errno == ENOENT || errno == EACCES) {
-			error("%s '%s' does not exist\n",
+			error("%s '%s' does not exist",
 			      opt_profile ? "profile" : "namespace", name);
 		} else if (errno == EINVAL) {
 			error("AppArmor interface not available");
