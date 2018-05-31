@@ -175,7 +175,14 @@ def set_ref_allow(prof_data, allow):
     else:
         return prof_data, ''
 
-def write_pair(prof_data, depth, allow, name, prefix, sep, tail, fn):
+def write_list_vars(prof_data, depth):
+    allow = ''
+    name = 'lvar'
+    prefix = ''
+    sep = ' = '
+    tail = ''
+    fn = var_transform
+
     pre = '  ' * depth
     data = []
     ref, allow = set_ref_allow(prof_data, allow)
@@ -225,9 +232,6 @@ def var_transform(ref):
             value = '""'
         data.append(quote_if_needed(value))
     return ' '.join(data)
-
-def write_list_vars(prof_data, depth):
-    return write_pair(prof_data, depth, '', 'lvar', '', ' = ', '', var_transform)
 
 def write_link_rules(prof_data, depth, allow):
     pre = '  ' * depth
