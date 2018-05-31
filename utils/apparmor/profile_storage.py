@@ -220,7 +220,7 @@ def write_includes(prof_data, depth):
 
 def var_transform(ref):
     data = []
-    for value in ref:
+    for value in sorted(ref):
         if not value:
             value = '""'
         data.append(quote_if_needed(value))

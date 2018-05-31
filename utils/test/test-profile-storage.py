@@ -37,8 +37,8 @@ class TestUnknownKey(AATest):
 
 class AaTest_var_transform(AATest):
     tests = [
-        (['foo', ''],           'foo ""'        ),
-        (['foo', 'bar'],        'foo bar'       ),
+        (['foo', ''],           '"" foo'        ),
+        (['foo', 'bar'],        'bar foo'       ),
         ([''],                  '""'            ),
         (['bar baz', 'foo'],    '"bar baz" foo' ),
     ]
