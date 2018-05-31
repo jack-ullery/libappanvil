@@ -201,8 +201,11 @@ int main(int argc, char **argv)
 	}
 
 	if (rc) {
-		if (errno == ENOENT || errno == EACCES) {
+		if (errno == ENOENT) {
 			error("%s '%s' does not exist",
+			      opt_profile ? "profile" : "namespace", name);
+		} else if (errno == EACCES) {
+			error("insufficient permissions to change to the %s '%s'",
 			      opt_profile ? "profile" : "namespace", name);
 		} else if (errno == EINVAL) {
 			error("AppArmor interface not available");
