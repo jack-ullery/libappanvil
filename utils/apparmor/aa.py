@@ -1893,11 +1893,9 @@ def save_profiles():
                 else:
                     oldprofile = get_profile_filename(which)
 
-                try:
-                    newprofile = serialize_profile_from_old_profile(aa[which], which, '')
-                except AttributeError:
-                    # see https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/1528139
-                    newprofile = "###\n###\n### Internal error while generating diff, please use '%s' instead\n###\n###\n" % _('View Changes b/w (C)lean profiles')
+                serialize_options = {}
+                serialize_options['METADATA'] = True
+                newprofile = serialize_profile(aa[which], which, serialize_options)
 
                 aaui.UI_Changes(oldprofile, newprofile, comments=True)
 
