@@ -2716,14 +2716,6 @@ def serialize_profile(profile_data, name, options):
 
     return string + '\n'
 
-def serialize_parse_profile_start(line, file, lineno, profile, hat, prof_data_profile, prof_data_external, correct):
-    (profile, hat, attachment, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
-
-    if hat and profile != hat and '%s//%s'%(profile, hat) in line and not prof_data_external:
-        correct = False
-
-    return (profile, hat, attachment, flags, in_contained_hat, correct)
-
 def write_profile_ui_feedback(profile):
     aaui.UI_Info(_('Writing updated profile for %s.') % profile)
     write_profile(profile)
