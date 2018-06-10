@@ -31,4 +31,4 @@
   /run/saslauthd/mux rw,
 
   # OCSP stapling
-  /var/log/apache2/stapling-cache rw,
+  /{var/,}run/lock/apache2/stapling-cache* rw,
