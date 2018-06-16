@@ -3,8 +3,8 @@ Description=Load AppArmor profiles
 DefaultDependencies=no
 Before=sysinit.target
 After=systemd-journald-audit.socket
-# profile cache
-After=var.mount var-lib.mount
+# profile cache: /var/cache/apparmor/ and /usr/share/apparmor/cache/
+After=var.mount var-cache.mount usr.mount usr-share.mount
 ConditionSecurity=apparmor
 
 [Service]
