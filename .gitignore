@@ -189,6 +189,7 @@ utils/*.tmp
 utils/po/*.mo
 utils/apparmor/*.pyc
 utils/apparmor/rule/*.pyc
+utils/test/common_test.pyc
 utils/test/.coverage
 utils/test/htmlcov/
 utils/vim/apparmor.vim
