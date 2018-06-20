@@ -544,6 +544,9 @@ class AaTest_parse_profile_start(AATest):
         expected = ('/foo', '/foo', None, 'complain', False, False, False)
         self.assertEqual(result, expected)
 
+    def test_parse_profile_start_unsupported_01(self):
+        with self.assertRaises(AppArmorException):
+            self._parse('/foo///bar///baz {', None, None)  # XXX deeply nested external hat
 
     def test_parse_profile_start_invalid_01(self):
         with self.assertRaises(AppArmorException):

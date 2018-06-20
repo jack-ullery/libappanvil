@@ -2145,8 +2145,10 @@ def parse_profile_start(line, file, lineno, profile, hat):
 
     else:  # stand-alone profile
         profile = matches['profile']
-        if len(profile.split('//')) >= 2:
-            profile, hat = profile.split('//')[:2]
+        if len(profile.split('//')) > 2:
+            raise AppArmorException("Nested child profiles ('%(profile)s', found in %(file)s) are not supported by the AppArmor tools yet." % {'profile': profile, 'file': file})
+        elif len(profile.split('//')) == 2:
+            profile, hat = profile.split('//')
             pps_set_hat_external = True
         else:
             hat = profile
