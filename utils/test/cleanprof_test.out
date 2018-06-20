@@ -1,5 +1,8 @@
 alias /foo -> /bar,
 
+@{asdf} = "" foo
+@{xy} = x y
+
 #include <tunables/global>
 
 # A simple test comment which will persist

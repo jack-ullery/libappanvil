@@ -169,21 +169,15 @@ def set_allow_str(allow):
     else:
         raise AppArmorException(_("Invalid allow string: %(allow)s"))
 
-def set_ref_allow(prof_data, allow):
-    if allow:
-        return prof_data[allow], set_allow_str(allow)
-    else:
-        return prof_data, ''
-
-def write_pair(prof_data, depth, allow, name, prefix, sep, tail, fn):
+def write_list_vars(ref, depth):
+    name = 'lvar'
     pre = '  ' * depth
     data = []
-    ref, allow = set_ref_allow(prof_data, allow)
 
     if ref.get(name, False):
         for key in sorted(ref[name].keys()):
-            value = fn(ref[name][key])  # eval('%s(%s)' % (fn, ref[name][key]))
-            data.append('%s%s%s%s%s%s%s' % (pre, allow, prefix, key, sep, value, tail))
+            value = var_transform(ref[name][key])
+            data.append('%s%s = %s' % (pre, key, value))
         if ref[name].keys():
             data.append('')
 
@@ -220,14 +214,11 @@ def write_includes(prof_data, depth):
 
 def var_transform(ref):
     data = []
-    for value in ref:
+    for value in sorted(ref):
         if not value:
             value = '""'
         data.append(quote_if_needed(value))
     return ' '.join(data)
-
-def write_list_vars(prof_data, depth):
-    return write_pair(prof_data, depth, '', 'lvar', '', ' = ', '', var_transform)
 
 def write_link_rules(prof_data, depth, allow):
     pre = '  ' * depth
