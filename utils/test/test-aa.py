@@ -21,7 +21,7 @@ import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
      get_profile_flags, set_profile_flags, set_options_audit_mode, set_options_owner_mode, is_skippable_file, is_skippable_dir,
      parse_profile_start, parse_profile_data, separate_vars, store_list_var, write_header,
-     serialize_parse_profile_start, get_file_perms, propose_file_rules)
+     get_file_perms, propose_file_rules)
 from apparmor.aare import AARE
 from apparmor.common import AppArmorException, AppArmorBug
 from apparmor.rule.file import FileRule
@@ -636,7 +636,6 @@ class AaTest_store_list_var(AATest):
         for key in exp_var:
             self.assertEqual(var[key], exp_var[key])
 
-
 class AaTest_write_header(AATest):
     tests = [
         # name       embedded_hat    write_flags    depth   flags           attachment  prof.keyw.  comment    expected
@@ -676,92 +675,6 @@ class AaTest_write_header(AATest):
 
         result = write_header(prof_data, depth, name, embedded_hat, write_flags)
         self.assertEqual(result, [expected])
-
-class AaTest_serialize_parse_profile_start(AATest):
-    def _parse(self, line, profile, hat, prof_data_profile, prof_data_external):
-        # 'correct' is always True in the code that uses serialize_parse_profile_start() (set some lines above the function call)
-        return serialize_parse_profile_start(line, 'somefile', 1, profile, hat, prof_data_profile, prof_data_external, True)
-
-    def test_serialize_parse_profile_start_01(self):
-        result = self._parse('/foo {', None, None, False, False)
-        expected = ('/foo', '/foo', None, None, False, True)
-        self.assertEqual(result, expected)
-
-    def test_serialize_parse_profile_start_02(self):
-        result = self._parse('/foo (complain) {', None, None, False, False)
-        expected = ('/foo', '/foo', None, 'complain', False, True)
-        self.assertEqual(result, expected)
-
-    def test_serialize_parse_profile_start_03(self):
-        result = self._parse('profile foo /foo {', None, None, False, False) # named profile
-        expected = ('foo', 'foo', '/foo', None, False, True)
-        self.assertEqual(result, expected)
-
-    def test_serialize_parse_profile_start_04(self):
-        result = self._parse('profile /foo {', '/bar', '/bar', False, False) # child profile
-        expected = ('/bar', '/foo', None, None, True, True)
-        self.assertEqual(result, expected)
-
-    def test_serialize_parse_profile_start_05(self):
-        result = self._parse('/foo//bar {', None, None, False, False) # external hat
-        expected = ('/foo', 'bar', None, None, False, False) # note correct == False here
-        self.assertEqual(result, expected)
-
-    def test_serialize_parse_profile_start_06(self):
-        result = self._parse('profile "/foo" (complain) {', None, None, False, False)
-        expected = ('/foo', '/foo', None, 'complain', False, True)
-        self.assertEqual(result, expected)
-
-    def test_serialize_parse_profile_start_07(self):
-        result = self._parse('/foo {', None, None, True, False)
-        expected = ('/foo', '/foo', None, None, False, True)
-        self.assertEqual(result, expected)
-
-    def test_serialize_parse_profile_start_08(self):
-        result = self._parse('/foo {', None, None, False, True)
-        expected = ('/foo', '/foo', None, None, False, True)
-        self.assertEqual(result, expected)
-
-    def test_serialize_parse_profile_start_09(self):
-        result = self._parse('/foo {', None, None, True, True)
-        expected = ('/foo', '/foo', None, None, False, True)
-        self.assertEqual(result, expected)
-
-    def test_serialize_parse_profile_start_10(self):
-        result = self._parse('profile /foo {', '/bar', '/bar', True, False) # child profile
-        expected = ('/bar', '/foo', None, None, True, True)
-        self.assertEqual(result, expected)
-
-    def test_serialize_parse_profile_start_11(self):
-        result = self._parse('profile /foo {', '/bar', '/bar', False, True) # child profile
-        expected = ('/bar', '/foo', None, None, True, True)
-        self.assertEqual(result, expected)
-
-    def test_serialize_parse_profile_start_12(self):
-        result = self._parse('profile /foo {', '/bar', '/bar', True, True) # child profile
-        expected = ('/bar', '/foo', None, None, True, True)
-        self.assertEqual(result, expected)
-
-class AaTestInvalid_serialize_parse_profile_start(AATest):
-    tests = [
-        # line              profile     hat     p_d_profile p_d_external   expected
-        (['/foo {',         '/bar',     '/bar', False,      False       ], AppArmorException), # child profile without 'profile' keyword
-        (['profile /foo {', '/bar',     '/xy',  False,      False       ], AppArmorException), # already inside a child profile - nesting level reached
-        (['/ext//hat {',    '/bar',     '/bar', True,       True        ], AppArmorException), # external hat inside a profile
-        (['/ext//hat {',    '/bar',     '/bar', True,       False       ], AppArmorException), # external hat inside a profile
-        (['xy',             '/bar',     '/bar', False,      False       ], AppArmorBug      ), # not a profile start
-    ]
-
-    def _run_test(self, params, expected):
-        line = params[0]
-        profile = params[1]
-        hat = params[2]
-        prof_data_profile = params[3]
-        prof_data_external = params[4]
-
-        with self.assertRaises(expected):
-            # 'correct' is always True in the code that uses serialize_parse_profile_start() (set some lines above the function call)
-            serialize_parse_profile_start(line, 'somefile', 1, profile, hat, prof_data_profile, prof_data_external, True)
 
 class AaTest_get_file_perms_1(AATest):
     tests = [
