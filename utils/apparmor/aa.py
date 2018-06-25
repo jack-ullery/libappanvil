@@ -2664,15 +2664,14 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
 
 def serialize_profile(profile_data, name, options):
     string = ''
-    include_metadata = False
     include_flags = True
     data = []
 
     if type(options) is not dict:
         raise AppArmorBug('serialize_profile(): options is not a dict: %s' % options)
 
-    if options.get('METADATA', False):
-        include_metadata = True
+    include_metadata = options.get('METADATA', False)
+
     if options.get('NO_FLAGS', False):
         include_flags = False
 
