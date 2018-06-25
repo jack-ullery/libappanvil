@@ -501,7 +501,7 @@ def get_profile(prof_name):
         inactive_profile[prof_name][prof_name].pop('filename')
         profile_hash[uname]['username'] = uname
         profile_hash[uname]['profile_type'] = 'INACTIVE_LOCAL'
-        profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name, None)
+        profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name, {})
         profile_hash[uname]['profile_data'] = inactive_profile
 
         existing_profiles.pop(prof_name)  # remove profile filename from list to force storing in /etc/apparmor.d/ instead of extra_profile_dir
@@ -1897,8 +1897,8 @@ def save_profiles():
                 aaui.UI_Changes(oldprofile, newprofile, comments=True)
 
             elif ans == 'CMD_VIEW_CHANGES_CLEAN':
-                oldprofile = serialize_profile(original_aa[which], which, '')
-                newprofile = serialize_profile(aa[which], which, '')
+                oldprofile = serialize_profile(original_aa[which], which, {})
+                newprofile = serialize_profile(aa[which], which, {})
 
                 aaui.UI_Changes(oldprofile, newprofile)
 
