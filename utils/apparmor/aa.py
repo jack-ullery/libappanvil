@@ -740,7 +740,7 @@ def sync_profile():
         aaui.UI_Important(_('WARNING: Error synchronizing profiles with the repository:\n%s\n') % ret)
     else:
         users_repo_profiles = ret
-        serialize_opts = {'NO_FLAGS': True}
+        serialize_opts = {'FLAGS': False}
         for prof in sorted(aa.keys()):
             if is_repo_profile([aa[prof][prof]]):
                 repo_profiles.append(prof)
@@ -2664,16 +2664,13 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
 
 def serialize_profile(profile_data, name, options):
     string = ''
-    include_flags = True
     data = []
 
     if type(options) is not dict:
         raise AppArmorBug('serialize_profile(): options is not a dict: %s' % options)
 
     include_metadata = options.get('METADATA', False)
-
-    if options.get('NO_FLAGS', False):
-        include_flags = False
+    include_flags = options.get('FLAGS', True)
 
     if include_metadata:
         string = '# Last Modified: %s\n' % time.asctime()
