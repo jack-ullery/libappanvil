@@ -2668,11 +2668,13 @@ def serialize_profile(profile_data, name, options):
     include_flags = True
     data = []
 
-    if options:  # and type(options) == dict:
-        if options.get('METADATA', False):
-            include_metadata = True
-        if options.get('NO_FLAGS', False):
-            include_flags = False
+    if type(options) is not dict:
+        raise AppArmorBug('serialize_profile(): options is not a dict: %s' % options)
+
+    if options.get('METADATA', False):
+        include_metadata = True
+    if options.get('NO_FLAGS', False):
+        include_flags = False
 
     if include_metadata:
         string = '# Last Modified: %s\n' % time.asctime()
