@@ -732,7 +732,6 @@ def sync_profile():
     repo_profiles = []
     changed_profiles = []
     new_profiles = []
-    serialize_opts = dict()
     status_ok, ret = fetch_profiles_by_user(cfg['repository']['url'],
                                             cfg['repository']['distro'], user)
     if not status_ok:
@@ -741,7 +740,7 @@ def sync_profile():
         aaui.UI_Important(_('WARNING: Error synchronizing profiles with the repository:\n%s\n') % ret)
     else:
         users_repo_profiles = ret
-        serialize_opts['NO_FLAGS'] = True
+        serialize_opts = {'NO_FLAGS': True}
         for prof in sorted(aa.keys()):
             if is_repo_profile([aa[prof][prof]]):
                 repo_profiles.append(prof)
@@ -1892,8 +1891,7 @@ def save_profiles():
                 else:
                     oldprofile = get_profile_filename(which)
 
-                serialize_options = {}
-                serialize_options['METADATA'] = True
+                serialize_options = {'METADATA': True}
                 newprofile = serialize_profile(aa[which], which, serialize_options)
 
                 aaui.UI_Changes(oldprofile, newprofile, comments=True)
@@ -2737,8 +2735,7 @@ def write_profile(profile):
         #os.chmod(newprof.name, permission_600)
         pass
 
-    serialize_options = {}
-    serialize_options['METADATA'] = True
+    serialize_options = {'METADATA': True}
 
     profile_string = serialize_profile(aa[profile], profile, serialize_options)
     newprof.write(profile_string)
