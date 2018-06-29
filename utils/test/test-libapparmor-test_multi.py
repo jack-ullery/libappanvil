@@ -260,7 +260,7 @@ def logfile_to_profile(logfile):
     apparmor.aa.filelist = apparmor.aa.hasher()
     apparmor.aa.filelist[profile_dummy_file]['profiles'][profile] = True
 
-    new_profile = apparmor.aa.serialize_profile(log_dict[aamode][profile], profile, None)
+    new_profile = apparmor.aa.serialize_profile(log_dict[aamode][profile], profile, {})
 
     return profile, new_profile
 

@@ -501,7 +501,7 @@ def get_profile(prof_name):
         inactive_profile[prof_name][prof_name].pop('filename')
         profile_hash[uname]['username'] = uname
         profile_hash[uname]['profile_type'] = 'INACTIVE_LOCAL'
-        profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name, None)
+        profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name, {})
         profile_hash[uname]['profile_data'] = inactive_profile
 
         existing_profiles.pop(prof_name)  # remove profile filename from list to force storing in /etc/apparmor.d/ instead of extra_profile_dir
@@ -732,7 +732,6 @@ def sync_profile():
     repo_profiles = []
     changed_profiles = []
     new_profiles = []
-    serialize_opts = dict()
     status_ok, ret = fetch_profiles_by_user(cfg['repository']['url'],
                                             cfg['repository']['distro'], user)
     if not status_ok:
@@ -741,7 +740,7 @@ def sync_profile():
         aaui.UI_Important(_('WARNING: Error synchronizing profiles with the repository:\n%s\n') % ret)
     else:
         users_repo_profiles = ret
-        serialize_opts['NO_FLAGS'] = True
+        serialize_opts = {'FLAGS': False}
         for prof in sorted(aa.keys()):
             if is_repo_profile([aa[prof][prof]]):
                 repo_profiles.append(prof)
@@ -1892,15 +1891,14 @@ def save_profiles():
                 else:
                     oldprofile = get_profile_filename(which)
 
-                serialize_options = {}
-                serialize_options['METADATA'] = True
+                serialize_options = {'METADATA': True}
                 newprofile = serialize_profile(aa[which], which, serialize_options)
 
                 aaui.UI_Changes(oldprofile, newprofile, comments=True)
 
             elif ans == 'CMD_VIEW_CHANGES_CLEAN':
-                oldprofile = serialize_profile(original_aa[which], which, '')
-                newprofile = serialize_profile(aa[which], which, '')
+                oldprofile = serialize_profile(original_aa[which], which, {})
+                newprofile = serialize_profile(aa[which], which, {})
 
                 aaui.UI_Changes(oldprofile, newprofile)
 
@@ -2666,15 +2664,13 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
 
 def serialize_profile(profile_data, name, options):
     string = ''
-    include_metadata = False
-    include_flags = True
     data = []
 
-    if options:  # and type(options) == dict:
-        if options.get('METADATA', False):
-            include_metadata = True
-        if options.get('NO_FLAGS', False):
-            include_flags = False
+    if type(options) is not dict:
+        raise AppArmorBug('serialize_profile(): options is not a dict: %s' % options)
+
+    include_metadata = options.get('METADATA', False)
+    include_flags = options.get('FLAGS', True)
 
     if include_metadata:
         string = '# Last Modified: %s\n' % time.asctime()
@@ -2737,8 +2733,7 @@ def write_profile(profile):
         #os.chmod(newprof.name, permission_600)
         pass
 
-    serialize_options = {}
-    serialize_options['METADATA'] = True
+    serialize_options = {'METADATA': True}
 
     profile_string = serialize_profile(aa[profile], profile, serialize_options)
     newprof.write(profile_string)
