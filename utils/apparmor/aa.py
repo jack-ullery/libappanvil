@@ -498,7 +498,7 @@ def get_profile(prof_name):
     if inactive_profile:
         uname = 'Inactive local profile for %s' % prof_name
         inactive_profile[prof_name][prof_name]['flags'] = 'complain'
-        inactive_profile[prof_name][prof_name].pop('filename')
+        inactive_profile[prof_name][prof_name]['filename'] = ''
         profile_hash[uname]['username'] = uname
         profile_hash[uname]['profile_type'] = 'INACTIVE_LOCAL'
         profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name, {})
