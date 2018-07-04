@@ -303,7 +303,12 @@ Profile *merge_policy(Profile *a, Profile *b)
 	}
 	b->entries = NULL;
 
-	a->flags.complain = a->flags.complain || b->flags.complain;
+	if (merge_profile_mode(a->flags.mode, b->flags.mode) == MODE_CONFLICT) {
+		PERROR("ASSERT: policy merge with different modes 0x%x != 0x%x\n",
+		       a->flags.mode, b->flags.mode);
+		exit(1);
+	}
+
 	a->flags.audit = a->flags.audit || b->flags.audit;
 
 	a->caps.allow |= b->caps.allow;

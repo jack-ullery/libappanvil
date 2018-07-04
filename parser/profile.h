@@ -53,32 +53,92 @@ public:
 	void dump_profile_names(bool children);
 };
 
+extern const char*profile_mode_table[];
+/* use profile_mode_packed to convert to the packed representation */
+enum profile_mode {
+	MODE_UNSPECIFIED = 0,
+	MODE_ENFORCE = 1,
+	MODE_COMPLAIN = 2,
+	MODE_KILL = 3,
+	MODE_UNCONFINED = 4,
+	MODE_CONFLICT = 5	/* greater than MODE_LAST */
+};
+#define MODE_LAST MODE_UNCONFINED
 
+static inline enum profile_mode operator++(enum profile_mode &mode)
+{
+	mode = (enum profile_mode)((int) mode + 1);
+	return mode;
+}
+
+static inline enum profile_mode merge_profile_mode(enum profile_mode l, enum profile_mode r)
+{
+	if (l == r || r == MODE_UNSPECIFIED)
+		return l;
+	else if (l == MODE_UNSPECIFIED)
+		return r;
+	return MODE_CONFLICT;
+}
+
+static inline uint32_t profile_mode_packed(enum profile_mode mode)
+{
+	/* kernel doesn't have an unspecified mode everything
+	 * shifts down by 1
+	 */
+	if ((uint32_t) mode)
+		return (uint32_t) mode - 1;
+	/* unspecified defaults to same as enforce */
+	return 0;
+}
+
+static inline void mode_dump(ostream &os, enum profile_mode mode)
+{
+	if (mode <= MODE_LAST)
+		os << profile_mode_table[(int) mode];
+	else
+		os << "unknown";
+}
+
+static inline enum profile_mode str_to_mode(const char *str)
+{
+	for (enum profile_mode i = MODE_ENFORCE; i <= MODE_LAST; ++i) {
+		if (strcmp(profile_mode_table[i], str) == 0)
+			return i;
+	}
+
+	return MODE_UNSPECIFIED;
+};
 
 class flagvals {
 public:
 	int hat;
-	int complain;
+	enum profile_mode mode;
 	int audit;
 	int path;
 
-	void dump(void)
+	ostream &dump(ostream &os)
 	{
-		printf("Profile Mode:\t");
-
-		if (complain)
-			printf("Complain");
-		else
-			printf("Enforce");
-
+		os << "Mode: ";
+		mode_dump(os, mode);
 		if (audit)
-			printf(", Audit");
+			os << ", Audit";
 
 		if (hat)
-			printf(", Hat");
+			os << ", Hat";
 
-		printf("\n");
+		os << "\n";
+
+		return os;
 	}
+	ostream &debug(ostream &os)
+	{
+#ifdef DEBUG
+		return dump(os);
+#else
+		return os;
+#endif
+	}
+
 };
 
 struct capabilities {
@@ -160,7 +220,7 @@ public:
 
 		parent = NULL;
 
-		flags = { 0, 0, 0, 0};
+		flags = { 0, MODE_UNSPECIFIED, 0, 0 };
 		rlimits = {0, {}};
 
 		std::fill(exec_table, exec_table + AA_EXEC_COUNT, (char *)NULL);
@@ -201,7 +261,7 @@ public:
 				printf("Local To:\t<NULL>\n");
 		}
 
-		flags.dump();
+		flags.dump(cerr);
 		caps.dump();
 		net.dump();
 
