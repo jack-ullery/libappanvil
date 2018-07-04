@@ -370,15 +370,11 @@ profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE
 			/* newer abis encode force complain as part of the
 			 * header
 			 */
-			prof->flags.complain = 1;
+			prof->flags.mode = MODE_COMPLAIN;
 
 		post_process_file_entries(prof);
 		post_process_rule_entries(prof);
-		PDEBUG("%s: flags='%s%s'\n",
-		       $2,
-		       prof->flags.complain ? "complain, " : "",
-		       prof->flags.audit ? "audit" : "");
-
+		prof->flags.debug(cerr);
 		$$ = prof;
 
 	};
@@ -540,7 +536,7 @@ valuelist:	valuelist TOK_VALUE
 	}
 
 flags:	{ /* nothing */
-	flagvals fv = { 0, 0, 0, 0 };
+	flagvals fv = { 0, MODE_UNSPECIFIED, 0, 0 };
 
 		$$ = fv;
 	};
@@ -561,7 +557,11 @@ flags:	opt_flags TOK_OPENPAREN flagvals TOK_CLOSEPAREN
 
 flagvals:	flagvals flagval
 	{
-		$1.complain = $1.complain || $2.complain;
+		if (merge_profile_mode($1.mode, $2.mode) == MODE_CONFLICT)
+			yyerror(_("Profile flag '%s' conflicts with '%s'"),
+				profile_mode_table[$1.mode],
+				profile_mode_table[$2.mode]);
+		$1.mode = merge_profile_mode($1.mode, $2.mode);
 		$1.audit = $1.audit || $2.audit;
 		$1.path = $1.path | $2.path;
 		if (($1.path & (PATH_CHROOT_REL | PATH_NS_REL)) ==
@@ -588,11 +588,13 @@ flagvals:	flagval
 
 flagval:	TOK_VALUE
 	{
-		flagvals fv = { 0, 0, 0, 0 };
+		flagvals fv = { 0, MODE_UNSPECIFIED, 0, 0 };
+		enum profile_mode mode;
+
 		if (strcmp($1, "debug") == 0) {
 			yyerror(_("Profile flag 'debug' is no longer valid."));
-		} else if (strcmp($1, "complain") == 0) {
-			fv.complain = 1;
+		} if ((mode = str_to_mode($1))) {
+			fv.mode = mode;
 		} else if (strcmp($1, "audit") == 0) {
 			fv.audit = 1;
 		} else if (strcmp($1, "chroot_relative") == 0) {

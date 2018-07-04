@@ -18,6 +18,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+const char *profile_mode_table[] = {
+	"",
+	"enforce",
+	"complain",
+	"kill",
+	"unconfined",
+};
+
 bool deref_profileptr_lt::operator()(Profile * const &lhs, Profile * const &rhs) const
 {
   return *lhs < *rhs;
