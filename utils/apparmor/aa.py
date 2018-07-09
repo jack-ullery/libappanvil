@@ -674,7 +674,8 @@ def set_profile_flags(prof_filename, program, newflags):
                     if (matches['attachment'] is not None):
                         profile_glob = AARE(matches['attachment'], True)
                     else:
-                        profile_glob = AARE(matches['profile'], True)
+                        profile_glob = AARE(matches['profile'], False)  # named profiles can come without an attachment path specified ("profile foo {...}")
+
                     if (program is not None and profile_glob.match(program)) or program is None or program == matches['profile']:
                         found = True
                         if program is not None and program != profile:
