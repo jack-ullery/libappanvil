@@ -25,6 +25,8 @@
   #include <abstractions/user-write>
   #include <abstractions/X>
 
+  signal (send) peer=/usr/bin/dumpcap,
+
   #include <abstractions/dbus-accessibility-strict>
   dbus (send)
        bus=session
@@ -40,6 +42,7 @@
   # From abstractions/evince
   deny /run/udev/data/** r,
 
+  /dev/dri/ r,
   /etc/ethers r,
   /etc/udev/udev.conf r,
   /etc/wireshark/** r,
@@ -47,7 +50,9 @@
   owner @{HOME}/.wireshark/* rw,
   owner @{HOME}/.config/wireshark/* rw,
   owner @{HOME}/.config/QtProject.conf rw,
-  owner @{HOME}/.config/QtProject.conf.lock rw,
+  owner @{HOME}/.config/QtProject.conf.* rw,
+  owner @{HOME}/.config/QtProject.conf.lock rwk,
+  owner @{HOME}/.config/.* rwk,
   owner @{HOME}/.fonts.cache-* r,
 
   owner @{HOME}/.config/dconf/user w,
@@ -55,7 +60,9 @@
   owner @{PROC}/@{pid}/cmdline r,
   owner @{PROC}/@{pid}/fd/ r,
   @{PROC}/@{pid}/net/dev r,
-  /sys/devices/pci[0-9]*/**/uevent r,
+  /sys/devices/pci[0-9]*/**/{device,subsystem_device,subsystem_vendor,uevent,vendor} r, # for libdrm
+
+  /tmp/.X[0-9]*-lock r,
 
   /etc/pango/pango.modules r,
   /usr/lib/gtk-*/*/loaders/* mr,
@@ -66,6 +73,7 @@
   /usr/lib/firefox/firefox.sh rPx,
   /usr/bin/wireshark mixr,
   /usr/share/mime/* r,
+  /usr/share/qt[45]/translations/* r,
   /usr/share/snmp/mibs r,
   /usr/share/snmp/mibs/* r,
   /usr/share/snmp/mibs/.index rw,
@@ -76,6 +84,8 @@
   /usr/lib/@{multiarch}/wireshark/plugins/**/   r,
   /usr/lib/@{multiarch}/wireshark/plugins/**.so mr,
 
+  /usr/bin/dumpcap Px,
+
   # for reading pcaps
-  /**.pcap r,
+  /**pcap{,ng} r,
 }
