@@ -28,14 +28,13 @@
   /sys/class/net/ r,
   /sys/devices/**/net/* r,
 
-  /usr/bin/dumpcap rm,
+  /usr/bin/dumpcap mr,
 
   /usr/share/GeoIP/ r,
   /usr/share/GeoIP/** r,
 
   @{PROC}/@{pid}/net/psched r,
 
-  /tmp/ rw,
   owner /tmp/*pcap{,ng} rw,
   owner @{HOME}/**pcap{,ng} rw,
 }
