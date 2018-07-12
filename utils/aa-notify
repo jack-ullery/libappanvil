@@ -157,7 +157,8 @@ if (-s $conf) {
 }
 
 if ($opt_p) {
-    -x "$notify_exe" or _error("Could not find '$notify_exe'. Please install libnotify-bin. Aborting");
+    # notify-send is packaged in libnotify-bin on Debian/Ubuntu, libnotify-tools on openSUSE
+    -x "$notify_exe" or _error("Could not find '$notify_exe'. Please install it (package libnotify-bin or libnotify-tools). Aborting");
 
     # we need correct values for $HOME and $DISPLAY environment variables,
     # otherwise $notify_exe won't be able to connect to DBUS to display the
