@@ -561,7 +561,7 @@ def activate_repo_profiles(url, profiles, complain):
             write_profile(pname)
             if complain:
                 fname = get_profile_filename(pname)
-                set_profile_flags(profile_dir + fname, 'complain')
+                change_profile_flags(profile_dir + fname, None, 'complain', True)
                 aaui.UI_Info(_('Setting %s to complain mode.') % pname)
     except Exception as e:
             sys.stderr.write(_("Error activating profiles: %s") % e)
