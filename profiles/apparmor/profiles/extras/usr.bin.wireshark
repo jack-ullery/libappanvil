@@ -90,6 +90,11 @@
 
   /usr/bin/dumpcap Px,
 
-  # for reading pcaps
-  /**pcap{,ng} r,
+  # file browsing dialogue
+  / r,
+  /**/ r,
+
+  # reading/writing pcaps
+  /**pcap{,ng}{,.gz}       r,
+  owner /**pcap{,ng}{,.gz} rw,
 }
