@@ -49,6 +49,7 @@
 
   owner @{HOME}/.wireshark/* rw,
   owner @{HOME}/.config/wireshark/* rw,
+  # TODO: move into it's own abstraction
   owner @{HOME}/.config/QtProject.conf rw,
   owner @{HOME}/.config/QtProject.conf.* rw,
   owner @{HOME}/.config/QtProject.conf.lock rwk,
