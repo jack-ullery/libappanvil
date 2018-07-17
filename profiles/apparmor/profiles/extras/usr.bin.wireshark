@@ -47,8 +47,8 @@
   /etc/udev/udev.conf r,
   /etc/wireshark/** r,
 
-  owner @{HOME}/.wireshark/* rw,
-  owner @{HOME}/.config/wireshark/* rw,
+  owner @{HOME}/.wireshark/{,**} rw,
+  owner @{HOME}/.config/wireshark/{,**} rw,
   # TODO: move into it's own abstraction
   owner @{HOME}/.config/QtProject.conf rw,
   owner @{HOME}/.config/QtProject.conf.* rw,
