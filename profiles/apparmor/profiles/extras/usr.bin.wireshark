@@ -54,6 +54,7 @@
   owner @{HOME}/.config/QtProject.conf.* rw,
   owner @{HOME}/.config/QtProject.conf.lock rwk,
   owner @{HOME}/.config/.?????? rwk,
+  owner @{HOME}/.cache/qt_compose_cache_* rw,
   owner @{HOME}/.fonts.cache-* r,
 
   owner @{HOME}/.config/dconf/user w,
