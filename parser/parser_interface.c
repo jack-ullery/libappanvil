@@ -118,6 +118,7 @@ int load_profile(int option, aa_kernel_interface *kernel_interface,
 		case OPTION_OFILE:
 			PERROR(_("%s: Unable to write to output file\n"),
 			       progname);
+			break;
 		default:
 			PERROR(_("%s: ASSERT: Invalid option: %d\n"),
 			       progname, option);
