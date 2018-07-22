@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: AppArmor list <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2018-07-12 12:49+0000\n"
+"PO-Revision-Date: 2018-07-21 12:47+0000\n"
 "Last-Translator: Jonatan Nyberg <Unknown>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2018-07-13 05:38+0000\n"
-"X-Generator: Launchpad (build 18719)\n"
+"X-Launchpad-Export-Date: 2018-07-22 05:34+0000\n"
+"X-Generator: Launchpad (build 18730)\n"
 "Language: sv\n"
 
 #: ../aa-genprof:56
@@ -26,11 +26,11 @@ msgstr "Generera profil för det givna programet"
 #: ../aa-autodep:25 ../aa-audit:25 ../aa-complain:24 ../aa-enforce:24
 #: ../aa-disable:24
 msgid "path to profiles"
-msgstr ""
+msgstr "sökväg till profiler"
 
 #: ../aa-genprof:58 ../aa-logprof:26
 msgid "path to logfile"
-msgstr ""
+msgstr "sökväg till loggfil"
 
 #: ../aa-genprof:59
 msgid "name of program to profile"
@@ -75,6 +75,11 @@ msgid ""
 "wish to confine. See the following wiki page for\n"
 "more information:"
 msgstr ""
+"\n"
+"Innan du börjar kan du kontrollera om en\n"
+"profil finns redan för programmet du\n"
+"vill begränsa. Se följande wikisida för\n"
+"mer information:"
 
 #: ../aa-genprof:126
 msgid ""
@@ -105,6 +110,9 @@ msgid ""
 "Please consider contributing your new profile!\n"
 "See the following wiki page for more information:"
 msgstr ""
+"\n"
+"Överväga att bidra med din nya profil!\n"
+"Se följande wikisida för mer information:"
 
 #: ../aa-genprof:167
 #, python-format
@@ -113,11 +121,11 @@ msgstr "Färdig med att generera profil för %s."
 
 #: ../aa-logprof:24
 msgid "Process log entries to generate profiles"
-msgstr ""
+msgstr "Processloggposter för att generera profiler"
 
 #: ../aa-logprof:27
 msgid "mark in the log to start processing after"
-msgstr ""
+msgstr "markera i loggen för att börja bearbetning efter"
 
 #: ../aa-cleanprof:23
 msgid "Cleanup the profiles for the given programs"
@@ -327,27 +335,27 @@ msgstr "skanna alla processer från /proc"
 #: ../aa-unconfined:81
 #, python-format
 msgid "%(pid)s %(program)s (%(commandline)s) not confined"
-msgstr ""
+msgstr "%(pid)s %(program)s (%(commandline)s) inte begränsad"
 
 #: ../aa-unconfined:85
 #, python-format
 msgid "%(pid)s %(program)s%(pname)s not confined"
-msgstr ""
+msgstr "%(pid)s %(program)s%(pname)s inte begränsad"
 
 #: ../aa-unconfined:90
 #, python-format
 msgid "%(pid)s %(program)s (%(commandline)s) confined by '%(attribute)s'"
-msgstr ""
+msgstr "%(pid)s %(program)s (%(commandline)s) begränsad av '%(attribute)s'"
 
 #: ../aa-unconfined:94
 #, python-format
 msgid "%(pid)s %(program)s%(pname)s confined by '%(attribute)s'"
-msgstr ""
+msgstr "%(pid)s %(program)s%(pname)s begränsad av '%(attribute)s'"
 
 #: ../apparmor/aa.py:196
 #, python-format
 msgid "Followed too many links while resolving %s"
-msgstr ""
+msgstr "Följde för många länkar medan %s löstes"
 
 #: ../apparmor/aa.py:252 ../apparmor/aa.py:259
 #, python-format
@@ -457,6 +465,10 @@ msgid ""
 "information is required to upload profiles to the repository.\n"
 "These changes could not be sent."
 msgstr ""
+"Förrådsfel\n"
+"Registrering eller inloggning misslyckades. Användarnamn\n"
+"information krävs för att skicka profiler till förrådet.\n"
+"Dessa ändringar kunde inte skickas."
 
 #: ../apparmor/aa.py:995
 msgid "Default Hat"
@@ -501,6 +513,12 @@ msgid ""
 "but some applications depend on the presence\n"
 "of LD_PRELOAD or LD_LIBRARY_PATH."
 msgstr ""
+"Ska AppArmor sanera miljön vid\n"
+"växling av profiler?\n"
+"\n"
+"Sanitisera miljö är säkrare,\n"
+"men vissa applikationer beror på närvaron\n"
+"av LD_PRELOAD or LD_LIBRARY_PATH."
 
 #: ../apparmor/aa.py:1310
 msgid ""
@@ -512,6 +530,13 @@ msgid ""
 "or LD_LIBRARY_PATH and sanitising the environment\n"
 "could cause functionality problems."
 msgstr ""
+"Ska AppArmor sanera miljön vid\n"
+"växling av profiler?\n"
+"\n"
+"Sanitisera miljö är säkrare,\n"
+"men denna applikation verkar använda LD_PRELOAD\n"
+"eller LD_LIBRARY_PATH och sanering av miljön\n"
+"kan orsaka funktionsproblem."
 
 #: ../apparmor/aa.py:1318
 #, python-format
@@ -522,6 +547,11 @@ msgid ""
 "Are you absolutely certain you wish to remove all\n"
 "AppArmor protection when executing %s ?"
 msgstr ""
+"Att starta processer i ett obegränsat tillstånd är mycket\n"
+"farlig operation och kan orsaka allvarliga säkerhetshål.\n"
+"\n"
+"Är du helt säker på att du vill ta bort allt\n"
+"AppArmor-skydd när du kör %s?"
 
 #: ../apparmor/aa.py:1320
 msgid ""
@@ -532,6 +562,12 @@ msgid ""
 "a program opens up significant security holes\n"
 "and should be avoided if at all possible."
 msgstr ""
+"Ska AppArmor sanera miljön när\n"
+"detta program körs obegränsat?\n"
+"\n"
+"Rengör inte miljön när obegränsning av\n"
+"ett program öppnar allvarliga säkerhetshål\n"
+"och bör undvikas om möjligt."
 
 #: ../apparmor/aa.py:1396 ../apparmor/aa.py:1414
 #, python-format
