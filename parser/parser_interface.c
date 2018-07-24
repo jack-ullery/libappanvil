@@ -459,7 +459,9 @@ void sd_serialize_profile(std::ostringstream &buf, Profile *profile,
 	sd_serialize_rlimits(buf, &profile->rlimits);
 
 	/* choice to support / downgrade needs to already have been made */
-	if (profile->net.allow && features_supports_network) {
+	if (features_supports_networkv8) {
+		/* nothing - encoded in policydb */
+	} else if (profile->net.allow && features_supports_network) {
 		size_t i;
 		sd_write_array(buf, "net_allowed_af", get_af_max());
 		for (i = 0; i < get_af_max(); i++) {
@@ -470,7 +472,7 @@ void sd_serialize_profile(std::ostringstream &buf, Profile *profile,
 			sd_write_uint16(buf, profile->net.deny[i] & profile->net.quiet[i]);
 		}
 		sd_write_arrayend(buf);
-	} else if (profile->net.allow && (warnflags & WARN_RULE_NOT_ENFORCED))
+	} else if (profile->net.allow)
 		pwarn(WARN_RULE_NOT_ENFORCED, _("profile %s network rules not enforced\n"), profile->name);
 
 	if (profile->policy.dfa) {
