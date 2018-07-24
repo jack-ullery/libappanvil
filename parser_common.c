@@ -67,6 +67,7 @@ int net_af_max_override = -1;           /* use kernel to determine af_max */
 int kernel_load = 1;
 int kernel_supports_setload = 0;	/* kernel supports atomic set loads */
 int features_supports_network = 0;	/* kernel supports network rules */
+int features_supports_networkv8 = 0;	/* kernel supports 4.17 network rules */
 int features_supports_unix = 0;		/* kernel supports unix socket rules */
 int kernel_supports_policydb = 0;	/* kernel supports new policydb */
 int features_supports_mount = 0;	/* kernel supports mount rules */

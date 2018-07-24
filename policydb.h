@@ -32,7 +32,7 @@
 #define AA_CLASS_NS_DOMAIN	8
 #define AA_CLASS_PTRACE		9
 #define AA_CLASS_SIGNAL		10
-
+#define AA_CLASS_NETV8		14
 #define AA_CLASS_LABEL		16
 
 /* defined in libapparmor's apparmor.h #define AA_CLASS_DBUS 32 */
