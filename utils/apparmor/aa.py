@@ -639,8 +639,8 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
 
     found = False
 
-    if newflags and newflags.strip() == '':
-        raise AppArmorBug('New flags for %s contain only whitespace' % prof_filename)
+    if not flag or flag.strip() == '':
+        raise AppArmorBug('New flag for %s is empty' % prof_filename)
 
     with open_file_read(prof_filename) as f_in:
         temp_file = tempfile.NamedTemporaryFile('w', prefix=prof_filename, suffix='~', delete=False, dir=profile_dir)

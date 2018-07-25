@@ -367,7 +367,7 @@ class AaTest_change_profile_flags(AaTestWithTempdir):
             # XXX empty new flag should raise AppArmorBug
             self._test_change_profile_flags('/foo', '(  )', '', True, '', check_new_flags=False)
     def test_change_profile_flags_invalid_04(self):
-    #    with self.assertRaises(AppArmorBug):  # XXX empty new flag should raise AppArmorBug
+        with self.assertRaises(AppArmorBug):
             self._test_change_profile_flags('/foo', 'flags=(complain,  audit)', '  ', True, 'audit, complain', check_new_flags=False) # whitespace-only newflags
 
     def test_change_profile_flags_other_profile(self):
