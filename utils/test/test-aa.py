@@ -19,7 +19,7 @@ import sys
 
 import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
-     get_profile_flags, set_profile_flags, set_options_audit_mode, set_options_owner_mode, is_skippable_file, is_skippable_dir,
+     get_profile_flags, change_profile_flags, set_options_audit_mode, set_options_owner_mode, is_skippable_file, is_skippable_dir,
      parse_profile_start, parse_profile_data, separate_vars, store_list_var, write_header,
      get_file_perms, propose_file_rules)
 from apparmor.aare import AARE
@@ -226,15 +226,12 @@ class AaTest_get_profile_flags(AaTestWithTempdir):
         with self.assertRaises(AppArmorException):
             self._test_get_flags('/no-such-profile flags=(complain)', 'complain')
 
-class AaTest_set_profile_flags(AaTestWithTempdir):
-    def _test_set_flags(self, profile, old_flags, new_flags, whitespace='', comment='',
+class AaTest_change_profile_flags(AaTestWithTempdir):
+    def _test_change_profile_flags(self, profile, old_flags, flags_to_change, set_flag, expected_flags, whitespace='', comment='',
                         more_rules='', expected_more_rules='@-@-@',
-                        expected_flags='@-@-@', check_new_flags=True, profile_name='/foo'):
+                        check_new_flags=True, profile_name='/foo'):
         if old_flags:
             old_flags = ' %s' % old_flags
-
-        if expected_flags == '@-@-@':
-            expected_flags = new_flags
 
         if expected_flags:
             expected_flags = ' flags=(%s)' % (expected_flags)
@@ -253,152 +250,153 @@ class AaTest_set_profile_flags(AaTestWithTempdir):
         new_prof = prof_template % (whitespace, profile, expected_flags, comment, expected_more_rules, dummy_profile_content)
 
         self.file = write_file(self.tmpdir, 'profile', old_prof)
-        set_profile_flags(self.file, profile_name, new_flags)
+        change_profile_flags(self.file, profile_name, flags_to_change, set_flag)
         if check_new_flags:
             real_new_prof = read_file(self.file)
             self.assertEqual(new_prof, real_new_prof)
 
     # tests that actually don't change the flags
-    def test_set_flags_nochange_01(self):
-        self._test_set_flags('/foo', '', '')
-    def test_set_flags_nochange_02(self):
-        self._test_set_flags('/foo', '(  complain  )', '  complain  ', whitespace='   ')
-    def test_set_flags_nochange_03(self):
-        self._test_set_flags('/foo', '(complain)', 'complain')
-    def test_set_flags_nochange_04(self):
-        self._test_set_flags('/foo', 'flags=(complain)', 'complain')
-    def test_set_flags_nochange_05(self):
-        self._test_set_flags('/foo', 'flags=(complain,  audit)', 'complain,  audit', whitespace='     ')
-    def test_set_flags_nochange_06(self):
-        self._test_set_flags('/foo', 'flags=(complain,  audit)', 'complain,  audit', whitespace='     ', comment='# a comment')
-    def test_set_flags_nochange_07(self):
-        self._test_set_flags('/foo', 'flags=(complain,  audit)', 'complain,  audit', whitespace='     ', more_rules='  # a comment\n#another  comment')
-    def test_set_flags_nochange_08(self):
-        self._test_set_flags('profile /foo', 'flags=(complain)', 'complain')
-    def test_set_flags_nochange_09(self):
-        self._test_set_flags('profile xy /foo', 'flags=(complain)', 'complain', profile_name='xy')
-    def test_set_flags_nochange_10(self):
-        self._test_set_flags('profile "/foo bar"', 'flags=(complain)', 'complain', profile_name='/foo bar')
-    def test_set_flags_nochange_11(self):
-        self._test_set_flags('/foo', '(complain)', 'complain', profile_name=None)
-    #def test_set_flags_nochange_12(self):
-    # XXX changes the flags for the child profile (which happens to have the same profile name) to 'complain'
-    #    self._test_set_flags('/foo', 'flags=(complain)', 'complain', more_rules='  profile /foo {\n}')
+    def test_change_profile_flags_nochange_02(self):
+        self._test_change_profile_flags('/foo', '(  complain  )', 'complain', True, 'complain', whitespace='   ')
+    def test_change_profile_flags_nochange_03(self):
+        self._test_change_profile_flags('/foo', '(complain)', 'complain', True, 'complain')
+    def test_change_profile_flags_nochange_04(self):
+        self._test_change_profile_flags('/foo', 'flags=(complain)', 'complain', True, 'complain')
+    def test_change_profile_flags_nochange_05(self):
+        self._test_change_profile_flags('/foo', 'flags=(complain,  audit)', 'complain', True, 'audit, complain', whitespace='     ')
+    def test_change_profile_flags_nochange_06(self):
+        self._test_change_profile_flags('/foo', 'flags=(complain,  audit)', 'complain', True, 'audit, complain', whitespace='     ', comment='# a comment')
+    def test_change_profile_flags_nochange_07(self):
+        self._test_change_profile_flags('/foo', 'flags=(complain,  audit)', 'audit', True, 'audit, complain', whitespace='     ', more_rules='  # a comment\n#another  comment')
+    def test_change_profile_flags_nochange_08(self):
+        self._test_change_profile_flags('profile /foo', 'flags=(complain)', 'complain', True, 'complain')
+    def test_change_profile_flags_nochange_09(self):
+        self._test_change_profile_flags('profile xy /foo', 'flags=(complain)', 'complain', True, 'complain', profile_name='xy')
+    def test_change_profile_flags_nochange_10(self):
+        self._test_change_profile_flags('profile "/foo bar"', 'flags=(complain)', 'complain', True, 'complain', profile_name='/foo bar')
+    def test_change_profile_flags_nochange_11(self):
+        self._test_change_profile_flags('/foo', '(complain)', 'complain', True, 'complain', profile_name=None)
+    def test_change_profile_flags_nochange_12(self):
+        # XXX changes the flags for the child profile (which happens to have the same profile name) to 'complain'
+        self._test_change_profile_flags('/foo', 'flags=(complain)', 'complain', True, 'complain', more_rules='  profile /foo {\n}', expected_more_rules='  profile /foo flags=(complain) {\n}')
 
     # tests that change the flags
-    def test_set_flags_01(self):
-        self._test_set_flags('/foo', '', 'audit')
-    def test_set_flags_02(self):
-        self._test_set_flags('/foo', '(  complain  )', 'audit ', whitespace='  ')
-    def test_set_flags_04(self):
-        self._test_set_flags('/foo', '(complain)', 'audit')
-    def test_set_flags_05(self):
-        self._test_set_flags('/foo', 'flags=(complain)', 'audit')
-    def test_set_flags_06(self):
-        self._test_set_flags('/foo', 'flags=(complain,  audit)', None, whitespace='    ')
-    def test_set_flags_07(self):
-        self._test_set_flags('/foo', 'flags=(complain,  audit)', '', expected_flags=None)
-    def test_set_flags_08(self):
-        self._test_set_flags('/foo', '(  complain  )', 'audit ', whitespace='  ', profile_name=None)
-    def test_set_flags_09(self):
-        self._test_set_flags('profile /foo', 'flags=(complain)', 'audit')
-    def test_set_flags_10(self):
-        self._test_set_flags('profile xy /foo', 'flags=(complain)', 'audit', profile_name='xy')
-    def test_set_flags_11(self):
-        self._test_set_flags('profile "/foo bar"', 'flags=(complain)', 'audit', profile_name='/foo bar')
-    def test_set_flags_12(self):
-        self._test_set_flags('profile xy "/foo bar"', 'flags=(complain)', 'audit', profile_name='xy')
-    def test_set_flags_13(self):
-        self._test_set_flags('/foo', '(audit)', '')
+    def test_change_profile_flags_01(self):
+        self._test_change_profile_flags('/foo', '', 'audit', True, 'audit')
+    def test_change_profile_flags_02(self):
+        self._test_change_profile_flags('/foo', '(  complain  )', 'audit', True, 'audit, complain', whitespace='  ')
+    def test_change_profile_flags_04(self):
+        self._test_change_profile_flags('/foo', '(complain)', 'audit', True, 'audit, complain')
+    def test_change_profile_flags_05(self):
+        self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', True, 'audit, complain')
+    def test_change_profile_flags_06(self):
+        self._test_change_profile_flags('/foo', 'flags=(complain,  audit)', 'complain', False, 'audit', whitespace='    ')
+    def test_change_profile_flags_07(self):
+        self._test_change_profile_flags('/foo', 'flags=(complain,  audit)', 'audit', False, 'complain')
+    def test_change_profile_flags_08(self):
+        self._test_change_profile_flags('/foo', '(  complain  )', 'audit', True, 'audit, complain', whitespace='  ', profile_name=None)
+    def test_change_profile_flags_09(self):
+        self._test_change_profile_flags('profile /foo', 'flags=(complain)', 'audit', True, 'audit, complain')
+    def test_change_profile_flags_10(self):
+        self._test_change_profile_flags('profile xy /foo', 'flags=(complain)', 'audit', True, 'audit, complain', profile_name='xy')
+    def test_change_profile_flags_11(self):
+        self._test_change_profile_flags('profile "/foo bar"', 'flags=(complain)', 'audit', True, 'audit, complain', profile_name='/foo bar')
+    def test_change_profile_flags_12(self):
+        self._test_change_profile_flags('profile xy "/foo bar"', 'flags=(complain)', 'audit', True, 'audit, complain', profile_name='xy')
+    def test_change_profile_flags_13(self):
+        self._test_change_profile_flags('/foo', '(audit)', 'audit', False, '')
 
     # test handling of hat flags
     def test_set_flags_with_hat_01(self):
-        self._test_set_flags('/foo', 'flags=(complain)', 'audit',
+        self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
             more_rules='\n  ^foobar {\n}\n',
-            expected_more_rules='\n  ^foobar flags=(audit) {\n}\n'
+            expected_more_rules='\n  ^foobar flags=(audit, complain) {\n}\n'  # XXX complain should not be added to the child profile
         )
 
-    def test_set_flags_with_hat_02(self):
-        self._test_set_flags('/foo', 'flags=(complain)', 'audit',
+    def test_change_profile_flags_with_hat_02(self):
+        self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', False, 'complain',
             profile_name=None,
-            more_rules='\n  ^foobar {\n}\n',
-            expected_more_rules='\n  ^foobar flags=(audit) {\n}\n'
+            more_rules='\n  ^foobar flags=(audit) {\n}\n',
+            expected_more_rules='\n  ^foobar flags=(complain) {\n}\n'  # XXX complain should NOT be added to child profile
         )
 
-    def test_set_flags_with_hat_03(self):
-        self._test_set_flags('/foo', 'flags=(complain)', 'audit',
+    def test_change_profile_flags_with_hat_03(self):
+        self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
             more_rules='\n^foobar (attach_disconnected) { # comment\n}\n', # XXX attach_disconnected will be lost!
-            expected_more_rules='\n^foobar flags=(audit) { # comment\n}\n'
+            expected_more_rules='\n^foobar flags=(audit, complain) { # comment\n}\n'  # XXX complain should not be added
         )
 
-    def test_set_flags_with_hat_04(self):
-        self._test_set_flags('/foo', '', 'audit',
+    def test_change_profile_flags_with_hat_04(self):
+        self._test_change_profile_flags('/foo', '', 'audit', True, 'audit',
             more_rules='\n  hat foobar (attach_disconnected) { # comment\n}\n', # XXX attach_disconnected will be lost!
             expected_more_rules='\n  hat foobar flags=(audit) { # comment\n}\n'
         )
 
-    def test_set_flags_with_hat_05(self):
-        self._test_set_flags('/foo', '(audit)', '',
-            more_rules='\n  hat foobar (attach_disconnected) { # comment\n}\n', # XXX attach_disconnected will be lost!
+    def test_change_profile_flags_with_hat_05(self):
+        self._test_change_profile_flags('/foo', '(audit)', 'audit', False, '',
+            more_rules='\n  hat foobar (attach_disconnected) { # comment\n}\n',  # XXX attach_disconnected will be lost
             expected_more_rules='\n  hat foobar { # comment\n}\n'
         )
 
     # test handling of child profiles
-    def test_set_flags_with_child_01(self):
-        self._test_set_flags('/foo', 'flags=(complain)', 'audit',
+    def test_change_profile_flags_with_child_01(self):
+        self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
             profile_name=None,
             more_rules='\n  profile /bin/bar {\n}\n',
-            expected_more_rules='\n  profile /bin/bar flags=(audit) {\n}\n'
+            expected_more_rules='\n  profile /bin/bar flags=(audit, complain) {\n}\n'  # XXX complain should not be added
         )
 
-    #def test_set_flags_with_child_02(self):
+    def test_change_profile_flags_with_child_02(self):
         # XXX child profile flags aren't changed if profile parameter is not None
-        #self._test_set_flags('/foo', 'flags=(complain)', 'audit',
-        #    more_rules='\n  profile /bin/bar {\n}\n',
-        #    expected_more_rules='\n  profile /bin/bar flags=(audit) {\n}\n'
-        #)
+        self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
+            more_rules='\n  profile /bin/bar {\n}\n',
+            expected_more_rules='\n  profile /bin/bar {\n}\n'  # flags(audit) should be added
+        )
 
 
-    def test_set_flags_invalid_01(self):
-        with self.assertRaises(AppArmorBug):
-            self._test_set_flags('/foo', '()', None, check_new_flags=False)
-    def test_set_flags_invalid_02(self):
-        with self.assertRaises(AppArmorBug):
-            self._test_set_flags('/foo', 'flags=()', None, check_new_flags=False)
-    def test_set_flags_invalid_03(self):
+    def test_change_profile_flags_invalid_01(self):
         with self.assertRaises(AppArmorException):
-            self._test_set_flags('/foo', '(  )', '', check_new_flags=False)
-    def test_set_flags_invalid_04(self):
-        with self.assertRaises(AppArmorBug):
-            self._test_set_flags('/foo', 'flags=(complain,  audit)', '  ', check_new_flags=False) # whitespace-only newflags
+            # XXX new flag 'None' should raise AppArmorBug
+            self._test_change_profile_flags('/foo', '()', None, False, '', check_new_flags=False)
+    def test_change_profile_flags_invalid_02(self):
+        with self.assertRaises(AppArmorException):
+            # XXX new flag 'None' should raise AppArmorBug
+            self._test_change_profile_flags('/foo', 'flags=()', None, True, '', check_new_flags=False)
+    def test_change_profile_flags_invalid_03(self):
+        with self.assertRaises(AppArmorException):
+            # XXX empty new flag should raise AppArmorBug
+            self._test_change_profile_flags('/foo', '(  )', '', True, '', check_new_flags=False)
+    def test_change_profile_flags_invalid_04(self):
+    #    with self.assertRaises(AppArmorBug):  # XXX empty new flag should raise AppArmorBug
+            self._test_change_profile_flags('/foo', 'flags=(complain,  audit)', '  ', True, 'audit, complain', check_new_flags=False) # whitespace-only newflags
 
-    def test_set_flags_other_profile(self):
+    def test_change_profile_flags_other_profile(self):
         # test behaviour if the file doesn't contain the specified /foo profile
         orig_prof = '/no-such-profile flags=(complain) {\n}'
         self.file = write_file(self.tmpdir, 'profile', orig_prof)
 
-        with self.assertRaises(AppArmorBug):
-            set_profile_flags(self.file, '/foo', 'audit')
+        with self.assertRaises(AppArmorException):
+            change_profile_flags(self.file, '/foo', 'audit', True)
 
         # the file should not be changed
         real_new_prof = read_file(self.file)
         self.assertEqual(orig_prof, real_new_prof)
 
-    def test_set_flags_no_profile_found(self):
+    def test_change_profile_flags_no_profile_found(self):
         # test behaviour if the file doesn't contain any profile
         orig_prof = '# /comment flags=(complain) {\n# }'
         self.file = write_file(self.tmpdir, 'profile', orig_prof)
 
-        with self.assertRaises(AppArmorBug):
-            set_profile_flags(self.file, None, 'audit')
+        with self.assertRaises(AppArmorException):
+            change_profile_flags(self.file, None, 'audit', True)
 
         # the file should not be changed
         real_new_prof = read_file(self.file)
         self.assertEqual(orig_prof, real_new_prof)
 
-    def test_set_flags_file_not_found(self):
+    def test_change_profile_flags_file_not_found(self):
         with self.assertRaises(IOError):
-            set_profile_flags('%s/file-not-found' % self.tmpdir, '/foo', 'audit')
+            change_profile_flags('%s/file-not-found' % self.tmpdir, '/foo', 'audit', True)
 
 class AaTest_set_options_audit_mode(AATest):
     tests = [
