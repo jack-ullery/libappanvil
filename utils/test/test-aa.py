@@ -310,32 +310,32 @@ class AaTest_change_profile_flags(AaTestWithTempdir):
     def test_set_flags_with_hat_01(self):
         self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
             more_rules='\n  ^foobar {\n}\n',
-            expected_more_rules='\n  ^foobar flags=(audit, complain) {\n}\n'  # XXX complain should not be added to the child profile
+            expected_more_rules='\n  ^foobar flags=(audit) {\n}\n'
         )
 
     def test_change_profile_flags_with_hat_02(self):
         self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', False, 'complain',
             profile_name=None,
             more_rules='\n  ^foobar flags=(audit) {\n}\n',
-            expected_more_rules='\n  ^foobar flags=(complain) {\n}\n'  # XXX complain should NOT be added to child profile
+            expected_more_rules='\n  ^foobar {\n}\n'
         )
 
     def test_change_profile_flags_with_hat_03(self):
         self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
-            more_rules='\n^foobar (attach_disconnected) { # comment\n}\n', # XXX attach_disconnected will be lost!
-            expected_more_rules='\n^foobar flags=(audit, complain) { # comment\n}\n'  # XXX complain should not be added
+            more_rules='\n^foobar (attach_disconnected) { # comment\n}\n',
+            expected_more_rules='\n^foobar flags=(attach_disconnected, audit) { # comment\n}\n'
         )
 
     def test_change_profile_flags_with_hat_04(self):
         self._test_change_profile_flags('/foo', '', 'audit', True, 'audit',
-            more_rules='\n  hat foobar (attach_disconnected) { # comment\n}\n', # XXX attach_disconnected will be lost!
-            expected_more_rules='\n  hat foobar flags=(audit) { # comment\n}\n'
+            more_rules='\n  hat foobar (attach_disconnected) { # comment\n}\n',
+            expected_more_rules='\n  hat foobar flags=(attach_disconnected, audit) { # comment\n}\n'
         )
 
     def test_change_profile_flags_with_hat_05(self):
         self._test_change_profile_flags('/foo', '(audit)', 'audit', False, '',
-            more_rules='\n  hat foobar (attach_disconnected) { # comment\n}\n',  # XXX attach_disconnected will be lost
-            expected_more_rules='\n  hat foobar { # comment\n}\n'
+            more_rules='\n  hat foobar (attach_disconnected) { # comment\n}\n',
+            expected_more_rules='\n  hat foobar flags=(attach_disconnected) { # comment\n}\n'
         )
 
     # test handling of child profiles
@@ -343,7 +343,7 @@ class AaTest_change_profile_flags(AaTestWithTempdir):
         self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
             profile_name=None,
             more_rules='\n  profile /bin/bar {\n}\n',
-            expected_more_rules='\n  profile /bin/bar flags=(audit, complain) {\n}\n'  # XXX complain should not be added
+            expected_more_rules='\n  profile /bin/bar flags=(audit) {\n}\n'
         )
 
     def test_change_profile_flags_with_child_02(self):
@@ -355,16 +355,13 @@ class AaTest_change_profile_flags(AaTestWithTempdir):
 
 
     def test_change_profile_flags_invalid_01(self):
-        with self.assertRaises(AppArmorException):
-            # XXX new flag 'None' should raise AppArmorBug
+        with self.assertRaises(AppArmorBug):
             self._test_change_profile_flags('/foo', '()', None, False, '', check_new_flags=False)
     def test_change_profile_flags_invalid_02(self):
-        with self.assertRaises(AppArmorException):
-            # XXX new flag 'None' should raise AppArmorBug
+        with self.assertRaises(AppArmorBug):
             self._test_change_profile_flags('/foo', 'flags=()', None, True, '', check_new_flags=False)
     def test_change_profile_flags_invalid_03(self):
-        with self.assertRaises(AppArmorException):
-            # XXX empty new flag should raise AppArmorBug
+        with self.assertRaises(AppArmorBug):
             self._test_change_profile_flags('/foo', '(  )', '', True, '', check_new_flags=False)
     def test_change_profile_flags_invalid_04(self):
         with self.assertRaises(AppArmorBug):

@@ -624,17 +624,9 @@ def get_profile_flags(filename, program):
     raise AppArmorException(_('%s contains no profile') % filename)
 
 def change_profile_flags(prof_filename, program, flag, set_flag):
-    old_flags = get_profile_flags(prof_filename, program)
-
-    newflags = add_or_remove_flag(old_flags, flag, set_flag)
-
-    newflags = ', '.join(newflags)
-
     """Reads the old profile file and updates the flags accordingly"""
     # TODO: count the number of matching lines (separated by profile and hat?) and return it
     #       so that code calling this function can make sure to only report success if there was a match
-    # TODO: existing (unrelated) flags of hats and child profiles are overwritten - ideally, we should
-    #       keep them and only add or remove a given flag
     # TODO: change child profile flags even if program is specified
 
     found = False
@@ -651,6 +643,8 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
                     matches = parse_profile_start_line(line, prof_filename)
                     space = matches['leadingspace'] or ''
                     profile = matches['profile']
+                    old_flags = matches['flags']
+                    newflags = ', '.join(add_or_remove_flag(old_flags, flag, set_flag))
 
                     if (matches['attachment'] is not None):
                         profile_glob = AARE(matches['attachment'], True)
@@ -674,6 +668,8 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
                     space = matches.group('leadingspace') or ''
                     hat_keyword = matches.group('hat_keyword')
                     hat = matches.group('hat')
+                    old_flags = matches['flags']
+                    newflags = ', '.join(add_or_remove_flag(old_flags, flag, set_flag))
                     comment = matches.group('comment') or ''
                     if comment:
                         comment = ' %s' % comment
@@ -687,9 +683,9 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
 
     if not found:
         if program is None:
-            raise AppArmorBug("%(file)s doesn't contain a valid profile (syntax error?)" % {'file': prof_filename})
+            raise AppArmorException("%(file)s doesn't contain a valid profile (syntax error?)" % {'file': prof_filename})
         else:
-            raise AppArmorBug("%(file)s doesn't contain a valid profile for %(profile)s (syntax error?)" % {'file': prof_filename, 'profile': program})
+            raise AppArmorException("%(file)s doesn't contain a valid profile for %(profile)s (syntax error?)" % {'file': prof_filename, 'profile': program})
 
 def profile_exists(program):
     """Returns True if profile exists, False otherwise"""
