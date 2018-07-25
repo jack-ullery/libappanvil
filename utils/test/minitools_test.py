@@ -89,7 +89,7 @@ class MinitoolsTest(AATest):
 
         self.assertEqual(os.path.islink('%s/%s' % (force_complain_dir, os.path.basename(self.local_profilename))), True,
                 'Failed to create a symlink for %s in force-complain'%self.local_profilename)
-        self.assertEqual(apparmor.get_profile_flags(self.local_profilename, self.test_path), 'audit,complain',
+        self.assertEqual(apparmor.get_profile_flags(self.local_profilename, self.test_path), 'audit, complain',
                 'Complain flag could not be set in profile %s'%self.local_profilename)
 
         #Remove complain flag first i.e. set to enforce mode

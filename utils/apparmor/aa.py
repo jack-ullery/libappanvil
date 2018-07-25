@@ -628,7 +628,7 @@ def change_profile_flags(filename, program, flag, set_flag):
 
     newflags = add_or_remove_flag(old_flags, flag, set_flag)
 
-    newflags = ','.join(newflags)
+    newflags = ', '.join(newflags)
 
     set_profile_flags(filename, program, newflags)
 
