@@ -9,5 +9,5 @@
   owner @{HOME}/.cache/mesa_shader_cache/ w,
   owner @{HOME}/.cache/mesa_shader_cache/index rw,
   owner @{HOME}/.cache/mesa_shader_cache/??/ w,
-  owner @{HOME}/.cache/mesa_shader_cache/??/* rw,
+  owner @{HOME}/.cache/mesa_shader_cache/??/* rwk,
 
