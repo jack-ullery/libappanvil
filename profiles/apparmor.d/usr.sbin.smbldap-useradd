@@ -1,7 +1,7 @@
 # Last Modified: Tue Jan  3 00:17:40 2012
 #include <tunables/global>
 
-/usr/sbin/smbldap-useradd {
+/usr/{bin,sbin}/smbldap-useradd {
   #include <abstractions/base>
   #include <abstractions/bash>
   #include <abstractions/nameservice>
@@ -13,8 +13,8 @@
   /etc/shadow r,
   /etc/smbldap-tools/smbldap.conf r,
   /etc/smbldap-tools/smbldap_bind.conf r,
-  /usr/sbin/smbldap-useradd r,
-  /usr/sbin/smbldap_tools.pm r,
+  /usr/{bin,sbin}/smbldap-useradd r,
+  /usr/{bin,sbin}/smbldap_tools.pm r,
   /var/log/samba/log.smbd w,
 
   # Site-specific additions and overrides. See local/README for details.

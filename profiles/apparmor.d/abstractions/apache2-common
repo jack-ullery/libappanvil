@@ -7,9 +7,9 @@
   # Allow unconfined processes to send us signals by default
   signal (receive) peer=unconfined,
   # Allow apache to send us signals by default
-  signal (receive) peer=/usr/sbin/apache2,
+  signal (receive) peer=/usr/{bin,sbin}/apache2,
   # Allow other hats to signal by default
-  signal peer=/usr/sbin/apache2//*,
+  signal peer=/usr/{bin,sbin}/apache2//*,
   # Allow us to signal ourselves
   signal peer=@{profile_name},
 

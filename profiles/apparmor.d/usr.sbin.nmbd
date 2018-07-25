@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-/usr/sbin/nmbd {
+/usr/{bin,sbin}/nmbd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/samba>
@@ -9,7 +9,7 @@
 
   @{PROC}/sys/kernel/core_pattern r,
 
-  /usr/sbin/nmbd mr,
+  /usr/{bin,sbin}/nmbd mr,
 
   /var/cache/samba/gencache.tdb rwk,
   /var/{cache,lib}/samba/browse.dat* rw,

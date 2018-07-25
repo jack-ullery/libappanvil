@@ -10,7 +10,7 @@
 # ------------------------------------------------------------------
 
 #include <tunables/global>
-/usr/sbin/nscd {
+/usr/{bin,sbin}/nscd {
   #include <abstractions/base>
   #include <abstractions/consoles>
   #include <abstractions/nameservice>
@@ -23,7 +23,7 @@
 
   /etc/netgroup r,
   /etc/nscd.conf r,
-  /usr/sbin/nscd rmix,
+  /usr/{bin,sbin}/nscd rmix,
   /{,var/}run/.nscd_socket wl,
   /{,var/}run/nscd/ rw,
   /{,var/}run/nscd/db* rwl,

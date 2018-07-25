@@ -15,7 +15,7 @@
 #define this to be where syslog-ng is chrooted
 @{CHROOT_BASE}=""
 
-profile syslog-ng /{usr/,}sbin/syslog-ng {
+profile syslog-ng /{usr/,}{bin,sbin}/syslog-ng {
   #include <abstractions/base>
   #include <abstractions/consoles>
   #include <abstractions/nameservice>
@@ -46,7 +46,7 @@ profile syslog-ng /{usr/,}sbin/syslog-ng {
   @{PROC}/kmsg r,
   /etc/hosts.deny r,
   /etc/hosts.allow r,
-  /{usr/,}sbin/syslog-ng mr,
+  /{usr/,}{bin,sbin}/syslog-ng mr,
   /sys/devices/system/cpu/online r,
   /usr/share/syslog-ng/** r,
   /var/lib/syslog-ng/syslog-ng-?????.qf rw,

@@ -12,7 +12,7 @@
 
 #include <tunables/global>
 
-/usr/sbin/dovecot flags=(attach_disconnected) {
+/usr/{bin,sbin}/dovecot flags=(attach_disconnected) {
   #include <abstractions/authentication>
   #include <abstractions/base>
   #include <abstractions/dovecot-common>
@@ -55,7 +55,7 @@
   /usr/lib/dovecot/ssl-build-param rix,
   /usr/lib/dovecot/ssl-params mrPx,
   /usr/lib/dovecot/stats Px,
-  /usr/sbin/dovecot mrix,
+  /usr/{bin,sbin}/dovecot mrix,
   /usr/share/dovecot/protocols.d/   r,
   /usr/share/dovecot/protocols.d/** r,
   /var/lib/dovecot/ w,

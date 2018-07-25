@@ -1,5 +1,5 @@
 #include <tunables/global>
-/usr/sbin/avahi-daemon {
+/usr/{bin,sbin}/avahi-daemon {
   #include <abstractions/base>
   #include <abstractions/consoles>
   #include <abstractions/dbus>
@@ -20,7 +20,7 @@
   /etc/avahi/services/ r,
   /etc/avahi/services/*.service r,
   @{PROC}/@{pid}/fd/ r,
-  /usr/sbin/avahi-daemon mr,
+  /usr/{bin,sbin}/avahi-daemon mr,
   /usr/share/avahi/introspection/*.introspect r,
   /usr/share/dbus-1/interfaces/org.freedesktop.Avahi.*.xml r,
   /{,var/}run/avahi-daemon/ w,

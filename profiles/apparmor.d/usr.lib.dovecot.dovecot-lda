@@ -29,7 +29,7 @@
   /run/dovecot/auth-userdb rw,
   /usr/bin/doveconf mrix,
   /usr/lib/dovecot/dovecot-lda mrix,
-  /usr/sbin/sendmail Cx,
+  /usr/{bin,sbin}/sendmail Cx,
   /usr/share/dovecot/protocols.d/ r,
   /usr/share/dovecot/protocols.d/** r,
 
@@ -37,7 +37,7 @@
   #include <local/usr.lib.dovecot.dovecot-lda>
 
 
-  profile /usr/sbin/sendmail flags=(attach_disconnected) {
+  profile /usr/{bin,sbin}/sendmail flags=(attach_disconnected) {
     # this profile is based on the usr.sbin.sendmail profile in extras
     # and should support both postfix' and sendmail's sendmail binary
 
@@ -70,13 +70,13 @@
     /usr/lib/postfix/master Px,
     /usr/lib/postfix/showq Px,
     /usr/lib/postfix/smtpd Px,
-    /usr/sbin/postalias Px,
-    /usr/sbin/postdrop Px,
-    /usr/sbin/postfix Px,
-    /usr/sbin/postqueue Px,
-    /usr/sbin/sendmail mrix,
-    /usr/sbin/sendmail.postfix mrix,
-    /usr/sbin/sendmail.sendmail mrix,
+    /usr/{bin,sbin}/postalias Px,
+    /usr/{bin,sbin}/postdrop Px,
+    /usr/{bin,sbin}/postfix Px,
+    /usr/{bin,sbin}/postqueue Px,
+    /usr/{bin,sbin}/sendmail mrix,
+    /usr/{bin,sbin}/sendmail.postfix mrix,
+    /usr/{bin,sbin}/sendmail.sendmail mrix,
     /{var/,}run/sendmail.pid rwl,
     /{var/,}run/sm-client.pid rwl,
     /{var/,}run/utmp rw,

@@ -11,7 +11,7 @@
 
 #include <tunables/global>
 
-/usr/sbin/identd {
+/usr/{bin,sbin}/identd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   capability net_bind_service,
@@ -20,7 +20,7 @@
   /etc/identd.conf         r,
   /etc/identd.key          r,
   /etc/identd.pid          w,
-  /usr/sbin/identd	   rmix,
+  /usr/{bin,sbin}/identd   rmix,
   @{PROC}/net/tcp          r,
   @{PROC}/net/tcp6         r,
   /{,var/}run/identd.pid   w,

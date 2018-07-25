@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-/usr/sbin/smbd {
+/usr/{bin,sbin}/smbd {
   #include <abstractions/authentication>
   #include <abstractions/base>
   #include <abstractions/consoles>
@@ -37,8 +37,8 @@
   /usr/lib/@{multiarch}/samba/*.so{,.[0-9]*} mr,
   /usr/lib/@{multiarch}/samba/**/ r,
   /usr/lib/@{multiarch}/samba/**/*.so{,.[0-9]*} mr,
-  /usr/sbin/smbd mr,
-  /usr/sbin/smbldap-useradd Px,
+  /usr/{bin,sbin}/smbd mr,
+  /usr/{bin,sbin}/smbldap-useradd Px,
   /var/cache/samba/** rwk,
   /var/{cache,lib}/samba/printing/printers.tdb mrw,
   /var/lib/samba/** rwk,
