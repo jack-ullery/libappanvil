@@ -159,6 +159,17 @@ class ProfileStorage:
         return data
 
 
+def split_flags(flags):
+    '''split the flags given as string into a sorted, de-duplicated list'''
+
+    if flags is None:
+        flags = ''
+
+    # Flags may be whitespace and/or comma separated
+    flags_list = flags.replace(',', ' ').split()
+    # sort and remove duplicates
+    return sorted(set(flags_list))
+
 def set_allow_str(allow):
     if allow == 'deny':
         return 'deny '

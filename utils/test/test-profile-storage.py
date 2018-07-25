@@ -13,7 +13,7 @@ import unittest
 from common_test import AATest, setup_all_loops
 
 from apparmor.common import AppArmorBug
-from apparmor.profile_storage import ProfileStorage, var_transform
+from apparmor.profile_storage import ProfileStorage, split_flags, var_transform
 
 class TestUnknownKey(AATest):
     def AASetup(self):
@@ -34,6 +34,22 @@ class TestUnknownKey(AATest):
     def test_set(self):
         with self.assertRaises(AppArmorBug):
             self.storage['foo'] = 'bar'
+
+class AaTest_split_flags(AATest):
+    tests = [
+        (None                               , []                                    ),
+        (''                                 , []                                    ),
+        ('       '                          , []                                    ),
+        ('  ,       '                       , []                                    ),
+        ('complain'                         , ['complain']                          ),
+        ('  complain   attach_disconnected' , ['attach_disconnected', 'complain']   ),
+        ('  complain , attach_disconnected' , ['attach_disconnected', 'complain']   ),
+        ('  complain , , audit , , '        , ['audit', 'complain']                 ),
+    ]
+
+    def _run_test(self, params, expected):
+        split = split_flags(params)
+        self.assertEqual(split, expected)
 
 class AaTest_var_transform(AATest):
     tests = [
