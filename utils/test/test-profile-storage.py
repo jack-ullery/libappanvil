@@ -46,6 +46,10 @@ class AaTest_add_or_remove_flag(AATest):
         ([ [],                  'audit',        False           ],  []                          ),
         ([ ['complain'],        'audit',        True            ],  ['audit', 'complain']       ),
         ([ ['complain'],        'audit',        False           ],  ['complain']                ),
+        ([ '',                  'audit',        True            ],  ['audit']                   ),
+        ([ None,                'audit',        False           ],  []                          ),
+        ([ 'complain',          'audit',        True            ],  ['audit', 'complain']       ),
+        ([ '  complain  ',      'audit',        False           ],  ['complain']                ),
     ]
 
     def _run_test(self, params, expected):

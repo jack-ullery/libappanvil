@@ -16,7 +16,7 @@
 
 from apparmor.aamode import AA_LINK_SUBSET
 
-from apparmor.common import AppArmorBug, AppArmorException, hasher
+from apparmor.common import AppArmorBug, AppArmorException, hasher, type_is_str
 
 from apparmor.rule.capability       import CapabilityRuleset
 from apparmor.rule.change_profile   import ChangeProfileRuleset
@@ -172,6 +172,9 @@ def split_flags(flags):
 
 def add_or_remove_flag(flags, flag_to_change, set_flag):
     '''add (if set_flag == True) or remove the given flag_to_change to flags'''
+
+    if type_is_str(flags) or flags is None:
+        flags = split_flags(flags)
 
     if set_flag:
         if flag_to_change not in flags:

@@ -49,7 +49,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
                             strip_quotes, parse_profile_start_line, re_match_include )
 
-from apparmor.profile_storage import (ProfileStorage, add_or_remove_flag, split_flags, ruletypes, write_alias,
+from apparmor.profile_storage import (ProfileStorage, add_or_remove_flag, ruletypes, write_alias,
                             write_includes, write_list_vars )
 
 import apparmor.rules as aarules
@@ -626,9 +626,7 @@ def get_profile_flags(filename, program):
 def change_profile_flags(filename, program, flag, set_flag):
     old_flags = get_profile_flags(filename, program)
 
-    newflags = split_flags(old_flags)
-
-    newflags = add_or_remove_flag(newflags, flag, set_flag)
+    newflags = add_or_remove_flag(old_flags, flag, set_flag)
 
     newflags = ','.join(newflags)
 
