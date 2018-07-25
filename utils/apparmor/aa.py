@@ -623,16 +623,13 @@ def get_profile_flags(filename, program):
 
     raise AppArmorException(_('%s contains no profile') % filename)
 
-def change_profile_flags(filename, program, flag, set_flag):
-    old_flags = get_profile_flags(filename, program)
+def change_profile_flags(prof_filename, program, flag, set_flag):
+    old_flags = get_profile_flags(prof_filename, program)
 
     newflags = add_or_remove_flag(old_flags, flag, set_flag)
 
     newflags = ', '.join(newflags)
 
-    set_profile_flags(filename, program, newflags)
-
-def set_profile_flags(prof_filename, program, newflags):
     """Reads the old profile file and updates the flags accordingly"""
     # TODO: count the number of matching lines (separated by profile and hat?) and return it
     #       so that code calling this function can make sure to only report success if there was a match

@@ -70,9 +70,9 @@ class ProfileStorage:
         data['attachment']       = ''
         data['flags']            = ''
         data['external']         = False
-        data['header_comment']   = ''  # currently only set by set_profile_flags()
+        data['header_comment']   = ''  # currently only set by change_profile_flags()
         data['initial_comment']  = ''
-        data['profile_keyword']  = False  # currently only set by set_profile_flags()
+        data['profile_keyword']  = False  # currently only set by change_profile_flags()
         data['profile']          = False  # profile or hat?
 
         data['allow'] = dict()
