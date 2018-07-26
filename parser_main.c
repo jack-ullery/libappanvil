@@ -1241,12 +1241,7 @@ int main(int argc, char *argv[])
 		uint16_t max_caches = write_cache && cond_clear_cache ? (uint16_t) (-1) : 0;
 
 		if (!cacheloc[0]) {
-			char *tmp;
-
-			if (asprintf(&tmp, "%s/cache.d", basedir) == -1) {
-				PERROR(_("Memory allocation error."));
-				return 1;
-			}
+			char *tmp = "/var/cache/apparmor";
 			cacheloc[0] = tmp;
 			cacheloc_n = 1;
 		}
