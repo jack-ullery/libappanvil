@@ -10,12 +10,9 @@
 # ------------------------------------------------------------------
 
   # system configuration
-  @{usr_share}/applications/{*/,}               r,
-  @{usr_share}/applications/{*/,}defaults.list  r,
-  @{usr_share}/applications/{*/,}mimeinfo.cache r,
-  @{usr_share}/applications/{*/,}*.desktop      r,
-  @{usr_share}/icons/{**,}   r,
-  @{usr_share}/pixmaps/{**,} r,
+  @{usr_share}/applications/{**,} r,
+  @{usr_share}/icons/{**,}        r,
+  @{usr_share}/pixmaps/{**,}      r,
 
   # this should probably go elsewhere
   @{usr_share}/mime/** r,
@@ -26,11 +23,8 @@
   owner @{HOME}/.local/share/recently-used.xbel* rw,
   owner @{HOME}/.config/user-dirs.dirs  r,
   owner @{HOME}/.config/mimeapps.list   r,
-  owner @{home_local_share}/applications/               r,
-  owner @{home_local_share}/applications/*.desktop      r,
-  owner @{home_local_share}/applications/defaults.list  r,
-  owner @{home_local_share}/applications/mimeapps.list  r,
-  owner @{home_local_share}/applications/mimeinfo.cache r,
+  owner @{home_local_share}/applications/   r,
+  owner @{home_local_share}/applications/** r,
   owner @{home_local_share}/icons/     r,
   owner @{home_local_share}/icons/**   r,
   owner @{home_local_share}/mime/      r,
