@@ -32,8 +32,6 @@ owner @{HOME}/.kde{,4}/share/config/*.lock rwl,
 owner @{HOME}/.qt/** rw,
 owner @{HOME}/.config/Trolltech.conf rwk,
 
-/usr/share/icons/ r,
-/usr/share/icons/** r,
 /usr/share/X11/XKeysymDB r,
 
 # kde3

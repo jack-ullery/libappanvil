@@ -10,21 +10,12 @@
 # ------------------------------------------------------------------
 
   # system configuration
-  /usr/{,local/}share/applications/{*/,}               r,
-  /usr/{,local/}share/applications/{*/,}defaults.list  r,
-  /usr/{,local/}share/applications/{*/,}mimeinfo.cache r,
-  /usr/{,local/}share/applications/{*/,}*.desktop      r,
-  /usr/share/icons/               r,
-  /usr/share/icons/**             r,
-  /usr/share/pixmaps/             r,
-  /usr/share/pixmaps/**           r,
-  /usr/local/share/icons/               r,
-  /usr/local/share/icons/**             r,
-  /usr/local/share/pixmaps/             r,
-  /usr/local/share/pixmaps/**           r,
+  @{system_share_dirs}/applications/{**,} r,
+  @{system_share_dirs}/icons/{**,}        r,
+  @{system_share_dirs}/pixmaps/{**,}      r,
 
   # this should probably go elsewhere
-  /usr/share/mime/**              r,
+  @{system_share_dirs}/mime/** r,
 
   # per-user configurations
   owner @{HOME}/.icons/                 r,
@@ -32,12 +23,6 @@
   owner @{HOME}/.local/share/recently-used.xbel* rw,
   owner @{HOME}/.config/user-dirs.dirs  r,
   owner @{HOME}/.config/mimeapps.list   r,
-  owner @{HOME}/.local/share/applications/               r,
-  owner @{HOME}/.local/share/applications/*.desktop      r,
-  owner @{HOME}/.local/share/applications/defaults.list  r,
-  owner @{HOME}/.local/share/applications/mimeapps.list  r,
-  owner @{HOME}/.local/share/applications/mimeinfo.cache r,
-  owner @{HOME}/.local/share/icons/     r,
-  owner @{HOME}/.local/share/icons/**   r,
-  owner @{HOME}/.local/share/mime/      r,
-  owner @{HOME}/.local/share/mime/**    r,
+  owner @{user_share_dirs}/applications/{**,} r,
+  owner @{user_share_dirs}/icons/{**,}        r,
+  owner @{user_share_dirs}/mime/{**,}         r,
