@@ -18,4 +18,7 @@
   /etc/sasl2/*              r,
   /usr/lib{,32,64}/sasl2/*  r,
 
+  # local LDAP name service daemon
+  /{,var/}run/nslcd/socket  rw,
+
   #include <abstractions/ssl_certs>
