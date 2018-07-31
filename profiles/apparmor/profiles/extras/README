@@ -30,7 +30,7 @@ work for your situation, then run commands such as the following:
 
   # aa-enforce /etc/apparmor.d/*postfix*
   # aa-enforce /etc/apparmor.d/usr.sbin.post*
-  # aa-enforce /etc/apparmor.d/usr.bin.procmail 
+  # aa-enforce /etc/apparmor.d/usr.bin.procmail
   # aa-enforce /etc/apparmor.d/usr.sbin.sendmail
 
 You may use the aa-unconfined tool to make sure your profiles are
@@ -38,8 +38,11 @@ working as you expect.
 
 Feedback on these unsupported profiles is welcomed; any
 contributions for this directory should be clearly licensed
--- we recommend using the GPL. Please mail suggestions or
-modifications to the apparmor@lists.ubuntu.com mail list:
-https://lists.ubuntu.com/mailman/listinfo/apparmor
+-- we recommend using the GPL. Please submit bug reports to the
+AppArmor issue tracker at https://gitlab.com/apparmor/apparmor/issues
+Please submit proposed changes as a merge request at
+https://gitlab.com/apparmor/apparmor/merge_requests
+Alternately, you may contact us via the apparmor@lists.ubuntu.com
+mailing list: https://lists.ubuntu.com/mailman/listinfo/apparmor
 
 Thanks
