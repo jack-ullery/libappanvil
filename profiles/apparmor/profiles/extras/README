@@ -39,7 +39,7 @@ working as you expect.
 Feedback on these unsupported profiles is welcomed; any
 contributions for this directory should be clearly licensed
 -- we recommend using the GPL. Please submit bug reports to the
-AppArmor issue tracker at https://gitlab.com/apparmor/apparmor/issues
+AppArmor issue tracker at https://bugs.launchpad.net/apparmor/+filebug
 Please submit proposed changes as a merge request at
 https://gitlab.com/apparmor/apparmor/merge_requests
 Alternately, you may contact us via the apparmor@lists.ubuntu.com
