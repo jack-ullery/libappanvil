@@ -129,6 +129,7 @@
   /etc.legal r,
   /etc/motd r,
   /{,var/}run/motd{,.dynamic}{,.new} rw,
+  /tmp/krb5cc* wk,
   /tmp/ssh-[a-zA-Z0-9]*/ w,
   /tmp/ssh-[a-zA-Z0-9]*/agent.[0-9]* wl,
 
