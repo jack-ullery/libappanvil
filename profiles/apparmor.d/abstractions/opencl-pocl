@@ -62,7 +62,7 @@
 
     # Additional executables
 
-    //usr/bin/{,@{multiarch}-}ld.bfd ix, # TODO: transfer to opencl_ld child profile?
+    /usr/bin/{,@{multiarch}-}ld.bfd ix, # TODO: transfer to opencl_ld child profile?
 
     # System files
 
