@@ -55,7 +55,11 @@ def last_audit_entry_time():
     return logmark
 
 def restore_ratelimit():
-    sysctl_write(ratelimit_sysctl, ratelimit_saved)
+    try:
+        sysctl_write(ratelimit_sysctl, ratelimit_saved)
+    except PermissionError:
+        if ratelimit_saved != sysctl_read(ratelimit_sysctl):
+            raise  # happens only if a) running under lxd and b) something changed the ratelimit since starting aa-genprof
 
 parser = argparse.ArgumentParser(description=_('Generate profile for the given program'))
 parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))
@@ -120,7 +124,11 @@ if apparmor.helpers[program] == 'enforce':
 # the printk ratelimit, and restore it on exit.
 ratelimit_sysctl = '/proc/sys/kernel/printk_ratelimit'
 ratelimit_saved = sysctl_read(ratelimit_sysctl)
-sysctl_write(ratelimit_sysctl, 0)
+
+try:
+    sysctl_write(ratelimit_sysctl, 0)
+except PermissionError:  # will fail in lxd
+    warn("Can't set printk_ratelimit, some events might be lost")
 
 atexit.register(restore_ratelimit)
 
