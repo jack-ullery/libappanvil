@@ -20,3 +20,6 @@
   /var/lib/acme/live/* r,
   /var/lib/acme/certs/** r,
   /var/lib/acme/keys/** r,
+
+  # dehydrated
+  /etc/dehydrated/certs/*/privkey-*.pem r,
