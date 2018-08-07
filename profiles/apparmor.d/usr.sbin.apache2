@@ -1,7 +1,7 @@
 # Author: Marc Deslauriers <marc.deslauriers@ubuntu.com>
 
 #include <tunables/global>
-/usr/sbin/apache2 flags=(attach_disconnected) {
+/usr/{bin,sbin}/apache2 flags=(attach_disconnected) {
 
   # This profile is completely permissive.
   # It is designed to target specific applications using mod_apparmor,

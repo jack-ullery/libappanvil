@@ -11,7 +11,7 @@
 
 #include <tunables/global>
 
-/usr/sbin/mdnsd {
+/usr/{bin,sbin}/mdnsd {
   #include <abstractions/base>
   #include <abstractions/consoles>
   #include <abstractions/nameservice>
@@ -24,7 +24,7 @@
 
   network netlink dgram,
 
-  /usr/sbin/mdnsd rmix,
+  /usr/{bin,sbin}/mdnsd rmix,
 
   @{PROC}/net/ r,
   @{PROC}/net/unix r,

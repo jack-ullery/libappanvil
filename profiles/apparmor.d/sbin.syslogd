@@ -11,7 +11,7 @@
 
 #include <tunables/global>
 
-profile syslogd /{usr/,}sbin/syslogd {
+profile syslogd /{usr/,}{bin,sbin}/syslogd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/consoles>
@@ -32,7 +32,7 @@ profile syslogd /{usr/,}sbin/syslogd {
   /dev/tty*                     w,
   /dev/xconsole                 rw,
   /etc/syslog.conf              r,
-  /{usr/,}sbin/syslogd                 rmix,
+  /{usr/,}{bin,sbin}/syslogd    rmix,
   /var/log/**                   rw,
   /{,var/}run/syslogd.pid          krwl,
   /{,var/}run/utmp                 rw,

@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-/usr/sbin/winbindd {
+/usr/{bin,sbin}/winbindd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/samba>
@@ -24,7 +24,7 @@
   /usr/lib*/samba/idmap/*.so mr,
   /usr/lib*/samba/nss_info/*.so mr,
   /usr/lib*/samba/pdb/*.so mr,
-  /usr/sbin/winbindd mr,
+  /usr/{bin,sbin}/winbindd mr,
   /var/cache/krb5rcache/* rw,
   /var/cache/samba/*.tdb rwk,
   /var/log/samba/log.winbindd rw,
