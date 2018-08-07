@@ -16,7 +16,7 @@
 
 from apparmor.aamode import AA_LINK_SUBSET
 
-from apparmor.common import AppArmorBug, AppArmorException, hasher
+from apparmor.common import AppArmorBug, AppArmorException, hasher, type_is_str
 
 from apparmor.rule.capability       import CapabilityRuleset
 from apparmor.rule.change_profile   import ChangeProfileRuleset
@@ -70,9 +70,9 @@ class ProfileStorage:
         data['attachment']       = ''
         data['flags']            = ''
         data['external']         = False
-        data['header_comment']   = ''  # currently only set by set_profile_flags()
+        data['header_comment']   = ''  # currently only set by change_profile_flags()
         data['initial_comment']  = ''
-        data['profile_keyword']  = False  # currently only set by set_profile_flags()
+        data['profile_keyword']  = False  # currently only set by change_profile_flags()
         data['profile']          = False  # profile or hat?
 
         data['allow'] = dict()
@@ -157,6 +157,33 @@ class ProfileStorage:
                 data += self.data[ruletype].get_clean(depth)
 
         return data
+
+
+def split_flags(flags):
+    '''split the flags given as string into a sorted, de-duplicated list'''
+
+    if flags is None:
+        flags = ''
+
+    # Flags may be whitespace and/or comma separated
+    flags_list = flags.replace(',', ' ').split()
+    # sort and remove duplicates
+    return sorted(set(flags_list))
+
+def add_or_remove_flag(flags, flag_to_change, set_flag):
+    '''add (if set_flag == True) or remove the given flag_to_change to flags'''
+
+    if type_is_str(flags) or flags is None:
+        flags = split_flags(flags)
+
+    if set_flag:
+        if flag_to_change not in flags:
+            flags.append(flag_to_change)
+    else:
+        if flag_to_change in flags:
+            flags.remove(flag_to_change)
+
+    return sorted(flags)
 
 
 def set_allow_str(allow):
