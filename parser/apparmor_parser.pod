@@ -247,7 +247,7 @@ If a cache directory name needs to have a comma as part of the name, it
 can be specified by using a backslash to escape the comma character in
 the directory name.
 
-If not specified the cache location defaults to /etc/apparmor.d/cache.d
+If not specified the cache location defaults to /var/cache/apparmor
 
 =item --print-cache-dir
 
