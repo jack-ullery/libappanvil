@@ -27,3 +27,8 @@
   # acmetool
   /var/lib/acme/certs/*/chain r,
   /var/lib/acme/certs/*/cert r,
+
+  # dehydrated
+  /etc/dehydrated/certs/*/cert-*.pem r,
+  /etc/dehydrated/certs/*/chain-*.pem r,
+  /etc/dehydrated/certs/*/fullchain-*.pem r,
