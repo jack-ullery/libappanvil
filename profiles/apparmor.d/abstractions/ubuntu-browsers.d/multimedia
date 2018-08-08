@@ -18,6 +18,7 @@
 
   #include <abstractions/ubuntu-media-players>
   owner @{HOME}/.adobe/ w,
+  owner @{HOME}/.adobe/** rw,
   owner @{HOME}/.macromedia/ w,
   owner @{HOME}/.macromedia/** rw,
   /opt/real/RealPlayer/mozilla/nphelix.so rm,
