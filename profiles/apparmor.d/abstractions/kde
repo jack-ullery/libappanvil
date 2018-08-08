@@ -23,6 +23,7 @@
 /etc/kde3/* r,
 /etc/kde4rc r,
 /etc/xdg/Trolltech.conf r,
+/usr/share/knotifications5/*.notifyrc r, # KNotification::sendEvent()
 
 owner @{HOME}/.DCOPserver_* r,
 owner @{HOME}/.ICEauthority r,
@@ -30,7 +31,14 @@ owner @{HOME}/.fonts.* lrw,
 owner @{HOME}/.kde{,4}/share/config/kdeglobals rw,
 owner @{HOME}/.kde{,4}/share/config/*.lock rwl,
 owner @{HOME}/.qt/** rw,
+owner @{HOME}/.cache/ksycoca5_??_* r, # KDE System Configuration Cache
 owner @{HOME}/.config/Trolltech.conf rwk,
+owner @{HOME}/.config/baloofilerc r, # indexing options (excludes, etc), used by KFileWidget
+owner @{HOME}/.config/dolphinrc r, # settings used by KFileWidget
+owner @{HOME}/.config/kde.org/libphonon.conf r, # for KNotifications::sendEvent()
+owner @{HOME}/.config/kdeglobals r, # global settings, used by Breeze style, etc.
+owner @{HOME}/.config/klanguageoverridesrc r, # per-application languages, for KDEPrivate::initializeLanguages() from libKF5XmlGui.so
+owner @{HOME}/.config/trashrc r, # Used by KFileWidget
 
 /usr/share/X11/XKeysymDB r,
 
