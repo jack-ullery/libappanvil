@@ -17,6 +17,8 @@
   /usr/bin/gwenview Cxr -> sanitized_helper,
 
   #include <abstractions/ubuntu-media-players>
+  owner @{HOME}/.adobe/ w,
+  owner @{HOME}/.macromedia/ w,
   owner @{HOME}/.macromedia/** rw,
   /opt/real/RealPlayer/mozilla/nphelix.so rm,
   /usr/bin/lpstat Cxr -> sanitized_helper,

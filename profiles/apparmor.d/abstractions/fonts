@@ -44,7 +44,7 @@
   owner @{HOME}/.local/share/fonts/     r,
   owner @{HOME}/.local/share/fonts/**   r,
   owner @{HOME}/.fonts.cache-2          mr,
-  owner @{HOME}/.{,cache/}fontconfig/   r,
+  owner @{HOME}/.{,cache/}fontconfig/   rw,
   owner @{HOME}/.{,cache/}fontconfig/** mrl,
   owner @{HOME}/.fonts.conf.d/          r,
   owner @{HOME}/.fonts.conf.d/**        r,
