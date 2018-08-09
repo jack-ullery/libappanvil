@@ -21,7 +21,7 @@ profile rpc.statd /{usr/,}sbin/rpc.statd {
   # changes ownership of pidfile
   capability chown,
 
-  # not sure why this is needed
+  # needed to drop capabilities
   capability setpcap,
 
   owner @{PROC}/@{pid}/fd/         r,
