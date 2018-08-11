@@ -8,13 +8,13 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: AppArmor list <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2018-08-09 18:10+0000\n"
+"PO-Revision-Date: 2018-08-10 16:25+0000\n"
 "Last-Translator: Jonatan Nyberg <Unknown>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2018-08-10 04:31+0000\n"
+"X-Launchpad-Export-Date: 2018-08-11 04:30+0000\n"
 "X-Generator: Launchpad (build 18747)\n"
 "Language: sv\n"
 
@@ -472,11 +472,11 @@ msgstr ""
 
 #: ../apparmor/aa.py:995
 msgid "Default Hat"
-msgstr ""
+msgstr "Standard Hat"
 
 #: ../apparmor/aa.py:997
 msgid "Requested Hat"
-msgstr ""
+msgstr "Förfrågad Hat"
 
 #: ../apparmor/aa.py:1218
 #, python-format
@@ -972,7 +972,7 @@ msgstr ""
 
 #: ../apparmor/ui.py:224
 msgid "(M)ore"
-msgstr ""
+msgstr "(M)er"
 
 #: ../apparmor/ui.py:225
 msgid "Audi(t)"
@@ -1012,7 +1012,7 @@ msgstr ""
 
 #: ../apparmor/ui.py:235
 msgid "(P)rofile"
-msgstr ""
+msgstr "(P)rofil"
 
 #: ../apparmor/ui.py:236
 msgid "(P)rofile Clean Exec"
@@ -1068,15 +1068,15 @@ msgstr ""
 
 #: ../apparmor/ui.py:249
 msgid "(X) ix On"
-msgstr ""
+msgstr "(X) ix På"
 
 #: ../apparmor/ui.py:250
 msgid "(X) ix Off"
-msgstr ""
+msgstr "(X) ix Av"
 
 #: ../apparmor/ui.py:251 ../apparmor/ui.py:265
 msgid "(S)ave Changes"
-msgstr ""
+msgstr "(S)para ändringar"
 
 #: ../apparmor/ui.py:252
 msgid "(C)ontinue Profiling"
@@ -1084,7 +1084,7 @@ msgstr ""
 
 #: ../apparmor/ui.py:253
 msgid "(N)ew"
-msgstr ""
+msgstr "(N)y"
 
 #: ../apparmor/ui.py:254
 msgid "(G)lob"
@@ -1108,11 +1108,11 @@ msgstr ""
 
 #: ../apparmor/ui.py:259
 msgid "(H)elp"
-msgstr ""
+msgstr "(H)jälp"
 
 #: ../apparmor/ui.py:260
 msgid "(V)iew Profile"
-msgstr ""
+msgstr "(V)isa profil"
 
 #: ../apparmor/ui.py:261
 msgid "(U)se Profile"
@@ -1124,11 +1124,11 @@ msgstr ""
 
 #: ../apparmor/ui.py:263
 msgid "(U)pdate Profile"
-msgstr ""
+msgstr "(U)ppdatera profil"
 
 #: ../apparmor/ui.py:264
 msgid "(I)gnore Update"
-msgstr ""
+msgstr "(I)gnorera uppdatering"
 
 #: ../apparmor/ui.py:266
 msgid "Save Selec(t)ed Profile"
@@ -1140,7 +1140,7 @@ msgstr ""
 
 #: ../apparmor/ui.py:268
 msgid "(V)iew Changes"
-msgstr ""
+msgstr "(V)isa ändringar"
 
 #: ../apparmor/ui.py:269
 msgid "View Changes b/w (C)lean profiles"
@@ -1148,7 +1148,7 @@ msgstr ""
 
 #: ../apparmor/ui.py:270
 msgid "(V)iew"
-msgstr ""
+msgstr "(V)isa"
 
 #: ../apparmor/ui.py:271
 msgid "(E)nable Repository"
