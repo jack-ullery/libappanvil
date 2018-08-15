@@ -160,7 +160,7 @@ struct option long_options[] = {
 	{"jobs",		1, 0, 'j'},
 	{"max-jobs",		1, 0, 136},	/* no short option */
 	{"print-cache-dir",	0, 0, 137},	/* no short option */
-	{"config-file",		1, 0, 139},	/* early option */
+	{"config-file",		1, 0, 139},	/* early option, no short option */
 	{"print-config-file",	0, 0, 140},	/* no short option */
 	{NULL, 0, 0, 0},
 };
