@@ -160,7 +160,7 @@ struct option long_options[] = {
 	{"jobs",		1, 0, 'j'},
 	{"max-jobs",		1, 0, 136},	/* no short option */
 	{"print-cache-dir",	0, 0, 137},	/* no short option */
-	{"config-file",		1, 0, 139},	/* early option, no short option */
+	{"config-file",		1, 0, 141},	/* early option, no short option */
 	{"print-config-file",	0, 0, 140},	/* no short option */
 	{NULL, 0, 0, 0},
 };
@@ -638,7 +638,7 @@ static int process_arg(int c, char *optarg, int config_count)
 		kernel_load = 0;
 		print_cache_dir = true;
 		break;
-	case 139:
+	case 141:
 		if (optind - config_count != 1) {
 			PERROR("%s: --config-file=%s must be the first option specified\n", progname, optarg);
 			exit(1);
