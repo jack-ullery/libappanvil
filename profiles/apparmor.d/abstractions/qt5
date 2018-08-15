@@ -17,4 +17,5 @@
   # User files
 
   owner @{HOME}/.config/QtProject.conf r, # common settings for QFileDialog, etc (application might need write access)
+  owner @{HOME}/.cache/qt_compose_cache_{little,big}_endian_* r, # for "platforminputcontexts" plugins
 
