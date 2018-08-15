@@ -132,8 +132,6 @@ struct option long_options[] = {
 	{"ofile",		1, 0, 'o'},
 	{"match-string",	1, 0, 'm'},
 	{"features-file",	1, 0, 'M'},
-	{"compile-features",	1, 0, 139},	/* no short option */
-	{"kernel-features",	1, 0, 138},	/* no short option */
 	{"quiet",		0, 0, 'q'},
 	{"skip-kernel-load",	0, 0, 'Q'},
 	{"verbose",		0, 0, 'v'},
@@ -143,9 +141,6 @@ struct option long_options[] = {
 	{"skip-read-cache",	0, 0, 'T'},
 	{"write-cache",		0, 0, 'W'},
 	{"show-cache",		0, 0, 'k'},
-	{"skip-bad-cache",	0, 0, 129},	/* no short option */
-	{"purge-cache",		0, 0, 130},	/* no short option */
-	{"create-cache-dir",	0, 0, 131},	/* no short option */
 	{"cache-loc",		1, 0, 'L'},
 	{"debug",		2, 0, 'd'},
 	{"dump",		1, 0, 'D'},
@@ -153,15 +148,21 @@ struct option long_options[] = {
 	{"optimize",		1, 0, 'O'},
 	{"Optimize",		1, 0, 'O'},
 	{"preprocess",		0, 0, 'p'},
+	{"jobs",		1, 0, 'j'},
+	{"skip-bad-cache",	0, 0, 129},	/* no short option */
+	{"purge-cache",		0, 0, 130},	/* no short option */
+	{"create-cache-dir",	0, 0, 131},	/* no short option */
 	{"abort-on-error",	0, 0, 132},	/* no short option */
 	{"skip-bad-cache-rebuild",	0, 0, 133},	/* no short option */
 	{"warn",		1, 0, 134},	/* no short option */
 	{"debug-cache",		0, 0, 135},	/* no short option */
-	{"jobs",		1, 0, 'j'},
 	{"max-jobs",		1, 0, 136},	/* no short option */
 	{"print-cache-dir",	0, 0, 137},	/* no short option */
-	{"config-file",		1, 0, 141},	/* early option, no short option */
+	{"kernel-features",	1, 0, 138},	/* no short option */
+	{"compile-features",	1, 0, 139},	/* no short option */
 	{"print-config-file",	0, 0, 140},	/* no short option */
+	{"config-file",		1, 0, 141},	/* early option, no short option */
+
 	{NULL, 0, 0, 0},
 };
 
