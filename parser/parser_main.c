@@ -102,7 +102,7 @@ bool debug_jobs = false;
 struct timespec cache_tstamp, mru_policy_tstamp;
 
 static char *apparmorfs = NULL;
-static char *cacheloc[MAX_CACHE_LOCS];
+static const char *cacheloc[MAX_CACHE_LOCS];
 static int cacheloc_n = 0;
 static bool print_cache_dir = false;
 
@@ -241,7 +241,7 @@ void display_warn(const char *command)
 }
 
 /* Parse comma separated cachelocations. Commas can be escaped by \, */
-static int parse_cacheloc(const char *arg, char **cacheloc, int max_size)
+static int parse_cacheloc(const char *arg, const char **cacheloc, int max_size)
 {
 	const char *s = arg;
 	const char *p = arg;
@@ -253,15 +253,17 @@ static int parse_cacheloc(const char *arg, char **cacheloc, int max_size)
 				p++;
 		} else if (*p == ',') {
 			if (p != s) {
+				char *tmp;
 				if (n == max_size) {
 					errno = E2BIG;
 					return -1;
 				}
-				cacheloc[n] = (char *) malloc(p - s + 1);
-				if (cacheloc[n] == NULL)
+				tmp = (char *) malloc(p - s + 1);
+				if (tmp == NULL)
 					return -1;
-				memcpy(cacheloc[n], s, p - s);
-				cacheloc[n][p - s] = 0;
+				memcpy(tmp, s, p - s);
+				tmp[p - s] = 0;
+				cacheloc[n] = tmp;
 				n++;
 			}
 			p++;
@@ -270,15 +272,17 @@ static int parse_cacheloc(const char *arg, char **cacheloc, int max_size)
 			p++;
 	}
 	if (p != s) {
+		char *tmp;
 		if (n == max_size) {
 			errno = E2BIG;
 			return -1;
 		}
-		cacheloc[n] = (char *) malloc(p - s + 1);
-		if (cacheloc[n] == NULL)
+		tmp = (char *) malloc(p - s + 1);
+		if (tmp == NULL)
 			return -1;
-		memcpy(cacheloc[n], s, p - s);
-		cacheloc[n][p - s] = 0;
+		memcpy(tmp, s, p - s);
+		tmp[p - s] = 0;
+		cacheloc[n] = tmp;
 		n++;
 	}
 
@@ -809,7 +813,7 @@ static bool do_print_cache_dir(aa_features *features, int dirfd, const char *pat
 	return true;
 }
 
-static bool do_print_cache_dirs(aa_features *features, char **cacheloc,
+static bool do_print_cache_dirs(aa_features *features, const char **cacheloc,
 				int cacheloc_n)
 {
 	int i;
@@ -1288,8 +1292,7 @@ int main(int argc, char *argv[])
 		uint16_t max_caches = write_cache && cond_clear_cache ? (uint16_t) (-1) : 0;
 
 		if (!cacheloc[0]) {
-			char *tmp = "/var/cache/apparmor";
-			cacheloc[0] = tmp;
+			cacheloc[0] = "/var/cache/apparmor";
 			cacheloc_n = 1;
 		}
 		if (print_cache_dir)
