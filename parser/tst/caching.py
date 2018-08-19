@@ -68,7 +68,9 @@ class AAParserCachingCommon(testlib.AATestTemplate):
             self.do_cleanup = False
             self.debug = True
 
-        self.cmd_prefix = [config.parser, '--base', self.tmp_dir, '--skip-kernel-load']
+        # Warnings break the test harness, but chroots may not be setup
+        # to have the config file, etc.
+        self.cmd_prefix = [config.parser, '--config-file=./parser.conf', '--base', self.tmp_dir, '--skip-kernel-load']
 
         if not self.is_apparmorfs_mounted():
             self.cmd_prefix += ['-M', './features_files/features.all']
