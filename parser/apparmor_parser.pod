@@ -359,9 +359,8 @@ profiles.
 =item --config-file
 
 Specify the config file to use instead of
-/etc/apparmor/parser.conf. This option must be the first option
-specified when invoking the parser, otherwise the parser will abort
-with an error.
+/etc/apparmor/parser.conf. This option will be processed early before
+regular options regardless of the order it is specified in.
 
 =item --print-config-file
 

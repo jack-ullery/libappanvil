@@ -59,6 +59,8 @@
 #define PRIVILEGED_OPS (kernel_load)
 #define UNPRIVILEGED_OPS (!(PRIVILEGED_OPS))
 
+#define EARLY_ARG_CONFIG_FILE 141
+
 const char *parser_title	= "AppArmor parser";
 const char *parser_copyright	= "Copyright (C) 1999-2008 Novell Inc.\nCopyright 2009-2018 Canonical Ltd.";
 
@@ -161,7 +163,7 @@ struct option long_options[] = {
 	{"kernel-features",	1, 0, 138},	/* no short option */
 	{"compile-features",	1, 0, 139},	/* no short option */
 	{"print-config-file",	0, 0, 140},	/* no short option */
-	{"config-file",		1, 0, 141},	/* early option, no short option */
+	{"config-file",		1, 0, EARLY_ARG_CONFIG_FILE},	/* early option, no short option */
 
 	{NULL, 0, 0, 0},
 };
@@ -219,7 +221,7 @@ static void display_usage(const char *command)
 	       "--max-jobs n		Hard cap on --jobs. Default 8*cpus\n"
 	       "--abort-on-error	Abort processing of profiles on first error\n"
 	       "--skip-bad-cache-rebuild Do not try rebuilding the cache if it is rejected by the kernel\n"
-	       "--config-file n		Specify the parser config file location, Must be the first option.\n"
+	       "--config-file n		Specify the parser config file location, processed early before other options.\n"
 	       "--print-config		Print config file location\n"
 	       "--warn n		Enable warnings (see --help=warn)\n"
 	       ,command);
@@ -388,10 +390,19 @@ static long process_jobs_arg(const char *arg, const char *val) {
 }
 
 
+bool early_arg(int c) {
+	switch(c) {
+	case EARLY_ARG_CONFIG_FILE:
+		return true;
+	}
+
+	return false;
+}
+
 /* process a single argment from getopt_long
  * Returns: 1 if an action arg, else 0
  */
-static int process_arg(int c, char *optarg, int config_count)
+static int process_arg(int c, char *optarg)
 {
 	int count = 0;
 
@@ -639,16 +650,11 @@ static int process_arg(int c, char *optarg, int config_count)
 		kernel_load = 0;
 		print_cache_dir = true;
 		break;
-	case 141:
-		if (optind - config_count != 1) {
-			PERROR("%s: --config-file=%s must be the first option specified\n", progname, optarg);
+	case EARLY_ARG_CONFIG_FILE:
+		config_file = strdup(optarg);
+		if (!config_file) {
+			PERROR("%s: %m", progname);
 			exit(1);
-		} else {
-			config_file = strdup(optarg);
-			if (!config_file) {
-				PERROR("%s: %m", progname);
-				exit(1);
-			}
 		}
 		break;
 	case 140:
@@ -663,24 +669,18 @@ static int process_arg(int c, char *optarg, int config_count)
 	return count;
 }
 
-static int process_early_args(int argc, char *argv[])
+static void process_early_args(int argc, char *argv[])
 {
-	int c, o, count = 1;
+	int c, o;
 
-	if (argc <= 1)
-		return 1;
-	if (strcmp("--config-file", argv[1]) == 0)
-		count = 2;
-	else if (strncmp("--config-file=", argv[1], 14) != 0)
-		return 1;
-
-	if ((c = getopt_long(argc, argv, short_options, long_options, &o)) != -1)
+	while ((c = getopt_long(argc, argv, short_options, long_options, &o)) != -1)
 	{
-		process_arg(c, optarg, count);
+		if (early_arg(c))
+			process_arg(c, optarg);
 	}
 
-	PDEBUG("optind = %d argc = %d\n", optind, argc);
-	return optind;
+	/* reset args, so we are ready for a second pass */
+	optind = 1;
 }
 
 static int process_args(int argc, char *argv[])
@@ -692,7 +692,8 @@ static int process_args(int argc, char *argv[])
 	opterr = 1;
 	while ((c = getopt_long(argc, argv, short_options, long_options, &o)) != -1)
 	{
-		count += process_arg(c, optarg, 0);
+		if (!early_arg(c))
+			count += process_arg(c, optarg);
 	}
 
 	if (count > 1) {
@@ -718,7 +719,7 @@ static int process_config_file(const char *name)
 	}
 
 	while ((c = getopt_long_file(f, long_options, &optarg, &o)) != -1)
-		process_arg(c, optarg, 0);
+		process_arg(c, optarg);
 	return 1;
 }
 
