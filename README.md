@@ -188,8 +188,11 @@ $ make tests
 Libapparmor
 -----------
 For details on structure and adding tests, see libraries/libapparmor/README.
+
+```
 $ cd libraries/libapparmor
 $ make check
+```
 
 Utils
 -----
