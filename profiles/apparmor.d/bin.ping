@@ -10,7 +10,7 @@
 # ------------------------------------------------------------------
 
 #include <tunables/global>
-profile ping /{usr/,}bin/ping {
+profile ping /{usr/,}bin/{,iputils-}ping {
   #include <abstractions/base>
   #include <abstractions/consoles>
   #include <abstractions/nameservice>
@@ -20,7 +20,7 @@ profile ping /{usr/,}bin/ping {
   network inet raw,
   network inet6 raw,
 
-  /{,usr/}bin/ping mixr,
+  /{,usr/}bin/{,iputils-}ping mixr,
   /etc/modules.conf r,
 
   # Site-specific additions and overrides. See local/README for details.
