@@ -11,7 +11,7 @@
 
 #include <tunables/global>
 #include <tunables/ntpd>
-/usr/{bin,sbin}/ntpd flags=(attach_disconnected) {
+/usr/{bin,sbin}/{,open}ntpd flags=(attach_disconnected) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/openssl>
@@ -40,7 +40,7 @@
 
   /tmp/ntp* rwl,
   /{usr/,usr/local/,}{s,}bin/ r,
-  /usr/{bin,sbin}/ntpd rmix,
+  /usr/{bin,sbin}/{,open}ntpd rmix,
   /var/lib/ntp/drift rwl,
   /var/lib/ntp/drift.TEMP rwl,
   /var/lib/ntp/drift/driftfile rw,

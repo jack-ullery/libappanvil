@@ -10,7 +10,7 @@
 # ------------------------------------------------------------------
 
 #include <tunables/global>
-/usr/{{bin,sbin}/traceroute,bin/traceroute.db} {
+profile traceroute /usr/{{bin,sbin}/traceroute,bin/linux-traceroute,bin/traceroute.db} {
   #include <abstractions/base>
   #include <abstractions/consoles>
   #include <abstractions/nameservice>
@@ -21,8 +21,7 @@
   network inet raw,
   network inet6 raw,
 
-  /usr/{bin,sbin}/traceroute mrix,
-  /usr/bin/traceroute.db mrix,
+  /usr/{{bin,sbin}/traceroute,bin/linux-traceroute,bin/traceroute.db} mrix,
   @{PROC}/net/route r,
   @{PROC}/sys/net/ipv4/{tcp_ecn,tcp_sack,tcp_timestamps,tcp_window_scaling} r,
 
