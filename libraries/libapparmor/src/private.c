@@ -312,9 +312,10 @@ fail:									\
 static ssize_t readdirfd(int dirfd, struct dirent ***out,
 			  int (*dircmp)(const struct dirent **, const struct dirent **))
 {
-	struct dirent **dents, *dent;
+	struct dirent **dents = NULL, *dent;
 	ssize_t n = 0;
 	size_t i;
+	int save;
 	DIR *dir;
 
 	*out = NULL;
@@ -343,17 +344,21 @@ static ssize_t readdirfd(int dirfd, struct dirent ***out,
 	rewinddir(dir);
 
 	dents = calloc(n, sizeof(struct dirent *));
+	if (!dents)
+		goto fail;
+
 	for (i = 0; i < n; ) {
 		if ((dent = readdir(dir)) == NULL) {
 			PDEBUG("readdir of entry[%d] failed: %m\n", i);
-			n = -1;
-			goto out;
+			goto fail;
 		}
 
 		if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, ".."))
 			continue;
 
 		dents[i] = malloc(sizeof(*dents[i]));
+		if (!dents[i])
+			goto fail;
 		memcpy(dents[i], dent, sizeof(*dent));
 		i++;
 	}
@@ -362,10 +367,19 @@ static ssize_t readdirfd(int dirfd, struct dirent ***out,
 		qsort(dents, n, sizeof(*dent), (int (*)(const void *, const void *))dircmp);
 
 	*out = dents;
-
-out:
 	closedir(dir);
 	return n;
+
+fail:
+	save = errno;
+	if (dents) {
+		for (i = 0; i < n; i++)
+			free(dents[i]);
+	}
+	free(dents);
+	closedir(dir);
+	errno = save;
+	return -1;
 }
 
 int _aa_overlaydirat_for_each(int dirfd[], int n, void *data,
