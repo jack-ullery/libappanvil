@@ -19,6 +19,9 @@
   # php extensions
   /usr/lib{64,}/php{,5,7}/*/*.so mr,
 
+  # ICU (unicode support) data tables
+  /usr/share/icu/*/*.dat r,
+
   # php session mmap socket
   /var/lib/php{,5,7}/session_mm_* rwlk,
   # file based session handler
