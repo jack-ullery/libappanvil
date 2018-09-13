@@ -33,9 +33,13 @@ Getting in Touch
 Please send all complaints, feature requests, rants about the software,
 and questions to the
 [AppArmor mailing list](https://lists.ubuntu.com/mailman/listinfo/apparmor).
-Bug reports can be filed against the AppArmor project on launchpad.net at
-https://launchpad.net/apparmor or reported to the mailing list directly
-for those who wish not to register for an account on launchpad.
+
+Bug reports can be filed against the AppArmor project on
+[launchpad](https://bugs.launchpad.net/apparmor) or reported to the mailing
+list directly for those who wish not to register for an account on
+launchpad. See the
+[wiki page](https://gitlab.com/apparmor/apparmor/wikis/home#reporting-bugs)
+for more information.
 
 Security issues can be filed as security bugs on launchpad
 or directed to security@ubuntu.com.
