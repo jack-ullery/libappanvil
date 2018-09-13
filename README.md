@@ -42,7 +42,8 @@ launchpad. See the
 for more information.
 
 Security issues can be filed as security bugs on launchpad
-or directed to `security@apparmor.net`.
+or directed to `security@apparmor.net`. Additional details can be found
+in the [wiki](https://gitlab.com/apparmor/apparmor/wikis/home#reporting-security-vulnerabilities).
 
 -------------
 Source Layout
