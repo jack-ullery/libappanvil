@@ -42,7 +42,7 @@ launchpad. See the
 for more information.
 
 Security issues can be filed as security bugs on launchpad
-or directed to security@ubuntu.com.
+or directed to `security@apparmor.net`.
 
 -------------
 Source Layout
