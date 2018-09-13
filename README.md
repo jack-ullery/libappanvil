@@ -26,6 +26,19 @@ For more information, you can read the techdoc.pdf (available after
 building the parser) and by visiting the https://apparmor.net/ web
 site.
 
+----------------
+Getting in Touch
+----------------
+
+Please send all complaints, feature requests, rants about the software,
+and questions to the
+[AppArmor mailing list](https://lists.ubuntu.com/mailman/listinfo/apparmor).
+Bug reports can be filed against the AppArmor project on launchpad.net at
+https://launchpad.net/apparmor or reported to the mailing list directly
+for those who wish not to register for an account on launchpad.
+
+Security issues can be filed as security bugs on launchpad
+or directed to security@ubuntu.com.
 
 -------------
 Source Layout
