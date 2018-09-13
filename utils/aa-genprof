@@ -132,7 +132,7 @@ except PermissionError:  # will fail in lxd
 
 atexit.register(restore_ratelimit)
 
-aaui.UI_Info(_('\nBefore you begin, you may wish to check if a\nprofile already exists for the application you\nwish to confine. See the following wiki page for\nmore information:')+'\nhttp://wiki.apparmor.net/index.php/Profiles')
+aaui.UI_Info(_('\nBefore you begin, you may wish to check if a\nprofile already exists for the application you\nwish to confine. See the following wiki page for\nmore information:')+'\nhttps://gitlab.com/apparmor/apparmor/wikis/Profiles')
 
 syslog = True
 logmark = ''
@@ -173,6 +173,6 @@ for p in sorted(apparmor.helpers.keys()):
         apparmor.reload(p)
 
 aaui.UI_Info(_('\nReloaded AppArmor profiles in enforce mode.'))
-aaui.UI_Info(_('\nPlease consider contributing your new profile!\nSee the following wiki page for more information:')+'\nhttp://wiki.apparmor.net/index.php/Profiles\n')
+aaui.UI_Info(_('\nPlease consider contributing your new profile!\nSee the following wiki page for more information:')+'\nhttps://gitlab.com/apparmor/apparmor/wikis/Profiles\n')
 aaui.UI_Info(_('Finished generating profile for %s.')%program)
 sys.exit(0)
