@@ -128,6 +128,6 @@ L<https://bugs.launchpad.net/apparmor/+filebug>.
 =head1 SEE ALSO
 
 apparmor(7), apparmor.d(5), apparmor_parser(8), aa_getcon(2), aa_splitcon(3)
-and L<http://wiki.apparmor.net>.
+and L<https://wiki.apparmor.net>.
 
 =cut

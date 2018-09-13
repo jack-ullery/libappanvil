@@ -37,6 +37,6 @@ L<https://bugs.launchpad.net/apparmor/+filebug>.
 =head1 SEE ALSO
 
 apparmor(7), apparmor.d(5), aa-enforce(1), aa-complain(1), aa-disable(1),
-aa_change_hat(2), and L<http://wiki.apparmor.net>.
+aa_change_hat(2), and L<https://wiki.apparmor.net>.
 
 =cut

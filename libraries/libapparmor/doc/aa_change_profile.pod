@@ -204,6 +204,6 @@ separate processes should be used.
 =head1 SEE ALSO
 
 apparmor(7), apparmor.d(5), apparmor_parser(8), aa_change_hat(2) and
-L<http://wiki.apparmor.net>.
+L<https://wiki.apparmor.net>.
 
 =cut

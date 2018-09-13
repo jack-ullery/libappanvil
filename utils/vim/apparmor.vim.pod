@@ -53,6 +53,6 @@ L<https://bugs.launchpad.net/apparmor/+filebug>.
 =head1 SEE ALSO
 
 vim(1), apparmor(7), apparmor.d(5), aa_change_hat(2), and
-L<http://wiki.apparmor.net>.
+L<https://wiki.apparmor.net>.
 
 =cut

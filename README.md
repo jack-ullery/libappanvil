@@ -23,7 +23,7 @@ library, available under the LGPL license, which allows change_hat(2)
 and change_profile(2) to be used by non-GPL binaries).
 
 For more information, you can read the techdoc.pdf (available after
-building the parser) and by visiting the http://apparmor.net/ web
+building the parser) and by visiting the https://apparmor.net/ web
 site.
 
 

@@ -87,6 +87,6 @@ L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 apparmor(7), apparmor.d(5), aa-enforce(1), aa-complain(1), aa-disable(1),
 aa_change_hat(2), aa-logprof(1), logprof.conf(5), and
-L<http://wiki.apparmor.net>.
+L<https://wiki.apparmor.net>.
 
 =cut
