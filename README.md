@@ -23,9 +23,27 @@ library, available under the LGPL license, which allows change_hat(2)
 and change_profile(2) to be used by non-GPL binaries).
 
 For more information, you can read the techdoc.pdf (available after
-building the parser) and by visiting the http://apparmor.net/ web
+building the parser) and by visiting the https://apparmor.net/ web
 site.
 
+----------------
+Getting in Touch
+----------------
+
+Please send all complaints, feature requests, rants about the software,
+and questions to the
+[AppArmor mailing list](https://lists.ubuntu.com/mailman/listinfo/apparmor).
+
+Bug reports can be filed against the AppArmor project on
+[launchpad](https://bugs.launchpad.net/apparmor) or reported to the mailing
+list directly for those who wish not to register for an account on
+launchpad. See the
+[wiki page](https://gitlab.com/apparmor/apparmor/wikis/home#reporting-bugs)
+for more information.
+
+Security issues can be filed as security bugs on launchpad
+or directed to `security@apparmor.net`. Additional details can be found
+in the [wiki](https://gitlab.com/apparmor/apparmor/wikis/home#reporting-security-vulnerabilities).
 
 -------------
 Source Layout

@@ -32,6 +32,6 @@ L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 apparmor(7), apparmor.d(5), aa_change_hat(2), aa-genprof(1), 
 aa-logprof(1), aa-enforce(1), aa-audit(1), aa-complain(1),
-aa-disable(1), and L<http://wiki.apparmor.net>.
+aa-disable(1), and L<https://wiki.apparmor.net>.
 
 =cut

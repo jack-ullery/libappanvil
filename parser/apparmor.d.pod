@@ -1611,6 +1611,6 @@ negative values match when specifying one or the other. Eg, 'rw' matches when
 
 apparmor(7), apparmor_parser(8), aa-complain(1),
 aa-enforce(1), aa_change_hat(2), mod_apparmor(5), and
-L<http://wiki.apparmor.net>.
+L<https://wiki.apparmor.net>.
 
 =cut

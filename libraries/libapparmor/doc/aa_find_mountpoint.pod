@@ -115,6 +115,6 @@ L<https://bugs.launchpad.net/apparmor/+filebug>.
 =head1 SEE ALSO
 
 apparmor(7), apparmor.d(5), apparmor_parser(8), and
-L<http://wiki.apparmor.net>.
+L<https://wiki.apparmor.net>.
 
 =cut

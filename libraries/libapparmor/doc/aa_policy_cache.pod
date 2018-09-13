@@ -175,6 +175,6 @@ L<https://bugs.launchpad.net/apparmor/+filebug>.
 =head1 SEE ALSO
 
 aa_features(3), aa_kernel_interface(3), openat(2) and
-L<http://wiki.apparmor.net>.
+L<https://wiki.apparmor.net>.
 
 =cut

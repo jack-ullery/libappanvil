@@ -68,7 +68,7 @@ extern int aa_is_enabled(void);
 extern int aa_find_mountpoint(char **mnt);
 
 /* Prototypes for self directed domain transitions
- * see <http://apparmor.net>
+ * see <https://apparmor.net>
  * Please see the change_hat(2) manpage for information.
  */
 

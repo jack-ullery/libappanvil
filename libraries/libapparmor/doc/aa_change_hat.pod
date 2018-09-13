@@ -257,6 +257,6 @@ should be used.
 
 apparmor(7), apparmor.d(5), apparmor_parser(8), aa_change_profile(2),
 aa_getcon(2) and
-L<http://wiki.apparmor.net>.
+L<https://wiki.apparmor.net>.
 
 =cut

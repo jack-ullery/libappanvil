@@ -161,6 +161,6 @@ L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 
-openat(2) and L<http://wiki.apparmor.net>.
+openat(2) and L<https://wiki.apparmor.net>.
 
 =cut

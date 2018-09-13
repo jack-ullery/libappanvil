@@ -165,6 +165,6 @@ apparmor_parser(8), aa_change_hat(2), apparmor.d(5),
 subdomain.conf(5), aa-autodep(1), clean(1),
 auditd(8),
 aa-unconfined(8), aa-enforce(1), aa-complain(1), and
-L<http://wiki.apparmor.net>.
+L<https://wiki.apparmor.net>.
 
 =cut
