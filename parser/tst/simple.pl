@@ -81,7 +81,7 @@ sub test_profile {
     # child
     open(STDOUT, ">/dev/null") or die "Failed to redirect STDOUT";
     open(STDERR, ">/dev/null") or die "Failed to redirect STDERR";
-    exec("$config{'parser'}", "-M", "features_files/features.all", "-S", "-I", "$config{'includedir'}") or die "Bail out! couldn't open parser";
+    exec("$config{'parser'}", "--config-file=./parser.conf", "-M", "features_files/features.all", "-S", "-I", "$config{'includedir'}") or die "Bail out! couldn't open parser";
     # noreturn
   }
 

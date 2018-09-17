@@ -93,7 +93,7 @@ check-parser: local
 	@echo "*** Checking profiles from ${PROFILES_SOURCE} and ${EXTRAS_SOURCE} against apparmor_parser"
 	$(Q)for profile in ${CHECK_PROFILES} ; do \
 	        [ -n "${VERBOSE}" ] && echo "Testing $${profile}" ; \
-		${PARSER} -S -b ${PWD}/apparmor.d $${profile} > /dev/null || exit 1; \
+		${PARSER} --config-file=../parser/tst/parser.conf -S -b ${PWD}/apparmor.d $${profile} > /dev/null || exit 1; \
 	done
 
 .PHONY: check-logprof
