@@ -41,6 +41,8 @@
   /tmp/ntp* rwl,
   /{usr/,usr/local/,}{s,}bin/ r,
   /usr/{bin,sbin}/{,open}ntpd rmix,
+  /var/db/ r,
+  /var/db/ntpd.drift rwl,
   /var/lib/ntp/drift rwl,
   /var/lib/ntp/drift.TEMP rwl,
   /var/lib/ntp/drift/driftfile rw,
@@ -60,6 +62,7 @@
   /{,var/}run/nscd/services r,
   /{,var/}run/ntpd.pid w,
   /{,var/}run/ntp/ntpd.pid w,
+  /{,var/}run/ntpd.sock rwl,
   /var/tmp/ntp* rwl,
   @{PROC}/@{pid}/net/if_inet6 r,
 
