@@ -40,8 +40,13 @@ profile dnsmasq /usr/{bin,sbin}/dnsmasq flags=(attach_disconnected) {
   /etc/ethers r,
   /etc/NetworkManager/dnsmasq.d/ r,
   /etc/NetworkManager/dnsmasq.d/* r,
+  /etc/NetworkManager/dnsmasq-shared.d/ r,
+  /etc/NetworkManager/dnsmasq-shared.d/* r,
 
   /usr/{bin,sbin}/dnsmasq mr,
+
+  /usr/share/dnsmasq/ r,
+  /usr/share/dnsmasq/* r,
 
   /{,var/}run/*dnsmasq*.pid w,
   /{,var/}run/dnsmasq-forwarders.conf r,
@@ -83,7 +88,9 @@ profile dnsmasq /usr/{bin,sbin}/dnsmasq flags=(attach_disconnected) {
   /var/lib/lxd/networks/*/dnsmasq.pid rw,
 
   # NetworkManager integration
+  /var/lib/NetworkManager/dnsmasq-*.leases rw,
   /{,var/}run/nm-dns-dnsmasq.conf r,
+  /{,var/}run/nm-dnsmasq-*.pid rw,
   /{,var/}run/sendsigs.omit.d/*dnsmasq.pid w,
   /{,var/}run/NetworkManager/dnsmasq.conf r,
   /{,var/}run/NetworkManager/dnsmasq.pid w,
