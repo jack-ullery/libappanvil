@@ -239,6 +239,8 @@ EQUALS		=
 ADD_ASSIGN	\+=
 ARROW		->
 LT_EQUAL	<=
+LT		<
+GT		>
 
 /* IF adding new state please update state_names table at eof */
 %x SUB_ID
@@ -261,6 +263,7 @@ LT_EQUAL	<=
 %x CHANGE_PROFILE_MODE
 %x INCLUDE
 %x INCLUDE_EXISTS
+%x ABI_MODE
 
 %%
 
@@ -277,15 +280,20 @@ LT_EQUAL	<=
 	{WS}+	{  DUMP_PREPROCESS; /* Ignoring whitespace */ }
 }
 
-<INCLUDE,INCLUDE_EXISTS>{
+<INCLUDE,INCLUDE_EXISTS,ABI_MODE>{
 	(\<(([^"\>\t\r\n]+)|{QUOTED_ID})\>|{QUOTED_ID}|{IDS})	{ /* <filename> | <"filename"> | "filename" | filename */
 		int lt = *yytext == '<'  ? 1 : 0;
-		autofree char *filename = processid(yytext + lt, yyleng - lt*2);
+		char *filename = processid(yytext + lt, yyleng - lt*2);
 		bool exists = YYSTATE == INCLUDE_EXISTS;
 
 		if (!filename)
 			yyerror(_("Failed to process filename\n"));
+		if (YYSTATE == ABI_MODE) {
+			yylval.id = filename;
+			POP_AND_RETURN(TOK_ID);
+		}
 		include_filename(filename, lt, exists);
+		free(filename);
 		POP_NODUMP();
 	}
 }
@@ -641,6 +649,9 @@ include/{WS}	{
 	case TOK_UNIX:
 		state = UNIX_MODE;
 		break;
+	case TOK_ABI:
+		state = ABI_MODE;
+		break;
 	default: /* nothing */
 		break;
 	}
@@ -694,4 +705,5 @@ unordered_map<int, string> state_names = {
 	STATE_TABLE_ENT(CHANGE_PROFILE_MODE),
 	STATE_TABLE_ENT(INCLUDE),
 	STATE_TABLE_ENT(INCLUDE_EXISTS),
+	STATE_TABLE_ENT(ABI_MODE),
 };

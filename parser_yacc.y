@@ -152,6 +152,7 @@ void add_local_entry(Profile *prof);
 %token TOK_TRACE
 %token TOK_TRACEDBY
 %token TOK_READBY
+%token TOK_ABI
 
  /* rlimits */
 %token TOK_RLIMIT
@@ -400,6 +401,7 @@ hat: hat_start profile_base
 preamble: { /* nothing */ }
 	| preamble alias { /* nothing */ };
 	| preamble varassign { /* nothing */ };
+	| preamble abi_rule { /* nothing */ };
 
 alias: TOK_ALIAS TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
 	{
@@ -614,6 +616,8 @@ rules:	{ /* nothing */
 
 		$$ = prof;
 	};
+
+rules: rules abi_rule { /* nothing */ }
 
 rules:  rules opt_prefix rule
 	{
@@ -1064,6 +1068,12 @@ opt_named_transition: { /* nothing */ $$ = NULL; }
 
 rule: file_rule { $$ = $1; }
 	| link_rule { $$ = $1; }
+
+abi_rule: TOK_ABI TOK_ID TOK_END_OF_RULE
+	{
+		pwarn(_("%s: Profile abi not supported, falling back to system abi.\n"), progname);
+		free($2);
+	};
 
 opt_exec_mode: { /* nothing */ $$ = EXEC_MODE_EMPTY; }
 	| TOK_UNSAFE { $$ = EXEC_MODE_UNSAFE; };
