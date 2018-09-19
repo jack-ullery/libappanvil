@@ -6,7 +6,7 @@ PARSER_BIN=apparmor_parser
 PARSER=$(PARSER_DIR)/$(PARSER_BIN)
 # parser.conf to use in tests. Note that some test scripts have the parser options hardcoded, so passing PARSER_ARGS=... is not enough to override it.
 PARSER_ARGS=--config-file=./parser.conf
-PROVE_ARG=-f
+PROVE_ARG=-f --directives
 
 ifeq ($(VERBOSE),1)
   PROVE_ARG+=-v
