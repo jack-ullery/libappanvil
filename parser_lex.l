@@ -277,40 +277,27 @@ LT_EQUAL	<=
 	{WS}+	{  DUMP_PREPROCESS; /* Ignoring whitespace */ }
 }
 
-<INCLUDE_EXISTS>{
+<INCLUDE,INCLUDE_EXISTS>{
 	(\<([^"\>\t\r\n]+)\>|{QUOTED_ID})	{ /* <filename> | "filename" */
 		autofree char *filename = strndup(yytext, yyleng - 1);
-		include_filename(filename + 1, *filename == '<', true);
+		bool exists = YYSTATE == INCLUDE_EXISTS;
+
+		include_filename(filename + 1, *filename == '<', exists);
 		POP_NODUMP();
 	}
 
 	(\<{QUOTED_ID}\>)	{	/* <"filename"> */
 		autofree char *filename = strndup(yytext, yyleng - 2);
-		include_filename(filename + 2, true, true);
+		bool exists = YYSTATE == INCLUDE_EXISTS;
+
+		include_filename(filename + 2, true, exists);
 		POP_NODUMP();
 	}
 
 	({IDS}|{QUOTED_ID}) {	/* filename */
-		include_filename(yytext, 0, true);
-		POP_NODUMP();
-	}
-}
+		bool exists = YYSTATE == INCLUDE_EXISTS;
 
-<INCLUDE>{
-	(\<([^"\>\t\r\n]+)\>|{QUOTED_ID})	{ /* <filename> | "filename" */
-		autofree char *filename = strndup(yytext, yyleng - 1);
-		include_filename(filename + 1, *filename == '<', false);
-		POP_NODUMP();
-	}
-
-	(\<{QUOTED_ID}\>)	{	/* <"filename"> */
-		autofree char *filename = strndup(yytext, yyleng - 2);
-		include_filename(filename + 2, true, false);
-		POP_NODUMP();
-	}
-
-	({IDS}|{QUOTED_ID}) {	/* filename */
-		include_filename(yytext, 0, false);
+		include_filename(yytext, false, exists);
 		POP_NODUMP();
 	}
 }
