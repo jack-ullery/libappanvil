@@ -194,6 +194,7 @@ int _aa_dirat_for_each2(int dirfd, const char *name, void *data,
 			int (* cb)(int, const struct dirent *, void *))
 {
 	autoclose int cb_dirfd = -1;
+	int fd_for_dir = -1;
 	const struct dirent *ent;
 	DIR *dir;
 	int save, rc;
@@ -209,15 +210,16 @@ int _aa_dirat_for_each2(int dirfd, const char *name, void *data,
 		PDEBUG("could not open directory fd '%d' '%s': %m\n", dirfd, name);
 		return -1;
 	}
-	dir = fdopendir(cb_dirfd);
-	if (!dir) {
-		PDEBUG("could not open directory '%s' from fd '%d': %m\n", name, cb_dirfd);
+	/* dup cd_dirfd because fdopendir has claimed the fd passed to it */
+	fd_for_dir = dup(cb_dirfd);
+	if (fd_for_dir == -1) {
+		PDEBUG("could not dup directory fd '%s': %m\n", name);
 		return -1;
 	}
-	/* dup cd_dirfd because fdopendir has claimed the fd passed to it */
-	cb_dirfd = dup(cb_dirfd);
+	dir = fdopendir(fd_for_dir);
 	if (!dir) {
-		PDEBUG("could not dup directory fd '%s': %m\n", name);
+		PDEBUG("could not open directory '%s' from fd '%d': %m\n", name, fd_for_dir);
+		close(fd_for_dir);
 		return -1;
 	}
 
