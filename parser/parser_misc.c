@@ -237,6 +237,8 @@ char *processquoted(const char *string, int len)
 {
 	/* skip leading " and eat trailing " */
 	if (*string == '"') {
+		if (string[len -1] != '"')
+			return NULL;
 		len -= 2;
 		if (len < 0)	/* start and end point to same quote */
 			len = 0;
