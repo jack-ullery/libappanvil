@@ -278,26 +278,14 @@ LT_EQUAL	<=
 }
 
 <INCLUDE,INCLUDE_EXISTS>{
-	(\<([^"\>\t\r\n]+)\>|{QUOTED_ID})	{ /* <filename> | "filename" */
-		autofree char *filename = strndup(yytext, yyleng - 1);
+	(\<(([^"\>\t\r\n]+)|{QUOTED_ID})\>|{QUOTED_ID}|{IDS})	{ /* <filename> | <"filename"> | "filename" | filename */
+		int lt = *yytext == '<'  ? 1 : 0;
+		autofree char *filename = processid(yytext + lt, yyleng - lt*2);
 		bool exists = YYSTATE == INCLUDE_EXISTS;
 
-		include_filename(filename + 1, *filename == '<', exists);
-		POP_NODUMP();
-	}
-
-	(\<{QUOTED_ID}\>)	{	/* <"filename"> */
-		autofree char *filename = strndup(yytext, yyleng - 2);
-		bool exists = YYSTATE == INCLUDE_EXISTS;
-
-		include_filename(filename + 2, true, exists);
-		POP_NODUMP();
-	}
-
-	({IDS}|{QUOTED_ID}) {	/* filename */
-		bool exists = YYSTATE == INCLUDE_EXISTS;
-
-		include_filename(yytext, false, exists);
+		if (!filename)
+			yyerror(_("Failed to process filename\n"));
+		include_filename(filename, lt, exists);
 		POP_NODUMP();
 	}
 }
