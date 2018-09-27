@@ -20,5 +20,5 @@
   /usr/bin/sylpheed Cx -> sanitized_helper,
   /usr/bin/tkrat Cx -> sanitized_helper,
 
+  /usr/bin/thunderbird Cx -> sanitized_helper, # used by gio-launch-desktop
   /usr/lib/thunderbird*/thunderbird{,.sh,-bin} Cx -> sanitized_helper,
-
