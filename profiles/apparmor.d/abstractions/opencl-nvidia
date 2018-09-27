@@ -6,7 +6,13 @@
 
   # Executables
 
-  /usr/bin/nvidia-modprobe PUx,
+  # https://github.com/NVIDIA/nvidia-modprobe
+  # This setuid executable is used to create various device files and load the
+  # the nvidia kernel module and is therefore not appropriate for a general
+  # purpose abstraction. Confined applications currently need to add this rule
+  # in their policy. At some point, a profile may be provided for this command
+  # such that Px would succeed.
+  #/usr/bin/nvidia-modprobe Pix,
 
   # System files
 
