@@ -186,6 +186,18 @@ log_to_profile_skip = [
     'testcase_changehat_01',  # interactive, asks to add a hat
 ]
 
+# tests that cause an empty log
+log_to_profile_known_empty_log = [
+    'change_onexec_lp1648143',  # change_onexec not supported in logparser.py yet (and the log is about "no new privs" error)
+    'testcase_changeprofile_01',  # change_profile not supported in logparser.py yet
+    'testcase_mount_01',  # mount rules not supported in logparser
+    'testcase_pivotroot_01',  # pivotroot not yet supported in logparser
+    'ptrace_garbage_lp1689667_1',  # no denied= in log
+    'ptrace_no_denied_mask',  # no denied= in log
+    'testcase_dmesg_changeprofile_01',  # change_profile not yet supported in logparser
+    'unconfined-change_hat',  # unconfined trying to change_hat, which isn't allowed
+]
+
 class TestLogToProfile(AATest):
     '''Check if the libraries/libapparmor/testsuite/test_multi tests result in the expected profile'''
 
@@ -259,6 +271,14 @@ def logfile_to_profile(logfile):
 
     apparmor.aa.filelist = apparmor.aa.hasher()
     apparmor.aa.filelist[profile_dummy_file]['profiles'][profile] = True
+
+    if logfile.split('/')[-1][:-3] in log_to_profile_known_empty_log:
+        # unfortunately this function might be called outside Unittest.TestCase, therefore we can't use assertEqual / assertNotEqual
+        if log != []:
+            raise Exception('got non-empty log for logfile in log_to_profile_known_empty_log: %s %s' % (logfile, log))
+    else:
+        if log == []:
+            raise Exception('got empty log for logfile not in log_to_profile_known_empty_log: %s %s' % (logfile, log))
 
     new_profile = apparmor.aa.serialize_profile(log_dict[aamode][profile], profile, {})
 
