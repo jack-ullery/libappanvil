@@ -19,7 +19,7 @@
   /var/lib/samba/** rwk,
   /var/log/samba/cores/ rw,
   /var/log/samba/cores/** rw,
-  /var/log/samba/log.* w,
+  /var/log/samba/* w,
   /{,var/}run/samba/ w,
   /{,var/}run/samba/*.tdb rw,
 
