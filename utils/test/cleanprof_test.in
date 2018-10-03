@@ -5,6 +5,8 @@
 
 @{xy}    =   y   x
 
+  abi  <abi/4.19>    ,
+
   @{asdf}       =   foo           ""
 
 /usr/bin/a/simple/cleanprof/test/profile {
@@ -18,6 +20,7 @@
     change_profile,
 
     network inet stream,
+               abi  "abi/4.20"    ,
     network stream,
 
 	#Below rule comes from abstractions/base
