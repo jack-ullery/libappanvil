@@ -12,6 +12,8 @@
   /usr/{bin,sbin}/nmbd mr,
 
   /var/cache/samba/gencache.tdb rwk,
+  /var/cache/samba/gencache_notrans.tdb rwk,
+  /var/cache/samba/names.tdb rwk,
   /var/{cache,lib}/samba/browse.dat* rw,
   /var/{cache,lib}/samba/gencache.dat rw,
   /var/{cache,lib}/samba/wins.dat* rw,
@@ -22,7 +24,9 @@
   /var/{cache,lib}/samba/unexpected rw,
   /var/cache/samba/msg/ rw,
   /var/cache/samba/msg/* w,
+  /var/cache/samba/msg.lock/{,*} rwk,
 
+  /{,var/}run/nmbd.pid rwk,
   /{,var/}run/samba/** rwk,
 
   # Site-specific additions and overrides. See local/README for details.

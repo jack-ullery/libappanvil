@@ -44,6 +44,7 @@
   /var/lib/samba/** rwk,
   /var/lib/sss/pubconf/kdcinfo.* r,
   /{,var/}run/dbus/system_bus_socket rw,
+  /{,var/}run/smbd.pid rwk,
   /{,var/}run/samba/** rk,
   /{,var/}run/samba/ncalrpc/ rw,
   /{,var/}run/samba/ncalrpc/** rw,
