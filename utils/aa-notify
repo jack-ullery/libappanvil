@@ -34,7 +34,7 @@ use Getopt::Long;
 
 my %prefs;
 my $conf = "/etc/apparmor/notify.conf";
-my $user_conf = "$ENV{HOME}/.apparmor/notify.conf";
+my $user_conf = "";
 my $notify_exe = "/usr/bin/notify-send";
 my $notify_home = "";
 my $notify_display = "";
@@ -154,6 +154,18 @@ if (-s $conf) {
             _error("'$login' must be in '$prefs{use_group}' group. Aborting.\nAsk your admin to add you to this group or to change the group in\n$conf if you want to use aa-notify.");
         }
     }
+}
+
+# find user's notify.conf
+if (-e "$ENV{HOME}/.apparmor/notify.conf" ) {
+    # use legacy path if the conf file is there
+    $user_conf = "$ENV{HOME}/.apparmor/notify.conf";
+} elsif (defined $ENV{XDG_CONFIG_HOME}) {
+    # use XDG_CONFIG_HOME if it is defined
+    $user_conf = "$ENV{XDG_CONFIG_HOME}/apparmor/notify.conf";
+} else {
+    # fallback to the default value of XDG_CONFIG_HOME
+    $user_conf = "$ENV{HOME}/.config/apparmor/notify.conf";
 }
 
 if ($opt_p) {
