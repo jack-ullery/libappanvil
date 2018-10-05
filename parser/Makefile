@@ -32,9 +32,9 @@ INSTALL_CONFDIR=${DESTDIR}${CONFDIR}
 LOCALEDIR=/usr/share/locale
 MANPAGES=apparmor.d.5 apparmor.7 apparmor_parser.8 subdomain.conf.5 aa-teardown.8
 
-YACC	:= /usr/bin/bison
+YACC	:= bison
 YFLAGS	:= -d
-LEX	:= /usr/bin/flex
+LEX	:= flex
 LEXFLAGS = -B -v
 WARNINGS = -Wall
 EXTRA_WARNINGS = -Wsign-compare -Wmissing-field-initializers -Wformat-security -Wunused-parameter
