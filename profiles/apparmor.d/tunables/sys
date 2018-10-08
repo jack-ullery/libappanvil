@@ -6,5 +6,4 @@
 #
 # ------------------------------------------------------------------
 
-# @{sys} is the location where sysfs is mounted.
-@{sys}=/sys/
+#This file is DEPRECATED! @{sys} is defined in tunables/kernelvars now.

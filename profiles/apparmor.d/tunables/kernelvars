@@ -28,3 +28,6 @@
 
 #same pattern as @{uid} for now
 @{uids}=@{uid}
+
+# until kernel var is implemented
+@{sys}=/sys/
