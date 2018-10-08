@@ -12,6 +12,7 @@ LibAppArmor.pm: libapparmor_wrap.c
 
 Makefile.perl: Makefile.PL LibAppArmor.pm
 	$(PERL) $< PREFIX=$(prefix) MAKEFILE=$@
+	sed -ie 's/LD_RUN_PATH="\x24(LD_RUN_PATH)"//g' Makefile.perl
 	sed -ie 's/^LD_RUN_PATH.*//g' Makefile.perl
 
 LibAppArmor.so: libapparmor_wrap.c Makefile.perl
