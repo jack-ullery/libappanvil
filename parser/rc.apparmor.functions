@@ -117,7 +117,7 @@ skip_profile() {
 	     "${profile%\~}" != "${profile}" ] ; then
 		return 1
 	fi
-	# Silently ignore the dpkg and pacman files
+	# Silently ignore the dpkg, pacman, and xbps files
 	if [ "${profile%.dpkg-new}" != "${profile}" -o \
 	     "${profile%.dpkg-old}" != "${profile}" -o \
 	     "${profile%.dpkg-dist}" != "${profile}" -o \
@@ -126,6 +126,9 @@ skip_profile() {
 	     "${profile%.pacsave}" != "${profile}" -o \
 	     "${profile%.pacnew}" != "${profile}" ] ; then
 		return 2
+	fi
+	if echo "${profile}" | egrep -q '^.+\.new-[0-9\.]+_[0-9]+$'; then
+		return 2 ;;
 	fi
 
 	return 0
