@@ -54,20 +54,24 @@ class CleanProf(object):
 
             #If different files remove duplicate includes in the other profile
             if not self.same_file:
-                for inc in includes:
-                    if self.other.aa[program][hat]['include'].get(inc, False):
-                        self.other.aa[program][hat]['include'].pop(inc)
-                        deleted += 1
+                if self.other.aa[program].get(hat):  # carefully avoid to accidently initialize self.other.aa[program][hat]
+                    for inc in includes:
+                        if self.other.aa[program][hat]['include'].get(inc, False):
+                            self.other.aa[program][hat]['include'].pop(inc)
+                            deleted += 1
+
             #Clean up superfluous rules from includes in the other profile
             for inc in includes:
                 if not self.profile.include.get(inc, {}).get(inc, False):
                     apparmor.load_include(inc)
-                deleted += apparmor.delete_duplicates(self.other.aa[program][hat], inc)
+                if self.other.aa[program].get(hat):  # carefully avoid to accidently initialize self.other.aa[program][hat]
+                    deleted += apparmor.delete_duplicates(self.other.aa[program][hat], inc)
 
             #Clean duplicate rules in other profile
             for ruletype in apparmor.ruletypes:
                 if not self.same_file:
-                    deleted += self.other.aa[program][hat][ruletype].delete_duplicates(self.profile.aa[program][hat][ruletype])
+                    if self.other.aa[program].get(hat):  # carefully avoid to accidently initialize self.other.aa[program][hat]
+                        deleted += self.other.aa[program][hat][ruletype].delete_duplicates(self.profile.aa[program][hat][ruletype])
                 else:
                     deleted += self.other.aa[program][hat][ruletype].delete_duplicates(None)
 
