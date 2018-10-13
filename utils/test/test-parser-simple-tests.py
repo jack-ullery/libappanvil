@@ -39,10 +39,23 @@ skip_startswith = (
 
 # testcases that should raise an exception, but don't
 exception_not_raised = [
+    # most abi/bad_* aren't detected as bad by the basic implementation in the tools
+    'abi/bad_1.sd',
+    'abi/bad_2.sd',
+    'abi/bad_3.sd',
+    'abi/bad_4.sd',
+    'abi/bad_5.sd',
+    'abi/bad_10.sd',
+    'abi/bad_11.sd',
+    'abi/bad_12.sd',
+
+    # invalid capabilities (like "foobar"), but syntactically correct
     'capability/bad_1.sd',
     'capability/bad_2.sd',
     'capability/bad_3.sd',
     'capability/bad_4.sd',
+
+    # interesting[tm] profile name
     'change_hat/bad_parsing.sd',
 
     # The tools don't detect conflicting change_profile exec modes
