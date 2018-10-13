@@ -29,6 +29,7 @@ DESTDIR=/
 PROFILES_DEST=${DESTDIR}/etc/apparmor.d
 EXTRAS_DEST=${DESTDIR}/usr/share/apparmor/extra-profiles/
 PROFILES_SOURCE=./apparmor.d
+ABSTRACTIONS_SOURCE=./apparmor.d/abstractions
 EXTRAS_SOURCE=./apparmor/profiles/extras/
 
 SUBDIRS=$(shell find ${PROFILES_SOURCE} -type d -print)
@@ -84,6 +85,8 @@ docs:
 
 IGNORE_FILES=${EXTRAS_SOURCE}/README
 CHECK_PROFILES=$(filter-out ${IGNORE_FILES} ${SUBDIRS}, $(wildcard ${PROFILES_SOURCE}/*) $(wildcard ${EXTRAS_SOURCE}/*))
+# use find because Make wildcard is not recursive:
+CHECK_ABSTRACTIONS=$(shell find ${ABSTRACTIONS_SOURCE} -type f -print)
 
 .PHONY: check
 check: check-parser check-logprof
@@ -94,6 +97,14 @@ check-parser: local
 	$(Q)for profile in ${CHECK_PROFILES} ; do \
 	        [ -n "${VERBOSE}" ] && echo "Testing $${profile}" ; \
 		${PARSER} --config-file=../parser/tst/parser.conf -S -b ${PWD}/apparmor.d $${profile} > /dev/null || exit 1; \
+	done
+
+	@echo "*** Checking abstractions from ${ABSTRACTIONS_SOURCE} against apparmor_parser"
+	$(Q)for abstraction in ${CHECK_ABSTRACTIONS} ; do \
+	        [ -n "${VERBOSE}" ] && echo "Testing $${abstraction}" ; \
+		echo "#include <tunables/global> profile test { #include <$${abstraction}> }" \
+		| ${PARSER} --config-file=../parser/tst/parser.conf -S -b ${PWD}/apparmor.d -I ${PWD} > /dev/null \
+		|| exit 1; \
 	done
 
 .PHONY: check-logprof
