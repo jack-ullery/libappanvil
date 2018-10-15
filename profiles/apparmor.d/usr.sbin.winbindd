@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-/usr/{bin,sbin}/winbindd {
+profile winbindd /usr/{bin,sbin}/winbindd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/samba>

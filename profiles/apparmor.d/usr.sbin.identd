@@ -11,7 +11,7 @@
 
 #include <tunables/global>
 
-/usr/{bin,sbin}/identd {
+profile identd /usr/{bin,sbin}/identd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   capability net_bind_service,

@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-/usr/{bin,sbin}/nmbd {
+profile nmbd /usr/{bin,sbin}/nmbd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/samba>

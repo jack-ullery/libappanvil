@@ -11,7 +11,7 @@
 
 #include <tunables/global>
 
-/usr/{bin,sbin}/mdnsd {
+profile mdnsd /usr/{bin,sbin}/mdnsd {
   #include <abstractions/base>
   #include <abstractions/consoles>
   #include <abstractions/nameservice>
