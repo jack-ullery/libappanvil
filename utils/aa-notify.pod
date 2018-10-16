@@ -98,7 +98,8 @@ System-wide configuration for B<aa-notify> is done via
   # OPTIONAL - custom notification message footer
   message_footer="For more information visit https://foo.com"
 
-Per-user configuration is done via ~/.apparmor/notify.conf:
+Per-user configuration is done via $XDG_CONFIG_HOME/apparmor/notify.conf (or
+the deprecated ~/.apparmor/notify.conf if it exists):
 
   # set to 'yes' to enable AppArmor DENIED notifications
   show_notifications="yes"
