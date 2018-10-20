@@ -549,9 +549,14 @@ static void count_tree_nodes(Node *t, struct node_counts *counts)
 #include "stdint.h"
 #include "apparmor_re.h"
 
+// maximum number of passes to iterate on the expression tree doing
+// simplification passes. Simplification may exit sooner if no changes
+// are made.
+#define MAX_PASSES 1
 Node *simplify_tree(Node *t, dfaflags_t flags)
 {
-	bool update;
+	bool update = true;
+	int i;
 
 	if (flags & DFA_DUMP_TREE_STATS) {
 		struct node_counts counts = { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -562,7 +567,7 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
 			counts.alt, counts.plus, counts.star, counts.any,
 			counts.cat);
 	}
-	do {
+	for (i = 0; update && i < MAX_PASSES; i++) {
 		update = false;
 		//default to right normalize first as this reduces the number
 		//of trailing nodes which might follow an internal *
@@ -588,7 +593,7 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
 			else
 				dir--;
 		}
-	} while (update);
+	}
 	if (flags & DFA_DUMP_TREE_STATS) {
 		struct node_counts counts = { 0, 0, 0, 0, 0, 0, 0, 0 };
 		count_tree_nodes(t, &counts);
