@@ -14,6 +14,6 @@
   deny capability block_suspend,
 
   # dovecot's master can send us signals
-  signal receive peer=/usr/{bin,sbin}/dovecot,
+  signal receive peer=dovecot,
 
   /{var/,}run/dovecot/config rw,

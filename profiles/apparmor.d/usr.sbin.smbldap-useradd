@@ -1,7 +1,7 @@
 # Last Modified: Tue Jan  3 00:17:40 2012
 #include <tunables/global>
 
-/usr/{bin,sbin}/smbldap-useradd {
+profile smbldap-useradd /usr/{bin,sbin}/smbldap-useradd {
   #include <abstractions/base>
   #include <abstractions/bash>
   #include <abstractions/nameservice>
