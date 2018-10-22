@@ -2105,9 +2105,21 @@ def read_profile(file, active_profile):
     if profile_data and active_profile:
         attach_profile_data(aa, profile_data)
         attach_profile_data(original_aa, profile_data)
+
+        for profile in profile_data:  # TODO: also honor hats
+            name = profile_data[profile][profile]['name']
+            filename = profile_data[profile][profile]['filename']
+
+            existing_profiles[name] = filename
+
     elif profile_data:
         attach_profile_data(extras, profile_data)
 
+        for profile in profile_data:  # TODO: also honor hats
+            name = profile_data[profile][profile]['name']
+            filename = profile_data[profile][profile]['filename']
+
+            existing_profiles[name] = filename
 
 def attach_profile_data(profiles, profile_data):
     # Make deep copy of data to avoid changes to
@@ -2198,9 +2210,6 @@ def parse_profile_data(data, file, do_include):
                 profile_data[profile][hat]['profile'] = True
             if pps_set_hat_external:
                 profile_data[profile][hat]['external'] = True
-
-            # Profile stored
-            existing_profiles[profile] = file
 
             # save profile name and filename
             profile_data[profile][hat]['name'] = profile
