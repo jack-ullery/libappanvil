@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014-2017 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2018 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -49,6 +49,8 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
                             strip_quotes, parse_profile_start_line, re_match_include )
 
+from apparmor.profile_list import ProfileList
+
 from apparmor.profile_storage import (ProfileStorage, add_or_remove_flag, ruletypes, write_alias,
                             write_abi, write_includes, write_list_vars )
 
@@ -89,7 +91,8 @@ extra_profile_dir = None
 # To keep track of previously included profile fragments
 include = dict()
 
-existing_profiles = dict()
+active_profiles = ProfileList()
+extra_profiles = ProfileList()
 
 # To store the globs entered by users so they can be provided again
 # format: user_globs['/foo*'] = AARE('/foo*')
@@ -220,7 +223,7 @@ def find_executable(bin_path):
 def get_profile_filename_from_profile_name(profile, get_new=False):
     """Returns the full profile name for the given profile name"""
 
-    filename = get_profile_filename_orig(profile)
+    filename = active_profiles.filename_from_profile_name(profile)
     if filename:
         return filename
 
@@ -230,17 +233,12 @@ def get_profile_filename_from_profile_name(profile, get_new=False):
 def get_profile_filename_from_attachment(profile, get_new=False):
     """Returns the full profile name for the given attachment"""
 
-    filename = get_profile_filename_orig(profile)
+    filename = active_profiles.filename_from_attachment(profile)
     if filename:
         return filename
 
     if get_new:
         return get_new_profile_filename(profile)
-
-def get_profile_filename_orig(profile):
-    """Returns the full profile name"""
-    if existing_profiles.get(profile, False):
-        return existing_profiles[profile]
 
 def get_new_profile_filename(profile):
     '''Compose filename for a new profile'''
@@ -527,7 +525,8 @@ def get_profile(prof_name):
         profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name, {})
         profile_hash[uname]['profile_data'] = inactive_profile
 
-        existing_profiles.pop(prof_name)  # remove profile filename from list to force storing in /etc/apparmor.d/ instead of extra_profile_dir
+        # no longer necessary after splitting active and extra profiles
+        # existing_profiles.pop(prof_name)  # remove profile filename from list to force storing in /etc/apparmor.d/ instead of extra_profile_dir
 
     # If no profiles in repo and no inactive profiles
     if not profile_hash.keys():
@@ -715,15 +714,16 @@ def profile_exists(program):
     """Returns True if profile exists, False otherwise"""
     # Check cache of profiles
 
-    if existing_profiles.get(program, False):
+    if active_profiles.filename_from_attachment(program):
         return True
     # Check the disk for profile
     prof_path = get_profile_filename_from_attachment(program, True)
     #print(prof_path)
     if os.path.isfile(prof_path):
         # Add to cache of profile
-        existing_profiles[program] = prof_path
-        return True
+        raise AppArmorBug('Reached strange condition in profile_exists(), please open a bugreport!')
+        # active_profiles[program] = prof_path
+        # return True
     return False
 
 def sync_profile():
@@ -1792,7 +1792,7 @@ def set_logfile(filename):
 def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
     # set up variables for this pass
 #    transitions = hasher()
-    global existing_profiles
+    global active_profiles
     global sev_db
 #    aa = hasher()
 #    profile_changes = hasher()
@@ -1809,13 +1809,13 @@ def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
     if not sev_db:
         sev_db = apparmor.severity.Severity(CONFDIR + '/severity.db', _('unknown'))
     #print(pid)
-    #print(existing_profiles)
+    #print(active_profiles)
     ##if not repo_cf and cfg['repostory']['url']:
     ##    repo_cfg = read_config('repository.conf')
     ##    if not repo_cfg['repository'].get('enabled', False) or repo_cfg['repository]['enabled'] not in ['yes', 'no']:
     ##    UI_ask_to_enable_repo()
 
-    log_reader = apparmor.logparser.ReadLog(log_pid, logfile, existing_profiles, profile_dir)
+    log_reader = apparmor.logparser.ReadLog(log_pid, logfile, active_profiles, profile_dir)
     log = log_reader.read_log(logmark)
     #read_log(logmark)
 
@@ -2108,18 +2108,26 @@ def read_profile(file, active_profile):
 
         for profile in profile_data:  # TODO: also honor hats
             name = profile_data[profile][profile]['name']
+            attachment = profile_data[profile][profile]['attachment']
             filename = profile_data[profile][profile]['filename']
 
-            existing_profiles[name] = filename
+            if not attachment and name.startswith('/'):
+                active_profiles.add(filename, name, name)  # use name as name and attachment
+            else:
+                active_profiles.add(filename, name, attachment)
 
     elif profile_data:
         attach_profile_data(extras, profile_data)
 
         for profile in profile_data:  # TODO: also honor hats
             name = profile_data[profile][profile]['name']
+            attachment = profile_data[profile][profile]['attachment']
             filename = profile_data[profile][profile]['filename']
 
-            existing_profiles[name] = filename
+            if not attachment and name.startswith('/'):
+                extra_profiles.add(filename, name, name)  # use name as name and attachment
+            else:
+                extra_profiles.add(filename, name, attachment)
 
 def attach_profile_data(profiles, profile_data):
     # Make deep copy of data to avoid changes to

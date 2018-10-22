@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2015 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2015-2018 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -18,6 +18,7 @@ from apparmor.common import open_file_read
 
 import apparmor.aa
 from apparmor.logparser import ReadLog
+from apparmor.profile_list import ProfileList
 
 class TestLibapparmorTestMulti(AATest):
     '''Parse all libraries/libapparmor/testsuite/test_multi tests and compare the result with the *.out files'''
@@ -249,9 +250,15 @@ def logfile_to_profile(logfile):
     if '//' in profile:
         profile, hat = profile.split('//')
 
-    apparmor.aa.existing_profiles = {profile: profile_dummy_file}
+    apparmor.aa.active_profiles = ProfileList()
 
-    log_reader = ReadLog(dict(), logfile, apparmor.aa.existing_profiles, '')
+    # optional for now, might be needed one day
+    # if profile.startswith('/'):
+    #     apparmor.aa.active_profiles.add(profile_dummy_file, profile, profile)
+    # else:
+    apparmor.aa.active_profiles.add(profile_dummy_file, profile, '')
+
+    log_reader = ReadLog(dict(), logfile, apparmor.aa.active_profiles, '')
     log = log_reader.read_log('')
 
     for root in log:
