@@ -219,17 +219,32 @@ def find_executable(bin_path):
 
 def get_profile_filename_from_profile_name(profile, get_new=False):
     """Returns the full profile name for the given profile name"""
-    return get_profile_filename_orig(profile)
+
+    filename = get_profile_filename_orig(profile)
+    if filename:
+        return filename
+
+    if get_new:
+        return get_new_profile_filename(profile)
 
 def get_profile_filename_from_attachment(profile, get_new=False):
     """Returns the full profile name for the given attachment"""
-    return get_profile_filename_orig(profile)
+
+    filename = get_profile_filename_orig(profile)
+    if filename:
+        return filename
+
+    if get_new:
+        return get_new_profile_filename(profile)
 
 def get_profile_filename_orig(profile):
     """Returns the full profile name"""
     if existing_profiles.get(profile, False):
         return existing_profiles[profile]
-    elif profile.startswith('/'):
+
+def get_new_profile_filename(profile):
+    '''Compose filename for a new profile'''
+    if profile.startswith('/'):
         # Remove leading /
         profile = profile[1:]
     else:
