@@ -220,14 +220,14 @@ class aa_tools:
                 while ans != 'CMD_SAVE_CHANGES':
                     ans, arg = q.promptUser()
                     if ans == 'CMD_SAVE_CHANGES':
-                        apparmor.write_profile_ui_feedback(program)
+                        apparmor.write_profile_ui_feedback(program, True)
                         self.reload_profile(filename)
                     elif ans == 'CMD_VIEW_CHANGES':
                         #oldprofile = apparmor.serialize_profile(apparmor.original_aa[program], program, {})
-                        newprofile = apparmor.serialize_profile(apparmor.aa[program], program, {})
+                        newprofile = apparmor.serialize_profile(apparmor.aa[program], program, {'is_attachment': True})
                         aaui.UI_Changes(filename, newprofile, comments=True)
             else:
-                apparmor.write_profile_ui_feedback(program)
+                apparmor.write_profile_ui_feedback(program, True)
                 self.reload_profile(filename)
         else:
             raise apparmor.AppArmorException(_('The profile for %s does not exists. Nothing to clean.') % program)
