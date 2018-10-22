@@ -75,7 +75,7 @@ def find_files_from_profiles(profiles):
     apparmor.aa.read_profiles()
 
     for profile_name in profiles:
-        profile_to_filename[profile_name] = apparmor.aa.get_profile_filename(profile_name)
+        profile_to_filename[profile_name] = apparmor.aa.get_profile_filename_from_profile_name(profile_name, True)
 
     reset_aa()
 

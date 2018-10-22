@@ -1,5 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
+#    Copyright (C) 2015-2018 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -66,12 +67,12 @@ class aa_tools:
                     profile = fq_path
                 else:
                     program = fq_path
-                    profile = apparmor.get_profile_filename(fq_path)
+                    profile = apparmor.get_profile_filename_from_attachment(fq_path, True)
             else:
                 which = apparmor.which(p)
                 if which is not None:
                     program = apparmor.get_full_path(which)
-                    profile = apparmor.get_profile_filename(program)
+                    profile = apparmor.get_profile_filename_from_attachment(program, True)
                 elif os.path.exists(os.path.join(apparmor.profile_dir, p)):
                     program = None
                     profile = apparmor.get_full_path(os.path.join(apparmor.profile_dir, p)).strip()
@@ -190,7 +191,7 @@ class aa_tools:
 
             apparmor.check_qualifiers(program)
 
-            if os.path.exists(apparmor.get_profile_filename(program)) and not self.force:
+            if os.path.exists(apparmor.get_profile_filename_from_attachment(program, True)) and not self.force:
                 aaui.UI_Info(_('Profile for %s already exists - skipping.') % program)
             else:
                 apparmor.autodep(program)
@@ -198,7 +199,7 @@ class aa_tools:
                     apparmor.reload(program)
 
     def clean_profile(self, program):
-        filename = apparmor.get_profile_filename(program)
+        filename = apparmor.get_profile_filename_from_attachment(program, True)
         import apparmor.cleanprofile as cleanprofile
         prof = cleanprofile.Prof(filename)
         cleanprof = cleanprofile.CleanProf(True, prof, prof)

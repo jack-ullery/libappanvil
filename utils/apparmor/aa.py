@@ -217,7 +217,15 @@ def find_executable(bin_path):
         return full_bin
     return None
 
-def get_profile_filename(profile):
+def get_profile_filename_from_profile_name(profile, get_new=False):
+    """Returns the full profile name for the given profile name"""
+    return get_profile_filename_orig(profile)
+
+def get_profile_filename_from_attachment(profile, get_new=False):
+    """Returns the full profile name for the given attachment"""
+    return get_profile_filename_orig(profile)
+
+def get_profile_filename_orig(profile):
     """Returns the full profile name"""
     if existing_profiles.get(profile, False):
         return existing_profiles[profile]
@@ -238,7 +246,7 @@ def name_to_prof_filename(prof_filename):
     else:
         bin_path = find_executable(prof_filename)
         if bin_path:
-            prof_filename = get_profile_filename(bin_path)
+            prof_filename = get_profile_filename_from_attachment(bin_path, True)
             if os.path.isfile(prof_filename):
                 return (prof_filename, bin_path)
 
@@ -464,7 +472,7 @@ def create_new_profile(localfile, is_stub=False):
 
 def delete_profile(local_prof):
     """Deletes the specified file from the disk and remove it from our list"""
-    profile_file = get_profile_filename(local_prof)
+    profile_file = get_profile_filename_from_profile_name(local_prof, True)
     if os.path.isfile(profile_file):
         os.remove(profile_file)
     if aa.get(local_prof, False):
@@ -560,7 +568,7 @@ def activate_repo_profiles(url, profiles, complain):
             attach_profile_data(aa, profile_data)
             write_profile(pname)
             if complain:
-                fname = get_profile_filename(pname)
+                fname = get_profile_filename_from_profile_name(pname, True)
                 change_profile_flags(profile_dir + fname, None, 'complain', True)
                 aaui.UI_Info(_('Setting %s to complain mode.') % pname)
     except Exception as e:
@@ -592,7 +600,7 @@ def autodep(bin_name, pname=''):
     # Create a new profile if no existing profile
     if not profile_data:
         profile_data = create_new_profile(pname)
-    file = get_profile_filename(pname)
+    file = get_profile_filename_from_profile_name(pname, True)
     profile_data[pname][pname]['filename'] = None  # will be stored in /etc/apparmor.d when saving, so it shouldn't carry the extra_profile_dir filename
     attach_profile_data(aa, profile_data)
     attach_profile_data(original_aa, profile_data)
@@ -695,7 +703,7 @@ def profile_exists(program):
     if existing_profiles.get(program, False):
         return True
     # Check the disk for profile
-    prof_path = get_profile_filename(program)
+    prof_path = get_profile_filename_from_attachment(program, True)
     #print(prof_path)
     if os.path.isfile(prof_path):
         # Add to cache of profile
@@ -1088,9 +1096,9 @@ def handle_children(profile, hat, root):
                         options += 'd'
                         # Define the default option
                         default = None
-                        if 'p' in options and os.path.exists(get_profile_filename(exec_target)):
+                        if 'p' in options and os.path.exists(get_profile_filename_from_attachment(exec_target, True)):
                             default = 'CMD_px'
-                            sys.stdout.write(_('Target profile exists: %s\n') % get_profile_filename(exec_target))
+                            sys.stdout.write(_('Target profile exists: %s\n') % get_profile_filename_from_attachment(exec_target, True))
                         elif 'i' in options:
                             default = 'CMD_ix'
                         elif 'c' in options:
@@ -1104,7 +1112,7 @@ def handle_children(profile, hat, root):
                         parent_uses_ld_xxx = check_for_LD_XXX(profile)
 
                         sev_db.unload_variables()
-                        sev_db.load_variables(get_profile_filename(profile))
+                        sev_db.load_variables(get_profile_filename_from_profile_name(profile, True))
                         severity = sev_db.rank_path(exec_target, 'x')
 
                         # Prompt portion starts
@@ -1228,7 +1236,7 @@ def handle_children(profile, hat, root):
                                 profile_changes[pid] = '%s' % profile
 
                         # Check profile exists for px
-                        if not os.path.exists(get_profile_filename(exec_target)):
+                        if not os.path.exists(get_profile_filename_from_attachment(exec_target, True)):
                             ynans = 'y'
                             if 'i' in exec_mode:
                                 ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
@@ -1362,7 +1370,7 @@ def ask_the_questions(log_dict):
                 UI_SelectUpdatedRepoProfile(profile, p)
 
             sev_db.unload_variables()
-            sev_db.load_variables(get_profile_filename(profile))
+            sev_db.load_variables(get_profile_filename_from_profile_name(profile, True))
 
             # Sorted list of hats with the profile name coming first
             hats = list(filter(lambda key: key != profile, sorted(log_dict[aamode][profile].keys())))
@@ -1867,7 +1875,7 @@ def save_profiles():
                 if aa[which][which].get('filename', False):
                     oldprofile = aa[which][which]['filename']
                 else:
-                    oldprofile = get_profile_filename(which)
+                    oldprofile = get_profile_filename_from_attachment(which, True)
 
                 serialize_options = {'METADATA': True}
                 newprofile = serialize_profile(aa[which], which, serialize_options)
@@ -2677,7 +2685,11 @@ def serialize_profile(profile_data, name, options):
 #         comment.replace('\\n', '\n')
 #         string += comment + '\n'
 
-    prof_filename = get_profile_filename(name)
+    if options.get('is_attachment'):
+        prof_filename = get_profile_filename_from_attachment(name, True)
+    else:
+        prof_filename = get_profile_filename_from_profile_name(name, True)
+
     if filelist.get(prof_filename, False):
         data += write_abi(filelist[prof_filename], 0)
         data += write_alias(filelist[prof_filename], 0)
@@ -2711,8 +2723,10 @@ def write_profile(profile, is_attachment=False):
     prof_filename = None
     if aa[profile][profile].get('filename', False):
         prof_filename = aa[profile][profile]['filename']
+    elif is_attachment:
+        prof_filename = get_profile_filename_from_attachment(profile, True)
     else:
-        prof_filename = get_profile_filename(profile)
+        prof_filename = get_profile_filename_from_profile_name(profile, True)
 
     newprof = tempfile.NamedTemporaryFile('w', suffix='~', delete=False, dir=profile_dir)
     if os.path.exists(prof_filename):
@@ -2844,7 +2858,7 @@ def reload_base(bin_path):
     if not check_for_apparmor():
         return None
 
-    prof_filename = get_profile_filename(bin_path)
+    prof_filename = get_profile_filename_from_profile_name(bin_path, True)
 
     # XXX use reload_profile() from tools.py instead (and don't hide output in /dev/null)
     subprocess.call("cat '%s' | %s -I%s -r >/dev/null 2>&1" % (prof_filename, parser, profile_dir), shell=True)
