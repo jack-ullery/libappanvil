@@ -17,7 +17,7 @@
   #include <abstractions/consoles>
   #include <abstractions/postfix-common>
   /etc/aliases                         r,
-  /etc/aliases.db                      rwl,
+  /etc/aliases.db                      rwlk,
   /etc/postfix                         r,
   /etc/postfix/main.cf                 r,
   /etc/postfix/aliases                 r,
