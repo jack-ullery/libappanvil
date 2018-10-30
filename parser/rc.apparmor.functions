@@ -1,7 +1,7 @@
 #!/bin/sh
 # ----------------------------------------------------------------------
 #    Copyright (c) 1999-2008 NOVELL (All rights reserved)
-#    Copyright (c) 2009-2012 Canonical Ltd. (All rights reserved)
+#    Copyright (c) 2009-2018 Canonical Ltd. (All rights reserved)
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -112,6 +112,53 @@ is_apparmor_present() {
 	[ $? -ne 0 -a -d /sys/module/apparmor ]
 
 	return $?
+}
+
+# Checks to see if the current container is capable of having internal AppArmor
+# profiles that should be loaded. Callers of this function should have already
+# verified that they're running inside of a container environment with
+# something like `systemd-detect-virt --container`.
+#
+# The only known container environments capable of supporting internal policy
+# are LXD and LXC environment.
+#
+# Returns 0 if the container environment is capable of having its own internal
+# policy and non-zero otherwise.
+#
+# IMPORTANT: This function will return 0 in the case of a non-LXD/non-LXC
+# system container technology being nested inside of a LXD/LXC container that
+# utilized an AppArmor namespace and profile stacking. The reason 0 will be
+# returned is because .ns_stacked will be "yes" and .ns_name will still match
+# "lx[dc]-*" since the nested system container technology will not have set up
+# a new AppArmor profile namespace. This will result in the nested system
+# container's boot process to experience failed policy loads but the boot
+# process should continue without any loss of functionality. This is an
+# unsupported configuration that cannot be properly handled by this function.
+is_container_with_internal_policy() {
+	local ns_stacked_path="${SFS_MOUNTPOINT}/.ns_stacked"
+	local ns_name_path="${SFS_MOUNTPOINT}/.ns_name"
+	local ns_stacked
+	local ns_name
+
+	if ! [ -f "$ns_stacked_path" ] || ! [ -f "$ns_name_path" ]; then
+		return 1
+	fi
+
+	read -r ns_stacked < "$ns_stacked_path"
+	if [ "$ns_stacked" != "yes" ]; then
+		return 1
+	fi
+
+	# LXD and LXC set up AppArmor namespaces starting with "lxd-" and
+	# "lxc-", respectively. Return non-zero for all other namespace
+	# identifiers.
+	read -r ns_name < "$ns_name_path"
+	if [ "${ns_name#lxd-*}" = "$ns_name" ] && \
+	   [ "${ns_name#lxc-*}" = "$ns_name" ]; then
+		return 1
+	fi
+
+	return 0
 }
 
 # This set of patterns to skip needs to be kept in sync with
