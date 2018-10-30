@@ -71,7 +71,6 @@ elif [ -d /etc/apparmor.d ] ; then
 elif [ -d /etc/subdomain.d ] ; then
 	PROFILE_DIR=/etc/subdomain.d
 fi
-ABSTRACTIONS="-I${PROFILE_DIR}"
 AA_EV_BIN=/usr/sbin/aa-eventd
 AA_EV_PIDFILE=/var/run/aa-eventd.pid
 AA_STATUS=/usr/sbin/aa-status
@@ -183,7 +182,7 @@ parse_profiles() {
 			continue
 		fi
 		if [ -f "${profile}" ] ; then
-			$PARSER $ABSTRACTIONS $PARSER_ARGS "$profile" > /dev/null
+			$PARSER $PARSER_ARGS "$profile" > /dev/null
 			if [ $? -ne 0 ]; then
 				aa_log_failure_msg "$profile failed to load"
 				STATUS=1
@@ -211,7 +210,7 @@ profiles_names_list() {
 
 	for profile in $PROFILE_DIR/*; do
 	        if skip_profile "${profile}" && [ -f "${profile}" ] ; then
-			LIST_ADD=$($PARSER $ABSTRACTIONS -N "$profile" )
+			LIST_ADD=$($PARSER -N "$profile" )
 			if [ $? -eq 0 ]; then
 				echo "$LIST_ADD"
 			fi
