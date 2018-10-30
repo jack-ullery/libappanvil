@@ -75,7 +75,10 @@ elif [ -d /etc/apparmor.d ] ; then
 	PROFILE_DIR=/etc/apparmor.d
 elif [ -d /etc/subdomain.d ] ; then
 	PROFILE_DIR=/etc/subdomain.d
+else
+	aa_log_warning_msg "Unable to find profiles directory, installation problem?"
 fi
+
 AA_EV_BIN=/usr/sbin/aa-eventd
 AA_EV_PIDFILE=/var/run/aa-eventd.pid
 AA_STATUS=/usr/sbin/aa-status
