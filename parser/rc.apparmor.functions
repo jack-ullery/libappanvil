@@ -60,6 +60,11 @@ if [ -f "${APPARMOR_CONF}" ] ; then
 fi
 
 PARSER=/sbin/apparmor_parser
+PARSER_OPTS=
+# Suppress warnings when booting in quiet mode
+if [ "${QUIET:-no}" = yes ] || [ "${quiet:-n}" = y ]; then
+	PARSER_OPTS="$PARSER_OPTS --quiet"
+fi
 
 # SUBDOMAIN_DIR and APPARMOR_DIR might be defined in subdomain.conf|apparmor.conf
 if [ -d "${APPARMOR_DIR}" ] ; then
@@ -137,11 +142,11 @@ parse_profiles() {
 	# get parser arg
 	case "$1" in
 		load)
-			PARSER_ARGS="--add"
+			PARSER_CMD="--add"
 			PARSER_MSG="Loading AppArmor profiles "
 			;;
 		reload)
-			PARSER_ARGS="--replace"
+			PARSER_CMD="--replace"
 			PARSER_MSG="Reloading AppArmor profiles "
 			;;
 		*)
@@ -173,7 +178,7 @@ parse_profiles() {
 	# when we pass it a directory, but not when we pass it an individual
 	# profile. So we need to use skip_profile only in the latter case,
 	# as long as the parser is in sync' with skip_profile().
-	"$PARSER" $PARSER_ARGS -- "$PROFILE_DIR" || {
+	"$PARSER" $PARSER_OPTS $PARSER_CMD -- "$PROFILE_DIR" || {
 		# FIXME: once the parser properly handles broken profiles
 		# (LP: #1377338), remove the following code and the
 		# skip_profile() function. For now, if the parser returns
@@ -197,7 +202,7 @@ parse_profiles() {
 		done | \
 		# Use xargs to parallelize calls to the parser over all CPUs
 		xargs -n1 -d"\n" --max-procs=$(getconf _NPROCESSORS_ONLN) \
-			"$PARSER" $PARSER_ARGS --
+			"$PARSER" $PARSER_OPTS $PARSER_CMD --
 		if [ $? -ne 0 ]; then
 			STATUS=1
 			aa_log_failure_msg "At least one profile failed to load"
