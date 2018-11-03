@@ -243,10 +243,10 @@ failstop_system() {
 	if [ $level -ne "1" ] ; then
 		aa_log_failure_msg "- could not start AppArmor.  Changing to runlevel 1"
 		telinit 1;
-		return -1;
+		return 255;
 	fi
 	aa_log_failure_msg "- could not start AppArmor."
-	return -1
+	return 255
 }
 
 module_panic() {
@@ -259,7 +259,7 @@ module_panic() {
 			rc=$?
 			return $rc ;;
 		*) aa_log_failure_msg "- invalid AppArmor module fail option"
-			return -1 ;;
+			return 255 ;;
 	esac
 }
 
