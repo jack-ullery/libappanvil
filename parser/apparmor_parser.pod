@@ -179,7 +179,7 @@ defined as relative paths.
 Add element n to the search path when resolving #include directives
 defined as an absolute paths.
 
-=item -f n, --subdomainfs n
+=item -f n, --apparmorfs n
 
 Set the location of the apparmor security filesystem (default is
 "/sys/kernel/security/apparmor").
@@ -408,7 +408,7 @@ L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 
-apparmor(7), apparmor.d(5), subdomain.conf(5), aa_change_hat(2), and
+apparmor(7), apparmor.d(5), aa_change_hat(2), and
 L<https://wiki.apparmor.net>.
 
 =cut

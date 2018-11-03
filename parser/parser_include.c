@@ -17,21 +17,21 @@
  *   along with this program; if not, contact Canonical, Ltd.
  */
 
-/* Handle subdomain includes, as a straight forward preprocessing phase.
+/* Handle apparmor includes, as a straight forward preprocessing phase.
    While we are at it we will strip comments.  Why? because it made it
    easier.
 
    We support 2 types of includes
 
 #include <name> which searches for the first occurance of name in the
-   subdomain directory path.
+   apparmor directory path.
 
 #include "name" which will search for a relative or absolute pathed
    file
 
 -p : preprocess only.  Dump output to stdout
 -I path : add a path to be search by #include < >
--b path : set the base path to something other than /etc/subdomain.d
+-b path : set the base path to something other than /etc/apparmor.d
 
 */
 
@@ -57,13 +57,6 @@
 /* maximum depth of nesting */
 #define MAX_NEST_LEVEL 100
 
-/* Location of the subdomain.conf file */
-#ifdef SUBDOMAIN_CONFDIR
-#define SUBDOMAIN_CONF SUBDOMAIN_CONFDIR "/subdomain.conf"
-#else	/* !defined SUBDOMAIN_CONFDIR */
-#define SUBDOMAIN_CONF "/etc/subdomain.conf"
-#endif	/* SUBDOMAIN_CONFDIR */
-
 static char *path[MAX_PATH] = { NULL };
 static int npath = 0;
 
@@ -71,12 +64,11 @@ static int fgetline(FILE * f, char *buffer, size_t len);
 static int stripcomment(char *s);
 static char *stripblanks(char *s);
 
-/* default base directory is /etc/subdomain.d, it can be overriden
+/* default base directory is /etc/apparmor.d, it can be overriden
    with the -b option. */
 
 const char *basedir;
 static const char *default_basedir = "/etc/apparmor.d";
-static const char *old_basedir = "/etc/subdomain.d";
 
 
 /* set up basedir so that it can be overridden/used later. */
@@ -92,12 +84,6 @@ void init_base_dir(void)
 	rc = stat(default_basedir, &sbuf);
 	if (rc == 0 && S_ISDIR(sbuf.st_mode)) {
 		basedir = default_basedir;
-		return;
-	}
-
-	rc = stat(old_basedir, &sbuf);
-	if (rc == 0 && S_ISDIR(sbuf.st_mode)) {
-		basedir = old_basedir;
 		return;
 	}
 }
@@ -164,53 +150,9 @@ int add_search_dir(const char *dir)
 	return 1;
 }
 
-/* Parse Subdomain.conf and put the default dirs in place.  
-
-   subdomain.conf is a shell sourcable file
-   we only parse entries starting with
-   SUBDOMAIN_PATH=
-
-   if there are multiple entries with SUBDOMAIN_PATH=
-   each will get added.
-
-   SUBDOMAIN_PATH=/etc/subdomain.d:/etc/subdomain.d/include
-   is the same as
-   SUBDOMAIN_PATH=/etc/subdomain.d
-   SUBDOMAIN_PATH=/etc/subdomain.d/include */
 void parse_default_paths(void)
 {
-	autofclose FILE *f;
-	char buf[1024];
-	char *t, *s;
-	int saved_npath = npath;
-
-	f = fopen(SUBDOMAIN_CONF, "r");
-	if (f == NULL)
-		goto out;
-
-	memset(buf, 0, sizeof(buf));
-
-	while (fgetline(f, buf, 1024)) {
-		if (stripcomment(buf) && (t = strstr(buf, "SUBDOMAIN_PATH="))) {
-			t += 15;
-			/* handle : separating path elements */
-			do {
-				s = strchr(t, ':');
-				if (s)
-					*s = 0;
-				if (!add_search_dir(stripblanks(t)))
-					break;
-				if (s)
-					t = s + 1;
-			} while (s != NULL);
-		}
-	}
-
-	/* if subdomain.conf doesn't set a base search dir set it to this */
-out:
-	if (npath - saved_npath == 0) {
-		add_search_dir(basedir);
-	}
+	add_search_dir(basedir);
 }
 
 FILE *search_path(char *filename, char **fullpath)

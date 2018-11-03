@@ -40,7 +40,7 @@ from apparmor.common import AppArmorException, open_file_read  # , warn, msg,
 
 # CFG = None
 # REPO_CFG = None
-# SHELL_FILES = ['easyprof.conf', 'notify.conf', 'parser.conf', 'subdomain.conf']
+# SHELL_FILES = ['easyprof.conf', 'notify.conf', 'parser.conf']
 class Config(object):
     def __init__(self, conf_type, conf_dir='/etc/apparmor'):
         self.CONF_DIR = conf_dir

@@ -33,25 +33,12 @@
 
 CONFIG_DIR=/etc/apparmor
 MODULE=apparmor
-OLD_MODULE=subdomain
 if [ -f "${CONFIG_DIR}/${MODULE}.conf" ] ; then
 	APPARMOR_CONF="${CONFIG_DIR}/${MODULE}.conf"
-elif [ -f "${CONFIG_DIR}/${OLD_MODULE}.conf" ] ; then
-	APPARMOR_CONF="${CONFIG_DIR}/${OLD_MODULE}.conf"
-elif [ -f "/etc/immunix/subdomain.conf" ] ; then
-	aa_log_warning_msg "/etc/immunix/subdomain.conf is deprecated, use ${CONFIG_DIR}/subdomain.conf instead"
-	APPARMOR_CONF="/etc/immunix/subdomain.conf"
-elif [ -f "/etc/subdomain.conf" ] ; then
-	aa_log_warning_msg "/etc/subdomain.conf is deprecated, use ${CONFIG_DIR}/subdomain.conf instead"
-	APPARMOR_CONF="/etc/subdomain.conf"
 else
 	aa_log_warning_msg "Unable to find config file in ${CONFIG_DIR}, installation problem?"
 fi
 
-# Read configuration options from /etc/subdomain.conf, default is to
-# warn if subdomain won't load.
-SUBDOMAIN_MODULE_PANIC="warn"
-SUBDOMAIN_ENABLE_OWLSM="no"
 APPARMOR_ENABLE_AAEVENTD="no"
 
 if [ -f "${APPARMOR_CONF}" ] ; then
@@ -61,27 +48,17 @@ fi
 
 PARSER=/sbin/apparmor_parser
 
-# SUBDOMAIN_DIR and APPARMOR_DIR might be defined in subdomain.conf|apparmor.conf
+# APPARMOR_DIR might be defined in apparmor.conf
 if [ -d "${APPARMOR_DIR}" ] ; then
 	PROFILE_DIR=${APPARMOR_DIR}
-elif [ -d "${SUBDOMAIN_DIR}" ] ; then
-	PROFILE_DIR=${SUBDOMAIN_DIR}
 elif [ -d /etc/apparmor.d ] ; then
 	PROFILE_DIR=/etc/apparmor.d
-elif [ -d /etc/subdomain.d ] ; then
-	PROFILE_DIR=/etc/subdomain.d
 fi
 ABSTRACTIONS="-I${PROFILE_DIR}"
 AA_EV_BIN=/usr/sbin/aa-eventd
 AA_EV_PIDFILE=/var/run/aa-eventd.pid
 AA_STATUS=/usr/sbin/aa-status
-SD_EV_BIN=/usr/sbin/sd-event-dispatch.pl
-SD_EV_PIDFILE=/var/run/sd-event-dispatch.init.pid
-SD_STATUS=/usr/sbin/subdomain_status
 SECURITYFS=/sys/kernel/security
-
-SUBDOMAINFS_MOUNTPOINT=$(grep subdomainfs /etc/fstab  | \
-	sed -e 's|^[[:space:]]*[^[:space:]]\+[[:space:]]\+\(/[^[:space:]]*\)[[:space:]]\+subdomainfs.*$|\1|' 2> /dev/null)
 
 # keep exit status from parser during profile load.  0 is good, 1 is bad
 STATUS=0
@@ -95,9 +72,6 @@ is_apparmor_present() {
 		modules="$modules|$1"
 		shift
 	done
-
-	# check for subdomainfs version of module
-	grep -qE "^($modules)[[:space:]]" /proc/modules
 
 	[ $? -ne 0 -a -d /sys/module/apparmor ]
 
@@ -249,44 +223,17 @@ failstop_system() {
 	return 255
 }
 
-module_panic() {
-	# the module failed to load, determine what action should be taken
-
-	case "$SUBDOMAIN_MODULE_PANIC" in
-		"warn"|"WARN")
-			return 1 ;;
-		"panic"|"PANIC") failstop_system
-			rc=$?
-			return $rc ;;
-		*) aa_log_failure_msg "- invalid AppArmor module fail option"
-			return 255 ;;
-	esac
-}
-
 is_apparmor_loaded() {
 	if ! is_securityfs_mounted ; then
 		mount_securityfs
 	fi
-
-	mount_subdomainfs
 
 	if [ -f "${SECURITYFS}/${MODULE}/profiles" ]; then
 		SFS_MOUNTPOINT="${SECURITYFS}/${MODULE}"
 		return 0
 	fi
 
-	if [ -f "${SECURITYFS}/${OLD_MODULE}/profiles" ]; then
-		SFS_MOUNTPOINT="${SECURITYFS}/${OLD_MODULE}"
-		return 0
-	fi
-
-	if [ -f "${SUBDOMAINFS_MOUNTPOINT}/profiles" ]; then
-		SFS_MOUNTPOINT=${SUBDOMAINFS_MOUNTPOINT}
-		return 0
-	fi
-
-	# check for subdomainfs version of module
-	is_apparmor_present apparmor subdomain
+	is_apparmor_present apparmor
 
 	return $?
 }
@@ -303,26 +250,6 @@ mount_securityfs() {
 		return $?
 	fi
 	return 0
-}
-
-
-mount_subdomainfs() {
-	# for backwords compatibility
-	if grep -q subdomainfs /proc/filesystems && \
-	   ! grep -q subdomainfs /proc/mounts && \
-	   [ -n "${SUBDOMAINFS_MOUNTPOINT}" ]; then
-		aa_action "Mounting subdomainfs on ${SUBDOMAINFS_MOUNTPOINT}" \
-				mount "${SUBDOMAINFS_MOUNTPOINT}"
-		return $?
-	fi
-	return 0
-}
-
-unmount_subdomainfs() {
-	SUBDOMAINFS=$(grep subdomainfs /proc/mounts  | cut -d" " -f2 2> /dev/null)
-	if [ -n "${SUBDOMAINFS}" ]; then
-		aa_action "Unmounting subdomainfs" umount ${SUBDOMAINFS}
-	fi
 }
 
 apparmor_start() {
@@ -358,7 +285,7 @@ apparmor_start() {
 
 remove_profiles() {
 
-	# removing profiles as we directly read from subdomainfs
+	# removing profiles as we directly read from apparmorfs
 	# doesn't work, since we are removing entries which screws up
 	# our position.  Lets hope there are never enough profiles to
 	# overflow the variable
@@ -406,11 +333,8 @@ apparmor_kill() {
 		return 1
 	fi
 
-	unmount_subdomainfs
 	if is_apparmor_present apparmor ; then
 		MODULE=apparmor
-	elif is_apparmor_present subdomain ; then
-		MODULE=subdomain
 	else
 		aa_log_failure_msg "AppArmor is builtin"
 		return 1
@@ -457,25 +381,9 @@ apparmor_try_restart() {
 	return $?
 }
 
-configure_owlsm () {
-	if [ "${SUBDOMAIN_ENABLE_OWLSM}" = "yes" -a -f ${SFS_MOUNTPOINT}/control/owlsm ] ; then
-		# Sigh, the "sh -c" is necessary for the SuSE aa_action
-		# and it can't be abstracted out as a seperate function, as
-		# that breaks under RedHat's action, which needs a
-		# binary to invoke.
-		aa_action "Enabling OWLSM extension" sh -c "echo -n \"1\" > \"${SFS_MOUNTPOINT}/control/owlsm\""
-	elif [ -f "${SFS_MOUNTPOINT}/control/owlsm" ] ; then
-		aa_action "Disabling OWLSM extension" sh -c "echo -n \"0\" > \"${SFS_MOUNTPOINT}/control/owlsm\""
-	fi
-}
-
 apparmor_status () {
 	if test -x ${AA_STATUS} ; then
 		${AA_STATUS} --verbose
-		return $?
-	fi
-	if test -x ${SD_STATUS} ; then
-		${SD_STATUS} --verbose
 		return $?
 	fi
 	if ! is_apparmor_loaded ; then
