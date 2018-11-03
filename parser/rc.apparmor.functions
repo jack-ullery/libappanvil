@@ -325,42 +325,16 @@ unmount_subdomainfs() {
 	fi
 }
 
-load_module() {
-	local rc=0
-	if modinfo -F filename apparmor > /dev/null 2>&1 ; then
-		MODULE=apparmor
-	elif modinfo -F filename ${OLD_MODULE} > /dev/null 2>&1 ; then
-		MODULE=${OLD_MODULE}
-	fi
-
-	if ! is_apparmor_present apparmor subdomain ; then
-		aa_action "Loading AppArmor module" /sbin/modprobe -q $MODULE $1
-		rc=$?
-		if [ $rc -ne 0 ] ; then
-			module_panic
-			rc=$?
-			if [ $rc -ne 0 ] ; then
-				exit $rc
-			fi
-		fi
-	fi
-
-	if ! is_apparmor_loaded ; then
-		return 1
-	fi
-
-	return $rc
-}
-
 apparmor_start() {
 	aa_log_daemon_msg "Starting AppArmor"
-	if ! is_apparmor_loaded ; then
-		load_module
-		rc=$?
-		if [ $rc -ne 0 ] ; then
-			aa_log_end_msg $rc
-			return $rc
-		fi
+	if ! is_apparmor_present ; then
+		aa_log_failure_msg "Starting AppArmor - failed, To enable AppArmor, ensure your kernel is configured with CONFIG_SECURITY_APPARMOR=y then add 'security=apparmor apparmor=1' to the kernel command line"
+		aa_log_end_msg 1
+		return 1
+	elif ! is_apparmor_loaded ; then
+		aa_log_failure_msg "Starting AppArmor - AppArmor control files aren't available under /sys/kernel/security/, please make sure securityfs is mounted."
+		aa_log_end_msg 1
+		return 1
 	fi
 
 	if [ ! -w "$SFS_MOUNTPOINT/.load" ] ; then
