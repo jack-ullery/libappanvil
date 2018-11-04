@@ -143,6 +143,56 @@ messages with the KERN facility. Thus, REJECTING and PERMITTING messages
 may go to either F</var/log/audit/audit.log> or F</var/log/messages>,
 depending upon local configuration.
 
+=head1 DEBUGGING
+
+AppArmor provides a few facilities to log more information,
+which can help debugging profiles.
+
+=head2 Enable debug mode
+
+When debug mode is enabled, AppArmor will log a few extra messages to
+dmesg (not via the audit subsystem). For example, the logs will tell
+whether environment scrubbing has been applied.
+
+To enable debug mode, run:
+
+	echo 1 > /sys/module/apparmor/parameters/debug
+
+=head2 Turn off deny audit quieting
+
+By default, operations that trigger C<deny> rules are not logged.
+This is called I<deny audit quieting>.
+
+To turn off deny audit quieting, run:
+
+	echo -n noquiet >/sys/module/apparmor/parameters/audit
+
+=head2 Force audit mode
+
+AppArmor can log a message for every operation that triggers a rule
+configured in the policy. This is called I<force audit mode>.
+
+B<Warning!> Force audit mode can be extremely noisy even for a single profile,
+let alone when enabled globally.
+
+To set a specific profile in force audit mode, add the C<audit> flag:
+
+	profile foo flags=(audit) { ... }
+
+To enable force audit mode globally, run:
+
+	echo -n all > /sys/module/apparmor/parameters/audit
+
+If auditd is not running, to avoid losing too many of the extra log
+messages, you will likely have to turn off rate limiting by doing:
+
+	echo 0 > /proc/sys/kernel/printk_ratelimit
+
+But even then the kernel ring buffer may overflow and you might
+lose messages.
+
+Else, if auditd is running, see auditd(8) and auditd.conf(5).
+
 =head1 FILES
 
 =over 4
