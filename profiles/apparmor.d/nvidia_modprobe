@@ -24,8 +24,8 @@ profile nvidia_modprobe {
 
   /dev/nvidia-uvm w,
   /dev/nvidia-uvm-tools w,
-  /sys/bus/pci/devices/ r,
-  /sys/devices/pci[0-9]*/**/config r,
+  @{sys}/bus/pci/devices/ r,
+  @{sys}/devices/pci[0-9]*/**/config r,
   @{PROC}/devices r,
   @{PROC}/modules r,
   @{PROC}/sys/kernel/modprobe r,
@@ -51,9 +51,9 @@ profile nvidia_modprobe {
 
     /etc/modprobe.d/{,*.conf} r,
     /etc/nvidia/current/*.conf r,
-    /sys/module/ipmi_devintf/initstate r,
-    /sys/module/ipmi_msghandler/initstate r,
-    /sys/module/nvidia/initstate r,
+    @{sys}/module/ipmi_devintf/initstate r,
+    @{sys}/module/ipmi_msghandler/initstate r,
+    @{sys}/module/nvidia/initstate r,
     @{PROC}/cmdline r,
   }
 

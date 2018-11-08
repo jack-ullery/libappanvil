@@ -47,7 +47,7 @@ profile syslog-ng /{usr/,}{bin,sbin}/syslog-ng {
   /etc/hosts.deny r,
   /etc/hosts.allow r,
   /{usr/,}{bin,sbin}/syslog-ng mr,
-  /sys/devices/system/cpu/online r,
+  @{sys}/devices/system/cpu/online r,
   /usr/share/syslog-ng/** r,
   /var/lib/syslog-ng/syslog-ng-?????.qf rw,
   # chrooted applications

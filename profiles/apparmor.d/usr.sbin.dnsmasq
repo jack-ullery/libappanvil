@@ -107,9 +107,9 @@ profile dnsmasq /usr/{bin,sbin}/dnsmasq flags=(attach_disconnected) {
     owner @{PROC}/@{pid}/net/psched r,
     owner @{PROC}/@{pid}/status r,
 
-    /sys/devices/system/cpu/ r,
-    /sys/devices/system/node/ r,
-    /sys/devices/system/node/*/meminfo r,
+    @{sys}/devices/system/cpu/ r,
+    @{sys}/devices/system/node/ r,
+    @{sys}/devices/system/node/*/meminfo r,
 
     # libvirt lease and status files for dnsmasq
     /var/lib/libvirt/dnsmasq/*.leases  rw,
