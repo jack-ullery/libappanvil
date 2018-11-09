@@ -55,8 +55,6 @@ elif [ -d /etc/apparmor.d ] ; then
 	PROFILE_DIR=/etc/apparmor.d
 fi
 ABSTRACTIONS="-I${PROFILE_DIR}"
-AA_EV_BIN=/usr/sbin/aa-eventd
-AA_EV_PIDFILE=/var/run/aa-eventd.pid
 AA_STATUS=/usr/sbin/aa-status
 SECURITYFS=/sys/kernel/security
 
