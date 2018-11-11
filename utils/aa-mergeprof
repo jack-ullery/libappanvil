@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014-2017 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2018 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -57,7 +57,7 @@ def reset_aa():
     apparmor.aa.aa = apparmor.aa.hasher()
     apparmor.aa.filelist = apparmor.aa.hasher()
     apparmor.aa.include = dict()
-    apparmor.aa.existing_profiles = apparmor.aa.hasher()
+    apparmor.aa.active_profiles = apparmor.aa.ProfileList()
     apparmor.aa.original_aa = apparmor.aa.hasher()
 
 def find_profiles_from_files(files):
@@ -75,7 +75,7 @@ def find_files_from_profiles(profiles):
     apparmor.aa.read_profiles()
 
     for profile_name in profiles:
-        profile_to_filename[profile_name] = apparmor.aa.get_profile_filename(profile_name)
+        profile_to_filename[profile_name] = apparmor.aa.get_profile_filename_from_profile_name(profile_name, True)
 
     reset_aa()
 

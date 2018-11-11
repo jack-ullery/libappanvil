@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2015-2016 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2015-2018 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -44,11 +44,11 @@ class ReadLog:
     # used to pre-filter log lines so that we hand over only relevant lines to LibAppArmor parsing
     RE_LOG_ALL = re.compile('(' + '|'.join(RE_log_parts) + ')')
 
-    def __init__(self, pid, filename, existing_profiles, profile_dir):
+    def __init__(self, pid, filename, active_profiles, profile_dir):
         self.filename = filename
         self.profile_dir = profile_dir
         self.pid = pid
-        self.existing_profiles = existing_profiles
+        self.active_profiles = active_profiles
         self.log = []
         self.debug_logger = DebugLogger('ReadLog')
         self.LOG = None
@@ -447,15 +447,16 @@ class ReadLog:
     def profile_exists(self, program):
         """Returns True if profile exists, False otherwise"""
         # Check cache of profiles
-        if self.existing_profiles.get(program, False):
+        if self.active_profiles.filename_from_profile_name(program):
             return True
         # Check the disk for profile
         prof_path = self.get_profile_filename(program)
         #print(prof_path)
         if os.path.isfile(prof_path):
             # Add to cache of profile
-            self.existing_profiles[program] = prof_path
-            return True
+            raise AppArmorBug('This should never happen, please open a bugreport!')
+            # self.active_profiles[program] = prof_path
+            # return True
         return False
 
     def get_profile_filename(self, profile):

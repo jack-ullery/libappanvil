@@ -107,7 +107,7 @@ apparmor.check_qualifiers(program)
 
 apparmor.loadincludes()
 
-profile_filename = apparmor.get_profile_filename(program)
+profile_filename = apparmor.get_profile_filename_from_attachment(program, True)
 if os.path.exists(profile_filename):
     apparmor.helpers[program] = apparmor.get_profile_flags(profile_filename, program)
 else:
