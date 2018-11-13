@@ -40,11 +40,6 @@ skip_startswith = (
 # testcases that should raise an exception, but don't
 exception_not_raised = [
     # most abi/bad_* aren't detected as bad by the basic implementation in the tools
-    'abi/bad_1.sd',
-    'abi/bad_2.sd',
-    'abi/bad_3.sd',
-    'abi/bad_4.sd',
-    'abi/bad_5.sd',
     'abi/bad_10.sd',
     'abi/bad_11.sd',
     'abi/bad_12.sd',
@@ -155,13 +150,9 @@ exception_not_raised = [
     'unix/bad_regex_04.sd',
     'unix/bad_shutdown_1.sd',
     'unix/bad_shutdown_2.sd',
-    'vars/boolean/boolean_bad_1.sd',
     'vars/boolean/boolean_bad_2.sd',
     'vars/boolean/boolean_bad_3.sd',
     'vars/boolean/boolean_bad_4.sd',
-    'vars/boolean/boolean_bad_6.sd',
-    'vars/boolean/boolean_bad_7.sd',
-    'vars/boolean/boolean_bad_8.sd',
     'vars/vars_bad_3.sd',
     'vars/vars_bad_4.sd',
     'vars/vars_bad_5.sd',
@@ -200,7 +191,6 @@ exception_not_raised = [
     'vars/vars_recursion_2.sd',
     'vars/vars_recursion_3.sd',
     'vars/vars_recursion_4.sd',
-    'vars/vars_simple_assignment_10.sd',
     'vars/vars_simple_assignment_3.sd',
     'vars/vars_simple_assignment_8.sd',
     'vars/vars_simple_assignment_9.sd',

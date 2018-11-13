@@ -2544,6 +2544,11 @@ def parse_profile_data(data, file, do_include):
         else:
             raise AppArmorException(_('Syntax Error: Unknown line found in file %(file)s line %(lineno)s:\n    %(line)s') % { 'file': file, 'lineno': lineno + 1, 'line': line })
 
+    if lastline:
+        # lastline gets merged into line (and reset to None) when reading the next line.
+        # If it isn't empty, this means there's something unparseable at the end of the profile
+        raise AppArmorException(_('Syntax Error: Unknown line found in file %(file)s line %(lineno)s:\n    %(line)s') % { 'file': file, 'lineno': lineno + 1, 'line': lastline })
+
     # Below is not required I'd say
     if not do_include:
         for hatglob in cfg['required_hats'].keys():
