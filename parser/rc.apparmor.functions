@@ -39,8 +39,6 @@ else
 	aa_log_warning_msg "Unable to find config file in ${CONFIG_DIR}, installation problem?"
 fi
 
-APPARMOR_ENABLE_AAEVENTD="no"
-
 if [ -f "${APPARMOR_CONF}" ] ; then
 	#parse the conf file to see what we should do
 	. "${APPARMOR_CONF}"
