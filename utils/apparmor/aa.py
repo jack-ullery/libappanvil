@@ -573,21 +573,6 @@ def get_profile(prof_name):
                 profile_data = parse_repo_profile(prof_name, repo_url, p)
     return profile_data
 
-def activate_repo_profiles(url, profiles, complain):
-    read_profiles()
-    try:
-        for p in profiles:
-            pname = p[0]
-            profile_data = parse_repo_profile(pname, url, p[1])
-            attach_profile_data(aa, profile_data)
-            write_profile(pname)
-            if complain:
-                fname = get_profile_filename_from_profile_name(pname, True)
-                change_profile_flags(profile_dir + fname, None, 'complain', True)
-                aaui.UI_Info(_('Setting %s to complain mode.') % pname)
-    except Exception as e:
-            sys.stderr.write(_("Error activating profiles: %s") % e)
-
 def autodep(bin_name, pname=''):
     bin_full = None
     global repo_cfg
