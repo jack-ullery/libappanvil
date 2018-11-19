@@ -6,6 +6,7 @@
   # lot of false positives when reading contents of directories)
   deny @{HOME}/.*history mrwkl,
   deny @{HOME}/.fetchmail* mrwkl,
+  deny @{HOME}/.mutt** mrwkl,
   deny @{HOME}/.viminfo* mrwkl,
   deny @{HOME}/.*~ mrwkl,
   deny @{HOME}/.*.swp mrwkl,
