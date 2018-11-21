@@ -519,6 +519,7 @@ def get_profile(prof_name):
     if inactive_profile:
         uname = 'Inactive local profile for %s' % prof_name
         inactive_profile[prof_name][prof_name]['flags'] = 'complain'
+        orig_filename = inactive_profile[prof_name][prof_name]['filename']  # needed for CMD_VIEW_PROFILE
         inactive_profile[prof_name][prof_name]['filename'] = ''
         profile_hash[uname]['username'] = uname
         profile_hash[uname]['profile_type'] = 'INACTIVE_LOCAL'
@@ -560,11 +561,7 @@ def get_profile(prof_name):
         q.selected = options.index(options[arg])
         if ans == 'CMD_VIEW_PROFILE':
             pager = get_pager()
-            proc = subprocess.Popen(pager, stdin=subprocess.PIPE)
-            #    proc.communicate('Profile submitted by %s:\n\n%s\n\n' %
-            #                     (options[arg], p['profile']))
-            proc.communicate(p['profile'].encode())
-            proc.kill()
+            subprocess.call([pager, orig_filename])
         elif ans == 'CMD_USE_PROFILE':
             if p['profile_type'] == 'INACTIVE_LOCAL':
                 profile_data = p['profile_data']
