@@ -30,5 +30,5 @@
   /var/spool/postfix/maildrop r,
   /var/spool/postfix/maildrop/* rwl,
   /var/spool/postfix/pid r,
-  /var/spool/postfix/public/pickup w,
+  /var/spool/postfix/public/pickup rw,
 }
