@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
+#    Copyright (C) 2018 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -10,16 +11,17 @@
 
 #include <tunables/global>
 
-/usr/lib/postfix/virtual {
+profile postfix-trivial-rewrite /usr/lib/postfix/{sbin/,}trivial-rewrite {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  capability setgid,
-  capability setuid,
+  /usr/lib/postfix/{sbin/,}trivial-rewrite    rmix,
 
-  /usr/lib/postfix/virtual rmix,
-  /var/spool/postfix/active/* rw,
-  /var/spool/postfix/pid/unix.virtual rw,
-  /var/spool/postfix/private/bounce w,
+  /etc/postfix/relocated.db                   r,
+  /etc/postfix/transport.db                   r,
+  /etc/postfix/virtual.db                     r,
+  /etc/{m,fs}tab                              r,
+  /var/spool/postfix/pid/unix.rewrite         rw,
+  /{var/spool/postfix/,}private/rewrite       rw,
 }
