@@ -23,4 +23,5 @@ profile postfix-trivial-rewrite /usr/lib/postfix/{sbin/,}trivial-rewrite {
   /etc/postfix/virtual.db                     r,
   /etc/{m,fs}tab                              r,
   /var/spool/postfix/pid/unix.rewrite         rw,
+  /{var/spool/postfix/,}private/rewrite       rw,
 }

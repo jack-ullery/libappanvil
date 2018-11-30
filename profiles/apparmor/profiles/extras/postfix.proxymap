@@ -16,5 +16,6 @@ profile postfix-proxymap /usr/lib/postfix/{sbin/,}proxymap {
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  /usr/lib/postfix/{sbin/,}proxymap     rmix,
+  /usr/lib/postfix/{sbin/,}proxymap          rmix,
+  /{var/spool/postfix/,}private/proxymap     rw,
 }

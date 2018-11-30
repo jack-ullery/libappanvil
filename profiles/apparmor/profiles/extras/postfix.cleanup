@@ -24,10 +24,12 @@ profile postfix-cleanup /usr/lib/postfix/{sbin/,}cleanup {
   /{var/spool/postfix/,}incoming/[0-9A-F]/[0-9A-F]/*      rwl,
   /{var/spool/postfix/,}incoming/[0-9A-F]/[0-9A-F]/       rwl,
   /{var/spool/postfix/,}incoming/[0-9A-F]/                rwl,
-  /{var/spool/postfix/,}private/{rewrite,bounce}          w,
-  /{var/spool/postfix/,}public/qmgr                       w,
+  /{var/spool/postfix/,}incoming/[0-9A-F]*                rw,
+  /{var/spool/postfix/,}private/bounce                    w,
+  /{var/spool/postfix/,}private/rewrite                   rw,
+  /{var/spool/postfix/,}public/qmgr                       rw,
   /{var/spool/postfix/,}hold/[0-9A-F]*                    w,
-
+  /{var/spool/postfix/,}public/cleanup          rw,
   /{var/spool/postfix/,}pid/unix.cleanup         rwk,
 
   /etc/{m,fs}tab                              r,

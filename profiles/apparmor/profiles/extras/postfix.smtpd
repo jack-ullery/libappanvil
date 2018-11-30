@@ -24,9 +24,9 @@ profile postfix-smtpd /usr/lib/postfix/{sbin/,}smtpd {
   /usr/sbin/postdrop                           rPx,
 
   /dev/urandom                                r,
-  /etc/aliases.db                             r,
+  /etc/aliases.db                             rk,
   # mailman on SuSE is configured to have its own alias db
-  /var/lib/mailman/data/aliases.db            r,
+  /var/lib/mailman/data/aliases.db             rk,
   /etc/mtab                                   r,
   /etc/fstab                                  r,
   /etc/postfix/*.db                           r,
@@ -38,12 +38,12 @@ profile postfix-smtpd /usr/lib/postfix/{sbin/,}smtpd {
 
   /usr/share/ssl/certs/ca-bundle.crt          r,
 
-  /{var/spool/postfix/,}pid/inet.*               rw,
-  /{var/spool/postfix/,}private/anvil            w,
-  /{var/spool/postfix/,}private/proxymap         w,
-  /{var/spool/postfix/,}private/rewrite          w,
-  /{var/spool/postfix/,}private/tlsmgr           w,
-  /{var/spool/postfix/,}public/cleanup           w,
+  /{var/spool/postfix/,}pid/inet.*               rwk,
+  /{var/spool/postfix/,}private/anvil            rw,
+  /{var/spool/postfix/,}private/proxymap         rw,
+  /{var/spool/postfix/,}private/rewrite          rw,
+  /{var/spool/postfix/,}private/tlsmgr           rw,
+  /{var/spool/postfix/,}public/cleanup           rw,
 
   /{,var/}run/sasl2/mux                             w,
 }
