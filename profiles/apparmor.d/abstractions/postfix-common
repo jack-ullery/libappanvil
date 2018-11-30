@@ -33,3 +33,5 @@
   /var/spool/postfix/etc/*        r,
   /var/spool/postfix/lib/lib*.so* mr,
   /var/spool/postfix/lib/@{multiarch}/lib*.so* mr,
+
+  /etc/postfix/dynamicmaps.cf.d/  r,
