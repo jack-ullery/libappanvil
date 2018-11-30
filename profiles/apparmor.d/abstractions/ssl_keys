@@ -23,3 +23,6 @@
 
   # dehydrated
   /etc/dehydrated/certs/*/privkey-*.pem r,
+
+  # certbot / letsencrypt
+  /etc/letsencrypt/archive/*/privkey*.pem r,
