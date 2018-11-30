@@ -32,3 +32,8 @@
   /etc/dehydrated/certs/*/cert-*.pem r,
   /etc/dehydrated/certs/*/chain-*.pem r,
   /etc/dehydrated/certs/*/fullchain-*.pem r,
+
+  # certbot
+  /etc/letsencrypt/archive/*/cert*.pem r,
+  /etc/letsencrypt/archive/*/chain*.pem r,
+  /etc/letsencrypt/archive/*/fullchain*.pem r,
