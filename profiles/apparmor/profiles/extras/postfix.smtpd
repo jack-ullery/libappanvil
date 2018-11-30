@@ -16,6 +16,8 @@ profile postfix-smtpd /usr/lib/postfix/{sbin/,}smtpd {
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
   #include <abstractions/openssl>
+  #include <abstractions/ssl_certs>
+  #include <abstractions/ssl_keys>
 
   capability dac_override,
   capability dac_read_search,
