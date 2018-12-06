@@ -139,7 +139,8 @@ SRC=access.c \
     unix_socket.c \
     unix_socket_client.c \
     unlink.c \
-    xattrs.c
+    xattrs.c \
+    xattrs_profile.c
 
 #only do the ioperm/iopl tests for x86 derived architectures
 ifneq (,$(findstring $(shell uname -i),i386 i486 i586 i686 x86 x86_64))
@@ -239,6 +240,7 @@ TESTS=aa_exec \
       unix_socket_unnamed \
       unlink\
       xattrs\
+      xattrs_profile\
       longpath
 
 #only do dbus if proper libs are installl
