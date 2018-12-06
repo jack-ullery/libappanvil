@@ -371,6 +371,28 @@ void sd_serialize_xtable(std::ostringstream &buf, char **table)
 	sd_write_structend(buf);
 }
 
+void sd_serialize_xattrs(std::ostringstream &buf, struct cond_entry_list xattrs)
+{
+	int count;
+	struct cond_entry *entry;
+
+	if (!(xattrs.list))
+		return;
+
+	count = 0;
+	for (entry = xattrs.list; entry; entry = entry->next) {
+		count++;
+	}
+
+	sd_write_struct(buf, "xattrs");
+	sd_write_array(buf, NULL, count);
+	for (entry = xattrs.list; entry; entry = entry->next) {
+		sd_write_string(buf, entry->name, NULL);
+	}
+	sd_write_arrayend(buf);
+	sd_write_structend(buf);
+}
+
 void sd_serialize_profile(std::ostringstream &buf, Profile *profile,
 			 int flattened)
 {
@@ -431,6 +453,8 @@ void sd_serialize_profile(std::ostringstream &buf, Profile *profile,
 	sd_write_uint32(buf, high_caps(profile->caps.deny & profile->caps.quiet));
 	sd_write_uint32(buf, 0);
 	sd_write_structend(buf);
+
+	sd_serialize_xattrs(buf, profile->xattrs);
 
 	sd_serialize_rlimits(buf, &profile->rlimits);
 

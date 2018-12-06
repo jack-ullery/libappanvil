@@ -534,6 +534,9 @@ static void count_tree_nodes(Node *t, struct node_counts *counts)
 	} else if (dynamic_cast<StarNode *>(t)) {
 		counts->star++;
 		count_tree_nodes(t->child[0], counts);
+	} else if (dynamic_cast<OptionalNode *>(t)) {
+		counts->optional++;
+		count_tree_nodes(t->child[0], counts);
 	} else if (dynamic_cast<CharNode *>(t)) {
 		counts->charnode++;
 	} else if (dynamic_cast<AnyCharNode *>(t)) {
@@ -559,7 +562,7 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
 	int i;
 
 	if (flags & DFA_DUMP_TREE_STATS) {
-		struct node_counts counts = { 0, 0, 0, 0, 0, 0, 0, 0 };
+		struct node_counts counts = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		count_tree_nodes(t, &counts);
 		fprintf(stderr,
 			"expr tree: c %d, [] %d, [^] %d, | %d, + %d, * %d, . %d, cat %d\n",
@@ -595,7 +598,7 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
 		}
 	}
 	if (flags & DFA_DUMP_TREE_STATS) {
-		struct node_counts counts = { 0, 0, 0, 0, 0, 0, 0, 0 };
+		struct node_counts counts = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		count_tree_nodes(t, &counts);
 		fprintf(stderr,
 			"simplified expr tree: c %d, [] %d, [^] %d, | %d, + %d, * %d, . %d, cat %d\n",
