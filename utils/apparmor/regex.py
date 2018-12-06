@@ -31,6 +31,7 @@ RE_PROFILE_PATH         = '(?P<%s>(' + RE_PATH + '))'  # quoted or unquoted file
 RE_PROFILE_PATH_OR_VAR  = '(?P<%s>(' + RE_PATH + '|@{\S+}\S*|"@{\S+}[^"]*"))'  # quoted or unquoted filename or variable. %s is the match group name
 RE_SAFE_OR_UNSAFE       = '(?P<execmode>(safe|unsafe))'
 RE_XATTRS               = '(\s+xattrs\s*=\s*\((?P<xattrs>([^)=]+=[^)=]+\s?)+)\)\s*)?'
+RE_FLAGS                = '(\s+(flags\s*=\s*)?\((?P<flags>[^)]+)\))?'
 
 RE_PROFILE_END          = re.compile('^\s*\}' + RE_EOL)
 RE_PROFILE_CAP          = re.compile(RE_AUDIT_DENY + 'capability(?P<capability>(\s+\S+)+)?' + RE_COMMA_EOL)
@@ -44,7 +45,7 @@ RE_PROFILE_CONDITIONAL_VARIABLE = re.compile('^\s*if\s+(not\s+)?defined\s+(@\{?\
 RE_PROFILE_CONDITIONAL_BOOLEAN = re.compile('^\s*if\s+(not\s+)?defined\s+(\$\{?\w+\}?)\s*\{\s*(#.*)?$')
 RE_PROFILE_NETWORK      = re.compile(RE_AUDIT_DENY + 'network(?P<details>\s+.*)?' + RE_COMMA_EOL)
 RE_PROFILE_CHANGE_HAT   = re.compile('^\s*\^(\"??.+?\"??)' + RE_COMMA_EOL)
-RE_PROFILE_HAT_DEF      = re.compile('^(?P<leadingspace>\s*)(?P<hat_keyword>\^|hat\s+)(?P<hat>\"??[^)]+?\"??)'+RE_XATTRS+'\s+((flags=)?\((?P<flags>[^)]+)\)\s+)*\{' + RE_EOL)
+RE_PROFILE_HAT_DEF      = re.compile('^(?P<leadingspace>\s*)(?P<hat_keyword>\^|hat\s+)(?P<hat>\"??[^)]+?\"??)' + RE_XATTRS + RE_FLAGS + '\s*\{' + RE_EOL)
 RE_PROFILE_DBUS         = re.compile(RE_AUDIT_DENY + '(dbus\s*,|dbus(?P<details>\s+[^#]*)\s*,)' + RE_EOL)
 RE_PROFILE_MOUNT        = re.compile(RE_AUDIT_DENY + '((mount|remount|umount|unmount)(\s+[^#]*)?\s*,)' + RE_EOL)
 RE_PROFILE_SIGNAL       = re.compile(RE_AUDIT_DENY + '(signal\s*,|signal(?P<details>\s+[^#]*)\s*,)' + RE_EOL)
@@ -70,7 +71,8 @@ RE_PROFILE_START          = re.compile(
         '(' + 'profile' + '\s+' + RE_PROFILE_NAME % 'namedprofile' + '(\s+' + RE_PROFILE_PATH_OR_VAR % 'attachment' + ')?' + ')' + # 'profile', profile name, optionally attachment
     ')' +
     RE_XATTRS +
-    '\s+((flags\s*=\s*)?\((?P<flags>[^)]+)\)\s*)?\{' +
+    RE_FLAGS +
+    '\s*\{' +
     RE_EOL)
 
 
