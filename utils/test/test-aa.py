@@ -511,32 +511,42 @@ class AaTest_parse_profile_start(AATest):
 
     def test_parse_profile_start_01(self):
         result = self._parse('/foo {', None, None)
-        expected = ('/foo', '/foo', None, None, False, False, False)
+        expected = ('/foo', '/foo', None, None, None, False, False, False)
         self.assertEqual(result, expected)
 
     def test_parse_profile_start_02(self):
         result = self._parse('/foo (complain) {', None, None)
-        expected = ('/foo', '/foo', None, 'complain', False, False, False)
+        expected = ('/foo', '/foo', None, None, 'complain', False, False, False)
         self.assertEqual(result, expected)
 
     def test_parse_profile_start_03(self):
         result = self._parse('profile foo /foo {', None, None) # named profile
-        expected = ('foo', 'foo', '/foo', None, False, False, False)
+        expected = ('foo', 'foo', '/foo', None, None, False, False, False)
         self.assertEqual(result, expected)
 
     def test_parse_profile_start_04(self):
         result = self._parse('profile /foo {', '/bar', '/bar') # child profile
-        expected = ('/bar', '/foo', None, None, True, True, False)
+        expected = ('/bar', '/foo', None, None, None, True, True, False)
         self.assertEqual(result, expected)
 
     def test_parse_profile_start_05(self):
         result = self._parse('/foo//bar {', None, None) # external hat
-        expected = ('/foo', 'bar', None, None, False, False, True)
+        expected = ('/foo', 'bar', None, None, None, False, False, True)
         self.assertEqual(result, expected)
 
     def test_parse_profile_start_06(self):
         result = self._parse('profile "/foo" (complain) {', None, None)
-        expected = ('/foo', '/foo', None, 'complain', False, False, False)
+        expected = ('/foo', '/foo', None, None, 'complain', False, False, False)
+        self.assertEqual(result, expected)
+
+    def test_parse_profile_start_07(self):
+        result = self._parse('profile "/foo" xattrs=(user.bar=bar) {', None, None)
+        expected = ('/foo', '/foo', None, 'user.bar=bar', None, False, False, False)
+        self.assertEqual(result, expected)
+
+    def test_parse_profile_start_08(self):
+        result = self._parse('profile "/foo" xattrs=(user.bar=bar user.foo=*) {', None, None)
+        expected = ('/foo', '/foo', None, 'user.bar=bar user.foo=*', None, False, False, False)
         self.assertEqual(result, expected)
 
     def test_parse_profile_start_unsupported_01(self):
@@ -565,6 +575,44 @@ class AaTest_parse_profile_data(AATest):
         with self.assertRaises(AppArmorException):
             # file contains two profiles with the same name
             parse_profile_data('profile /foo {\n}\nprofile /foo {\n}\n'.split(), 'somefile', False)
+
+    def test_parse_xattrs_01(self):
+        prof = parse_profile_data('/foo xattrs=(user.bar=bar) {\n}\n'.split(), 'somefile', False)
+
+        self.assertEqual(list(prof.keys()), ['/foo'])
+        self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
+        self.assertEqual(prof['/foo']['/foo']['name'], '/foo')
+        self.assertEqual(prof['/foo']['/foo']['filename'], 'somefile')
+        self.assertEqual(prof['/foo']['/foo']['flags'], None)
+        self.assertEqual(prof['/foo']['/foo']['xattrs'], 'user.bar=bar')
+
+    def test_parse_xattrs_02(self):
+        prof = parse_profile_data('/foo xattrs=(user.bar=bar user.foo=*) {\n}\n'.split(), 'somefile', False)
+
+        self.assertEqual(list(prof.keys()), ['/foo'])
+        self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
+        self.assertEqual(prof['/foo']['/foo']['name'], '/foo')
+        self.assertEqual(prof['/foo']['/foo']['filename'], 'somefile')
+        self.assertEqual(prof['/foo']['/foo']['flags'], None)
+        self.assertEqual(prof['/foo']['/foo']['xattrs'], 'user.bar=bar user.foo=*')
+
+    def test_parse_xattrs_03(self):
+        d = '/foo xattrs=(user.bar=bar) flags=(complain) {\n}\n'
+        prof = parse_profile_data(d.split(), 'somefile', False)
+
+        self.assertEqual(list(prof.keys()), ['/foo'])
+        self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
+        self.assertEqual(prof['/foo']['/foo']['name'], '/foo')
+        self.assertEqual(prof['/foo']['/foo']['filename'], 'somefile')
+        self.assertEqual(prof['/foo']['/foo']['flags'], 'complain')
+        self.assertEqual(prof['/foo']['/foo']['xattrs'], 'user.bar=bar')
+
+    def test_parse_xattrs_04(self):
+        with self.assertRaises(AppArmorException):
+            # flags before xattrs
+            d = '/foo flags=(complain) xattrs=(user.bar=bar) {\n}\n'
+            parse_profile_data(d.split(), 'somefile', False)
+
 
 class AaTest_separate_vars(AATest):
     tests = [
@@ -669,8 +717,47 @@ class AaTest_write_header(AATest):
         embedded_hat = params[1]
         write_flags = params[2]
         depth = params[3]
-        prof_data = { 'flags': params[4], 'attachment': params[5], 'profile_keyword': params[6], 'header_comment': params[7] }
+        prof_data = { 'flags': params[4], 'attachment': params[5], 'profile_keyword': params[6], 'header_comment': params[7], 'xattrs': '' }
 
+        result = write_header(prof_data, depth, name, embedded_hat, write_flags)
+        self.assertEqual(result, [expected])
+
+class AaTest_write_header_01(AATest):
+    tests = [
+        (
+            {'name': '/foo', 'write_flags': True, 'depth': 1, 'flags': 'complain'},
+            '  /foo flags=(complain) {',
+        ),
+        (
+            {'name': '/foo', 'write_flags': True, 'depth': 1, 'flags': 'complain', 'profile_keyword': 'profile'},
+            '  profile /foo flags=(complain) {',
+        ),
+        (
+            {'name': '/foo', 'write_flags': True, 'flags': 'complain'},
+            '/foo flags=(complain) {',
+        ),
+        (
+            {'name': '/foo', 'xattrs': 'user.foo=bar', 'write_flags': True, 'flags': 'complain'},
+            '/foo xattrs=(user.foo=bar) flags=(complain) {',
+        ),
+        (
+            {'name': '/foo', 'xattrs': 'user.foo=bar', 'embedded_hat': True},
+            'profile /foo xattrs=(user.foo=bar) {',
+        ),
+     ]
+
+    def _run_test(self, params, expected):
+        name = params['name']
+        embedded_hat = params.get('embedded_hat', False)
+        write_flags = params.get('write_flags', False)
+        depth = params.get('depth', 0)
+        prof_data = {
+            'xattrs': params.get('xattrs', None),
+            'flags': params.get('flags', None),
+            'attachment': params.get('attachment', None),
+            'profile_keyword': params.get('profile_keyword', None),
+            'header_comment': params.get('header_comment', None),
+        }
         result = write_header(prof_data, depth, name, embedded_hat, write_flags)
         self.assertEqual(result, [expected])
 

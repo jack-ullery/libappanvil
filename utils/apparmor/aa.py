@@ -680,6 +680,7 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
                             'flags': newflags,
                             'profile_keyword': matches['profile_keyword'],
                             'header_comment': matches['comment'] or '',
+                            'xattrs': matches['xattrs'],
                         }
                         line = write_header(header_data, len(space)/2, profile, False, True)
                         line = '%s\n' % line[0]
@@ -2172,8 +2173,9 @@ def parse_profile_start(line, file, lineno, profile, hat):
 
     attachment = matches['attachment']
     flags = matches['flags']
+    xattrs = matches['xattrs']
 
-    return (profile, hat, attachment, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
+    return (profile, hat, attachment, xattrs, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
 
 def parse_profile_data(data, file, do_include):
     profile_data = hasher()
@@ -2201,7 +2203,7 @@ def parse_profile_data(data, file, do_include):
             lastline = None
         # Starting line of a profile
         if RE_PROFILE_START.search(line):
-            (profile, hat, attachment, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
+            (profile, hat, attachment, xattrs, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
 
             if profile_data[profile].get(hat, False):
                 raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
@@ -2221,6 +2223,7 @@ def parse_profile_data(data, file, do_include):
             profile_data[profile][hat]['filename'] = file
             filelist[file]['profiles'][profile][hat] = True
 
+            profile_data[profile][hat]['xattrs'] = xattrs
             profile_data[profile][hat]['flags'] = flags
 
             # Save the initial comment
@@ -2631,11 +2634,15 @@ def write_header(prof_data, depth, name, embedded_hat, write_flags):
     if (not embedded_hat and re.search('^[^/]', unquoted_name)) or (embedded_hat and re.search('^[^^]', unquoted_name)) or prof_data['attachment'] or prof_data['profile_keyword']:
         name = 'profile %s%s' % (name, attachment)
 
+    xattrs = ''
+    if prof_data['xattrs']:
+        xattrs = ' xattrs=(%s)' % prof_data['xattrs']
+
     flags = ''
     if write_flags and prof_data['flags']:
         flags = ' flags=(%s)' % prof_data['flags']
 
-    data.append('%s%s%s {%s' % (pre, name, flags, comment))
+    data.append('%s%s%s%s {%s' % (pre, name, xattrs, flags, comment))
 
     return data
 
