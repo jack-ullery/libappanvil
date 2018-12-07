@@ -96,6 +96,7 @@ profile dnsmasq /usr/{bin,sbin}/dnsmasq flags=(attach_disconnected) {
   /{,var/}run/sendsigs.omit.d/*dnsmasq.pid w,
   /{,var/}run/NetworkManager/dnsmasq.conf r,
   /{,var/}run/NetworkManager/dnsmasq.pid w,
+  /{,var/}run/NetworkManager/NetworkManager.pid w,
 
   profile libvirt_leaseshelper {
     #include <abstractions/base>
