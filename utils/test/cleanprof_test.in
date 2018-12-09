@@ -67,3 +67,9 @@
 	allow /home/*/** rw,
 	allow /home/foo/bar r,
 }
+
+/what/ever/xattr   xattrs=(   foo=bar      )
+       flags=(  complain
+	   ) {
+ /what/ever r,
+ }
