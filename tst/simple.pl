@@ -131,9 +131,13 @@ sub test_profile {
   } elsif ($coredump) {
     ok(0, "$profile: Produced core dump (signal $signal): $description");
   } elsif ($istodo) {
-    TODO: {
-      local $TODO = "Unfixed testcase.";
-      ok($expass ? !$result : $result, "TODO: $profile: $description");
+    if ($expass != $result) {
+        fail("TODO passed unexpectedly: $profile: $description");
+    } else {
+      TODO: {
+        local $TODO = "Unfixed testcase.";
+        ok($expass ? !$result : $result, "TODO: $profile: $description");
+      }
     }
   } else {
     ok($expass ? !$result : $result, "$profile: $description");
