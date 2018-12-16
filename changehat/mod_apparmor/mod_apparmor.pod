@@ -139,7 +139,7 @@ them at L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 
-apparmor(7), subdomain.conf(5), apparmor_parser(8), aa_change_hat(2) and
+apparmor(7), apparmor_parser(8), aa_change_hat(2) and
 L<https://wiki.apparmor.net>.
 
 =cut

@@ -30,7 +30,7 @@ SYSTEMD_UNIT_DIR=${DESTDIR}/usr/lib/systemd/system
 CONFDIR=/etc/apparmor
 INSTALL_CONFDIR=${DESTDIR}${CONFDIR}
 LOCALEDIR=/usr/share/locale
-MANPAGES=apparmor.d.5 apparmor.7 apparmor_parser.8 subdomain.conf.5 aa-teardown.8
+MANPAGES=apparmor.d.5 apparmor.7 apparmor_parser.8 aa-teardown.8
 
 YACC	:= bison
 YFLAGS	:= -d
@@ -71,9 +71,6 @@ endif
 
 # Internationalization support. Define a package and a LOCALEDIR
 EXTRA_CFLAGS+=-DPACKAGE=\"${NAME}\" -DLOCALEDIR=\"${LOCALEDIR}\"
-
-# Compile-time configuration of the location of the config file
-EXTRA_CFLAGS+=-DSUBDOMAIN_CONFDIR=\"${CONFDIR}\"
 
 SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
        parser_main.c parser_misc.c parser_merge.c parser_symtab.c \
@@ -373,7 +370,6 @@ install-arch: $(INSTALLDEPS)
 .PHONY: install-indep
 install-indep: indep
 	install -m 755 -d $(INSTALL_CONFDIR)
-	install -m 644 subdomain.conf $(INSTALL_CONFDIR)
 	install -m 644 parser.conf $(INSTALL_CONFDIR)
 	install -m 755 -d ${DESTDIR}/var/lib/apparmor
 	install -m 755 -d $(APPARMOR_BIN_PREFIX)

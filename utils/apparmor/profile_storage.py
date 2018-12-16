@@ -69,6 +69,7 @@ class ProfileStorage:
         data['filename']         = ''
         data['name']             = ''
         data['attachment']       = ''
+        data['xattrs']           = ''
         data['flags']            = ''
         data['external']         = False
         data['header_comment']   = ''  # currently only set by change_profile_flags()

@@ -1,4 +1,4 @@
-SUBDIRS=subdomain
+SUBDIRS=apparmor
 
 .PHONY: clean
 clean:

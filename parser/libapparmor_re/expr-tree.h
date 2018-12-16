@@ -116,13 +116,34 @@ public:
 	}
 
 	/**
-	 * See the "Dragon Book" for an explanation of nullable, firstpos,
-	 * lastpos, and followpos.
+	 * firstpos, lastpos, and followpos are used to convert the syntax tree
+	 * to a DFA.
+	 *
+	 * firstpos holds nodes that can match the first character of a string
+	 * that matches the syntax tree. For the regex 'a*bcd', firstpos holds
+	 * the 'a' and 'b' nodes. firstpos is used to determine the start state
+	 * of the DFA.
+	 *
+	 * lastpos is the same as firstpos for the last character. For the regex
+	 * 'a*bcd', lastpos holds the 'd' node. lastpos is used to determine the
+	 * accepting states of the DFA.
+	 *
+	 * followpos holds the set of nodes that can match a character directly
+	 * after the current node. For the regexp 'a*bcd', the followpos of the
+	 * 'a' node are the 'b' node and the 'a' node itself. followpos is used
+	 * to determine the transitions of the DFA.
+	 *
+	 * nullable indicates that a node can match the empty string. It is used
+	 * to compute firstpos and lastpos.
+	 *
+	 * See the "Dragon Book" 2nd Edition section 3.9.2 for an in-depth
+	 * explanation.
 	 */
 	virtual void compute_nullable() { }
 	virtual void compute_firstpos() = 0;
 	virtual void compute_lastpos() = 0;
 	virtual void compute_followpos() { }
+
 	virtual int eq(Node *other) = 0;
 	virtual ostream &dump(ostream &os) = 0;
 	void dump_syntax_tree(ostream &os);

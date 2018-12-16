@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
+#    Copyright (C) 2018 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -10,24 +11,24 @@
 
 #include <tunables/global>
 
-/usr/lib/postfix/smtpd {
+profile postfix-smtpd /usr/lib/postfix/{sbin/,}smtpd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
   #include <abstractions/openssl>
+  #include <abstractions/ssl_certs>
+  #include <abstractions/ssl_keys>
 
   capability dac_override,
   capability dac_read_search,
-  capability setgid,
-  capability setuid,
 
-  /usr/lib/postfix/smtpd                       rmix,
+  /usr/lib/postfix/{sbin/,}smtpd               rmix,
   /usr/sbin/postdrop                           rPx,
 
   /dev/urandom                                r,
-  /etc/aliases.db                             r,
+  /etc/aliases.db                             rk,
   # mailman on SuSE is configured to have its own alias db
-  /var/lib/mailman/data/aliases.db            r,
+  /var/lib/mailman/data/aliases.db             rk,
   /etc/mtab                                   r,
   /etc/fstab                                  r,
   /etc/postfix/*.db                           r,
@@ -37,21 +38,14 @@
   /etc/postfix/main.cf                        r,
   /etc/postfix/prng_exch                      rw,
 
-  /usr/lib64/sasl2/                           mr,
-  /usr/lib64/sasl2/*                          mr,
-  /usr/lib/sasl2/                             mr,
-  /usr/lib/sasl2/*                            mr,
-
   /usr/share/ssl/certs/ca-bundle.crt          r,
 
-  /{var/spool/postfix/,}pid/inet.*               rw,
-  /{var/spool/postfix/,}private/anvil            w,
-  /{var/spool/postfix/,}private/proxymap         w,
-  /{var/spool/postfix/,}private/rewrite          w,
-  /{var/spool/postfix/,}private/tlsmgr           w,
-  /{var/spool/postfix/,}public/cleanup           w,
+  /{var/spool/postfix/,}pid/inet.*               rwk,
+  /{var/spool/postfix/,}private/anvil            rw,
+  /{var/spool/postfix/,}private/proxymap         rw,
+  /{var/spool/postfix/,}private/rewrite          rw,
+  /{var/spool/postfix/,}private/tlsmgr           rw,
+  /{var/spool/postfix/,}public/cleanup           rw,
 
   /{,var/}run/sasl2/mux                             w,
-
-  @{PROC}/net/if_inet6                          r,
 }

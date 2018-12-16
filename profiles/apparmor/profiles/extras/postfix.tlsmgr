@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
+#    Copyright (C) 2018 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -11,24 +12,18 @@
 
 #include <tunables/global>
 
-/usr/sbin/postdrop {
+profile postfix-tlsmgr /usr/lib/postfix/{sbin/,}tlsmgr {
   #include <abstractions/base>
-  #include <abstractions/kerberosclient>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  # This is needed at least for permissions=paranoid
-  capability dac_override,
-  capability dac_read_search,
+  /usr/lib/postfix/{sbin/,}tlsmgr          rmix,
 
-  /etc/postfix r,
-  /etc/postfix/main.cf r,
-  /etc/postfix/postfix-script mixr,
-  @{PROC}/net/if_inet6 r,
-  /usr/sbin/postdrop rmix,
-  /var/spool/postfix r,
-  /var/spool/postfix/maildrop r,
-  /var/spool/postfix/maildrop/* rwl,
-  /var/spool/postfix/pid r,
-  /var/spool/postfix/public/pickup rw,
+  /var/spool/postfix/dev/urandom r,
+  /{etc,var/lib}/postfix/prng_exch            rwk,
+  /{var/spool/postfix/,}private/tlsmgr rw,
+  /{,var/}run/__db.smtpd_tls_session_cache.db rw,
+  /{,var/}run/smtpd_tls_session_cache.db rw,
+  /var/lib/postfix/smtpd_scache.db rwk,
+  /var/lib/postfix/smtp_scache.db rwk,
 }

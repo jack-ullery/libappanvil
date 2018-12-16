@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014-2017 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2018 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -49,6 +49,8 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
                             strip_quotes, parse_profile_start_line, re_match_include )
 
+from apparmor.profile_list import ProfileList
+
 from apparmor.profile_storage import (ProfileStorage, add_or_remove_flag, ruletypes, write_alias,
                             write_abi, write_includes, write_list_vars )
 
@@ -89,7 +91,8 @@ extra_profile_dir = None
 # To keep track of previously included profile fragments
 include = dict()
 
-existing_profiles = dict()
+active_profiles = ProfileList()
+extra_profiles = ProfileList()
 
 # To store the globs entered by users so they can be provided again
 # format: user_globs['/foo*'] = AARE('/foo*')
@@ -217,11 +220,29 @@ def find_executable(bin_path):
         return full_bin
     return None
 
-def get_profile_filename(profile):
-    """Returns the full profile name"""
-    if existing_profiles.get(profile, False):
-        return existing_profiles[profile]
-    elif profile.startswith('/'):
+def get_profile_filename_from_profile_name(profile, get_new=False):
+    """Returns the full profile name for the given profile name"""
+
+    filename = active_profiles.filename_from_profile_name(profile)
+    if filename:
+        return filename
+
+    if get_new:
+        return get_new_profile_filename(profile)
+
+def get_profile_filename_from_attachment(profile, get_new=False):
+    """Returns the full profile name for the given attachment"""
+
+    filename = active_profiles.filename_from_attachment(profile)
+    if filename:
+        return filename
+
+    if get_new:
+        return get_new_profile_filename(profile)
+
+def get_new_profile_filename(profile):
+    '''Compose filename for a new profile'''
+    if profile.startswith('/'):
         # Remove leading /
         profile = profile[1:]
     else:
@@ -238,7 +259,7 @@ def name_to_prof_filename(prof_filename):
     else:
         bin_path = find_executable(prof_filename)
         if bin_path:
-            prof_filename = get_profile_filename(bin_path)
+            prof_filename = get_profile_filename_from_attachment(bin_path, True)
             if os.path.isfile(prof_filename):
                 return (prof_filename, bin_path)
 
@@ -464,7 +485,7 @@ def create_new_profile(localfile, is_stub=False):
 
 def delete_profile(local_prof):
     """Deletes the specified file from the disk and remove it from our list"""
-    profile_file = get_profile_filename(local_prof)
+    profile_file = get_profile_filename_from_profile_name(local_prof, True)
     if os.path.isfile(profile_file):
         os.remove(profile_file)
     if aa.get(local_prof, False):
@@ -498,13 +519,15 @@ def get_profile(prof_name):
     if inactive_profile:
         uname = 'Inactive local profile for %s' % prof_name
         inactive_profile[prof_name][prof_name]['flags'] = 'complain'
+        orig_filename = inactive_profile[prof_name][prof_name]['filename']  # needed for CMD_VIEW_PROFILE
         inactive_profile[prof_name][prof_name]['filename'] = ''
         profile_hash[uname]['username'] = uname
         profile_hash[uname]['profile_type'] = 'INACTIVE_LOCAL'
         profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name, {})
         profile_hash[uname]['profile_data'] = inactive_profile
 
-        existing_profiles.pop(prof_name)  # remove profile filename from list to force storing in /etc/apparmor.d/ instead of extra_profile_dir
+        # no longer necessary after splitting active and extra profiles
+        # existing_profiles.pop(prof_name)  # remove profile filename from list to force storing in /etc/apparmor.d/ instead of extra_profile_dir
 
     # If no profiles in repo and no inactive profiles
     if not profile_hash.keys():
@@ -538,11 +561,7 @@ def get_profile(prof_name):
         q.selected = options.index(options[arg])
         if ans == 'CMD_VIEW_PROFILE':
             pager = get_pager()
-            proc = subprocess.Popen(pager, stdin=subprocess.PIPE)
-            #    proc.communicate('Profile submitted by %s:\n\n%s\n\n' %
-            #                     (options[arg], p['profile']))
-            proc.communicate(p['profile'].encode())
-            proc.kill()
+            subprocess.call([pager, orig_filename])
         elif ans == 'CMD_USE_PROFILE':
             if p['profile_type'] == 'INACTIVE_LOCAL':
                 profile_data = p['profile_data']
@@ -550,21 +569,6 @@ def get_profile(prof_name):
             else:
                 profile_data = parse_repo_profile(prof_name, repo_url, p)
     return profile_data
-
-def activate_repo_profiles(url, profiles, complain):
-    read_profiles()
-    try:
-        for p in profiles:
-            pname = p[0]
-            profile_data = parse_repo_profile(pname, url, p[1])
-            attach_profile_data(aa, profile_data)
-            write_profile(pname)
-            if complain:
-                fname = get_profile_filename(pname)
-                change_profile_flags(profile_dir + fname, None, 'complain', True)
-                aaui.UI_Info(_('Setting %s to complain mode.') % pname)
-    except Exception as e:
-            sys.stderr.write(_("Error activating profiles: %s") % e)
 
 def autodep(bin_name, pname=''):
     bin_full = None
@@ -592,7 +596,7 @@ def autodep(bin_name, pname=''):
     # Create a new profile if no existing profile
     if not profile_data:
         profile_data = create_new_profile(pname)
-    file = get_profile_filename(pname)
+    file = get_profile_filename_from_profile_name(pname, True)
     profile_data[pname][pname]['filename'] = None  # will be stored in /etc/apparmor.d when saving, so it shouldn't carry the extra_profile_dir filename
     attach_profile_data(aa, profile_data)
     attach_profile_data(original_aa, profile_data)
@@ -661,6 +665,7 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
                             'flags': newflags,
                             'profile_keyword': matches['profile_keyword'],
                             'header_comment': matches['comment'] or '',
+                            'xattrs': matches['xattrs'],
                         }
                         line = write_header(header_data, len(space)/2, profile, False, True)
                         line = '%s\n' % line[0]
@@ -692,15 +697,16 @@ def profile_exists(program):
     """Returns True if profile exists, False otherwise"""
     # Check cache of profiles
 
-    if existing_profiles.get(program, False):
+    if active_profiles.filename_from_attachment(program):
         return True
     # Check the disk for profile
-    prof_path = get_profile_filename(program)
+    prof_path = get_profile_filename_from_attachment(program, True)
     #print(prof_path)
     if os.path.isfile(prof_path):
         # Add to cache of profile
-        existing_profiles[program] = prof_path
-        return True
+        raise AppArmorBug('Reached strange condition in profile_exists(), please open a bugreport!')
+        # active_profiles[program] = prof_path
+        # return True
     return False
 
 def sync_profile():
@@ -1088,9 +1094,9 @@ def handle_children(profile, hat, root):
                         options += 'd'
                         # Define the default option
                         default = None
-                        if 'p' in options and os.path.exists(get_profile_filename(exec_target)):
+                        if 'p' in options and os.path.exists(get_profile_filename_from_attachment(exec_target, True)):
                             default = 'CMD_px'
-                            sys.stdout.write(_('Target profile exists: %s\n') % get_profile_filename(exec_target))
+                            sys.stdout.write(_('Target profile exists: %s\n') % get_profile_filename_from_attachment(exec_target, True))
                         elif 'i' in options:
                             default = 'CMD_ix'
                         elif 'c' in options:
@@ -1104,7 +1110,7 @@ def handle_children(profile, hat, root):
                         parent_uses_ld_xxx = check_for_LD_XXX(profile)
 
                         sev_db.unload_variables()
-                        sev_db.load_variables(get_profile_filename(profile))
+                        sev_db.load_variables(get_profile_filename_from_profile_name(profile, True))
                         severity = sev_db.rank_path(exec_target, 'x')
 
                         # Prompt portion starts
@@ -1228,7 +1234,7 @@ def handle_children(profile, hat, root):
                                 profile_changes[pid] = '%s' % profile
 
                         # Check profile exists for px
-                        if not os.path.exists(get_profile_filename(exec_target)):
+                        if not os.path.exists(get_profile_filename_from_attachment(exec_target, True)):
                             ynans = 'y'
                             if 'i' in exec_mode:
                                 ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
@@ -1362,7 +1368,7 @@ def ask_the_questions(log_dict):
                 UI_SelectUpdatedRepoProfile(profile, p)
 
             sev_db.unload_variables()
-            sev_db.load_variables(get_profile_filename(profile))
+            sev_db.load_variables(get_profile_filename_from_profile_name(profile, True))
 
             # Sorted list of hats with the profile name coming first
             hats = list(filter(lambda key: key != profile, sorted(log_dict[aamode][profile].keys())))
@@ -1769,7 +1775,7 @@ def set_logfile(filename):
 def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
     # set up variables for this pass
 #    transitions = hasher()
-    global existing_profiles
+    global active_profiles
     global sev_db
 #    aa = hasher()
 #    profile_changes = hasher()
@@ -1786,13 +1792,13 @@ def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
     if not sev_db:
         sev_db = apparmor.severity.Severity(CONFDIR + '/severity.db', _('unknown'))
     #print(pid)
-    #print(existing_profiles)
+    #print(active_profiles)
     ##if not repo_cf and cfg['repostory']['url']:
     ##    repo_cfg = read_config('repository.conf')
     ##    if not repo_cfg['repository'].get('enabled', False) or repo_cfg['repository]['enabled'] not in ['yes', 'no']:
     ##    UI_ask_to_enable_repo()
 
-    log_reader = apparmor.logparser.ReadLog(log_pid, logfile, existing_profiles, profile_dir)
+    log_reader = apparmor.logparser.ReadLog(log_pid, logfile, active_profiles, profile_dir)
     log = log_reader.read_log(logmark)
     #read_log(logmark)
 
@@ -1867,7 +1873,7 @@ def save_profiles():
                 if aa[which][which].get('filename', False):
                     oldprofile = aa[which][which]['filename']
                 else:
-                    oldprofile = get_profile_filename(which)
+                    oldprofile = get_profile_filename_from_attachment(which, True)
 
                 serialize_options = {'METADATA': True}
                 newprofile = serialize_profile(aa[which], which, serialize_options)
@@ -2082,9 +2088,29 @@ def read_profile(file, active_profile):
     if profile_data and active_profile:
         attach_profile_data(aa, profile_data)
         attach_profile_data(original_aa, profile_data)
+
+        for profile in profile_data:  # TODO: also honor hats
+            name = profile_data[profile][profile]['name']
+            attachment = profile_data[profile][profile]['attachment']
+            filename = profile_data[profile][profile]['filename']
+
+            if not attachment and name.startswith('/'):
+                active_profiles.add(filename, name, name)  # use name as name and attachment
+            else:
+                active_profiles.add(filename, name, attachment)
+
     elif profile_data:
         attach_profile_data(extras, profile_data)
 
+        for profile in profile_data:  # TODO: also honor hats
+            name = profile_data[profile][profile]['name']
+            attachment = profile_data[profile][profile]['attachment']
+            filename = profile_data[profile][profile]['filename']
+
+            if not attachment and name.startswith('/'):
+                extra_profiles.add(filename, name, name)  # use name as name and attachment
+            else:
+                extra_profiles.add(filename, name, attachment)
 
 def attach_profile_data(profiles, profile_data):
     # Make deep copy of data to avoid changes to
@@ -2132,8 +2158,9 @@ def parse_profile_start(line, file, lineno, profile, hat):
 
     attachment = matches['attachment']
     flags = matches['flags']
+    xattrs = matches['xattrs']
 
-    return (profile, hat, attachment, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
+    return (profile, hat, attachment, xattrs, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
 
 def parse_profile_data(data, file, do_include):
     profile_data = hasher()
@@ -2161,7 +2188,7 @@ def parse_profile_data(data, file, do_include):
             lastline = None
         # Starting line of a profile
         if RE_PROFILE_START.search(line):
-            (profile, hat, attachment, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
+            (profile, hat, attachment, xattrs, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
 
             if profile_data[profile].get(hat, False):
                 raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
@@ -2176,14 +2203,12 @@ def parse_profile_data(data, file, do_include):
             if pps_set_hat_external:
                 profile_data[profile][hat]['external'] = True
 
-            # Profile stored
-            existing_profiles[profile] = file
-
             # save profile name and filename
             profile_data[profile][hat]['name'] = profile
             profile_data[profile][hat]['filename'] = file
             filelist[file]['profiles'][profile][hat] = True
 
+            profile_data[profile][hat]['xattrs'] = xattrs
             profile_data[profile][hat]['flags'] = flags
 
             # Save the initial comment
@@ -2504,6 +2529,11 @@ def parse_profile_data(data, file, do_include):
         else:
             raise AppArmorException(_('Syntax Error: Unknown line found in file %(file)s line %(lineno)s:\n    %(line)s') % { 'file': file, 'lineno': lineno + 1, 'line': line })
 
+    if lastline:
+        # lastline gets merged into line (and reset to None) when reading the next line.
+        # If it isn't empty, this means there's something unparseable at the end of the profile
+        raise AppArmorException(_('Syntax Error: Unknown line found in file %(file)s line %(lineno)s:\n    %(line)s') % { 'file': file, 'lineno': lineno + 1, 'line': lastline })
+
     # Below is not required I'd say
     if not do_include:
         for hatglob in cfg['required_hats'].keys():
@@ -2589,11 +2619,15 @@ def write_header(prof_data, depth, name, embedded_hat, write_flags):
     if (not embedded_hat and re.search('^[^/]', unquoted_name)) or (embedded_hat and re.search('^[^^]', unquoted_name)) or prof_data['attachment'] or prof_data['profile_keyword']:
         name = 'profile %s%s' % (name, attachment)
 
+    xattrs = ''
+    if prof_data['xattrs']:
+        xattrs = ' xattrs=(%s)' % prof_data['xattrs']
+
     flags = ''
     if write_flags and prof_data['flags']:
         flags = ' flags=(%s)' % prof_data['flags']
 
-    data.append('%s%s%s {%s' % (pre, name, flags, comment))
+    data.append('%s%s%s%s {%s' % (pre, name, xattrs, flags, comment))
 
     return data
 
@@ -2677,7 +2711,11 @@ def serialize_profile(profile_data, name, options):
 #         comment.replace('\\n', '\n')
 #         string += comment + '\n'
 
-    prof_filename = get_profile_filename(name)
+    if options.get('is_attachment'):
+        prof_filename = get_profile_filename_from_attachment(name, True)
+    else:
+        prof_filename = get_profile_filename_from_profile_name(name, True)
+
     if filelist.get(prof_filename, False):
         data += write_abi(filelist[prof_filename], 0)
         data += write_alias(filelist[prof_filename], 0)
@@ -2703,16 +2741,18 @@ def serialize_profile(profile_data, name, options):
 
     return string + '\n'
 
-def write_profile_ui_feedback(profile):
+def write_profile_ui_feedback(profile, is_attachment=False):
     aaui.UI_Info(_('Writing updated profile for %s.') % profile)
-    write_profile(profile)
+    write_profile(profile, is_attachment)
 
-def write_profile(profile):
+def write_profile(profile, is_attachment=False):
     prof_filename = None
     if aa[profile][profile].get('filename', False):
         prof_filename = aa[profile][profile]['filename']
+    elif is_attachment:
+        prof_filename = get_profile_filename_from_attachment(profile, True)
     else:
-        prof_filename = get_profile_filename(profile)
+        prof_filename = get_profile_filename_from_profile_name(profile, True)
 
     newprof = tempfile.NamedTemporaryFile('w', suffix='~', delete=False, dir=profile_dir)
     if os.path.exists(prof_filename):
@@ -2722,7 +2762,7 @@ def write_profile(profile):
         #os.chmod(newprof.name, permission_600)
         pass
 
-    serialize_options = {'METADATA': True}
+    serialize_options = {'METADATA': True, 'is_attachment': is_attachment}
 
     profile_string = serialize_profile(aa[profile], profile, serialize_options)
     newprof.write(profile_string)
@@ -2844,7 +2884,7 @@ def reload_base(bin_path):
     if not check_for_apparmor():
         return None
 
-    prof_filename = get_profile_filename(bin_path)
+    prof_filename = get_profile_filename_from_profile_name(bin_path, True)
 
     # XXX use reload_profile() from tools.py instead (and don't hide output in /dev/null)
     subprocess.call("cat '%s' | %s -I%s -r >/dev/null 2>&1" % (prof_filename, parser, profile_dir), shell=True)

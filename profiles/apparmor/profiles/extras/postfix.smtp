@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
+#    Copyright (C) 2018 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -10,7 +11,7 @@
 
 #include <tunables/global>
 
-/usr/lib/postfix/smtp {
+profile postfix-smtp /usr/lib/postfix/{sbin/,}smtp {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
@@ -20,7 +21,7 @@
   capability dac_read_search,
   capability net_bind_service,
 
-  /usr/lib/postfix/smtp                        rmix,
+  /usr/lib/postfix/{sbin/,}smtp                rmix,
 
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/*      rwl,
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/       rwl,

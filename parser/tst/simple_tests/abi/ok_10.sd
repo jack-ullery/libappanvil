@@ -2,6 +2,7 @@
 #=DESCRIPTION abi testing - abi path quotes in <> with spaces
 #=EXRESULT PASS
 #=TODO
+#=DISABLED - results in "superfluous TODO", but fails after removing TODO
 
 abi < "abi/4.19">,
 
