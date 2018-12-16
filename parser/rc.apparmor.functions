@@ -243,9 +243,6 @@ parse_profiles() {
 		__parse_profiles_dir "$PARSER_CMD" "$profile_dir" || STATUS=$?
 	done
 
-	if [ $STATUS -eq 2 ]; then
-		STATUS=0
-	fi
 	aa_log_action_end "$STATUS"
 	return $STATUS
 }
