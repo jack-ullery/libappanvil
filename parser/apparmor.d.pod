@@ -66,7 +66,7 @@ B<COMMENT> = '#' I<TEXT> [ '\r' ] '\n'
 
 B<TEXT> = any characters
 
-B<PROFILE> = ( I<PROFILE HEAD> ) [ I<ATTACHMENT SPECIFICATION> ] [ I<PROFILE FLAG CONDS> ] '{' ( I<RULES> )* '}'
+B<PROFILE> = ( I<PROFILE HEAD> ) [ I<ATTACHMENT SPECIFICATION> ] [ I<PROFILE XATTR CONDS> ] [ I<PROFILE FLAG CONDS> ] '{' ( I<RULES> )* '}'
 
 B<PROFILE HEAD> = [ 'profile' ] I<FILEGLOB> | 'profile' I<PROFILE NAME>
 
@@ -77,6 +77,12 @@ B<QUOTED PROFILE NAME> = '"' I<UNQUOTED PROFILE NAME> '"'
 B<UNQUOTED PROFILE NAME> = (must start with alphanumeric character (after variable expansion), or '/' B<AARE> have special meanings; see below. May include I<VARIABLE>. Rules with embedded spaces or tabs must be quoted.)
 
 B<ATTACHMENT SPECIFICATION> = I<FILEGLOB>
+
+B<PROFILE XATTR CONDS> =  [ 'xattrs=' ] '(' comma or white space separated list of I<PROFILE XATTR> ')'
+
+B<PROFILE XATTR> = extended attribute name '=' I<XATTR VALUE FILEGLOB>
+
+B<XATTR VALUE FILEGLOB> = I<FILEGLOB>
 
 B<PROFILE FLAG CONDS> =  [ 'flags=' ] '(' comma or white space separated list of I<PROFILE FLAGS> ')'
 
@@ -1371,6 +1377,18 @@ Directories anywhere underneath F</tmp>.
 
 =back
 
+=head2 Extended Attributes
+
+AppArmor profiles have the ability to target files based on their xattr(7)
+values in addition to their path. For example, the following profile matches
+files in /usr/bin with the attribute "security.apparmor" and value "trusted":
+
+  /usr/bin/* xattrs(security.apparmor="trusted") {
+    # ...
+  }
+
+See apparmor_xattrs(7) for further details.
+
 =head2 Rule Qualifiers
 
 There are several rule qualifiers that can be applied to permission rules.
@@ -1609,7 +1627,7 @@ negative values match when specifying one or the other. Eg, 'rw' matches when
 
 =head1 SEE ALSO
 
-apparmor(7), apparmor_parser(8), aa-complain(1),
+apparmor(7), apparmor_parser(8), apprmor_xattrs(7), aa-complain(1),
 aa-enforce(1), aa_change_hat(2), mod_apparmor(5), and
 L<https://wiki.apparmor.net>.
 
