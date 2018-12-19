@@ -60,10 +60,6 @@
 static char *path[MAX_PATH] = { NULL };
 static int npath = 0;
 
-static int fgetline(FILE * f, char *buffer, size_t len);
-static int stripcomment(char *s);
-static char *stripblanks(char *s);
-
 /* default base directory is /etc/apparmor.d, it can be overriden
    with the -b option. */
 
@@ -175,48 +171,6 @@ FILE *search_path(char *filename, char **fullpath)
 			break;
 	}
 	return newf;
-}
-
-/* get a line from the file.  If it is to long truncate it. */
-static int fgetline(FILE * f, char *buffer, size_t len)
-{
-	char *b = buffer;
-	int c;
-
-	while (((c = fgetc(f)) != EOF) && (c != '\n')
-	       && (strlen(buffer) < len - 1)) {
-		*b = c;
-		b++;
-	}
-	*b = '\0';
-	if (c != EOF)
-		return 1;
-	return 0;
-}
-
-/* If there is a comment null terminate the string,
-   return strlen of the stripped string*/
-static int stripcomment(char *s)
-{
-	char *t = s;
-	while (*s != '#' && *s != 0)
-		s++;
-	*s = 0;
-
-	return strlen(t);
-}
-
-static char *stripblanks(char *s)
-{
-	char *c;
-
-	while (isspace(*s))
-		s++;
-	c = s;
-	while (!isspace(*s) && *s != 0)
-		s++;
-	*s = 0;
-	return c;
 }
 
 struct include_stack_t {
