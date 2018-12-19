@@ -22,6 +22,7 @@
 
 /* eliminates need to link with libfl */
 %option noyywrap
+%option noyy_top_state
 %option nounput
 %option stack
 
