@@ -19,7 +19,7 @@ APPARMOR_FUNCTIONS=/lib/apparmor/rc.apparmor.functions
 
 aa_action()
 {
-    echo $1
+    echo "$1"
     shift
     "$@"
     return $?
@@ -27,12 +27,12 @@ aa_action()
 
 aa_log_warning_msg()
 {
-    echo "Warning: $@"
+    echo "Warning: $*"
 }
 
 aa_log_failure_msg()
 {
-    echo "Error: $@"
+    echo "Error: $*"
 }
 
 aa_log_action_start()
@@ -42,7 +42,7 @@ aa_log_action_start()
 
 aa_log_action_end()
 {
-    echo -n
+    printf ""
 }
 
 aa_log_daemon_msg()
@@ -52,17 +52,18 @@ aa_log_daemon_msg()
 
 aa_log_skipped_msg()
 {
-    echo "Skipped: $@"
+    echo "Skipped: $*"
 }
 
 aa_log_end_msg()
 {
-    echo -n
+    printf ""
 }
 
 # source apparmor function library
 if [ -f "${APPARMOR_FUNCTIONS}" ]; then
-	. ${APPARMOR_FUNCTIONS}
+	# shellcheck source=rc.apparmor.functions
+	. "${APPARMOR_FUNCTIONS}"
 else
 	aa_log_failure_msg "Unable to find AppArmor initscript functions"
 	exit 1
@@ -97,4 +98,4 @@ case "$1" in
 		exit 1
 		;;
 esac
-exit $rc
+exit "$rc"
