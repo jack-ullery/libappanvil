@@ -257,6 +257,7 @@ profiles_names_list() {
 	for profile_dir in $PROFILE_DIRS; do
 		if [ ! -d "$profile_dir" ]; then
 			aa_log_warning_msg "- Profile directory not found: $profile_dir"
+			continue
 		fi
 
 		for profile in $profile_dir/*; do
