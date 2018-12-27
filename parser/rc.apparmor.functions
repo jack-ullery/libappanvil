@@ -189,13 +189,13 @@ __parse_profiles_dir() {
 		for profile in $profile_dir/*; do
 			skip_profile "${profile}"
 			skip=$?
-			# Ignore skip status == 2 (silent skip)
-			if [ "$skip" -eq 1 ] ; then
+			if [ "$skip" -eq 2 ]; then
+				# Ignore skip status == 2 (silent skip)
+				continue
+			elif [ "$skip" -ne 0 ] ; then
 				aa_log_skipped_msg "$profile"
 				logger -t "AppArmor(init)" -p daemon.warn \
 					"Skipping profile $profile"
-				continue
-			elif [ "$skip" -ne 0 ]; then
 				continue
 			fi
 			if [ ! -f "${profile}" ] ; then
