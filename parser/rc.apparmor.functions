@@ -31,19 +31,7 @@
 
 # Some nice defines that we use
 
-CONFIG_DIR=/etc/apparmor
 MODULE=apparmor
-if [ -f "${CONFIG_DIR}/${MODULE}.conf" ] ; then
-	APPARMOR_CONF="${CONFIG_DIR}/${MODULE}.conf"
-else
-	aa_log_warning_msg "Unable to find config file in ${CONFIG_DIR}, installation problem?"
-fi
-
-if [ -f "${APPARMOR_CONF}" ] ; then
-	#parse the conf file to see what we should do
-	. "${APPARMOR_CONF}"
-fi
-
 PARSER=/sbin/apparmor_parser
 PARSER_OPTS=
 # Suppress warnings when booting in quiet mode
@@ -51,10 +39,7 @@ if [ "${QUIET:-no}" = yes ] || [ "${quiet:-n}" = y ]; then
 	PARSER_OPTS="$PARSER_OPTS --quiet"
 fi
 
-# APPARMOR_DIR might be defined in apparmor.conf
-if [ -d "${APPARMOR_DIR}" ] ; then
-	PROFILE_DIRS=${APPARMOR_DIR}
-elif [ -d /etc/apparmor.d ] ; then
+if [ -d /etc/apparmor.d ] ; then
 	PROFILE_DIRS=/etc/apparmor.d
 else
 	aa_log_warning_msg "Unable to find profiles directory, installation problem?"
