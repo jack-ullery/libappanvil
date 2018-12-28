@@ -329,8 +329,6 @@ apparmor_start() {
 		return 1
 	fi
 
-	configure_owlsm
-
 	# if there is anything in the profiles file don't load
 	if ! read line < "$SFS_MOUNTPOINT/profiles"; then
 		parse_profiles load
@@ -412,7 +410,6 @@ __apparmor_restart() {
 
 	aa_log_daemon_msg "Restarting AppArmor"
 
-	configure_owlsm
 	parse_profiles reload
 
 	rc=$?
