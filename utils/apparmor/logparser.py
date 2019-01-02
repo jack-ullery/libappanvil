@@ -450,14 +450,3 @@ class ReadLog:
             return True
 
         return False
-
-    def get_profile_filename(self, profile):
-        """Returns the full profile name"""
-        if profile.startswith('/'):
-            # Remove leading /
-            profile = profile[1:]
-        else:
-            profile = "profile_" + profile
-        profile = profile.replace('/', '.')
-        full_profilename = self.profile_dir + '/' + profile
-        return full_profilename
