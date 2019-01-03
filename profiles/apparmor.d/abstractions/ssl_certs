@@ -32,6 +32,7 @@
   /{etc,var/lib}/dehydrated/certs/*/cert*.pem r,
   /{etc,var/lib}/dehydrated/certs/*/chain*.pem r,
   /{etc,var/lib}/dehydrated/certs/*/fullchain*.pem r,
+  /{etc,var/lib}/dehydrated/certs/*/ocsp*.der r,
 
   # certbot
   /etc/letsencrypt/archive/*/cert*.pem r,
