@@ -22,7 +22,7 @@
   /var/lib/acme/keys/** r,
 
   # dehydrated
-  /etc/dehydrated/certs/*/privkey-*.pem r,
+  /{etc,var/lib}/dehydrated/certs/*/privkey*.pem r,
 
   # certbot / letsencrypt
   /etc/letsencrypt/archive/*/privkey*.pem r,
