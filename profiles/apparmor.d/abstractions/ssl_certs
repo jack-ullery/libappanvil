@@ -29,9 +29,9 @@
   /var/lib/acme/certs/*/cert r,
 
   # dehydrated
-  /{var/lib,etc}/dehydrated/certs/*/cert-*.pem r,
-  /{var/lib,etc}/dehydrated/certs/*/chain-*.pem r,
-  /{var/lib,etc}/dehydrated/certs/*/fullchain-*.pem r,
+  /{etc,var/lib}/dehydrated/certs/*/cert*.pem r,
+  /{etc,var/lib}/dehydrated/certs/*/chain*.pem r,
+  /{etc,var/lib}/dehydrated/certs/*/fullchain*.pem r,
 
   # certbot
   /etc/letsencrypt/archive/*/cert*.pem r,
