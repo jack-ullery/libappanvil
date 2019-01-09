@@ -133,6 +133,7 @@ class Config(object):
 
     def read_shell(self, filepath):
         """Reads the shell type conf files and returns config[''][option]=value"""
+        # @TODO: Use standard ConfigParser when https://bugs.python.org/issue22253 is fixed
         config = {'': dict()}
         with open_file_read(filepath) as conf_file:
             for line in conf_file:

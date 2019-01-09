@@ -126,14 +126,14 @@ Feb  4 13:40:38 XPS-13-9370 kernel: [128552.880347] audit: type=1400 audit({epoc
         if self.test_logfile and os.path.exists(self.test_logfile):
             os.remove(self.test_logfile)
 
-    # The Perl aa-notify script is written so, that it will check for kern.log
+    # The Perl aa-notify script was written so, that it will checked for kern.log
     # before printing help when invoked without arguments (sic!).
     @unittest.skipUnless(os.path.isfile('/var/log/kern.log'), 'Requires kern.log on system')
     def test_no_arguments(self):
         '''Test using no arguments at all'''
 
-        expected_return_code = 1
-        expected_output_has = 'USAGE: aa-notify'
+        expected_return_code = 0
+        expected_output_has = 'usage: aa-notify'
 
         return_code, output = cmd([aanotify_bin])
         result = 'Got return code %d, expected %d\n' % (return_code, expected_return_code)
@@ -146,23 +146,26 @@ Feb  4 13:40:38 XPS-13-9370 kernel: [128552.880347] audit: type=1400 audit({epoc
 
         expected_return_code = 0
         expected_output_is = \
-'''USAGE: aa-notify [OPTIONS]
+'''usage: aa-notify [-h] [-p] [--display DISPLAY] [-f FILE] [-l] [-s NUM] [-v]
+                 [-u USER] [-w NUM] [--debug]
 
 Display AppArmor notifications or messages for DENIED entries.
 
-OPTIONS:
-  -p, --poll			poll AppArmor logs and display notifications
-  --display $DISPLAY		set the DISPLAY environment variable to $DISPLAY
-				(might be needed if sudo resets $DISPLAY)
-  -f FILE, --file=FILE		search FILE for AppArmor messages
-  -l, --since-last		display stats since last login
-  -s NUM, --since-days=NUM	show stats for last NUM days (can be used alone
-				or with -p)
-  -v, --verbose			show messages with stats
-  -h, --help			display this help
-  -u USER, --user=USER		user to drop privileges to when not using sudo
-  -w NUM, --wait=NUM		wait NUM seconds before displaying
-				notifications (with -p)
+optional arguments:
+  -h, --help            show this help message and exit
+  -p, --poll            poll AppArmor logs and display notifications
+  --display DISPLAY     set the DISPLAY environment variable (might be needed
+                        if sudo resets $DISPLAY)
+  -f FILE, --file FILE  search FILE for AppArmor messages
+  -l, --since-last      display stats since last login
+  -s NUM, --since-days NUM
+                        show stats for last NUM days (can be used alone or
+                        with -p)
+  -v, --verbose         show messages with stats
+  -u USER, --user USER  user to drop privileges to when not using sudo
+  -w NUM, --wait NUM    wait NUM seconds before displaying notifications (with
+                        -p)
+  --debug               debug mode
 '''
 
         return_code, output = cmd([aanotify_bin, '--help'])
@@ -190,7 +193,7 @@ OPTIONS:
         expected_output_has = 'AppArmor denials: 10 (since'
 
         return_code, output = cmd([aanotify_bin, '-f', self.test_logfile, '-l'])
-        if output == "aa-notify: ERROR: Couldn't find last login\n":
+        if "ERROR: Could not find last login" in output:
             self.skipTest('Could not find last login')
         result = 'Got return code %d, expected %d\n' % (return_code, expected_return_code)
         self.assertEqual(expected_return_code, return_code, result + output)
@@ -266,7 +269,7 @@ Logfile: {logfile}
 AppArmor denials: 10 (since'''.format(logfile=self.test_logfile)
 
         return_code, output = cmd([aanotify_bin, '-f', self.test_logfile, '-l', '-v'])
-        if output == "aa-notify: ERROR: Couldn't find last login\n":
+        if "ERROR: Could not find last login" in output:
             self.skipTest('Could not find last login')
         result = 'Got return code %d, expected %d\n' % (return_code, expected_return_code)
         self.assertEqual(expected_return_code, return_code, result + output)

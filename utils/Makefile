@@ -20,11 +20,10 @@ COMMONDIR=../common/
 
 include $(COMMONDIR)/Make.rules
 
-PERLTOOLS = aa-notify
 PYTOOLS = aa-easyprof aa-genprof aa-logprof aa-cleanprof aa-mergeprof \
           aa-autodep aa-audit aa-complain aa-enforce aa-disable \
-	  aa-status aa-unconfined
-TOOLS = ${PERLTOOLS} ${PYTOOLS} aa-decode aa-remove-unknown
+	        aa-notify aa-status aa-unconfined
+TOOLS = ${PYTOOLS} aa-decode aa-remove-unknown
 PYSETUP = python-tools-setup.py
 PYMODULES = $(wildcard apparmor/*.py apparmor/rule/*.py)
 
@@ -92,9 +91,6 @@ check_severity_db: /usr/include/linux/capability.h severity.db
 .PHONY: check
 .SILENT: check
 check: check_severity_db check_pod_files
-	for i in ${PERLTOOLS} ; do \
-		perl -c $$i || exit 1; \
-	done
 	for i in ${PYTOOLS} apparmor test/*.py; do \
 		echo Checking $$i; \
 		$(PYFLAKES) $$i || exit 1; \
