@@ -3,9 +3,10 @@
 
   # User files
 
-  owner @{HOME}/.config/#[0-9]* rw,
+  owner @{HOME}/.config/#[0-9]*[0-9] rw,
+  owner @{HOME}/.config/QtProject.conf l -> @{HOME}/.config/#[0-9]*[0-9],
   owner @{HOME}/.config/QtProject.conf rw,
-  owner @{HOME}/.config/QtProject.conf.?????? l -> @{HOME}/.config/#[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9],
+  owner @{HOME}/.config/QtProject.conf.?????? l -> @{HOME}/.config/#[0-9]*[0-9],
   owner @{HOME}/.config/QtProject.conf.?????? rw, # for temporary files like QtProject.conf.Aqrgeb
   owner @{HOME}/.config/QtProject.conf.lock rwk,
 
