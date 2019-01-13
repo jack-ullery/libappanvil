@@ -68,6 +68,7 @@ owner /tmp/pulse-*/* rw,
 /etc/sound/** r,
 
 # openal
+/etc/alsa/conf.d/{,*} r,
 /etc/openal/alsoft.conf r,
 owner @{HOME}/.alsoftrc r,
 /usr/{,local/}share/openal/hrtf/{,**} r,
