@@ -28,7 +28,9 @@ profile dnsmasq /usr/{bin,sbin}/dnsmasq flags=(attach_disconnected) {
   network inet6 raw,
 
   signal (receive) peer=/usr/{bin,sbin}/libvirtd,
+  signal (receive) peer=libvirtd,
   ptrace (readby) peer=/usr/{bin,sbin}/libvirtd,
+  ptrace (readby) peer=libvirtd,
 
   owner /dev/tty rw,
 
