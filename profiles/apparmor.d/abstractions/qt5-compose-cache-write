@@ -3,5 +3,6 @@
 
   # User files
 
-  owner @{HOME}/.cache/qt_compose_cache_{little,big}_endian_* rw,
+  owner @{HOME}/.cache/qt_compose_cache_{little,big}_endian_* rwl -> @{HOME}/.cache/#[0-9]*[0-9],
+  owner @{HOME}/.cache/#[0-9]*[0-9] rw, # QSaveFile (anonymous shared memory)
 
