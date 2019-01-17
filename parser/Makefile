@@ -278,10 +278,9 @@ parser_version.h: Makefile
 # as well as the filtering that occurs for network protocols that
 # apparmor should not mediate.
 
-.PHONY: af_names.h
-af_names.h:
-	echo "$(AF_NAMES)" | LC_ALL=C sed -n -e 's/[ \t]\?AF_MAX[ \t]\+[0-9]\+,//g'  -e 's/[ \t]\+\?AF_\([A-Z0-9_]\+\)[ \t]\+\([0-9]\+\),/#ifndef AF_\1\n#  define AF_\1 \2\n#endif\nAA_GEN_NET_ENT("\L\1", \UAF_\1)\n\n/pg' > $@
-	echo "$(AF_NAMES)" | LC_ALL=C sed -n -e 's/.*,[ \t]\+AF_MAX[ \t]\+\([0-9]\+\),\?.*/#define AA_AF_MAX \1\n/p' >> $@
+af_names.h: ../common/list_af_names.sh
+	../common/list_af_names.sh | LC_ALL=C sed -n -e 's/[ \t]\?AF_MAX[ \t]\+[0-9]\+,//g'  -e 's/[ \t]\+\?AF_\([A-Z0-9_]\+\)[ \t]\+\([0-9]\+\),/#ifndef AF_\1\n#  define AF_\1 \2\n#endif\nAA_GEN_NET_ENT("\L\1", \UAF_\1)\n/pg' > $@
+	../common/list_af_names.sh | LC_ALL=C sed -n -e 's/AF_MAX[ \t]\+\([0-9]\+\),\?.*/\n#define AA_AF_MAX \1\n/p' >> $@
 	# cat $@
 
 cap_names.h: /usr/include/linux/capability.h
@@ -301,10 +300,7 @@ tests: apparmor_parser ${TESTS}
 	sh -e -c 'for test in ${TESTS} ; do echo "*** running $${test}" && ./$${test}; done'
 	$(Q)$(MAKE) -s -C tst tests
 
-# always need to rebuild.
-.SILENT: $(AAREOBJECT)
-.PHONY: $(AAREOBJECT)
-$(AAREOBJECT):
+$(AAREOBJECT): FORCE
 	$(MAKE) -C $(AAREDIR) CFLAGS="$(EXTRA_CXXFLAGS)"
 
 .PHONY: install-rhel4
@@ -404,3 +400,4 @@ clean: pod_clean
 	$(MAKE) -s -C po clean
 	$(MAKE) -s -C tst clean
 
+FORCE:
