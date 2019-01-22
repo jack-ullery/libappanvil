@@ -31,7 +31,7 @@ verbose="${VERBOSE:-}"
 
 hash_binary_policy()
 {
-	printf %s "$1" | ${APPARMOR_PARSER} --features-file ${_SCRIPTDIR}/features_files/features.all -qS 2>/dev/null| md5sum | cut -d ' ' -f 1
+	printf %s "$1" | ${APPARMOR_PARSER} --features-file "${_SCRIPTDIR}/features_files/features.all" -qS 2>/dev/null| md5sum | cut -d ' ' -f 1
 	return $?
 }
 
@@ -63,8 +63,7 @@ verify_binary()
 	fi
 
 	if [ -n "$verbose" ] ; then printf "Binary %s %s" "$t" "$desc" ; fi
-	good_hash=$(hash_binary_policy "$good_profile")
-	if [ $? -ne 0 ]
+	if ! good_hash=$(hash_binary_policy "$good_profile")
 	then
 		if [ -z "$verbose" ] ; then printf "Binary %s %s" "$t" "$desc" ; fi
 		printf "\nERROR: Error hashing the following \"known-good\" profile:\n%s\n\n" \
@@ -75,8 +74,7 @@ verify_binary()
 
 	for profile in "$@"
 	do
-		hash=$(hash_binary_policy "$profile")
-		if [ $? -ne 0 ]
+		if ! hash=$(hash_binary_policy "$profile")
 		then
 			if [ -z "$verbose" ] ; then printf "Binary %s %s" "$t" "$desc" ; fi
 			printf "\nERROR: Error hashing the following profile:\n%s\n\n" \
@@ -549,10 +547,10 @@ verify_binary_equality "set rlimit memlock <= 2GB" \
                        "/t { set rlimit memlock <= $((2 * 1024 * 1024)) KB, }" \
                        "/t { set rlimit memlock <= $((2 * 1024 * 1024 * 1024)) , }" \
 
-if [ $fails -ne 0 -o $errors -ne 0 ]
+if [ $fails -ne 0 ] || [ $errors -ne 0 ]
 then
 	printf "ERRORS: %d\nFAILS: %d\n" $errors $fails 2>&1
-	exit $(($fails + $errors))
+	exit $((fails + errors))
 fi
 
 [ -z "${verbose}" ] && printf "\n"
