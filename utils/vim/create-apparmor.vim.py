@@ -57,7 +57,7 @@ for cap in capabilities:
         benign_caps.append(cap)
 
 # get network protos list
-(rc, output) = cmd(['make', '-s', '--no-print-directory', 'list_af_names'])
+(rc, output) = cmd(['../../common/list_af_names.sh'])
 if rc != 0:
     sys.stderr.write("make list_af_names failed: " + output)
     exit(rc)

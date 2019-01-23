@@ -88,27 +88,6 @@ list_capabilities: /usr/include/linux/capability.h
 	@echo "$(CAPABILITIES)"
 
 # =====================
-# generate list of network protocols based on
-# sys/socket.h for use in multiple locations in
-# the source tree
-# =====================
-
-# These are the families that it doesn't make sense for apparmor
-# to mediate. We use PF_ here since that is what is required in
-# bits/socket.h, but we will rewrite these as AF_.
-
-FILTER_FAMILIES=PF_UNIX
-
-__FILTER=$(shell echo $(strip $(FILTER_FAMILIES)) | sed -e 's/ /\\\|/g')
-
-# emits the AF names in a "AF_NAME NUMBER," pattern
-AF_NAMES=$(shell echo "\#include <sys/socket.h>" | cpp -dM | LC_ALL=C sed -n -e '/$(__FILTER)/d' -e 's/PF_LOCAL/PF_UNIX/' -e 's/^\#define[ \t]\+PF_\([A-Z0-9_]\+\)[ \t]\+\([0-9]\+\).*$$/AF_\1 \2,/p' | sort -n -k2)
-
-.PHONY: list_af_names
-list_af_names:
-	@echo "$(AF_NAMES)"
-
-# =====================
 # manpages
 # =====================
 
