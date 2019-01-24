@@ -19,3 +19,6 @@
   /usr/lib*/samba/lowcase.dat r,
   /usr/share/samba/codepages/{lowcase,upcase,valid}.dat r,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/winbind.d>

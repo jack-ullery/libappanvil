@@ -15,3 +15,6 @@
   @{sys}/devices/pci[0-9]*/**/{class,config,resource,revision} r, # libcl.so -> libdrm_intel.so -> libpciaccess.so (move to dri-enumerate ?)
   /usr/lib/@{multiarch}/beignet/** r,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/opencl-intel.d>

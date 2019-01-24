@@ -22,3 +22,6 @@
   /usr/local/share/man/man?/**          r,
   /usr/{share,X11R6,local,kerberos}/man/**	 r,
   /usr/man/**				r,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/user-manpages.d>

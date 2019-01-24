@@ -22,3 +22,6 @@
   # fallbacks
   /usr/share/ r,
   /usr/local/share/ r,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/xdg-desktop.d>

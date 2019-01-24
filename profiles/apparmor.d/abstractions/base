@@ -161,3 +161,6 @@
   # new-style encrypted $HOME
   owner @{HOMEDIRS}/.ecryptfs/*/.Private/** mrixwlk,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/base.d>

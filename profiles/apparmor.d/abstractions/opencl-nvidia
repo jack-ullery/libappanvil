@@ -28,3 +28,6 @@
   owner @{HOME}/.nv/ComputeCache/** rw,
   owner @{HOME}/.nv/ComputeCache/index rwk,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/opencl-nvidia.d>

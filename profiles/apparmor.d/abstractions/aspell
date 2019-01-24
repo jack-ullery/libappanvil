@@ -11,3 +11,6 @@
   /usr/share/aspell/ r,
   /usr/share/aspell/* r,
   /var/lib/aspell/* r,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/aspell.d>

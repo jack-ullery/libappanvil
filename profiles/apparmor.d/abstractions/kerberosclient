@@ -30,3 +30,6 @@
 
   # credential caches
   /tmp/krb5cc* r,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/kerberosclient.d>

@@ -21,3 +21,6 @@
   /usr/share/perl/**             r,
   /usr/share/perl5/**            r,
   /etc/perl/**                   r,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/perl.d>

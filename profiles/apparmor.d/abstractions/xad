@@ -23,3 +23,6 @@
   /var/opt/novell/nici/* r,
   /var/opt/novell/nici/*/ r,
   /var/opt/novell/nici/*/* rw,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/xad.d>

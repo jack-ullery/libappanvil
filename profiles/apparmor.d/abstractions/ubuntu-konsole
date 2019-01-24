@@ -15,3 +15,6 @@
   # do not use ux or Ux here. Use at a minimum ix
   /usr/bin/konsole ix,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/ubuntu-konsole.d>

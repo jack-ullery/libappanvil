@@ -11,3 +11,6 @@
   # do not use ux or Ux here. Use at a minimum ix
   /usr/bin/xterm ix,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/ubuntu-xterm.d>

@@ -6,3 +6,6 @@
   /etc/dconf/** r,
   owner /{,var/}run/user/*/dconf/user r,
   owner @{HOME}/.config/dconf/user r,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/dconf.d>

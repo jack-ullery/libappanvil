@@ -50,3 +50,6 @@
   /tmp/apr* rwl,
   /var/tmp/apr* rwl,
   /tmp/report*.tmp rwl,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/svn-repositories.d>

@@ -21,3 +21,6 @@
   /dev/pts/[0-9]*   rw,
   /dev/pts/         r,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/consoles.d>

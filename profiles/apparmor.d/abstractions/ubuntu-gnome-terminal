@@ -8,3 +8,6 @@
   # do not use ux or PUx here. Use at a minimum ix
   /usr/bin/gnome-terminal ix,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/ubuntu-gnome-terminal.d>

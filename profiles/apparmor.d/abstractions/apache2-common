@@ -32,3 +32,6 @@
 
   # OCSP stapling
   /{var/,}run/lock/apache2/stapling-cache* rw,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/apache2-common.d>

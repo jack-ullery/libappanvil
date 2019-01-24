@@ -16,3 +16,6 @@
   /usr/bin/elmo Cx -> sanitized_helper,
   /usr/bin/mutt Cx -> sanitized_helper,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/ubuntu-console-email.d>

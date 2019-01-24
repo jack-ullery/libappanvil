@@ -37,3 +37,6 @@
 
   # Zend opcache
   /tmp/.ZendSem.* rwlk,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/php.d>

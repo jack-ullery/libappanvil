@@ -16,3 +16,6 @@
   # client should be able to read user-specified cups configuration
   owner @{HOME}/.cups/client.conf r,
   owner @{HOME}/.cups/lpoptions r,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/cups-client.d>

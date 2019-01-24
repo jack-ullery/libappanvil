@@ -13,3 +13,6 @@
   # portmapper may ask root processes to do nis/ldap at low ports
   capability net_bind_service,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/nis.d>

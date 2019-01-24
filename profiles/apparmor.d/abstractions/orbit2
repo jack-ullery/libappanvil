@@ -3,3 +3,6 @@
 
   # system library
   /usr/lib/orbit-2.0/*.so mr,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/orbit2.d>

@@ -7,3 +7,6 @@
   #include <abstractions/opencl-nvidia>
   #include <abstractions/opencl-pocl>
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/opencl.d>

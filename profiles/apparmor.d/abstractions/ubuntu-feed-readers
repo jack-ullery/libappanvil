@@ -8,3 +8,6 @@
 
   /usr/bin/akregator Cxr -> sanitized_helper,
   /usr/bin/liferea-add-feed Cxr -> sanitized_helper,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/ubuntu-feed-readers.d>

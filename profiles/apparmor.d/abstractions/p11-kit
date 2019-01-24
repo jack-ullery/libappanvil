@@ -25,3 +25,6 @@
   # p11-kit also supports reading user configuration from ~/.pkcs11 depending
   # on how /etc/pkcs11/pkcs11.conf is configured. This should generally not be
   # included in this abstraction.
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/p11-kit.d>

@@ -49,3 +49,6 @@
 
   # p11-kit (PKCS#11 modules configuration)
   #include <abstractions/p11-kit>
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/authentication.d>

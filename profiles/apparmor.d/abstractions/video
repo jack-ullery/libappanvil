@@ -4,3 +4,6 @@
   # System devices
   @{sys}/class/video4linux r,
   @{sys}/class/video4linux/** r,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/video.d>

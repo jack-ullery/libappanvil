@@ -102,3 +102,6 @@
   unix (send, receive, connect)
        type=stream
        peer=(addr="@/dbus-vfs-daemon/socket-*"),
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/gnome.d>

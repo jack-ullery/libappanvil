@@ -35,3 +35,6 @@
   /var/spool/postfix/lib/@{multiarch}/lib*.so* mr,
 
   /etc/postfix/dynamicmaps.cf.d/  r,
+
+  Include additions to the abstraction
+  #include if exists <abstractions/postfix-common.d>

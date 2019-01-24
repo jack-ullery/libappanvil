@@ -10,3 +10,6 @@
   /etc/drirc                      r,
   owner @{HOME}/.drirc            r,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/dri-common.d>

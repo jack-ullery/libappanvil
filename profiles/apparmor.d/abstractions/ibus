@@ -13,3 +13,6 @@
   owner @{HOME}/.config/ibus/ r,
   owner @{HOME}/.config/ibus/bus/ rw,
   owner @{HOME}/.config/ibus/bus/* rw,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/ibus.d>

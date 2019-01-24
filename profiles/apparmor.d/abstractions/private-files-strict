@@ -23,3 +23,6 @@
   audit deny @{HOME}/.kde{,4}/share/apps/kmail{,2}/{,**} mrwkl,
   audit deny @{HOME}/.kde{,4}/share/apps/kwallet/{,**} mrwkl,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/private-files-strict.d>

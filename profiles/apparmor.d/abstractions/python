@@ -35,3 +35,6 @@
 
   # python build configuration and headers
   /usr/include/python{2.[4-7],3.[0-9]}*/pyconfig.h r,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/python.d>

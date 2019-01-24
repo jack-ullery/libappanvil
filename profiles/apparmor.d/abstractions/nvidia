@@ -26,3 +26,6 @@
   owner @{HOME}/.nv/GLCache/** rwk,
 
   unix (send, receive) type=dgram peer=(addr="@nvidia[0-9a-f]*"),
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/nvidia.d>

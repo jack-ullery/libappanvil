@@ -12,3 +12,6 @@
   # User files
   owner @{HOME}/.local/share/vulkan/implicit_layer.d/{,*.json} r,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/vulkan.d>

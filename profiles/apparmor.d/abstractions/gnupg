@@ -9,3 +9,6 @@
   owner @{HOME}/.gnupg/secring.gpg r,
   owner @{HOME}/.gnupg/so/*.x86_64 mr,
   owner @{HOME}/.gnupg/trustdb.gpg rw,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/gnupg.d>

@@ -11,3 +11,6 @@
 
   #include <abstractions/fcitx-strict>
   dbus bus=fcitx,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/fcitx.d>

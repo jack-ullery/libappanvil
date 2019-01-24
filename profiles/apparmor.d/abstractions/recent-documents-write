@@ -8,3 +8,6 @@
   owner @{HOME}/.local/share/RecentDocuments/*.desktop rwl -> @{HOME}/.local/share/RecentDocuments/#[0-9]*,
   owner @{HOME}/.local/share/RecentDocuments/*.lock rwk,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/recent-documents-write.d>

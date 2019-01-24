@@ -18,3 +18,6 @@
   /var/tmp/             rw,
   owner /tmp/**         rwkl,
   /tmp/                 rw,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/user-tmp.d>

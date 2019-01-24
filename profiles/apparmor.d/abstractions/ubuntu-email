@@ -22,3 +22,6 @@
 
   /usr/bin/thunderbird Cx -> sanitized_helper, # used by gio-launch-desktop
   /usr/lib/thunderbird*/thunderbird{,.sh,-bin} Cx -> sanitized_helper,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/ubuntu-email.d>

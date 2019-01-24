@@ -12,3 +12,6 @@
   owner @{HOME}/.cache/mesa_shader_cache/??/ w,
   owner @{HOME}/.cache/mesa_shader_cache/??/* rwk,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/mesa.d>

@@ -54,3 +54,6 @@
   # per-user dictionaries
   owner @{HOME}/.config/enchant/                   rw,
   owner @{HOME}/.config/enchant/*                  rwk,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/enchant.d>

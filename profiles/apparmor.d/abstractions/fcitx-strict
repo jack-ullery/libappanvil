@@ -19,3 +19,6 @@
       peer=(name=org.freedesktop.DBus),
 
   owner @{HOME}/.config/fcitx/dbus/* r,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/fcitx-strict.d>

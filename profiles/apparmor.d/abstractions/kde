@@ -73,3 +73,6 @@ owner @{HOME}/.config/trashrc r, # Used by KFileWidget
 /usr/lib/@{multiarch}/qt4/lib*/lib*so* mr,
 /usr/lib/@{multiarch}/qt4/plugins/**  mr,
 /usr/share/qt4/** r,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/kde.d>

@@ -14,3 +14,6 @@
   /var/log/lastlog  rwk,
   /var/log/wtmp     wk,
   /{,var/}run/utmp     rwk,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/wutmp.d>

@@ -52,3 +52,6 @@
   # mouse themes
   /etc/X11/cursors/               r,
   /etc/X11/cursors/**             r,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/X.d>

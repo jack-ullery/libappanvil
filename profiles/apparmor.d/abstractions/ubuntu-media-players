@@ -58,3 +58,6 @@
   /etc/gnashpluginrc r,
   owner @{HOME}/.gnash/ rw,
   owner @{HOME}/.gnash/** rw,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/ubuntu-media-players.d>

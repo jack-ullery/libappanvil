@@ -16,3 +16,6 @@
   /usr/bin/netrik Cx -> sanitized_helper,
   /usr/bin/w3m Cx -> sanitized_helper,
 
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/ubuntu-console-browsers.d>

@@ -99,3 +99,6 @@
 
   # interface details
   @{PROC}/@{pid}/net/route r,
+
+  # Include additions to the abstraction
+  #include if exists <abstractions/nameservice.d>
