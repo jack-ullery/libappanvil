@@ -36,5 +36,5 @@
 
   /etc/postfix/dynamicmaps.cf.d/  r,
 
-  Include additions to the abstraction
-  #include if exists <abstractions/postfix-common.d>
+  # Include additions to the abstraction
+  include if exists <abstractions/postfix-common.d>
