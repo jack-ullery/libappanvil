@@ -13,7 +13,6 @@
 #
 # ----------------------------------------------------------------------
 import ctypes
-import os
 import re
 import sys
 import time
@@ -449,23 +448,5 @@ class ReadLog:
         # Check cache of profiles
         if self.active_profiles.filename_from_profile_name(program):
             return True
-        # Check the disk for profile
-        prof_path = self.get_profile_filename(program)
-        #print(prof_path)
-        if os.path.isfile(prof_path):
-            # Add to cache of profile
-            raise AppArmorBug('This should never happen, please open a bugreport!')
-            # self.active_profiles[program] = prof_path
-            # return True
-        return False
 
-    def get_profile_filename(self, profile):
-        """Returns the full profile name"""
-        if profile.startswith('/'):
-            # Remove leading /
-            profile = profile[1:]
-        else:
-            profile = "profile_" + profile
-        profile = profile.replace('/', '.')
-        full_profilename = self.profile_dir + '/' + profile
-        return full_profilename
+        return False
