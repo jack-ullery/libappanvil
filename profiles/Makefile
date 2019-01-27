@@ -89,7 +89,7 @@ CHECK_PROFILES=$(filter-out ${IGNORE_FILES} ${SUBDIRS}, $(wildcard ${PROFILES_SO
 CHECK_ABSTRACTIONS=$(shell find ${ABSTRACTIONS_SOURCE} -type f -print)
 
 .PHONY: check
-check: check-parser check-logprof
+check: check-parser check-logprof check-abstractions.d
 
 .PHONY: check-parser
 check-parser: local
@@ -111,3 +111,13 @@ check-parser: local
 check-logprof: local
 	@echo "*** Checking profiles from ${PROFILES_SOURCE} against logprof"
 	$(Q)${LOGPROF} -d ${PROFILES_SOURCE} -f /dev/null || exit 1
+
+.PHONY: check-abstractions.d
+check-abstractions.d:
+	@echo "*** Checking if all abstractions (with a few exceptions) contain #include if exists <abstractions/*.d>"
+	$(Q)cd apparmor.d/abstractions && for file in * ; do \
+		test -d "$$file" &&  continue ;  \
+		test "$$file" == 'ubuntu-browsers' && continue ; \
+		test "$$file" == 'ubuntu-helpers' && continue ; \
+		grep -q "^  #include if exists <abstractions/$${file}.d>$$" $$file || { echo "$$file does not contain '#include if exists <abstractions/$${file}.d>'"; exit 1; } ; \
+	done
