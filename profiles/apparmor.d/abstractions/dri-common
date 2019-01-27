@@ -8,6 +8,7 @@
   /usr/lib/fglrx/dri/**           mr,
   /dev/dri/**                     rw,
   /etc/drirc                      r,
+  /usr/share/drirc.d/{,*.conf}    r,
   owner @{HOME}/.drirc            r,
 
 
