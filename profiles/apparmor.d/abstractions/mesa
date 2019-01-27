@@ -3,7 +3,6 @@
 
   # System files
   /dev/dri/ r, # libGLX_mesa.so calls drmGetDevice2()
-  /usr/share/drirc.d/{,*.conf} r,
 
   # User files
   owner @{HOME}/.cache/ w, # if user clears all caches
