@@ -45,6 +45,10 @@ owner @{HOME}/.esd_auth r,
 owner @{HOME}/.asoundrc r,
 /etc/esound/esd.conf r,
 
+# libao
+/etc/libao.conf r,
+owner @{HOME}/.libao r,
+
 # libcanberra
 owner @{HOME}/.cache/event-sound-cache.* rwk,
 
