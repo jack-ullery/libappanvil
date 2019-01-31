@@ -41,6 +41,7 @@
 /usr/share/sounds/** r,
 
 owner @{HOME}/.esd_auth r,
+/etc/asound.conf r,
 owner @{HOME}/.asoundrc r,
 /etc/esound/esd.conf r,
 
