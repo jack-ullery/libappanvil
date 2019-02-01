@@ -135,6 +135,9 @@ class AaTest_create_new_profile(AATest):
         apparmor.aa.load_include('abstractions/bash')
 
         exp_interpreter_path, exp_abstraction = expected
+        # damn symlinks!
+        if exp_interpreter_path:
+            exp_interpreter_path = os.path.realpath(exp_interpreter_path)
 
         program = self.writeTmpfile('script', params)
         profile = create_new_profile(program)
@@ -178,11 +181,8 @@ class AaTest_get_interpreter_and_abstraction(AATest):
         interpreter_path, abstraction = get_interpreter_and_abstraction(program)
 
         # damn symlinks!
-        if exp_interpreter_path and os.path.islink(exp_interpreter_path):
-            dirname = os.path.dirname(exp_interpreter_path)
-            exp_interpreter_path = os.readlink(exp_interpreter_path)
-            if not exp_interpreter_path.startswith('/'):
-                exp_interpreter_path = os.path.join(dirname, exp_interpreter_path)
+        if exp_interpreter_path:
+            exp_interpreter_path = os.path.realpath(exp_interpreter_path)
 
         self.assertEqual(interpreter_path, exp_interpreter_path)
         self.assertEqual(abstraction, exp_abstraction)
