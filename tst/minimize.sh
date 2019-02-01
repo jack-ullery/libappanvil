@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 #
 APPARMOR_PARSER="${APPARMOR_PARSER:-../apparmor_parser}"
