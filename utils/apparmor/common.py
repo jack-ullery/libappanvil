@@ -255,12 +255,20 @@ def type_is_str(var):
     else:
         return False
 
+
 class DebugLogger(object):
+    '''Unified debug facility. Logs to file or stderr.
+
+    Does not log anything by default. Will only log if environment variable
+    LOGPROF_DEBUG is set to a number between 1 and 3 or if method activateStderr
+    is run.
+    '''
     def __init__(self, module_name=__name__):
         self.debugging = False
-        self.logfile = '/var/log/apparmor/logprof.log'
         self.debug_level = logging.DEBUG
+
         if os.getenv('LOGPROF_DEBUG', False):
+            self.logfile = '/var/log/apparmor/logprof.log'
             self.debugging = os.getenv('LOGPROF_DEBUG')
             try:
                 self.debugging = int(self.debugging)
@@ -272,11 +280,11 @@ class DebugLogger(object):
             if self.debugging == 0:  # debugging disabled, don't need to setup logging
                 return
             if self.debugging == 1:
-                self.debug_level = logging.ERROR
+                self.debug_level = logging.ERROR  # 40
             elif self.debugging == 2:
-                self.debug_level = logging.INFO
+                self.debug_level = logging.INFO  # 20
             elif self.debugging == 3:
-                self.debug_level = logging.DEBUG
+                self.debug_level = logging.DEBUG  # 10
 
             try:
                 logging.basicConfig(filename=self.logfile, level=self.debug_level,
@@ -291,6 +299,15 @@ class DebugLogger(object):
                                     format='%(asctime)s - %(name)s - %(message)s\n')
 
             self.logger = logging.getLogger(module_name)
+
+    def activateStderr(self):
+        self.debugging = True
+        logging.basicConfig(
+            level=self.debug_level,
+            format='%(levelname)s: %(message)s',
+            stream=sys.stderr,
+        )
+        self.logger = logging.getLogger(__name__)
 
     def error(self, message):
         if self.debugging:
