@@ -28,23 +28,33 @@ def subprocess_setup():
     # non-Python subprocesses expect.
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
-def cmd(command, input = None, stderr = subprocess.STDOUT, stdout = subprocess.PIPE, stdin = None, timeout = None):
+# Define only arguments that are actually ever used: command and stdin
+def cmd(command, stdin=None):
     '''Try to execute given command (array) and return its stdout, or return
     a textual error if it failed.'''
 
     try:
-        sp = subprocess.Popen(command, stdin=stdin, stdout=stdout, stderr=stderr, close_fds=True, preexec_fn=subprocess_setup)
+        sp = subprocess.Popen(
+            command,
+            stdin=stdin,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            close_fds=True,
+            preexec_fn=subprocess_setup
+        )
     except OSError as e:
         return [127, str(e)]
 
-    out, outerr = sp.communicate(input)
-    # Handle redirection of stdout
-    if out == None:
-        out = b''
-    # Handle redirection of stderr
-    if outerr == None:
-        outerr = b''
-    return [sp.returncode, out.decode('utf-8') + outerr.decode('utf-8')]
+    stdout, stderr = sp.communicate(input)
+
+    # If there was some error output, show that instead of stdout to ensure
+    # test fails and does not mask potentially major warnings and errors.
+    if stderr:
+        out = stderr
+    else:
+        out = stdout
+
+    return [sp.returncode, out.decode('utf-8')]
 
 
 def mkstemp_fill(contents, suffix='', prefix='tst-aadecode-', dir=None):

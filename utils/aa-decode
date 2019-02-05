@@ -37,8 +37,12 @@ EOM
 }
 
 decode() {
-    decoded=`perl -le "\\$s = uc('$1') ; if (\\$s =~ /^[0-9A-F]*$/) { print pack 'H*', \\$s; }"`
-    echo "$decoded"
+    if echo "$1" | egrep -q "^[0-9A-Fa-f]+$" ; then
+      python3 -c "import binascii; print(bytes.decode(binascii.unhexlify('$1'), errors='strict'));"
+    else
+      echo ""
+    fi
+
 }
 
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
@@ -92,4 +96,3 @@ while read line ; do
     echo "$line"
 
 done
-
