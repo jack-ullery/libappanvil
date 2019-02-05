@@ -23,8 +23,10 @@
 /etc/kderc r,
 /etc/kde3/* r,
 /etc/kde4rc r,
+/etc/xdg/kdeglobals r,
 /etc/xdg/Trolltech.conf r,
 /usr/share/knotifications5/*.notifyrc r, # KNotification::sendEvent()
+/usr/share/kubuntu-default-settings/kf5-settings/* r,
 
 owner @{HOME}/.DCOPserver_* r,
 owner @{HOME}/.ICEauthority r,
