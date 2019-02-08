@@ -126,9 +126,10 @@ bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
 
 /* create a dfa from the ruleset
  * returns: buffer contain dfa tables, @size set to the size of the tables
- *          else NULL on failure
+ *          else NULL on failure, @min_match_len set to the shortest string
+ *          that can match the dfa for determining xmatch priority.
  */
-void *aare_rules::create_dfa(size_t *size, dfaflags_t flags)
+void *aare_rules::create_dfa(size_t *size, int *min_match_len, dfaflags_t flags)
 {
 	char *buffer = NULL;
 
@@ -150,6 +151,7 @@ void *aare_rules::create_dfa(size_t *size, dfaflags_t flags)
 			root = new AltNode(root, new CatNode(tmp, i->first));
 		}
 	}
+	*min_match_len = root->min_match_len();
 
 	/* dumping of the none simplified tree without -O no-expr-simplify
 	 * is broken because we need to build the tree above first, and

@@ -144,6 +144,18 @@ public:
 	virtual void compute_lastpos() = 0;
 	virtual void compute_followpos() { }
 
+	/*
+	 * min_match_len determines the smallest string that can match the
+	 * syntax tree. This is used to determine the priority of a regex.
+	 */
+	virtual int min_match_len() { return 0; }
+	/*
+	 * contains_null returns if the expression tree contains a null character.
+	 * Null characters indicate that the rest of the DFA matches the xattrs and
+	 * not the path. This is used to compute min_match_len.
+	 */
+	virtual bool contains_null() { return false; }
+
 	virtual int eq(Node *other) = 0;
 	virtual ostream &dump(ostream &os) = 0;
 	void dump_syntax_tree(ostream &os);
@@ -278,6 +290,17 @@ public:
 		return os << c;
 	}
 
+	int min_match_len()
+	{
+		if (c == 0) {
+			// Null character indicates end of string.
+			return 0;
+		}
+		return 1;
+	}
+
+	bool contains_null() { return c == 0; }
+
 	uchar c;
 };
 
@@ -317,6 +340,24 @@ public:
 		for (Chars::iterator i = chars.begin(); i != chars.end(); i++)
 			os << *i;
 		return os << ']';
+	}
+
+	int min_match_len()
+	{
+		if (contains_null()) {
+			return 0;
+		}
+		return 1;
+	}
+
+	bool contains_null()
+	{
+		for (Chars::iterator i = chars.begin(); i != chars.end(); i++) {
+			if (*i == 0) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	Chars chars;
@@ -367,6 +408,24 @@ public:
 		return os << ']';
 	}
 
+	int min_match_len()
+	{
+		if (contains_null()) {
+			return 0;
+		}
+		return 1;
+	}
+
+	bool contains_null()
+	{
+		for (Chars::iterator i = chars.begin(); i != chars.end(); i++) {
+			if (*i == 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	Chars chars;
 };
 
@@ -390,6 +449,8 @@ public:
 		return 0;
 	}
 	ostream &dump(ostream &os) { return os << "."; }
+
+	bool contains_null() { return true; }
 };
 
 /* Match a node zero or more times. (This is a unary operator.) */
@@ -417,6 +478,8 @@ public:
 		child[0]->dump(os);
 		return os << ")*";
 	}
+
+	bool contains_null() { return child[0]->contains_null(); }
 };
 
 /* Match a node one or more times. (This is a unary operator.) */
@@ -444,6 +507,8 @@ public:
 		child[0]->dump(os);
 		return os << ")+";
 	}
+	int min_match_len() { return child[0]->min_match_len(); }
+	bool contains_null() { return child[0]->contains_null(); }
 };
 
 /* Match a pair of consecutive nodes. */
@@ -491,6 +556,22 @@ public:
 		return os;
 	}
 	void normalize(int dir);
+	int min_match_len()
+	{
+		int len = child[0]->min_match_len();
+		if (child[0]->contains_null()) {
+			// Null characters are used to indicate when the DFA transitions
+			// from matching the path to matching the xattrs. If the left child
+			// contains a null character, the right side doesn't contribute to
+			// the path match.
+			return len;
+		}
+		return len + child[1]->min_match_len();
+	}
+	bool contains_null()
+	{
+		return child[0]->contains_null() || child[1]->contains_null();
+	}
 };
 
 /* Match one of two alternative nodes. */
@@ -528,6 +609,20 @@ public:
 		return os;
 	}
 	void normalize(int dir);
+	int min_match_len()
+	{
+		int m1, m2;
+		m1 = child[0]->min_match_len();
+		m2 = child[1]->min_match_len();
+		if (m1 < m2) {
+			return m1;
+		}
+		return m2;
+	}
+	bool contains_null()
+	{
+		return child[0]->contains_null() || child[1]->contains_null();
+	}
 };
 
 class SharedNode: public ImportantNode {
