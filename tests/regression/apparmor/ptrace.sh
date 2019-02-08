@@ -30,26 +30,29 @@ bin=$pwd
 
 helper=$pwd/ptrace_helper
 
+bin_true=${tmpdir}/true
+cp -pL /bin/true ${tmpdir}/true
+
 # -n number of syscalls to perform
 # -c have the child call ptrace_me, else parent does ptrace_attach
 # -h transition child to ptrace_helper before doing ptrace (used to test
 #  x transitions with ptrace)
 # test base line of unconfined tracing unconfined
-runchecktest "test 1" pass -n 100 /bin/true
-runchecktest "test 1 -c" pass -c -n 100 /bin/true
+runchecktest "test 1" pass -n 100 ${bin_true}
+runchecktest "test 1 -c" pass -c -n 100 ${bin_true}
 runchecktest "test 1 -h" pass -h -n 100 $helper
 runchecktest "test 1 -hc" pass -h -c -n 100 $helper
-runchecktest "test 1 -h prog" pass -h -n 100 $helper /bin/true
-runchecktest "test 1 -hc prog" pass -h -c -n 100 $helper /bin/true
+runchecktest "test 1 -h prog" pass -h -n 100 $helper ${bin_true}
+runchecktest "test 1 -hc prog" pass -h -c -n 100 $helper ${bin_true}
 
 # test that unconfined can ptrace before profile attaches
-genprofile image=/bin/true signal:ALL
-runchecktest "test 2" pass -n 100 /bin/true
-runchecktest "test 2 -c" pass -c -n 100 /bin/true
+genprofile image=${bin_true} signal:ALL
+runchecktest "test 2" pass -n 100 ${bin_true}
+runchecktest "test 2 -c" pass -c -n 100 ${bin_true}
 runchecktest "test 2 -h" pass -h -n 100 $helper
 runchecktest "test 2 -hc" pass -h -c -n 100 $helper
-runchecktest "test 2 -h prog" pass -h -n 100 $helper /bin/true
-runchecktest "test 2 -hc prog" pass -h -c -n 100 $helper /bin/true
+runchecktest "test 2 -h prog" pass -h -n 100 $helper ${bin_true}
+runchecktest "test 2 -hc prog" pass -h -c -n 100 $helper ${bin_true}
 
 
 if [ "$(kernel_features ptrace)" == "true" -a "$(parser_supports 'ptrace,')" == "true" ] ; then
