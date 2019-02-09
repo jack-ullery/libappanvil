@@ -62,6 +62,11 @@ def set_json_mode():
     write_json(jsonout)
 
 
+def set_text_mode():
+    """Output plaintext"""
+    global UI_mode
+    UI_mode = 'text'
+
 # reads the response on command line for json and verifies the response
 # for the dialog type
 def json_response(dialog_type):
