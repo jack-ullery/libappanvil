@@ -126,6 +126,9 @@ Feb  4 13:40:38 XPS-13-9370 kernel: [128552.880347] audit: type=1400 audit({epoc
         if self.test_logfile and os.path.exists(self.test_logfile):
             os.remove(self.test_logfile)
 
+    # The Perl aa-notify script is written so, that it will check for kern.log
+    # before printing help when invoked without arguments (sic!).
+    @unittest.skipUnless(os.path.isfile('/var/log/kern.log'), 'Requires kern.log on system')
     def test_no_arguments(self):
         '''Test using no arguments at all'''
 
@@ -187,11 +190,14 @@ OPTIONS:
         expected_output_has = 'AppArmor denials: 10 (since'
 
         return_code, output = cmd([aanotify_bin, '-f', self.test_logfile, '-l'])
+        if output == "aa-notify: ERROR: Couldn't find last login\n":
+            self.skipTest('Could not find last login')
         result = 'Got return code %d, expected %d\n' % (return_code, expected_return_code)
         self.assertEqual(expected_return_code, return_code, result + output)
         result = 'Got output "%s", expected "%s"\n' % (output, expected_output_has)
         self.assertIn(expected_output_has, output, result + output)
 
+    @unittest.skipUnless(os.path.isfile('/var/log/wtmp'), 'Requires wtmp on system')
     def test_entries_since_login_verbose(self):
         '''Test showing log entries since last login in verbose mode'''
 
@@ -260,6 +266,8 @@ Logfile: {logfile}
 AppArmor denials: 10 (since'''.format(logfile=self.test_logfile)
 
         return_code, output = cmd([aanotify_bin, '-f', self.test_logfile, '-l', '-v'])
+        if output == "aa-notify: ERROR: Couldn't find last login\n":
+            self.skipTest('Could not find last login')
         result = 'Got return code %d, expected %d\n' % (return_code, expected_return_code)
         self.assertEqual(expected_return_code, return_code, result + output)
         result = 'Got output "%s", expected "%s"\n' % (output, expected_output_has)
