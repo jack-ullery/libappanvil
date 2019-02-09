@@ -30,6 +30,7 @@ else
     # PYTHON_DIST_BUILD_PATH based on libapparmor/swig/python/test/Makefile.am
     PYTHON_DIST_BUILD_PATH = ../../libraries/libapparmor/swig/python/build/$$($(PYTHON) -c "import distutils.util; import platform; print(\"lib.%s-%s\" %(distutils.util.get_platform(), platform.python_version()[:3]))")
     LD_LIBRARY_PATH=../../libraries/libapparmor/src/.libs/
+    PERL5LIB=../../libraries/libapparmor/swig/perl/blib/lib/:../../libraries/libapparmor/swig/perl/:../../libraries/libapparmor/swig/perl/blib/arch/auto/:../../libraries/libapparmor/swig/perl/blib/arch/auto/LibAppArmor/
     PYTHONPATH=..:$(PYTHON_DIST_BUILD_PATH)
     CONFDIR=$(CURDIR)
     BASEDIR=../../profiles/apparmor.d
@@ -78,7 +79,7 @@ clean:
 	rm -rf __pycache__/ .coverage htmlcov
 
 check: __libapparmor __parser
-	export PYTHONPATH=$(PYTHONPATH) LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) LC_ALL=C __AA_CONFDIR=$(CONFDIR) __AA_BASEDIR=$(BASEDIR) __AA_PARSER=$(PARSER) ; $(foreach test, $(wildcard test-*.py), echo ; echo === $(test) === ; $(call pyalldo, $(test)))
+	export PYTHONPATH=$(PYTHONPATH) PERL5LIB=$(PERL5LIB) LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) LC_ALL=C __AA_CONFDIR=$(CONFDIR) __AA_BASEDIR=$(BASEDIR) __AA_PARSER=$(PARSER) ; $(foreach test, $(wildcard test-*.py), echo ; echo === $(test) === ; $(call pyalldo, $(test)))
 
 .coverage: $(wildcard ../aa-* ../apparmor/*.py test-*.py) __libapparmor __parser
 	export PYTHONPATH=$(PYTHONPATH) LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) LC_ALL=C __AA_CONFDIR=$(CONFDIR) __AA_BASEDIR=$(BASEDIR) __AA_PARSER=$(PARSER) ; $(COVERAGE_IGNORE_FAILURES_CMD) ; $(foreach test, $(wildcard test-*.py), echo ; echo === $(test) === ; $(PYTHON) -m coverage run --branch -p $(test); )
@@ -91,4 +92,3 @@ coverage-report: .coverage
 
 coverage-html: .coverage
 	$(PYTHON) -m coverage html --omit="$(COVERAGE_OMIT)" $(HTML_COVR_ARGS)
-
