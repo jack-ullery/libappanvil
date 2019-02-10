@@ -10,7 +10,8 @@
 # ------------------------------------------------------------------
 
 import unittest
-from common_test import AATest, setup_all_loops
+from common_test import AATest, setup_all_loops # , setup_aa
+# import apparmor.aa as aa  # see the setup_aa() call for details
 
 class TestFoo(AATest):
     tests = [
@@ -46,8 +47,8 @@ class TestBaz(AATest):
     def test_Baz_only_one_test(self):
         self.assertEqual("baz", "baz")
 
-
-
+# if you import apparmor.aa and call init_aa() in your tests, uncomment this
+# setup_aa(aa)
 setup_all_loops(__name__)
 if __name__ == '__main__':
     unittest.main(verbosity=1)
