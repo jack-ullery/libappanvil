@@ -14,8 +14,11 @@ import os
 import signal
 import subprocess
 import tempfile
-import unittest
 import time
+import unittest
+
+from common_test import AATest, setup_all_loops, setup_aa
+import apparmor.aa as aa
 
 # The location of the aa-notify utility can be overridden by setting
 # the APPARMOR_NOTIFY environment variable; this is useful for running
@@ -59,9 +62,9 @@ def cmd(command):
     return [sp.returncode, out.decode('utf-8')]
 
 
-class AANotifyTest(unittest.TestCase):
+class AANotifyTest(AATest):
 
-    def setUp(self):
+    def AASetup(self):
         '''Create temporary log file with 30 enties of different age'''
 
         test_logfile_contents_999_days_old = \
@@ -120,7 +123,7 @@ Feb  4 13:40:38 XPS-13-9370 kernel: [128552.880347] audit: type=1400 audit({epoc
         )
         handle.close()
 
-    def tearDown(self):
+    def AATeardown(self):
         '''Remove temporary log file after tests ended'''
 
         if self.test_logfile and os.path.exists(self.test_logfile):
@@ -276,6 +279,9 @@ AppArmor denials: 10 (since'''.format(logfile=self.test_logfile)
         result = 'Got output "%s", expected "%s"\n' % (output, expected_output_has)
         self.assertIn(expected_output_has, output, result + output)
 
+
+setup_aa(aa)  # Wrapper for aa.init_aa()
+setup_all_loops(__name__)
 if __name__ == '__main__':
     if 'APPARMOR_NOTIFY' in os.environ:
         aanotify_bin = os.environ['APPARMOR_NOTIFY']
