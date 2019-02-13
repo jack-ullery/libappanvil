@@ -132,10 +132,10 @@ sub gen_binary($) {
   my $hashbang = head($bin);
   if ($hashbang && $hashbang =~ /^#!\s*(\S+)/) {
     my $interpreter = $1;
-    gen_file("$interpreter:rix");
+    gen_file(realpath($interpreter) . ":rix");
     gen_elf_binary($interpreter);
   } else {
-    gen_elf_binary($bin)
+    gen_elf_binary(realpath($bin))
   }
 }
 
