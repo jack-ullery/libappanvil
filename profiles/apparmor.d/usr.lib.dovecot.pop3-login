@@ -16,6 +16,7 @@
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/dovecot-common>
+  #include <abstractions/openssl>
 
   capability setuid,
   capability sys_chroot,
