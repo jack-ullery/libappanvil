@@ -64,6 +64,9 @@
   # per-user font business
   owner @{HOME}/.fonts.cache-*    rwl,
 
+  # GtkComposeTable
+  owner @{HOME}/.cache/gtk-3.0/** r,
+
   # icon caches
   /var/cache/**/icon-theme.cache  r,
   /usr/share/**/icon-theme.cache  r,
