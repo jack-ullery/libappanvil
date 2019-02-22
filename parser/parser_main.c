@@ -1095,49 +1095,49 @@ do {									\
 ({									\
 	int localrc = 0;						\
 	do {								\
-	if (jobs == 0) {						\
-		/* no parallel work so avoid fork() overhead */		\
-		RESULT(WORK);						\
-		break;							\
-	}								\
-	if (jobs_scale) {						\
-		long n = sysconf(_SC_NPROCESSORS_ONLN);			\
-		if (n > jobs_max)					\
-			n = jobs_max;					\
-		if (n > jobs) {						\
-			/* reset sample chances - potentially reduce to 0 */ \
-			jobs_scale = jobs_max - n;			\
-			jobs = n;					\
-		} else							\
-			/* reduce scaling chance by 1 */		\
-			jobs_scale--;					\
-	}								\
-	if (njobs == jobs) {						\
-		/* wait for a child */					\
-		if (debug_jobs)						\
-			fprintf(stderr, "    JOBS SPAWN: waiting (jobs %ld == max %ld) ...\n", njobs, jobs);						\
-		work_sync_one(RESULT);					\
-	}								\
-									\
-	pid_t child = fork();						\
-	if (child == 0) {						\
-		/* child - exit work unit with returned value */	\
-		exit(WORK);						\
-	} else if (child > 0) {						\
-		/* parent */						\
-		njobs++;						\
-		if (debug_jobs)						\
-			fprintf(stderr, "    JOBS SPAWN: created %ld ...\n", njobs);									\
-	} else {							\
-		/* error */						\
-		if (debug_jobs)	{					\
-			int error = errno;				\
-			fprintf(stderr, "    JOBS SPAWN: failed error: %d) ...\n", errno);	\
-			errno = error;					\
+		if (jobs == 0) {					\
+			/* no parallel work so avoid fork() overhead */	\
+			RESULT(WORK);					\
+			break;						\
 		}							\
-		RESULT(errno);						\
-		localrc = -1;						\
-	}								\
+		if (jobs_scale) {					\
+			long n = sysconf(_SC_NPROCESSORS_ONLN);		\
+			if (n > jobs_max)				\
+				n = jobs_max;				\
+			if (n > jobs) {					\
+				/* reset sample chances - potentially reduce to 0 */ \
+				jobs_scale = jobs_max - n;		\
+				jobs = n;				\
+			} else						\
+				/* reduce scaling chance by 1 */	\
+				jobs_scale--;				\
+		}							\
+		if (njobs == jobs) {					\
+			/* wait for a child */				\
+			if (debug_jobs)					\
+				fprintf(stderr, "    JOBS SPAWN: waiting (jobs %ld == max %ld) ...\n", njobs, jobs);					\
+			work_sync_one(RESULT);				\
+		}							\
+									\
+		pid_t child = fork();					\
+		if (child == 0) {					\
+			/* child - exit work unit with returned value */\
+			exit(WORK);					\
+		} else if (child > 0) {					\
+			/* parent */					\
+			njobs++;					\
+			if (debug_jobs)					\
+				fprintf(stderr, "    JOBS SPAWN: created %ld ...\n", njobs);								\
+		} else {						\
+			/* error */					\
+			if (debug_jobs)	{				\
+				int error = errno;			\
+				fprintf(stderr, "    JOBS SPAWN: failed error: %d) ...\n", errno);	\
+				errno = error;				\
+			}						\
+			RESULT(errno);					\
+			localrc = -1;					\
+		}							\
 	} while (0);							\
 	localrc;							\
 })
