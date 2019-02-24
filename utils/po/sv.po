@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: AppArmor list <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2018-09-08 03:39+0000\n"
+"PO-Revision-Date: 2019-02-23 11:50+0000\n"
 "Last-Translator: Jonatan Nyberg <Unknown>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2018-09-09 06:00+0000\n"
-"X-Generator: Launchpad (build 18767)\n"
+"X-Launchpad-Export-Date: 2019-02-24 05:28+0000\n"
+"X-Generator: Launchpad (build 18886)\n"
 "Language: sv\n"
 
 #: ../aa-genprof:56
@@ -45,7 +45,6 @@ msgstr "Loggfilen %s existerar inte. Vänligen kontrollera sökvägen."
 msgid ""
 "It seems AppArmor was not started. Please enable AppArmor and try again."
 msgstr ""
-"Det verkar som AppArmor inte startades. Aktivera AppArmor och försök igen."
 
 #: ../aa-genprof:80 ../aa-mergeprof:47
 #, python-format
@@ -275,7 +274,7 @@ msgstr "Nätverksfamilj"
 #: ../aa-mergeprof:631 ../aa-mergeprof:658 ../apparmor/aa.py:1960
 #: ../apparmor/aa.py:1996
 msgid "Socket Type"
-msgstr ""
+msgstr "Uttagstyp"
 
 #: ../aa-mergeprof:673 ../apparmor/aa.py:2010
 #, python-format
@@ -310,7 +309,7 @@ msgstr "ta bort revisionsläge"
 
 #: ../aa-audit:28
 msgid "Show full trace"
-msgstr ""
+msgstr "Visa fullständigt spår"
 
 #: ../aa-complain:23
 msgid "Switch the given program to complain mode"

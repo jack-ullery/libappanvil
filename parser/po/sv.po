@@ -6,19 +6,19 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-13 00:11-0700\n"
-"PO-Revision-Date: 2018-08-09 18:04+0000\n"
+"PO-Revision-Date: 2019-02-23 12:56+0000\n"
 "Last-Translator: Jonatan Nyberg <Unknown>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2018-08-10 04:31+0000\n"
-"X-Generator: Launchpad (build 18747)\n"
+"X-Launchpad-Export-Date: 2019-02-24 05:28+0000\n"
+"X-Generator: Launchpad (build 18886)\n"
 "Language: sv\n"
 
 #: ../parser_include.c:113 ../parser_include.c:111
 msgid "Error: Out of memory.\n"
-msgstr "Fel: Slut på minne\n"
+msgstr "Fel: Slut på minne.\n"
 
 #: ../parser_include.c:123 ../parser_include.c:121
 #, c-format
@@ -144,11 +144,11 @@ msgstr ""
 #: ../parser_interface.c:446
 #, c-format
 msgid "profile %s network rules not enforced\n"
-msgstr ""
+msgstr "profil %s nätverksregler ej verkställda\n"
 
 #: ../parser_interface.c:666
 msgid "Unknown pattern type\n"
-msgstr ""
+msgstr "Okänd mönstertyp\n"
 
 #: ../parser_interface.c:750 ../parser_interface.c:902
 #: ../parser_interface.c:743 ../parser_interface.c:894
@@ -189,27 +189,27 @@ msgstr "%s: Det gick inte att skriva hela profilposten\n"
 #: ../parser_interface.c:593
 #, c-format
 msgid "%s: Unable to write entire profile entry to cache\n"
-msgstr ""
+msgstr "%s: Kunde inte skriva hela profilposten till cache\n"
 
 #: parser_lex.l:100 parser_lex.l:163 parser_lex.l:169
 #, c-format
 msgid "Could not open '%s'"
-msgstr ""
+msgstr "Kunde inte öppna \"%s\""
 
 #: parser_lex.l:104 parser_lex.l:167 parser_lex.l:173
 #, c-format
 msgid "fstat failed for '%s'"
-msgstr ""
+msgstr "fstat misslyckades för \"%s\""
 
 #: parser_lex.l:121
 #, c-format
 msgid "opendir failed '%s'"
-msgstr ""
+msgstr "opendir misslyckades '%s'"
 
 #: parser_lex.l:152
 #, c-format
 msgid "stat failed for '%s'"
-msgstr ""
+msgstr "stat misslyckades för '%s'"
 
 #: parser_lex.l:155 parser_lex.l:133 parser_lex.l:139
 #, c-format
@@ -224,7 +224,7 @@ msgstr "Oväntat tecken hittades: %s"
 
 #: parser_lex.l:386 parser_lex.l:418 parser_lex.l:428
 msgid "Variable declarations do not accept trailing commas"
-msgstr ""
+msgstr "Variabel deklarationer tillåter inte släpande kommatecken"
 
 #: parser_lex.l:420
 #, c-format
@@ -655,12 +655,12 @@ msgstr "Kan inte uppdatera cachekatalog: %s\n"
 #: ../parser_misc.c:833
 #, c-format
 msgid "Internal: unexpected DBus mode character '%c' in input"
-msgstr ""
+msgstr "Internt: oväntat DBus-lägestecken \"%c\" i inmatning"
 
 #: ../parser_misc.c:857
 #, c-format
 msgid "Internal error generated invalid DBus perm 0x%x\n"
-msgstr ""
+msgstr "Internt fel genererat ogiltigt DBus perm 0x%x\n"
 
 #: parser_yacc.y:575 parser_yacc.y:621
 msgid "deny prefix not allowed"
@@ -668,7 +668,7 @@ msgstr "neka prefixet inte tillåtet"
 
 #: parser_yacc.y:612 parser_yacc.y:658
 msgid "owner prefix not allowed"
-msgstr ""
+msgstr "ägarprefix inte tillåtet"
 
 #: parser_yacc.y:660
 msgid "owner prefix not allow on mount rules"
@@ -676,11 +676,11 @@ msgstr ""
 
 #: parser_yacc.y:677
 msgid "owner prefix not allow on dbus rules"
-msgstr ""
+msgstr "ägarprefix tillåter inte dbus-regler"
 
 #: parser_yacc.y:704
 msgid "owner prefix not allow on capability rules"
-msgstr ""
+msgstr "ägarprefix tillåter inte på kapacitetsregler"
 
 #: parser_yacc.y:1357 parser_yacc.y:1613
 #, c-format
