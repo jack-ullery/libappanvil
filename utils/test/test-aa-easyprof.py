@@ -1674,7 +1674,7 @@ POLICYGROUPS_DIR="%s/templates"
 
         # verify we get the same manifest back
         man_new = easyp.gen_manifest(params)
-        self.assertEquals(m, man_new)
+        self.assertEqual(m, man_new)
 
     def test_gen_manifest_ubuntu(self):
         '''Test gen_manifest (ubuntu)'''
@@ -1714,7 +1714,7 @@ POLICYGROUPS_DIR="%s/templates"
 
         # verify we get the same manifest back
         man_new = easyp.gen_manifest(params)
-        self.assertEquals(m, man_new)
+        self.assertEqual(m, man_new)
 
     def test_parse_manifest_no_version(self):
         '''Test parse_manifest (vendor with no version)'''

@@ -137,7 +137,7 @@ class AAParserCachingCommon(testlib.AATestTemplate):
         with open(features_path) as f:
             features = f.read()
         if expected:
-            self.assertEquals(expected_output, features,
+            self.assertEqual(expected_output, features,
                               "features contents differ, expected:\n%s\nresult:\n%s" % (expected_output, features))
         else:
             self.assertNotEquals(expected_output, features,
@@ -269,7 +269,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         if (int(major) < 3) or ((int(major) == 3) and (int(minor) <= 2)):
             self.assertAlmostEquals(time1, time2, places=5)
         else:
-            self.assertEquals(time1, time2)
+            self.assertEqual(time1, time2)
 
     def _set_mtime(self, path, mtime):
         atime = os.stat(path).st_atime
@@ -370,7 +370,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         # in cache_contents because of the difficulty coercing cache
         # file bytes into strings in python3
         self.assertNotEquals(orig_stat.st_size, stat.st_size, 'Expected cache file to be updated, size is not changed.')
-        self.assertEquals(os.stat(self.profile).st_mtime, stat.st_mtime)
+        self.assertEqual(os.stat(self.profile).st_mtime, stat.st_mtime)
 
     def test_cache_writing_clears_all_files(self):
         '''test cache writing clears all cache files'''
@@ -388,7 +388,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self._set_mtime(self.abstraction, 0)
         self._set_mtime(self.profile, expected)
         self._generate_cache_file()
-        self.assertEquals(expected, os.stat(self.cache_file).st_mtime)
+        self.assertEqual(expected, os.stat(self.cache_file).st_mtime)
 
     def test_abstraction_mtime_preserved(self):
         '''test abstraction mtime is preserved when it is newest'''
@@ -396,7 +396,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self._set_mtime(self.profile, 0)
         self._set_mtime(self.abstraction, expected)
         self._generate_cache_file()
-        self.assertEquals(expected, os.stat(self.cache_file).st_mtime)
+        self.assertEqual(expected, os.stat(self.cache_file).st_mtime)
 
     def test_equal_mtimes_preserved(self):
         '''test equal profile and abstraction mtimes are preserved'''
@@ -404,7 +404,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self._set_mtime(self.profile, expected)
         self._set_mtime(self.abstraction, expected)
         self._generate_cache_file()
-        self.assertEquals(expected, os.stat(self.cache_file).st_mtime)
+        self.assertEqual(expected, os.stat(self.cache_file).st_mtime)
 
     def test_profile_newer_skips_cache(self):
         '''test cache is skipped if profile is newer'''
@@ -420,9 +420,9 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
         stat = os.stat(self.cache_file)
-        self.assertEquals(orig_stat.st_size, stat.st_size)
-        self.assertEquals(orig_stat.st_ino, stat.st_ino)
-        self.assertEquals(orig_stat.st_mtime, stat.st_mtime)
+        self.assertEqual(orig_stat.st_size, stat.st_size)
+        self.assertEqual(orig_stat.st_ino, stat.st_ino)
+        self.assertEqual(orig_stat.st_mtime, stat.st_mtime)
 
     def test_abstraction_newer_skips_cache(self):
         '''test cache is skipped if abstraction is newer'''
@@ -438,9 +438,9 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
         stat = os.stat(self.cache_file)
-        self.assertEquals(orig_stat.st_size, stat.st_size)
-        self.assertEquals(orig_stat.st_ino, stat.st_ino)
-        self.assertEquals(orig_stat.st_mtime, stat.st_mtime)
+        self.assertEqual(orig_stat.st_size, stat.st_size)
+        self.assertEqual(orig_stat.st_ino, stat.st_ino)
+        self.assertEqual(orig_stat.st_mtime, stat.st_mtime)
 
     def test_profile_newer_rewrites_cache(self):
         '''test cache is rewritten if profile is newer'''
