@@ -74,7 +74,7 @@ class AAPythonBindingsTests(unittest.TestCase):
         libapparmor.free_record(swig_record)
 
         expected = self.parse_output_file(outfile)
-        self.assertEquals(expected, record,
+        self.assertEqual(expected, record,
                           "expected records did not match\n" +
                           "expected = %s\nactual = %s" % (expected, record))
 
@@ -90,7 +90,7 @@ class AAPythonBindingsTests(unittest.TestCase):
             line = l.rstrip('\n')
             count += 1
             if line == "START":
-                self.assertEquals(count, 1,
+                self.assertEqual(count, 1,
                                   "Unexpected output format in %s" % (outfile))
                 continue
             else:
