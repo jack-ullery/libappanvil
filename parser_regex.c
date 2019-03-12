@@ -473,17 +473,13 @@ static int process_profile_name_xmatch(Profile *prof)
 				ptype = convert_aaregex_to_pcre(alt->name, 0,
 								glob_default,
 								tbuf, &len);
-				if (ptype == ePatternBasic)
-					len = strlen(alt->name);
-				if (len < prof->xmatch_len)
-					prof->xmatch_len = len;
 				if (!rules->add_rule(tbuf.c_str(), 0, AA_MAY_EXEC, 0, dfaflags)) {
 					delete rules;
 					return FALSE;
 				}
 			}
 		}
-		prof->xmatch = rules->create_dfa(&prof->xmatch_size, dfaflags);
+		prof->xmatch = rules->create_dfa(&prof->xmatch_size, &prof->xmatch_len, dfaflags);
 		delete rules;
 		if (!prof->xmatch)
 			return FALSE;
@@ -679,8 +675,9 @@ int process_profile_regex(Profile *prof)
 		goto out;
 
 	if (prof->dfa.rules->rule_count > 0) {
+		int xmatch_len = 0;
 		prof->dfa.dfa = prof->dfa.rules->create_dfa(&prof->dfa.size,
-							    dfaflags);
+							    &xmatch_len, dfaflags);
 		delete prof->dfa.rules;
 		prof->dfa.rules = NULL;
 		if (!prof->dfa.dfa)
@@ -815,7 +812,9 @@ int process_profile_policydb(Profile *prof)
 		goto out;
 
 	if (prof->policy.rules->rule_count > 0) {
-		prof->policy.dfa = prof->policy.rules->create_dfa(&prof->policy.size, dfaflags);
+		int xmatch_len = 0;
+		prof->policy.dfa = prof->policy.rules->create_dfa(&prof->policy.size,
+														  &xmatch_len, dfaflags);
 		delete prof->policy.rules;
 
 		prof->policy.rules = NULL;
