@@ -401,7 +401,7 @@ int _aa_overlaydirat_for_each(int dirfd[], int n, void *data,
 		}
 		if (merge(overlay, size, max_size, list, n_list, dirfd[i])) {
 			for (k = 0; k < n_list; k++)
-				free(list[i]);
+				free(list[k]);
 			for (k = 0; k < size; k++)
 				free(overlay[k].dent);
 			return -1;
