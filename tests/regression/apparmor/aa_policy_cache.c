@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Canonical, Ltd.
+ * Copyright (C) 2015, 2019 Canonical, Ltd.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of version 2 of the GNU General Public
@@ -24,6 +24,7 @@
 #include <sys/apparmor.h>
 
 #define OPT_NEW			"new"
+#define OPT_CACHE_DIR		"cache-dir"
 #define OPT_REMOVE		"remove"
 #define OPT_REMOVE_POLICY	"remove-policy"
 #define OPT_REPLACE_ALL		"replace-all"
@@ -34,9 +35,11 @@ static void usage(const char *prog)
 	fprintf(stderr,
 		"FAIL - usage: %s %s [%s N] <PATH>\n"
 		"              %s %s <PATH>\n"
+		"              %s %s <PATH>\n"
 		"              %s %s <PROFILE_NAME>\n"
 		"              %s %s [%s N] <PATH>\n",
 		prog, OPT_NEW, OPT_FLAG_MAX_CACHES,
+		prog, OPT_CACHE_DIR,
 		prog, OPT_REMOVE,
 		prog, OPT_REMOVE_POLICY,
 		prog, OPT_REPLACE_ALL, OPT_FLAG_MAX_CACHES);
@@ -56,6 +59,24 @@ static int test_new(const char *path, uint16_t max_caches)
 	rc = 0;
 out:
 	aa_policy_cache_unref(policy_cache);
+	return rc;
+}
+
+static int test_cache_dir(const char *path)
+{
+	char *cache_dir;
+	int rc = 1;
+
+	cache_dir = aa_policy_cache_dir_path_preview(NULL, AT_FDCWD, path);
+	if (!cache_dir) {
+		perror("FAIL - aa_policy_cache_new");
+		goto out;
+	}
+
+	printf("%s\n", cache_dir);
+	rc = 0;
+out:
+	free(cache_dir);
 	return rc;
 }
 
@@ -120,6 +141,7 @@ int main(int argc, char **argv)
 {
 	uint16_t max_caches = 0;
 	const char *str = NULL;
+	bool show_pass = true;
 	int rc = 1;
 
 	if (!(argc == 3 || argc == 5)) {
@@ -151,6 +173,9 @@ int main(int argc, char **argv)
 
 	if (strcmp(argv[1], OPT_NEW) == 0) {
 		rc = test_new(str, max_caches);
+	} else if (strcmp(argv[1], OPT_CACHE_DIR) == 0 && argc == 3) {
+		show_pass = false;
+		rc = test_cache_dir(str);
 	} else if (strcmp(argv[1], OPT_REMOVE) == 0 && argc == 3) {
 		rc = test_remove(str);
 	} else if (strcmp(argv[1], OPT_REMOVE_POLICY) == 0 && argc == 3) {
@@ -161,7 +186,7 @@ int main(int argc, char **argv)
 		usage(argv[0]);
 	}
 
-	if (!rc)
+	if (show_pass && !rc)
 		printf("PASS\n");
 
 	exit(rc);
