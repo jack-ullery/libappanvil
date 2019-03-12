@@ -366,7 +366,7 @@ static ssize_t readdirfd(int dirfd, struct dirent ***out,
 	}
 
 	if (dircmp)
-		qsort(dents, n, sizeof(*dent), (int (*)(const void *, const void *))dircmp);
+		qsort(dents, n, sizeof(struct dirent *), (int (*)(const void *, const void *))dircmp);
 
 	*out = dents;
 	closedir(dir);
