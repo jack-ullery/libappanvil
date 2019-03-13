@@ -18,32 +18,40 @@ bin=$pwd
 
 . $bin/prologue.inc
 
-cachedir=$tmpdir/cache
+# cacheloc is the top level directory of cache directories
+cacheloc="$tmpdir/cache"
+
+# cachedir will be a subdirectory of the $cacheloc and its name will be
+# influenced by the features available in the currently running kernel
+#
+# the test helper will call into libapparmor to query the cacheloc path
+cachedir=$("$test" cache-dir "$cacheloc")
+
 policies=$(echo aa_policy_cache_test_{0001..1024})
 
-create_cachedir()
+create_cacheloc()
 {
-	mkdir -p "$cachedir"
+	mkdir -p "$cacheloc"
 }
 
-remove_cachedir()
+remove_cacheloc()
 {
-	if [ -n "$cachedir" ]
+	if [ -n "$cacheloc" ]
 	then
-		rm -rf "$cachedir"
+		rm -rf "$cacheloc"
 	fi
 }
 
-create_empty_cache()
+create_empty_cachedir()
 {
-	$test new --max-caches 1 "$cachedir" > /dev/null
+	$test new --max-caches 1 "$cacheloc" > /dev/null
 }
 
 create_cache_files()
 {
 	local cachefile
 
-	create_cachedir
+	mkdir -p "$cachedir"
 	for policy in $policies
 	do
 		cachefile="${cachedir}/${policy}"
@@ -101,29 +109,29 @@ runchecktest_remove_policies()
 # IMPORTANT: These tests build on themselves so the first failing test can
 # cause many failures
 
-runchecktest "AA_POLICY_CACHE new (no cachedir)" fail new "$cachedir"
-create_cachedir
-runchecktest "AA_POLICY_CACHE new (no .features)" fail new "$cachedir"
-remove_cachedir
-runchecktest "AA_POLICY_CACHE new create (no cachedir)" pass new --max-caches 1 "$cachedir"
-runchecktest "AA_POLICY_CACHE new create (existing cache)" pass new --max-caches 1 "$cachedir"
-runchecktest "AA_POLICY_CACHE new (existing cache)" pass new "$cachedir"
+runchecktest "AA_POLICY_CACHE new (no cacheloc)" fail new "$cacheloc"
+create_cacheloc
+runchecktest "AA_POLICY_CACHE new (no .features)" fail new "$cacheloc"
+remove_cacheloc
+runchecktest "AA_POLICY_CACHE new create (no cacheloc)" pass new --max-caches 1 "$cacheloc"
+runchecktest "AA_POLICY_CACHE new create (existing cache)" pass new --max-caches 1 "$cacheloc"
+runchecktest "AA_POLICY_CACHE new (existing cache)" pass new "$cacheloc"
 
 install_bad_features_file
-runchecktest "AA_POLICY_CACHE new (bad .features)" fail new "$cachedir"
-runchecktest "AA_POLICY_CACHE new create (bad .features)" pass new --max-caches 1 "$cachedir"
+runchecktest "AA_POLICY_CACHE new (bad .features)" fail new "$cacheloc"
+runchecktest "AA_POLICY_CACHE new create (bad .features)" pass new --max-caches 1 "$cacheloc"
 
 # Make sure that no test policies are already loaded
 verify_policies_are_not_loaded
 
-remove_cachedir
-runchecktest "AA_POLICY_CACHE replace-all (no cachedir)" fail replace-all "$cachedir"
-create_cachedir
-runchecktest "AA_POLICY_CACHE replace-all (no .features)" fail replace-all "$cachedir"
-create_empty_cache
-runchecktest "AA_POLICY_CACHE replace-all (empty cache)" pass replace-all "$cachedir"
+remove_cacheloc
+runchecktest "AA_POLICY_CACHE replace-all (no cacheloc)" fail replace-all "$cacheloc"
+create_cacheloc
+runchecktest "AA_POLICY_CACHE replace-all (no .features)" fail replace-all "$cacheloc"
+create_empty_cachedir
+runchecktest "AA_POLICY_CACHE replace-all (empty cachedir)" pass replace-all "$cacheloc"
 create_cache_files
-runchecktest "AA_POLICY_CACHE replace-all (full cache)" pass replace-all "$cachedir"
+runchecktest "AA_POLICY_CACHE replace-all (full cache)" pass replace-all "$cacheloc"
 
 # Test that the previous policy load was successful 
 runchecktest_policies_are_loaded
@@ -131,9 +139,11 @@ runchecktest_policies_are_loaded
 runchecktest "AA_POLICY_CACHE remove-policy (DNE)" fail remove-policy "aa_policy_cache_test_DNE"
 runchecktest_remove_policies
 
-runchecktest "AA_POLICY_CACHE remove (full cache)" pass remove "$cachedir"
-runchecktest "AA_POLICY_CACHE remove (no .features)" pass remove "$cachedir"
-install_bad_features_file
-runchecktest "AA_POLICY_CACHE remove (empty cache)" pass remove "$cachedir"
-remove_cachedir
-runchecktest "AA_POLICY_CACHE remove (DNE)" fail remove "$cachedir"
+runchecktest "AA_POLICY_CACHE remove (full cache)" pass remove "$cacheloc"
+create_empty_cachedir
+remove_features_file
+runchecktest "AA_POLICY_CACHE remove (no .features)" pass remove "$cacheloc"
+create_empty_cachedir
+runchecktest "AA_POLICY_CACHE remove (empty cache)" pass remove "$cacheloc"
+remove_cacheloc
+runchecktest "AA_POLICY_CACHE remove (DNE)" fail remove "$cacheloc"
