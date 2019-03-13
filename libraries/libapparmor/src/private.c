@@ -389,7 +389,7 @@ int _aa_overlaydirat_for_each(int dirfd[], int n, void *data,
 {
 	autofree struct dirent **list = NULL;
 	autofree struct overlaydir *overlay = NULL;
-	int i, k;
+	int i;
 	int n_list, size = 0, max_size = 0;
 	int rc = 0;
 
@@ -400,10 +400,10 @@ int _aa_overlaydirat_for_each(int dirfd[], int n, void *data,
 			return -1;
 		}
 		if (merge(overlay, size, max_size, list, n_list, dirfd[i])) {
-			for (k = 0; k < n_list; k++)
-				free(list[k]);
-			for (k = 0; k < size; k++)
-				free(overlay[k].dent);
+			for (i = 0; i < n_list; i++)
+				free(list[i]);
+			for (i = 0; i < size; i++)
+				free(overlay[i].dent);
 			return -1;
 		}
 	}
