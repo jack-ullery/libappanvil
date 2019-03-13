@@ -278,33 +278,33 @@ static int insert(struct overlaydir **overlayptr, int *max_size, int *size,
 
 #define merge(overlay, n_overlay, max_size, list, n_list, dirfd)	\
 ({									\
-	int i, j;							\
+	int y, z;							\
 	int rc = 0;							\
 									\
-	for (i = 0, j = 0; i < n_overlay && j < n_list; ) {		\
-		int res = strcmp(overlay[i].dent->d_name, list[j]->d_name);\
+	for (y = 0, z = 0; y < n_overlay && z < n_list; ) {		\
+		int res = strcmp(overlay[y].dent->d_name, list[z]->d_name);\
 		if (res < 0) {						\
-			i++;						\
+			y++;						\
 			continue;					\
 		} else if (res == 0) {					\
-			free(list[j]);					\
-			list[j] = NULL;					\
-			i++;						\
-			j++;						\
+			free(list[z]);					\
+			list[z] = NULL;					\
+			y++;						\
+			z++;						\
 		} else {						\
-			if ((rc = insert(&overlay, &max_size, &n_overlay, i,\
-					 n_list - j, dirfd, list[j])))	\
+			if ((rc = insert(&overlay, &max_size, &n_overlay, y,\
+					 n_list - z, dirfd, list[z])))	\
 				goto fail;				\
-			i++;						\
-			list[j++] = NULL;				\
+			y++;						\
+			list[z++] = NULL;				\
 		}							\
 	}								\
-	while (j < n_list) {						\
-		if ((rc = insert(&overlay, &max_size, &n_overlay, i,	\
-				 n_list - j, dirfd,list[j])))		\
+	while (z < n_list) {						\
+		if ((rc = insert(&overlay, &max_size, &n_overlay, y,	\
+				 n_list - z, dirfd,list[z])))		\
 			goto fail;					\
-		i++;							\
-		list[j++] = NULL;					\
+		y++;							\
+		list[z++] = NULL;					\
 	}								\
 									\
 fail:									\
