@@ -340,14 +340,16 @@ remove_profiles() {
 	# We filter child profiles as removing the parent will remove
 	# the children
 	sed -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" | \
-	LC_COLLATE=C sort | grep -v // | while read profile ; do
-		echo -n "$profile" > "$SFS_MOUNTPOINT/.remove"
-		rc=$?
-		if [ ${rc} -ne 0 ] ; then 
-			retval=${rc}
-		fi
-	done
-	return ${retval}
+	LC_COLLATE=C sort | grep -v // | {
+		while read profile ; do
+			echo -n "$profile" > "$SFS_MOUNTPOINT/.remove"
+			rc=$?
+			if [ ${rc} -ne 0 ] ; then
+				retval=${rc}
+			fi
+		done
+		return ${retval}
+	}
 }
 
 apparmor_stop() {
