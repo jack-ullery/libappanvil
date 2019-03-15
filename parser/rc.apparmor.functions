@@ -359,22 +359,13 @@ apparmor_stop() {
 }
 
 apparmor_kill() {
-	aa_log_daemon_msg "Unloading AppArmor modules "
 	if ! is_apparmor_loaded ; then
 		aa_log_failure_msg "AppArmor module is not loaded"
 		return 1
 	fi
 
-	if is_apparmor_present ; then
-		MODULE=apparmor
-	else
-		aa_log_failure_msg "AppArmor is builtin"
-		return 1
-	fi
-	/sbin/modprobe -qr $MODULE
-	rc=$?
-	aa_log_end_msg $rc
-	return $rc
+	aa_log_failure_msg "apparmor_kill() is no longer supported because AppArmor can't be built as a module"
+	return 1
 }
 
 __apparmor_restart() {
