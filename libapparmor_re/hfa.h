@@ -44,7 +44,7 @@ typedef list<State *> Partition;
 
 class perms_t {
 public:
-	perms_t(void) throw(int): allow(0), deny(0), audit(0), quiet(0), exact(0) { };
+	perms_t(void): allow(0), deny(0), audit(0), quiet(0), exact(0) { };
 
 	bool is_accept(void) { return (allow | audit | quiet); }
 
@@ -192,7 +192,7 @@ struct DiffDag {
  */
 class State {
 public:
-	State(int l, ProtoState &n, State *other) throw(int):
+	State(int l, ProtoState &n, State *other):
 		label(l), flags(0), perms(), trans()
 	{
 		int error;
