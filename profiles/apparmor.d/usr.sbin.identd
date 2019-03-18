@@ -17,6 +17,7 @@ profile identd /usr/{bin,sbin}/identd {
   capability net_bind_service,
   capability setgid,
   capability setuid,
+  network netlink dgram,
   /etc/identd.conf         r,
   /etc/identd.key          r,
   /etc/identd.pid          w,
