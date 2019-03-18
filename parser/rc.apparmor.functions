@@ -130,7 +130,7 @@ skip_profile() {
 	   [ "${profile%.pacnew}"       != "${profile}" ] ; then
 		return 2
 	fi
-	if echo "${profile}" | egrep -q '^.+\.new-[0-9\.]+_[0-9]+$'; then
+	if echo "${profile}" | grep -E -q '^.+\.new-[0-9\.]+_[0-9]+$'; then
 		return 2
 	fi
 
