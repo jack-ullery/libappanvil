@@ -17,15 +17,39 @@ import unittest
 from collections import namedtuple
 from common_test import AATest, setup_all_loops
 
-from apparmor.rule.network import NetworkRule, NetworkRuleset
+from apparmor.rule.network import NetworkRule, NetworkRuleset, network_domain_keywords
 from apparmor.rule import BaseRule
-from apparmor.common import AppArmorException, AppArmorBug
+from apparmor.common import AppArmorException, AppArmorBug, cmd
 from apparmor.logparser import ReadLog
 from apparmor.translations import init_translation
 _ = init_translation()
 
 exp = namedtuple('exp', ['audit', 'allow_keyword', 'deny', 'comment',
         'domain', 'all_domains', 'type_or_protocol', 'all_type_or_protocols'])
+
+# --- check if the keyword list is up to date --- #
+
+class NetworkKeywordsTest(AATest):
+    def test_network_keyword_list(self):
+        rc, output = cmd('../../common/list_af_names.sh')
+        self.assertEqual(rc, 0)
+
+        af_names = []
+        af_pairs = output.replace('AF_', '').strip().lower().split(",")
+        for af_pair in af_pairs:
+            af_name = af_pair.lstrip().split(" ")[0]
+            # skip max af name definition
+            if len(af_name) > 0 and af_name != "max":
+                af_names.append(af_name)
+
+        missing_af_names = []
+        for keyword in af_names:
+            if keyword not in network_domain_keywords:
+                # keywords missing in the system are ok (= older kernel), but network_domain_keywords needs to have the full list
+                missing_af_names.append(keyword)
+
+        self.assertEqual(missing_af_names, [], 'Missing af_names in NetworkRule network_domain_keywords. This test is likely running '
+                'on an newer kernel and will require updating the list of network domain keywords in utils/apparmor/rule/network.py')
 
 # --- tests for single NetworkRule --- #
 
