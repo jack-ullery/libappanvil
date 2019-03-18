@@ -113,21 +113,21 @@ is_container_with_internal_policy() {
 # returns 2 on silent skip
 skip_profile() {
 	local profile=$1
-	if [ "${profile%.rpmnew}" != "${profile}" -o \
-	     "${profile%.rpmsave}" != "${profile}" -o \
-	     "${profile%.orig}" != "${profile}" -o \
-	     "${profile%.rej}" != "${profile}" -o \
-	     "${profile%\~}" != "${profile}" ] ; then
+	if [ "${profile%.rpmnew}"   != "${profile}" ] || \
+	   [ "${profile%.rpmsave}"  != "${profile}" ] || \
+	   [ "${profile%.orig}"     != "${profile}" ] || \
+	   [ "${profile%.rej}"      != "${profile}" ] || \
+	   [ "${profile%\~}"        != "${profile}" ] ; then
 		return 1
 	fi
 	# Silently ignore the dpkg, pacman, and xbps files
-	if [ "${profile%.dpkg-new}" != "${profile}" -o \
-	     "${profile%.dpkg-old}" != "${profile}" -o \
-	     "${profile%.dpkg-dist}" != "${profile}" -o \
-	     "${profile%.dpkg-bak}" != "${profile}" -o \
-	     "${profile%.dpkg-remove}" != "${profile}" -o \
-	     "${profile%.pacsave}" != "${profile}" -o \
-	     "${profile%.pacnew}" != "${profile}" ] ; then
+	if [ "${profile%.dpkg-new}"     != "${profile}" ] || \
+	   [ "${profile%.dpkg-old}"     != "${profile}" ] || \
+	   [ "${profile%.dpkg-dist}"    != "${profile}" ] || \
+	   [ "${profile%.dpkg-bak}"     != "${profile}" ] || \
+	   [ "${profile%.dpkg-remove}"  != "${profile}" ] || \
+	   [ "${profile%.pacsave}"      != "${profile}" ] || \
+	   [ "${profile%.pacnew}"       != "${profile}" ] ; then
 		return 2
 	fi
 	if echo "${profile}" | egrep -q '^.+\.new-[0-9\.]+_[0-9]+$'; then
