@@ -482,6 +482,26 @@ public:
 	bool contains_null() { return child[0]->contains_null(); }
 };
 
+/* Match a node zero or one times. */
+class OptionalNode: public OneChildNode {
+public:
+	OptionalNode(Node *left): OneChildNode(left) { nullable = true; }
+	void compute_firstpos() { firstpos = child[0]->firstpos; }
+	void compute_lastpos() { lastpos = child[0]->lastpos; }
+	int eq(Node *other)
+	{
+		if (dynamic_cast<OptionalNode *>(other))
+			return child[0]->eq(other->child[0]);
+		return 0;
+	}
+	ostream &dump(ostream &os)
+	{
+		os << '(';
+		child[0]->dump(os);
+		return os << ")?";
+	}
+};
+
 /* Match a node one or more times. (This is a unary operator.) */
 class PlusNode: public OneChildNode {
 public:
@@ -713,6 +733,7 @@ struct node_counts {
 	int alt;
 	int plus;
 	int star;
+	int optional;
 	int any;
 	int cat;
 };

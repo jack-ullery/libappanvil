@@ -432,11 +432,28 @@ static const char *local_name(const char *name)
 	return name;
 }
 
+/*
+ * get_xattr_value returns the value of an xattr expression, performing NULL
+ * checks along the way. The method returns NULL if the xattr match doesn't
+ * have an xattrs (though this case currently isn't permitted by the parser).
+ */
+char *get_xattr_value(struct cond_entry *entry)
+{
+	if (!entry->eq)
+		return NULL;
+	if (!entry->vals)
+		return NULL;
+	return entry->vals->value;
+}
+
 static int process_profile_name_xmatch(Profile *prof)
 {
 	std::string tbuf;
 	pattern_t ptype;
 	const char *name;
+
+	struct cond_entry *entry;
+	const char *xattr_value;
 
 	/* don't filter_slashes for profile names */
 	if (prof->attachment)
@@ -451,7 +468,7 @@ static int process_profile_name_xmatch(Profile *prof)
 	if (ptype == ePatternInvalid) {
 		PERROR(_("%s: Invalid profile name '%s' - bad regular expression\n"), progname, name);
 		return FALSE;
-	} else if (ptype == ePatternBasic && !(prof->altnames || prof->attachment)) {
+	} else if (ptype == ePatternBasic && !(prof->altnames || prof->attachment || prof->xattrs.list)) {
 		/* no regex so do not set xmatch */
 		prof->xmatch = NULL;
 		prof->xmatch_len = 0;
@@ -474,6 +491,28 @@ static int process_profile_name_xmatch(Profile *prof)
 								glob_default,
 								tbuf, &len);
 				if (!rules->add_rule(tbuf.c_str(), 0, AA_MAY_EXEC, 0, dfaflags)) {
+					delete rules;
+					return FALSE;
+				}
+			}
+		}
+		if (prof->xattrs.list) {
+			for (entry = prof->xattrs.list; entry; entry = entry->next) {
+				xattr_value = get_xattr_value(entry);
+				if (!xattr_value)
+					xattr_value = "**"; // Default to allowing any value.
+				/* len is measured because it's required to
+				 * convert the regex to pcre, but doesn't impact
+				 * xmatch_len. The kernel uses the number of
+				 * xattrs matched to prioritized in addition to
+				 * xmatch_len.
+				 */
+				int len;
+				tbuf.clear();
+				convert_aaregex_to_pcre(xattr_value, 0,
+							glob_default, tbuf,
+							&len);
+				if (!rules->append_rule(tbuf.c_str(), dfaflags)) {
 					delete rules;
 					return FALSE;
 				}
