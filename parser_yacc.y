@@ -306,9 +306,9 @@ opt_id: { /* nothing */ $$ = NULL; }
 opt_id_or_var: { /* nothing */ $$ = NULL; }
 	| id_or_var { $$ = $1; }
 
-profile_base: TOK_ID opt_id_or_var flags TOK_OPEN rules TOK_CLOSE
+profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE
 	{
-		Profile *prof = $5;
+		Profile *prof = $6;
 		bool self_stack = false;
 
 		if (!prof) {
@@ -342,7 +342,13 @@ profile_base: TOK_ID opt_id_or_var flags TOK_OPEN rules TOK_CLOSE
 		prof->attachment = $2;
 		if ($2 && !($2[0] == '/' || strncmp($2, "@{", 2) == 0))
 			yyerror(_("Profile attachment must begin with a '/' or variable."));
-		prof->flags = $3;
+		if ($3.name) {
+			if (strcmp($3.name, "xattrs") != 0)
+				yyerror(_("profile id: invalid conditional group %s=()"), $3.name);
+			free ($3.name);
+			prof->xattrs = $3;
+		}
+		prof->flags = $4;
 		if (force_complain && kernel_abi_version == 5)
 			/* newer abis encode force complain as part of the
 			 * header
@@ -393,6 +399,12 @@ hat: hat_start profile_base
 		Profile *prof = $2;
 		if ($2)
 			PDEBUG("Matched: hat %s { ... }\n", prof->name);
+		/*
+		 * It isn't clear what a xattrs match on a hat profile
+		 * should do, disallow it for now.
+		 */
+		if ($2->xattrs.list)
+			yyerror("hat profiles can't use xattrs matches");
 
 		prof->flags.hat = 1;
 		$$ = prof;

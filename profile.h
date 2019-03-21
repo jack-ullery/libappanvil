@@ -120,6 +120,8 @@ public:
 	size_t xmatch_size;
 	int xmatch_len;
 
+	struct cond_entry_list xattrs;
+
 	/* char *sub_name; */			/* subdomain name or NULL */
 	/* int default_deny; */			/* TRUE or FALSE */
 	int local;
@@ -150,6 +152,8 @@ public:
 		xmatch = NULL;
 		xmatch_size = 0;
 		xmatch_len = 0;
+
+		xattrs.list = NULL;
 
 		local = local_mode = local_audit = 0;
 

@@ -124,6 +124,44 @@ bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
 	return true;
 }
 
+/*
+ * append_rule is like add_rule, but appends the rule to any existing rules
+ * with a null transition. The appended rule matches with the same permissions
+ * as the rule it's appended to.
+ *
+ * This is used by xattrs matching where, after matching the path, the DFA is
+ * advanced by a null character for each xattr.
+ */
+bool aare_rules::append_rule(const char *rule, dfaflags_t flags)
+{
+	Node *tree = NULL;
+	if (regex_parse(&tree, rule))
+		return false;
+
+	if (flags & DFA_DUMP_RULE_EXPR) {
+		cerr << "rule: ";
+		cerr << rule;
+		cerr << "  ->  ";
+		tree->dump(cerr);
+		cerr << "\n\n";
+	}
+
+	/*
+	 * For each matching state, we want to create an optional path
+	 * separated by a null character.
+	 *
+	 * When matching xattrs, the DFA must end up in an accepting state for
+	 * the path, then each value of the xattrs. Using an optional node
+	 * lets each rule end up in an accepting state.
+	 */
+	tree = new OptionalNode(new CatNode(new CharNode(0), tree));
+	PermExprMap::iterator it;
+	for (it = expr_map.begin(); it != expr_map.end(); it++) {
+		expr_map[it->first] = new CatNode(it->second, tree);
+	}
+	return true;
+}
+
 /* create a dfa from the ruleset
  * returns: buffer contain dfa tables, @size set to the size of the tables
  *          else NULL on failure, @min_match_len set to the shortest string
