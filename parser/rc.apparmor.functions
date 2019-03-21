@@ -31,7 +31,6 @@
 
 # Some nice defines that we use
 
-MODULE=apparmor
 PARSER=/sbin/apparmor_parser
 PARSER_OPTS=
 # Suppress warnings when booting in quiet mode
@@ -262,8 +261,8 @@ is_apparmor_loaded() {
 		mount_securityfs
 	fi
 
-	if [ -f "${SECURITYFS}/${MODULE}/profiles" ]; then
-		SFS_MOUNTPOINT="${SECURITYFS}/${MODULE}"
+	if [ -f "${SECURITYFS}/apparmor/profiles" ]; then
+		SFS_MOUNTPOINT="${SECURITYFS}/apparmor"
 		return 0
 	fi
 
