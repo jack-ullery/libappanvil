@@ -64,13 +64,11 @@
 
   # we might as well allow everything to use common libraries
   /{usr/,}lib{,32,64}/**                r,
-  /{usr/,}lib{,32,64}/lib*.so*          mr,
-  /{usr/,}lib{,32,64}/**/lib*.so*       mr,
+  /{usr/,}lib{,32,64}/**.so*       mr,
   /{usr/,}lib/@{multiarch}/**            r,
-  /{usr/,}lib/@{multiarch}/lib*.so*      mr,
-  /{usr/,}lib/@{multiarch}/**/lib*.so*   mr,
-  /{usr/,}lib/tls/i686/{cmov,nosegneg}/lib*.so*    mr,
-  /{usr/,}lib/i386-linux-gnu/tls/i686/{cmov,nosegneg}/lib*.so*    mr,
+  /{usr/,}lib/@{multiarch}/**.so*   mr,
+  /{usr/,}lib/tls/i686/{cmov,nosegneg}/*.so*    mr,
+  /{usr/,}lib/i386-linux-gnu/tls/i686/{cmov,nosegneg}/*.so*    mr,
 
   # /dev/null is pretty harmless and frequently used
   /dev/null                      rw,
