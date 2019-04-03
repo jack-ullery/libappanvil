@@ -77,11 +77,14 @@ class TestFilename_from_profile_name(AATest):
         ('foo',         '/etc/apparmor.d/bin.foo'),
         ('/bin/foo',    None),
         ('bar',         None),
+        ('/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}',   '/etc/apparmor.d/usr.bin.wine'),
+        ('/usr/lib/wine/bin/wine-preloader-staging-foo',                                            None),  # no AARE matching for profile names
     ]
 
     def AASetup(self):
         self.pl = ProfileList()
         self.pl.add('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
+        self.pl.add('/etc/apparmor.d/usr.bin.wine', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}')
 
     def _run_test(self, params, expected):
         self.assertEqual(self.pl.filename_from_profile_name(params), expected)
@@ -93,6 +96,8 @@ class TestFilename_from_attachment(AATest):
         ('/bin/foobar', '/etc/apparmor.d/bin.foobar'),
         ('@{foo}',      None),  # XXX variables not supported yet (and @{foo} isn't defined in this test)
         ('/bin/404',    None),
+        ('/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}',   '/etc/apparmor.d/usr.bin.wine'),  # XXX should this really match, or should attachment matching only use AARE?
+        ('/usr/lib/wine/bin/wine-preloader-staging-foo',                                            '/etc/apparmor.d/usr.bin.wine'),  # AARE match
     ]
 
     def AASetup(self):
@@ -100,6 +105,7 @@ class TestFilename_from_attachment(AATest):
         self.pl.add('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
         self.pl.add('/etc/apparmor.d/bin.baz', 'baz', '/bin/ba*')
         self.pl.add('/etc/apparmor.d/bin.foobar', 'foobar', '/bin/foo{bar,baz}')
+        self.pl.add('/etc/apparmor.d/usr.bin.wine', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}')
 
     def _run_test(self, params, expected):
         self.assertEqual(self.pl.filename_from_attachment(params), expected)
