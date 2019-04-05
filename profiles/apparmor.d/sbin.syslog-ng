@@ -21,6 +21,7 @@ profile syslog-ng /{usr/,}{bin,sbin}/syslog-ng {
   #include <abstractions/nameservice>
   #include <abstractions/mysql>
   #include <abstractions/openssl>
+  #include <abstractions/python>
 
   capability chown,
   capability dac_override,
