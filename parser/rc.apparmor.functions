@@ -79,8 +79,11 @@ is_apparmor_present() {
 # process should continue without any loss of functionality. This is an
 # unsupported configuration that cannot be properly handled by this function.
 is_container_with_internal_policy() {
-	local ns_stacked_path="$SFS_MOUNTPOINT/.ns_stacked"
-	local ns_name_path="$SFS_MOUNTPOINT/.ns_name"
+	# this function is sometimes called independently of
+	# is_apparmor_loaded(), so also define this here.
+	SFS_MOUNTPOINT="${SECURITYFS}/${MODULE}"
+	local ns_stacked_path="${SFS_MOUNTPOINT}/.ns_stacked"
+	local ns_name_path="${SFS_MOUNTPOINT}/.ns_name"
 	local ns_stacked
 	local ns_name
 
