@@ -48,7 +48,7 @@ def write_json(jsonout):
 def set_json_mode():
     """
     Currently this is only used by aa-genprof and aa-logprof, while e.g.
-    aa-status generates its own JSON ourput.
+    aa-status generates its own JSON output.
 
     Remember to bump the JSON API version number if the output commands
     in this file are modified.
