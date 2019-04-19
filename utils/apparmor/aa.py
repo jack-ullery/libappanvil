@@ -1761,8 +1761,12 @@ def set_logfile(filename):
 
     if filename:
         logfile = filename
-    else:
+    elif 'logfiles' in cfg['settings']:
+        # This line can only run if the 'logfile' exists in settings, otherwise
+        # it will yield a Python KeyError
         logfile = conf.find_first_file(cfg['settings']['logfiles']) or '/var/log/syslog'
+    else:
+        logfile = '/var/log/syslog'
 
     if not os.path.exists(logfile):
         if filename:
