@@ -157,13 +157,13 @@ Display AppArmor notifications or messages for DENIED entries.
 optional arguments:
   -h, --help            show this help message and exit
   -p, --poll            poll AppArmor logs and display notifications
-  --display DISPLAY     set the DISPLAY environment variable (might be needed
-                        if sudo resets $DISPLAY)
+  --display DISPLAY     set the DISPLAY environment variable (might be needed if
+                        sudo resets $DISPLAY)
   -f FILE, --file FILE  search FILE for AppArmor messages
   -l, --since-last      display stats since last login
   -s NUM, --since-days NUM
-                        show stats for last NUM days (can be used alone or
-                        with -p)
+                        show stats for last NUM days (can be used alone or with
+                        -p)
   -v, --verbose         show messages with stats
   -u USER, --user USER  user to drop privileges to when not using sudo
   -w NUM, --wait NUM    wait NUM seconds before displaying notifications (with
