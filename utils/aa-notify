@@ -1,13 +1,17 @@
-#!/usr/bin/perl
-# ------------------------------------------------------------------
-#
-#    Copyright (C) 2009-2011 Canonical Ltd.
+#! /usr/bin/python3
+# ----------------------------------------------------------------------
+#    Copyright (C) 2018–2019 Otto Kekäläinen <otto@kekalainen.net>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
-#    License published by the Free Software Foundation.
+#    License as published by the Free Software Foundation.
 #
-# ------------------------------------------------------------------
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+# ----------------------------------------------------------------------
 #
 # /etc/apparmor/notify.conf:
 # # set to 'yes' to enable AppArmor DENIED notifications
@@ -20,679 +24,547 @@
 # # set to 'yes' to enable AppArmor DENIED notifications
 # show_notifications="yes"
 #
+# In a typical desktop environment one would run as a service the
+# command:
+#   /usr/bin/python3 /usr/bin/aa-notify -p -w 10
 
-use strict;
-use warnings;
-no warnings qw( once );
+import argparse
+import atexit
+import os
+import re
+import sys
+import time
+import struct
+import notify2
+import psutil
+import pwd
+import grp
 
-require LibAppArmor;
-require POSIX;
-require Time::Local;
-require File::Basename;
+import apparmor.aa as aa
+import apparmor.ui as aaui
+import apparmor.config as aaconfig
+from apparmor.common import DebugLogger, open_file_read
+from apparmor.fail import enable_aa_exception_handler
+from apparmor.translations import init_translation
 
-use Getopt::Long;
+import LibAppArmor  # C-library to parse one log line
 
-my %prefs;
-my $conf = "/etc/apparmor/notify.conf";
-my $user_conf = "";
-my $notify_exe = "/usr/bin/notify-send";
-my $notify_home = "";
-my $notify_display = "";
-my $last_exe = "/usr/bin/last";
-my $ps_exe = "/bin/ps";
-my $url = "https://wiki.ubuntu.com/DebuggingApparmor";
-my $nobody_user = "nobody";
-my $nobody_group = "nogroup";
+def get_user_login():
+    '''Portable function to get username. Should not trigger any
+    "OSError: [Errno 25] Inappropriate ioctl for device" errors in Giltab-CI'''
+    if os.name == "posix":
+        username = pwd.getpwuid(os.geteuid()).pw_name
+    else:
+        username = os.environ.get('USER')
+        if not username and hasattr(os, 'getlogin'):
+            username = os.getlogin()
+    return username
 
-sub readconf;
-sub parse_message;
-sub format_message;
-sub format_stats;
-sub kill_running_daemons;
-sub do_notify;
-sub show_since;
-sub do_last;
-sub do_show_messages;
-sub _error;
-sub _warn;
-sub _debug;
-sub exitscript;
-sub usage;
 
-#
-# Main script
-#
+def get_last_login_timestamp(username):
+    '''Directly read wtmp and get last login for user as epoch timestamp'''
+    timestamp = 0
+    filename = '/var/log/wtmp'
+    last_login = 0
 
-# Clean environment
-$ENV{PATH} = "/bin:/usr/bin";
-$ENV{SHELL} = "/bin/sh";
-defined($ENV{IFS}) and $ENV{IFS} = ' \t\n';
+    debug_logger.debug('Username: {}'.format(username))
 
-my $prog = File::Basename::basename($0);
+    with open(filename, "rb") as wtmp_file:
+        offset = 0
+        wtmp_filesize = os.path.getsize(filename)
+        debug_logger.debug('WTMP filesize: {}'.format(wtmp_filesize))
+        while offset < wtmp_filesize:
+            wtmp_file.seek(offset)
+            offset += 384  # Increment for next entry
 
-if ($prog !~ /^[a-zA-Z0-9_\-]+$/) {
-    print STDERR "ERROR: bad programe name '$prog'\n";
-    exitscript(1);
-}
+            type = struct.unpack("<L", wtmp_file.read(4))[0]
+            debug_logger.debug('WTMP entry type: {}'.format(type))
 
-$> == $< or die "Cannot be suid\n";
-$) == $( or die "Cannot be sgid\n";
+            # Only parse USER lines
+            if type == 7:
+                # Read each item and move pointer forward
+                pid = struct.unpack("<L", wtmp_file.read(4))[0]
+                line = wtmp_file.read(32).decode("utf-8", "replace").split('\0', 1)[0]
+                id = wtmp_file.read(4).decode("utf-8", "replace").split('\0', 1)[0]
+                user = wtmp_file.read(32).decode("utf-8", "replace").split('\0', 1)[0]
+                host = wtmp_file.read(256).decode("utf-8", "replace").split('\0', 1)[0]
+                term = struct.unpack("<H", wtmp_file.read(2))[0]
+                exit = struct.unpack("<H", wtmp_file.read(2))[0]
+                session = struct.unpack("<L", wtmp_file.read(4))[0]
+                timestamp = struct.unpack("<L", wtmp_file.read(4))[0]
+                usec = struct.unpack("<L", wtmp_file.read(4))[0]
+                entry = (pid, line, id, user, host, term, exit, session, timestamp, usec)
+                debug_logger.debug('WTMP entry: {}'.format(entry))
 
-my $login;
-our $orig_euid = $>;
+                # Store login timestamp for requested user
+                if user == username:
+                    last_login = timestamp
 
-my $opt_d = '';
-my $opt_display = '';
-my $opt_h = '';
-my $opt_l = '';
-my $opt_p = '';
-my $opt_v = '';
-my $opt_f = '';
-my $opt_s = 0;
-my $opt_u = '';
-my $opt_w = 0;
-GetOptions(
-    'debug|d'        => \$opt_d,
-    'display=s'      => \$opt_display,
-    'help|h'         => \$opt_h,
-    'since-last|l'   => \$opt_l,
-    'poll|p'         => \$opt_p,
-    'verbose|v'      => \$opt_v,
-    'file|f=s'       => \$opt_f,
-    'since-days|s=n' => \$opt_s,
-    'user|u=s'       => \$opt_u,
-    'wait|w=n'       => \$opt_w,
-);
-if ($opt_h) {
-    usage;
-    exitscript(0);
-}
+    # When loop is done, last value should be the latest login timestamp
+    return last_login
 
-# monitor file specified with -f, else use audit.log if auditd is running,
-# otherwise kern.log
-our $logfile = "/var/log/kern.log";
-if ($opt_f) {
-    -f $opt_f or die "'$opt_f' does not exist. Aborting\n";
-    $logfile = $opt_f;
-} else {
-    -e "/var/run/auditd.pid" and $logfile = "/var/log/audit/audit.log";
-}
 
--r $logfile or die "Cannot read '$logfile'\n";
-our $logfile_inode = get_logfile_inode($logfile);
-our $logfile_size = get_logfile_size($logfile);
-open (LOGFILE, "<$logfile") or die "Could not open '$logfile'\n";
-# Drop priviliges, if running as root
-if ($< == 0) {
-    $login = "root";
-    if (defined($ENV{SUDO_UID}) and defined($ENV{SUDO_GID})) {
-        $) = "$ENV{SUDO_GID} $ENV{SUDO_GID}" or _error("Could not change egid");
-        $( = $ENV{SUDO_GID} or _error("Could not change gid");
-        $> = $ENV{SUDO_UID} or _error("Could not change euid");
-        defined($ENV{SUDO_USER}) and $login = $ENV{SUDO_USER};
-    } else {
-        my $drop_to = $nobody_user;
-        if ($opt_u) {
-            $drop_to = $opt_u;
-        }
-        # nobody/nogroup
-        my $nam = scalar(getgrnam($nobody_group));
-        $) = "$nam $nam" or _error("Could not change egid");
-        $( = $nam or _error("Could not change gid");
-        $> = scalar(getpwnam($drop_to)) or _error("Could not change euid to '$drop_to'");
-    }
-} else {
-    $login = getlogin();
-    defined $login or $login = $ENV{'USER'};
-}
+def format_event(event, logsource):
+    output = []
 
-if (-s $conf) {
-    readconf($conf);
-    if (defined($prefs{use_group})) {
-        my ($name, $passwd, $gid, $members) = getgrnam($prefs{use_group});
-        if (not defined($members) or not defined($login) or (not grep { $_ eq $login } split(/ /, $members) and $login ne "root")) {
-            _error("'$login' must be in '$prefs{use_group}' group. Aborting.\nAsk your admin to add you to this group or to change the group in\n$conf if you want to use aa-notify.");
-        }
-    }
-}
+    if 'message_body' in config['']:
+        output += [config['']['message_body']]
 
-# find user's notify.conf
-if (-e "$ENV{HOME}/.apparmor/notify.conf" ) {
-    # use legacy path if the conf file is there
-    $user_conf = "$ENV{HOME}/.apparmor/notify.conf";
-} elsif (defined $ENV{XDG_CONFIG_HOME}) {
-    # use XDG_CONFIG_HOME if it is defined
-    $user_conf = "$ENV{XDG_CONFIG_HOME}/apparmor/notify.conf";
-} else {
-    # fallback to the default value of XDG_CONFIG_HOME
-    $user_conf = "$ENV{HOME}/.config/apparmor/notify.conf";
-}
+    if event.profile:
+        output += ['Profile: {}'.format(event.profile)]
+    if event.operation:
+        output += ['Operation: {}'.format(event.operation)]
+    if event.name:
+        output += ['Name: {}'.format(event.name)]
+    if event.denied_mask:
+        output += ['Denied: {}'.format(event.denied_mask)]
+    if event.net_family and event.net_sock_type:
+        output += ['Family: {}'.format(event.net_family)]
+        output += ['Socket: {}'.format(event.net_sock_type)]
 
-if ($opt_p) {
-    # notify-send is packaged in libnotify-bin on Debian/Ubuntu, libnotify-tools on openSUSE
-    -x "$notify_exe" or _error("Could not find '$notify_exe'. Please install it (package libnotify-bin or libnotify-tools). Aborting");
+    output += ['Logfile: {}'.format(logsource)]
 
-    # we need correct values for $HOME and $DISPLAY environment variables,
-    # otherwise $notify_exe won't be able to connect to DBUS to display the
-    # message. Do this here to avoid excessive lookups.
-    $notify_home = (getpwuid $>)[7]; # homedir of the user
+    return "\n".join(output)
 
-    if ($opt_display ne '') {
-        $notify_display = $opt_display;
-    } elsif (defined($ENV{'DISPLAY'})) {
-        $notify_display = $ENV{'DISPLAY'};
-    }
 
-    if ($notify_display eq '') {
-        my $sudo_warn_msg = '';
-        if (defined($ENV{'SUDO_USER'})) {
-            $sudo_warn_msg = ' (or reset by sudo)';
-        }
-        _warn("Environment variable \$DISPLAY not set$sudo_warn_msg.");
-        _warn ('Desktop notifications will not work.');
-        if ($sudo_warn_msg ne '') { 
-            _warn ('Use   sudo aa-notify -p --display "$DISPLAY"   to set the environment variable.');
-        } else {
-            _warn ('Use something like   aa-notify -p --display :0   to set the environment variable.')
-        }
-    }
-} elsif ($opt_l) {
-    -x "$last_exe" or _error("Could not find '$last_exe'. Aborting");
-}
-if ($opt_s and not $opt_l) {
-    $opt_s =~ /^[0-9]+$/ or _error("-s requires a number");
-}
+def notify_about_new_entries(logfile, wait=0):
+    # Kill other instances of aa-notify if already running
+    for process in psutil.process_iter():
+        # Find the process that has the same name as this script, e.g. aa-notify.py
+        if process.name() == os.path.basename(__file__) and process.pid != os.getpid():
+            print(_('Killing old daemon (PID {})...').format(process.pid))
+            os.kill(process.pid, 15)
 
-if ($opt_w) {
-    $opt_w =~ /^[0-9]+$/ or _error("-w requires a number");
-}
+    # Spawn/fork into the background and stay running
+    newpid = os.fork()
+    if newpid == 0:
 
-if ($opt_p or $opt_l) {
-    if (-s $user_conf) {
-        readconf($user_conf);
-    }
+        # Follow the logfile and stream notifications
+        # Rate limit to not show too many notifications
+        try:
+            for event in follow_apparmor_events(logfile, wait):
+                debug_logger.info(format_event(event, logfile))
+                yield(format_event(event, logfile))
+        except PermissionError:
+            sys.exit(_("ERROR: Cannot read {}. Please check permissions.".format(logfile)))
 
-    if (defined($prefs{show_notifications}) and $prefs{show_notifications} ne "yes") {
-        _debug("'show_notifications' is disabled. Exiting");
-        exitscript(0);
-    }
-}
+    else:
+        print(_('Notification emitter started in the background'))
+        # pids = (os.getpid(), newpid)
+        # print("parent: %d, child: %d\n" % pids)
+        os._exit(0)  # Exit child without calling exit handlers etc
 
-my $now = time();
-if ($opt_p) {
-    do_notify();
-} elsif ($opt_l) {
-    do_last();
-} elsif ($opt_s and not $opt_p) {
-    do_show_messages($opt_s);
-} else {
-    usage;
-    exitscript(1);
-}
 
-exitscript(0);
+def show_entries_since_epoch(logfile, epoch_since):
+    count = 0
+    for event in get_apparmor_events(logfile, epoch_since):
+        count += 1
+        if args.verbose:
+            print(format_event(event, logfile))
+            print()  # Print a newline after each entry for better readability
 
-#
-# Subroutines
-#
-sub readconf {
-    my $cfg = $_[0];
-    -r $cfg or die "'$cfg' does not exist\n";
-
-    open (CFG, "<$cfg") or die "Could not open '$cfg'\n";
-    while (<CFG>) {
-        chomp;
-        s/#.*//;                # no comments
-        s/^\s+//;               # no leading white
-        s/\s+$//;               # no trailing white
-        next unless length;     # anything left?
-        my ($var, $value) = split(/\s*=\s*/, $_, 2);
-        if ($var eq "show_notifications" or $var eq "use_group" or $var eq "message_body" or $var eq "message_title" or $var eq "message_footer") {
-            $value =~ s/^"(.*)"$/$1/g;
-            $prefs{$var} = $value;
-        }
-    }
-    close(CFG);
-}
-
-sub parse_message {
-    my @params = @_;
-    my $msg = $params[0];
-
-    chomp($msg);
-    #_debug("processing: $msg");
-
-    my ($test) = LibAppArmorc::parse_record($msg);
-
-    # Don't show logs before certain date
-    my $date = LibAppArmor::aa_log_record::swig_epoch_get($test);
-    my $since = 0;
-    if (defined($date) and $#params > 0 and $params[1] =~ /^[0-9]+$/) {
-        $since = int($params[1]);
-        int($date) >= $since or goto err;
-    }
-
-    # ignore all but status and denied messages
-    my $type = LibAppArmor::aa_log_record::swig_event_get($test);
-
-    if ($type != $LibAppArmor::AA_RECORD_DENIED and $type != $LibAppArmor::AA_RECORD_ALLOWED) {
-        goto err;
-    }
-
-    my $profile = LibAppArmor::aa_log_record::swig_profile_get($test);
-    my $operation = LibAppArmor::aa_log_record::swig_operation_get($test);
-    my $name = LibAppArmor::aa_log_record::swig_name_get($test);
-    my $denied = LibAppArmor::aa_log_record::swig_denied_mask_get($test);
-    my $family = LibAppArmor::aa_log_record::swig_net_family_get($test);
-    my $sock_type = LibAppArmor::aa_log_record::swig_net_sock_type_get($test);
-    LibAppArmorc::free_record($test);
-
-    return ($profile, $operation, $name, $denied, $family, $sock_type, $date);
-
-err:
-    LibAppArmorc::free_record($test);
-    return ();
-}
-
-sub format_message {
-    my ($profile, $operation, $name, $denied, $family, $sock_type, $date) = @_;
-
-    my $formatted = "";
-    if (defined($prefs{message_body})) {
-        $formatted .= $prefs{message_body};
-    } else {
-        defined($profile) and $formatted .= "Profile: $profile\n";
-        defined($operation) and $formatted .= "Operation: $operation\n";
-        defined($name) and $formatted .= "Name: $name\n";
-        defined($denied) and $formatted .= "Denied: $denied\n";
-        defined($family) and defined ($sock_type) and $formatted .= "Family: $family\nSocket type: $sock_type\n";
-        $formatted .= "Logfile: $logfile\n";
-    }
-
-    return $formatted;
-}
-
-sub format_stats {
-    my $num = $_[0];
-    my $time = $_[1];
-    if ($num > 0) {
-        print "AppArmor denial";
-        $num > 1 and print "s";
-        print ": $num (since " . scalar(localtime($time)) . ")\n";
-        $opt_v and print "For more information, please see: $url\n";
-    }
-}
-
-sub kill_running_daemons {
-    # Look for other daemon instances of this script and kill them. This
-    # can happen on logout and back in (in which case $notify_exe fails
-    # anyway). 'ps xw' should output something like:
-    #  9987 ?        Ss     0:01 /usr/bin/perl ./bin/aa-notify -p
-    # 10170 ?        Ss     0:00 /usr/bin/perl ./bin/aa-notify -p
-    open(PS,"$ps_exe xw|") or die "Unable to run '$ps_exe':$!\n";
-    while(<PS>) {
-        chomp;
-        /$prog -[ps]/ or next;
-        s/^\s+//;
-        my @line = split(/\s+/, $_);
-        if ($line[5] =~ /$prog$/ and ($line[6] eq "-p" or $line[6] eq "-s")) {
-            if ($line[0] != $$) {
-                _warn("killing old daemon '$line[0]'");
-                kill 15, ($line[0]);
+    aaui.UI_Info(_('AppArmor denials: {count} (since {date})').format(
+            **{
+                'count': count,
+                'date': time.strftime(timeformat, time.localtime(epoch_since))
             }
-        }
-    }
-    close(PS);
-}
+        )
+    )
 
-sub send_message {
-    my $msg = $_[0];
+    if args.verbose:
+        if 'message_footer' in config['']:
+            print(config['']['message_footer'])
+        else:
+            print(_('For more information, please see: {}').format(debug_docs_url))
 
-    my $pid = fork();
-    if ($pid == 0) { 	# child
-        # notify-send needs $< to be the unprivileged user
-        $< = $>;
 
-        $notify_home ne "" and $ENV{'HOME'} = $notify_home;
-        $notify_display ne "" and $ENV{'DISPLAY'} = $notify_display;
-        if (not defined($ENV{'DBUS_SESSION_BUS_ADDRESS'})) {
-            $ENV{'DBUS_SESSION_BUS_ADDRESS'} = "unix:path=/run/user/$>/bus";
-        }
+def show_entries_since_last_login(logfile, username=get_user_login()):
+    # If running as sudo, use username of sudo user instead of root
+    if 'SUDO_USER' in os.environ.keys():
+        username = os.environ['SUDO_USER']
 
-        # 'system' uses execvp() so no shell metacharacters here.
-        # $notify_exe is an absolute path so execvp won't search PATH.
-        system "$notify_exe", "-i", "gtk-dialog-warning", "-u", "normal", "--", "AppArmor Message", "$msg";
-        my $exit_code = $? >> 8;
-        exit($exit_code);
-    }
+    if args.verbose:
+        print(_('Showing entries since {} logged in').format(username))
+        print() # Newline
+    epoch_since = get_last_login_timestamp(username)
+    if epoch_since == 0:
+        print(_('ERROR: Could not find last login'), file=sys.stderr)
+        sys.exit(1)
+    show_entries_since_epoch(logfile, epoch_since)
 
-    # parent
-    waitpid($pid, 0);
-    return $?;
-}
 
-sub do_notify {
-    my %seen;
-    my $seconds = 5;
-    our $time_to_die = 0;
+def show_entries_since_days(logfile, since_days):
+    day_in_seconds = 60*60*24
+    epoch_now = int(time.time())
+    epoch_since = epoch_now - day_in_seconds * since_days
+    show_entries_since_epoch(logfile, epoch_since)
 
-    print "Starting aa-notify\n";
-    kill_running_daemons();
 
-    # Daemonize, but not if in debug mode
-    if (not $opt_d) {
-        chdir('/') or die "Can't chdir to /: $!";
-        umask 0;
-        open STDIN, '/dev/null' or die "Can't read /dev/null: $!";
-        open STDOUT, '>/dev/null' or die "Can't write to /dev/null: $!";
-        #open STDERR, '>/dev/null' or die "Can't write to /dev/null: $!";
-        my $pid = fork();
-        exit if $pid;
-        die "Couldn't fork: $!" unless defined($pid);
-        POSIX::setsid() or die "Can't start a new session: $!";
-    }
+def follow_apparmor_events(logfile, wait=0):
+    '''Follow AppArmor events and yield relevant entries until process stops'''
 
-    sub signal_handler {
-        $time_to_die = 1;
-    }
-    $SIG{INT} = $SIG{TERM} = $SIG{HUP} = \&signal_handler;
-    $SIG{'PIPE'} = 'IGNORE';
+    # If wait was given as argument but was type None (from ArgumentParser)
+    # ensure it type int and zero
+    if not wait:
+        wait = 0
 
-    if ($opt_w) {
-        sleep($opt_w);
-    }
+    # Record start time here so wait can be calculated later
+    start_time = int(time.time())
 
-    my $count = 0;
-    my $footer = exists $prefs{message_footer} ? $prefs{message_footer} : "For more information, please see:\n$url";
-    my $first_run = 1;
-    my $since = $now;
-    if ($opt_s and int($opt_s) > 0) {
-       $since = $since - (int($opt_s) * 60 * 60 * 24);
-    }
-    for (my $i=0; $time_to_die == 0; $i++) {
-        if ($logfile_inode != get_logfile_inode($logfile)) {
-            _warn("$logfile changed inodes, reopening");
-            reopen_logfile();
-        } elsif (get_logfile_size($logfile) < $logfile_size) {
-            _warn("$logfile is smaller, reopening");
-            reopen_logfile();
-        }
-        while(my $msg = <LOGFILE>) {
-            my @attrib;
-            if ($first_run == 1) {
-                if ($since != $now) {
-                    @attrib = parse_message($msg, $since);
-                }
-            } else {
-                @attrib = parse_message($msg);
-            }
-            $#attrib > 0 or next;
-            if ($first_run == 1) {
-               $count++;
-               next;
-            }
+    # Record initial file size to detect if log rotates
+    log_size = os.stat(logfile).st_size
+    # Record initial file inode number to detect if log gets renamed
+    log_inode = os.stat(logfile).st_ino
 
-            my ($profile, $operation, $name, $denied, $family, $sock_type, $date) = @attrib;
+    # @TODO Implement more log sources in addition to just the logfile
+    with open_file_read(logfile) as logdata:
 
-            # Rate limit messages by creating a hash whose keys are:
-            # - for files: $profile|$name|$denied|
-            # - for everything else: $profile|$operation|$name|$denied|$family|$sock_type| (as available)
-            # The value for the key is a timestamp (epoch) and we won't show
-            # messages whose key has a timestamp from less than 5 seconds afo
-            my $k = "";
-            defined($profile) and $k .= "$profile|";
-            if (defined($name) and defined($denied)) {
-                $k .= "$name|$denied|";		# for file access, don't worry about operation
-            } else {
-                defined($operation) and $k .= "$operation|";
-                defined($name) and $k .= "$name|";
-                defined($denied) and $k .= "$denied|";
-                defined($family) and defined ($sock_type) and $k .= "$family|$sock_type|";
-            }
+        # Loop all pre-existing events in the log source once so later runs
+        # will only see new events
+        for discarded_event in logdata:
+            pass
 
-            # don't display same message if seen in last 5 seconds
-            if (not defined($seen{$k})) {
-                $seen{$k} = time();
-            } else {
-                my $now = time();
-                $now - $seen{$k} < $seconds and next;
-                $seen{$k} = $now;
-            }
+        # @TODO: while+sleep will cause CPU interruptions once per second,
+        # so switch to epoll/inotify/etc for less resource consumption.
+        while True:
+            debug_logger.debug(
+                'Poll AppArmor event source {} seconds since start'.
+                format(int(time.time()) - start_time)
+            )
 
-            my $m = format_message(@attrib);
-            $m ne "" or next;
+            # Reopen file if inode has chaneged, e.g. rename by logrotate
+            if os.stat(logfile).st_ino != log_inode:
+                debug_logger.debug('Logfile was renamed, reload to read the new file.')
+                logdata = open(logfile, 'r')
+                # Store new inode number for next comparisons
+                log_inode = os.stat(logfile).st_ino
 
-            $m .= $footer;
+            # Start reading from the beginning if file shrank
+            if os.stat(logfile).st_size < log_size:
+                debug_logger.debug('Logfile shrank in size, reload from beginning.')
+                logdata.seek(0)
+                log_size = os.stat(logfile).st_size  # Reset file size value
 
-            my $rc = send_message($m);
-            if ($rc != 0) {
-                _warn("'$notify_exe' exited with error '$rc'");
-                $time_to_die = 1;
-                last;
-            }
-        }
-        # from seek() in Programming Perl
-        seek(LOGFILE, 0, 1);
-        sleep(1);
+            # Record new file size if grown
+            if os.stat(logfile).st_size > log_size:
+                log_size = os.stat(logfile).st_size
 
-        if ($first_run) {
-            if ($count > 0) {
-                my $m = "$logfile contains $count denied message";
-                $count > 1 and $m .= "s";
-                if ($opt_s) {
-                    $m .= " in the last ";
-                    if ($opt_s > 1) {
-                        $m .= "$opt_s days";
-                    } else {
-                        $m .= "day";
-                    }
-                }
-                $m .= ". ";
-                $m .= $footer;
-                send_message($m);
-            }
-            $first_run = 0;
-        }
+            for event in parse_logdata(logdata):
+                # @TODO Alternatively use os.times()
+                if int(time.time()) - start_time < wait:
+                    debug_logger.debug('Omitted an event seen during wait time')
+                    continue
+                yield event
 
-        # clean out the %seen database every 30 seconds
-        if ($i > 30) {
-            foreach my $k (keys %seen) {
-                my $now = time();
-                $now - $seen{$k} > $seconds and delete $seen{$k} and _debug("deleted $k");
-            }
-            $i = 0;
-            _debug("done purging");
-            foreach my $k (keys %seen) {
-                _debug("remaining key: $k: $seen{$k}");
-            }
-        }
-    }
-    print STDERR "Stopping aa-notify\n";
-}
+            if debug_logger.debug_level <= 10 and int(time.time()) - start_time > 100:
+                debug_logger.debug('Debug mode detected: aborting notification emitter after 100 seconds.')
+                sys.exit(0)
 
-sub show_since {
-    my %msg_hash;
-    my %last_date;
-    my @msg_list;
-    my $count = 0;
-    while(my $msg = <LOGFILE>) {
-        my @attrib = parse_message($msg, $_[0]);
-        $#attrib > 0 or next;
+            time.sleep(1)
 
-        my $m = format_message(@attrib);
-        $m ne "" or next;
-        my $date = $attrib[6];
-        if ($opt_v) {
-            if (exists($msg_hash{$m})) {
-                $msg_hash{$m}++;
-                defined($date) and $last_date{$m} = scalar(localtime($date));
-            } else {
-                $msg_hash{$m} = 1;
-                push(@msg_list, $m);
-            }
-        }
-        $count++;
-    }
-    if ($opt_v) {
-        foreach my $m (@msg_list) {
-            print "$m";
-            if ($msg_hash{$m} gt 1) {
-                print "($msg_hash{$m} found";
-                if (exists($last_date{$m})) {
-                    print ", most recent from '$last_date{$m}'";
-                }
-                print ")\n";
-            }
-            print "\n";
-        }
-    }
-    return $count;
-}
 
-sub do_last {
-    open(LAST,"$last_exe -F -a $login|") or die "Unable to run $last_exe:$!\n";
-    my $time = 0;
-    while(my $line = <LAST>) {
-        _debug("Checking '$line'");
-        $line =~ /^$login/ or next;
-        $line !~ /^$login\s+pts.*\s+:[0-9]+\.[0-9]+$/ or next; # ignore xterm and friends
-        my @entry = split(/\s+/, $line);
-        my ($hour, $min, $sec) = (split(/:/, $entry[5]))[0,1,2];
-        $time = Time::Local::timelocal($sec, $min, $hour, $entry[4], $entry[3], $entry[6]);
-        last;
-    }
-    close(LAST);
-    $time > 0 or _error("Couldn't find last login");
+def get_apparmor_events(logfile, since=0):
+    '''Read audit events from log source and yield all relevant events'''
 
-    format_stats(show_since($time), $time);
-}
+    # Get logdata from file
+    # @TODO Implement more log sources in addition to just the logfile
+    try:
+        with open_file_read(logfile) as logdata:
+            for event in parse_logdata(logdata):
+                if event.epoch > since:
+                    yield event
+    except PermissionError:
+        sys.exit(_("ERROR: Cannot read {}. Please check permissions.".format(logfile)))
 
-sub do_show_messages {
-    my $since = $now - (int($_[0]) * 60 * 60 * 24);
-    format_stats(show_since($since), $since);
-}
 
-sub _warn {
-    my $msg = $_[0];
-    print STDERR "aa-notify: WARN: $msg\n";
-}
-sub _error {
-    my $msg = $_[0];
-    print STDERR "aa-notify: ERROR: $msg\n";
-    exitscript(1);
-}
+def parse_logdata(logsource):
+    '''Traverse any iterable log source and extract relevant AppArmor events'''
 
-sub _debug {
-    $opt_d or return;
-    my $msg = $_[0];
-    print STDERR "aa-notify: DEBUG: $msg\n";
-}
+    RE_audit_time_id = '(msg=)?audit\([\d\.\:]+\):\s+'  # 'audit(1282626827.320:411): '
+    RE_kernel_time = '\[[\d\.\s]+\]'    # '[ 1612.746129]'
+    RE_type_num = '1[45][0-9][0-9]'     # 1400..1599
+    RE_aa_or_op = '(apparmor=|operation=)'
 
-sub exitscript {
-    my $rc = $_[0];
-    close(LOGFILE);
-    exit $rc;
-}
+    RE_log_parts = [
+        'kernel:\s+(' + RE_kernel_time + '\s+)?(audit:\s+)?type=' + RE_type_num + '\s+' + RE_audit_time_id + RE_aa_or_op,  # v2_6 syslog
+        'kernel:\s+(' + RE_kernel_time + '\s+)?' + RE_audit_time_id + 'type=' + RE_type_num + '\s+' + RE_aa_or_op,
+        'type=(AVC|APPARMOR[_A-Z]*|' + RE_type_num + ')\s+' + RE_audit_time_id + '(type=' + RE_type_num + '\s+)?' + RE_aa_or_op,  # v2_6 audit and dmesg
+        'type=USER_AVC\s+' + RE_audit_time_id + '.*apparmor=',  # dbus
+        'type=UNKNOWN\[' + RE_type_num + '\]\s+' + RE_audit_time_id + RE_aa_or_op,
+        'dbus\[[0-9]+\]:\s+apparmor=',  # dbus
+    ]
 
-sub usage {
-    my $s = <<'EOF';
-USAGE: aa-notify [OPTIONS]
+    # Pre-filter log lines so that we hand over only relevant lines to LibAppArmor parsing
+    RE_LOG_ALL = re.compile('(' + '|'.join(RE_log_parts) + ')')
 
-Display AppArmor notifications or messages for DENIED entries.
+    for entry in logsource:
 
-OPTIONS:
-  -p, --poll			poll AppArmor logs and display notifications
-  --display $DISPLAY		set the DISPLAY environment variable to $DISPLAY
-				(might be needed if sudo resets $DISPLAY)
-  -f FILE, --file=FILE		search FILE for AppArmor messages
-  -l, --since-last		display stats since last login
-  -s NUM, --since-days=NUM	show stats for last NUM days (can be used alone
-				or with -p)
-  -v, --verbose			show messages with stats
-  -h, --help			display this help
-  -u USER, --user=USER		user to drop privileges to when not using sudo
-  -w NUM, --wait=NUM		wait NUM seconds before displaying
-				notifications (with -p)
-EOF
-    print $s;
-}
+        # Check the start of the log line and only process lines from AppArmor
+        apparmor_entry = RE_LOG_ALL.search(entry)
+        if apparmor_entry:
+            # Parse the line using LibAppArmor (C library)
+            # See aalogparse.h for data structure
+            event = LibAppArmor.parse_record(entry)
+            # Only show actual events of contained programs and ignore among
+            # others AppArmor profile reloads
+            if event.operation[0:8] != 'profile_':
+                yield event
 
-sub raise_privileges {
-    my $old_euid = -1;
 
-    if ($> != $<) {
-        _debug("raising privileges to '$orig_euid'");
-        $old_euid = $>;
-        $> = $orig_euid;
-        $> == $orig_euid or die "Could not raise privileges\n";
-    }
+def drop_privileges():
+    '''If running as root, drop privileges to USER if known, or fall-back to nobody_user/group'''
 
-    return $old_euid;
-}
+    if os.geteuid() == 0:
 
-sub drop_privileges {
-    my $old_euid = $_[0];
+        if 'SUDO_USER' in os.environ.keys():
+            next_username = os.environ['SUDO_USER']
+            next_uid = os.environ['SUDO_UID']
+            next_gid = os.environ['SUDO_GID']
+        else:
+            nobody_user_info = pwd.getpwnam(nobody_user)
+            next_username = nobody_user_info[0]
+            next_uid = nobody_user_info[2]
+            next_gid = nobody_user_info[3]
 
-    # Just exit if we didn't raise privileges
-    $old_euid == -1 and return;
+        debug_logger.debug('Dropping to user "{}" privileges'.format(next_username))
 
-    _debug("dropping privileges to '$old_euid'");
-    $> = $old_euid;
-    $> == $old_euid or die "Could not drop privileges\n";
-}
+        # @TODO?
+        # Remove group privileges, including potential 'adm' group that might
+        # have had log read access but also other accesses.
+        # os.setgroups([])
 
-sub reopen_logfile {
-    # reopen the logfile, temporarily switching back to starting euid for
-    # file permissions.
-    close(LOGFILE);
+        # Try setting the new uid/gid
+        # Set gid first, otherwise the latter step would fail on missing permissions
+        os.setegid(int(next_gid))
+        os.seteuid(int(next_uid))
 
-    my $old_euid = raise_privileges();
+def raise_privileges():
+    '''If was running as user with saved user ID 0, raise back to root privileges'''
 
-    $logfile_inode = get_logfile_inode($logfile);
-    $logfile_size = get_logfile_size($logfile);
-    open (LOGFILE, "<$logfile") or die "Could not open '$logfile'\n";
+    if os.geteuid() != 0 and original_effective_user == 0:
 
-    drop_privileges($old_euid);
-}
+        debug_logger.debug('Rasing privileges from UID {} back to UID 0 (root)'.format(os.geteuid()))
 
-sub get_logfile_size {
-    my $fn = $_[0];
-    my $size;
-    my $dir = File::Basename::dirname($fn);
+        # os.setgid(int(next_gid))
+        os.seteuid(original_effective_user)
 
-    # If we can't access the file, then raise privs. This can happen when
-    # using auditd and /var/log/audit/ is 700.
-    my $old_euid = -1;
-    if (! -x $dir) {
-        $old_euid = raise_privileges();
-    }
+def read_notify_conf(path, shell_config):
+    try:
+        shell_config.CONF_DIR = path
+        conf_dict = shell_config.read_config('notify.conf')
+        debug_logger.debug('Found configuration file in {}/notify.conf'.format(shell_config.CONF_DIR))
+        return conf_dict
+    except FileNotFoundError:
+        return {}
 
-    defined(($size = (stat($fn))[7])) or (sleep(10) and defined(($size = (stat($fn))[7])) or die "'$fn' disappeared. Aborting\n");
+def main():
+    '''
+    Main function of aa-notify that parses command line
+    arguments and starts the requested operations.
+    '''
 
-    drop_privileges($old_euid);
+    global _, debug_logger, config, args
+    global debug_docs_url, nobody_user, original_effective_user, timeformat
 
-    return $size;
-}
+    debug_docs_url = "https://wiki.ubuntu.com/DebuggingApparmor"
+    nobody_user = "nobody"
+    timeformat = "%c"  # Automatically using locale format
+    original_effective_user = os.geteuid()
 
-sub get_logfile_inode {
-    my $fn = $_[0];
-    my $inode;
-    my $dir = File::Basename::dirname($fn);
+    # setup exception handling
+    enable_aa_exception_handler()
 
-    # If we can't access the file, then raise privs. This can happen when
-    # using auditd and /var/log/audit/ is 700.
-    my $old_euid = -1;
-    if (! -x $dir) {
-        $old_euid = raise_privileges();
-    }
+    # setup module translations
+    _ = init_translation()
 
-    defined(($inode = (stat($fn))[1])) or (sleep(10) and defined(($inode = (stat($fn))[1])) or die "'$fn' disappeared. Aborting\n");
+    # Register the on_exit method with atexit
+    # Takes care of closing the debug log etc
+    atexit.register(aa.on_exit)
 
-    drop_privileges($old_euid);
+    # Set up UI logger for separate messages from UI module
+    debug_logger = DebugLogger('Notify')
+    debug_logger.debug("Starting aa-notify")
 
-    return $inode;
-}
+    parser = argparse.ArgumentParser(description=_('Display AppArmor notifications or messages for DENIED entries.'))
+    parser.add_argument('-p', '--poll', action='store_true', help=_('poll AppArmor logs and display notifications'))
+    parser.add_argument('--display', type=str, help=_('set the DISPLAY environment variable (might be needed if sudo resets $DISPLAY)'))
+    parser.add_argument('-f', '--file', type=str, help=_('search FILE for AppArmor messages'))
+    parser.add_argument('-l', '--since-last', action='store_true', help=_('display stats since last login'))
+    parser.add_argument('-s', '--since-days', type=int, metavar=('NUM'), help=_('show stats for last NUM days (can be used alone or with -p)'))
+    parser.add_argument('-v', '--verbose', action='store_true', help=_('show messages with stats'))
+    parser.add_argument('-u', '--user', type=str, help=_('user to drop privileges to when not using sudo'))
+    parser.add_argument('-w', '--wait', type=int, metavar=('NUM'), help=_('wait NUM seconds before displaying notifications (with -p)'))
+    parser.add_argument('--debug', action='store_true', help=_('debug mode'))
 
-#
-# end Subroutines
-#
+    # If a TTY then assume running in test mode and fix output width
+    if not sys.stdout.isatty():
+        parser.formatter_class=lambda prog: argparse.HelpFormatter(prog, width=80)
+
+    args = parser.parse_args()
+
+    # Debug mode can be invoked directly with --debug or env LOGPROF_DEBUG=3
+    if args.debug:
+        debug_logger.activateStderr()
+        debug_logger.debug('Logging level: {}'.format(debug_logger.debug_level))
+        debug_logger.debug('Running as uid: {0[0]}, euid: {0[1]}, suid: {0[2]}'.format(os.getresuid()))
+
+    # Sanity checks
+    user_ids = os.getresuid()
+    groups_ids = os.getresgid()
+    if user_ids[1] != user_ids[2]:
+        sys.exit("ERROR: Cannot be started with suid set!")
+    if groups_ids[1] != groups_ids[2]:
+        sys.exit("ERROR: Cannot be started with sgid set!")
+
+    # Define global variables that will be populated by init_aa()
+    # conf = None
+    logfile = None
+
+    confdir = os.getenv('__AA_CONFDIR')
+    if confdir:
+        aa.init_aa(confdir)
+    else:
+        aa.init_aa()
+
+    # Initialize aa.logfile
+    aa.set_logfile(args.file)
+
+    aa.loadincludes()
+
+    # Load global config reader
+    shell_config = aaconfig.Config('shell')
+
+    # Load system's notify.conf
+    system_config = read_notify_conf('/etc/apparmor', shell_config)
+    # Set default is no system notify.conf was found
+    if not system_config:
+        system_config = {'': {'show_notifications': 'yes'}}
+
+    # Load user's notify.conf
+    if os.path.isfile(os.environ['HOME'] + '/.apparmor/notify.conf'):
+        # Use legacy path if the conf file is there
+        user_config = read_notify_conf(os.environ['HOME'] + '/.apparmor', shell_config)
+    elif 'XDG_CONFIG_HOME' in os.environ and os.path.isfile(os.environ['XDG_CONFIG_HOME'] + '/apparmor/notify.conf'):
+        # Use XDG_CONFIG_HOME if it is defined
+        user_config = read_notify_conf(os.environ['XDG_CONFIG_HOME'] + '/apparmor', shell_config)
+    else:
+        # Fallback to the default value of XDG_CONFIG_HOME
+        user_config = read_notify_conf(os.environ['HOME'] + '/.config/apparmor', shell_config)
+
+    # Merge the two config dicts in an accurate and idiomatic way (requires Python 3.5)
+    config = {**system_config, **user_config}
+
+    """
+    Possible configuration options:
+    - show_notifications
+    - message_body
+    - message_footer
+    - use_group
+    """
+
+    # # Config checks
+
+    # Warn about unknown keys in the config
+    allowed_config_keys = [
+        'use_group',
+        'show_notifications',
+        'message_body',
+        'message_footer'
+    ]
+    found_config_keys = config[''].keys()
+    unknown_keys = [item for item in found_config_keys if item not in allowed_config_keys]
+    for item in unknown_keys:
+        print(_('Warning! Configration item "{}" is unknown!').format(item))
+
+    # Warn if use_group is defined and current group does not match defined
+    if 'use_group' in config['']:
+        user = pwd.getpwuid(os.geteuid())[0]
+        user_groups = [g.gr_name for g in grp.getgrall() if user in g.gr_mem]
+        gid = pwd.getpwnam(user).pw_gid
+        user_groups.append(grp.getgrgid(gid).gr_name)
+
+        if config['']['use_group'] not in user_groups:
+            print(
+                _('ERROR! User {user} not member of {group} group!').format(
+                    user=user,
+                    group=config['']['use_group']
+                ),
+                file=sys.stderr
+            )
+            sys.exit(1)
+            # @TODO: Extend UI lib to have warning and error functions that
+            # can be used in an uniform way with both text and JSON output.
+
+    if args.file:
+        logfile = args.file
+    elif os.path.isfile('/var/run/auditd.pid') and os.path.isfile('/var/log/audit/audit.log'):
+        # If auditd is running, look at /var/log/audit/audit.log
+        logfile = '/var/log/audit/audit.log'
+    elif os.path.isfile('/var/log/kern.log'):
+        # For aa-notify, the fallback is kern.log, not syslog from aa.logfile
+        logfile = '/var/log/kern.log'
+    else:
+        # If all above failed, use aa cfg
+        logfile = aa.logfile
+
+    if args.verbose:
+        print(_('Using log file'), logfile)
+
+    if args.display:
+        os.environ['DISPLAY'] = args.display
+
+    if args.poll:
+        # Exit immediately if show_notifications is no or any of the options below
+        if config['']['show_notifications'] in [False, 'no', 'false', '0']:
+            print(_('Showing notifications forbidden in notify.conf, aborting..'))
+            sys.exit(0)
+
+        # Don't allow usage of aa-notify by root, must be some user. Desktop
+        # logins as root are not recommended and certainly not a use case for
+        # aa-notify notifications.
+        if not args.user and os.getuid() == 0 and 'SUDO_USER' not in os.environ.keys():
+            sys.exit("ERROR: Cannot be started a real root user. Use --user to define what user to use.")
+
+        # At this point this script needs to be able to read 'logfile' but once
+        # the for loop starts, privileges can be dropped since the file descriptor
+        # has been opened and access granted. Further reads of the file will not
+        # trigger any new permission checks.
+        # @TODO Plan to catch PermissionError here or..?
+        for message in notify_about_new_entries(logfile, args.wait):
+
+            # Notifications should not be run as root, since root probably is
+            # the wrong desktop user and not the one getting the notifications.
+            drop_privileges()
+
+            # sudo does not preserve DBUS address, so we need to guess it based on UID
+            if 'DBUS_SESSION_BUS_ADDRESS' not in os.environ:
+                os.environ['DBUS_SESSION_BUS_ADDRESS'] = 'unix:path=/run/user/{}/bus'.format(os.geteuid())
+
+            # Before use, notify2 must be initialized and the DBUS channel
+            # should be opened using the non-root user. This this step needs to
+            # be executed after the drop_privileges().
+            notify2.init('AppArmor')
+
+            n = notify2.Notification(
+                _('AppArmor notification'),
+                message,
+                'gtk-dialog-warning'
+            )
+            n.show()
+
+            # When notification is sent, raise privileged back to root if the
+            # original effective user id was zero (to be ableo to read AppArmor logs)
+            raise_privileges()
+
+    elif args.since_last:
+        show_entries_since_last_login(logfile)
+    elif args.since_days:
+        show_entries_since_days(logfile, args.since_days)
+    else:
+        parser.print_help()
+
+    sys.exit(0)
+
+
+if __name__ == '__main__':
+    main()

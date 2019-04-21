@@ -317,7 +317,13 @@ incomplete) list of known version dependencies:
 The Python utilities require a minimum of Python 2.7 (deprecated) or Python 3.3.
 Python 3.x is recommended. Python 2.x support is deprecated since AppArmor 2.11.
 
-Some utilities (aa-exec, aa-notify and aa-decode) require Perl 5.10.1 or newer.
+The aa-notify tool's Python dependencies can be satisfied by installing the
+following packages (Debian package names, other distros may vary):
+* python3-notify2
+* python3-psutil
+
+Perl is no longer needed since none of the utilities shipped to end users depend
+on it anymore.
 
 Most shell scripts are written for POSIX-compatible sh. aa-decode expects
 bash, probably version 3.2 and higher.

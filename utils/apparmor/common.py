@@ -181,9 +181,13 @@ def open_file_write(path):
     return open_file_anymode('w', path, 'UTF-8')
 
 def open_file_anymode(mode, path, encoding='UTF-8'):
-    '''Open specified file in specified mode'''
+    '''Crash-resistant wrapper to open a specified file in specified mode'''
 
+    # This avoids a crash when reading a logfile with special characters that
+    # are not utf8-encoded (for example a latin1 "ö"), and also avoids crashes
+    # at several other places we don't know yet ;-)
     errorhandling = 'surrogateescape'
+
     if sys.version_info[0] < 3:
         errorhandling = 'replace'
 
