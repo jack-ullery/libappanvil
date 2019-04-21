@@ -1761,14 +1761,18 @@ def set_logfile(filename):
 
     if filename:
         logfile = filename
-    else:
+    elif 'logfiles' in cfg['settings']:
+        # This line can only run if the 'logfile' exists in settings, otherwise
+        # it will yield a Python KeyError
         logfile = conf.find_first_file(cfg['settings']['logfiles']) or '/var/log/syslog'
+    else:
+        logfile = '/var/log/syslog'
 
     if not os.path.exists(logfile):
         if filename:
-            raise AppArmorException(_('The logfile %s does not exist. Please check the path') % logfile)
+            raise AppArmorException(_('The logfile %s does not exist. Please check the path.') % logfile)
         else:
-            raise AppArmorException('Can\'t find system log "%s".' % (logfile))
+            raise AppArmorException('Can\'t find system log "%s". Please check permissions.' % (logfile))
     elif os.path.isdir(logfile):
         raise AppArmorException(_('%s is a directory. Please specify a file as logfile') % logfile)
 
