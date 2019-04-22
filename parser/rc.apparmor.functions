@@ -45,7 +45,7 @@ else
 fi
 ADDITIONAL_PROFILE_DIR=/var/lib/snapd/apparmor/profiles
 if [ -d "$ADDITIONAL_PROFILE_DIR" ]; then
-	PROFILE_DIRS="${PROFILE_DIRS} ${ADDITIONAL_PROFILE_DIR}"
+	PROFILE_DIRS="$PROFILE_DIRS $ADDITIONAL_PROFILE_DIR"
 fi
 AA_STATUS=/usr/sbin/aa-status
 SECURITYFS=/sys/kernel/security
@@ -79,8 +79,8 @@ is_apparmor_present() {
 # process should continue without any loss of functionality. This is an
 # unsupported configuration that cannot be properly handled by this function.
 is_container_with_internal_policy() {
-	local ns_stacked_path="${SFS_MOUNTPOINT}/.ns_stacked"
-	local ns_name_path="${SFS_MOUNTPOINT}/.ns_name"
+	local ns_stacked_path="$SFS_MOUNTPOINT/.ns_stacked"
+	local ns_name_path="$SFS_MOUNTPOINT/.ns_name"
 	local ns_stacked
 	local ns_name
 
@@ -111,25 +111,25 @@ is_container_with_internal_policy() {
 # returns 1 on verbose skip
 # returns 2 on silent skip
 skip_profile() {
-	local profile=$1
-	if [ "${profile%.rpmnew}"   != "${profile}" ] || \
-	   [ "${profile%.rpmsave}"  != "${profile}" ] || \
-	   [ "${profile%.orig}"     != "${profile}" ] || \
-	   [ "${profile%.rej}"      != "${profile}" ] || \
-	   [ "${profile%\~}"        != "${profile}" ] ; then
+	local profile="$1"
+	if [ "${profile%.rpmnew}"   != "$profile" ] || \
+	   [ "${profile%.rpmsave}"  != "$profile" ] || \
+	   [ "${profile%.orig}"     != "$profile" ] || \
+	   [ "${profile%.rej}"      != "$profile" ] || \
+	   [ "${profile%\~}"        != "$profile" ] ; then
 		return 1
 	fi
 	# Silently ignore the dpkg, pacman, and xbps files
-	if [ "${profile%.dpkg-new}"     != "${profile}" ] || \
-	   [ "${profile%.dpkg-old}"     != "${profile}" ] || \
-	   [ "${profile%.dpkg-dist}"    != "${profile}" ] || \
-	   [ "${profile%.dpkg-bak}"     != "${profile}" ] || \
-	   [ "${profile%.dpkg-remove}"  != "${profile}" ] || \
-	   [ "${profile%.pacsave}"      != "${profile}" ] || \
-	   [ "${profile%.pacnew}"       != "${profile}" ] ; then
+	if [ "${profile%.dpkg-new}"     != "$profile" ] || \
+	   [ "${profile%.dpkg-old}"     != "$profile" ] || \
+	   [ "${profile%.dpkg-dist}"    != "$profile" ] || \
+	   [ "${profile%.dpkg-bak}"     != "$profile" ] || \
+	   [ "${profile%.dpkg-remove}"  != "$profile" ] || \
+	   [ "${profile%.pacsave}"      != "$profile" ] || \
+	   [ "${profile%.pacnew}"       != "$profile" ] ; then
 		return 2
 	fi
-	if echo "${profile}" | grep -E -q '^.+\.new-[0-9\.]+_[0-9]+$'; then
+	if echo "$profile" | grep -E -q '^.+\.new-[0-9\.]+_[0-9]+$'; then
 		return 2
 	fi
 
@@ -161,7 +161,7 @@ __parse_profiles_dir() {
 		# skip_profile() function. For now, if the parser returns
 		# an error, just run it again separately on each profile.
 		for profile in "$profile_dir"/*; do
-			skip_profile "${profile}"
+			skip_profile "$profile"
 			skip=$?
 			if [ "$skip" -eq 2 ]; then
 				# Ignore skip status == 2 (silent skip)
@@ -172,7 +172,7 @@ __parse_profiles_dir() {
 					"Skipping profile $profile"
 				continue
 			fi
-			if [ ! -f "${profile}" ] ; then
+			if [ ! -f "$profile" ] ; then
 				continue
 			fi
 			echo "$profile"
@@ -186,7 +186,7 @@ __parse_profiles_dir() {
 		fi
 	}
 
-	return $status
+	return "$status"
 }
 
 parse_profiles() {
@@ -218,7 +218,7 @@ parse_profiles() {
 	done
 
 	aa_log_action_end "$STATUS"
-	return $STATUS
+	return "$STATUS"
 }
 
 profiles_names_list() {
@@ -235,8 +235,8 @@ profiles_names_list() {
 		fi
 
 		for profile in "$profile_dir"/*; do
-			if skip_profile "${profile}" && [ -f "${profile}" ] ; then
-				LIST_ADD=$($PARSER -N "$profile" )
+			if skip_profile "$profile" && [ -f "$profile" ] ; then
+				LIST_ADD=$("$PARSER" -N "$profile" )
 				if [ $? -eq 0 ]; then
 					echo "$LIST_ADD"
 				fi
@@ -261,8 +261,8 @@ is_apparmor_loaded() {
 		mount_securityfs
 	fi
 
-	if [ -f "${SECURITYFS}/apparmor/profiles" ]; then
-		SFS_MOUNTPOINT="${SECURITYFS}/apparmor"
+	if [ -f "$SECURITYFS/apparmor/profiles" ]; then
+		SFS_MOUNTPOINT="$SECURITYFS/apparmor"
 		return 0
 	fi
 
@@ -272,14 +272,14 @@ is_apparmor_loaded() {
 }
 
 is_securityfs_mounted() {
-	test -d ${SECURITYFS} -a -d /sys/fs/cgroup/systemd || grep -q securityfs /proc/filesystems && grep -q securityfs /proc/mounts
+	test -d "$SECURITYFS" -a -d /sys/fs/cgroup/systemd || grep -q securityfs /proc/filesystems && grep -q securityfs /proc/mounts
 	return $?
 }
 
 mount_securityfs() {
 	if grep -q securityfs /proc/filesystems ; then
-		aa_action "Mounting securityfs on ${SECURITYFS}" \
-				mount -t securityfs securityfs "${SECURITYFS}"
+		aa_action "Mounting securityfs on $SECURITYFS" \
+				mount -t securityfs securityfs "$SECURITYFS"
 		return $?
 	fi
 	return 0
@@ -304,7 +304,7 @@ apparmor_start() {
 	fi
 
 	# if there is anything in the profiles file don't load
-	if ! read line < "$SFS_MOUNTPOINT/profiles"; then
+	if ! read -r line < "$SFS_MOUNTPOINT/profiles"; then
 		parse_profiles load
 	else
 		aa_log_skipped_msg ": already loaded with profiles."
@@ -330,7 +330,7 @@ remove_profiles() {
 		return 1
 	fi
 
-	if [ ! -x "${PARSER}" ] ; then
+	if [ ! -x "$PARSER" ] ; then
 		aa_log_failure_msg "Unable to execute AppArmor parser"
 		return 1
 	fi
@@ -340,14 +340,14 @@ remove_profiles() {
 	# the children
 	sed -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" | \
 	LC_COLLATE=C sort | grep -v // | {
-		while read profile ; do
-			echo -n "$profile" > "$SFS_MOUNTPOINT/.remove"
+		while read -r profile ; do
+			printf "%s" "$profile" > "$SFS_MOUNTPOINT/.remove"
 			rc=$?
-			if [ ${rc} -ne 0 ] ; then
-				retval=${rc}
+			if [ "$rc" -ne 0 ] ; then
+				retval=$rc
 			fi
 		done
-		return ${retval}
+		return "$retval"
 	}
 }
 
@@ -355,8 +355,8 @@ apparmor_stop() {
 	aa_log_daemon_msg "Unloading AppArmor profiles "
 	remove_profiles
 	rc=$?
-	aa_log_end_msg $rc
-	return $rc
+	aa_log_end_msg "$rc"
+	return "$rc"
 }
 
 apparmor_kill() {
@@ -380,15 +380,15 @@ __apparmor_restart() {
 	parse_profiles reload
 
 	rc=$?
-	aa_log_end_msg $rc
-	return $rc
+	aa_log_end_msg "$rc"
+	return "$rc"
 }
 
 apparmor_restart() {
 	if ! is_apparmor_loaded ; then
 		apparmor_start
 		rc=$?
-		return $rc
+		return "$rc"
 	fi
 
 	__apparmor_restart
@@ -405,8 +405,8 @@ apparmor_try_restart() {
 }
 
 apparmor_status () {
-	if test -x ${AA_STATUS} ; then
-		${AA_STATUS} --verbose
+	if test -x "$AA_STATUS" ; then
+		"$AA_STATUS" --verbose
 		return $?
 	fi
 	if ! is_apparmor_loaded ; then
@@ -417,7 +417,7 @@ apparmor_status () {
 		rc=0
 	fi
 	echo "Install the apparmor-utils package to receive more detailed"
-	echo "status information here (or examine ${SFS_MOUNTPOINT} directly)."
+	echo "status information here (or examine $SFS_MOUNTPOINT directly)."
 
-	return $rc
+	return "$rc"
 }
