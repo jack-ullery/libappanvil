@@ -92,6 +92,10 @@ class FileTestParse(FileTest):
         # duplicated (but not conflicting) permissions
         ('/foo PxPxPxPxrwPx -> bar,'            , exp(False, False, False, '',        '/foo',           False,      {'r', 'w'},     False,  'Px',       'bar',      False,  False,  False,          False       )),
         ('/foo CixCixrwCix -> bar, '            , exp(False, False, False, '',        '/foo',           False,      {'r', 'w'},     False,  'Cix',      'bar',      False,  False,  False,          False       )),
+
+        # link rules
+        ('link /foo -> /bar,'                   , exp(False, False, False, '',        '/foo',           False,      {'link'},       False,  None,       '/bar',     False,  False,  False,          True        )),
+        ('link subset /foo -> /bar,'            , exp(False, False, False, '',        '/foo',           False,      {'link', 'subset'}, False, None,    '/bar',     False,  False,  False,          True        )),
     ]
 
     def _run_test(self, rawrule, expected):
@@ -128,6 +132,10 @@ class FileTestNonMatch(AATest):
         ('file Px -> bar,'  , False ),
         ('/foo bar,'        , False ),
         ('dbus /foo,'       , False ),
+        ('link /foo,'       , False ),  # missing '-> /target'
+        ('link -> /bar,'    , False ),  # missing path
+        ('/foo -> bar link,', False ),  # link has to be leading keyword
+        ('link,'            , False ),  # link isn't available as bare keyword
     ]
 
     def _run_test(self, rawrule, expected):
@@ -176,6 +184,8 @@ class FileTestParseFromLog(FileTest):
 
         self.assertEqual(obj.get_raw(1), '  /bin/dash r,')
 
+# TODO: add logparser example for link event
+
 class FileFromInit(FileTest):
     tests = [
 
@@ -188,6 +198,11 @@ class FileFromInit(FileTest):
         (FileRule(  '/foo',         None,   'Pix',      'bar_prof',     True,   True,           True,           allow_keyword=True          ),
                     #exp#   audit   allow   deny    comment     path            all_paths   perms           all?    exec_perms  target      all?    owner   file keyword    leading perms
                     exp(    False,  True,   False,  '',         '/foo',         False,      set(),          False,  'Pix',      'bar_prof', False,  True,   True,           True        )),
+
+        #FileRule# path,            perms,          exec_perms, target, owner,  file_keyword,   leading_perms
+        (FileRule(  '/foo',         {'link', 'subset'}, None,   '/bar', False,  False,          True,           audit=True,     deny=True   ),
+                    #exp#   audit   allow   deny    comment     path            all_paths   perms           all?    exec_perms  target      all?    owner   file keyword    leading perms
+                    exp(    True,   False,  True,   '',         '/foo',         False,      {'link', 'subset'}, False,  None,   '/bar',     False,  False,  False,          True       )),
 
     ]
 
@@ -240,6 +255,14 @@ class InvalidFileInit(AATest):
         (        (  '/foo',         'rw',   'ax',       '/bar',         False,  False,          False   ), AppArmorBug),        # invalid exec mode 'ax'
         (        (  '/foo',         'rw',   'x',        '/bar',         False,  False,          False   ), AppArmorException),  # plain 'x' is only allowed in deny rules
         (        (  FileRule.ALL,   FileRule.ALL, None, '/bar',         False,  False,          False   ), AppArmorBug),        # plain 'file,' doesn't allow exec target
+
+        # link rules
+        (       (  None,            {'link'},   None,   None,           False,  False,          False,  ), AppArmorBug),        # missing path and target
+        (       ( '/foo',           {'link'},   None,   None,           False,  False,          False,  ), AppArmorBug),        # missing target
+        (       (  None,            {'link'},   None,   '/bar',         False,  False,          False,  ), AppArmorBug),        # missing path
+        (       (  '/foo',          {'subset'}, None,   '/bar',         False,  False,          False,  ), AppArmorBug),        # subset without link
+        (       (  '/foo',          {'link'},   'ix',   '/bar',         False,  False,          False,  ), AppArmorBug),        # link rule with exec perms
+        (       (  '/foo',  {'link', 'subset'}, 'ix',   '/bar',         False,  False,          False,  ), AppArmorBug),        # link subset rule with exec perms
     ]
 
     def _run_test(self, params, expected):
@@ -346,6 +369,7 @@ class FileGlobTest(AATest):
         ('/foo/bar.xy r,',  (True,      True,           '/foo/* r,',        '/foo/*.xy r,')),
         ('/foo/*.xy r,',    (True,      True,           '/foo/* r,',        '/**.xy r,')),
         ('file,',           (False,     False,          'file,',            'file,')),  # bare 'file,' rules can't be globbed
+        ('link /a/b -> /c,', (True,     True,           'link /a/* -> /c,', 'link /a/b -> /c,')),
     ]
 
 class WriteFileTest(AATest):
@@ -388,6 +412,11 @@ class WriteFileTest(AATest):
         ('                   r      /foo ,'                                 , 'r /foo,'),
         ('                   klwr   /foo  ,'                                , 'rwlk /foo,'),
         ('                   Pxrm   /foo -> bar,'                           , 'mrPx /foo -> bar,'),
+
+        # link rules
+        ('  link    /foo    ->  /bar,'                                      , 'link /foo -> /bar,'),
+        ('  audit deny owner link subset /foo -> /bar,'                     , 'audit deny owner link subset /foo -> /bar,'),
+        ('                   link subset /foo -> /bar,'                     , 'link subset /foo -> /bar,')
   ]
 
     def test_write_manually_1(self):
@@ -607,6 +636,35 @@ class FileCoveredTest_07(FileCoveredTest):
         ('deny /foo a,'                                 , [ False   , False         , False     , False     ]),
     ]
 
+class FileCoveredTest_08(FileCoveredTest):
+    rule = 'link /foo -> /bar,'
+
+    tests = [
+        #   rule                                            equal     strict equal    covered     covered exact
+        ('link /foo -> /bar,'                           , [ True    , True          , True      , True      ]),
+        ('link /asdf -> /bar,'                          , [ False   , False         , False     , False     ]),
+        ('link /foo -> /asdf,'                          , [ False   , False         , False     , False     ]),
+        ('deny link /foo -> /bar,'                      , [ False   , False         , False     , False     ]),
+        ('deny link /foo -> /bar,'                      , [ False   , False         , False     , False     ]),
+        ('link subset /foo -> /bar,'                    , [ False   , False         , True      , True      ]),  # subset makes the rule more strict
+      # ('/foo l -> /bar,'                              , [ ?       , ?             , ?         , ?         ]),  # TODO
+      # ('l /foo -> /bar,'                              , [ ?       , ?             , ?         , ?         ]),  # TODO
+    ]
+
+class FileCoveredTest_09(FileCoveredTest):
+    rule = 'link subset /foo -> /bar,'
+    tests = [
+        #   rule                                            equal     strict equal    covered     covered exact
+        ('link subset /foo -> /bar,'                    , [ True    , True          , True      , True      ]),
+        ('link subset /asdf -> /bar,'                   , [ False   , False         , False     , False     ]),
+        ('link subset /foo -> /asdf,'                   , [ False   , False         , False     , False     ]),
+        ('deny link subset /foo -> /bar,'               , [ False   , False         , False     , False     ]),
+        ('deny link subset /foo -> /bar,'               , [ False   , False         , False     , False     ]),
+        ('link /foo -> /bar,'                           , [ False   , False         , False     , False     ]),  # no subset means more permissions
+      # ('/foo l -> /bar,'                              , [ ?       , ?             , ?         , ?         ]),  # TODO
+      # ('l /foo -> /bar,'                              , [ ?       , ?             , ?         , ?         ]),  # TODO
+    ]
+
 class FileCoveredTest_ManualOrInvalid(AATest):
     def AASetup(self):
         #FileRule#                 path,           perms,  exec_perms, target,         owner,  file_keyword,   leading_perms
@@ -761,6 +819,8 @@ class FileLogprofHeaderTest(AATest):
         (['/foo rw,',                           set(),      set('rw')   ], [                               _('Path'), '/foo',         _('Old Mode'), _('owner rw'),     _('New Mode'), _('rw')                  ]),
         (['/foo mrw,',                          set('r'),   set('k')    ], [                               _('Path'), '/foo',         _('Old Mode'), _('r + owner k'),  _('New Mode'), _('mrw')                 ]),
         (['/foo mrw,',                          set('r'),   set('rk')   ], [                               _('Path'), '/foo',         _('Old Mode'), _('r + owner k'),  _('New Mode'), _('mrw')                 ]),
+        (['link /foo -> /bar,',                 set(),      set()       ], [                               _('Path'), '/foo',                                           _('New Mode'), 'link -> /bar'           ]),
+        (['link subset /foo -> /bar,',          set(),      set()       ], [                               _('Path'), '/foo',                                           _('New Mode'), 'link subset -> /bar'    ]),
    ]
 
     def _run_test(self, params, expected):
@@ -784,6 +844,7 @@ class FileEditHeaderTest(AATest):
     tests = [
         ('/foo/bar/baz r,',         '/foo/bar/baz'),
         ('/foo/**/baz r,',          '/foo/**/baz'),
+        ('link /foo/** -> /bar,',   '/foo/**'),
     ]
 
     def test_edit_header_bare_file(self):
