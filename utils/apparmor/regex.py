@@ -103,6 +103,12 @@ RE_PROFILE_FILE_ENTRY = re.compile(
             RE_PATH_PERMS % 'perms2' + '\s+' + RE_PROFILE_PATH_OR_VAR % 'path2' +  # perms and path
         ')' +
         '(\s+->\s*' + RE_PROFILE_NAME % 'target' + ')?' +
+    '|' + # or
+        '(?P<link_keyword>link\s+)' +  # 'link' keyword
+        '(?P<subset_keyword>subset\s+)?' +  # optional 'subset' keyword
+        RE_PROFILE_PATH_OR_VAR % 'link_path' +  # path
+        '\s+' + '->' + '\s+' +  # ' -> '
+        RE_PROFILE_PATH_OR_VAR % 'link_target' +  # path
     ')' +
     RE_COMMA_EOL)
 
