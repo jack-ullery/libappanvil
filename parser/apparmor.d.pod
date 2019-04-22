@@ -277,7 +277,7 @@ B<EXEC TRANSITION> =  ( 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'cx' | 'Cx' | 'pix' |
 B<EXEC TARGET> = name
   Requires I<EXEC TRANSITION> specified.
 
-B<LINK RULE> = I<QUALIFIERS> [ 'owner' ] 'link' [ 'subset' ] I<FILEGLOB> ( 'to' | '-E<gt>' ) I<FILEGLOB>
+B<LINK RULE> = I<QUALIFIERS> [ 'owner' ] 'link' [ 'subset' ] I<FILEGLOB> '-E<gt>' I<FILEGLOB>
 
 B<ALPHA> = ('a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
