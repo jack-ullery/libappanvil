@@ -39,7 +39,7 @@ import apparmor.ui as aaui
 
 from apparmor.aamode import str_to_mode, split_mode
 
-from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_LINK,
+from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
                             RE_ABI, RE_PROFILE_ALIAS,
                             RE_PROFILE_BOOLEAN, RE_PROFILE_VARIABLE, RE_PROFILE_CONDITIONAL,
                             RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
@@ -2244,34 +2244,6 @@ def parse_profile_data(data, file, do_include):
                 raise AppArmorException(_('Syntax Error: Unexpected capability entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             profile_data[profile][hat]['capability'].add(CapabilityRule.parse(line))
-
-        elif RE_PROFILE_LINK.search(line):
-            matches = RE_PROFILE_LINK.search(line).groups()
-
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected link entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            audit = False
-            if matches[0]:
-                audit = True
-
-            allow = 'allow'
-            if matches[1] and matches[1].strip() == 'deny':
-                allow = 'deny'
-
-            subset = matches[3]
-            link = strip_quotes(matches[6])
-            value = strip_quotes(matches[7])
-            profile_data[profile][hat][allow]['link'][link]['to'] = value
-            profile_data[profile][hat][allow]['link'][link]['mode'] = profile_data[profile][hat][allow]['link'][link].get('mode', set()) | apparmor.aamode.AA_MAY_LINK
-
-            if subset:
-                profile_data[profile][hat][allow]['link'][link]['mode'] |= apparmor.aamode.AA_LINK_SUBSET
-
-            if audit:
-                profile_data[profile][hat][allow]['link'][link]['audit'] = profile_data[profile][hat][allow]['link'][link].get('audit', set()) | apparmor.aamode.AA_LINK_SUBSET
-            else:
-                profile_data[profile][hat][allow]['link'][link]['audit'] = set()
 
         elif ChangeProfileRule.match(line):
             if not profile:
