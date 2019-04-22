@@ -224,10 +224,6 @@ unknown_line = [
     'file/owner/ok_1.sd',
     'profile/entry_mods_audit_ok1.sd',
 
-    # link rules with owner conditional
-    'file/ok_link_owner.sd',
-    'file/ok_link_audit_deny_owner_subset.sd',
-
     # namespace
     'profile/profile_ns_named_ok1.sd',  # profile keyword?
     'profile/profile_ns_named_ok2.sd',  # profile keyword?
