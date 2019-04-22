@@ -32,10 +32,11 @@ alias /foo -> /bar,
   unix (receive) type=dgram,
   unix shutdown addr=@HypotheticalServiceDaemon,
 
-  link subset /alpha/beta -> /tmp/**,
+  deny owner link /some/thing -> /foo/bar,
 
   allow /home/*/** r,
   allow /home/foo/** w,
+  link subset /alpha/beta -> /tmp/**,
 
   change_profile,
 
