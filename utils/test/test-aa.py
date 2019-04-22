@@ -507,7 +507,7 @@ class AaTest_is_skippable_dir(AATest):
 class AaTest_parse_profile_start(AATest):
     def _parse(self, line, profile, hat):
         return parse_profile_start(line, 'somefile', 1, profile, hat)
-        # (profile, hat, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
+        # (profile, hat, attachment, xattrs, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
 
     def test_parse_profile_start_01(self):
         result = self._parse('/foo {', None, None)
@@ -547,6 +547,11 @@ class AaTest_parse_profile_start(AATest):
     def test_parse_profile_start_08(self):
         result = self._parse('profile "/foo" xattrs=(user.bar=bar user.foo=*) {', None, None)
         expected = ('/foo', '/foo', None, 'user.bar=bar user.foo=*', None, False, False, False)
+        self.assertEqual(result, expected)
+
+    def test_parse_profile_start_09(self):
+        result = self._parse('/usr/bin/xattrs-test xattrs=(myvalue="foo.bar") {', None, None)
+        expected = ('/usr/bin/xattrs-test', '/usr/bin/xattrs-test', None, 'myvalue="foo.bar"', None, False, False, False)
         self.assertEqual(result, expected)
 
     def test_parse_profile_start_unsupported_01(self):
