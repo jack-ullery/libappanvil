@@ -17,7 +17,6 @@ import argparse
 import os
 
 import apparmor.aa
-import apparmor.aamode
 
 import apparmor.severity
 import apparmor.cleanprofile as cleanprofile
