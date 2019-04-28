@@ -193,12 +193,6 @@ class ReadLog:
         #print("\n\npid",self.pid)
         #print("log",self.log)
 
-    def add_event_to_tree(self, e):
-        e = self.parse_event_for_tree(e)
-        if e is not None:
-            (pid, parent, mode, details) = e
-            self.add_to_tree(pid, parent, mode, details)
-
     def parse_event_for_tree(self, e):
         aamode = e.get('aamode', 'UNKNOWN')
 
@@ -380,7 +374,11 @@ class ReadLog:
             #print(event)
             if event:
                 try:
-                    self.add_event_to_tree(event)
+                    event = self.parse_event_for_tree(event)
+                    if event is not None:
+                        (pid, parent, mode, details) = event
+                        self.add_to_tree(pid, parent, mode, details)
+
                 except AppArmorException as e:
                     ex_msg = ('%(msg)s\n\nThis error was caused by the log line:\n%(logline)s' %
                             {'msg': e.value, 'logline': line})
