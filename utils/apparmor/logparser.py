@@ -295,7 +295,7 @@ class ReadLog:
                 arrayref.append(ia)
 
         elif self.op_type(e) == 'net':
-            return(e['pid'], e['parent'], 'netdomain',
+            return(e['pid'], e['parent'], 'network',
                              [profile, hat, prog, aamode, e['family'], e['sock_type'], e['protocol']])
         elif e['operation'] == 'change_hat':
             return(e['pid'], e['parent'], 'unknown_hat',
