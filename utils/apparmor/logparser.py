@@ -81,12 +81,6 @@ class ReadLog:
     def throw_away_next_log_entry(self):
         self.next_log_entry = None
 
-    def parse_log_record(self, record):
-        self.debug_logger.debug('parse_log_record: %s' % record)
-
-        record_event = self.parse_event(record)
-        return record_event
-
     def parse_event(self, msg):
         """Parse the event from log into key value pairs"""
         msg = msg.strip()
@@ -282,7 +276,7 @@ class ReadLog:
             if e['operation'] == 'inode_permission' and (e['denied_mask'] & AA_MAY_EXEC) and aamode == 'PERMITTING':
                 following = self.peek_at_next_log_entry()
                 if following:
-                    entry = self.parse_log_record(following)
+                    entry = self.parse_event(following)
                     if entry and entry.get('info', False) == 'set profile':
                         is_domain_change = True
                         self.throw_away_next_log_entry()
@@ -370,7 +364,7 @@ class ReadLog:
             if not seenmark:
                 continue
 
-            event = self.parse_log_record(line)
+            event = self.parse_event(line)
             #print(event)
             if event:
                 try:
