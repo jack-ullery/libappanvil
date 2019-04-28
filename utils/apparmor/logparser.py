@@ -85,7 +85,6 @@ class ReadLog:
         """Parse the event from log into key value pairs"""
         msg = msg.strip()
         self.debug_logger.info('parse_event: %s' % msg)
-        #print(repr(msg))
         if sys.version_info < (3, 0):
             # parse_record fails with u'foo' style strings hence typecasting to string
             msg = str(msg)
@@ -132,10 +131,6 @@ class ReadLog:
 
         if not ev['time']:
             ev['time'] = int(time.time())
-        # Remove None keys
-        #for key in ev.keys():
-        #    if not ev[key] or not re.search('[\w]+', ev[key]):
-        #        ev.pop(key)
 
         if ev['aamode']:
             # Convert aamode values to their counter-parts
@@ -158,7 +153,6 @@ class ReadLog:
             ev['aamode'] = 'ERROR'
 
         if ev['aamode']:
-            #debug_logger.debug(ev)
             return ev
         else:
             return None
@@ -175,17 +169,11 @@ class ReadLog:
                 self.pid[loc_pid] = arrayref
                 for ia in ['fork', loc_pid, profile, hat]:
                     arrayref.append(ia)
-#                 self.pid[parent].append(array_ref)
-#                 self.pid[loc_pid] = array_ref
             else:
                 arrayref = []
                 self.log.append(arrayref)
                 self.pid[loc_pid] = arrayref
-#                 self.log.append(array_ref)
-#                 self.pid[loc_pid] = array_ref
         self.pid[loc_pid].append([type, loc_pid] + event)
-        #print("\n\npid",self.pid)
-        #print("log",self.log)
 
     def parse_event_for_tree(self, e):
         aamode = e.get('aamode', 'UNKNOWN')
@@ -220,7 +208,6 @@ class ReadLog:
             if e['error_code'] == 1 and e['info'] == 'unconfined can not change_hat':
                 return None
             profile = e['name2']
-            #hat = None
             if '//' in e['name2']:
                 profile, hat = e['name2'].split('//')[:2]
 
@@ -306,11 +293,6 @@ class ReadLog:
             self.pid[child].append(arrayref)
             for ia in ['fork', child, profile, hat]:
                 arrayref.append(ia)
-#             if self.pid.get(parent, False):
-#                 self.pid[parent] += [arrayref]
-#             else:
-#                 self.log += [arrayref]
-#             self.pid[child] = arrayref
 
         elif self.op_type(e) == 'net':
             return(e['pid'], e['parent'], 'netdomain',
@@ -342,14 +324,10 @@ class ReadLog:
         seenmark = True
         if self.logmark:
             seenmark = False
-        #last = None
-        #event_type = None
         try:
-            #print(self.filename)
             self.LOG = open_file_read(self.filename)
         except IOError:
             raise AppArmorException('Can not read AppArmor logfile: ' + self.filename)
-        #LOG = open_file_read(log_open)
         line = True
         while line:
             line = self.get_next_log_entry()
@@ -365,7 +343,6 @@ class ReadLog:
                 continue
 
             event = self.parse_event(line)
-            #print(event)
             if event:
                 try:
                     event = self.parse_event_for_tree(event)
