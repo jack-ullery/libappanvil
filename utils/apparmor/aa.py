@@ -1289,6 +1289,9 @@ def handle_children(profile, hat, root):
                 if family and sock_type:
                     prelog[aamode][profile][hat]['network'][family][sock_type] = True
 
+            else:
+                raise AppArmorBug('unknown event type %s - should never happen, please open a bugreport!' % typ)
+
     return None
 
 ##### Repo related functions
