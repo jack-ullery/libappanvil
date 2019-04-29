@@ -1814,8 +1814,6 @@ def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
     #for root in range(len(log)):
         #log[root] = handle_children('', '', log[root])
     #print(log)
-    for pid in sorted(profile_changes.keys()):
-        set_process(pid, profile_changes[pid])
 
     log_dict = collapse_log()
 
@@ -1899,41 +1897,6 @@ def save_profiles():
 
 def get_pager():
     return 'less'
-
-def set_process(pid, profile):
-    # If process not running don't do anything
-    if not os.path.exists('/proc/%s/attr/current' % pid):
-        return None
-
-    process = None
-    try:
-        process = open_file_read('/proc/%s/attr/current' % pid)
-    except IOError:
-        return None
-    current = process.readline().strip()
-    process.close()
-
-    if not re.search('^null(-complain)*-profile$', current):
-        return None
-
-    stats = None
-    try:
-        stats = open_file_read('/proc/%s/stat' % pid)
-    except IOError:
-        return None
-    stat = stats.readline().strip()
-    stats.close()
-
-    match = re.search('^\d+ \((\S+)\) ', stat)
-    if not match:
-        return None
-
-    try:
-        process = open_file_write('/proc/%s/attr/current' % pid)
-    except IOError:
-        return None
-    process.write('setprofile %s' % profile)
-    process.close()
 
 def collapse_log():
     log_dict = hasher()
