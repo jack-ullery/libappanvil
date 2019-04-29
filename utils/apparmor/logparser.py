@@ -81,17 +81,10 @@ class ReadLog:
     def throw_away_next_log_entry(self):
         self.next_log_entry = None
 
-    def parse_log_record(self, record):
-        self.debug_logger.debug('parse_log_record: %s' % record)
-
-        record_event = self.parse_event(record)
-        return record_event
-
     def parse_event(self, msg):
         """Parse the event from log into key value pairs"""
         msg = msg.strip()
         self.debug_logger.info('parse_event: %s' % msg)
-        #print(repr(msg))
         if sys.version_info < (3, 0):
             # parse_record fails with u'foo' style strings hence typecasting to string
             msg = str(msg)
@@ -138,10 +131,6 @@ class ReadLog:
 
         if not ev['time']:
             ev['time'] = int(time.time())
-        # Remove None keys
-        #for key in ev.keys():
-        #    if not ev[key] or not re.search('[\w]+', ev[key]):
-        #        ev.pop(key)
 
         if ev['aamode']:
             # Convert aamode values to their counter-parts
@@ -164,7 +153,6 @@ class ReadLog:
             ev['aamode'] = 'ERROR'
 
         if ev['aamode']:
-            #debug_logger.debug(ev)
             return ev
         else:
             return None
@@ -181,23 +169,11 @@ class ReadLog:
                 self.pid[loc_pid] = arrayref
                 for ia in ['fork', loc_pid, profile, hat]:
                     arrayref.append(ia)
-#                 self.pid[parent].append(array_ref)
-#                 self.pid[loc_pid] = array_ref
             else:
                 arrayref = []
                 self.log.append(arrayref)
                 self.pid[loc_pid] = arrayref
-#                 self.log.append(array_ref)
-#                 self.pid[loc_pid] = array_ref
         self.pid[loc_pid].append([type, loc_pid] + event)
-        #print("\n\npid",self.pid)
-        #print("log",self.log)
-
-    def add_event_to_tree(self, e):
-        e = self.parse_event_for_tree(e)
-        if e is not None:
-            (pid, parent, mode, details) = e
-            self.add_to_tree(pid, parent, mode, details)
 
     def parse_event_for_tree(self, e):
         aamode = e.get('aamode', 'UNKNOWN')
@@ -232,7 +208,6 @@ class ReadLog:
             if e['error_code'] == 1 and e['info'] == 'unconfined can not change_hat':
                 return None
             profile = e['name2']
-            #hat = None
             if '//' in e['name2']:
                 profile, hat = e['name2'].split('//')[:2]
 
@@ -288,7 +263,7 @@ class ReadLog:
             if e['operation'] == 'inode_permission' and (e['denied_mask'] & AA_MAY_EXEC) and aamode == 'PERMITTING':
                 following = self.peek_at_next_log_entry()
                 if following:
-                    entry = self.parse_log_record(following)
+                    entry = self.parse_event(following)
                     if entry and entry.get('info', False) == 'set profile':
                         is_domain_change = True
                         self.throw_away_next_log_entry()
@@ -318,14 +293,9 @@ class ReadLog:
             self.pid[child].append(arrayref)
             for ia in ['fork', child, profile, hat]:
                 arrayref.append(ia)
-#             if self.pid.get(parent, False):
-#                 self.pid[parent] += [arrayref]
-#             else:
-#                 self.log += [arrayref]
-#             self.pid[child] = arrayref
 
         elif self.op_type(e) == 'net':
-            return(e['pid'], e['parent'], 'netdomain',
+            return(e['pid'], e['parent'], 'network',
                              [profile, hat, prog, aamode, e['family'], e['sock_type'], e['protocol']])
         elif e['operation'] == 'change_hat':
             return(e['pid'], e['parent'], 'unknown_hat',
@@ -354,14 +324,10 @@ class ReadLog:
         seenmark = True
         if self.logmark:
             seenmark = False
-        #last = None
-        #event_type = None
         try:
-            #print(self.filename)
             self.LOG = open_file_read(self.filename)
         except IOError:
             raise AppArmorException('Can not read AppArmor logfile: ' + self.filename)
-        #LOG = open_file_read(log_open)
         line = True
         while line:
             line = self.get_next_log_entry()
@@ -376,11 +342,14 @@ class ReadLog:
             if not seenmark:
                 continue
 
-            event = self.parse_log_record(line)
-            #print(event)
+            event = self.parse_event(line)
             if event:
                 try:
-                    self.add_event_to_tree(event)
+                    event = self.parse_event_for_tree(event)
+                    if event is not None:
+                        (pid, parent, mode, details) = event
+                        self.add_to_tree(pid, parent, mode, details)
+
                 except AppArmorException as e:
                     ex_msg = ('%(msg)s\n\nThis error was caused by the log line:\n%(logline)s' %
                             {'msg': e.value, 'logline': line})

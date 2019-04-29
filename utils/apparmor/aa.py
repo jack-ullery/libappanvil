@@ -1277,8 +1277,8 @@ def handle_children(profile, hat, root):
                         if domainchange == 'change':
                             return None
 
-            elif typ == 'netdomain':
-                # If netdomain we (should) have pid, profile, hat, program, mode, network family, socket type and protocol
+            elif typ == 'network':
+                # If network we (should) have pid, profile, hat, program, mode, network family, socket type and protocol
                 pid, p, h, prog, aamode, family, sock_type, protocol = entry[:8]
 
                 if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
@@ -1287,7 +1287,10 @@ def handle_children(profile, hat, root):
                 if not hat or not profile:
                     continue
                 if family and sock_type:
-                    prelog[aamode][profile][hat]['netdomain'][family][sock_type] = True
+                    prelog[aamode][profile][hat]['network'][family][sock_type] = True
+
+            else:
+                raise AppArmorBug('unknown event type %s - should never happen, please open a bugreport!' % typ)
 
     return None
 
@@ -1992,7 +1995,7 @@ def collapse_log():
 
                                             log_dict[aamode][profile][hat]['dbus'].add(dbus_event)
 
-                nd = prelog[aamode][profile][hat]['netdomain']
+                nd = prelog[aamode][profile][hat]['network']
                 for family in nd.keys():
                     for sock_type in nd[family].keys():
                         net_event = NetworkRule(family, sock_type, log_event=True)
