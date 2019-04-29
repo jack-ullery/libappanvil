@@ -107,7 +107,6 @@ extras = hasher()  # Inactive profiles from extras
 ### end our
 log_pid = dict()  # handed over to ReadLog, gets filled in logparser.py. The only case the previous content of this variable _might_(?) be used is aa-genprof (multiple do_logprof_pass() runs)
 
-profile_changes = dict()
 prelog = hasher()
 changed = dict()
 created = []
@@ -917,10 +916,8 @@ def handle_children(profile, hat, root):
                 if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
                     profile = p
                     hat = h
-                if hat:
-                    profile_changes[pid] = profile + '//' + hat
-                else:
-                    profile_changes[pid] = profile
+                # XXX profile and hat were used to track profile changes - do we still need to set them?
+                # XXX actuallly, is event type 'fork' still used?
             elif typ == 'unknown_hat':
                 # If hat is not known then we (should) have pid, profile, hat, mode and unknown hat in entry
                 pid, p, h, aamode, uhat = entry[:5]
@@ -1220,10 +1217,7 @@ def handle_children(profile, hat, root):
                     # Update tracking info based on kind of change
 
                     if ans == 'CMD_ix':
-                        if hat:
-                            profile_changes[pid] = '%s//%s' % (profile, hat)
-                        else:
-                            profile_changes[pid] = '%s//' % profile
+                        pass
                     elif re.search('^CMD_(px|nx|pix|nix)', ans):
                         if to_name:
                             exec_target = to_name
@@ -1231,7 +1225,6 @@ def handle_children(profile, hat, root):
                             if domainchange == 'change':
                                 profile = exec_target
                                 hat = exec_target
-                                profile_changes[pid] = '%s' % profile
 
                         # Check profile exists for px
                         if not os.path.exists(get_profile_filename_from_attachment(exec_target, True)):
@@ -1248,9 +1241,6 @@ def handle_children(profile, hat, root):
                     elif ans.startswith('CMD_cx') or ans.startswith('CMD_cix'):
                         if to_name:
                             exec_target = to_name
-                        if aamode == 'PERMITTING':
-                            if domainchange == 'change':
-                                profile_changes[pid] = '%s//%s' % (profile, exec_target)
 
                         if not aa[profile].get(exec_target, False):
                             ynans = 'y'
@@ -1273,7 +1263,6 @@ def handle_children(profile, hat, root):
                                 filelist[file_name]['profiles'][profile][hat] = True
 
                     elif ans.startswith('CMD_ux'):
-                        profile_changes[pid] = 'unconfined'
                         if domainchange == 'change':
                             return None
 
@@ -1785,7 +1774,6 @@ def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
     global active_profiles
     global sev_db
 #    aa = hasher()
-#    profile_changes = hasher()
 #     prelog = hasher()
 #     changed = dict()
 #    filelist = hasher()
