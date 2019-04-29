@@ -53,6 +53,7 @@
 
 	pivot_root oldroot=/mnt/root/old/,
 
+	deny    owner       link       /some/thing    ->     /foo/bar    ,
 	unix shutdown addr=@HypotheticalServiceDaemon,
 
 	link subset /alpha/beta -> /tmp/**,

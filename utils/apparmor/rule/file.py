@@ -25,7 +25,7 @@ _ = init_translation()
 allow_exec_transitions          = ('ix', 'ux', 'Ux', 'px', 'Px', 'cx', 'Cx')  # 2 chars - len relevant for split_perms()
 allow_exec_fallback_transitions = ('pix', 'Pix', 'cix', 'Cix', 'pux', 'PUx', 'cux', 'CUx')  # 3 chars - len relevant for split_perms()
 deny_exec_transitions           = ('x')
-file_permissions                = ('m', 'r', 'w', 'a', 'l', 'k')  # also defines the write order
+file_permissions                = ('m', 'r', 'w', 'a', 'l', 'k', 'link', 'subset')  # also defines the write order
 
 
 
@@ -76,16 +76,24 @@ class FileRule(BaseRule):
         elif perms == None:
             perms = set()
 
-        self.perms, self.all_perms, unknown_items = check_and_split_list(perms, file_permissions, FileRule.ALL, 'FileRule', 'permissions', allow_empty_list=True)
-        if unknown_items:
-            raise AppArmorBug('Passed unknown perms to FileRule: %s' % str(unknown_items))
-        if self.perms and 'a' in self.perms and 'w' in self.perms:
-            raise AppArmorException("Conflicting permissions found: 'a' and 'w'")
+        if perms == {'subset'}:
+            raise AppArmorBug('subset without link permissions given')
+        elif perms in [{'link'}, {'link', 'subset'}]:
+            self.perms = perms
+            self.all_perms = False
+        else:
+            self.perms, self.all_perms, unknown_items = check_and_split_list(perms, file_permissions, FileRule.ALL, 'FileRule', 'permissions', allow_empty_list=True)
+            if unknown_items:
+                raise AppArmorBug('Passed unknown perms to FileRule: %s' % str(unknown_items))
+            if self.perms and 'a' in self.perms and 'w' in self.perms:
+                raise AppArmorException("Conflicting permissions found: 'a' and 'w'")
 
         self.original_perms = None  # might be set by aa-logprof / aa.py propose_file_rules()
 
         if exec_perms is None:
             self.exec_perms = None
+        elif 'link' in self.perms:
+            raise AppArmorBug("link rules can't have execute permissions")
         elif exec_perms == self.ANY_EXEC:
             self.exec_perms = exec_perms
         elif type_is_str(exec_perms):
@@ -146,6 +154,9 @@ class FileRule(BaseRule):
         elif matches.group('path2'):
             path = strip_quotes(matches.group('path2'))
             leading_perms = True
+        elif matches.group('link_path'):
+            path = strip_quotes(matches.group('link_path'))
+            leading_perms = True
         else:
             path = FileRule.ALL
 
@@ -156,12 +167,21 @@ class FileRule(BaseRule):
             perms = matches.group('perms2')
             perms, exec_perms = split_perms(perms, deny)
             leading_perms = True
+        elif matches.group('link_keyword'):
+            if matches.group('subset_keyword'):
+                perms = {'link', 'subset'}
+            else:
+                perms = {'link'}
+            exec_perms = None
+            leading_perms = True
         else:
             perms = FileRule.ALL
             exec_perms = None
 
         if matches.group('target'):
             target = strip_quotes(matches.group('target'))
+        elif matches.group('link_target'):
+            target = strip_quotes(matches.group('link_target'))
         else:
             target = FileRule.ALL
 
@@ -227,6 +247,8 @@ class FileRule(BaseRule):
         perm_string = ''
         for perm in file_permissions:
             if perm in perms:
+                if perm == 'subset':
+                    perm = ' subset'  # add leading space
                 perm_string = perm_string + perm
 
         if exec_perms == self.ANY_EXEC:
@@ -242,10 +264,16 @@ class FileRule(BaseRule):
         if not self._is_covered_aare(self.path,         self.all_paths,         other_rule.path,        other_rule.all_paths,           'path'):
             return False
 
-        # perms can be empty if only exec_perms are specified, therefore disable the sanity check in _is_covered_list()...
-        # 'w' covers 'a', therefore use perms_with_a() to temporarily add 'a' if 'w' is present
-        if not self._is_covered_list(perms_with_a(self.perms), self.all_perms,  perms_with_a(other_rule.perms), other_rule.all_perms,   'perms', sanity_check=False):
+        if self.perms and 'subset' in self.perms and other_rule.perms and 'subset' not in other_rule.perms:
+            return False  # subset is a restriction (also, if subset is included, this means this instance is a link rule, so other file permissions can't be covered)
+        elif self.perms and 'link' in self.perms and other_rule.perms and 'link' in other_rule.perms:
+            pass  # skip _is_covered_list() because it would interpret 'subset' as additional permissions, not as restriction
+        elif not self._is_covered_list(perms_with_a(self.perms), self.all_perms,  perms_with_a(other_rule.perms), other_rule.all_perms,   'perms', sanity_check=False):
+            # perms can be empty if only exec_perms are specified, therefore disable the sanity check in _is_covered_list()...
+            # 'w' covers 'a', therefore use perms_with_a() to temporarily add 'a' if 'w' is present
             return False
+
+        # TODO: check  link / link subset vs. 'l'?
 
         # ... and do our own sanity check
         if not other_rule.perms and not other_rule.all_perms and not other_rule.exec_perms:
@@ -262,7 +290,9 @@ class FileRule(BaseRule):
 
         # check exec_mode and target only if other_rule contains exec_perms (except ANY_EXEC) or link permissions
         # (for mrwk permissions, the target is ignored anyway)
-        if (other_rule.exec_perms and other_rule.exec_perms != self.ANY_EXEC) or (other_rule.perms and 'l' in other_rule.perms):
+        if (other_rule.exec_perms and other_rule.exec_perms != self.ANY_EXEC) or \
+           (other_rule.perms and 'l' in other_rule.perms) or \
+           (other_rule.perms and 'link' in other_rule.perms):
             if not self._is_covered_aare(self.target,   self.all_targets,       other_rule.target,      other_rule.all_targets,         'target'):
                 return False
 
@@ -318,6 +348,7 @@ class FileRule(BaseRule):
             severity = sev_db.rank_path('/**', 'mrwlkix')
         else:
             severity = -1
+            # TODO: special handling for link / link subset?
             sev = sev_db.rank_path(self.path.regex, self._joint_perms())
             if isinstance(sev, int):  # type check avoids breakage caused by 'unknown'
                 severity = max(severity, sev)
@@ -361,6 +392,8 @@ class FileRule(BaseRule):
             perms = "%s -> %s" % (perms, self.target.regex)
 
         headers += [_('New Mode'), perms]
+
+        # TODO: different output for link rules?
 
         # file_keyword and leading_perms are not really relevant
         return headers

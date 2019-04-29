@@ -14,9 +14,7 @@
 # ----------------------------------------------------------------------
 
 
-from apparmor.aamode import AA_LINK_SUBSET
-
-from apparmor.common import AppArmorBug, AppArmorException, hasher, type_is_str
+from apparmor.common import AppArmorBug, AppArmorException, type_is_str
 
 from apparmor.rule.capability       import CapabilityRuleset
 from apparmor.rule.change_profile   import ChangeProfileRuleset
@@ -80,9 +78,6 @@ class ProfileStorage:
         data['allow'] = dict()
         data['deny'] = dict()
 
-        data['allow']['link']    = hasher()
-        data['deny']['link']     = hasher()
-
         # mount, pivot_root, unix have a .get() fallback to list() - initialize them nevertheless
         data['allow']['mount']   = list()
         data['deny']['mount']    = list()
@@ -100,7 +95,7 @@ class ProfileStorage:
             raise AppArmorBug('attempt to read unknown key %s' % key)
 
     def __setitem__(self, key, value):
-        # TODO: Most of the keys (containing *Ruleset, dict(), list() or hasher()) should be read-only.
+        # TODO: Most of the keys (containing *Ruleset, dict() or list()) should be read-only.
         #       Their content needs to be changed, but the container shouldn't
         #       Note: serialize_profile_from_old_profile.write_prior_segments() and write_prior_segments() expect the container to be writeable!
         # TODO: check if value has the expected type
@@ -126,7 +121,6 @@ class ProfileStorage:
             'abi': write_abi,
             'alias': write_alias,
             'include': write_includes,
-            'links': write_links,
             'lvar': write_list_vars,
             'mount': write_mount,
             'pivot_root': write_pivot_root,
@@ -147,7 +141,6 @@ class ProfileStorage:
             'ptrace',
             'pivot_root',
             'unix',
-            'links',
             'file',
             'change_profile',
         ]
@@ -261,33 +254,6 @@ def var_transform(ref):
             value = '""'
         data.append(quote_if_needed(value))
     return ' '.join(data)
-
-def write_link_rules(prof_data, depth, allow):
-    pre = '  ' * depth
-    data = []
-    allowstr = set_allow_str(allow)
-
-    if prof_data[allow].get('link', False):
-        for path in sorted(prof_data[allow]['link'].keys()):
-            to_name = prof_data[allow]['link'][path]['to']
-            subset = ''
-            if prof_data[allow]['link'][path]['mode'] & AA_LINK_SUBSET:
-                subset = 'subset '
-            audit = ''
-            if prof_data[allow]['link'][path].get('audit', False):
-                audit = 'audit '
-            path = quote_if_needed(path)
-            to_name = quote_if_needed(to_name)
-            data.append('%s%s%slink %s%s -> %s,' % (pre, audit, allowstr, subset, path, to_name))
-        data.append('')
-
-    return data
-
-def write_links(prof_data, depth):
-    data = write_link_rules(prof_data, depth, 'deny')
-    data += write_link_rules(prof_data, depth, 'allow')
-
-    return data
 
 def write_mount_rules(prof_data, depth, allow):
     pre = '  ' * depth
