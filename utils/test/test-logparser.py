@@ -16,7 +16,12 @@ import unittest
 
 from apparmor.logparser import ReadLog
 
-class TestParseEvent(unittest.TestCase):
+from common_test import AATest, setup_all_loops # , setup_aa
+from apparmor.common import AppArmorException
+
+class TestParseEvent(AATest):
+    tests = []
+
     def setUp(self):
         self.parser = ReadLog('', '', '', '')
 
@@ -94,6 +99,22 @@ class TestParseEvent(unittest.TestCase):
 
         self.assertIsNotNone(ReadLog.RE_LOG_ALL.search(event))
 
+class TestParseEventForTreeInvalid(AATest):
+    tests = [
+        ('type=AVC msg=audit(1556742870.707:3614): apparmor="ALLOWED" operation="open" profile="/bin/hello" name="/dev/tty" pid=12856 comm="hello" requested_mask="wr" denied_mask="foo" fsuid=1000 ouid=0',    AppArmorException),  # invalid file permissions "foo"
+        ('type=AVC msg=audit(1556742870.707:3614): apparmor="ALLOWED" operation="open" profile="/bin/hello" name="/dev/tty" pid=12856 comm="hello" requested_mask="wr" denied_mask="wr::w" fsuid=1000 ouid=0',  AppArmorException),  # "wr::w" mixes owner and other
+    ]
 
+    def _fake_profile_exists(self, program):
+        return True
+
+    def _run_test(self, params, expected):
+        self.parser = ReadLog('', '', '', '')
+        self.parser.profile_exists = self._fake_profile_exists  # inject fake function that always returns True - much easier than handing over a ProfileList object to __init__
+        parsed_event = self.parser.parse_event(params)
+        with self.assertRaises(expected):
+            self.parser.parse_event_for_tree(parsed_event)
+
+setup_all_loops(__name__)
 if __name__ == "__main__":
     unittest.main(verbosity=1)
