@@ -66,6 +66,7 @@ class ReadLog:
             'capability':   {},  # flat, no hasher needed
             'dbus':         hasher(),
             'network':      hasher(),
+            'path':         hasher(),
             'ptrace':       hasher(),
             'signal':       hasher(),
         }
@@ -256,19 +257,30 @@ class ReadLog:
             if not validate_log_mode(hide_log_mode(dmask)):
                 raise AppArmorException(_('Log contains unknown mode %s') % dmask)
 
+            owner = False
+
+            if '::' in dmask:
+                # old log styles used :: to indicate if permissions are meant for owner or other
+                (owner_d, other_d) = dmask.split('::')
+                if owner_d and other_d:
+                    raise AppArmorException('Found log event with both owner and other permissions. Please open a bugreport!')
+                if owner_d:
+                    dmask = owner_d
+                    owner = True
+                else:
+                    dmask = other_d
+
             if e.get('ouid') is not None and e['fsuid'] == e['ouid']:
-                # mark as "owner" event
-                if '::' not in rmask:
-                    rmask = '%s::' % rmask
-                if '::' not in dmask:
-                    dmask = '%s::' % dmask
+                # in current log style, owner permissions are indicated by a match of fsuid and ouid
+                owner = True
 
-            # convert rmask and dmask to mode arrays
-            e['denied_mask'],  e['name2'] = log_str_to_mode(e['profile'], dmask, e['name2'])
-            e['request_mask'], e['name2'] = log_str_to_mode(e['profile'], rmask, e['name2'])
+            for perm in dmask:
+                if perm in 'mrwalk':  # intentionally not allowing 'x' here
+                    self.hashlog[aamode][full_profile]['path'][e['name']][owner][perm] = True
+                else:
+                    raise AppArmorException(_('Log contains unknown mode %s') % dmask)
 
-            return(e['pid'], e['parent'], 'path',
-                             [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
+            return None
 
         elif e['operation'] == 'capable':
             self.hashlog[aamode][full_profile]['capability'][e['name']] = True

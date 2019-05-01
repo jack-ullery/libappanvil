@@ -37,8 +37,6 @@ from apparmor.common import (AppArmorException, AppArmorBug, open_file_read, val
 
 import apparmor.ui as aaui
 
-from apparmor.aamode import str_to_mode, split_mode
-
 from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
                             RE_ABI, RE_PROFILE_ALIAS,
                             RE_PROFILE_BOOLEAN, RE_PROFILE_VARIABLE, RE_PROFILE_CONDITIONAL,
@@ -990,7 +988,7 @@ def handle_children(profile, hat, root):
                     # As unknown hat is denied no entry for it should be made
                     return None
 
-            elif typ == 'path' or typ == 'exec':
+            elif typ == 'exec':
                 # If path or exec then we (should) have pid, profile, hat, program, mode, details and to_name
                 pid, p, h, prog, aamode, mode, detail, to_name = entry[:8]
                 if not mode:
@@ -1003,26 +1001,13 @@ def handle_children(profile, hat, root):
 
                 # Give Execute dialog if x access requested for something that's not a directory
                 # For directories force an 'ix' Path dialog
-                do_execute = False
+                domainchange = 'change'
                 exec_target = detail
 
-                if mode & str_to_mode('x'):
+                if True:
                     if os.path.isdir(exec_target):
                         raise AppArmorBug('exec permissions requested for directory %s. This should not happen - please open a bugreport!' % exec_target)
-                    elif typ != 'exec':
-                        raise AppArmorBug('exec permissions requested for %(exec_target)s, but mode is %(mode)s instead of exec. This should not happen - please open a bugreport!' % {'exec_target': exec_target, 'mode':mode})
-                    else:
-                        do_execute = True
-                        domainchange = 'change'
 
-                if mode and mode != str_to_mode('x'):  # x is already handled in handle_children, so it must not become part of prelog
-                    path = detail
-
-                    if prelog[aamode][profile][hat]['path'].get(path, False):
-                        mode |= prelog[aamode][profile][hat]['path'][path]
-                    prelog[aamode][profile][hat]['path'][path] = mode
-
-                if do_execute:
                     if not aa[profile][hat]:
                         continue  # ignore log entries for non-existing profiles
 
@@ -1859,29 +1844,17 @@ def collapse_log():
                 log_dict[aamode][profile][hat] = ProfileStorage(profile, hat, 'collapse_log()')
 
                 for path in prelog[aamode][profile][hat]['path'].keys():
-                    mode = prelog[aamode][profile][hat]['path'][path]
+                    for owner in prelog[aamode][profile][hat]['path'][path]:
+                        mode = set(prelog[aamode][profile][hat]['path'][path][owner].keys())
 
-                    user, other = split_mode(mode)
+                        # logparser sums up multiple log events, so both 'a' and 'w' can be present
+                        if 'a' in mode and 'w' in mode:
+                            mode.remove('a')
 
-                    # logparser.py doesn't preserve 'owner' information, see https://bugs.launchpad.net/apparmor/+bug/1538340
-                    # XXX re-check this code after fixing this bug
-                    if other:
-                        owner = False
-                        mode = other
-                    else:
-                        owner = True
-                        mode = user
+                        file_event = FileRule(path, mode, None, FileRule.ALL, owner=owner, log_event=True)
 
-                    # python3 aa-logprof -f <(echo '[55826.822365] audit: type=1400 audit(1454355221.096:85479): apparmor="ALLOWED" operation="file_receive" profile="/usr/sbin/smbd" name="/foo.png" pid=28185 comm="smbd" requested_mask="w" denied_mask="w" fsuid=100 ouid=100')
-                    # happens via log_str_to_mode() called in logparser.py parse_event_for_tree()
-                    # XXX fix this in the log parsing!
-                    if 'a' in mode and 'w' in mode:
-                        mode.remove('a')
-
-                    file_event = FileRule(path, mode, None, FileRule.ALL, owner=owner, log_event=True)
-
-                    if not is_known_rule(aa[profile][hat], 'file', file_event):
-                        log_dict[aamode][profile][hat]['file'].add(file_event)
+                        if not is_known_rule(aa[profile][hat], 'file', file_event):
+                            log_dict[aamode][profile][hat]['file'].add(file_event)
 
                 for cap in prelog[aamode][profile][hat]['capability'].keys():
                     cap_event = CapabilityRule(cap, log_event=True)

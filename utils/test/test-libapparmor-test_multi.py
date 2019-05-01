@@ -154,27 +154,6 @@ log_to_profile_known_failures = [
     'testcase01',
     'testcase12',
     'testcase13',
-
-    # null-* hats get ignored by handle_children() if it didn't see an exec event for that null-* hat
-    'syslog_datetime_01',
-    'syslog_datetime_02',
-    'syslog_datetime_03',
-    'syslog_datetime_04',
-    'syslog_datetime_05',
-    'syslog_datetime_06',
-    'syslog_datetime_07',
-    'syslog_datetime_08',
-    'syslog_datetime_09',
-    'syslog_datetime_10',
-    'syslog_datetime_11',
-    'syslog_datetime_12',
-    'syslog_datetime_13',
-    'syslog_datetime_14',
-    'syslog_datetime_15',
-    'syslog_datetime_16',
-    'syslog_datetime_17',
-    'syslog_datetime_18',
-    'testcase_network_send_receive',
 ]
 
 # tests that cause crashes or need user interaction (will be skipped)

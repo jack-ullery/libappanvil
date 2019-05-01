@@ -20,13 +20,6 @@ def AA_OTHER(mode):
         other.add('::%s' % i)
     return other
 
-def AA_OTHER_REMOVE(mode):
-    other = set()
-    for i in mode:
-        if '::' in i:
-            other.add(i[2:])
-    return other
-
 AA_MAY_EXEC = set('x')
 AA_MAY_WRITE = set('w')
 AA_MAY_READ = set('r')
@@ -126,15 +119,6 @@ def validate_log_mode(mode):
 def hide_log_mode(mode):
     mode = mode.replace('::', '')
     return mode
-
-def split_mode(mode):
-    user = set()
-    for i in mode:
-        if not '::' in i:
-            user.add(i)
-    other = mode - user
-    other = AA_OTHER_REMOVE(other)
-    return user, other
 
 def log_str_to_mode(profile, string, nt_name):
     mode = str_to_mode(string)
