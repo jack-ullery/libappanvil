@@ -259,7 +259,9 @@ def logfile_to_profile(logfile):
     apparmor.aa.active_profiles.add(profile_dummy_file, profile, '')
 
     log_reader = ReadLog(dict(), logfile, apparmor.aa.active_profiles, '')
-    log = log_reader.read_log('')
+    (log, hashlog) = log_reader.read_log('')
+
+    apparmor.aa.handle_hashlog(hashlog)
 
     for root in log:
         apparmor.aa.handle_children('', '', root)  # interactive for exec events!
@@ -279,12 +281,23 @@ def logfile_to_profile(logfile):
     apparmor.aa.filelist = apparmor.aa.hasher()
     apparmor.aa.filelist[profile_dummy_file]['profiles'][profile] = True
 
+    log_is_empty = True
+
+    if log != []:
+        log_is_empty = False
+
+    for tmpaamode in hashlog:
+        for tmpprofile in hashlog[tmpaamode]:
+            for tmpruletype in hashlog[tmpaamode][tmpprofile]:
+                if hashlog[tmpaamode][tmpprofile][tmpruletype]:
+                    log_is_empty = False
+
     if logfile.split('/')[-1][:-3] in log_to_profile_known_empty_log:
         # unfortunately this function might be called outside Unittest.TestCase, therefore we can't use assertEqual / assertNotEqual
-        if log != []:
+        if log_is_empty == False:
             raise Exception('got non-empty log for logfile in log_to_profile_known_empty_log: %s %s' % (logfile, log))
     else:
-        if log == []:
+        if log_is_empty == True:
             raise Exception('got empty log for logfile not in log_to_profile_known_empty_log: %s %s' % (logfile, log))
 
     new_profile = apparmor.aa.serialize_profile(log_dict[aamode][profile], profile, {})

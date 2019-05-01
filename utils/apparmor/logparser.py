@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2015-2018 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2015-2019 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -17,7 +17,7 @@ import re
 import sys
 import time
 import LibAppArmor
-from apparmor.common import AppArmorException, AppArmorBug, open_file_read, DebugLogger
+from apparmor.common import AppArmorException, AppArmorBug, hasher, open_file_read, DebugLogger
 
 from apparmor.aamode import validate_log_mode, log_str_to_mode, hide_log_mode, AA_MAY_EXEC
 
@@ -49,11 +49,24 @@ class ReadLog:
         self.pid = pid
         self.active_profiles = active_profiles
         self.log = []
+        self.hashlog = { 'PERMITTING': {}, 'REJECTING': {}, 'AUDIT': {} }  # structure inside {}: {'profilename': init_hashlog(aamode, profilename), 'profilename2': init_hashlog(...), ...}
         self.debug_logger = DebugLogger('ReadLog')
         self.LOG = None
         self.logmark = ''
         self.seenmark = None
         self.next_log_entry = None
+
+    def init_hashlog(self, aamode, profile):
+        ''' initialize self.hashlog[aamode][profile] for all rule types'''
+
+        if profile in self.hashlog[aamode].keys():
+            return  # already initialized, don't overwrite existing data
+
+        self.hashlog[aamode][profile] = {
+            'capability':   {},  # flat, no hasher needed
+            'network':      hasher(),
+            'signal':       hasher(),
+        }
 
     def prefetch_next_log_entry(self):
         if self.next_log_entry:
@@ -191,6 +204,9 @@ class ReadLog:
         if not e.get('profile', False):
             return None
 
+        full_profile = e['profile']  # full, nested profile name
+        self.init_hashlog(aamode, full_profile)
+
         # Convert new null profiles to old single level null profile
         if '//null-' in e['profile']:
             e['profile'] = 'null-complain-profile'
@@ -276,8 +292,8 @@ class ReadLog:
                                  [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
 
         elif e['operation'] == 'capable':
-            return(e['pid'], e['parent'], 'capability',
-                             [profile, hat, prog, aamode, e['name'], ''])
+            self.hashlog[aamode][full_profile]['capability'][e['name']] = True
+            return None
 
         elif e['operation'] == 'clone':
             parent, child = e['pid'], e['task']
@@ -295,8 +311,9 @@ class ReadLog:
                 arrayref.append(ia)
 
         elif self.op_type(e) == 'net':
-            return(e['pid'], e['parent'], 'network',
-                             [profile, hat, prog, aamode, e['family'], e['sock_type'], e['protocol']])
+            self.hashlog[aamode][full_profile]['network'][e['family']][e['sock_type']][e['protocol']] = True
+            return None
+
         elif e['operation'] == 'change_hat':
             return(e['pid'], e['parent'], 'unknown_hat',
                              [profile, hat, aamode, hat])
@@ -311,8 +328,8 @@ class ReadLog:
             return(e['pid'], e['parent'], 'ptrace',
                              [profile, hat, prog, aamode, e['denied_mask'], e['peer']])
         elif e['operation'] == 'signal':
-            return(e['pid'], e['parent'], 'signal',
-                             [profile, hat, prog, aamode, e['denied_mask'], e['signal'], e['peer']])
+            self.hashlog[aamode][full_profile]['signal'][e['peer']][e['denied_mask']][e['signal']]= True
+            return None
         elif e['operation'].startswith('dbus_'):
             return(e['pid'], e['parent'], 'dbus',
                              [profile, hat, prog, aamode, e['denied_mask'], e['bus'], e['path'], e['name'], e['interface'], e['member'], e['peer_profile']])
@@ -358,7 +375,8 @@ class ReadLog:
 
         self.LOG.close()
         self.logmark = ''
-        return self.log
+
+        return (self.log, self.hashlog)
 
     # operation types that can be network or file operations
     # (used by op_type() which checks some event details to decide)

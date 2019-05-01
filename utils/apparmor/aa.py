@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014-2018 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2019 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -888,6 +888,22 @@ def build_x_functions(default, options, exec_toggle):
     ret_list += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
     return ret_list
 
+def handle_hashlog(hashlog):
+    '''Copy hashlog content to prelog'''
+
+    # TODO: translate  null-*  to the profile name after deciding about exec mode (currently, events get lost/ignored at the exec boundary)
+    for aamode in hashlog.keys():
+        for full_profile in hashlog[aamode].keys():
+            if '//' in full_profile:
+                profile, hat = full_profile.split('//')[:2]  # XXX limit to two levels to avoid an Exception on nested child profiles or nested null-*
+                # TODO: support nested child profiles
+            else:
+                profile = full_profile
+                hat = full_profile
+
+            for typ in hashlog[aamode][full_profile].keys():
+                prelog[aamode][profile][hat][typ] = hashlog[aamode][full_profile][typ]
+
 def handle_children(profile, hat, root):
     entries = root[:]
     pid = None
@@ -899,10 +915,7 @@ def handle_children(profile, hat, root):
     detail = None
     to_name = None
     uhat = None
-    capability = None
-    family = None
-    sock_type = None
-    protocol = None
+
     regex_nullcomplain = re.compile('^null(-complain)*-profile$')
 
     for entry in entries:
@@ -977,16 +990,6 @@ def handle_children(profile, hat, root):
                     # As unknown hat is denied no entry for it should be made
                     return None
 
-            elif typ == 'capability':
-                # If capability then we (should) have pid, profile, hat, program, mode, capability
-                pid, p, h, prog, aamode, capability = entry[:6]
-                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
-                    profile = p
-                    hat = h
-                if not profile or not hat:
-                    continue
-                prelog[aamode][profile][hat]['capability'][capability] = True
-
             elif typ == 'dbus':
                 # If dbus then we (should) have pid, profile, hat, program, mode, access, bus, name, path, interface, member, peer_profile
                 pid, p, h, prog, aamode, access, bus, path, name, interface, member, peer_profile = entry
@@ -1006,16 +1009,6 @@ def handle_children(profile, hat, root):
                 if not profile or not hat:
                     continue
                 prelog[aamode][profile][hat]['ptrace'][peer][access] = True
-
-            elif typ == 'signal':
-                # If signal then we (should) have pid, profile, hat, program, mode, access, signal and peer
-                pid, p, h, prog, aamode, access, signal, peer = entry
-                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
-                    profile = p
-                    hat = h
-                if not profile or not hat:
-                    continue
-                prelog[aamode][profile][hat]['signal'][peer][access][signal] = True
 
             elif typ == 'path' or typ == 'exec':
                 # If path or exec then we (should) have pid, profile, hat, program, mode, details and to_name
@@ -1265,18 +1258,6 @@ def handle_children(profile, hat, root):
                     elif ans.startswith('CMD_ux'):
                         if domainchange == 'change':
                             return None
-
-            elif typ == 'network':
-                # If network we (should) have pid, profile, hat, program, mode, network family, socket type and protocol
-                pid, p, h, prog, aamode, family, sock_type, protocol = entry[:8]
-
-                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
-                    profile = p
-                    hat = h
-                if not hat or not profile:
-                    continue
-                if family and sock_type:
-                    prelog[aamode][profile][hat]['network'][family][sock_type] = True
 
             else:
                 raise AppArmorBug('unknown event type %s - should never happen, please open a bugreport!' % typ)
@@ -1794,7 +1775,10 @@ def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
     ##    UI_ask_to_enable_repo()
 
     log_reader = apparmor.logparser.ReadLog(log_pid, logfile, active_profiles, profile_dir)
-    log = log_reader.read_log(logmark)
+    (log, hashlog) = log_reader.read_log(logmark)
+
+    handle_hashlog(hashlog)
+
     #read_log(logmark)
 
     for root in log:
