@@ -990,26 +990,6 @@ def handle_children(profile, hat, root):
                     # As unknown hat is denied no entry for it should be made
                     return None
 
-            elif typ == 'dbus':
-                # If dbus then we (should) have pid, profile, hat, program, mode, access, bus, name, path, interface, member, peer_profile
-                pid, p, h, prog, aamode, access, bus, path, name, interface, member, peer_profile = entry
-                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
-                    profile = p
-                    hat = h
-                if not profile or not hat:
-                    continue
-                prelog[aamode][profile][hat]['dbus'][access][bus][path][name][interface][member][peer_profile] = True
-
-            elif typ == 'ptrace':
-                # If ptrace then we (should) have pid, profile, hat, program, mode, access and peer
-                pid, p, h, prog, aamode, access, peer = entry
-                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
-                    profile = p
-                    hat = h
-                if not profile or not hat:
-                    continue
-                prelog[aamode][profile][hat]['ptrace'][peer][access] = True
-
             elif typ == 'path' or typ == 'exec':
                 # If path or exec then we (should) have pid, profile, hat, program, mode, details and to_name
                 pid, p, h, prog, aamode, mode, detail, to_name = entry[:8]

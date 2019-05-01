@@ -64,7 +64,9 @@ class ReadLog:
 
         self.hashlog[aamode][profile] = {
             'capability':   {},  # flat, no hasher needed
+            'dbus':         hasher(),
             'network':      hasher(),
+            'ptrace':       hasher(),
             'signal':       hasher(),
         }
 
@@ -325,14 +327,17 @@ class ReadLog:
                 self.debug_logger.debug('ignored garbage ptrace event with empty denied_mask')
                 return None
 
-            return(e['pid'], e['parent'], 'ptrace',
-                             [profile, hat, prog, aamode, e['denied_mask'], e['peer']])
+            self.hashlog[aamode][full_profile]['ptrace'][e['peer']][e['denied_mask']] = True
+            return None
+
         elif e['operation'] == 'signal':
             self.hashlog[aamode][full_profile]['signal'][e['peer']][e['denied_mask']][e['signal']]= True
             return None
+
         elif e['operation'].startswith('dbus_'):
-            return(e['pid'], e['parent'], 'dbus',
-                             [profile, hat, prog, aamode, e['denied_mask'], e['bus'], e['path'], e['name'], e['interface'], e['member'], e['peer_profile']])
+            self.hashlog[aamode][full_profile]['dbus'][e['denied_mask']][e['bus']][e['path']][e['name']][e['interface']][e['member']][e['peer_profile']] = True
+            return None
+
         else:
             self.debug_logger.debug('UNHANDLED: %s' % e)
 
