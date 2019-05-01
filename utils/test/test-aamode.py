@@ -14,7 +14,7 @@ from common_test import AATest, setup_all_loops
 
 import apparmor.aamode
 
-from apparmor.aamode import split_log_mode, str_to_mode, sub_str_to_mode, validate_log_mode
+from apparmor.aamode import split_log_mode, str_to_mode, sub_str_to_mode
 from apparmor.common import AppArmorBug
 
 class AamodeTest_split_log_mode(AATest):
@@ -86,27 +86,6 @@ class AamodeTest_sub_str_to_mode(AATest):
 
         with self.assertRaises(AppArmorBug):
             sub_str_to_mode('r')
-
-
-
-class AamodeTest_validate_log_mode(AATest):
-    def test_validate_log_mode_1(self):
-        self.assertTrue(validate_log_mode('a'))
-    def test_validate_log_mode_2(self):
-        self.assertTrue(validate_log_mode('rw'))
-    def test_validate_log_mode_3(self):
-        self.assertTrue(validate_log_mode('Pixrw'))
-    def test_validate_log_mode_4(self):
-        self.assertTrue(validate_log_mode('rrrr'))
-
-    def test_validate_log_mode_invalid_1(self):
-        self.assertFalse(validate_log_mode('c'))  # 'c' (create) must be converted to 'a' before calling validate_log_mode()
-    def test_validate_log_mode_invalid_2(self):
-        self.assertFalse(validate_log_mode('R'))  # only lowercase 'r' is valid
-    def test_validate_log_mode_invalid_3(self):
-        self.assertFalse(validate_log_mode('foo'))
-    def test_validate_log_mode_invalid_4(self):
-        self.assertFalse(validate_log_mode(''))
 
 
 setup_all_loops(__name__)

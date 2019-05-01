@@ -55,7 +55,6 @@ MODE_HASH = {'x': AA_MAY_EXEC, 'X': AA_MAY_EXEC,
              'N': AA_EXEC_NT
              }
 
-LOG_MODE_RE = re.compile('^(r|w|l|m|k|a|x|ix|ux|px|pux|cx|nx|pix|cix|Ux|Px|PUx|Cx|Nx|Pix|Cix)+$')
 MODE_MAP_SET = {"r", "w", "l", "m", "k", "a", "x", "i", "u", "p", "c", "n", "I", "U", "P", "C", "N"}
 
 def str_to_mode(string):
@@ -109,16 +108,6 @@ def mode_contains(mode, subset):
         mode |= (AA_OTHER(AA_MAY_APPEND))
 
     return (mode & subset) == subset
-
-def validate_log_mode(mode):
-    if LOG_MODE_RE.search(mode):
-        return True
-    else:
-        return False
-
-def hide_log_mode(mode):
-    mode = mode.replace('::', '')
-    return mode
 
 def log_str_to_mode(profile, string, nt_name):
     mode = str_to_mode(string)

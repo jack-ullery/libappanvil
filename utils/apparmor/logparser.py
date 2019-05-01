@@ -19,7 +19,7 @@ import time
 import LibAppArmor
 from apparmor.common import AppArmorException, AppArmorBug, hasher, open_file_read, DebugLogger
 
-from apparmor.aamode import validate_log_mode, log_str_to_mode, hide_log_mode
+from apparmor.aamode import log_str_to_mode
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -245,17 +245,9 @@ class ReadLog:
 
         elif self.op_type(e) == 'file':
             # Map c (create) and d (delete) to w (logging is more detailed than the profile language)
-            rmask = e['request_mask']
-            rmask = rmask.replace('c', 'w')
-            rmask = rmask.replace('d', 'w')
-            if not validate_log_mode(hide_log_mode(rmask)):
-                raise AppArmorException(_('Log contains unknown mode %s') % rmask)
-
             dmask = e['denied_mask']
             dmask = dmask.replace('c', 'w')
             dmask = dmask.replace('d', 'w')
-            if not validate_log_mode(hide_log_mode(dmask)):
-                raise AppArmorException(_('Log contains unknown mode %s') % dmask)
 
             owner = False
 
