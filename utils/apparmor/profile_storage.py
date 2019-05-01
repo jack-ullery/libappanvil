@@ -14,7 +14,7 @@
 # ----------------------------------------------------------------------
 
 
-from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.common import AppArmorBug, type_is_str
 
 from apparmor.rule.capability       import CapabilityRuleset
 from apparmor.rule.change_profile   import ChangeProfileRuleset
@@ -182,16 +182,6 @@ def add_or_remove_flag(flags, flag_to_change, set_flag):
 
     return sorted(flags)
 
-
-def set_allow_str(allow):
-    if allow == 'deny':
-        return 'deny '
-    elif allow == 'allow':
-        return ''
-    elif allow == '':
-        return ''
-    else:
-        raise AppArmorException(_("Invalid allow string: %(allow)s"))
 
 def write_list_vars(ref, depth):
     name = 'lvar'
