@@ -19,7 +19,7 @@ import time
 import LibAppArmor
 from apparmor.common import AppArmorException, AppArmorBug, hasher, open_file_read, DebugLogger
 
-from apparmor.aamode import validate_log_mode, log_str_to_mode, hide_log_mode, AA_MAY_EXEC
+from apparmor.aamode import validate_log_mode, log_str_to_mode, hide_log_mode
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -86,15 +86,6 @@ class ReadLog:
         log_entry = self.next_log_entry
         self.next_log_entry = None
         return log_entry
-
-    def peek_at_next_log_entry(self):
-        # Take a peek at the next log entry
-        if not self.next_log_entry:
-            self.prefetch_next_log_entry()
-        return self.next_log_entry
-
-    def throw_away_next_log_entry(self):
-        self.next_log_entry = None
 
     def parse_event(self, msg):
         """Parse the event from log into key value pairs"""
@@ -276,22 +267,8 @@ class ReadLog:
             e['denied_mask'],  e['name2'] = log_str_to_mode(e['profile'], dmask, e['name2'])
             e['request_mask'], e['name2'] = log_str_to_mode(e['profile'], rmask, e['name2'])
 
-            # check if this is an exec event
-            is_domain_change = False
-            if e['operation'] == 'inode_permission' and (e['denied_mask'] & AA_MAY_EXEC) and aamode == 'PERMITTING':
-                following = self.peek_at_next_log_entry()
-                if following:
-                    entry = self.parse_event(following)
-                    if entry and entry.get('info', False) == 'set profile':
-                        is_domain_change = True
-                        self.throw_away_next_log_entry()
-
-            if is_domain_change:
-                return(e['pid'], e['parent'], 'exec',
-                                 [profile, hat, prog, aamode, e['denied_mask'], e['name'], e['name2']])
-            else:
-                return(e['pid'], e['parent'], 'path',
-                                 [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
+            return(e['pid'], e['parent'], 'path',
+                             [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
 
         elif e['operation'] == 'capable':
             self.hashlog[aamode][full_profile]['capability'][e['name']] = True
