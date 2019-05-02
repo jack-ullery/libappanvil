@@ -914,13 +914,11 @@ def ask_addhat(hashlog):
             for hat in hashlog[aamode][profile]['change_hat']:
                 hat = hat.split('//')[-1]
 
-                uhat = hat
-                if aa[profile].get(uhat, False):
-                    hat = uhat
-                    continue
+                if aa[profile].get(hat, False):
+                    continue  # no need to ask if the hat already exists
+
                 new_p = update_repo_profile(aa[profile][profile])
-                if new_p and UI_SelectUpdatedRepoProfile(profile, new_p) and aa[profile].get(uhat, False):
-                    hat = uhat
+                if new_p and UI_SelectUpdatedRepoProfile(profile, new_p) and aa[profile].get(hat, False):
                     continue
 
                 default_hat = None
@@ -929,7 +927,7 @@ def ask_addhat(hashlog):
                         default_hat = cfg['defaulthat'][hatglob]
 
                 context = profile
-                context = context + ' -> ^%s' % uhat
+                context = context + ' -> ^%s' % hat
                 ans = transitions.get(context, 'XXXINVALIDXXX')
 
                 while ans not in ['CMD_ADDHAT', 'CMD_USEDEFAULT', 'CMD_DENY']:
@@ -939,7 +937,7 @@ def ask_addhat(hashlog):
                     if default_hat:
                         q.headers += [_('Default Hat'), default_hat]
 
-                    q.headers += [_('Requested Hat'), uhat]
+                    q.headers += [_('Requested Hat'), hat]
 
                     q.functions.append('CMD_ADDHAT')
                     if default_hat:
@@ -959,15 +957,19 @@ def ask_addhat(hashlog):
                 transitions[context] = ans
 
                 if ans == 'CMD_ADDHAT':
-                    hat = uhat
-                    aa[profile][hat] = ProfileStorage(profile, hat, 'handle_children addhat')
+                    aa[profile][hat] = ProfileStorage(profile, hat, 'ask_addhat addhat')
                     aa[profile][hat]['flags'] = aa[profile][profile]['flags']
                     changed[profile] = True
                 elif ans == 'CMD_USEDEFAULT':
                     hat = default_hat
+                    if not aa[profile].get(hat, False):
+                        # create default hat if it doesn't exist yet
+                        aa[profile][hat] = ProfileStorage(profile, hat, 'ask_addhat default hat')
+                        aa[profile][hat]['flags'] = aa[profile][profile]['flags']
+                        changed[profile] = True
                 elif ans == 'CMD_DENY':
                     # As unknown hat is denied no entry for it should be made
-                    return None
+                    continue
 
 def handle_children(profile, hat, root):
     regex_nullcomplain = re.compile('^null(-complain)*-profile$')
