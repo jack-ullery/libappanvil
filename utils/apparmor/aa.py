@@ -921,15 +921,7 @@ def handle_children(profile, hat, root):
             handle_children(profile, hat, entry)
         else:
             typ = entry.pop(0)
-            if typ == 'fork':
-                # If type is fork then we (should) have pid, profile and hat
-                pid, p, h = entry[:3]
-                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
-                    profile = p
-                    hat = h
-                # XXX profile and hat were used to track profile changes - do we still need to set them?
-                # XXX actuallly, is event type 'fork' still used?
-            elif typ == 'unknown_hat':
+            if typ == 'unknown_hat':
                 # If hat is not known then we (should) have pid, profile, hat, mode and unknown hat in entry
                 pid, p, h, aamode, uhat = entry[:5]
                 if not regex_nullcomplain.search(p):

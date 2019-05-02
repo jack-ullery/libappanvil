@@ -275,21 +275,6 @@ class ReadLog:
             self.hashlog[aamode][full_profile]['capability'][e['name']] = True
             return None
 
-        elif e['operation'] == 'clone':
-            parent, child = e['pid'], e['task']
-            if not parent:
-                parent = 'null-complain-profile'
-            if not hat:
-                hat = 'null-complain-profile'
-            arrayref = []
-            if self.pid.get(parent, False):
-                self.pid[parent].append(arrayref)
-            else:
-                self.log.append(arrayref)
-            self.pid[child].append(arrayref)
-            for ia in ['fork', child, profile, hat]:
-                arrayref.append(ia)
-
         elif self.op_type(e) == 'net':
             self.hashlog[aamode][full_profile]['network'][e['family']][e['sock_type']][e['protocol']] = True
             return None
