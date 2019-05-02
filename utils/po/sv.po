@@ -8,13 +8,13 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: AppArmor list <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2019-04-17 23:42+0000\n"
-"Last-Translator: Erik Hellberg <hellberg.erik@outlook.com>\n"
+"PO-Revision-Date: 2019-05-01 15:01+0000\n"
+"Last-Translator: Jonatan Nyberg <Unknown>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2019-04-19 05:30+0000\n"
+"X-Launchpad-Export-Date: 2019-05-02 05:32+0000\n"
 "X-Generator: Launchpad (build 18928)\n"
 "Language: sv\n"
 
@@ -94,6 +94,15 @@ msgid ""
 "opportunity to choose whether the access should be \n"
 "allowed or denied."
 msgstr ""
+"Vänligen starta programmet som ska profileras i\n"
+"ett annat fönster och utöva dess funktionalitet nu.\n"
+"\n"
+"När du är klar väljer du alternativet \"Skanna\" nedan i \n"
+"för att skanna systemloggar för AppArmor-händelser. \n"
+"\n"
+"För varje AppArmor-händelse får du \n"
+"möjlighet att välja om åtkomst ska \n"
+"tillåtas eller nekas."
 
 #: ../aa-genprof:147
 msgid "Profiling"
@@ -327,7 +336,7 @@ msgstr "Inaktivera profilen för de angivna programmen"
 
 #: ../aa-unconfined:28
 msgid "Lists unconfined processes having tcp or udp ports"
-msgstr ""
+msgstr "Listar obegränsade processer som har tcp- eller udp-portar"
 
 #: ../aa-unconfined:29
 msgid "scan all processes from /proc"
@@ -457,7 +466,7 @@ msgstr "Skickade ändringar till förrådet."
 
 #: ../apparmor/aa.py:865
 msgid "Changelog Entry: "
-msgstr ""
+msgstr "Ändringsloggens post: "
 
 #: ../apparmor/aa.py:885
 msgid ""
@@ -606,6 +615,11 @@ msgid ""
 "  Entered Path:  %(ans)s\n"
 "Do you really want to use this path?"
 msgstr ""
+"Den angivna sökvägen matchar inte denna loggpost:\n"
+"\n"
+"  Loggpost: %(path)s\n"
+"  Inmatad sökväg: %(ans)s\n"
+"Vill du verkligen använda den här sökvägen?"
 
 #: ../apparmor/aa.py:2251
 #, python-format
@@ -791,6 +805,7 @@ msgid ""
 "Syntax Error: Unexpected hat definition found in file: %(file)s line: "
 "%(line)s"
 msgstr ""
+"Syntaxfel: oväntad hat-definition hittades i filen: %(file)s line: %(line)s"
 
 #: ../apparmor/aa.py:3168
 #, python-format
