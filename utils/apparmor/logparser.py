@@ -208,16 +208,6 @@ class ReadLog:
         if '//' in e['profile']:
             profile, hat = e['profile'].split('//')[:2]
 
-        # Filter out change_hat events that aren't from learning
-        if e['operation'] == 'change_hat':
-            if aamode != 'HINT' and aamode != 'PERMITTING':
-                return None
-            if e['error_code'] == 1 and e['info'] == 'unconfined can not change_hat':
-                return None
-            profile = e['name2']
-            if '//' in e['name2']:
-                profile, hat = e['name2'].split('//')[:2]
-
         if not hat:
             hat = profile
 
@@ -280,6 +270,15 @@ class ReadLog:
             return None
 
         elif e['operation'] == 'change_hat':
+            if e['error_code'] == 1 and e['info'] == 'unconfined can not change_hat':
+                return None
+
+            if '//' in e['name2']:
+                profile, hat = e['name2'].split('//')[:2]
+            else:
+                profile = e['name2']
+                hat = profile
+
             return(e['pid'], e['parent'], 'unknown_hat',
                              [profile, hat, aamode, hat])
         elif e['operation'] == 'ptrace':
