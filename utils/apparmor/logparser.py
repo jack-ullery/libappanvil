@@ -191,9 +191,6 @@ class ReadLog:
         if aamode in ['AUDIT', 'STATUS', 'ERROR']:
             return None
 
-        if 'profile_set' in e['operation']:
-            return None
-
         # Skip if AUDIT event was issued due to a change_hat in unconfined mode
         if not e.get('profile', False):
             return None
