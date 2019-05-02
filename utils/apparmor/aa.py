@@ -902,19 +902,19 @@ def handle_hashlog(hashlog):
             for typ in hashlog[aamode][full_profile].keys():
                 prelog[aamode][profile][hat][typ] = hashlog[aamode][full_profile][typ]
 
-def handle_children(profile, hat, root):
-    regex_nullcomplain = re.compile('^null(-complain)*-profile$')
+def ask_addhat(hashlog):
+    '''ask the user about change_hat events (requests to add a hat)'''
 
-    for entry in root[:]:
-        if type(entry[0]) != str:
-            handle_children(profile, hat, entry)
-        else:
-            typ = entry.pop(0)
-            if typ == 'unknown_hat':
-                # If hat is not known then we (should) have pid, profile, hat, mode and unknown hat in entry
-                pid, p, h, aamode, uhat = entry[:5]
-                if not regex_nullcomplain.search(p):
-                    profile = p
+    for aamode in hashlog:
+        for profile in hashlog[aamode]:
+            if '//' in profile:
+                aaui.UI_Important('Ignoring change_hat event for %s, nested profiles are not supported yet.' % profile)
+                continue
+
+            for hat in hashlog[aamode][profile]['change_hat']:
+                hat = hat.split('//')[-1]
+
+                uhat = hat
                 if aa[profile].get(uhat, False):
                     hat = uhat
                     continue
@@ -969,7 +969,17 @@ def handle_children(profile, hat, root):
                     # As unknown hat is denied no entry for it should be made
                     return None
 
-            elif typ == 'exec':
+def handle_children(profile, hat, root):
+    regex_nullcomplain = re.compile('^null(-complain)*-profile$')
+
+    for entry in root[:]:
+        if type(entry[0]) != str:
+            raise Exception('handle_children recursive')
+            handle_children(profile, hat, entry)
+        else:
+            typ = entry.pop(0)
+
+            if typ == 'exec':
                 # If path or exec then we (should) have pid, profile, hat, program, mode, details and to_name
                 pid, p, h, prog, aamode, mode, detail, to_name = entry[:8]
                 if not mode:
@@ -1724,6 +1734,7 @@ def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
     (log, hashlog) = log_reader.read_log(logmark)
 
     handle_hashlog(hashlog)
+    ask_addhat(hashlog)
 
     #read_log(logmark)
 

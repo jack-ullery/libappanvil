@@ -64,6 +64,7 @@ class ReadLog:
 
         self.hashlog[aamode][profile] = {
             'capability':   {},  # flat, no hasher needed
+            'change_hat':   {},  # flat, no hasher needed
             'dbus':         hasher(),
             'network':      hasher(),
             'path':         hasher(),
@@ -273,14 +274,9 @@ class ReadLog:
             if e['error_code'] == 1 and e['info'] == 'unconfined can not change_hat':
                 return None
 
-            if '//' in e['name2']:
-                profile, hat = e['name2'].split('//')[:2]
-            else:
-                profile = e['name2']
-                hat = profile
+            self.hashlog[aamode][full_profile]['change_hat'][e['name2']] = True
+            return None
 
-            return(e['pid'], e['parent'], 'unknown_hat',
-                             [profile, hat, aamode, hat])
         elif e['operation'] == 'ptrace':
             if not e['peer']:
                 self.debug_logger.debug('ignored garbage ptrace event with empty peer')
