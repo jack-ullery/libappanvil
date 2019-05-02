@@ -903,20 +903,9 @@ def handle_hashlog(hashlog):
                 prelog[aamode][profile][hat][typ] = hashlog[aamode][full_profile][typ]
 
 def handle_children(profile, hat, root):
-    entries = root[:]
-    pid = None
-    p = None
-    h = None
-    prog = None
-    aamode = None
-    mode = None
-    detail = None
-    to_name = None
-    uhat = None
-
     regex_nullcomplain = re.compile('^null(-complain)*-profile$')
 
-    for entry in entries:
+    for entry in root[:]:
         if type(entry[0]) != str:
             handle_children(profile, hat, entry)
         else:
