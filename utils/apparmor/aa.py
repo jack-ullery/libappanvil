@@ -992,9 +992,6 @@ def handle_children(profile, hat, root):
                 if not profile or not hat or not detail:
                     continue
 
-                # Give Execute dialog if x access requested for something that's not a directory
-                # For directories force an 'ix' Path dialog
-                domainchange = 'change'
                 exec_target = detail
 
                 if True:
@@ -1140,8 +1137,7 @@ def handle_children(profile, hat, root):
                                 aa[profile][hat]['file'].add(FileRule(exec_target, None, 'x', FileRule.ALL, owner=False, log_event=True, deny=True))
                                 changed[profile] = True
                                 # Skip remaining events if they ask to deny exec
-                                if domainchange == 'change':
-                                    return None
+                                return None
 
                         if ans != 'CMD_DENY':
                             if to_name:
@@ -1173,9 +1169,8 @@ def handle_children(profile, hat, root):
                         if to_name:
                             exec_target = to_name
                         if aamode == 'PERMITTING':
-                            if domainchange == 'change':
-                                profile = exec_target
-                                hat = exec_target
+                            profile = exec_target
+                            hat = exec_target
 
                         # Check profile exists for px
                         if not os.path.exists(get_profile_filename_from_attachment(exec_target, True)):
@@ -1214,8 +1209,7 @@ def handle_children(profile, hat, root):
                                 filelist[file_name]['profiles'][profile][hat] = True
 
                     elif ans.startswith('CMD_ux'):
-                        if domainchange == 'change':
-                            return None
+                        return None
 
             else:
                 raise AppArmorBug('unknown event type %s - should never happen, please open a bugreport!' % typ)
