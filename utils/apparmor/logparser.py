@@ -44,9 +44,9 @@ class ReadLog:
     def __init__(self, pid, filename, active_profiles, profile_dir):
         self.filename = filename
         self.profile_dir = profile_dir
-        self.pid = pid
+        self.pid = pid  # XXX unused
         self.active_profiles = active_profiles
-        self.log = []
+        self.log = []  # XXX unused
         self.hashlog = { 'PERMITTING': {}, 'REJECTING': {}, 'AUDIT': {} }  # structure inside {}: {'profilename': init_hashlog(aamode, profilename), 'profilename2': init_hashlog(...), ...}
         self.debug_logger = DebugLogger('ReadLog')
         self.LOG = None
@@ -163,24 +163,6 @@ class ReadLog:
             return ev
         else:
             return None
-
-    def add_to_tree(self, loc_pid, parent, type, event):
-        self.debug_logger.info('add_to_tree: pid [%s] type [%s] event [%s]' % (loc_pid, type, event))
-        if not self.pid.get(loc_pid, False):
-            profile, hat = event[:2]
-            if parent and self.pid.get(parent, False):
-                if not hat:
-                    hat = 'null-complain-profile'
-                arrayref = []
-                self.pid[parent].append(arrayref)
-                self.pid[loc_pid] = arrayref
-                for ia in ['fork', loc_pid, profile, hat]:
-                    arrayref.append(ia)
-            else:
-                arrayref = []
-                self.log.append(arrayref)
-                self.pid[loc_pid] = arrayref
-        self.pid[loc_pid].append([type, loc_pid] + event)
 
     def parse_event_for_tree(self, e):
         aamode = e.get('aamode', 'UNKNOWN')
@@ -313,10 +295,7 @@ class ReadLog:
             event = self.parse_event(line)
             if event:
                 try:
-                    event = self.parse_event_for_tree(event)
-                    if event is not None:
-                        (pid, parent, mode, details) = event
-                        self.add_to_tree(pid, parent, mode, details)
+                    self.parse_event_for_tree(event)
 
                 except AppArmorException as e:
                     ex_msg = ('%(msg)s\n\nThis error was caused by the log line:\n%(logline)s' %
