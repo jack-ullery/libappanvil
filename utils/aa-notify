@@ -26,7 +26,7 @@
 #
 # In a typical desktop environment one would run as a service the
 # command:
-#   /usr/bin/python3 /usr/bin/aa-notify -p -w 10
+#   /usr/bin/aa-notify -p -w 10
 
 import argparse
 import atexit
@@ -435,7 +435,8 @@ def main():
     shell_config = aaconfig.Config('shell')
 
     # Load system's notify.conf
-    system_config = read_notify_conf('/etc/apparmor', shell_config)
+    # By default aa.CONFDIR is /etc/apparmor on most production systems
+    system_config = read_notify_conf(aa.CONFDIR, shell_config)
     # Set default is no system notify.conf was found
     if not system_config:
         system_config = {'': {'show_notifications': 'yes'}}
