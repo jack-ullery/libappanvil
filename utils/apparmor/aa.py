@@ -907,7 +907,7 @@ def ask_addhat(hashlog):
 
     for aamode in hashlog:
         for profile in hashlog[aamode]:
-            if '//' in profile:
+            if '//' in profile and hashlog[aamode][profile]['change_hat'].keys():
                 aaui.UI_Important('Ignoring change_hat event for %s, nested profiles are not supported yet.' % profile)
                 continue
 
