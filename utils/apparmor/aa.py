@@ -1709,15 +1709,13 @@ def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
     ##    UI_ask_to_enable_repo()
 
     log_reader = apparmor.logparser.ReadLog(log_pid, logfile, active_profiles, profile_dir)
-    (log, hashlog) = log_reader.read_log(logmark)
+    hashlog = log_reader.read_log(logmark)
 
     handle_hashlog(hashlog)
     ask_exec(hashlog)
     ask_addhat(hashlog)
 
     #read_log(logmark)
-
-    #print(log)
 
     log_dict = collapse_log()
 

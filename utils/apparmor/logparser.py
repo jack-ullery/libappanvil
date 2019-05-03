@@ -46,7 +46,6 @@ class ReadLog:
         self.profile_dir = profile_dir
         self.pid = pid  # XXX unused
         self.active_profiles = active_profiles
-        self.log = []  # XXX unused
         self.hashlog = { 'PERMITTING': {}, 'REJECTING': {}, 'AUDIT': {} }  # structure inside {}: {'profilename': init_hashlog(aamode, profilename), 'profilename2': init_hashlog(...), ...}
         self.debug_logger = DebugLogger('ReadLog')
         self.LOG = None
@@ -306,7 +305,7 @@ class ReadLog:
         self.LOG.close()
         self.logmark = ''
 
-        return (self.log, self.hashlog)
+        return self.hashlog
 
     # operation types that can be network or file operations
     # (used by op_type() which checks some event details to decide)
