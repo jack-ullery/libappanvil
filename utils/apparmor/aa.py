@@ -971,30 +971,22 @@ def ask_addhat(hashlog):
                     # As unknown hat is denied no entry for it should be made
                     continue
 
-def handle_children(profile, hat, root):
-    regex_nullcomplain = re.compile('^null(-complain)*-profile$')
+def ask_exec(hashlog):
+    '''ask the user about exec events (requests to execute another program) and which exec mode to use'''
 
-    for entry in root[:]:
-        if type(entry[0]) != str:
-            raise Exception('handle_children recursive')
-            handle_children(profile, hat, entry)
-        else:
-            typ = entry.pop(0)
+    for aamode in hashlog:
+        for profile in hashlog[aamode]:
+            if '//' in profile and hashlog[aamode][profile]['exec'].keys():
+                # TODO: is this really needed? Or would removing Cx from the options be good enough?
+                aaui.UI_Important('WARNING: Ignoring exec event in %s, nested profiles are not supported yet.' % profile)
+                continue
 
-            if typ == 'exec':
-                # If path or exec then we (should) have pid, profile, hat, program, mode, details and to_name
-                pid, p, h, prog, aamode, mode, detail, to_name = entry[:8]
-                if not mode:
-                    mode = set()
-                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
-                    profile = p
-                    hat = h
-                if not profile or not hat or not detail:
-                    continue
+            hat = profile  # XXX temporary solution to avoid breaking the existing code
 
-                exec_target = detail
+            for exec_target in hashlog[aamode][profile]['exec']:
+                for target_profile in hashlog[aamode][profile]['exec'][exec_target]:
+                    to_name = ''
 
-                if True:
                     if os.path.isdir(exec_target):
                         raise AppArmorBug('exec permissions requested for directory %s. This should not happen - please open a bugreport!' % exec_target)
 
@@ -1133,7 +1125,7 @@ def handle_children(profile, hat, root):
                                 aa[profile][hat]['file'].add(FileRule(exec_target, None, 'x', FileRule.ALL, owner=False, log_event=True, deny=True))
                                 changed[profile] = True
                                 # Skip remaining events if they ask to deny exec
-                                return None
+                                continue
 
                         if ans != 'CMD_DENY':
                             if to_name:
@@ -1205,12 +1197,7 @@ def handle_children(profile, hat, root):
                                 filelist[file_name]['profiles'][profile][hat] = True
 
                     elif ans.startswith('CMD_ux'):
-                        return None
-
-            else:
-                raise AppArmorBug('unknown event type %s - should never happen, please open a bugreport!' % typ)
-
-    return None
+                        continue
 
 ##### Repo related functions
 
@@ -1726,14 +1713,11 @@ def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
     (log, hashlog) = log_reader.read_log(logmark)
 
     handle_hashlog(hashlog)
+    ask_exec(hashlog)
     ask_addhat(hashlog)
 
     #read_log(logmark)
 
-    for root in log:
-        handle_children('', '', root)
-    #for root in range(len(log)):
-        #log[root] = handle_children('', '', log[root])
     #print(log)
 
     log_dict = collapse_log()

@@ -241,10 +241,8 @@ def logfile_to_profile(logfile):
     (log, hashlog) = log_reader.read_log('')
 
     apparmor.aa.handle_hashlog(hashlog)
+    apparmor.aa.ask_exec(hashlog)
     apparmor.aa.ask_addhat(hashlog)
-
-    for root in log:
-        apparmor.aa.handle_children('', '', root)  # interactive for exec events!
 
     log_dict = apparmor.aa.collapse_log()
 
