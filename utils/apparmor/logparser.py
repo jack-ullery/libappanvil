@@ -19,8 +19,6 @@ import time
 import LibAppArmor
 from apparmor.common import AppArmorException, AppArmorBug, hasher, open_file_read, DebugLogger
 
-from apparmor.aamode import log_str_to_mode
-
 # setup module translations
 from apparmor.translations import init_translation
 _ = init_translation()
@@ -66,6 +64,7 @@ class ReadLog:
             'capability':   {},  # flat, no hasher needed
             'change_hat':   {},  # flat, no hasher needed
             'dbus':         hasher(),
+            'exec':         hasher(),
             'network':      hasher(),
             'path':         hasher(),
             'ptrace':       hasher(),
@@ -204,32 +203,21 @@ class ReadLog:
             e['profile'] = 'null-complain-profile'
 
         profile = e['profile']
-        hat = None
 
         if '//' in e['profile']:
             profile, hat = e['profile'].split('//')[:2]
 
-        if not hat:
-            hat = profile
-
-        # prog is no longer passed around consistently
-        prog = 'HINT'
-
         if profile != 'null-complain-profile' and not self.profile_exists(profile):
             return None
         if e['operation'] == 'exec':
-            # convert rmask and dmask to mode arrays
-            e['denied_mask'],  e['name2'] = log_str_to_mode(e['profile'], e['denied_mask'], e['name2'])
-            e['request_mask'], e['name2'] = log_str_to_mode(e['profile'], e['request_mask'], e['name2'])
+            if not e['name']:
+                raise AppArmorException('exec without executed binary')
 
-            if e.get('info', False) and e['info'] == 'mandatory profile missing':
-                return(e['pid'], e['parent'], 'exec',
-                                 [profile, hat, aamode, 'PERMITTING', e['denied_mask'], e['name'], e['name2']])
-            elif (e.get('name2', False) and '//null-' in e['name2']) or e.get('name', False):
-                return(e['pid'], e['parent'], 'exec',
-                                 [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-            else:
-                self.debug_logger.debug('parse_event_for_tree: dropped exec event in %s' % e['profile'])
+            if not e['name2']:
+                raise AppArmorException('exec without target profile')
+
+            self.hashlog[aamode][full_profile]['exec'][e['name']][e['name2']] = True
+            return None
 
         elif self.op_type(e) == 'file':
             # Map c (create) and d (delete) to w (logging is more detailed than the profile language)
