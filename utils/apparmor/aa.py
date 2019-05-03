@@ -1026,8 +1026,6 @@ def handle_children(profile, hat, root):
 
                     if True:
                         options = cfg['qualifiers'].get(exec_target, 'ipcnu')
-                        if to_name:
-                            fatal_error(_('%s has transition name but not transition mode') % entry)
 
                         ### If profiled program executes itself only 'ix' option
                         ##if exec_target == profile:
@@ -1062,8 +1060,6 @@ def handle_children(profile, hat, root):
                         q = aaui.PromptQuestion()
 
                         q.headers += [_('Profile'), combine_name(profile, hat)]
-                        if prog and prog != 'HINT':
-                            q.headers += [_('Program'), prog]
 
                         # to_name should not exist here since, transitioning is already handeled
                         q.headers += [_('Execute'), exec_target]
