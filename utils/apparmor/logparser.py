@@ -41,10 +41,9 @@ class ReadLog:
     # used to pre-filter log lines so that we hand over only relevant lines to LibAppArmor parsing
     RE_LOG_ALL = re.compile('(' + '|'.join(RE_log_parts) + ')')
 
-    def __init__(self, pid, filename, active_profiles, profile_dir):
+    def __init__(self, filename, active_profiles, profile_dir):
         self.filename = filename
         self.profile_dir = profile_dir
-        self.pid = pid  # XXX unused
         self.active_profiles = active_profiles
         self.hashlog = { 'PERMITTING': {}, 'REJECTING': {}, 'AUDIT': {} }  # structure inside {}: {'profilename': init_hashlog(aamode, profilename), 'profilename2': init_hashlog(...), ...}
         self.debug_logger = DebugLogger('ReadLog')
