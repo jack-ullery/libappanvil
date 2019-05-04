@@ -12,7 +12,7 @@
 import unittest
 from common_test import AATest, setup_all_loops
 
-from apparmor.common import type_is_str
+from apparmor.common import type_is_str, split_name
 
 class TestIs_str_type(AATest):
     tests = [
@@ -25,6 +25,17 @@ class TestIs_str_type(AATest):
 
     def _run_test(self, params, expected):
         self.assertEqual(type_is_str(params), expected)
+
+class AaTest_split_name(AATest):
+    tests = [
+        # log event path       and perms    expected proposals
+        ('foo',                             ('foo',             'foo')),
+        ('foo//bar',                        ('foo',             'bar')),
+        ('foo//bar//baz',                   ('foo',             'bar')),  # XXX nested child profiles get cut off
+    ]
+
+    def _run_test(self, params, expected):
+        self.assertEqual(split_name(params), expected)
 
 
 setup_all_loops(__name__)

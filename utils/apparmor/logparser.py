@@ -17,7 +17,7 @@ import re
 import sys
 import time
 import LibAppArmor
-from apparmor.common import AppArmorException, AppArmorBug, hasher, open_file_read, DebugLogger
+from apparmor.common import AppArmorException, AppArmorBug, hasher, open_file_read, split_name, DebugLogger
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -182,10 +182,7 @@ class ReadLog:
         if '//null-' in e['profile']:
             e['profile'] = 'null-complain-profile'
 
-        profile = e['profile']
-
-        if '//' in e['profile']:
-            profile, hat = e['profile'].split('//')[:2]
+        profile, hat = split_name(e['profile'])
 
         if profile != 'null-complain-profile' and not self.profile_exists(profile):
             return None

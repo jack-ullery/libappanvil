@@ -33,7 +33,7 @@ from copy import deepcopy
 from apparmor.aare import AARE
 
 from apparmor.common import (AppArmorException, AppArmorBug, open_file_read, valid_path, hasher,
-                             open_file_write, DebugLogger)
+                             split_name, open_file_write, DebugLogger)
 
 import apparmor.ui as aaui
 
@@ -891,12 +891,8 @@ def handle_hashlog(hashlog):
     # TODO: translate  null-*  to the profile name after deciding about exec mode (currently, events get lost/ignored at the exec boundary)
     for aamode in hashlog.keys():
         for full_profile in hashlog[aamode].keys():
-            if '//' in full_profile:
-                profile, hat = full_profile.split('//')[:2]  # XXX limit to two levels to avoid an Exception on nested child profiles or nested null-*
-                # TODO: support nested child profiles
-            else:
-                profile = full_profile
-                hat = full_profile
+            profile, hat = split_name(full_profile)  # XXX limited to two levels to avoid an Exception on nested child profiles or nested null-*
+            # TODO: support nested child profiles
 
             for typ in hashlog[aamode][full_profile].keys():
                 prelog[aamode][profile][hat][typ] = hashlog[aamode][full_profile][typ]

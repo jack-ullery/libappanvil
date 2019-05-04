@@ -259,6 +259,16 @@ def type_is_str(var):
     else:
         return False
 
+def split_name(full_profile):
+    if '//' in full_profile:
+        profile, hat = full_profile.split('//')[:2]  # XXX limit to two levels to avoid an Exception on nested child profiles or nested null-*
+        # TODO: support nested child profiles
+    else:
+        profile = full_profile
+        hat = full_profile
+
+    return (profile, hat)
+
 
 class DebugLogger(object):
     '''Unified debug facility. Logs to file or stderr.

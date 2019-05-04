@@ -14,7 +14,7 @@ from common_test import AATest, setup_all_loops, setup_aa, read_file
 
 import os
 import sys
-from apparmor.common import open_file_read
+from apparmor.common import open_file_read, split_name
 
 import apparmor.aa
 from apparmor.logparser import ReadLog
@@ -224,10 +224,7 @@ def logfile_to_profile(logfile):
     apparmor.aa.aa = apparmor.aa.hasher()
     apparmor.aa.prelog = apparmor.aa.hasher()
 
-    profile = parsed_event['profile']
-    hat = profile
-    if '//' in profile:
-        profile, hat = profile.split('//')
+    profile, hat = split_name(parsed_event['profile'])
 
     apparmor.aa.active_profiles = ProfileList()
 
