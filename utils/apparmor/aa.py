@@ -1000,11 +1000,6 @@ def ask_exec(hashlog):
                         if UI_SelectUpdatedRepoProfile(profile, p) and is_known_rule(aa[profile][hat], 'file', exec_event):  # we need an exec_event with target=exec_target here
                             continue
 
-                    context_new = profile
-                    if profile != hat:
-                        context_new = context_new + '^%s' % hat
-                    context_new = context_new + ' -> %s' % exec_target
-
                     # nx is not used in profiles but in log files.
                     # Log parsing methods will convert it to its profile form
                     # nx is internally cx/px/cix/pix + to_name
@@ -1052,7 +1047,6 @@ def ask_exec(hashlog):
                         q.headers += [_('Execute'), exec_target]
                         q.headers += [_('Severity'), severity]
 
-                        # prompt = '\n%s\n' % context_new  # XXX
                         exec_toggle = False
                         q.functions += build_x_functions(default, options, exec_toggle)
 
