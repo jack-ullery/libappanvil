@@ -993,12 +993,8 @@ def ask_exec(hashlog):
                         continue
 
                     p = update_repo_profile(aa[profile][profile])
-                    if to_name:
-                        if UI_SelectUpdatedRepoProfile(profile, p) and is_known_rule(aa[profile][hat], 'file', exec_event):  # we need an exec_event with target=to_name here
-                            continue
-                    else:
-                        if UI_SelectUpdatedRepoProfile(profile, p) and is_known_rule(aa[profile][hat], 'file', exec_event):  # we need an exec_event with target=exec_target here
-                            continue
+                    if UI_SelectUpdatedRepoProfile(profile, p) and is_known_rule(aa[profile][hat], 'file', exec_event):
+                        continue
 
                     # nx is not used in profiles but in log files.
                     # Log parsing methods will convert it to its profile form
