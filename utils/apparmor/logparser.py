@@ -59,6 +59,7 @@ class ReadLog:
             return  # already initialized, don't overwrite existing data
 
         self.hashlog[aamode][profile] = {
+            'final_name':   profile,  # might be changed for null-* profiles based on exec decisions
             'capability':   {},  # flat, no hasher needed
             'change_hat':   {},  # flat, no hasher needed
             'dbus':         hasher(),

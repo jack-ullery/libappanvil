@@ -888,10 +888,12 @@ def build_x_functions(default, options, exec_toggle):
 def handle_hashlog(hashlog):
     '''Copy hashlog content to prelog'''
 
-    # TODO: translate  null-*  to the profile name after deciding about exec mode (currently, events get lost/ignored at the exec boundary)
     for aamode in hashlog.keys():
         for full_profile in hashlog[aamode].keys():
-            profile, hat = split_name(full_profile)  # XXX limited to two levels to avoid an Exception on nested child profiles or nested null-*
+            if hashlog[aamode][full_profile]['final_name'] == '':
+                continue  # user chose "deny" or "unconfined" for this target, therefore ignore log events
+
+            profile, hat = split_name(hashlog[aamode][full_profile]['final_name'])  # XXX limited to two levels to avoid an Exception on nested child profiles or nested null-*
             # TODO: support nested child profiles
 
             for typ in hashlog[aamode][full_profile].keys():
@@ -902,12 +904,12 @@ def ask_addhat(hashlog):
 
     for aamode in hashlog:
         for profile in hashlog[aamode]:
-            if '//' in profile and hashlog[aamode][profile]['change_hat'].keys():
+            if '//' in hashlog[aamode][profile]['final_name'] and hashlog[aamode][profile]['change_hat'].keys():
                 aaui.UI_Important('Ignoring change_hat event for %s, nested profiles are not supported yet.' % profile)
                 continue
 
-            for hat in hashlog[aamode][profile]['change_hat']:
-                hat = hat.split('//')[-1]
+            for full_hat in hashlog[aamode][profile]['change_hat']:
+                hat = full_hat.split('//')[-1]
 
                 if aa[profile].get(hat, False):
                     continue  # no need to ask if the hat already exists
@@ -954,9 +956,11 @@ def ask_addhat(hashlog):
                 if ans == 'CMD_ADDHAT':
                     aa[profile][hat] = ProfileStorage(profile, hat, 'ask_addhat addhat')
                     aa[profile][hat]['flags'] = aa[profile][profile]['flags']
+                    hashlog[aamode][full_hat]['final_name'] = '%s//%s' % (profile, hat)
                     changed[profile] = True
                 elif ans == 'CMD_USEDEFAULT':
                     hat = default_hat
+                    hashlog[aamode][full_hat]['final_name'] = '%s//%s' % (profile, default_hat)
                     if not aa[profile].get(hat, False):
                         # create default hat if it doesn't exist yet
                         aa[profile][hat] = ProfileStorage(profile, hat, 'ask_addhat default hat')
@@ -964,6 +968,7 @@ def ask_addhat(hashlog):
                         changed[profile] = True
                 elif ans == 'CMD_DENY':
                     # As unknown hat is denied no entry for it should be made
+                    hashlog[aamode][full_hat]['final_name'] = ''
                     continue
 
 def ask_exec(hashlog):
@@ -971,9 +976,9 @@ def ask_exec(hashlog):
 
     for aamode in hashlog:
         for profile in hashlog[aamode]:
-            if '//' in profile and hashlog[aamode][profile]['exec'].keys():
+            if '//' in hashlog[aamode][profile]['final_name'] and hashlog[aamode][profile]['exec'].keys():
                 # TODO: is this really needed? Or would removing Cx from the options be good enough?
-                aaui.UI_Important('WARNING: Ignoring exec event in %s, nested profiles are not supported yet.' % profile)
+                aaui.UI_Important('WARNING: Ignoring exec event in %s, nested profiles are not supported yet.' % hashlog[aamode][profile]['final_name'])
                 continue
 
             hat = profile  # XXX temporary solution to avoid breaking the existing code
@@ -1109,6 +1114,7 @@ def ask_exec(hashlog):
                             if ans == 'CMD_DENY':
                                 aa[profile][hat]['file'].add(FileRule(exec_target, None, 'x', FileRule.ALL, owner=False, log_event=True, deny=True))
                                 changed[profile] = True
+                                hashlog[aamode][target_profile]['final_name'] = ''
                                 # Skip remaining events if they ask to deny exec
                                 continue
 
@@ -1137,10 +1143,13 @@ def ask_exec(hashlog):
                     # Update tracking info based on kind of change
 
                     if ans == 'CMD_ix':
-                        pass
+                        hashlog[aamode][target_profile]['final_name'] = profile
+
                     elif re.search('^CMD_(px|nx|pix|nix)', ans):
                         if to_name:
                             exec_target = to_name
+
+                        hashlog[aamode][target_profile]['final_name'] = exec_target
 
                         # Check profile exists for px
                         if not os.path.exists(get_profile_filename_from_attachment(exec_target, True)):
@@ -1154,6 +1163,9 @@ def ask_exec(hashlog):
                                 else:
                                     autodep(exec_target, '')
                                 reload_base(exec_target)
+                            else:
+                                hashlog[aamode][target_profile]['final_name'] = profile  # not creating the target profile effectively results in ix mode
+
                     elif ans.startswith('CMD_cx') or ans.startswith('CMD_cix'):
                         if to_name:
                             exec_target = to_name
@@ -1176,6 +1188,11 @@ def ask_exec(hashlog):
 
                                 file_name = aa[profile][profile]['filename']
                                 filelist[file_name]['profiles'][profile][exec_target] = True
+
+                                hashlog[aamode][target_profile]['final_name'] = '%s//%s' % (profile, exec_target)
+
+                            else:
+                                hashlog[aamode][target_profile]['final_name'] = profile  # not creating the target profile effectively results in ix mode
 
                     elif ans.startswith('CMD_ux'):
                         continue
@@ -1693,9 +1710,9 @@ def do_logprof_pass(logmark='', passno=0):
     log_reader = apparmor.logparser.ReadLog(logfile, active_profiles, profile_dir)
     hashlog = log_reader.read_log(logmark)
 
-    handle_hashlog(hashlog)
     ask_exec(hashlog)
     ask_addhat(hashlog)
+    handle_hashlog(hashlog)
 
     #read_log(logmark)
 

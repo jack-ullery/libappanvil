@@ -237,9 +237,9 @@ def logfile_to_profile(logfile):
     log_reader = ReadLog(logfile, apparmor.aa.active_profiles, '')
     hashlog = log_reader.read_log('')
 
-    apparmor.aa.handle_hashlog(hashlog)
     apparmor.aa.ask_exec(hashlog)
     apparmor.aa.ask_addhat(hashlog)
+    apparmor.aa.handle_hashlog(hashlog)
 
     log_dict = apparmor.aa.collapse_log()
 
@@ -261,6 +261,8 @@ def logfile_to_profile(logfile):
     for tmpaamode in hashlog:
         for tmpprofile in hashlog[tmpaamode]:
             for tmpruletype in hashlog[tmpaamode][tmpprofile]:
+                if tmpruletype == 'final_name' and hashlog[tmpaamode][tmpprofile]['final_name'] == tmpprofile:
+                    continue  # final_name is a copy of the profile name (may be changed by ask_exec(), but that won't happen in this test)
                 if hashlog[tmpaamode][tmpprofile][tmpruletype]:
                     log_is_empty = False
 
