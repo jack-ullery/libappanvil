@@ -104,7 +104,6 @@ original_aa = hasher()
 extras = hasher()  # Inactive profiles from extras
 ### end our
 
-prelog = hasher()
 changed = dict()
 created = []
 helpers = dict()  # Preserve this between passes # was our
@@ -888,6 +887,8 @@ def build_x_functions(default, options, exec_toggle):
 def handle_hashlog(hashlog):
     '''Copy hashlog content to prelog'''
 
+    prelog = hasher()
+
     for aamode in hashlog.keys():
         for full_profile in hashlog[aamode].keys():
             if hashlog[aamode][full_profile]['final_name'] == '':
@@ -898,6 +899,8 @@ def handle_hashlog(hashlog):
 
             for typ in hashlog[aamode][full_profile].keys():
                 prelog[aamode][profile][hat][typ] = hashlog[aamode][full_profile][typ]
+
+    return prelog
 
 def ask_addhat(hashlog):
     '''ask the user about change_hat events (requests to add a hat)'''
@@ -1688,7 +1691,6 @@ def do_logprof_pass(logmark='', passno=0):
     global active_profiles
     global sev_db
 #    aa = hasher()
-#     prelog = hasher()
 #     changed = dict()
 #    filelist = hasher()
 
@@ -1712,11 +1714,11 @@ def do_logprof_pass(logmark='', passno=0):
 
     ask_exec(hashlog)
     ask_addhat(hashlog)
-    handle_hashlog(hashlog)
+    prelog = handle_hashlog(hashlog)
 
     #read_log(logmark)
 
-    log_dict = collapse_log()
+    log_dict = collapse_log(prelog)
 
     ask_the_questions(log_dict)
 
@@ -1799,7 +1801,7 @@ def save_profiles():
 def get_pager():
     return 'less'
 
-def collapse_log():
+def collapse_log(prelog):
     log_dict = hasher()
     for aamode in prelog.keys():
         for profile in prelog[aamode].keys():

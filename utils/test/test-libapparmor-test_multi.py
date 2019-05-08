@@ -239,9 +239,9 @@ def logfile_to_profile(logfile):
 
     apparmor.aa.ask_exec(hashlog)
     apparmor.aa.ask_addhat(hashlog)
-    apparmor.aa.handle_hashlog(hashlog)
+    prelog = apparmor.aa.handle_hashlog(hashlog)
 
-    log_dict = apparmor.aa.collapse_log()
+    log_dict = apparmor.aa.collapse_log(prelog)
 
     if profile != hat:
         # log event for a child profile means log_dict only contains the child profile
