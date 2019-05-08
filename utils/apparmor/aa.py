@@ -1145,9 +1145,6 @@ def ask_exec(hashlog):
                     elif re.search('^CMD_(px|nx|pix|nix)', ans):
                         if to_name:
                             exec_target = to_name
-                        if aamode == 'PERMITTING':
-                            profile = exec_target
-                            hat = exec_target
 
                         # Check profile exists for px
                         if not os.path.exists(get_profile_filename_from_attachment(exec_target, True)):
