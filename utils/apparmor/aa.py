@@ -1181,20 +1181,19 @@ def ask_exec(hashlog):
                             if 'i' in exec_mode:
                                 ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
                             if ynans == 'y':
-                                hat = exec_target
-                                if not aa[profile].get(hat, False):
-                                    stub_profile = create_new_profile(hat, True)
-                                    aa[profile][hat] = stub_profile[hat][hat]
+                                if not aa[profile].get(exec_target, False):
+                                    stub_profile = create_new_profile(exec_target, True)
+                                    aa[profile][exec_target] = stub_profile[exec_target][exec_target]
 
-                                aa[profile][hat]['profile'] = True
+                                aa[profile][exec_target]['profile'] = True
 
-                                if profile != hat:
-                                    aa[profile][hat]['flags'] = aa[profile][profile]['flags']
+                                if profile != exec_target:
+                                    aa[profile][exec_target]['flags'] = aa[profile][profile]['flags']
 
-                                aa[profile][hat]['flags'] = 'complain'
+                                aa[profile][exec_target]['flags'] = 'complain'
 
                                 file_name = aa[profile][profile]['filename']
-                                filelist[file_name]['profiles'][profile][hat] = True
+                                filelist[file_name]['profiles'][profile][exec_target] = True
 
                     elif ans.startswith('CMD_ux'):
                         continue
