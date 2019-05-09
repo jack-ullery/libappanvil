@@ -1798,7 +1798,9 @@ def collapse_log(hashlog, ignore_null_profiles=True):
             # TODO: support nested child profiles
 
             if True:
-                log_dict[aamode][profile][hat] = ProfileStorage(profile, hat, 'collapse_log()')
+                if not log_dict[aamode][profile].get(hat):
+                    # with execs in ix mode, we already have ProfileStorage initialized and should keep the content it already has
+                    log_dict[aamode][profile][hat] = ProfileStorage(profile, hat, 'collapse_log()')
 
                 for path in hashlog[aamode][full_profile]['path'].keys():
                     for owner in hashlog[aamode][full_profile]['path'][path]:
@@ -1812,6 +1814,7 @@ def collapse_log(hashlog, ignore_null_profiles=True):
 
                         if not is_known_rule(aa[profile][hat], 'file', file_event):
                             log_dict[aamode][profile][hat]['file'].add(file_event)
+                            # TODO: check for existing rules with this path, and merge them into one rule
 
                 for cap in hashlog[aamode][full_profile]['capability'].keys():
                     cap_event = CapabilityRule(cap, log_event=True)
