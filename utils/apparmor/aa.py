@@ -884,24 +884,6 @@ def build_x_functions(default, options, exec_toggle):
     ret_list += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
     return ret_list
 
-def handle_hashlog(hashlog):
-    '''Copy hashlog content to prelog'''
-
-    prelog = hasher()
-
-    for aamode in hashlog.keys():
-        for full_profile in hashlog[aamode].keys():
-            if hashlog[aamode][full_profile]['final_name'] == '':
-                continue  # user chose "deny" or "unconfined" for this target, therefore ignore log events
-
-            profile, hat = split_name(hashlog[aamode][full_profile]['final_name'])  # XXX limited to two levels to avoid an Exception on nested child profiles or nested null-*
-            # TODO: support nested child profiles
-
-            for typ in hashlog[aamode][full_profile].keys():
-                prelog[aamode][profile][hat][typ] = hashlog[aamode][full_profile][typ]
-
-    return prelog
-
 def ask_addhat(hashlog):
     '''ask the user about change_hat events (requests to add a hat)'''
 
@@ -1714,11 +1696,8 @@ def do_logprof_pass(logmark='', passno=0):
 
     ask_exec(hashlog)
     ask_addhat(hashlog)
-    prelog = handle_hashlog(hashlog)
 
-    #read_log(logmark)
-
-    log_dict = collapse_log(prelog)
+    log_dict = collapse_log(hashlog)
 
     ask_the_questions(log_dict)
 
@@ -1801,17 +1780,23 @@ def save_profiles():
 def get_pager():
     return 'less'
 
-def collapse_log(prelog):
+def collapse_log(hashlog):
     log_dict = hasher()
-    for aamode in prelog.keys():
-        for profile in prelog[aamode].keys():
-            for hat in prelog[aamode][profile].keys():
 
+    for aamode in hashlog.keys():
+        for full_profile in hashlog[aamode].keys():
+            if hashlog[aamode][full_profile]['final_name'] == '':
+                continue  # user chose "deny" or "unconfined" for this target, therefore ignore log events
+
+            profile, hat = split_name(hashlog[aamode][full_profile]['final_name'])  # XXX limited to two levels to avoid an Exception on nested child profiles or nested null-*
+            # TODO: support nested child profiles
+
+            if True:
                 log_dict[aamode][profile][hat] = ProfileStorage(profile, hat, 'collapse_log()')
 
-                for path in prelog[aamode][profile][hat]['path'].keys():
-                    for owner in prelog[aamode][profile][hat]['path'][path]:
-                        mode = set(prelog[aamode][profile][hat]['path'][path][owner].keys())
+                for path in hashlog[aamode][full_profile]['path'].keys():
+                    for owner in hashlog[aamode][full_profile]['path'][path]:
+                        mode = set(hashlog[aamode][full_profile]['path'][path][owner].keys())
 
                         # logparser sums up multiple log events, so both 'a' and 'w' can be present
                         if 'a' in mode and 'w' in mode:
@@ -1822,12 +1807,12 @@ def collapse_log(prelog):
                         if not is_known_rule(aa[profile][hat], 'file', file_event):
                             log_dict[aamode][profile][hat]['file'].add(file_event)
 
-                for cap in prelog[aamode][profile][hat]['capability'].keys():
+                for cap in hashlog[aamode][full_profile]['capability'].keys():
                     cap_event = CapabilityRule(cap, log_event=True)
                     if not is_known_rule(aa[profile][hat], 'capability', cap_event):
                         log_dict[aamode][profile][hat]['capability'].add(cap_event)
 
-                dbus = prelog[aamode][profile][hat]['dbus']
+                dbus = hashlog[aamode][full_profile]['dbus']
                 for access in                               dbus:
                     for bus in                              dbus[access]:
                         for path in                         dbus[access][bus]:
@@ -1849,21 +1834,21 @@ def collapse_log(prelog):
 
                                             log_dict[aamode][profile][hat]['dbus'].add(dbus_event)
 
-                nd = prelog[aamode][profile][hat]['network']
+                nd = hashlog[aamode][full_profile]['network']
                 for family in nd.keys():
                     for sock_type in nd[family].keys():
                         net_event = NetworkRule(family, sock_type, log_event=True)
                         if not is_known_rule(aa[profile][hat], 'network', net_event):
                             log_dict[aamode][profile][hat]['network'].add(net_event)
 
-                ptrace = prelog[aamode][profile][hat]['ptrace']
+                ptrace = hashlog[aamode][full_profile]['ptrace']
                 for peer in ptrace.keys():
                     for access in ptrace[peer].keys():
                         ptrace_event = PtraceRule(access, peer, log_event=True)
                         if not is_known_rule(aa[profile][hat], 'ptrace', ptrace_event):
                             log_dict[aamode][profile][hat]['ptrace'].add(ptrace_event)
 
-                sig = prelog[aamode][profile][hat]['signal']
+                sig = hashlog[aamode][full_profile]['signal']
                 for peer in sig.keys():
                     for access in sig[peer].keys():
                         for signal in sig[peer][access].keys():
