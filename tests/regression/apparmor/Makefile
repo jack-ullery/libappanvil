@@ -301,6 +301,27 @@ unix_socket_client: unix_socket_client.c unix_socket_common.o
 unix_socket: unix_socket.c unix_socket_common.o unix_socket_client
 	${CC} ${CFLAGS} ${LDFLAGS} $(filter-out unix_socket_client, $^) -o $@ ${LDLIBS}
 
+build-dep:
+	@if [ `whoami` = "root" ] ;\
+	then \
+		if [ -z ${DISTRO} ] ;\
+		then \
+			echo "must set DISTRO before using target 'build-dep'" ;\
+			exit 1;\
+		fi; \
+		\
+		if [ ${DISTRO} = "ubuntu" ] || [ ${DISTRO} = "debian" ] ;\
+		then \
+			apt install apparmor libapparmor1 libapparmor-dev perl python gcc libc-dev ;\
+		else \
+			echo "Unknown option for DISTRO: '$(DISTRO)'. Supported options are 'ubuntu' or 'debian'" ;\
+			exit 1;\
+		fi; \
+	else \
+		echo "must be root to install build dependencies" ;\
+		exit 1;\
+	fi
+
 tests: all
 	@if [ `whoami` = "root" ] ;\
 	then \
