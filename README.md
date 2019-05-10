@@ -94,7 +94,7 @@ $ export PYTHON_VERSION=3
 $ export PYTHON_VERSIONS=python3
 ```
 
-### libapparmor
+### libapparmor:
 
 ```
 $ cd ./libraries/libapparmor
@@ -193,10 +193,10 @@ $ sudo bash open.sh -r	 # runs and saves the last testcase from open.sh
 ```
 
 ## using apparmor userspace from the tree.
-- [build libapparmor](apparmor#)
-- [build binutils](apparmor#binary-utilities)
-- [build apparmor parser](apparmor#)
-- [build Pam apparmor]()
+- [build libapparmor](#libapparmor)
+- [build binutils](#binary-utilities)
+- [build apparmor parser](#parser)
+- [build Pam apparmor](#pam-apparmor)
 
 ```
 $ cd tests/regression/apparmor (requires root)
