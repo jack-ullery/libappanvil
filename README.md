@@ -94,7 +94,7 @@ $ export PYTHON_VERSION=3
 $ export PYTHON_VERSIONS=python3
 ```
 
-libapparmor:
+### libapparmor
 
 ```
 $ cd ./libraries/libapparmor
@@ -109,7 +109,7 @@ $ make install
 generate Ruby bindings to libapparmor.]
 
 
-Binary Utilities:
+### Binary Utilities:
 
 ```
 $ cd binutils
@@ -118,7 +118,7 @@ $ make check
 $ make install
 ```
 
-parser:
+### Parser:
 
 ```
 $ cd parser
@@ -128,7 +128,7 @@ $ make install
 ```
 
 
-Utilities:
+### Utilities:
 
 ```
 $ cd utils
@@ -137,7 +137,7 @@ $ make check
 $ make install
 ```
 
-Apache mod_apparmor:
+### Apache mod_apparmor:
 
 ```
 $ cd changehat/mod_apparmor
@@ -146,7 +146,7 @@ $ make install
 ```
 
 
-PAM AppArmor:
+### PAM AppArmor:
 
 ```
 $ cd changehat/pam_apparmor
@@ -155,7 +155,7 @@ $ make install
 ```
 
 
-Profiles:
+### Profiles:
 
 ```
 $ cd profiles
@@ -183,6 +183,20 @@ For details on structure and adding tests, see
 tests/regression/apparmor/README.
 
 To run:
+
+## using apparmor userspace installed on host
+```
+$ cd tests/regression/apparmor (requires root)
+$ make USE_SYSTEM=1
+$ sudo make tests USE_SYSTEM=1
+$ sudo bash open.sh -r	 # runs and saves the last testcase from open.sh
+```
+
+## using apparmor userspace from the tree.
+- [build libapparmor](apparmor#)
+- [build binutils](apparmor#binary-utilities)
+- [build apparmor parser](apparmor#)
+- [build Pam apparmor]()
 
 ```
 $ cd tests/regression/apparmor (requires root)
