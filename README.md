@@ -184,7 +184,7 @@ tests/regression/apparmor/README.
 
 To run:
 
-## using apparmor userspace installed on host
+### Regression tests - using apparmor userspace installed on host
 ```
 $ cd tests/regression/apparmor (requires root)
 $ make USE_SYSTEM=1
@@ -192,7 +192,7 @@ $ sudo make tests USE_SYSTEM=1
 $ sudo bash open.sh -r	 # runs and saves the last testcase from open.sh
 ```
 
-## using apparmor userspace from the tree.
+### Regression tests - using apparmor userspace from the tree.
 - [build libapparmor](#libapparmor)
 - [build binutils](#binary-utilities)
 - [build apparmor parser](#parser)
