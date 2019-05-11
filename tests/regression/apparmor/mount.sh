@@ -67,21 +67,9 @@ if [ ! -b /dev/loop0 ] ; then
 	modprobe loop
 fi
 
-# kinda ugly way of atomically finding a free loop device
-for i in $(seq 0 15) 
-do
-	if [ "$loop_device" = "unset" ] 
-	then
-		if /sbin/losetup /dev/loop$i ${mount_file} > /dev/null 2> /dev/null
-		then 
-			loop_device=/dev/loop$i;
-		fi
-	fi
-done
-if [ "$loop_device" = "unset" ] 
-then
-	fatalerror 'Unable to find a free loop device'
-fi
+# find the next free loop device and mount it
+loop_device=$(losetup -f) || fatalerror 'Unable to find a free loop device'
+/sbin/losetup "$loop_device" ${mount_file} > /dev/null 2> /dev/null
 
 
 # TEST 1.  Make sure can mount and umount unconfined
