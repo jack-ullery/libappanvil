@@ -2,6 +2,7 @@
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
 #    Copyright (C) 2018 Canonical, Ltd.
+#    Copyright (C) 2019 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -25,6 +26,7 @@ profile postfix-smtp /usr/lib/postfix/{bin/,sbin/,}smtp {
 
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/*      rwl,
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/       rwl,
+  /{var/spool/postfix/,}active/[0-9A-F]/*               rwk,
   /{var/spool/postfix/,}active/[0-9A-F]/                rwl,
   /{var/spool/postfix/,}private/anvil                   w,
   /{var/spool/postfix/,}private/bounce                  w,
@@ -34,7 +36,7 @@ profile postfix-smtp /usr/lib/postfix/{bin/,sbin/,}smtp {
   /{var/spool/postfix/,}private/tlsmgr                  w,
   /{var/spool/postfix/,}private/trace                   w,
   /{var/spool/postfix/,}public/flush                    w,
-  /{var/spool/postfix/,}pid/unix.smtp            rw,
+  /{var/spool/postfix/,}pid/unix.smtp            rwk,
   /{var/spool/postfix/,}pid/unix.relay           rw,
   /etc/postfix/{ssl/,}*.pem                   r,
   /etc/postfix/prng_exch                      rw,

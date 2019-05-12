@@ -2,6 +2,7 @@
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
 #    Copyright (C) 2018 Canonical, Ltd.
+#    Copyright (C) 2019 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -17,6 +18,7 @@ profile postfix-cleanup /usr/lib/postfix/{bin/,sbin/,}cleanup {
   #include <abstractions/postfix-common>
 
   capability net_bind_service,
+  capability dac_read_search,
 
   /usr/lib/postfix/{bin/,sbin/,}cleanup                   mrix,
 
