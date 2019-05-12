@@ -14,7 +14,7 @@ from common_test import AATest, setup_all_loops, setup_aa, read_file
 
 import os
 import sys
-from apparmor.common import open_file_read
+from apparmor.common import open_file_read, split_name
 
 import apparmor.aa
 from apparmor.logparser import ReadLog
@@ -39,7 +39,7 @@ class TestLibapparmorTestMulti(AATest):
 
         self.assertEqual(len(loglines2), 1, '%s.in should only contain one line!' % params)
 
-        parser = ReadLog('', '', '', '')
+        parser = ReadLog('', '', '')
         parsed_event = parser.parse_event(loglines2[0])
 
         if parsed_event and expected:
@@ -154,27 +154,6 @@ log_to_profile_known_failures = [
     'testcase01',
     'testcase12',
     'testcase13',
-
-    # null-* hats get ignored by handle_children() if it didn't see an exec event for that null-* hat
-    'syslog_datetime_01',
-    'syslog_datetime_02',
-    'syslog_datetime_03',
-    'syslog_datetime_04',
-    'syslog_datetime_05',
-    'syslog_datetime_06',
-    'syslog_datetime_07',
-    'syslog_datetime_08',
-    'syslog_datetime_09',
-    'syslog_datetime_10',
-    'syslog_datetime_11',
-    'syslog_datetime_12',
-    'syslog_datetime_13',
-    'syslog_datetime_14',
-    'syslog_datetime_15',
-    'syslog_datetime_16',
-    'syslog_datetime_17',
-    'syslog_datetime_18',
-    'testcase_network_send_receive',
 ]
 
 # tests that cause crashes or need user interaction (will be skipped)
@@ -226,7 +205,7 @@ def logfile_to_profile(logfile):
     profile_dummy_file = 'AATest_does_exist'
 
     # we need to find out the profile name and aamode (complain vs. enforce mode) so that the test can access the correct place in storage
-    parser = ReadLog('', '', '', '')
+    parser = ReadLog('', '', '')
     parsed_event = parser.parse_event(read_file(logfile))
 
     if not parsed_event:  # AA_RECORD_INVALID
@@ -243,12 +222,8 @@ def logfile_to_profile(logfile):
     # cleanup apparmor.aa storage
     apparmor.aa.log = dict()
     apparmor.aa.aa = apparmor.aa.hasher()
-    apparmor.aa.prelog = apparmor.aa.hasher()
 
-    profile = parsed_event['profile']
-    hat = profile
-    if '//' in profile:
-        profile, hat = profile.split('//')
+    profile, hat = split_name(parsed_event['profile'])
 
     apparmor.aa.active_profiles = ProfileList()
 
@@ -258,13 +233,13 @@ def logfile_to_profile(logfile):
     # else:
     apparmor.aa.active_profiles.add(profile_dummy_file, profile, '')
 
-    log_reader = ReadLog(dict(), logfile, apparmor.aa.active_profiles, '')
-    log = log_reader.read_log('')
+    log_reader = ReadLog(logfile, apparmor.aa.active_profiles, '')
+    hashlog = log_reader.read_log('')
 
-    for root in log:
-        apparmor.aa.handle_children('', '', root)  # interactive for exec events!
+    apparmor.aa.ask_exec(hashlog)
+    apparmor.aa.ask_addhat(hashlog)
 
-    log_dict = apparmor.aa.collapse_log()
+    log_dict = apparmor.aa.collapse_log(hashlog, ignore_null_profiles=False)
 
     if profile != hat:
         # log event for a child profile means log_dict only contains the child profile
@@ -279,13 +254,23 @@ def logfile_to_profile(logfile):
     apparmor.aa.filelist = apparmor.aa.hasher()
     apparmor.aa.filelist[profile_dummy_file]['profiles'][profile] = True
 
+    log_is_empty = True
+
+    for tmpaamode in hashlog:
+        for tmpprofile in hashlog[tmpaamode]:
+            for tmpruletype in hashlog[tmpaamode][tmpprofile]:
+                if tmpruletype == 'final_name' and hashlog[tmpaamode][tmpprofile]['final_name'] == tmpprofile:
+                    continue  # final_name is a copy of the profile name (may be changed by ask_exec(), but that won't happen in this test)
+                if hashlog[tmpaamode][tmpprofile][tmpruletype]:
+                    log_is_empty = False
+
     if logfile.split('/')[-1][:-3] in log_to_profile_known_empty_log:
         # unfortunately this function might be called outside Unittest.TestCase, therefore we can't use assertEqual / assertNotEqual
-        if log != []:
-            raise Exception('got non-empty log for logfile in log_to_profile_known_empty_log: %s %s' % (logfile, log))
+        if log_is_empty == False:
+            raise Exception('got non-empty log for logfile in log_to_profile_known_empty_log: %s %s' % (logfile, hashlog))
     else:
-        if log == []:
-            raise Exception('got empty log for logfile not in log_to_profile_known_empty_log: %s %s' % (logfile, log))
+        if log_is_empty == True:
+            raise Exception('got empty log for logfile not in log_to_profile_known_empty_log: %s %s' % (logfile, hashlog))
 
     new_profile = apparmor.aa.serialize_profile(log_dict[aamode][profile], profile, {})
 

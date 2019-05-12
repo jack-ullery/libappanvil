@@ -96,7 +96,7 @@ class RlimitTestParseInvalid(RlimitTest):
 class RlimitTestParseFromLog(RlimitTest):
     pass
     # def test_net_from_log(self):
-    #   parser = ReadLog('', '', '', '')
+    #   parser = ReadLog('', '', '')
 
     #   event = 'type=AVC ...'
 

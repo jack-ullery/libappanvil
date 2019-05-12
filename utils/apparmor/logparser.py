@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2015-2018 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2015-2019 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -17,9 +17,7 @@ import re
 import sys
 import time
 import LibAppArmor
-from apparmor.common import AppArmorException, AppArmorBug, open_file_read, DebugLogger
-
-from apparmor.aamode import validate_log_mode, log_str_to_mode, hide_log_mode, AA_MAY_EXEC
+from apparmor.common import AppArmorException, AppArmorBug, hasher, open_file_read, split_name, DebugLogger
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -43,17 +41,34 @@ class ReadLog:
     # used to pre-filter log lines so that we hand over only relevant lines to LibAppArmor parsing
     RE_LOG_ALL = re.compile('(' + '|'.join(RE_log_parts) + ')')
 
-    def __init__(self, pid, filename, active_profiles, profile_dir):
+    def __init__(self, filename, active_profiles, profile_dir):
         self.filename = filename
         self.profile_dir = profile_dir
-        self.pid = pid
         self.active_profiles = active_profiles
-        self.log = []
+        self.hashlog = { 'PERMITTING': {}, 'REJECTING': {}, 'AUDIT': {} }  # structure inside {}: {'profilename': init_hashlog(aamode, profilename), 'profilename2': init_hashlog(...), ...}
         self.debug_logger = DebugLogger('ReadLog')
         self.LOG = None
         self.logmark = ''
         self.seenmark = None
         self.next_log_entry = None
+
+    def init_hashlog(self, aamode, profile):
+        ''' initialize self.hashlog[aamode][profile] for all rule types'''
+
+        if profile in self.hashlog[aamode].keys():
+            return  # already initialized, don't overwrite existing data
+
+        self.hashlog[aamode][profile] = {
+            'final_name':   profile,  # might be changed for null-* profiles based on exec decisions
+            'capability':   {},  # flat, no hasher needed
+            'change_hat':   {},  # flat, no hasher needed
+            'dbus':         hasher(),
+            'exec':         hasher(),
+            'network':      hasher(),
+            'path':         hasher(),
+            'ptrace':       hasher(),
+            'signal':       hasher(),
+        }
 
     def prefetch_next_log_entry(self):
         if self.next_log_entry:
@@ -71,15 +86,6 @@ class ReadLog:
         log_entry = self.next_log_entry
         self.next_log_entry = None
         return log_entry
-
-    def peek_at_next_log_entry(self):
-        # Take a peek at the next log entry
-        if not self.next_log_entry:
-            self.prefetch_next_log_entry()
-        return self.next_log_entry
-
-    def throw_away_next_log_entry(self):
-        self.next_log_entry = None
 
     def parse_event(self, msg):
         """Parse the event from log into key value pairs"""
@@ -157,24 +163,6 @@ class ReadLog:
         else:
             return None
 
-    def add_to_tree(self, loc_pid, parent, type, event):
-        self.debug_logger.info('add_to_tree: pid [%s] type [%s] event [%s]' % (loc_pid, type, event))
-        if not self.pid.get(loc_pid, False):
-            profile, hat = event[:2]
-            if parent and self.pid.get(parent, False):
-                if not hat:
-                    hat = 'null-complain-profile'
-                arrayref = []
-                self.pid[parent].append(arrayref)
-                self.pid[loc_pid] = arrayref
-                for ia in ['fork', loc_pid, profile, hat]:
-                    arrayref.append(ia)
-            else:
-                arrayref = []
-                self.log.append(arrayref)
-                self.pid[loc_pid] = arrayref
-        self.pid[loc_pid].append([type, loc_pid] + event)
-
     def parse_event_for_tree(self, e):
         aamode = e.get('aamode', 'UNKNOWN')
 
@@ -184,122 +172,77 @@ class ReadLog:
         if aamode in ['AUDIT', 'STATUS', 'ERROR']:
             return None
 
-        if 'profile_set' in e['operation']:
-            return None
-
         # Skip if AUDIT event was issued due to a change_hat in unconfined mode
         if not e.get('profile', False):
             return None
+
+        full_profile = e['profile']  # full, nested profile name
+        self.init_hashlog(aamode, full_profile)
 
         # Convert new null profiles to old single level null profile
         if '//null-' in e['profile']:
             e['profile'] = 'null-complain-profile'
 
-        profile = e['profile']
-        hat = None
-
-        if '//' in e['profile']:
-            profile, hat = e['profile'].split('//')[:2]
-
-        # Filter out change_hat events that aren't from learning
-        if e['operation'] == 'change_hat':
-            if aamode != 'HINT' and aamode != 'PERMITTING':
-                return None
-            if e['error_code'] == 1 and e['info'] == 'unconfined can not change_hat':
-                return None
-            profile = e['name2']
-            if '//' in e['name2']:
-                profile, hat = e['name2'].split('//')[:2]
-
-        if not hat:
-            hat = profile
-
-        # prog is no longer passed around consistently
-        prog = 'HINT'
+        profile, hat = split_name(e['profile'])
 
         if profile != 'null-complain-profile' and not self.profile_exists(profile):
             return None
         if e['operation'] == 'exec':
-            # convert rmask and dmask to mode arrays
-            e['denied_mask'],  e['name2'] = log_str_to_mode(e['profile'], e['denied_mask'], e['name2'])
-            e['request_mask'], e['name2'] = log_str_to_mode(e['profile'], e['request_mask'], e['name2'])
+            if not e['name']:
+                raise AppArmorException('exec without executed binary')
 
-            if e.get('info', False) and e['info'] == 'mandatory profile missing':
-                return(e['pid'], e['parent'], 'exec',
-                                 [profile, hat, aamode, 'PERMITTING', e['denied_mask'], e['name'], e['name2']])
-            elif (e.get('name2', False) and '//null-' in e['name2']) or e.get('name', False):
-                return(e['pid'], e['parent'], 'exec',
-                                 [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-            else:
-                self.debug_logger.debug('parse_event_for_tree: dropped exec event in %s' % e['profile'])
+            if not e['name2']:
+                raise AppArmorException('exec without target profile')
+
+            self.hashlog[aamode][full_profile]['exec'][e['name']][e['name2']] = True
+            return None
 
         elif self.op_type(e) == 'file':
             # Map c (create) and d (delete) to w (logging is more detailed than the profile language)
-            rmask = e['request_mask']
-            rmask = rmask.replace('c', 'w')
-            rmask = rmask.replace('d', 'w')
-            if not validate_log_mode(hide_log_mode(rmask)):
-                raise AppArmorException(_('Log contains unknown mode %s') % rmask)
-
             dmask = e['denied_mask']
             dmask = dmask.replace('c', 'w')
             dmask = dmask.replace('d', 'w')
-            if not validate_log_mode(hide_log_mode(dmask)):
-                raise AppArmorException(_('Log contains unknown mode %s') % dmask)
+
+            owner = False
+
+            if '::' in dmask:
+                # old log styles used :: to indicate if permissions are meant for owner or other
+                (owner_d, other_d) = dmask.split('::')
+                if owner_d and other_d:
+                    raise AppArmorException('Found log event with both owner and other permissions. Please open a bugreport!')
+                if owner_d:
+                    dmask = owner_d
+                    owner = True
+                else:
+                    dmask = other_d
 
             if e.get('ouid') is not None and e['fsuid'] == e['ouid']:
-                # mark as "owner" event
-                if '::' not in rmask:
-                    rmask = '%s::' % rmask
-                if '::' not in dmask:
-                    dmask = '%s::' % dmask
+                # in current log style, owner permissions are indicated by a match of fsuid and ouid
+                owner = True
 
-            # convert rmask and dmask to mode arrays
-            e['denied_mask'],  e['name2'] = log_str_to_mode(e['profile'], dmask, e['name2'])
-            e['request_mask'], e['name2'] = log_str_to_mode(e['profile'], rmask, e['name2'])
+            for perm in dmask:
+                if perm in 'mrwalk':  # intentionally not allowing 'x' here
+                    self.hashlog[aamode][full_profile]['path'][e['name']][owner][perm] = True
+                else:
+                    raise AppArmorException(_('Log contains unknown mode %s') % dmask)
 
-            # check if this is an exec event
-            is_domain_change = False
-            if e['operation'] == 'inode_permission' and (e['denied_mask'] & AA_MAY_EXEC) and aamode == 'PERMITTING':
-                following = self.peek_at_next_log_entry()
-                if following:
-                    entry = self.parse_event(following)
-                    if entry and entry.get('info', False) == 'set profile':
-                        is_domain_change = True
-                        self.throw_away_next_log_entry()
-
-            if is_domain_change:
-                return(e['pid'], e['parent'], 'exec',
-                                 [profile, hat, prog, aamode, e['denied_mask'], e['name'], e['name2']])
-            else:
-                return(e['pid'], e['parent'], 'path',
-                                 [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
+            return None
 
         elif e['operation'] == 'capable':
-            return(e['pid'], e['parent'], 'capability',
-                             [profile, hat, prog, aamode, e['name'], ''])
-
-        elif e['operation'] == 'clone':
-            parent, child = e['pid'], e['task']
-            if not parent:
-                parent = 'null-complain-profile'
-            if not hat:
-                hat = 'null-complain-profile'
-            arrayref = []
-            if self.pid.get(parent, False):
-                self.pid[parent].append(arrayref)
-            else:
-                self.log.append(arrayref)
-            self.pid[child].append(arrayref)
-            for ia in ['fork', child, profile, hat]:
-                arrayref.append(ia)
+            self.hashlog[aamode][full_profile]['capability'][e['name']] = True
+            return None
 
         elif self.op_type(e) == 'net':
-            return(e['pid'], e['parent'], 'network',
-                             [profile, hat, prog, aamode, e['family'], e['sock_type'], e['protocol']])
+            self.hashlog[aamode][full_profile]['network'][e['family']][e['sock_type']][e['protocol']] = True
+            return None
+
         elif e['operation'] == 'change_hat':
-            return(e['pid'], e['parent'], 'unknown_hat',
-                             [profile, hat, aamode, hat])
+            if e['error_code'] == 1 and e['info'] == 'unconfined can not change_hat':
+                return None
+
+            self.hashlog[aamode][full_profile]['change_hat'][e['name2']] = True
+            return None
+
         elif e['operation'] == 'ptrace':
             if not e['peer']:
                 self.debug_logger.debug('ignored garbage ptrace event with empty peer')
@@ -308,14 +251,17 @@ class ReadLog:
                 self.debug_logger.debug('ignored garbage ptrace event with empty denied_mask')
                 return None
 
-            return(e['pid'], e['parent'], 'ptrace',
-                             [profile, hat, prog, aamode, e['denied_mask'], e['peer']])
+            self.hashlog[aamode][full_profile]['ptrace'][e['peer']][e['denied_mask']] = True
+            return None
+
         elif e['operation'] == 'signal':
-            return(e['pid'], e['parent'], 'signal',
-                             [profile, hat, prog, aamode, e['denied_mask'], e['signal'], e['peer']])
+            self.hashlog[aamode][full_profile]['signal'][e['peer']][e['denied_mask']][e['signal']]= True
+            return None
+
         elif e['operation'].startswith('dbus_'):
-            return(e['pid'], e['parent'], 'dbus',
-                             [profile, hat, prog, aamode, e['denied_mask'], e['bus'], e['path'], e['name'], e['interface'], e['member'], e['peer_profile']])
+            self.hashlog[aamode][full_profile]['dbus'][e['denied_mask']][e['bus']][e['path']][e['name']][e['interface']][e['member']][e['peer_profile']] = True
+            return None
+
         else:
             self.debug_logger.debug('UNHANDLED: %s' % e)
 
@@ -345,10 +291,7 @@ class ReadLog:
             event = self.parse_event(line)
             if event:
                 try:
-                    event = self.parse_event_for_tree(event)
-                    if event is not None:
-                        (pid, parent, mode, details) = event
-                        self.add_to_tree(pid, parent, mode, details)
+                    self.parse_event_for_tree(event)
 
                 except AppArmorException as e:
                     ex_msg = ('%(msg)s\n\nThis error was caused by the log line:\n%(logline)s' %
@@ -358,7 +301,8 @@ class ReadLog:
 
         self.LOG.close()
         self.logmark = ''
-        return self.log
+
+        return self.hashlog
 
     # operation types that can be network or file operations
     # (used by op_type() which checks some event details to decide)

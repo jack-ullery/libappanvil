@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014-2018 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2019 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -33,11 +33,9 @@ from copy import deepcopy
 from apparmor.aare import AARE
 
 from apparmor.common import (AppArmorException, AppArmorBug, open_file_read, valid_path, hasher,
-                             open_file_write, DebugLogger)
+                             split_name, open_file_write, DebugLogger)
 
 import apparmor.ui as aaui
-
-from apparmor.aamode import str_to_mode, split_mode
 
 from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
                             RE_ABI, RE_PROFILE_ALIAS,
@@ -105,9 +103,7 @@ aa = hasher()  # Profiles originally in sd, replace by aa
 original_aa = hasher()
 extras = hasher()  # Inactive profiles from extras
 ### end our
-log_pid = dict()  # handed over to ReadLog, gets filled in logparser.py. The only case the previous content of this variable _might_(?) be used is aa-genprof (multiple do_logprof_pass() runs)
 
-prelog = hasher()
 changed = dict()
 created = []
 helpers = dict()  # Preserve this between passes # was our
@@ -888,47 +884,23 @@ def build_x_functions(default, options, exec_toggle):
     ret_list += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
     return ret_list
 
-def handle_children(profile, hat, root):
-    entries = root[:]
-    pid = None
-    p = None
-    h = None
-    prog = None
-    aamode = None
-    mode = None
-    detail = None
-    to_name = None
-    uhat = None
-    capability = None
-    family = None
-    sock_type = None
-    protocol = None
-    regex_nullcomplain = re.compile('^null(-complain)*-profile$')
+def ask_addhat(hashlog):
+    '''ask the user about change_hat events (requests to add a hat)'''
 
-    for entry in entries:
-        if type(entry[0]) != str:
-            handle_children(profile, hat, entry)
-        else:
-            typ = entry.pop(0)
-            if typ == 'fork':
-                # If type is fork then we (should) have pid, profile and hat
-                pid, p, h = entry[:3]
-                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
-                    profile = p
-                    hat = h
-                # XXX profile and hat were used to track profile changes - do we still need to set them?
-                # XXX actuallly, is event type 'fork' still used?
-            elif typ == 'unknown_hat':
-                # If hat is not known then we (should) have pid, profile, hat, mode and unknown hat in entry
-                pid, p, h, aamode, uhat = entry[:5]
-                if not regex_nullcomplain.search(p):
-                    profile = p
-                if aa[profile].get(uhat, False):
-                    hat = uhat
-                    continue
+    for aamode in hashlog:
+        for profile in hashlog[aamode]:
+            if '//' in hashlog[aamode][profile]['final_name'] and hashlog[aamode][profile]['change_hat'].keys():
+                aaui.UI_Important('Ignoring change_hat event for %s, nested profiles are not supported yet.' % profile)
+                continue
+
+            for full_hat in hashlog[aamode][profile]['change_hat']:
+                hat = full_hat.split('//')[-1]
+
+                if aa[profile].get(hat, False):
+                    continue  # no need to ask if the hat already exists
+
                 new_p = update_repo_profile(aa[profile][profile])
-                if new_p and UI_SelectUpdatedRepoProfile(profile, new_p) and aa[profile].get(uhat, False):
-                    hat = uhat
+                if new_p and UI_SelectUpdatedRepoProfile(profile, new_p) and aa[profile].get(hat, False):
                     continue
 
                 default_hat = None
@@ -937,7 +909,7 @@ def handle_children(profile, hat, root):
                         default_hat = cfg['defaulthat'][hatglob]
 
                 context = profile
-                context = context + ' -> ^%s' % uhat
+                context = context + ' -> ^%s' % hat
                 ans = transitions.get(context, 'XXXINVALIDXXX')
 
                 while ans not in ['CMD_ADDHAT', 'CMD_USEDEFAULT', 'CMD_DENY']:
@@ -947,7 +919,7 @@ def handle_children(profile, hat, root):
                     if default_hat:
                         q.headers += [_('Default Hat'), default_hat]
 
-                    q.headers += [_('Requested Hat'), uhat]
+                    q.headers += [_('Requested Hat'), hat]
 
                     q.functions.append('CMD_ADDHAT')
                     if default_hat:
@@ -967,89 +939,42 @@ def handle_children(profile, hat, root):
                 transitions[context] = ans
 
                 if ans == 'CMD_ADDHAT':
-                    hat = uhat
-                    aa[profile][hat] = ProfileStorage(profile, hat, 'handle_children addhat')
+                    aa[profile][hat] = ProfileStorage(profile, hat, 'ask_addhat addhat')
                     aa[profile][hat]['flags'] = aa[profile][profile]['flags']
+                    hashlog[aamode][full_hat]['final_name'] = '%s//%s' % (profile, hat)
                     changed[profile] = True
                 elif ans == 'CMD_USEDEFAULT':
                     hat = default_hat
+                    hashlog[aamode][full_hat]['final_name'] = '%s//%s' % (profile, default_hat)
+                    if not aa[profile].get(hat, False):
+                        # create default hat if it doesn't exist yet
+                        aa[profile][hat] = ProfileStorage(profile, hat, 'ask_addhat default hat')
+                        aa[profile][hat]['flags'] = aa[profile][profile]['flags']
+                        changed[profile] = True
                 elif ans == 'CMD_DENY':
                     # As unknown hat is denied no entry for it should be made
-                    return None
-
-            elif typ == 'capability':
-                # If capability then we (should) have pid, profile, hat, program, mode, capability
-                pid, p, h, prog, aamode, capability = entry[:6]
-                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
-                    profile = p
-                    hat = h
-                if not profile or not hat:
-                    continue
-                prelog[aamode][profile][hat]['capability'][capability] = True
-
-            elif typ == 'dbus':
-                # If dbus then we (should) have pid, profile, hat, program, mode, access, bus, name, path, interface, member, peer_profile
-                pid, p, h, prog, aamode, access, bus, path, name, interface, member, peer_profile = entry
-                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
-                    profile = p
-                    hat = h
-                if not profile or not hat:
-                    continue
-                prelog[aamode][profile][hat]['dbus'][access][bus][path][name][interface][member][peer_profile] = True
-
-            elif typ == 'ptrace':
-                # If ptrace then we (should) have pid, profile, hat, program, mode, access and peer
-                pid, p, h, prog, aamode, access, peer = entry
-                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
-                    profile = p
-                    hat = h
-                if not profile or not hat:
-                    continue
-                prelog[aamode][profile][hat]['ptrace'][peer][access] = True
-
-            elif typ == 'signal':
-                # If signal then we (should) have pid, profile, hat, program, mode, access, signal and peer
-                pid, p, h, prog, aamode, access, signal, peer = entry
-                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
-                    profile = p
-                    hat = h
-                if not profile or not hat:
-                    continue
-                prelog[aamode][profile][hat]['signal'][peer][access][signal] = True
-
-            elif typ == 'path' or typ == 'exec':
-                # If path or exec then we (should) have pid, profile, hat, program, mode, details and to_name
-                pid, p, h, prog, aamode, mode, detail, to_name = entry[:8]
-                if not mode:
-                    mode = set()
-                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
-                    profile = p
-                    hat = h
-                if not profile or not hat or not detail:
+                    hashlog[aamode][full_hat]['final_name'] = ''
                     continue
 
-                # Give Execute dialog if x access requested for something that's not a directory
-                # For directories force an 'ix' Path dialog
-                do_execute = False
-                exec_target = detail
+def ask_exec(hashlog):
+    '''ask the user about exec events (requests to execute another program) and which exec mode to use'''
 
-                if mode & str_to_mode('x'):
+    for aamode in hashlog:
+        for profile in hashlog[aamode]:
+            if '//' in hashlog[aamode][profile]['final_name'] and hashlog[aamode][profile]['exec'].keys():
+                # TODO: is this really needed? Or would removing Cx from the options be good enough?
+                aaui.UI_Important('WARNING: Ignoring exec event in %s, nested profiles are not supported yet.' % hashlog[aamode][profile]['final_name'])
+                continue
+
+            hat = profile  # XXX temporary solution to avoid breaking the existing code
+
+            for exec_target in hashlog[aamode][profile]['exec']:
+                for target_profile in hashlog[aamode][profile]['exec'][exec_target]:
+                    to_name = ''
+
                     if os.path.isdir(exec_target):
                         raise AppArmorBug('exec permissions requested for directory %s. This should not happen - please open a bugreport!' % exec_target)
-                    elif typ != 'exec':
-                        raise AppArmorBug('exec permissions requested for %(exec_target)s, but mode is %(mode)s instead of exec. This should not happen - please open a bugreport!' % {'exec_target': exec_target, 'mode':mode})
-                    else:
-                        do_execute = True
-                        domainchange = 'change'
 
-                if mode and mode != str_to_mode('x'):  # x is already handled in handle_children, so it must not become part of prelog
-                    path = detail
-
-                    if prelog[aamode][profile][hat]['path'].get(path, False):
-                        mode |= prelog[aamode][profile][hat]['path'][path]
-                    prelog[aamode][profile][hat]['path'][path] = mode
-
-                if do_execute:
                     if not aa[profile][hat]:
                         continue  # ignore log entries for non-existing profiles
 
@@ -1058,17 +983,8 @@ def handle_children(profile, hat, root):
                         continue
 
                     p = update_repo_profile(aa[profile][profile])
-                    if to_name:
-                        if UI_SelectUpdatedRepoProfile(profile, p) and is_known_rule(aa[profile][hat], 'file', exec_event):  # we need an exec_event with target=to_name here
-                            continue
-                    else:
-                        if UI_SelectUpdatedRepoProfile(profile, p) and is_known_rule(aa[profile][hat], 'file', exec_event):  # we need an exec_event with target=exec_target here
-                            continue
-
-                    context_new = profile
-                    if profile != hat:
-                        context_new = context_new + '^%s' % hat
-                    context_new = context_new + ' -> %s' % exec_target
+                    if UI_SelectUpdatedRepoProfile(profile, p) and is_known_rule(aa[profile][hat], 'file', exec_event):
+                        continue
 
                     # nx is not used in profiles but in log files.
                     # Log parsing methods will convert it to its profile form
@@ -1078,8 +994,6 @@ def handle_children(profile, hat, root):
 
                     if True:
                         options = cfg['qualifiers'].get(exec_target, 'ipcnu')
-                        if to_name:
-                            fatal_error(_('%s has transition name but not transition mode') % entry)
 
                         ### If profiled program executes itself only 'ix' option
                         ##if exec_target == profile:
@@ -1114,14 +1028,11 @@ def handle_children(profile, hat, root):
                         q = aaui.PromptQuestion()
 
                         q.headers += [_('Profile'), combine_name(profile, hat)]
-                        if prog and prog != 'HINT':
-                            q.headers += [_('Program'), prog]
 
                         # to_name should not exist here since, transitioning is already handeled
                         q.headers += [_('Execute'), exec_target]
                         q.headers += [_('Severity'), severity]
 
-                        # prompt = '\n%s\n' % context_new  # XXX
                         exec_toggle = False
                         q.functions += build_x_functions(default, options, exec_toggle)
 
@@ -1188,9 +1099,9 @@ def handle_children(profile, hat, root):
                             if ans == 'CMD_DENY':
                                 aa[profile][hat]['file'].add(FileRule(exec_target, None, 'x', FileRule.ALL, owner=False, log_event=True, deny=True))
                                 changed[profile] = True
+                                hashlog[aamode][target_profile]['final_name'] = ''
                                 # Skip remaining events if they ask to deny exec
-                                if domainchange == 'change':
-                                    return None
+                                continue
 
                         if ans != 'CMD_DENY':
                             if to_name:
@@ -1217,14 +1128,13 @@ def handle_children(profile, hat, root):
                     # Update tracking info based on kind of change
 
                     if ans == 'CMD_ix':
-                        pass
+                        hashlog[aamode][target_profile]['final_name'] = profile
+
                     elif re.search('^CMD_(px|nx|pix|nix)', ans):
                         if to_name:
                             exec_target = to_name
-                        if aamode == 'PERMITTING':
-                            if domainchange == 'change':
-                                profile = exec_target
-                                hat = exec_target
+
+                        hashlog[aamode][target_profile]['final_name'] = exec_target
 
                         # Check profile exists for px
                         if not os.path.exists(get_profile_filename_from_attachment(exec_target, True)):
@@ -1238,6 +1148,9 @@ def handle_children(profile, hat, root):
                                 else:
                                     autodep(exec_target, '')
                                 reload_base(exec_target)
+                            else:
+                                hashlog[aamode][target_profile]['final_name'] = profile  # not creating the target profile effectively results in ix mode
+
                     elif ans.startswith('CMD_cx') or ans.startswith('CMD_cix'):
                         if to_name:
                             exec_target = to_name
@@ -1247,41 +1160,27 @@ def handle_children(profile, hat, root):
                             if 'i' in exec_mode:
                                 ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
                             if ynans == 'y':
-                                hat = exec_target
-                                if not aa[profile].get(hat, False):
-                                    stub_profile = create_new_profile(hat, True)
-                                    aa[profile][hat] = stub_profile[hat][hat]
+                                if not aa[profile].get(exec_target, False):
+                                    stub_profile = create_new_profile(exec_target, True)
+                                    aa[profile][exec_target] = stub_profile[exec_target][exec_target]
 
-                                aa[profile][hat]['profile'] = True
+                                aa[profile][exec_target]['profile'] = True
 
-                                if profile != hat:
-                                    aa[profile][hat]['flags'] = aa[profile][profile]['flags']
+                                if profile != exec_target:
+                                    aa[profile][exec_target]['flags'] = aa[profile][profile]['flags']
 
-                                aa[profile][hat]['flags'] = 'complain'
+                                aa[profile][exec_target]['flags'] = 'complain'
 
                                 file_name = aa[profile][profile]['filename']
-                                filelist[file_name]['profiles'][profile][hat] = True
+                                filelist[file_name]['profiles'][profile][exec_target] = True
+
+                                hashlog[aamode][target_profile]['final_name'] = '%s//%s' % (profile, exec_target)
+
+                            else:
+                                hashlog[aamode][target_profile]['final_name'] = profile  # not creating the target profile effectively results in ix mode
 
                     elif ans.startswith('CMD_ux'):
-                        if domainchange == 'change':
-                            return None
-
-            elif typ == 'network':
-                # If network we (should) have pid, profile, hat, program, mode, network family, socket type and protocol
-                pid, p, h, prog, aamode, family, sock_type, protocol = entry[:8]
-
-                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
-                    profile = p
-                    hat = h
-                if not hat or not profile:
-                    continue
-                if family and sock_type:
-                    prelog[aamode][profile][hat]['network'][family][sock_type] = True
-
-            else:
-                raise AppArmorBug('unknown event type %s - should never happen, please open a bugreport!' % typ)
-
-    return None
+                        continue
 
 ##### Repo related functions
 
@@ -1768,13 +1667,12 @@ def set_logfile(filename):
     elif os.path.isdir(logfile):
         raise AppArmorException(_('%s is a directory. Please specify a file as logfile') % logfile)
 
-def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
+def do_logprof_pass(logmark='', passno=0):
     # set up variables for this pass
 #    transitions = hasher()
     global active_profiles
     global sev_db
 #    aa = hasher()
-#     prelog = hasher()
 #     changed = dict()
 #    filelist = hasher()
 
@@ -1793,17 +1691,13 @@ def do_logprof_pass(logmark='', passno=0, log_pid=log_pid):
     ##    if not repo_cfg['repository'].get('enabled', False) or repo_cfg['repository]['enabled'] not in ['yes', 'no']:
     ##    UI_ask_to_enable_repo()
 
-    log_reader = apparmor.logparser.ReadLog(log_pid, logfile, active_profiles, profile_dir)
-    log = log_reader.read_log(logmark)
-    #read_log(logmark)
+    log_reader = apparmor.logparser.ReadLog(logfile, active_profiles, profile_dir)
+    hashlog = log_reader.read_log(logmark)
 
-    for root in log:
-        handle_children('', '', root)
-    #for root in range(len(log)):
-        #log[root] = handle_children('', '', log[root])
-    #print(log)
+    ask_exec(hashlog)
+    ask_addhat(hashlog)
 
-    log_dict = collapse_log()
+    log_dict = collapse_log(hashlog)
 
     ask_the_questions(log_dict)
 
@@ -1886,45 +1780,48 @@ def save_profiles():
 def get_pager():
     return 'less'
 
-def collapse_log():
+def collapse_log(hashlog, ignore_null_profiles=True):
     log_dict = hasher()
-    for aamode in prelog.keys():
-        for profile in prelog[aamode].keys():
-            for hat in prelog[aamode][profile].keys():
 
-                log_dict[aamode][profile][hat] = ProfileStorage(profile, hat, 'collapse_log()')
+    for aamode in hashlog.keys():
+        for full_profile in hashlog[aamode].keys():
+            if hashlog[aamode][full_profile]['final_name'] == '':
+                continue  # user chose "deny" or "unconfined" for this target, therefore ignore log events
 
-                for path in prelog[aamode][profile][hat]['path'].keys():
-                    mode = prelog[aamode][profile][hat]['path'][path]
+            if '//null-' in hashlog[aamode][full_profile]['final_name'] and ignore_null_profiles:
+                # ignore null-* profiles (probably nested childs)
+                # otherwise we'd accidently create a null-* hat in the profile which is worse
+                # XXX drop this once we support nested childs
+                continue
 
-                    user, other = split_mode(mode)
+            profile, hat = split_name(hashlog[aamode][full_profile]['final_name'])  # XXX limited to two levels to avoid an Exception on nested child profiles or nested null-*
+            # TODO: support nested child profiles
 
-                    # logparser.py doesn't preserve 'owner' information, see https://bugs.launchpad.net/apparmor/+bug/1538340
-                    # XXX re-check this code after fixing this bug
-                    if other:
-                        owner = False
-                        mode = other
-                    else:
-                        owner = True
-                        mode = user
+            if True:
+                if not log_dict[aamode][profile].get(hat):
+                    # with execs in ix mode, we already have ProfileStorage initialized and should keep the content it already has
+                    log_dict[aamode][profile][hat] = ProfileStorage(profile, hat, 'collapse_log()')
 
-                    # python3 aa-logprof -f <(echo '[55826.822365] audit: type=1400 audit(1454355221.096:85479): apparmor="ALLOWED" operation="file_receive" profile="/usr/sbin/smbd" name="/foo.png" pid=28185 comm="smbd" requested_mask="w" denied_mask="w" fsuid=100 ouid=100')
-                    # happens via log_str_to_mode() called in logparser.py parse_event_for_tree()
-                    # XXX fix this in the log parsing!
-                    if 'a' in mode and 'w' in mode:
-                        mode.remove('a')
+                for path in hashlog[aamode][full_profile]['path'].keys():
+                    for owner in hashlog[aamode][full_profile]['path'][path]:
+                        mode = set(hashlog[aamode][full_profile]['path'][path][owner].keys())
 
-                    file_event = FileRule(path, mode, None, FileRule.ALL, owner=owner, log_event=True)
+                        # logparser sums up multiple log events, so both 'a' and 'w' can be present
+                        if 'a' in mode and 'w' in mode:
+                            mode.remove('a')
 
-                    if not is_known_rule(aa[profile][hat], 'file', file_event):
-                        log_dict[aamode][profile][hat]['file'].add(file_event)
+                        file_event = FileRule(path, mode, None, FileRule.ALL, owner=owner, log_event=True)
 
-                for cap in prelog[aamode][profile][hat]['capability'].keys():
+                        if not is_known_rule(aa[profile][hat], 'file', file_event):
+                            log_dict[aamode][profile][hat]['file'].add(file_event)
+                            # TODO: check for existing rules with this path, and merge them into one rule
+
+                for cap in hashlog[aamode][full_profile]['capability'].keys():
                     cap_event = CapabilityRule(cap, log_event=True)
                     if not is_known_rule(aa[profile][hat], 'capability', cap_event):
                         log_dict[aamode][profile][hat]['capability'].add(cap_event)
 
-                dbus = prelog[aamode][profile][hat]['dbus']
+                dbus = hashlog[aamode][full_profile]['dbus']
                 for access in                               dbus:
                     for bus in                              dbus[access]:
                         for path in                         dbus[access][bus]:
@@ -1946,21 +1843,21 @@ def collapse_log():
 
                                             log_dict[aamode][profile][hat]['dbus'].add(dbus_event)
 
-                nd = prelog[aamode][profile][hat]['network']
+                nd = hashlog[aamode][full_profile]['network']
                 for family in nd.keys():
                     for sock_type in nd[family].keys():
                         net_event = NetworkRule(family, sock_type, log_event=True)
                         if not is_known_rule(aa[profile][hat], 'network', net_event):
                             log_dict[aamode][profile][hat]['network'].add(net_event)
 
-                ptrace = prelog[aamode][profile][hat]['ptrace']
+                ptrace = hashlog[aamode][full_profile]['ptrace']
                 for peer in ptrace.keys():
                     for access in ptrace[peer].keys():
                         ptrace_event = PtraceRule(access, peer, log_event=True)
                         if not is_known_rule(aa[profile][hat], 'ptrace', ptrace_event):
                             log_dict[aamode][profile][hat]['ptrace'].add(ptrace_event)
 
-                sig = prelog[aamode][profile][hat]['signal']
+                sig = hashlog[aamode][full_profile]['signal']
                 for peer in sig.keys():
                     for access in sig[peer].keys():
                         for signal in sig[peer][access].keys():

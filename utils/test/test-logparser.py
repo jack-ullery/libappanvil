@@ -16,9 +16,14 @@ import unittest
 
 from apparmor.logparser import ReadLog
 
-class TestParseEvent(unittest.TestCase):
+from common_test import AATest, setup_all_loops # , setup_aa
+from apparmor.common import AppArmorException
+
+class TestParseEvent(AATest):
+    tests = []
+
     def setUp(self):
-        self.parser = ReadLog('', '', '', '')
+        self.parser = ReadLog('', '', '')
 
     def test_parse_event_audit_1(self):
         event = 'type=AVC msg=audit(1345027352.096:499): apparmor="ALLOWED" operation="rename_dest" parent=6974 profile="/usr/sbin/httpd2-prefork//vhost_foo" name=2F686F6D652F7777772F666F6F2E6261722E696E2F68747470646F63732F61707061726D6F722F696D616765732F746573742F696D61676520312E6A7067 pid=20143 comm="httpd2-prefork" requested_mask="wc" denied_mask="wc" fsuid=30 ouid=30'
@@ -94,6 +99,22 @@ class TestParseEvent(unittest.TestCase):
 
         self.assertIsNotNone(ReadLog.RE_LOG_ALL.search(event))
 
+class TestParseEventForTreeInvalid(AATest):
+    tests = [
+        ('type=AVC msg=audit(1556742870.707:3614): apparmor="ALLOWED" operation="open" profile="/bin/hello" name="/dev/tty" pid=12856 comm="hello" requested_mask="wr" denied_mask="foo" fsuid=1000 ouid=0',    AppArmorException),  # invalid file permissions "foo"
+        ('type=AVC msg=audit(1556742870.707:3614): apparmor="ALLOWED" operation="open" profile="/bin/hello" name="/dev/tty" pid=12856 comm="hello" requested_mask="wr" denied_mask="wr::w" fsuid=1000 ouid=0',  AppArmorException),  # "wr::w" mixes owner and other
+    ]
 
+    def _fake_profile_exists(self, program):
+        return True
+
+    def _run_test(self, params, expected):
+        self.parser = ReadLog('', '', '')
+        self.parser.profile_exists = self._fake_profile_exists  # inject fake function that always returns True - much easier than handing over a ProfileList object to __init__
+        parsed_event = self.parser.parse_event(params)
+        with self.assertRaises(expected):
+            self.parser.parse_event_for_tree(parsed_event)
+
+setup_all_loops(__name__)
 if __name__ == "__main__":
     unittest.main(verbosity=1)
