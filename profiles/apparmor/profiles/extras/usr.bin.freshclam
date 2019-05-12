@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
+#    Copyright (C) 2019 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -21,7 +22,7 @@
   /etc/clamd.conf r,
   /etc/freshclam.conf r,
   /usr/bin/freshclam mr,
-  /var/lib/clamav/clamav-* rw,
-  /var/lib/clamav/daily.cvd rw,
-  /var/lib/clamav/main.cvd rw,
+  /var/lib/clamav/** rw,
+  owner /run/clamav/freshclam.pid w,
+
 }
