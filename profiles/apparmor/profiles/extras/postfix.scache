@@ -13,10 +13,10 @@
 
 #include <tunables/global>
 
-profile postfix-scache /usr/lib/postfix/{sbin/,}scache {
+profile postfix-scache /usr/lib/postfix/{bin/,sbin/,}scache {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  /usr/lib/postfix/{sbin/,}scache rmix,
+  /usr/lib/postfix/{bin/,sbin/,}scache mrix,
 }

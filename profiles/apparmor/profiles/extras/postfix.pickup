@@ -11,12 +11,12 @@
 
 #include <tunables/global>
 
-profile postfix-pickup /usr/lib/postfix/{sbin/,}pickup {
+profile postfix-pickup /usr/lib/postfix/{bin/,sbin/,}pickup {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  /usr/lib/postfix/{sbin/,}pickup             rmix,
+  /usr/lib/postfix/{bin/,sbin/,}pickup           mrix,
 
   /{var/spool/postfix/,}public/cleanup           rw,
   /{var/spool/postfix/,}public/pickup            r,

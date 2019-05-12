@@ -12,10 +12,10 @@
 
 #include <tunables/global>
 
-profile postfix-oqmgr /usr/lib/postfix/{sbin/,}oqmgr {
+profile postfix-oqmgr /usr/lib/postfix/{bin/,sbin/,}oqmgr {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  /usr/lib/postfix/{sbin/,}oqmgr rmix,
+  /usr/lib/postfix/{bin/,sbin/,}oqmgr mrix,
 }

@@ -11,12 +11,12 @@
 
 #include <tunables/global>
 
-profile postfix-trivial-rewrite /usr/lib/postfix/{sbin/,}trivial-rewrite {
+profile postfix-trivial-rewrite /usr/lib/postfix/{bin/,sbin/,}trivial-rewrite {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  /usr/lib/postfix/{sbin/,}trivial-rewrite    rmix,
+  /usr/lib/postfix/{bin/,sbin/,}trivial-rewrite mrix,
 
   /etc/postfix/relocated.db                   r,
   /etc/postfix/transport.db                   r,

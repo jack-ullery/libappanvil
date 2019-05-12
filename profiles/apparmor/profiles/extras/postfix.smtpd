@@ -11,7 +11,7 @@
 
 #include <tunables/global>
 
-profile postfix-smtpd /usr/lib/postfix/{sbin/,}smtpd {
+profile postfix-smtpd /usr/lib/postfix/{bin/,sbin/,}smtpd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
@@ -22,7 +22,7 @@ profile postfix-smtpd /usr/lib/postfix/{sbin/,}smtpd {
   capability dac_override,
   capability dac_read_search,
 
-  /usr/lib/postfix/{sbin/,}smtpd               rmix,
+  /usr/lib/postfix/{bin/,sbin/,}smtpd         mrix,
   /usr/sbin/postdrop                           rPx,
 
   /dev/urandom                                r,

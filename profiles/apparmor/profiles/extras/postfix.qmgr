@@ -11,12 +11,12 @@
 
 #include <tunables/global>
 
-profile postfix-qmgr /usr/lib/postfix/{sbin/,}qmgr {
+profile postfix-qmgr /usr/lib/postfix/{bin/,sbin/,}qmgr {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  /usr/lib/postfix/{sbin/,}qmgr                       rmix,
+  /usr/lib/postfix/{bin/,sbin/,}qmgr                              mrix,
 
   /{var/spool/postfix/,}active/                                   r,
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/*                rwl,

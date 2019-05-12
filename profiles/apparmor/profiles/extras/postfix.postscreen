@@ -10,8 +10,8 @@
 
 #include <tunables/global>
 
-profile postfix-postscreen /usr/lib/postfix/{sbin/,}postscreen {
+profile postfix-postscreen /usr/lib/postfix/{bin/,sbin/,}postscreen {
   #include <abstractions/base>
 
-  /usr/lib/postfix/{sbin/,}postscreen rmix,
+  /usr/lib/postfix/{bin/,sbin/,}postscreen mrix,
 }

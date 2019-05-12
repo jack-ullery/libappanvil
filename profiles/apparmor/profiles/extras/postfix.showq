@@ -11,12 +11,12 @@
 
 #include <tunables/global>
 
-profile postfix-showq /usr/lib/postfix/{sbin/,}showq {
+profile postfix-showq /usr/lib/postfix/{bin/,sbin/,}showq {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  /usr/lib/postfix/{sbin/,}showq                       rmix,
+  /usr/lib/postfix/{bin/,sbin/,}showq                              mrix,
 
   /{var/spool/postfix/,}active/                                    r,
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/*                 r,

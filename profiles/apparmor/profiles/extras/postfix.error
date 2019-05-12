@@ -12,12 +12,12 @@
 
 #include <tunables/global>
 
-profile postfix-error /usr/lib/postfix/{sbin/,}error {
+profile postfix-error /usr/lib/postfix/{bin/,sbin/,}error {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  /usr/lib/postfix/{sbin/,}error rmix,
+  /usr/lib/postfix/{bin/,sbin/,}error mrix,
 
   owner /var/spool/postfix/active/* rwk,
   /var/spool/postfix/pid/unix.error rwk,

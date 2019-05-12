@@ -11,7 +11,7 @@
 
 #include <tunables/global>
 
-profile postfix-smtp /usr/lib/postfix/{sbin/,}smtp {
+profile postfix-smtp /usr/lib/postfix/{bin/,sbin/,}smtp {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
@@ -21,7 +21,7 @@ profile postfix-smtp /usr/lib/postfix/{sbin/,}smtp {
   capability dac_read_search,
   capability net_bind_service,
 
-  /usr/lib/postfix/{sbin/,}smtp                rmix,
+  /usr/lib/postfix/{bin/,sbin/,}smtp                    mrix,
 
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/*      rwl,
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/       rwl,
