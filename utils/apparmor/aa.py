@@ -1701,8 +1701,6 @@ def do_logprof_pass(logmark='', passno=0):
 
     ask_the_questions(log_dict)
 
-    finishing = False
-    # Check for finished
     save_profiles()
 
     ##if not repo_cfg['repository'].get('upload', False) or repo['repository']['upload'] == 'later':
@@ -1711,13 +1709,6 @@ def do_logprof_pass(logmark='', passno=0):
     ##    if repo_cgf['repository']['upload'] == 'yes':
     ##        sync_profiles()
     ##    created = []
-
-    # If user selects 'Finish' then we want to exit logprof
-    if finishing:
-        return 'FINISHED'
-    else:
-        return 'NORMAL'
-
 
 def save_profiles():
     # Ensure the changed profiles are actual active profiles

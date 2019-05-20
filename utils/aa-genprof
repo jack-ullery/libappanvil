@@ -160,10 +160,8 @@ while not done_profiling:
     ans, arg = q.promptUser('noexit')
 
     if ans == 'CMD_SCAN':
-        lp_ret = apparmor.do_logprof_pass(logmark, passno)
+        apparmor.do_logprof_pass(logmark, passno)
         passno += 1
-        if lp_ret == 'FINISHED':
-            done_profiling = True
     else:
         done_profiling = True
 
