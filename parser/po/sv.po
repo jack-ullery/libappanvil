@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-13 00:11-0700\n"
-"PO-Revision-Date: 2019-02-23 12:56+0000\n"
+"PO-Revision-Date: 2019-05-25 10:11+0000\n"
 "Last-Translator: Jonatan Nyberg <Unknown>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2019-04-18 05:33+0000\n"
-"X-Generator: Launchpad (build 18928)\n"
+"X-Launchpad-Export-Date: 2019-05-26 05:31+0000\n"
+"X-Generator: Launchpad (build 18968)\n"
 "Language: sv\n"
 
 #: ../parser_include.c:113 ../parser_include.c:111
@@ -626,7 +626,7 @@ msgstr "%s: Fel i efterbearbetning av regelkombination. Avbryter.\n"
 #: parser_lex.l:180 parser_lex.l:186
 #, c-format
 msgid "Could not process include directory '%s' in '%s'"
-msgstr ""
+msgstr "Det gick inte att bearbeta inkludera katalogen \"%s\" i \"%s\""
 
 #: ../parser_main.c:660 ../parser_main.c:523
 msgid "Feature buffer full."
@@ -672,7 +672,7 @@ msgstr "ägarprefix inte tillåtet"
 
 #: parser_yacc.y:660
 msgid "owner prefix not allow on mount rules"
-msgstr ""
+msgstr "ägarprefix tillåter inte på monteraregler"
 
 #: parser_yacc.y:677
 msgid "owner prefix not allow on dbus rules"
@@ -685,31 +685,32 @@ msgstr "ägarprefix tillåter inte på kapacitetsregler"
 #: parser_yacc.y:1357 parser_yacc.y:1613
 #, c-format
 msgid "invalid mount conditional %s%s"
-msgstr ""
+msgstr "ogiltigt monteringsvillkorlig %s%s"
 
 #: parser_yacc.y:1374 parser_yacc.y:1628
 msgid "bad mount rule"
-msgstr ""
+msgstr "dålig monteringsregel"
 
 #: parser_yacc.y:1381 parser_yacc.y:1635
 msgid "mount point conditions not currently supported"
-msgstr ""
+msgstr "monteringspunktsförhållanden stöds för närvarande inte"
 
 #: parser_yacc.y:1398 parser_yacc.y:1650
 #, c-format
 msgid "invalid pivotroot conditional '%s'"
-msgstr ""
+msgstr "ogiltigt pivotroot-villkorlig \"%s\""
 
 #: ../parser_regex.c:241 ../parser_regex.c:236
 #, c-format
 msgid ""
 "%s: Regex grouping error: Invalid close ], no matching open [ detected\n"
 msgstr ""
+"%s: Regex-grupperingsfel: ogiltig stäng ], ingen matchning öppen [ upptäckt\n"
 
 #: ../parser_regex.c:257 ../parser_regex.c:256
 #, c-format
 msgid "%s: Regex grouping error: Exceeded maximum nesting of {}\n"
-msgstr ""
+msgstr "%s: Regex-grupperingsfel: Överskred maximal kapsling av {}\n"
 
 #: ../parser_policy.c:366 ../parser_policy.c:339
 #, c-format
@@ -724,61 +725,61 @@ msgstr ""
 #: ../parser_interface.c:635 ../parser_interface.c:638
 #, c-format
 msgid "%s: Unable to write %s\n"
-msgstr ""
+msgstr "%s: Det går inte att skriva %s\n"
 
 #: ../parser_main.c:721
 #, c-format
 msgid "Error: Could not read binary profile or cache file %s: %s.\n"
-msgstr ""
+msgstr "Fel: det gick inte att läsa binär profil eller cachefilen %s: %s.\n"
 
 #: ../parser_main.c:811
 #, c-format
 msgid "Error: Could not read cache file '%s', skipping...\n"
-msgstr ""
+msgstr "Fel: Det gick inte att läsa cachefilen %s, hoppar över...\n"
 
 #: ../parser_misc.c:575
 #, c-format
 msgid "Internal: unexpected %s mode character '%c' in input"
-msgstr ""
+msgstr "Internt: oväntat %s-lägetecken \"%c\" i inmatning"
 
 #: ../parser_misc.c:599
 #, c-format
 msgid "Internal error generated invalid %s perm 0x%x\n"
-msgstr ""
+msgstr "Internt fel genererat ogiltigt %s perm 0x%x\n"
 
 #: parser_yacc.y:703
 msgid "owner prefix not allowed on mount rules"
-msgstr ""
+msgstr "ägarprefix inte tillåtet på monteringsregler"
 
 #: parser_yacc.y:720
 msgid "owner prefix not allowed on dbus rules"
-msgstr ""
+msgstr "ägarprefix inte tillåtet på dbus-regler"
 
 #: parser_yacc.y:736
 msgid "owner prefix not allowed on signal rules"
-msgstr ""
+msgstr "ägarprefix inte tillåtet på signalregler"
 
 #: parser_yacc.y:752
 msgid "owner prefix not allowed on ptrace rules"
-msgstr ""
+msgstr "ägarprefix inte tillåtet på ptrace-regler"
 
 #: parser_yacc.y:768
 msgid "owner prefix not allowed on unix rules"
-msgstr ""
+msgstr "ägarprefix inte tillåtet på unix-regler"
 
 #: parser_yacc.y:794
 msgid "owner prefix not allowed on capability rules"
-msgstr ""
+msgstr "ägarprefix inte tillåtet på kapacitetsregler"
 
 #: parser_yacc.y:1293
 #, c-format
 msgid "dbus rule: invalid conditional group %s=()"
-msgstr ""
+msgstr "dbus-regel: ogiltig villkorlig grupp %s=()"
 
 #: parser_yacc.y:1371
 #, c-format
 msgid "unix rule: invalid conditional group %s=()"
-msgstr ""
+msgstr "unix-regel: ogiltig villkorlig grupp %s=()"
 
 #: ../parser_regex.c:368
 #, c-format
