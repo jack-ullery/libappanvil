@@ -8,13 +8,13 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: AppArmor list <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2019-05-25 10:34+0000\n"
+"PO-Revision-Date: 2019-05-26 08:20+0000\n"
 "Last-Translator: Jonatan Nyberg <Unknown>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2019-05-26 05:32+0000\n"
+"X-Launchpad-Export-Date: 2019-05-27 05:35+0000\n"
 "X-Generator: Launchpad (build 18968)\n"
 "Language: sv\n"
 
@@ -978,11 +978,11 @@ msgstr "Ogiltig snabbtangent för"
 
 #: ../apparmor/ui.py:77 ../apparmor/ui.py:121 ../apparmor/ui.py:275
 msgid "(Y)es"
-msgstr ""
+msgstr "(J)a"
 
 #: ../apparmor/ui.py:78 ../apparmor/ui.py:122 ../apparmor/ui.py:276
 msgid "(N)o"
-msgstr ""
+msgstr "(N)ej"
 
 #: ../apparmor/ui.py:123
 msgid "(C)ancel"
@@ -990,7 +990,7 @@ msgstr ""
 
 #: ../apparmor/ui.py:223
 msgid "(A)llow"
-msgstr ""
+msgstr "(T)illåt"
 
 #: ../apparmor/ui.py:224
 msgid "(M)ore"
@@ -1018,7 +1018,7 @@ msgstr ""
 
 #: ../apparmor/ui.py:231
 msgid "(D)eny"
-msgstr ""
+msgstr "(F)örneka"
 
 #: ../apparmor/ui.py:232
 msgid "Abo(r)t"
