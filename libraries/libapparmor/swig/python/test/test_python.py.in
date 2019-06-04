@@ -109,7 +109,7 @@ class AAPythonBindingsTests(unittest.TestCase):
 
         new_record = dict()
         for key in [x for x in dir(record) if not (x.startswith('_') or x == 'this')]:
-            value = record.__getattr__(key)
+            value = getattr(record, key)
             if key == "event" and value in EVENT_MAP:
                 new_record[key] = EVENT_MAP[value]
             elif key == "version":
