@@ -518,8 +518,6 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'O':
-		skip_read_cache = 1;
-
 		if (!handle_flag_table(optflag_table, optarg,
 				       &dfaflags)) {
 			PERROR("%s: Invalid --Optimize option %s\n",
