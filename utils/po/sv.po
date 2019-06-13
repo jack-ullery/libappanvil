@@ -1018,7 +1018,7 @@ msgstr ""
 
 #: ../apparmor/ui.py:231
 msgid "(D)eny"
-msgstr "(F)örneka"
+msgstr ""
 
 #: ../apparmor/ui.py:232
 msgid "Abo(r)t"
