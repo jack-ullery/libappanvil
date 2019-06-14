@@ -11,12 +11,12 @@
 
 #include <tunables/global>
 
-profile postfix-virtual /usr/lib/postfix/{sbin/,}virtual {
+profile postfix-virtual /usr/lib/postfix/{bin/,sbin/,}virtual {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  /usr/lib/postfix/{sbin/,}virtual rmix,
+  /usr/lib/postfix/{bin/,sbin/,}virtual mrix,
 
   /var/spool/postfix/active/* rw,
   /var/spool/postfix/pid/unix.virtual rw,

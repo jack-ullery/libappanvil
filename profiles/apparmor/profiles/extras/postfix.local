@@ -11,7 +11,7 @@
 
 #include <tunables/global>
 
-profile postfix-local /usr/lib/postfix/{sbin/,}local {
+profile postfix-local /usr/lib/postfix/{bin/,sbin/,}local {
   #include <abstractions/base>
   #include <abstractions/bash>
   #include <abstractions/nameservice>
@@ -24,7 +24,7 @@ profile postfix-local /usr/lib/postfix/{sbin/,}local {
   /var/mailman/mail/wrapper                             Px,
   /usr/bin/mlmmj-recieve                                Px,
 
-  /usr/lib/postfix/{sbin/,}local                        rmix,
+  /usr/lib/postfix/{bin/,sbin/,}local                   mrix,
   /{usr/,}bin/bash                                      mixr,
   /{usr/,}bin/date                                      mixr,
 

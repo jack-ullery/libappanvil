@@ -11,12 +11,12 @@
 
 #include <tunables/global>
 
-profile postfix-anvil /usr/lib/postfix/{sbin/,}anvil {
+profile postfix-anvil /usr/lib/postfix/{bin/,sbin/,}anvil {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  /usr/lib/postfix/{sbin/,}anvil              rmix,
+  /usr/lib/postfix/{bin/,sbin/,}anvil         mrix,
 
   /etc/postfix/main.cf                        r,
   /{var/spool/postfix/,}private/anvil         rw,

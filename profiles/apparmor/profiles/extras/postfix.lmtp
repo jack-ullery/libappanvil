@@ -12,12 +12,12 @@
 
 #include <tunables/global>
 
-profile postfix-lmtp /usr/lib/postfix/{sbin/,}lmtp {
+profile postfix-lmtp /usr/lib/postfix/{bin/,sbin/,}lmtp {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  /usr/lib/postfix/{sbin/,}lmtp rmix,
+  /usr/lib/postfix/{bin/,sbin/,}lmtp mrix,
 
   /var/spool/postfix/active/* rwk,
   /var/spool/postfix/pid/unix.lmtp rwk,

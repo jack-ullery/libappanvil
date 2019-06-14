@@ -11,10 +11,10 @@
 
 #include <tunables/global>
 
-profile postfix-dnsblog /usr/lib/postfix/{sbin/,}dnsblog {
+profile postfix-dnsblog /usr/lib/postfix/{bin/,sbin/,}dnsblog {
   #include <abstractions/base>
 
-  /usr/lib/postfix/{sbin/,}dnsblog rmix,
+  /usr/lib/postfix/{bin/,sbin/,}dnsblog mrix,
 
   /var/spool/postfix/private/dnsblog rw,
 }

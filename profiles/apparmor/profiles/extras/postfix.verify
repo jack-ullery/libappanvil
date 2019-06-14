@@ -11,10 +11,10 @@
 
 #include <tunables/global>
 
-profile postfix-verify /usr/lib/postfix/{sbin/,}verify {
+profile postfix-verify /usr/lib/postfix/{bin/,sbin/,}verify {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  /usr/lib/postfix/{sbin/,}verify rmix,
+  /usr/lib/postfix/{bin/,sbin/,}verify mrix,
 }

@@ -12,8 +12,8 @@
 
 #include <tunables/global>
 
-profile postfix-discard /usr/lib/postfix/{sbin/,}discard {
+profile postfix-discard /usr/lib/postfix/{bin/,sbin/,}discard {
   #include <abstractions/base>
 
-  /usr/lib/postfix/{sbin/,}discard rmix,
+  /usr/lib/postfix/{bin/,sbin/,}discard mrix,
 }

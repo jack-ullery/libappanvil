@@ -12,12 +12,12 @@
 
 #include <tunables/global>
 
-profile postfix-tlsmgr /usr/lib/postfix/{sbin/,}tlsmgr {
+profile postfix-tlsmgr /usr/lib/postfix/{bin/,sbin/,}tlsmgr {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
 
-  /usr/lib/postfix/{sbin/,}tlsmgr          rmix,
+  /usr/lib/postfix/{bin/,sbin/,}tlsmgr mrix,
 
   /var/spool/postfix/dev/urandom r,
   /{etc,var/lib}/postfix/prng_exch            rwk,

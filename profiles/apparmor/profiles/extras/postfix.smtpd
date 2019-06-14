@@ -2,6 +2,7 @@
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
 #    Copyright (C) 2018 Canonical, Ltd.
+#    Copyright (C) 2019 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -11,7 +12,7 @@
 
 #include <tunables/global>
 
-profile postfix-smtpd /usr/lib/postfix/{sbin/,}smtpd {
+profile postfix-smtpd /usr/lib/postfix/{bin/,sbin/,}smtpd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/postfix-common>
@@ -22,7 +23,7 @@ profile postfix-smtpd /usr/lib/postfix/{sbin/,}smtpd {
   capability dac_override,
   capability dac_read_search,
 
-  /usr/lib/postfix/{sbin/,}smtpd               rmix,
+  /usr/lib/postfix/{bin/,sbin/,}smtpd         mrix,
   /usr/sbin/postdrop                           rPx,
 
   /dev/urandom                                r,
@@ -32,6 +33,7 @@ profile postfix-smtpd /usr/lib/postfix/{sbin/,}smtpd {
   /etc/mtab                                   r,
   /etc/fstab                                  r,
   /etc/postfix/*.db                           r,
+  /etc/postfix/*.regexp                       r,
   /etc/postfix/{ssl/,}*.pem                   r,
   /etc/postfix/smtpd_scache.dir               r,
   /etc/postfix/smtpd_scache.pag               rw,
@@ -40,6 +42,7 @@ profile postfix-smtpd /usr/lib/postfix/{sbin/,}smtpd {
 
   /usr/share/ssl/certs/ca-bundle.crt          r,
 
+  /{var/spool/postfix/,}incoming/*               rw,
   /{var/spool/postfix/,}pid/inet.*               rwk,
   /{var/spool/postfix/,}private/anvil            rw,
   /{var/spool/postfix/,}private/proxymap         rw,
