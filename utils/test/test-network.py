@@ -31,7 +31,7 @@ exp = namedtuple('exp', ['audit', 'allow_keyword', 'deny', 'comment',
 
 class NetworkKeywordsTest(AATest):
     def test_network_keyword_list(self):
-        rc, output = cmd(['make', '-s', '--no-print-directory', 'list_af_names'])
+        rc, output = cmd('../../common/list_af_names.sh')
         self.assertEqual(rc, 0)
 
         af_names = []
