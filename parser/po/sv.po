@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-13 00:11-0700\n"
-"PO-Revision-Date: 2019-05-25 10:11+0000\n"
+"PO-Revision-Date: 2019-06-15 06:20+0000\n"
 "Last-Translator: Jonatan Nyberg <Unknown>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2019-05-26 05:31+0000\n"
-"X-Generator: Launchpad (build 18968)\n"
+"X-Launchpad-Export-Date: 2019-06-16 05:29+0000\n"
+"X-Generator: Launchpad (build 18981)\n"
 "Language: sv\n"
 
 #: ../parser_include.c:113 ../parser_include.c:111
@@ -716,11 +716,13 @@ msgstr "%s: Regex-grupperingsfel: Överskred maximal kapsling av {}\n"
 #, c-format
 msgid "ERROR processing policydb rules for profile %s, failed to load\n"
 msgstr ""
+"FEL vid behandling av policydb_regler för profil %s, misslyckades med att "
+"läsa in\n"
 
 #: ../parser_policy.c:396 ../parser_policy.c:369
 #, c-format
 msgid "ERROR replacing aliases for profile %s, failed to load\n"
-msgstr ""
+msgstr "FEL vid byte av alias för profil %s, kunde inte läsa in\n"
 
 #: ../parser_interface.c:635 ../parser_interface.c:638
 #, c-format
