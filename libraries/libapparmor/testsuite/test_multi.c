@@ -14,6 +14,7 @@ int main(int argc, char **argv)
 	FILE *testcase;
 	char log_line[1024];
 	aa_log_record *test = NULL;
+	size_t size;
 	int ret = -1;
 
 	if (argc != 2)
@@ -32,14 +33,14 @@ int main(int argc, char **argv)
 		return(1);
 	}
 
-	if (fgets(log_line, 1023, testcase) == NULL)
-	{
+	size = fread(log_line, 1, 1023, testcase);
+	if (ferror(testcase)) {
 		fprintf(stderr, "Could not read testcase.\n");
 		fclose(testcase);
 		return(1);
 	}
-
 	fclose(testcase);
+	log_line[size] = 0;
 
 	test = parse_record(log_line);
 

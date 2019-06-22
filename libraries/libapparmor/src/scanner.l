@@ -131,6 +131,8 @@ key_pid			"pid"
 key_peer_pid		"peer_pid"
 key_profile		"profile"
 key_peer_profile	"peer_profile"
+key_label		"label"
+key_peer_label		"peer_label"
 key_family		"family"
 key_sock_type		"sock_type"
 key_protocol		"protocol"
@@ -314,6 +316,8 @@ yy_flex_debug = 0;
 {key_peer_pid}		{ return(TOK_KEY_PEER_PID); }
 {key_profile}		{ BEGIN(safe_string); return(TOK_KEY_PROFILE); }
 {key_peer_profile}	{ BEGIN(safe_string); return(TOK_KEY_PEER_PROFILE); }
+{key_label}		{ BEGIN(safe_string); return(TOK_KEY_LABEL); }
+{key_peer_label}	{ BEGIN(safe_string); return(TOK_KEY_PEER_LABEL); }
 {key_family}		{ return(TOK_KEY_FAMILY); }
 {key_sock_type}		{ return(TOK_KEY_SOCK_TYPE); }
 {key_protocol}		{ return(TOK_KEY_PROTOCOL); }

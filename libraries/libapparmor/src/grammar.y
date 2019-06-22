@@ -19,7 +19,12 @@
 %{
 
 /* set the following to non-zero to get bison to emit debugging
- * information about tokens given and rules matched. */
+ * information about tokens given and rules matched.
+ * Also:
+ *   Uncomment the %defines
+ *   parse.error
+ *   parse.trace
+ */
 #define YYDEBUG 0
 #include <string.h>
 #include <aalogparse.h>
@@ -34,7 +39,9 @@ aa_log_record *ret_record;
  * emit messages when asked for. */
 void aalogparse_error(void *scanner, char const *s)
 {
-        //printf("ERROR: %s\n", s);
+#if (YYDEBUG != 0)
+	printf("ERROR: %s\n", s);
+#endif
 	ret_record->event = AA_RECORD_INVALID;
 }
 
@@ -68,6 +75,11 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %}
 
 %defines
+/* uncomment for debugging
+%define parse.error verbose
+%define parse.trace
+*/
+
 %define api.pure
 %lex-param{void *scanner}
 %parse-param{void *scanner}
@@ -128,6 +140,8 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_PEER_PID
 %token TOK_KEY_PROFILE
 %token TOK_KEY_PEER_PROFILE
+%token TOK_KEY_LABEL
+%token TOK_KEY_PEER_LABEL
 %token TOK_KEY_PEER
 %token TOK_AUDIT
 %token TOK_KEY_FAMILY
@@ -194,7 +208,7 @@ new_syntax:
 	| TOK_TYPE_AA_ERROR audit_msg key_list { ret_record->event = AA_RECORD_ERROR; }
 	| TOK_TYPE_UNKNOWN audit_msg key_list { ret_record->event = lookup_aa_event($1); }
 	| TOK_TYPE_LSM_AVC audit_msg key_list
-	| TOK_TYPE_USER_AVC audit_user_msg TOK_SINGLE_QUOTE key_list TOK_SINGLE_QUOTE
+	| TOK_TYPE_USER_AVC audit_user_msg
 	;
 
 other_audit: TOK_TYPE_OTHER audit_msg TOK_MSG_REST
@@ -218,6 +232,11 @@ syslog_type:
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); free($4); }
 	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP key_type audit_id key_list
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); free($4); }
+	/* needs update: hard newline in handling mutiline log messages */
+	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id audit_user_msg_partial_tail
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); }
+	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id audit_user_msg_tail
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); }
 	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id key_list
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); free($4); }
 	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_AUDIT TOK_COLON key_type audit_id key_list
@@ -234,7 +253,13 @@ audit_dispatch:
 audit_msg: TOK_KEY_MSG TOK_EQUALS audit_id
 	;
 
-audit_user_msg: TOK_KEY_MSG TOK_EQUALS audit_id ignored_pid ignored_uid ignored_auid ignored_ses TOK_KEY_MSG TOK_EQUALS
+audit_user_msg_partial_tail: ignored_pid ignored_uid ignored_auid ignored_ses TOK_KEY_MSG TOK_EQUALS TOK_SINGLE_QUOTE key_list
+	;
+
+audit_user_msg_tail: audit_user_msg_partial_tail TOK_SINGLE_QUOTE
+	;
+
+audit_user_msg: TOK_KEY_MSG TOK_EQUALS audit_id audit_user_msg_tail
 	;
 
 audit_id: TOK_AUDIT TOK_OPEN_PAREN TOK_AUDIT_DIGITS TOK_PERIOD TOK_AUDIT_DIGITS TOK_COLON TOK_AUDIT_DIGITS TOK_CLOSE_PAREN TOK_COLON
@@ -291,6 +316,10 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	| TOK_KEY_PROFILE TOK_EQUALS safe_string
 	{ ret_record->profile = $3;}
 	| TOK_KEY_PEER_PROFILE TOK_EQUALS safe_string
+	{ ret_record->peer_profile = $3;}
+	| TOK_KEY_LABEL TOK_EQUALS safe_string
+	{ ret_record->profile = $3;}
+	| TOK_KEY_PEER_LABEL TOK_EQUALS safe_string
 	{ ret_record->peer_profile = $3;}
 	| TOK_KEY_FAMILY TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->net_family = $3;}
