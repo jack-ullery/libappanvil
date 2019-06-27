@@ -38,6 +38,7 @@ profile postfix-master /usr/lib/postfix/{bin/,sbin/,}master {
   /usr/lib/postfix/{bin/,sbin/,}anvil               Px,
   /usr/lib/postfix/{bin/,sbin/,}bounce              Px,
   /usr/lib/postfix/{bin/,sbin/,}cleanup             Px,
+  /usr/lib/postfix/{bin/,sbin/,}error               Px,
   /usr/lib/postfix/{bin/,sbin/,}flush               Px,
   /usr/lib/postfix/{bin/,sbin/,}local               Px,
   /usr/lib/postfix/{bin/,sbin/,}lmtp                mrPx,
