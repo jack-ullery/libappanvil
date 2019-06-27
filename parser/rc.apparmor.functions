@@ -49,6 +49,7 @@ if [ -d "$ADDITIONAL_PROFILE_DIR" ]; then
 fi
 AA_STATUS=/usr/sbin/aa-status
 SECURITYFS=/sys/kernel/security
+SFS_MOUNTPOINT="${SECURITYFS}/apparmor"
 
 # keep exit status from parser during profile load.  0 is good, 1 is bad
 STATUS=0
@@ -81,7 +82,6 @@ is_apparmor_present() {
 is_container_with_internal_policy() {
 	# this function is sometimes called independently of
 	# is_apparmor_loaded(), so also define this here.
-	SFS_MOUNTPOINT="${SECURITYFS}/${MODULE}"
 	local ns_stacked_path="${SFS_MOUNTPOINT}/.ns_stacked"
 	local ns_name_path="${SFS_MOUNTPOINT}/.ns_name"
 	local ns_stacked
@@ -264,8 +264,7 @@ is_apparmor_loaded() {
 		mount_securityfs
 	fi
 
-	if [ -f "$SECURITYFS/apparmor/profiles" ]; then
-		SFS_MOUNTPOINT="$SECURITYFS/apparmor"
+	if [ -f "${SFS_MOUNTPOINT}/profiles" ]; then
 		return 0
 	fi
 
