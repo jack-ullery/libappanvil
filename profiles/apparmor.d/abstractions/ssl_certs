@@ -38,7 +38,7 @@
   /etc/letsencrypt/archive/*/cert*.pem r,
   /etc/letsencrypt/archive/*/chain*.pem r,
   /etc/letsencrypt/archive/*/fullchain*.pem r,
-  
+
   /etc/certbot/archive/*/cert*.pem r,
   /etc/certbot/archive/*/chain*.pem r,
   /etc/certbot/archive/*/fullchain*.pem r,
