@@ -24,22 +24,9 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 class ReadLog:
-    RE_audit_time_id = '(msg=)?audit\([\d\.\:]+\):\s+'  # 'audit(1282626827.320:411): '
-    RE_kernel_time = '\[[\d\.\s]+\]'    # '[ 1612.746129]'
-    RE_type_num = '1[45][0-9][0-9]'     # 1400..1599
-    RE_aa_or_op = '(apparmor=|operation=)'
-
-    RE_log_parts = [
-        'kernel:\s+(' + RE_kernel_time + '\s+)?(audit:\s+)?type=' + RE_type_num + '\s+' + RE_audit_time_id + RE_aa_or_op,  # v2_6 syslog
-        'kernel:\s+(' + RE_kernel_time + '\s+)?' + RE_audit_time_id + 'type=' + RE_type_num + '\s+' + RE_aa_or_op,
-        'type=(AVC|APPARMOR[_A-Z]*|' + RE_type_num + ')\s+' + RE_audit_time_id + '(type=' + RE_type_num + '\s+)?' + RE_aa_or_op,  # v2_6 audit and dmesg
-        'type=(USER_AVC|1107)\s+' + RE_audit_time_id + '.*apparmor=',  # dbus
-        'type=UNKNOWN\[' + RE_type_num + '\]\s+' + RE_audit_time_id + RE_aa_or_op,
-        'dbus\[[0-9]+\]:\s+apparmor=',  # dbus
-    ]
 
     # used to pre-filter log lines so that we hand over only relevant lines to LibAppArmor parsing
-    RE_LOG_ALL = re.compile('(' + '|'.join(RE_log_parts) + ')')
+    RE_LOG_ALL = re.compile('apparmor=|operation=|type=AVC')
 
     def __init__(self, filename, active_profiles, profile_dir):
         self.filename = filename
