@@ -217,6 +217,9 @@ def hasher():
 def convert_regexp(regexp):
     regex_paren = re.compile('^(.*){([^}]*)}(.*)$')
     regexp = regexp.strip()
+
+    regexp = regexp.replace('(', '\\(').replace(')', '\\)')  # escape '(' and ')'
+
     new_reg = re.sub(r'(?<!\\)(\.|\+|\$)', r'\\\1', regexp)
 
     while regex_paren.search(new_reg):
