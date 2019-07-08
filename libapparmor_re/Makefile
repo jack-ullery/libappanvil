@@ -10,6 +10,7 @@ endif
 
 TARGET=libapparmor_re.a
 
+AR ?= ar
 CFLAGS ?= -g -Wall -O2 ${EXTRA_CFLAGS} -std=gnu++0x
 CXXFLAGS := ${CFLAGS} ${INCLUDE_APPARMOR}
 
@@ -22,7 +23,7 @@ all : ${TARGET}
 UNITTESTS = tst_parse
 
 libapparmor_re.a: parse.o expr-tree.o hfa.o chfa.o aare_rules.o
-	ar ${ARFLAGS} $@ $^
+	${AR} ${ARFLAGS} $@ $^
 
 expr-tree.o: expr-tree.cc expr-tree.h
 
