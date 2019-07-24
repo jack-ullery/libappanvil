@@ -1,0 +1,99 @@
+# vim:syntax=apparmor
+
+# This abstraction is designed to be used in a child profile to limit what
+# confined application can invoke via exo-open helper.
+#
+# NOTE: most likely you want to use xdg-open abstraction instead for better
+# portability across desktop environments, unless you are sure that confined
+# application only uses /usr/bin/exo-open directly.
+#
+# Usage example:
+#
+# ```
+# profile foo /usr/bin/foo {
+# ...
+# /usr/bin/exo-open rPx -> foo//exo-open,
+# ...
+# } # end of main profile
+#
+# # out-of-line child profile
+# profile foo//exo-open {
+#   #include <abstractions/exo-open>
+#
+#   # needed for ubuntu-* abstractions
+#   #include <abstractions/ubuntu-helpers>
+#
+#   # Only allow to handle http[s]: and mailto: links
+#   #include <abstractions/ubuntu-browsers>
+#   #include <abstractions/ubuntu-email>
+#
+#   # < add additional allowed applications here >
+# }
+
+  #include <abstractions/X>
+  #include <abstractions/base>
+  #include <abstractions/dbus-accessibility-strict>
+  #include <abstractions/dbus-session-strict>
+  #include <abstractions/gnome>
+
+  # Main executables
+
+  /usr/bin/exo-open rix,
+  /usr/lib/@{multiarch}/xfce4/exo-[0-9]/exo-helper-[0-9] ix,
+
+  # Other executables
+
+  /{,usr/}bin/which rix,
+
+  # Deny DBus
+
+  # for GTK error message dialog? overkill?
+  deny dbus send
+    bus=session
+    path=/org/gtk/vfs/mounttracker,
+
+  # DBus
+
+  # for error message box
+  dbus send
+    bus=accessibility
+    path=/org/a11y/atspi/accessible/root
+    interface=org.a11y.atspi.Socket
+    member=Embed
+    peer=(name=org.a11y.atspi.Registry),
+
+  dbus send
+    bus=accessibility
+    path=/org/a11y/atspi/registry
+    interface=org.a11y.atspi.Registry
+    member=GetRegisteredEvents
+    peer=(name=org.a11y.atspi.Registry),
+
+  dbus send
+    bus=accessibility
+    path=/org/a11y/atspi/registry/deviceeventcontroller
+    interface=org.a11y.atspi.DeviceEventController
+    member={GetDeviceEventListeners,GetKeystrokeListeners}
+    peer=(name=org.a11y.atspi.Registry),
+
+  dbus receive
+    bus=accessibility
+    path=/org/a11y/atspi/accessible/root
+    interface=org.freedesktop.DBus.Properties
+    member=Set
+    peer=(name=:[0-9]*.[0-9]*),
+
+  # end for errmor message box
+
+  # System files
+
+  /etc/xdg/{,xdg-*/}xfce4/helpers.rc r,
+  /etc/xfce4/defaults.list r, # TODO: move into xfce4 abstraction?
+  /usr/share/xfce4/helpers/*.desktop r,
+  /usr/share/{xfce4,xubuntu}/applications/{,*.list} r,
+
+  # User files
+
+  owner @{PROC}/@{pid}/fd/ r,
+  owner @{HOME}/.config/xfce4/helpers.rc r,
+

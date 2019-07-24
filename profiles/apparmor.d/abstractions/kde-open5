@@ -1,0 +1,154 @@
+# vim:syntax=apparmor
+
+# This abstraction is designed to be used in a child profile to limit what
+# confined application can invoke via kde-open5 helper.
+#
+# NOTE: most likely you want to use xdg-open abstraction instead for better
+# portability across desktop environments, unless you are sure that confined
+# application only uses /usr/bin/kde-open5 directly.
+#
+# Usage example:
+#
+# ```
+# profile foo /usr/bin/foo {
+# ...
+# /usr/bin/kde-open5 rPx -> foo//kde-open5,
+# ...
+# } # end of main profile
+#
+# # out-of-line child profile
+# profile foo//kde-open5 {
+#   #include <abstractions/kde-open5>
+#
+#   # needed for ubuntu-* abstractions
+#   #include <abstractions/ubuntu-helpers>
+#
+#   # Only allow to handle http[s]: and mailto: links
+#   #include <abstractions/ubuntu-browsers>
+#   #include <abstractions/ubuntu-email>
+#
+#   # < add additional allowed applications here >
+# }
+# ```
+
+  #include <abstractions/audio> # for alert messages
+  #include <abstractions/base>
+  #include <abstractions/dbus-accessibility-strict>
+  #include <abstractions/dbus-session-strict>
+  #include <abstractions/dbus-strict>
+  #include <abstractions/kde-icon-cache-write>
+  #include <abstractions/kde>
+  #include <abstractions/nameservice> # for IceProcessMessages () from libICE.so (called by libQtCore.so)
+  #include <abstractions/openssl>
+  #include <abstractions/qt5>
+  #include <abstractions/recent-documents-write>
+  #include <abstractions/X>
+
+  # Main executables
+
+  /usr/bin/kde-open5 rix,
+  /usr/lib/@{multiarch}/libexec/kf5/kioslave ix,
+
+  # Other executables
+
+  /usr/lib/gstreamer-[0-9]*.[0-9]*/gst-plugin-scanner PUx, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
+
+  # Additional libraries
+
+  owner /{,var/}run/user/[0-9]*/orcexec.* rwm, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
+
+  # DBus
+
+  dbus send
+      bus=system
+      path=/org/freedesktop/NetworkManager
+      interface=org.freedesktop.DBus.Properties
+      member=GetAll
+      peer=(name=org.freedesktop.NetworkManager),
+
+  dbus send
+      bus=system
+      path=/org/freedesktop/NetworkManager
+      interface=org.freedesktop.NetworkManager
+      member=GetDevices
+      peer=(name=org.freedesktop.NetworkManager),
+
+  dbus send
+      bus=system
+      path=/org/freedesktop/NetworkManager/ActiveConnection/[0-9]*
+      interface=org.freedesktop.DBus.Properties
+      member=GetAll
+      peer=(name=org.freedesktop.NetworkManager),
+
+  dbus send
+      bus=system
+      path=/org/freedesktop/NetworkManager/Devices/[0-9]*
+      interface=org.freedesktop.DBus.Properties
+      member=GetAll
+      peer=(name=org.freedesktop.NetworkManager),
+
+  dbus send
+      bus=system
+      path=/org/freedesktop/NetworkManager/Settings/[0-9]*
+      interface=org.freedesktop.NetworkManager.Settings.Connection
+      member=GetSettings
+      peer=(name=org.freedesktop.NetworkManager),
+
+  dbus send
+      bus=system
+      path=/org/freedesktop/NetworkManager/Settings
+      interface=org.freedesktop.NetworkManager.Settings
+      member=ListConnections
+      peer=(name=org.freedesktop.NetworkManager),
+
+  dbus send
+     bus=session
+     peer=(name=org.a11y.Bus),
+
+  dbus
+      bus=session
+      interface=org.kde.KLauncher
+      member=start_service_by_desktop_path
+      peer=(name=org.kde.klauncher5),
+
+  # Denied system files
+
+  deny /usr/lib/vlc/plugins/* w, # VLC backed tries to create plugins.dat.16109
+
+  # libpcre2 on openSUSE tries to mmap() shared memory on directory.
+  # see: https://lists.ubuntu.com/archives/apparmor/2019-January/011925.html
+  # AppArmor does not allow to distinguish "real" file vs shared memory one,
+  # so we deny this path to protect from loading exploits from /tmp.
+  deny /tmp/#[0-9]*[0-9] m,
+
+  # System files
+
+  /dev/ r, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
+  /dev/tty r,
+  /dev/video[0-9]* rw, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
+  /etc/xdg/accept-languages.codes r,
+  /etc/xdg/menus/{,*/} r,
+  /run/udev/data/c* r, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
+  /sys/bus/ r, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
+  /sys/class/ r, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
+  /sys/class/video4linux/ r, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
+  /sys/devices/pci[0-9]*/**/uevent r, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
+  /usr/share/*fonts*/conf.avail/*.conf r, # for openSUSE, when showing error message box
+  /usr/share/ghostscript/fonts/ r, # for openSUSE, when showing error message box
+  /usr/share/hwdata/pnp.ids r, # for openSUSE, when showing error message box, for QXcbConnection::initializeScreens() from libQt5XcbQpa.so
+  /usr/share/icu/[0-9]*.[0-9]*/*.dat r, # for openSUSE
+  /usr/share/kservices5/{,**} r, # for KProtocolManager::defaultUserAgent() from libKF5KIOCore.so
+  /usr/share/mime/ r,
+  /usr/share/mime/generic-icons r,
+  /usr/share/plasma/look-and-feel/*/contents/defaults r, # TODO: move to kde abstraction?
+  /usr/share/sounds/ r,
+  @{PROC}/sys/kernel/core_pattern r,
+  @{PROC}/sys/kernel/random/boot_id r,
+
+  # User files
+
+  owner /tmp/xauth-[0-9]*-_[0-9] r, # for libQt5XcbQpa.so
+  owner /{,var/}run/user/[0-9]*/#[0-9]* rw, # for /run/user/1000/#13
+  owner /{,var/}run/user/[0-9]*/kioclient*slave-socket lrw -> /{,var/}/run/user/[0-9]/#[0-9]*, # for KIO::Slave::holdSlave(QString const&, QUrl const&) () from libKF5KIOCore.so (not 100% sure)
+  owner @{HOME}/.cache/gstreamer-[0-9]*.[0-9]*/registry.*.bin{,.tmp*} rw, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
+
