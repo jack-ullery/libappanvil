@@ -1099,7 +1099,8 @@ def ask_exec(hashlog):
                             if ans == 'CMD_DENY':
                                 aa[profile][hat]['file'].add(FileRule(exec_target, None, 'x', FileRule.ALL, owner=False, log_event=True, deny=True))
                                 changed[profile] = True
-                                hashlog[aamode][target_profile]['final_name'] = ''
+                                if target_profile:
+                                    hashlog[aamode][target_profile]['final_name'] = ''
                                 # Skip remaining events if they ask to deny exec
                                 continue
 
@@ -1128,13 +1129,15 @@ def ask_exec(hashlog):
                     # Update tracking info based on kind of change
 
                     if ans == 'CMD_ix':
-                        hashlog[aamode][target_profile]['final_name'] = profile
+                        if target_profile:
+                            hashlog[aamode][target_profile]['final_name'] = profile
 
                     elif re.search('^CMD_(px|nx|pix|nix)', ans):
                         if to_name:
                             exec_target = to_name
 
-                        hashlog[aamode][target_profile]['final_name'] = exec_target
+                        if target_profile:
+                            hashlog[aamode][target_profile]['final_name'] = exec_target
 
                         # Check profile exists for px
                         if not os.path.exists(get_profile_filename_from_attachment(exec_target, True)):
@@ -1149,7 +1152,8 @@ def ask_exec(hashlog):
                                     autodep(exec_target, '')
                                 reload_base(exec_target)
                             else:
-                                hashlog[aamode][target_profile]['final_name'] = profile  # not creating the target profile effectively results in ix mode
+                                if target_profile:
+                                    hashlog[aamode][target_profile]['final_name'] = profile  # not creating the target profile effectively results in ix mode
 
                     elif ans.startswith('CMD_cx') or ans.startswith('CMD_cix'):
                         if to_name:
@@ -1174,10 +1178,12 @@ def ask_exec(hashlog):
                                 file_name = aa[profile][profile]['filename']
                                 filelist[file_name]['profiles'][profile][exec_target] = True
 
-                                hashlog[aamode][target_profile]['final_name'] = '%s//%s' % (profile, exec_target)
+                                if target_profile:
+                                    hashlog[aamode][target_profile]['final_name'] = '%s//%s' % (profile, exec_target)
 
                             else:
-                                hashlog[aamode][target_profile]['final_name'] = profile  # not creating the target profile effectively results in ix mode
+                                if target_profile:
+                                    hashlog[aamode][target_profile]['final_name'] = profile  # not creating the target profile effectively results in ix mode
 
                     elif ans.startswith('CMD_ux'):
                         continue
