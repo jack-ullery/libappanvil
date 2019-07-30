@@ -159,10 +159,14 @@ Install libdbus-1-dev or equivalent package to build and run these tests${nl}\
 endif
 
 TRANSITION_CFLAGS=
+AA_POLICY_CACHE_CFLAGS=
 ifdef USE_SYSTEM
   ifneq (,$(shell pkg-config --atleast-version 2.10 libapparmor && echo TRUE))
     SRC+=aa_policy_cache.c
     CONDITIONAL_TESTS+=aa_policy_cache
+    ifeq (,$(shell pkg-config --atleast-version 2.13 libapparmor && echo TRUE))
+        AA_POLICY_CACHE_CFLAGS=-DCOMPAT_PATH_PREVIEW
+    endif
   else
     $(warning ${nl}\
     ************************************************************************${nl}\
@@ -267,6 +271,9 @@ ifdef USE_SYSTEM
 else # !USE_SYSTEM
 	cp uservars.inc.source uservars.inc
 endif # USE_SYSTEM
+
+aa_policy_cache: aa_policy_cache.c
+	${CC} ${CFLAGS} ${AA_POLICY_CACHE_CFLAGS} ${LDFLAGS} $< -o $@ ${LDLIBS}
 
 at_secure: at_secure.c transition
 	${CC} ${CFLAGS} ${LDFLAGS} $< -o $@ ${LDLIBS}
