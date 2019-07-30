@@ -31,6 +31,7 @@
 # }
 
   #include <abstractions/X>
+  #include <abstractions/audio> # for alert messages
   #include <abstractions/base>
   #include <abstractions/dbus-accessibility-strict>
   #include <abstractions/dbus-session-strict>
