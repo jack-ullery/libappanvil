@@ -39,7 +39,7 @@
   # Main executables
 
   /usr/bin/exo-open rix,
-  /usr/lib/@{multiarch}/xfce4/exo-[0-9]/exo-helper-[0-9] ix,
+  /usr/lib{32,64,/@{multiarch}}/xfce4/exo-[0-9]/exo-helper-[0-9] ix,
 
   # Other executables
 
@@ -89,8 +89,9 @@
 
   /etc/xdg/{,xdg-*/}xfce4/helpers.rc r,
   /etc/xfce4/defaults.list r, # TODO: move into xfce4 abstraction?
+  /usr/share/sounds/freedesktop/** r, # for message box alert sound
   /usr/share/xfce4/helpers/*.desktop r,
-  /usr/share/{xfce4,xubuntu}/applications/{,*.list} r,
+  /usr/share/{xfce{,4},xubuntu}/applications/{,*.list} r,
 
   # User files
 
