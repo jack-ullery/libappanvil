@@ -171,7 +171,7 @@ ifdef USE_SYSTEM
   endif
 
   ifneq (,$(shell pkg-config --atleast-version 2.10.95 libapparmor && echo TRUE))
-    CONDITIONAL_TESTS+=exec_stack stackonexec stackprofile
+    CONDITIONAL_TESTS+=exec_stack nnp stackonexec stackprofile
   else
     $(warning ${nl}\
     ************************************************************************${nl}\
@@ -181,7 +181,7 @@ ifdef USE_SYSTEM
   endif
 else
   SRC+=aa_policy_cache.c
-  CONDITIONAL_TESTS+=exec_stack aa_policy_cache stackonexec stackprofile
+  CONDITIONAL_TESTS+=exec_stack aa_policy_cache nnp stackonexec stackprofile
 endif
 
 EXEC=$(SRC:%.c=%)
