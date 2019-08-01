@@ -14,12 +14,17 @@
  * along with this program; if not, contact Canonical Ltd.
  */
 
+#define _GNU_SOURCE
+
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <sys/apparmor.h>
 
@@ -61,6 +66,84 @@ out:
 	aa_policy_cache_unref(policy_cache);
 	return rc;
 }
+
+#ifdef COMPAT_PATH_PREVIEW
+
+static char *path_from_fd(int fd)
+{
+	char *proc_path = NULL;
+	char *path = NULL;
+	int proc_fd = -1;
+	struct stat proc_stat;
+	ssize_t size, path_len;
+
+	if (asprintf(&proc_path, "/proc/self/fd/%d", fd) == -1) {
+		proc_path = NULL;
+		errno = ENOMEM;
+		goto err;
+	}
+
+	proc_fd = open(proc_path, O_RDONLY | O_CLOEXEC | O_PATH | O_NOFOLLOW);
+	if (proc_fd == -1)
+		goto out;
+
+	if (fstat(proc_fd, &proc_stat) == -1)
+		goto err;
+
+	if (!S_ISLNK(proc_stat.st_mode)) {
+		errno = EINVAL;
+		goto err;
+	}
+
+	size = proc_stat.st_size;
+repeat:
+	path = malloc(size + 1);
+	if (!path)
+		goto err;
+
+	/**
+	 * Since 2.6.39, symlink file descriptors opened with
+	 * (O_PATH | O_NOFOLLOW) can be used as the dirfd with an empty string
+	 * as the path. readlinkat() will operate on the symlink inode.
+	 */
+	path_len = readlinkat(proc_fd, "", path, size);
+	if (path_len == -1)
+		goto err;
+	if (path_len == size) {
+		free(path);
+		size = size * 2;
+		goto repeat;
+	}
+	path[path_len] = '\0';
+	goto out;
+err:
+	free(path);
+out:
+	free(proc_path);
+	return path;
+}
+
+static char *aa_policy_cache_dir_path_preview(aa_features *kernel_features,
+					      int dirfd, const char *path)
+{
+	char *cache_loc = NULL;
+	char *dir_path;
+
+	if (dirfd != AT_FDCWD) {
+		cache_loc = path_from_fd(dirfd);
+		if (!cache_loc)
+			return NULL;
+	}
+
+	if (asprintf(&dir_path, "%s%s%s", cache_loc ? cache_loc : "",
+		     cache_loc ? "/" : "", path) < 0)
+		dir_path = NULL;
+
+	free(cache_loc);
+	return dir_path;
+}
+
+#endif /* COMPAT_PATH_PREVIEW */
 
 static int test_cache_dir(const char *path)
 {

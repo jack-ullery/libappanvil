@@ -688,8 +688,8 @@ char *aa_policy_cache_dir_path_preview(aa_features *kernel_features,
 
 	aa_features_unref(kernel_features);
 
-	if (asprintf(&dir_path, "%s%s%s",
-		     cache_loc ? : "", cache_loc ? "/" : "", cache_dir) == -1) {
+	if (asprintf(&dir_path, "%s%s%s", cache_loc ? cache_loc : "",
+		     cache_loc ? "/" : "", cache_dir) == -1) {
 		errno = ENOMEM;
 		return NULL;
 	}
