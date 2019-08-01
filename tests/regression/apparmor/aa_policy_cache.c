@@ -135,8 +135,8 @@ static char *aa_policy_cache_dir_path_preview(aa_features *kernel_features,
 			return NULL;
 	}
 
-	if (asprintf(&dir_path, "%s%s%s",
-		     cache_loc ? : "", cache_loc ? "/" : "", path) < 0)
+	if (asprintf(&dir_path, "%s%s%s", cache_loc ? cache_loc : "",
+		     cache_loc ? "/" : "", path) < 0)
 		dir_path = NULL;
 
 	free(cache_loc);
