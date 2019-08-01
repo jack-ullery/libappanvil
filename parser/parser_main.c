@@ -206,7 +206,7 @@ static void display_usage(const char *command)
 	       "    --skip-bad-cache	Don't clear cache if out of sync\n"
 	       "    --purge-cache	Clear cache regardless of its state\n"
 	       "    --debug-cache       Debug cache file checks\n"
-	       "    --print-cache_dir	Print the cache directory path\n"
+	       "    --print-cache-dir	Print the cache directory path\n"
 	       "-L, --cache-loc n	Set the location of the profile caches\n"
 	       "-q, --quiet		Don't emit warnings\n"
 	       "-v, --verbose		Show profile names as they load\n"
