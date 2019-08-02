@@ -192,7 +192,7 @@ class ReadLog:
                 raise AppArmorException('exec without executed binary')
 
             if not e['name2']:
-                raise AppArmorException('exec without target profile')
+                e['name2'] = ''  # exec events in enforce mode don't have target=...
 
             self.hashlog[aamode][full_profile]['exec'][e['name']][e['name2']] = True
             return None
