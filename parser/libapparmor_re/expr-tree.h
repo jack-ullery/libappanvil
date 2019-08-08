@@ -45,8 +45,77 @@
 
 using namespace std;
 
-typedef unsigned char uchar;
-typedef set<uchar> Chars;
+class uchar {
+public:
+	short c;
+
+	uchar(unsigned char a): c((unsigned short) a) {}
+	uchar(const uchar &a): c(a.c) {}
+	uchar(): c(0) {}
+
+	bool operator==(const uchar &rhs) const {
+		return this->c == rhs.c;
+	}
+	bool operator==(const int &rhs) const {
+		return this->c == rhs;
+	}
+	bool operator!=(const uchar &rhs) const {
+		return this->c != rhs.c;
+	}
+	bool operator>(const uchar &rhs) const {
+		return this->c > rhs.c;
+	}
+	bool operator<(const uchar &rhs) const {
+		return this->c < rhs.c;
+	}
+	bool operator<=(const uchar &rhs) const {
+		return this->c <= rhs.c;
+	}
+	uchar &operator++() {		// prefix
+		(this->c)++;
+		return *this;
+	}
+	uchar operator++(int) {		// postfix
+		uchar tmp(*this);
+		(this->c)++;
+		return tmp;
+	}
+
+};
+
+class Chars {
+public:
+	set<uchar> chars;
+
+	typedef set<uchar>::iterator iterator;
+	iterator begin() { return chars.begin(); }
+	iterator end() { return chars.end(); }
+
+	Chars(): chars() {}
+
+	bool empty() const
+	{
+		return chars.empty();
+	}
+	std::size_t size() const
+	{
+		return chars.size();
+	}
+	iterator find(const uchar &key)
+	{
+		return chars.find(key);
+	}
+	pair<iterator,bool> insert(uchar c)
+	{
+		return chars.insert(c);
+	}
+	pair<iterator,bool> insert(char c)
+	{
+		uchar tmp(c);
+		return chars.insert(tmp);
+	}
+};
+
 
 ostream &operator<<(ostream &os, uchar c);
 

@@ -1068,9 +1068,9 @@ void DFA::dump(ostream & os)
 				if ((*i)->perms.is_accept())
 					os << " ", (*i)->perms.dump(os);
 				os << " -> " << *(j)->second << ": 0x"
-				   << hex << (int) j->first;
-				if (isprint(j->first))
-					os << " " << j->first;
+				   << hex << j->first.c;
+				if (j->first.c < 256 && isprint(j->first.c))
+					os << " " << j->first.c;
 				os << dec << "\n";
 			}
 		}
@@ -1084,10 +1084,10 @@ void DFA::dump(ostream & os)
 				os << "^";
 				for (Chars::iterator k = excluded.begin();
 				     k != excluded.end(); k++) {
-					if (isprint(*k))
-						os << *k;
+					if (k->c < 256 && isprint(k->c))
+						os << k->c;
 					else
-						os << "\\0x" << hex << (int) *k << dec;
+						os << "\\0x" << hex << k->c << dec;
 				}
 			}
 			os << "]\n";
@@ -1128,10 +1128,10 @@ void DFA::dump_dot_graph(ostream & os)
 				os << "\t\"" << **i << "\" -> \"" << *j->second
 				   << "\" [" << "\n";
 				os << "\t\tlabel=\"";
-				if (isprint(j->first))
-					os << j->first;
+				if (j->first.c < 256 && isprint(j->first.c))
+					os << j->first.c;
 				else
-					os << "\\0x" << hex << (int) j->first << dec;
+					os << "\\0x" << hex << j->first.c << dec;
 
 				os << "\"\n\t]" << "\n";
 			}
@@ -1143,10 +1143,10 @@ void DFA::dump_dot_graph(ostream & os)
 				os << "\t\tlabel=\"[^";
 				for (Chars::iterator i = excluded.begin();
 				     i != excluded.end(); i++) {
-					if (isprint(*i))
-						os << *i;
+					if (i->c < 256 && isprint(i->c))
+						os << i->c;
 					else
-						os << "\\0x" << hex << (int) *i << dec;
+						os << "\\0x" << hex << i->c << dec;
 				}
 				os << "]\"" << "\n";
 			}
@@ -1217,7 +1217,7 @@ map<uchar, uchar> DFA::equivalence_classes(dfaflags_t flags)
 
 	if (flags & DFA_DUMP_EQUIV_STATS)
 		fprintf(stderr, "Equiv class reduces to %d classes\n",
-			next_class - 1);
+			next_class.c - 1);
 	return classes;
 }
 
@@ -1234,7 +1234,7 @@ void dump_equivalence_classes(ostream &os, map<uchar, uchar> &eq)
 	}
 	os << "(eq):" << "\n";
 	for (map<uchar, Chars>::iterator i = rev.begin(); i != rev.end(); i++) {
-		os << (int)i->first << ':';
+		os << i->first.c << ':';
 		Chars &chars = i->second;
 		for (Chars::iterator j = chars.begin(); j != chars.end(); j++) {
 			os << ' ' << *j;
