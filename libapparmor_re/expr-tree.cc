@@ -41,7 +41,7 @@
 /* Use a single static EpsNode as it carries no node specific information */
 EpsNode epsnode;
 
-ostream &operator<<(ostream &os, uchar c)
+ostream &operator<<(ostream &os, transchar c)
 {
 	const char *search = "\a\033\f\n\r\t|*+[](). ",
 	    *replace = "aefnrt|*+[](). ", *s;

@@ -45,38 +45,38 @@
 
 using namespace std;
 
-class uchar {
+class transchar {
 public:
 	short c;
 
-	uchar(unsigned char a): c((unsigned short) a) {}
-	uchar(const uchar &a): c(a.c) {}
-	uchar(): c(0) {}
+	transchar(unsigned char a): c((unsigned short) a) {}
+	transchar(const transchar &a): c(a.c) {}
+	transchar(): c(0) {}
 
-	bool operator==(const uchar &rhs) const {
+	bool operator==(const transchar &rhs) const {
 		return this->c == rhs.c;
 	}
 	bool operator==(const int &rhs) const {
 		return this->c == rhs;
 	}
-	bool operator!=(const uchar &rhs) const {
+	bool operator!=(const transchar &rhs) const {
 		return this->c != rhs.c;
 	}
-	bool operator>(const uchar &rhs) const {
+	bool operator>(const transchar &rhs) const {
 		return this->c > rhs.c;
 	}
-	bool operator<(const uchar &rhs) const {
+	bool operator<(const transchar &rhs) const {
 		return this->c < rhs.c;
 	}
-	bool operator<=(const uchar &rhs) const {
+	bool operator<=(const transchar &rhs) const {
 		return this->c <= rhs.c;
 	}
-	uchar &operator++() {		// prefix
+	transchar &operator++() {		// prefix
 		(this->c)++;
 		return *this;
 	}
-	uchar operator++(int) {		// postfix
-		uchar tmp(*this);
+	transchar operator++(int) {		// postfix
+		transchar tmp(*this);
 		(this->c)++;
 		return tmp;
 	}
@@ -85,9 +85,9 @@ public:
 
 class Chars {
 public:
-	set<uchar> chars;
+	set<transchar> chars;
 
-	typedef set<uchar>::iterator iterator;
+	typedef set<transchar>::iterator iterator;
 	iterator begin() { return chars.begin(); }
 	iterator end() { return chars.end(); }
 
@@ -101,23 +101,23 @@ public:
 	{
 		return chars.size();
 	}
-	iterator find(const uchar &key)
+	iterator find(const transchar &key)
 	{
 		return chars.find(key);
 	}
-	pair<iterator,bool> insert(uchar c)
+	pair<iterator,bool> insert(transchar c)
 	{
 		return chars.insert(c);
 	}
 	pair<iterator,bool> insert(char c)
 	{
-		uchar tmp(c);
+		transchar tmp(c);
 		return chars.insert(tmp);
 	}
 };
 
 
-ostream &operator<<(ostream &os, uchar c);
+ostream &operator<<(ostream &os, transchar c);
 
 /* Compute the union of two sets. */
 template<class T> set<T> operator+(const set<T> &a, const set<T> &b)
@@ -151,12 +151,12 @@ ostream &operator<<(ostream &os, const NodeSet &state);
  * enumerating all the explicit tranitions for default matches.
  */
 typedef struct Cases {
-	typedef map<uchar, NodeSet *>::iterator iterator;
+	typedef map<transchar, NodeSet *>::iterator iterator;
 	iterator begin() { return cases.begin(); }
 	iterator end() { return cases.end(); }
 
 	Cases(): otherwise(0) { }
-	map<uchar, NodeSet *> cases;
+	map<transchar, NodeSet *> cases;
 	NodeSet *otherwise;
 } Cases;
 
@@ -334,7 +334,7 @@ public:
 /* Match one specific character (/c/). */
 class CharNode: public CNode {
 public:
-	CharNode(uchar c): c(c) { }
+	CharNode(transchar c): c(c) { }
 	void follow(Cases &cases)
 	{
 		NodeSet **x = &cases.cases[c];
@@ -370,7 +370,7 @@ public:
 
 	bool contains_null() { return c == 0; }
 
-	uchar c;
+	transchar c;
 };
 
 /* Match a set of characters (/[abc]/). */

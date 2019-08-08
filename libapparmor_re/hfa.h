@@ -37,7 +37,7 @@
 
 class State;
 
-typedef map<uchar, State *> StateTrans;
+typedef map<transchar, State *> StateTrans;
 typedef list<State *> Partition;
 
 #include "../immunix.h"
@@ -212,7 +212,7 @@ public:
 		}
 	};
 
-	State *next(uchar c) {
+	State *next(transchar c) {
 		State *state = this;
 		do {
 			StateTrans::iterator i = state->trans.find(c);
@@ -326,8 +326,8 @@ public:
 	void dump_dot_graph(ostream &os);
 	void dump_uniq_perms(const char *s);
 
-	map<uchar, uchar> equivalence_classes(dfaflags_t flags);
-	void apply_equivalence_classes(map<uchar, uchar> &eq);
+	map<transchar, transchar> equivalence_classes(dfaflags_t flags);
+	void apply_equivalence_classes(map<transchar, transchar> &eq);
 
 	unsigned int diffcount;
 	Node *root;
@@ -335,6 +335,6 @@ public:
 	Partition states;
 };
 
-void dump_equivalence_classes(ostream &os, map<uchar, uchar> &eq);
+void dump_equivalence_classes(ostream &os, map<transchar, transchar> &eq);
 
 #endif /* __LIBAA_RE_HFA_H */

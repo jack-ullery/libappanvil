@@ -1160,10 +1160,10 @@ void DFA::dump_dot_graph(ostream & os)
  * Compute character equivalence classes in the DFA to save space in the
  * transition table.
  */
-map<uchar, uchar> DFA::equivalence_classes(dfaflags_t flags)
+map<transchar, transchar> DFA::equivalence_classes(dfaflags_t flags)
 {
-	map<uchar, uchar> classes;
-	uchar next_class = 1;
+	map<transchar, transchar> classes;
+	transchar next_class = 1;
 
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
 		/* Group edges to the same next state together */
@@ -1174,28 +1174,28 @@ map<uchar, uchar> DFA::equivalence_classes(dfaflags_t flags)
 		for (map<const State *, Chars>::iterator j = node_sets.begin();
 		     j != node_sets.end(); j++) {
 			/* Group edges to the same next state together by class */
-			map<uchar, Chars> node_classes;
+			map<transchar, Chars> node_classes;
 			bool class_used = false;
 			for (Chars::iterator k = j->second.begin();
 			     k != j->second.end(); k++) {
-				pair<map<uchar, uchar>::iterator, bool> x = classes.insert(make_pair(*k, next_class));
+				pair<map<transchar, transchar>::iterator, bool> x = classes.insert(make_pair(*k, next_class));
 				if (x.second)
 					class_used = true;
-				pair<map<uchar, Chars>::iterator, bool> y = node_classes.insert(make_pair(x.first->second, Chars()));
+				pair<map<transchar, Chars>::iterator, bool> y = node_classes.insert(make_pair(x.first->second, Chars()));
 				y.first->second.insert(*k);
 			}
 			if (class_used) {
 				next_class++;
 				class_used = false;
 			}
-			for (map<uchar, Chars>::iterator k = node_classes.begin();
+			for (map<transchar, Chars>::iterator k = node_classes.begin();
 			     k != node_classes.end(); k++) {
 			  /**
 			   * If any other characters are in the same class, move
 			   * the characters in this class into their own new
 			   * class
 			   */
-				map<uchar, uchar>::iterator l;
+				map<transchar, transchar>::iterator l;
 				for (l = classes.begin(); l != classes.end(); l++) {
 					if (l->second == k->first &&
 					    k->second.find(l->first) == k->second.end()) {
@@ -1224,16 +1224,16 @@ map<uchar, uchar> DFA::equivalence_classes(dfaflags_t flags)
 /**
  * Text-dump the equivalence classes (for debugging).
  */
-void dump_equivalence_classes(ostream &os, map<uchar, uchar> &eq)
+void dump_equivalence_classes(ostream &os, map<transchar, transchar> &eq)
 {
-	map<uchar, Chars> rev;
+	map<transchar, Chars> rev;
 
-	for (map<uchar, uchar>::iterator i = eq.begin(); i != eq.end(); i++) {
+	for (map<transchar, transchar>::iterator i = eq.begin(); i != eq.end(); i++) {
 		Chars &chars = rev.insert(make_pair(i->second, Chars())).first->second;
 		chars.insert(i->first);
 	}
 	os << "(eq):" << "\n";
-	for (map<uchar, Chars>::iterator i = rev.begin(); i != rev.end(); i++) {
+	for (map<transchar, Chars>::iterator i = rev.begin(); i != rev.end(); i++) {
 		os << i->first.c << ':';
 		Chars &chars = i->second;
 		for (Chars::iterator j = chars.begin(); j != chars.end(); j++) {
@@ -1247,14 +1247,14 @@ void dump_equivalence_classes(ostream &os, map<uchar, uchar> &eq)
  * Replace characters with classes (which are also represented as
  * characters) in the DFA transition table.
  */
-void DFA::apply_equivalence_classes(map<uchar, uchar> &eq)
+void DFA::apply_equivalence_classes(map<transchar, transchar> &eq)
 {
     /**
      * Note: We only transform the transition table; the nodes continue to
      * contain the original characters.
      */
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
-		map<uchar, State *> tmp;
+		map<transchar, State *> tmp;
 		tmp.swap((*i)->trans);
 		for (StateTrans::iterator j = tmp.begin(); j != tmp.end(); j++)
 			(*i)->trans.insert(make_pair(eq[j->first], j->second));
