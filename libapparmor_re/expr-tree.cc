@@ -46,13 +46,13 @@ ostream &operator<<(ostream &os, uchar c)
 	const char *search = "\a\033\f\n\r\t|*+[](). ",
 	    *replace = "aefnrt|*+[](). ", *s;
 
-	if ((s = strchr(search, c)) && *s != '\0') {
+	if ((s = strchr(search, c.c)) && *s != '\0') {
 		os << '\\' << replace[s - search];
-	} else if (c < 32 || c >= 127) {
-		os << '\\' << '0' << char ('0' + (c >> 6))
-		   << char ('0' + ((c >> 3) & 7)) << char ('0' + (c & 7));
+	} else if (c.c < 32 || c.c >= 127) {
+		os << '\\' << '0' << char ('0' + (c.c >> 6))
+		   << char ('0' + ((c.c >> 3) & 7)) << char ('0' + (c.c & 7));
 	} else {
-		os << (char)c;
+		os << (char)c.c;
 	}
 	return os;
 }

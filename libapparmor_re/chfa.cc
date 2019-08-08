@@ -85,8 +85,8 @@ CHFA::CHFA(DFA &dfa, map<uchar, uchar> &eq, dfaflags_t flags): eq(eq)
 			size_t range = 0;
 			if ((*i)->trans.size())
 				range =
-				    (*i)->trans.rbegin()->first -
-				    (*i)->trans.begin()->first;
+				    (*i)->trans.rbegin()->first.c -
+				    (*i)->trans.begin()->first.c;
 			size_t ord = ((256 - (*i)->trans.size()) << 8) | (256 - range);
 			/* reverse sort by entry count, most entries first */
 			order.insert(make_pair(ord, *i));
@@ -166,9 +166,9 @@ bool CHFA::fits_in(vector<pair<size_t, size_t> > &free_list
 			      __attribute__ ((unused)), size_t pos,
 			      StateTrans &trans)
 {
-	size_t c, base = pos - trans.begin()->first;
+	size_t c, base = pos - trans.begin()->first.c;
 	for (StateTrans::iterator i = trans.begin(); i != trans.end(); i++) {
-		c = base + i->first;
+		c = base + i->first.c;
 		/* if it overflows the next_check array it fits in as we will
 		 * resize */
 		if (c >= next_check.size())
@@ -191,7 +191,7 @@ void CHFA::insert_state(vector<pair<size_t, size_t> > &free_list,
 	int resize;
 
 	StateTrans &trans = from->trans;
-	size_t c = trans.begin()->first;
+	size_t c = trans.begin()->first.c;
 	size_t prev = 0;
 	size_t x = first_free;
 
@@ -214,11 +214,11 @@ repeat:
 		x = free_list[x].second;
 	}
 	if (!x) {
-		resize = 256 - trans.begin()->first;
+		resize = 256 - trans.begin()->first.c;
 		x = free_list.size();
 		/* set prev to last free */
-	} else if (x + 255 - trans.begin()->first >= next_check.size()) {
-		resize = (255 - trans.begin()->first - (next_check.size() - 1 - x));
+	} else if (x + 255 - trans.begin()->first.c >= next_check.size()) {
+		resize = (255 - trans.begin()->first.c - (next_check.size() - 1 - x));
 		for (size_t y = x; y; y = free_list[y].second)
 			prev = y;
 	}
@@ -236,14 +236,14 @@ repeat:
 
 	base = x - c;
 	for (StateTrans::iterator j = trans.begin(); j != trans.end(); j++) {
-		next_check[base + j->first] = make_pair(j->second, from);
-		size_t prev = free_list[base + j->first].first;
-		size_t next = free_list[base + j->first].second;
+		next_check[base + j->first.c] = make_pair(j->second, from);
+		size_t prev = free_list[base + j->first.c].first;
+		size_t next = free_list[base + j->first.c].second;
 		if (prev)
 			free_list[prev].second = next;
 		if (next)
 			free_list[next].first = prev;
-		if (base + j->first == first_free)
+		if (base + j->first.c == first_free)
 			first_free = next;
 	}
 
@@ -380,7 +380,7 @@ void CHFA::flex_table(ostream &os, const char *name)
 	if (eq.size()) {
 		equiv_vec.resize(256);
 		for (map<uchar, uchar>::iterator i = eq.begin(); i != eq.end(); i++) {
-			equiv_vec[i->first] = i->second;
+			equiv_vec[i->first.c] = i->second.c;
 		}
 	}
 
