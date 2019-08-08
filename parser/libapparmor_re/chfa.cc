@@ -49,7 +49,7 @@ void CHFA::init_free_list(vector<pair<size_t, size_t> > &free_list,
 /**
  * new Construct the transition table.
  */
-CHFA::CHFA(DFA &dfa, map<uchar, uchar> &eq, dfaflags_t flags): eq(eq)
+CHFA::CHFA(DFA &dfa, map<transchar, transchar> &eq, dfaflags_t flags): eq(eq)
 {
 	if (flags & DFA_DUMP_TRANS_PROGRESS)
 		fprintf(stderr, "Compressing HFA:\r");
@@ -63,7 +63,7 @@ CHFA::CHFA(DFA &dfa, map<uchar, uchar> &eq, dfaflags_t flags): eq(eq)
 		max_eq = 255;
 	else {
 		max_eq = 0;
-		for (map<uchar, uchar>::iterator i = eq.begin();
+		for (map<transchar, transchar>::iterator i = eq.begin();
 		     i != eq.end(); i++) {
 			if (i->second > max_eq)
 				max_eq = i->second;
@@ -291,7 +291,7 @@ void CHFA::dump(ostream &os)
 			if (eq.size())
 				os << offs;
 			else
-				os << (uchar) offs;
+				os << (transchar) offs;
 		}
 		os << "\n";
 	}
@@ -379,7 +379,7 @@ void CHFA::flex_table(ostream &os, const char *name)
 	vector<uint8_t> equiv_vec;
 	if (eq.size()) {
 		equiv_vec.resize(256);
-		for (map<uchar, uchar>::iterator i = eq.begin(); i != eq.end(); i++) {
+		for (map<transchar, transchar>::iterator i = eq.begin(); i != eq.end(); i++) {
 			equiv_vec[i->first.c] = i->second.c;
 		}
 	}

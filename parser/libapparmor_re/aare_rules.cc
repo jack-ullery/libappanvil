@@ -257,7 +257,7 @@ void *aare_rules::create_dfa(size_t *size, int *min_match_len, dfaflags_t flags)
 		if (flags & DFA_DUMP_GRAPH)
 			dfa.dump_dot_graph(cerr);
 
-		map<uchar, uchar> eq;
+		map<transchar, transchar> eq;
 		if (flags & DFA_CONTROL_EQUIV) {
 			eq = dfa.equivalence_classes(flags);
 			dfa.apply_equivalence_classes(eq);
