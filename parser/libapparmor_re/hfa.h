@@ -42,6 +42,9 @@ typedef list<State *> Partition;
 
 #include "../immunix.h"
 
+ostream &operator<<(ostream &os, const State &state);
+ostream &operator<<(ostream &os, State &state);
+
 class perms_t {
 public:
 	perms_t(void): allow(0), deny(0), audit(0), quiet(0), exact(0) { };
@@ -229,6 +232,15 @@ public:
 		return NULL;
 	}
 
+	ostream &dump(ostream &os)
+	{
+		cerr << *this << "\n";
+		for (StateTrans::iterator i = trans.begin(); i != trans.end(); i++) {
+			os << "    " << i->first.c << " -> " << *i->second << "\n";
+		}
+		return os;
+	}
+
 	int diff_weight(State *rel);
 	int make_relative(State *rel);
 	void flatten_relative(void);
@@ -248,8 +260,6 @@ public:
 		DiffDag *diff;		/* used during diff encoding */
 	};
 };
-
-ostream &operator<<(ostream &os, const State &state);
 
 class NodeMap: public CacheStats
 {

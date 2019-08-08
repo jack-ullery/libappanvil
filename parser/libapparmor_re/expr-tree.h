@@ -81,6 +81,8 @@ public:
 		return tmp;
 	}
 
+	ostream &dump(ostream &os) const;
+
 };
 
 class Chars {

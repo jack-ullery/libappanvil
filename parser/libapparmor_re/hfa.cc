@@ -73,6 +73,15 @@ ostream &operator<<(ostream &os, const State &state)
 	return os;
 }
 
+ostream &operator<<(ostream &os, State &state)
+{
+	/* dump the state label */
+	os << '{';
+	os << state.label;
+	os << '}';
+	return os;
+}
+
 /**
  * diff_weight - Find differential compression distance between @rel and @this
  * @rel: State to compare too
@@ -1058,39 +1067,52 @@ void DFA::dump(ostream & os)
 
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
 		Chars excluded;
+		bool first = true;
 
 		for (StateTrans::iterator j = (*i)->trans.begin();
 		     j != (*i)->trans.end(); j++) {
 			if (j->second == nonmatching) {
 				excluded.insert(j->first);
 			} else {
-				os << **i;
-				if ((*i)->perms.is_accept())
-					os << " ", (*i)->perms.dump(os);
-				os << " -> " << *(j)->second << ": 0x"
-				   << hex << j->first.c;
-				if (j->first.c < 256 && isprint(j->first.c))
-					os << " " << j->first.c;
-				os << dec << "\n";
+				if (first) {
+					first = false;
+					os << **i << " perms: ";
+					if ((*i)->perms.is_accept())
+						(*i)->perms.dump(os);
+					else
+						os << "none";
+					os << "\n";
+				}
+				os << "    "; j->first.dump(os) << " -> " <<
+					*(j)->second;
+				if ((j)->second->perms.is_accept())
+					os << " ", (j->second)->perms.dump(os);
+				os << "\n";
 			}
 		}
 
 		if ((*i)->otherwise != nonmatching) {
-			os << **i;
-			if ((*i)->perms.is_accept())
-				os << " ", (*i)->perms.dump(os);
-			os << " -> " << *(*i)->otherwise << ": [";
+			if (first) {
+				first = false;
+				os << **i << " perms: ";
+				if ((*i)->perms.is_accept())
+					(*i)->perms.dump(os);
+				else
+					os << "none";
+				os << "\n";
+			}
+			os << "    [";
 			if (!excluded.empty()) {
 				os << "^";
 				for (Chars::iterator k = excluded.begin();
 				     k != excluded.end(); k++) {
-					if (k->c < 256 && isprint(k->c))
-						os << k->c;
-					else
-						os << "\\0x" << hex << k->c << dec;
+					os << *k;
 				}
 			}
-			os << "]\n";
+			os << "] -> " << *(*i)->otherwise;
+			if ((*i)->otherwise->perms.is_accept())
+				os << " ", (*i)->otherwise->perms.dump(os);
+			os << "\n";
 		}
 	}
 	os << "\n";
@@ -1128,11 +1150,7 @@ void DFA::dump_dot_graph(ostream & os)
 				os << "\t\"" << **i << "\" -> \"" << *j->second
 				   << "\" [" << "\n";
 				os << "\t\tlabel=\"";
-				if (j->first.c < 256 && isprint(j->first.c))
-					os << j->first.c;
-				else
-					os << "\\0x" << hex << j->first.c << dec;
-
+				j->first.dump(os);
 				os << "\"\n\t]" << "\n";
 			}
 		}
@@ -1143,10 +1161,7 @@ void DFA::dump_dot_graph(ostream & os)
 				os << "\t\tlabel=\"[^";
 				for (Chars::iterator i = excluded.begin();
 				     i != excluded.end(); i++) {
-					if (i->c < 256 && isprint(i->c))
-						os << i->c;
-					else
-						os << "\\0x" << hex << i->c << dec;
+					i->dump(os);
 				}
 				os << "]\"" << "\n";
 			}
