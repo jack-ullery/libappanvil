@@ -28,6 +28,7 @@
 
 #define BASE32_FLAGS 0xff000000
 #define DiffEncodeBit32 0x80000000
+#define MATCH_FLAG_OOB_TRANSITION 0x20000000
 #define base_mask_size(X) ((X) & ~BASE32_FLAGS)
 
 using namespace std;
@@ -54,7 +55,7 @@ class CHFA {
 	map<const State *, size_t> num;
 	map<transchar, transchar> &eq;
 	transchar max_eq;
-	size_t first_free;
+	ssize_t first_free;
 	unsigned int chfaflags;
 };
 

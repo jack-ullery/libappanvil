@@ -47,7 +47,7 @@ aare_rules::~aare_rules(void)
 bool aare_rules::add_rule(const char *rule, int deny, uint32_t perms,
 			  uint32_t audit, dfaflags_t flags)
 {
-	return add_rule_vec(deny, perms, audit, 1, &rule, flags);
+	return add_rule_vec(deny, perms, audit, 1, &rule, flags, false);
 }
 
 void aare_rules::add_to_rules(Node *tree, Node *perms)
@@ -66,8 +66,14 @@ static Node *cat_with_null_seperator(Node *l, Node *r)
 	return new CatNode(new CatNode(l, new CharNode(0)), r);
 }
 
+static Node *cat_with_oob_seperator(Node *l, Node *r)
+{
+	return new CatNode(new CatNode(l, new CharNode(transchar(-1, true))), r);
+}
+
 bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
-			      int count, const char **rulev, dfaflags_t flags)
+			      int count, const char **rulev, dfaflags_t flags,
+			      bool oob)
 {
 	Node *tree = NULL, *accept;
 	int exact_match;
@@ -78,7 +84,10 @@ bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
 		Node *subtree = NULL;
 		if (regex_parse(&subtree, rulev[i]))
 			return false;
-		tree = cat_with_null_seperator(tree, subtree);
+		if (oob)
+			tree = cat_with_oob_seperator(tree, subtree);
+		else
+			tree = cat_with_null_seperator(tree, subtree);
 	}
 
 	/*
@@ -102,10 +111,15 @@ bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
 	accept = unique_perms.insert(deny, perms, audit, exact_match);
 
 	if (flags & DFA_DUMP_RULE_EXPR) {
+		const char *seperator;
+		if (oob)
+			seperator = "\\-x01";
+		else
+			seperator = "\\x00";
 		cerr << "rule: ";
 		cerr << rulev[0];
 		for (int i = 1; i < count; i++) {
-			cerr << "\\x00";
+			cerr << seperator;
 			cerr << rulev[i];
 		}
 		cerr << "  ->  ";

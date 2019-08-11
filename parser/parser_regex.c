@@ -613,7 +613,7 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 			perms |= LINK_TO_LINK_SUBSET(perms);
 			vec[1] = "/[^/].*";
 		}
-		if (!dfarules->add_rule_vec(entry->deny, perms, entry->audit & AA_LINK_BITS, 2, vec, dfaflags))
+		if (!dfarules->add_rule_vec(entry->deny, perms, entry->audit & AA_LINK_BITS, 2, vec, dfaflags, false))
 			return FALSE;
 	}
 	if (is_change_profile_mode(entry->mode)) {
@@ -666,12 +666,12 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 		/* regular change_profile rule */
 		if (!dfarules->add_rule_vec(entry->deny,
 					    AA_CHANGE_PROFILE | onexec_perms,
-					    0, index - 1, &vec[1], dfaflags))
+					    0, index - 1, &vec[1], dfaflags, false))
 			return FALSE;
 
 		/* onexec rules - both rules are needed for onexec */
 		if (!dfarules->add_rule_vec(entry->deny, onexec_perms,
-					    0, 1, vec, dfaflags))
+					    0, 1, vec, dfaflags, false))
 			return FALSE;
 
 		/**
@@ -680,7 +680,7 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 		 */
 		onexec_perms |= (entry->mode & (AA_EXEC_BITS | ALL_AA_EXEC_UNSAFE));
 		if (!dfarules->add_rule_vec(entry->deny, onexec_perms,
-					    0, index, vec, dfaflags))
+					    0, index, vec, dfaflags, false))
 			return FALSE;
 	}
 	return TRUE;

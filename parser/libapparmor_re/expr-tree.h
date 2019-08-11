@@ -45,11 +45,69 @@
 
 using namespace std;
 
+/*
+ * transchar - representative input character for state transitions
+ *
+ * the transchar is used as the leaf node in the expr tree created
+ * by parsing an input regex (parse.y), and is used to build both the
+ * states and the transitions for a state machine (hfa.{h,cc}) built
+ * from the expression tree.
+ *
+ * While the state machine is currently based on byte inputs the
+ * transchar abstraction allows for flexibility and the option of
+ * moving to a larger input in the future. It also allows the ability
+ * to specify out of band transitions.
+ *
+ * Out of band transitions allow for code to specify special transitions
+ * that can not be triggered by an input byte stream. As such out of
+ * band transitions can be used to separate logical units of a match.
+ *
+ * eg.
+ * you need to allow an arbitrary data match (.*) followed by an arbitrary
+ * string match ([^\x00]*), and make an acceptance dission based
+ * on both matches.
+ *
+ * One way to do this is to chain the two matches in a single state
+ * machine. However without an out of band transition, the matche pattern
+ * for the data match (.*) could also consume the input for the string match.
+ * To ensure the data pattern match cannot consume characters for the second
+ * match a special character is used. This prevents state machine
+ * generation from intermixing the two expressions. For string matches
+ * this can be achieved with the pattern.
+ *    ([^\x00]*)\x00([\x00]*)
+ * since \x00 can not be matched by the first expression (and is not a
+ * valid character in a C string), the nul character can be used to
+ * separate the string match. This however is not possible when matching
+ * arbitrary data that can have any input character.
+ *
+ * Out of band transitions replace the \x00 transition in the string
+ * example with a new input transition that comes from the driver
+ * code. Once the first match is done, the driver supplies the non-input
+ * character, causing the state machine to transition to the second
+ * match pattern.
+ *
+ * Out of band transitions are specified using negative integers
+ * (-1..-32k). They llow for different transitions if needed (currently
+ * only -1 is used).
+ *
+ * Negative integers were chosen to represent out of band transitions
+ * because it makes the run time match simple, and also keeps the
+ * upper positive integer range open for future input character
+ * expansion.
+ *
+ * When a chfa is built, the out of band transition is encoded as
+ * a negative offset of the same value specified in the transchar from the
+ * state base base value. The check value at the negative offset will
+ * contain the owning state value. The chfa state machine is constructed
+ * in such a way that this value will always be in bounds, and only an
+ * unpack time verification is needed.
+ */
 class transchar {
 public:
 	short c;
 
 	transchar(unsigned char a): c((unsigned short) a) {}
+	transchar(short a, bool oob __attribute__((unused))): c(a) {}
 	transchar(const transchar &a): c(a.c) {}
 	transchar(): c(0) {}
 
@@ -341,7 +399,7 @@ public:
 	{
 		NodeSet **x = &cases.cases[c];
 		if (!*x) {
-			if (cases.otherwise)
+			if (cases.otherwise && c.c >= 0)
 				*x = new NodeSet(*cases.otherwise);
 			else
 				*x = new NodeSet;
@@ -384,7 +442,7 @@ public:
 		for (Chars::iterator i = chars.begin(); i != chars.end(); i++) {
 			NodeSet **x = &cases.cases[*i];
 			if (!*x) {
-				if (cases.otherwise)
+				if (cases.otherwise && i->c >= 0)
 					*x = new NodeSet(*cases.otherwise);
 				else
 					*x = new NodeSet;
@@ -453,7 +511,8 @@ public:
 		cases.otherwise->insert(followpos.begin(), followpos.end());
 		for (Cases::iterator i = cases.begin(); i != cases.end();
 		     i++) {
-			if (chars.find(i->first) == chars.end())
+			/* does not match oob transition chars */
+			if (i->first.c >=0 && chars.find(i->first) == chars.end())
 				i->second->insert(followpos.begin(),
 						  followpos.end());
 		}
@@ -511,7 +570,9 @@ public:
 		cases.otherwise->insert(followpos.begin(), followpos.end());
 		for (Cases::iterator i = cases.begin(); i != cases.end();
 		     i++)
-			i->second->insert(followpos.begin(), followpos.end());
+			/* does not match oob transition chars */
+			if (i->first.c >= 0)
+				i->second->insert(followpos.begin(), followpos.end());
 	}
 	int eq(Node *other)
 	{
