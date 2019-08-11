@@ -643,7 +643,7 @@ int mnt_rule::gen_policy_re(Profile &prof)
 		/* rule for match without required data || data MATCH_CONT */
 		if (!prof.policy.rules->add_rule_vec(deny, tmpallow,
 					      audit | AA_AUDIT_MNT_DATA, 4,
-					      vec, dfaflags))
+					      vec, dfaflags, false))
 			goto fail;
 		count++;
 
@@ -655,7 +655,7 @@ int mnt_rule::gen_policy_re(Profile &prof)
 			vec[4] = optsbuf.c_str();
 			if (!prof.policy.rules->add_rule_vec(deny, allow,
 						      audit | AA_AUDIT_MNT_DATA,
-						      5, vec, dfaflags))
+						      5, vec, dfaflags, false))
 				goto fail;
 			count++;
 		}
@@ -684,7 +684,7 @@ int mnt_rule::gen_policy_re(Profile &prof)
 			goto fail;
 		vec[3] = flagsbuf;
 		if (!prof.policy.rules->add_rule_vec(deny, allow, audit, 4, vec,
-						    dfaflags))
+						     dfaflags, false))
 			goto fail;
 		count++;
 	}
@@ -713,7 +713,7 @@ int mnt_rule::gen_policy_re(Profile &prof)
 			goto fail;
 		vec[3] = flagsbuf;
 		if (!prof.policy.rules->add_rule_vec(deny, allow, audit, 4, vec,
-						    dfaflags))
+						     dfaflags, false))
 			goto fail;
 		count++;
 	}
@@ -743,7 +743,7 @@ int mnt_rule::gen_policy_re(Profile &prof)
 			goto fail;
 		vec[3] = flagsbuf;
 		if (!prof.policy.rules->add_rule_vec(deny, allow, audit, 4, vec,
-						    dfaflags))
+						     dfaflags, false))
 			goto fail;
 		count++;
 	}
@@ -784,7 +784,7 @@ int mnt_rule::gen_policy_re(Profile &prof)
 		/* rule for match without required data || data MATCH_CONT */
 		if (!prof.policy.rules->add_rule_vec(deny, tmpallow,
 					      audit | AA_AUDIT_MNT_DATA, 4,
-					      vec, dfaflags))
+					      vec, dfaflags, false))
 			goto fail;
 		count++;
 
@@ -796,7 +796,7 @@ int mnt_rule::gen_policy_re(Profile &prof)
 			vec[4] = optsbuf.c_str();
 			if (!prof.policy.rules->add_rule_vec(deny, allow,
 						      audit | AA_AUDIT_MNT_DATA,
-						      5, vec, dfaflags))
+						      5, vec, dfaflags, false))
 				goto fail;
 			count++;
 		}
@@ -808,7 +808,7 @@ int mnt_rule::gen_policy_re(Profile &prof)
 			goto fail;
 		vec[0] = mntbuf.c_str();
 		if (!prof.policy.rules->add_rule_vec(deny, allow, audit, 1, vec,
-						    dfaflags))
+						     dfaflags, false))
 			goto fail;
 		count++;
 	}
@@ -822,7 +822,7 @@ int mnt_rule::gen_policy_re(Profile &prof)
 			goto fail;
 		vec[1] = devbuf.c_str();
 		if (!prof.policy.rules->add_rule_vec(deny, allow, audit, 2, vec,
-						    dfaflags))
+						     dfaflags, false))
 			goto fail;
 		count++;
 	}

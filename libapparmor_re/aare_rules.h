@@ -103,7 +103,7 @@ class aare_rules {
 	bool add_rule(const char *rule, int deny, uint32_t perms,
 		      uint32_t audit, dfaflags_t flags);
 	bool add_rule_vec(int deny, uint32_t perms, uint32_t audit, int count,
-			  const char **rulev, dfaflags_t flags);
+			  const char **rulev, dfaflags_t flags, bool oob);
 	bool append_rule(const char *rule, dfaflags_t flags);
 	void *create_dfa(size_t *size, int *min_match_len, dfaflags_t flags);
 };

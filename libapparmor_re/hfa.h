@@ -241,9 +241,9 @@ public:
 		return os;
 	}
 
-	int diff_weight(State *rel);
-	int make_relative(State *rel);
-	void flatten_relative(void);
+	int diff_weight(State *rel, int max_range, int upper_bound);
+	int make_relative(State *rel, int upper_bound);
+	void flatten_relative(State *, int upper_bound);
 
 	int apply_and_clear_deny(void) { return perms.apply_and_clear_deny(); }
 
@@ -340,6 +340,10 @@ public:
 	void apply_equivalence_classes(map<transchar, transchar> &eq);
 
 	unsigned int diffcount;
+	int oob_range;
+	int max_range;
+	int ord_range;
+	int upper_bound;
 	Node *root;
 	State *nonmatching, *start;
 	Partition states;
