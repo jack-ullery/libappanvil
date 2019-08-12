@@ -98,9 +98,9 @@ class DbusRule(BaseRule):
 
         # not all combinations are allowed
         if self.access and 'bind' in self.access and (self.path or self.interface or self.member or self.peername or self.peerlabel):
-                raise AppArmorException(_('dbus bind rules must not contain a path, interface, member or peer conditional'))
+            raise AppArmorException(_('dbus bind rules must not contain a path, interface, member or peer conditional'))
         elif self.access and 'eavesdrop' in self.access and (self.name or self.path or self.interface or self.member or self.peername or self.peerlabel):
-                raise AppArmorException(_('dbus eavesdrop rules must not contain a name, path, interface, member or peer conditional'))
+            raise AppArmorException(_('dbus eavesdrop rules must not contain a name, path, interface, member or peer conditional'))
         elif self.access and self.name:
             for msg in message_keywords:
                 if msg in self.access:
