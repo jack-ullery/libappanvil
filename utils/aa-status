@@ -148,7 +148,7 @@ def get_profiles():
         sys.exit(4)
 
     for p in f.readlines():
-        match = re.search("^([^\(]+)\s+\((\w+)\)$", p)
+        match = re.search("^(.+)\s+\((\w+)\)$", p)
         profiles[match.group(1)] = match.group(2)
 
     f.close()
