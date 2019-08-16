@@ -279,11 +279,11 @@ public:
 	 */
 	virtual int min_match_len() { return 0; }
 	/*
-	 * contains_null returns if the expression tree contains a null character.
-	 * Null characters indicate that the rest of the DFA matches the xattrs and
-	 * not the path. This is used to compute min_match_len.
+	 * contains_oob returns if the expression tree contains a oob character.
+	 * oob characters indicate that the rest of the DFA matches has an
+	 * out of band transition. This is used to compute min_match_len.
 	 */
-	virtual bool contains_null() { return false; }
+	virtual bool contains_oob() { return false; }
 
 	virtual int eq(Node *other) = 0;
 	virtual ostream &dump(ostream &os) = 0;
@@ -421,14 +421,17 @@ public:
 
 	int min_match_len()
 	{
-		if (c == 0) {
-			// Null character indicates end of string.
+		if (c < 0) {
+			// oob characters indicates end of string.
+			// note: does NOT currently calc match len
+			// base on NULL char separator transitions
+			// which some match rules use.
 			return 0;
 		}
 		return 1;
 	}
 
-	bool contains_null() { return c == 0; }
+	bool contains_oob() { return c < 0; }
 
 	transchar c;
 };
@@ -473,16 +476,16 @@ public:
 
 	int min_match_len()
 	{
-		if (contains_null()) {
+		if (contains_oob()) {
 			return 0;
 		}
 		return 1;
 	}
 
-	bool contains_null()
+	bool contains_oob()
 	{
 		for (Chars::iterator i = chars.begin(); i != chars.end(); i++) {
-			if (*i == 0) {
+			if (*i < 0) {
 				return true;
 			}
 		}
@@ -540,16 +543,16 @@ public:
 
 	int min_match_len()
 	{
-		if (contains_null()) {
+		if (contains_oob()) {
 			return 0;
 		}
 		return 1;
 	}
 
-	bool contains_null()
+	bool contains_oob()
 	{
 		for (Chars::iterator i = chars.begin(); i != chars.end(); i++) {
-			if (*i == 0) {
+			if (*i < 0) {
 				return false;
 			}
 		}
@@ -581,8 +584,6 @@ public:
 		return 0;
 	}
 	ostream &dump(ostream &os) { return os << "."; }
-
-	bool contains_null() { return true; }
 };
 
 /* Match a node zero or more times. (This is a unary operator.) */
@@ -611,7 +612,7 @@ public:
 		return os << ")*";
 	}
 
-	bool contains_null() { return child[0]->contains_null(); }
+	bool contains_oob() { return child[0]->contains_oob(); }
 };
 
 /* Match a node zero or one times. */
@@ -660,7 +661,7 @@ public:
 		return os << ")+";
 	}
 	int min_match_len() { return child[0]->min_match_len(); }
-	bool contains_null() { return child[0]->contains_null(); }
+	bool contains_oob() { return child[0]->contains_oob(); }
 };
 
 /* Match a pair of consecutive nodes. */
@@ -711,18 +712,18 @@ public:
 	int min_match_len()
 	{
 		int len = child[0]->min_match_len();
-		if (child[0]->contains_null()) {
-			// Null characters are used to indicate when the DFA transitions
+		if (child[0]->contains_oob()) {
+			// oob characters are used to indicate when the DFA transitions
 			// from matching the path to matching the xattrs. If the left child
-			// contains a null character, the right side doesn't contribute to
+			// contains an oob character, the right side doesn't contribute to
 			// the path match.
 			return len;
 		}
 		return len + child[1]->min_match_len();
 	}
-	bool contains_null()
+	bool contains_oob()
 	{
-		return child[0]->contains_null() || child[1]->contains_null();
+		return child[0]->contains_oob() || child[1]->contains_oob();
 	}
 };
 
@@ -771,9 +772,9 @@ public:
 		}
 		return m2;
 	}
-	bool contains_null()
+	bool contains_oob()
 	{
-		return child[0]->contains_null() || child[1]->contains_null();
+		return child[0]->contains_oob() || child[1]->contains_oob();
 	}
 };
 

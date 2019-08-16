@@ -406,7 +406,7 @@ void CHFA::flex_table(ostream &os, const char *name)
 	}
 
 	/* Write the actual flex parser table. */
-
+	/* TODO: add max_oob */
 	size_t hsize = pad64(sizeof(th) + sizeof(th_version) + strlen(name) + 1);
 	th.th_magic = htonl(YYTH_REGEX_MAGIC);
 	th.th_flags = htons(chfaflags);
