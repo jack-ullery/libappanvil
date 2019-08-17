@@ -997,9 +997,19 @@ void free_cond_list(struct cond_entry *ents)
 {
 	struct cond_entry *entry, *tmp;
 
-	list_for_each_safe(ents, entry, tmp) {
-		free_cond_entry(entry);
+	if (ents) {
+		list_for_each_safe(ents, entry, tmp) {
+			free_cond_entry(entry);
+		}
 	}
+}
+
+void free_cond_entry_list(struct cond_entry_list &cond)
+{
+	free_cond_list(cond.list);
+	free(cond.name);
+	cond.list = NULL;
+	cond.name = NULL;
 }
 
 void print_cond_entry(struct cond_entry *ent)

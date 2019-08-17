@@ -346,6 +346,7 @@ profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE
 			if (strcmp($3.name, "xattrs") != 0)
 				yyerror(_("profile id: invalid conditional group %s=()"), $3.name);
 			free ($3.name);
+			$3.name = NULL;
 			prof->xattrs = $3;
 		}
 		prof->flags = $4;

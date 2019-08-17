@@ -77,6 +77,7 @@ Profile::~Profile()
 {
 	hat_table.clear();
 	free_cod_entries(entries);
+	free_cond_entry_list(xattrs);
 
 	for (RuleList::iterator i = rule_ents.begin(); i != rule_ents.end(); i++)
 		delete *i;
