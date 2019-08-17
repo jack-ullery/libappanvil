@@ -227,7 +227,18 @@ pattern_t convert_aaregex_to_pcre(const char *aare, int anchor, int glob,
 			} else {
 				update_re_pos(sptr - aare);
 				ptype = ePatternRegex;
-				pcre.append("[^/\\x00]");
+				switch (glob) {
+				case glob_default:
+					pcre.append("[^/\\x00]");
+					break;
+				case glob_null:
+					pcre.append("[^/]");
+					break;
+				default:
+					PERROR(_("%s: Invalid glob type %d\n"), progname, glob);
+					error = e_parse_error;
+					break;
+				}
 			}
 			break;
 
@@ -510,7 +521,7 @@ static int process_profile_name_xmatch(Profile *prof)
 				int len;
 				tbuf.clear();
 				convert_aaregex_to_pcre(xattr_value, 0,
-							glob_default, tbuf,
+							glob_null, tbuf,
 							&len);
 				if (!rules->append_rule(tbuf.c_str(), true, dfaflags)) {
 					delete rules;
