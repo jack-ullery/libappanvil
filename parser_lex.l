@@ -213,7 +213,7 @@ LIST_VALUE_ID_CHARS	([^ \t\n"!,]{-}[()]|\\[ ]|\\\t|\\\"|\\!|\\,|\\\(|\\\))
 LIST_VALUE_QUOTED_ID_CHARS [^\0"]|\\\"
 LIST_VALUE_ID	{LIST_VALUE_ID_CHARS}+
 QUOTED_LIST_VALUE_ID	\"{LIST_VALUE_QUOTED_ID_CHARS}+\"
-ID_CHARS_NOEQ	[^ \t\n"!,]{-}[=]
+ID_CHARS_NOEQ	[^ \t\n"!,]{-}[=)]
 LEADING_ID_CHARS_NOEQ [^ \t\n"!,]{-}[=()+&]
 ID_NOEQ		{ID_CHARS_NOEQ}|(,{ID_CHARS_NOEQ})
 IDS_NOEQ	{LEADING_ID_CHARS_NOEQ}{ID_NOEQ}*

@@ -1205,6 +1205,15 @@ network_rule: TOK_NETWORK TOK_ID TOK_ID TOK_END_OF_RULE
 		$$ = entry;
 	}
 
+cond: TOK_CONDID
+	{
+		struct cond_entry *ent;
+		ent = new_cond_entry($1, 0, NULL);
+		if (!ent)
+			yyerror(_("Memory allocation error."));
+		$$ = ent;
+	}
+
 cond: TOK_CONDID TOK_EQUALS TOK_VALUE
 	{
 		struct cond_entry *ent;
