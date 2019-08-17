@@ -788,6 +788,10 @@ static void set_supported_features(aa_features *kernel_features unused)
 							   "policy/diff_encode");
 	kernel_supports_stacking = aa_features_supports(compile_features,
 							"domain/stack");
+	kernel_supports_domain_xattr = aa_features_supports(compile_features,
+							"domain/attach_conditions/xattr");
+	kernel_supports_oob = aa_features_supports(compile_features,
+							"policy/outofband");
 
 	if (aa_features_supports(compile_features, "policy/versions/v7"))
 		kernel_abi_version = 7;
