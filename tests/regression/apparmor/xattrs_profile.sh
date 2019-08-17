@@ -138,11 +138,7 @@ runchecktest "Profiles with xattrs and same path length" pass profile_1
 
 clean_xattr
 
-# xattr matching doesn't work if the xattr value has a null character. This
-# impacts matching security.ima and security.evm values.
-#
-# A kernel patch has been proposed to fix this:
-# https://lists.ubuntu.com/archives/apparmor/2018-December/011882.html
+# xattr value matching doesn't work if the xattr value has a null character.
 
 genprofile "image=profile_1" \
   "addimage:$file" \
@@ -155,5 +151,50 @@ set_xattr "user.foo" "ab"
 runchecktest "matches value" pass profile_1
 set_xattr "user.foo" "0x610062" # "a\0b"
 runchecktest "xattr values with null characters don't work" pass unconfined
+
+clean_xattr
+
+# All test cases below this use an xattr_key match
+requires_kernel_features domain/attach_conditions/xattr_key
+
+# xattr value matching doesn't work if the xattr value has a null character.
+
+genprofile "image=profile_1" \
+  "addimage:$file" \
+  "path:$file" \
+  "/proc/*/attr/current:r" \
+  "xattr:user.foo" \
+
+runchecktest "Path with no xattrs" pass unconfined
+set_xattr "user.foo" "ab"
+runchecktest "matches value" pass profile_1
+set_xattr "user.foo" "0x610062" # "a\0b"
+runchecktest "xattr values with null characters don't work" pass profile_1
+
+clean_xattr
+
+# Test that xattr keys contribute to the priority of a profile
+
+genprofile "image=profile_1" \
+  "addimage:$file" \
+  "path:$file" \
+  "/proc/*/attr/current:r" \
+  "xattr:user.foo:hello" \
+  "xattr:user.bar:bye" \
+  -- \
+  "image=profile_2" \
+  "addimage:$file" \
+  "path:$file" \
+  "/proc/*/attr/current:r" \
+  "xattr:user.foo:hello" \
+  "xattr:user.bar" \
+  "xattr:user.spam"
+
+runchecktest "Path with no xattrs" pass unconfined
+set_xattr "user.foo" "hello"
+set_xattr "user.bar" "bye"
+runchecktest "matches value" pass profile_1
+set_xattr "user.spam" "spam"
+runchecktest "matches more xattrs in profile_2" pass profile_2
 
 clean_xattr
