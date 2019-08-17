@@ -309,6 +309,8 @@ extern int kernel_supports_signal;
 extern int kernel_supports_ptrace;
 extern int kernel_supports_unix;
 extern int kernel_supports_stacking;
+extern int kernel_supports_domain_xattr;
+extern int kernel_supports_oob;
 extern int conf_verbose;
 extern int conf_quiet;
 extern int names_only;

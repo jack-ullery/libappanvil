@@ -457,6 +457,22 @@ char *get_xattr_value(struct cond_entry *entry)
 	return entry->vals->value;
 }
 
+/* do we want to warn once/profile or just once per compile?? */
+static void warn_once_xattr(const char *name)
+{
+	static const char *warned_name = NULL;
+
+	if ((warnflags & WARN_RULE_DOWNGRADED) && warned_name != name) {
+		cerr << "Warning from profile " << name << " (";
+		if (current_filename)
+			cerr << current_filename;
+		else
+			cerr << "stdin";
+		cerr << ") xattr attachment conditional ignored\n";
+		warned_name = name;
+	}
+}
+
 static int process_profile_name_xmatch(Profile *prof)
 {
 	std::string tbuf;
@@ -508,6 +524,12 @@ static int process_profile_name_xmatch(Profile *prof)
 			}
 		}
 		if (prof->xattrs.list) {
+			if (!(kernel_supports_domain_xattr && kernel_supports_oob)) {
+				warn_once_xattr(name);
+				free_cond_entry_list(prof->xattrs);
+				goto build;
+			}
+
 			for (entry = prof->xattrs.list; entry; entry = entry->next) {
 				xattr_value = get_xattr_value(entry);
 				if (!xattr_value)
@@ -529,6 +551,7 @@ static int process_profile_name_xmatch(Profile *prof)
 				}
 			}
 		}
+build:
 		prof->xmatch = rules->create_dfa(&prof->xmatch_size, &prof->xmatch_len, dfaflags);
 		delete rules;
 		if (!prof->xmatch)
