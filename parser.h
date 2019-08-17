@@ -386,6 +386,7 @@ extern void move_conditional_value(const char *rulename, char **dst_ptr,
 				   struct cond_entry *cond_ent);
 extern void free_cond_entry(struct cond_entry *ent);
 extern void free_cond_list(struct cond_entry *ents);
+extern void free_cond_entry_list(struct cond_entry_list &cond);
 extern void print_cond_entry(struct cond_entry *ent);
 extern char *processid(const char *string, int len);
 extern char *processquoted(const char *string, int len);

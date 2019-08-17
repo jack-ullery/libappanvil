@@ -154,6 +154,7 @@ public:
 		xmatch_len = 0;
 
 		xattrs.list = NULL;
+		xattrs.name = NULL;
 
 		local = local_mode = local_audit = 0;
 
