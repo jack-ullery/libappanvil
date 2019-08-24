@@ -7,20 +7,16 @@
 # #include <abstractions/ubuntu-helpers>
 
   /usr/bin/arora Cx -> sanitized_helper,
-  /usr/bin/conkeror Cx -> sanitized_helper,
   /usr/bin/dillo Cx -> sanitized_helper,
   /usr/bin/Dooble Cx -> sanitized_helper,
   /usr/bin/epiphany Cx -> sanitized_helper,
   /usr/bin/epiphany-browser Cx -> sanitized_helper,
   /usr/bin/epiphany-webkit Cx -> sanitized_helper,
   /usr/lib/fennec-*/fennec Cx -> sanitized_helper,
-  /usr/bin/galeon Cx -> sanitized_helper,
   /usr/bin/kazehakase Cx -> sanitized_helper,
   /usr/bin/konqueror Cx -> sanitized_helper,
   /usr/bin/midori Cx -> sanitized_helper,
   /usr/bin/netsurf Cx -> sanitized_helper,
-  /usr/bin/prism Cx -> sanitized_helper,
-  /usr/bin/rekonq Cx -> sanitized_helper,
   /usr/bin/seamonkey Cx -> sanitized_helper,
   /usr/bin/sensible-browser Pixr,
 
