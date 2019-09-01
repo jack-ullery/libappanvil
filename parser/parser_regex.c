@@ -542,6 +542,20 @@ static int process_profile_name_xmatch(Profile *prof)
 				 */
 				int len;
 				tbuf.clear();
+				/* prepend \x00 to every value. This is
+				 * done to separate the existance of the
+				 * xattr from a null value match.
+				 *
+				 * if an xattr exists, a single \x00 will
+				 * be done before matching any of the
+				 * xattr_value data.
+				 *
+				 * the pattern for a required xattr
+				 *    \x00{value_match}\x-1
+				 * optional xattr (null alternation)
+				 *    {\x00{value_match},}\x-1
+				 */
+				tbuf.append("\\x00");
 				convert_aaregex_to_pcre(xattr_value, 0,
 							glob_null, tbuf,
 							&len);
