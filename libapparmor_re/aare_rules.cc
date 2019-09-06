@@ -147,7 +147,8 @@ bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
  * This is used by xattrs matching where, after matching the path, the DFA is
  * advanced by a null character for each xattr.
  */
-bool aare_rules::append_rule(const char *rule, bool oob, dfaflags_t flags)
+bool aare_rules::append_rule(const char *rule, bool oob, bool with_perm,
+			     dfaflags_t flags)
 {
 	Node *tree = NULL;
 	if (regex_parse(&tree, rule))
@@ -169,10 +170,13 @@ bool aare_rules::append_rule(const char *rule, bool oob, dfaflags_t flags)
 	 * the path, then each value of the xattrs. Using an optional node
 	 * lets each rule end up in an accepting state.
 	 */
-	tree = new OptionalNode(new CatNode(oob ? new CharNode(transchar(-1, true)) : new CharNode(0), tree));
+	tree = new CatNode(oob ? new CharNode(transchar(-1, true)) : new CharNode(0), tree);
 	PermExprMap::iterator it;
 	for (it = expr_map.begin(); it != expr_map.end(); it++) {
-		expr_map[it->first] = new CatNode(it->second, tree);
+		if (with_perm)
+			expr_map[it->first] = new CatNode(it->second, new AltNode(it->first, tree));
+		else
+			expr_map[it->first] = new CatNode(it->second, tree);
 	}
 	return true;
 }
