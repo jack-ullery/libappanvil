@@ -559,7 +559,7 @@ static int process_profile_name_xmatch(Profile *prof)
 				convert_aaregex_to_pcre(xattr_value, 0,
 							glob_null, tbuf,
 							&len);
-				if (!rules->append_rule(tbuf.c_str(), true, dfaflags)) {
+				if (!rules->append_rule(tbuf.c_str(), true, true, dfaflags)) {
 					delete rules;
 					return FALSE;
 				}
