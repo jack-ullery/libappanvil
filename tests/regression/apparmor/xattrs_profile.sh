@@ -48,7 +48,7 @@ genprofile "image=profile_1" \
   "xattr:user.bar:bye" \
   --nowarn
 
-runchecktest "Path with no xattrs" pass unconfined
+runchecktest "Path with no xattrs 1" pass unconfined
 set_xattr "user.foo" "hello"
 runchecktest "Path only matching one xattr" pass unconfined
 set_xattr "user.bar" "hello"
@@ -69,7 +69,7 @@ genprofile "image=profile_1" \
   "xattr:user.foo:hello/*" \
   "xattr:user.bar:*"
 
-runchecktest "Path with no xattrs" pass unconfined
+runchecktest "Path with no xattrs 2" pass unconfined
 set_xattr "user.foo" "hello"
 runchecktest "Path not matching xattr regexs" pass unconfined
 set_xattr "user.bar" "hello"
@@ -94,7 +94,7 @@ genprofile "image=profile_1" \
   "path:$bin/xattrs_profile" \
   "/proc/*/attr/current:r"
 
-runchecktest "Path with no xattrs" pass profile_2
+runchecktest "Path with no xattrs 3" pass profile_2
 set_xattr "user.foo" "hello"
 runchecktest "Path more specific than xattr profile" pass profile_2
 
@@ -113,7 +113,7 @@ genprofile "image=profile_1" \
   "path:$bin/xattrs_*" \
   "/proc/*/attr/current:r"
 
-runchecktest "Path with no xattrs" pass profile_2
+runchecktest "Path with no xattrs 4" pass profile_2
 set_xattr "user.foo" "hello"
 runchecktest "Path with xattrs longer" pass profile_1
 
@@ -132,13 +132,12 @@ genprofile "image=profile_1" \
   "path:$file" \
   "/proc/*/attr/current:r"
 
-runchecktest "Path with no xattrs" pass profile_2
+runchecktest "Path with no xattrs 5" pass profile_2
 set_xattr "user.foo" "hello"
 runchecktest "Profiles with xattrs and same path length" pass profile_1
 
 clean_xattr
 
-# xattr value matching doesn't work if the xattr value has a null character.
 
 genprofile "image=profile_1" \
   "addimage:$file" \
@@ -146,18 +145,15 @@ genprofile "image=profile_1" \
   "/proc/*/attr/current:r" \
   "xattr:user.foo:**" \
 
-runchecktest "Path with no xattrs" pass unconfined
+runchecktest "Path with no xattrs 6" pass unconfined
 set_xattr "user.foo" "ab"
 runchecktest "matches value" pass profile_1
 set_xattr "user.foo" "0x610062" # "a\0b"
-runchecktest "xattr values with null characters don't work" pass unconfined
+runchecktest "xattr values with null characters work 6" pass profile_1
 
 clean_xattr
 
-# All test cases below this use an xattr_key match
-requires_kernel_features domain/attach_conditions/xattr_key
-
-# xattr value matching doesn't work if the xattr value has a null character.
+# All test cases below this use an xattr key without specified value
 
 genprofile "image=profile_1" \
   "addimage:$file" \
@@ -165,11 +161,11 @@ genprofile "image=profile_1" \
   "/proc/*/attr/current:r" \
   "xattr:user.foo" \
 
-runchecktest "Path with no xattrs" pass unconfined
+runchecktest "Path with no xattrs 7" pass unconfined
 set_xattr "user.foo" "ab"
 runchecktest "matches value" pass profile_1
 set_xattr "user.foo" "0x610062" # "a\0b"
-runchecktest "xattr values with null characters don't work" pass profile_1
+runchecktest "xattr values with null characters work " pass profile_1
 
 clean_xattr
 
@@ -190,7 +186,7 @@ genprofile "image=profile_1" \
   "xattr:user.bar" \
   "xattr:user.spam"
 
-runchecktest "Path with no xattrs" pass unconfined
+runchecktest "Path with no xattrs 8" pass unconfined
 set_xattr "user.foo" "hello"
 set_xattr "user.bar" "bye"
 runchecktest "matches value" pass profile_1
