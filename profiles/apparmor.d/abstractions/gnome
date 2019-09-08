@@ -85,6 +85,7 @@
   /usr/share/gvfs/remote-volume-monitors/  r,
   /usr/share/gvfs/remote-volume-monitors/* r,
   @{PROC}/@{pid}/mounts                    r,
+  /run/mount/utab                          r,
 
   # printing
   /etc/papersize                   r,
