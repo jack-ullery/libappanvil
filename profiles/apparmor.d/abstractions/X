@@ -53,5 +53,8 @@
   /etc/X11/cursors/               r,
   /etc/X11/cursors/**             r,
 
+  # Xwayland
+  owner /run/user/*/.mutter-Xwaylandauth.* r,
+
   # Include additions to the abstraction
   #include if exists <abstractions/X.d>
