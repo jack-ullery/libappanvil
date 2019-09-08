@@ -81,8 +81,8 @@ def parse_args(args=None, parser=None):
 
     valid_xservers = ['xpra', 'xpra3d', 'xephyr']
     if my_opt.withx and my_opt.xserver.lower() not in valid_xservers:
-            error("Invalid server '%s'. Use one of: %s" % (my_opt.xserver, \
-                                                           ", ".join(valid_xservers)))
+        error("Invalid server '%s'. Use one of: %s" % (my_opt.xserver, \
+                                                       ", ".join(valid_xservers)))
 
     if my_opt.withx:
         if my_opt.xephyr_geometry and my_opt.xserver.lower() != "xephyr":

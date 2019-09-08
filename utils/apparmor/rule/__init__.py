@@ -140,7 +140,7 @@ class BaseRule(object):
         '''check if other_rule is covered by this rule object'''
 
         if not type(other_rule) == type(self):
-            raise AppArmorBug('Passes %s instead of %s' % (str(other_rule),self.__class__.__name__))
+            raise AppArmorBug('Passes %s instead of %s' % (str(other_rule), self.__class__.__name__))
 
         if check_allow_deny and self.deny != other_rule.deny:
             return False
@@ -197,7 +197,7 @@ class BaseRule(object):
            Note: this function checks against other_value.regex, which is not really correct, but avoids overly strict results when matching one regex against another
         '''
         if type(other_value) == AARE:
-           other_value = other_value.regex
+            other_value = other_value.regex
 
         return self._is_covered_aare(self_value, self_all, other_value, other_all, cond_name)
 

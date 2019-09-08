@@ -822,8 +822,8 @@ def check_for_manifest_arg(option, opt_str, value, parser):
 def check_for_manifest_arg_append(option, opt_str, value, parser):
     '''Check for -m/--manifest with conflicting args (with append)'''
     if parser.values.manifest:
-         raise optparse.OptionValueError("can't use --%s with --manifest " \
-                                         "argument" % opt_str.lstrip('-'))
+        raise optparse.OptionValueError("can't use --%s with --manifest " \
+                                        "argument" % opt_str.lstrip('-'))
     parser.values.ensure_value(option.dest, []).append(value)
 
 def add_parser_policy_args(parser):
@@ -1216,7 +1216,7 @@ def verify_manifest(params, args=None):
                 tv_val = tv.split('=')[1]
                 debug("Examining %s" % tv_val)
                 if '..' in tv_val or pat.search(tv_val):
-                     err_str += "\n%s" % tv
+                    err_str += "\n%s" % tv
 
     if err_str:
         warn("Manifest definition is potentially unsafe%s" % err_str)

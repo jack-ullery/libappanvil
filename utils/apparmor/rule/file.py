@@ -401,7 +401,7 @@ class FileRule(BaseRule):
     def glob(self):
         '''Change path to next possible glob'''
         if self.all_paths:
-           return
+            return
 
         self.path = self.path.glob_path()
         self.raw_rule = None
@@ -409,7 +409,7 @@ class FileRule(BaseRule):
     def glob_ext(self):
         '''Change path to next possible glob with extension'''
         if self.all_paths:
-           return
+            return
 
         self.path = self.path.glob_path_withext()
         self.raw_rule = None

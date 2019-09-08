@@ -398,7 +398,7 @@ def main():
 
     # If a TTY then assume running in test mode and fix output width
     if not sys.stdout.isatty():
-        parser.formatter_class=lambda prog: argparse.HelpFormatter(prog, width=80)
+        parser.formatter_class = lambda prog: argparse.HelpFormatter(prog, width=80)
 
     args = parser.parse_args()
 
