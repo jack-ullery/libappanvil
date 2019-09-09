@@ -1,3 +1,15 @@
+apparmor_re.h - control flags for hfa generation
+expr-tree.{h,cc} - abstract syntax tree (ast) built from a regex parse
+parse.{h,y} - code to parse a regex into an ast
+hfc.{h,cc} - code to build and manipulate a hybrid finite automata (state
+             machine).
+flex-tables.h - basic defines used by chfa
+chfa.{h,cc} - code to build a highly compressed runtime readonly version
+              of an hfa.
+aare_rules.{h,cc} - code to that binds parse -> expr-tree -> hfa generation
+                    -> chfa generation into a basic interface for converting
+		    rules to a runtime ready statemachine.
+
 Regular Expression Scanner Generator
 ====================================
 
