@@ -19,7 +19,7 @@ danger_caps = ["audit_control",
                "audit_write",
                "mac_override",
                "mac_admin",
-               "set_fcap",
+               "setfcap",
                "sys_admin",
                "sys_module",
                "sys_rawio"]
