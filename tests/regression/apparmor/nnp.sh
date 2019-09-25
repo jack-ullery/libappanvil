@@ -28,6 +28,7 @@ fileok="${file}:${okperm}"
 getcon="/proc/*/attr/current:r"
 setcon="/proc/*/attr/current:w"
 setexec="/proc/*/attr/exec:w"
+policy="/sys/kernel/security/apparmor/"
 
 touch $file
 
@@ -67,7 +68,7 @@ runchecktest "NNP (change profile - no NNP)" pass -P "$bin/open"
 runchecktest_errno EPERM "NNP (change profile - NNP)" fail -n -P "$bin/open"
 
 if [ "$(kernel_features_istrue domain/stack)" != "true" ] ; then
-    echo "	kernel does not support profile stacking - skipping stacking tests ..."
+    echo "	kernel does not support profile stacking - skipping stacking nnp tests ..."
 else
 
     # Verify that NNP allows stack onexec of another profile
@@ -79,4 +80,65 @@ else
     genprofile "$fileok" "$setcon" "change_profile->:&$bin/open" -- image="$bin/open" "$fileok"
     runchecktest "NNP (stack profile - no NNP)" pass -p "$bin/open" -f "$file"
     runchecktest "NNP (stack profile - NNP)" pass -n -p "$bin/open" -f "$file"
+
+    #Verify that NNP allow stacking unconfined along current profile
+    #this allows verifying that a stack with unconfined still gets the
+    #unconfined exception applied. It also tests that dropping unconfined
+    #from the stack is allowed. ie.
+    # transition//&unconfined -> transition//&open
+    # and
+    # transition//&unconfined -> transition//&open//&unconfined
+    genprofile "$fileok" "$setcon" "change_profile->:&$bin/open" "change_profile->:&unconfined" -- image="$bin/open" "$fileok"
+    runchecktest "NNP (stack profile&unconfined - no NNP)" pass -i "&unconfined" -p "$bin/open" -f "$file"
+    runchecktest "NNP (stack profile&unconfined - NNP)" pass -n -i "&unconfined" -p "$bin/open" -f "$file"
+
+    genprofile "$fileok" "$setcon" "change_profile->:$bin/transition" "change_profile->:$bin/open" "change_profile->:&unconfined" -- image="$bin/open" "$fileok"
+    runchecktest "NNP (change profile&unconfined - no NNP)" pass -i "&unconfined" -P "$bin/transition//&$bin/open" -f "$file"
+    runchecktest "NNP (change profile&unconfined - NNP)" pass -n -i "&unconfined" -P "$bin/transition//&$bin/open" -f "$file"
+
+
+    #Verify that NNP allows stacking a new policy namespace
+    #must use stdin with genprofile for namespaces
+    genprofile --stdin <<EOF
+$test {
+    @{gen_bin $test}
+    @{gen_def}
+    ${file} ${okperm},
+    /proc/*/attr/current w,
+    change_profile-> &:nnp:unconfined,
+}
+:nnp:$bin/open {
+    @{gen_bin $bin/open}
+    @{gen_def}
+    ${file} ${okperm},
+}
+EOF
+    #genprofile is creating child namespace so mkdir not needed
+    runchecktest "NNP (stack :nnp:unconfined - no NNP)" pass -p ":nnp:unconfined" -f "$file"
+    runchecktest "NNP (stack :nnp:unconfined - NNP)" pass -n -p ":nnp:unconfined" -f "$file"
+
+    runchecktest "NNP (stack :nnp:open - no NNP)" fail -p ":nnp:$bin/open" -f "$file"
+    runchecktest "NNP (stack :nnp:open - NNP)" fail -n -p ":nnp:$bin/open" -f "$file"
+
+    genprofile --stdin <<EOF
+$test {
+    @{gen_bin $test}
+    @{gen_def}
+    ${file} ${okperm},
+    /proc/*/attr/current w,
+    change_profile-> &:nnp:$bin/open,
+}
+:nnp:$bin/open {
+    @{gen_bin $bin/open}
+    @{gen_def}
+    ${file} ${okperm},
+}
+EOF
+     runchecktest "NNP (stack :nnp:open - no NNP)" pass -p ":nnp:$bin/open" -f "$file"
+    runchecktest "NNP (stack :nnp:open - NNP)" pass -n -p ":nnp:$bin/open" -f "$file"
+    # explicitly remove profile before cleaning up the namespace so
+    # prologue.inc auto cleanup doesn't fail
+    removeprofile
+    echo -n  ":nnp:" > "$policy/.remove" || echo "   warning failed to remove namespace policy/namespaces/nnp"
+
 fi
