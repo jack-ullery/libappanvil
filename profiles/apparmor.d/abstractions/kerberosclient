@@ -22,6 +22,8 @@
 
   /etc/krb5.keytab            rk,
   /etc/krb5.conf              r,
+  /etc/krb5.conf.d/           r,
+  /etc/krb5.conf.d/*          r,
 
   # config files found via strings on libs
   /etc/krb.conf               r,
