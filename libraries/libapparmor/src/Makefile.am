@@ -43,7 +43,7 @@ scanner.h: scanner.l
 scanner.c: scanner.l
 
 af_protos.h:
-	 echo '#include <netinet/in.h>' | $(CC) -E -dM - | LC_ALL=C  sed  -n -e "/IPPROTO_MAX/d"  -e "s/^\#define[ \\t]\\+IPPROTO_\\([A-Z0-9_]\\+\\)\\(.*\\)$$/AA_GEN_PROTO_ENT(\\UIPPROTO_\\1, \"\\L\\1\")/p" > $@
+	 echo '#include <netinet/in.h>' | $(CC) $(CPPFLAGS) -E -dM - | LC_ALL=C  sed  -n -e "/IPPROTO_MAX/d"  -e "s/^\#define[ \\t]\\+IPPROTO_\\([A-Z0-9_]\\+\\)\\(.*\\)$$/AA_GEN_PROTO_ENT(\\UIPPROTO_\\1, \"\\L\\1\")/p" > $@
 
 lib_LTLIBRARIES = libapparmor.la
 noinst_HEADERS = grammar.h parser.h scanner.h af_protos.h private.h PMurHash.h
