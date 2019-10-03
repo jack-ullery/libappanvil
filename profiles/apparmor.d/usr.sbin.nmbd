@@ -24,7 +24,6 @@ profile nmbd /usr/{bin,sbin}/nmbd {
   /var/{cache,lib}/samba/unexpected rw,
   /var/cache/samba/msg/ rw,
   /var/cache/samba/msg/* w,
-  /var/cache/samba/msg.lock/{,*} rwk,
 
   /{,var/}run/nmbd.pid rwk,
   /{,var/}run/samba/** rwk,

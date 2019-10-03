@@ -49,8 +49,6 @@ profile smbd /usr/{bin,sbin}/smbd {
   /{,var/}run/samba/ncalrpc/ rw,
   /{,var/}run/samba/ncalrpc/** rw,
   /{,var/}run/samba/smbd.pid rw,
-  /{,var/}run/samba/msg.lock/ rw,
-  /{,var/}run/samba/msg.lock/[0-9]* rwk,
   /var/spool/samba/** rw,
 
   @{HOMEDIRS}/** lrwk,
