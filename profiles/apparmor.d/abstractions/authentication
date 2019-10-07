@@ -2,6 +2,7 @@
 #
 #    Copyright (C) 2002-2009 Novell/SUSE
 #    Copyright (C) 2009-2012 Canonical Ltd
+#    Copyright (C) 2019 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -14,13 +15,13 @@
   # Some services need to perform authentication of users
   # Such authentication almost certainly needs access to the local users
   # databases containing passwords, PAM configuration files, PAM libraries
-  /etc/nologin                r,
-  /etc/pam.d/*                r,
-  /etc/securetty              r,
-  /etc/security/*             r,
-  /etc/shadow                 r,
-  /etc/gshadow                r,
-  /etc/pwdb.conf              r,
+  /{usr/,}etc/nologin                r,
+  /{usr/,}etc/pam.d/*                r,
+  /{usr/,}etc/securetty              r,
+  /{usr/,}etc/security/*             r,
+  /{usr/,}etc/shadow                 r,
+  /{usr/,}etc/gshadow                r,
+  /{usr/,}etc/pwdb.conf              r,
 
   /{usr/,}lib{,32,64}/security/pam_filter/*  mr,
   /{usr/,}lib{,32,64}/security/pam_*.so      mr,
@@ -32,8 +33,8 @@
   # kerberos
   #include <abstractions/kerberosclient>
   # SuSE's pwdutils are different:
-  /etc/default/passwd         r,
-  /etc/login.defs             r,
+  /{usr/,}etc/default/passwd         r,
+  /{usr/,}etc/login.defs             r,
 
   # nis
   #include <abstractions/nis>
