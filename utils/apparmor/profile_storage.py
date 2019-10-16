@@ -60,7 +60,6 @@ class ProfileStorage:
         data['alias']            = dict()
         data['abi']              = []
         data['include']          = dict()
-        data['localinclude']     = dict()
         data['lvar']             = dict()
         data['repo']             = dict()
 
