@@ -139,7 +139,7 @@ sys.stdout.write('%s\n' % distutils.sysconfig.get_python_lib(0,0));"`
         if test -z "$PYTHON_EXTRA_LIBS"; then
            PYTHON_EXTRA_LIBS=`$PYTHON -c "import sys; import distutils.sysconfig; \
 conf = distutils.sysconfig.get_config_var; \
-sys.stdout.write('%s %s\n' % (conf('LOCALMODLIBS'), conf('LIBS')))"`
+sys.stdout.write('%s %s %s\n' % (conf('BLDLIBRARY'), conf('LOCALMODLIBS'), conf('LIBS')))"`
         fi
         AC_MSG_RESULT([$PYTHON_EXTRA_LIBS])
         AC_SUBST(PYTHON_EXTRA_LIBS)
@@ -164,7 +164,7 @@ sys.stdout.write('%s\n' % conf('LINKFORSHARED'))"`
         # save current global flags
         ac_save_LIBS="$LIBS"
         ac_save_CPPFLAGS="$CPPFLAGS"
-        LIBS="$ac_save_LIBS $PYTHON_LDFLAGS"
+        LIBS="$ac_save_LIBS $PYTHON_LDFLAGS $PYTHON_EXTRA_LIBS"
         CPPFLAGS="$ac_save_CPPFLAGS $PYTHON_CPPFLAGS"
         AC_TRY_LINK([
                 #include <Python.h>
