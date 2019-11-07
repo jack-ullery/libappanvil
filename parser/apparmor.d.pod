@@ -35,6 +35,29 @@ configuration files; see apparmor(7) for an overview of AppArmor.
 
 =head1 FORMAT
 
+AppArmor policy is written in a declarative language, in which the
+order of rules within a given section or block does not
+matter. Policy is by convention written so that it is contained in
+multiple files, but this is not a requirement. It could just as easily
+be written in a single file. The policy language is compiled to a
+architecture independent binary format that is loaded into the kernel
+for enforcement.
+
+The base unit of AppArmor confinement is the profile. It contains a
+set of rules which are enforced when the profile is associated with a
+running program. The rules within the profile provide a whitelist of
+different permission that are allowed, along with a few other special
+rules.
+
+The text in AppArmor policy is split into two sections, the preamble
+and the profile definitions. The preamble must occur at the head of
+the file and once profile definitions begin, no more preamble rules
+are allowed (even in files that are included into the profile). When
+AppArmor policy (set of profiles) is split across multiple files, each
+file can have its own preamble section, which may be the same or
+different from other files preamble. Files included within a profile
+section can not have a preamble section.
+
 The following is a BNF-style description of AppArmor policy
 configuration files; see below for an example AppArmor policy file.
 AppArmor configuration files are line-oriented; B<#> introduces a
