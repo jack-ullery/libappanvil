@@ -53,6 +53,26 @@ aa_log_skipped_msg() {
 	echo ": Skipped."
 }
 
+aa_log_action_start()
+{
+    echo "$@"
+}
+
+aa_log_action_end()
+{
+    printf ""
+}
+
+aa_log_daemon_msg()
+{
+    echo "$@"
+}
+
+aa_log_end_msg()
+{
+    printf ""
+}
+
 usage() {
     echo "Usage: $0 {start|stop|restart|try-restart|reload|force-reload|status|kill}"
 }
