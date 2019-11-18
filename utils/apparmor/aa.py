@@ -2173,8 +2173,6 @@ def parse_profile_data(data, file, do_include):
         elif re_match_include(line):
             # Include files
             include_name = re_match_include(line)
-            if include_name.startswith('local/'):
-                profile_data[profile][hat]['localinclude'][include_name] = True
 
             if profile:
                 profile_data[profile][hat]['include'][include_name] = True
