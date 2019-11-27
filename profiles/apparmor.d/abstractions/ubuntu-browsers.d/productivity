@@ -22,7 +22,3 @@
   # PDFs
   /usr/bin/evince Cxr -> sanitized_helper,
   /usr/bin/okular Cxr -> sanitized_helper,
-
-  owner @{HOME}/.adobe/** rw,
-  /opt/Adobe/Reader9/bin/acroread Cxr -> sanitized_helper,
-  /opt/Adobe/Reader9/** r,

@@ -13,7 +13,6 @@
   /usr/bin/gimp* Cxr -> sanitized_helper,
   /usr/bin/shotwell Cxr -> sanitized_helper,
   /usr/bin/digikam Cxr -> sanitized_helper,
-  /usr/bin/f-spot Cxr -> sanitized_helper,
   /usr/bin/gwenview Cxr -> sanitized_helper,
 
   #include <abstractions/ubuntu-media-players>
@@ -25,18 +24,8 @@
   /usr/bin/lpstat Cxr -> sanitized_helper,
   /usr/bin/lpr Cxr -> sanitized_helper,
 
-  # npviewer
-  /usr/lib/nspluginwrapper/i386/linux/npviewer{,.bin} ixr,
-  /var/lib/ r,
-  /var/lib/**/*.so mr,
-  /usr/bin/setarch ixr,
-
   # Bittorrent clients
   #include <abstractions/ubuntu-bittorrent-clients>
-
-  # Mozplugger
-  /etc/mozpluggerrc r,
-  /usr/bin/mozplugger-helper Cxr -> sanitized_helper,
 
   # Archivers
   /usr/bin/ark Cxr -> sanitized_helper,
@@ -46,12 +35,6 @@
 
   # News feed readers
   #include <abstractions/ubuntu-feed-readers>
-
-  # Googletalk
-  /opt/google/talkplugin/*.so mr,
-  /opt/google/talkplugin/lib/*.so mr,
-  /opt/google/talkplugin/GoogleTalkPlugin ixr,
-  owner @{HOME}/.config/google-googletalkplugin/** rw,
 
   # If we allow the above, nvidia based systems will also need this
   #include <abstractions/nvidia>
