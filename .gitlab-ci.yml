@@ -27,7 +27,7 @@ build-all:
         - changehat/pam_apparmor/
         - profiles/
   script:
-      - cd libraries/libapparmor && ./autogen.sh && PYTHON=/usr/bin/python3 ./configure --with-perl --with-python --prefix=/usr && make PYTHON=/usr/bin/python3 && cd ../..
+      - cd libraries/libapparmor && ./autogen.sh && PYTHON=/usr/bin/python3 ./configure --with-perl --with-python --prefix=/usr && make PYTHON=/usr/bin/python3 && cd ../.. || { cat config.log ; exit 1 ; }
       - make -C parser
       - make -C binutils
       - make -C utils
