@@ -309,6 +309,7 @@ static void usage(const char *prog)
 		"  -P <LABEL>\tCall aa_change_profile(LABEL)\n"
 		"  -o <LABEL>\tCall aa_stack_onexec(LABEL)\n"
 		"  -p <LABEL>\tCall aa_stack_profile(LABEL)\n"
+		"  -i <LABEL>\tCall aa_change_profile(LABEL) before nnp\n"
 		"  -n\t\tSet NO_NEW_PRIVS\n"
 		"  -L <LABEL>\tVerify that /proc/self/attr/exec contains LABEL\n"
 		"  -M <MODE>\tVerify that /proc/self/attr/exec contains MODE. Set to \"%s\" if a NULL mode is expected.\n"
@@ -351,10 +352,10 @@ static void set_transition(const char *prog, struct options *opts,
 static void parse_opts(int argc, char **argv, struct options *opts)
 {
 	const char *prog = argv[0];
-	int o;
+	int o, rc;
 
 	memset(opts, 0, sizeof(*opts));
-	while ((o = getopt(argc, argv, "f:L:M:l:m:nO:P:o:p:")) != -1) {
+	while ((o = getopt(argc, argv, "f:L:M:l:m:nO:P:o:p:i:")) != -1) {
 		switch (o) {
 		case 'f': /* file */
 			opts->file = optarg;
@@ -385,6 +386,14 @@ static void parse_opts(int argc, char **argv, struct options *opts)
 			break;
 		case 'p': /* aa_stack_profile */
 			set_transition(prog, opts, STACK_PROFILE, optarg);
+			break;
+		case 'i': /* aa_change_profile - immediate before nnp */
+			rc = aa_change_profile(optarg);
+			if (rc < 0) {
+				int err = errno;
+				perror("FAIL: immediate change_profile");
+				exit(err);
+			}
 			break;
 		default: /* '?' */
 			usage(prog);
