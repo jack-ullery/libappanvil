@@ -379,10 +379,12 @@ sub gen_addimage($) {
 sub gen_xattr($) {
   my $rule = shift;
   my @rules = split (/:/, $rule);
-  if (@rules != 3) {
-    (!$nowarn) && print STDERR "Warning: invalid xattr description '$rule', ignored\n";
-  } else {
+  if (@rules == 3) {
     $xattrs{$rules[1]} = $rules[2];
+  } elsif (@rules == 2) {
+    $xattrs{$rules[1]} = "";
+  } else {
+    (!$nowarn) && print STDERR "Warning: invalid xattr description '$rule', ignored\n";
   }
 }
 
@@ -479,7 +481,10 @@ sub gen_from_args() {
       } else {
         print STDOUT " ";
       }
-      print STDOUT "$xattr=$xattrs{$xattr}";
+      print STDOUT "$xattr";
+      if (not $xattrs{$xattr} eq "") {
+        print STDOUT "=$xattrs{$xattr}";
+      }
     }
     print STDOUT ") ";
   }

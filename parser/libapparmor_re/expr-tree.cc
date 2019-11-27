@@ -41,19 +41,38 @@
 /* Use a single static EpsNode as it carries no node specific information */
 EpsNode epsnode;
 
-ostream &operator<<(ostream &os, uchar c)
+ostream &transchar::dump(ostream &os) const
+{
+	const char *search = "\a\033\f\n\r\t|*+[](). ",
+		   *replace = "aefnrt|*+[](). ", *s;
+
+	if (this->c < 0)
+		os << "-0x" << hex << -this->c << dec;
+	else if (this->c > 255)
+		os << "0x" << hex << this->c << dec;
+	else if ((s = strchr(search, this->c)) && *s != '\0')
+		os << '\\' << replace[s - search] << " 0x" << hex << this->c << dec;
+	else if (!isprint(this->c))
+		os << "0x" << hex << this->c << dec;
+	else
+		os << (char)this->c << " 0x" << hex << this->c << dec;
+	return os;
+}
+
+ostream &operator<<(ostream &os, transchar tc)
 {
 	const char *search = "\a\033\f\n\r\t|*+[](). ",
 	    *replace = "aefnrt|*+[](). ", *s;
+	short c = tc.c;
 
-	if ((s = strchr(search, c)) && *s != '\0') {
+	if (c < 0)
+		os << "\\d" << "" << tc.c;
+	else if ((s = strchr(search, c)) && *s != '\0')
 		os << '\\' << replace[s - search];
-	} else if (c < 32 || c >= 127) {
-		os << '\\' << '0' << char ('0' + (c >> 6))
-		   << char ('0' + ((c >> 3) & 7)) << char ('0' + (c & 7));
-	} else {
+	else if (!isprint(c))
+		os << "\\x" << hex << c << dec;
+	else
 		os << (char)c;
-	}
 	return os;
 }
 

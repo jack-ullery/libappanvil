@@ -73,6 +73,15 @@ ostream &operator<<(ostream &os, const State &state)
 	return os;
 }
 
+ostream &operator<<(ostream &os, State &state)
+{
+	/* dump the state label */
+	os << '{';
+	os << state.label;
+	os << '}';
+	return os;
+}
+
 /**
  * diff_weight - Find differential compression distance between @rel and @this
  * @rel: State to compare too
@@ -91,9 +100,10 @@ ostream &operator<<(ostream &os, const State &state)
  *
  * Should be applied after state minimization 
 */
-int State::diff_weight(State *rel)
+int State::diff_weight(State *rel, int max_range, int upper_bound)
 {
 	int weight = 0;
+	int first = 0;
 
 	if (this == rel)
 		return 0;
@@ -108,8 +118,10 @@ int State::diff_weight(State *rel)
 	} else if (rel->diff->depth >= this->diff->depth)
 		return 0;
 
+	if (rel->trans.begin()->first.c < first)
+		first = rel->trans.begin()->first.c;
 	if (rel->flags & DiffEncodeFlag) {
-		for (int i = 0; i < 256; i++) {
+		for (int i = first; i < upper_bound; i++) {
 			State *state = rel->next(i);
 			StateTrans::iterator j = trans.find(i);
 			if (j != trans.end()) {
@@ -175,7 +187,7 @@ int State::diff_weight(State *rel)
 		/* rel default transitions have to be masked with transitions
 		 * This covers all transitions not covered above
 		 */
-		weight -= 256 - (rel->trans.size() + this_count);
+		weight -= (max_range) - (rel->trans.size() + this_count);
 	}
 
 	return weight;
@@ -184,12 +196,14 @@ int State::diff_weight(State *rel)
 /**
  * make_relative - Make this state relative to @rel
  * @rel: state to make this state relative too
+ * @upper_bound: the largest value for an input transition (256 for a byte).
  *
  * @rel can be a relative (differentially compressed state)
  */
-int State::make_relative(State *rel)
+int State::make_relative(State *rel, int upper_bound)
 {
 	int weight = 0;
+	int first = 0;
 
 	if (this == rel || !rel)
 		return 0;
@@ -197,9 +211,12 @@ int State::make_relative(State *rel)
 	if (flags & DiffEncodeFlag)
 		return 0;
 
+	if (rel->trans.begin()->first.c < 0)
+		first = rel->trans.begin()->first.c;
+
 	flags |= DiffEncodeFlag;
 
-	for (int i = 0; i < 256 ; i++) {
+	for (int i = first; i < upper_bound ; i++) {
 		State *next = rel->next(i);
 
 		StateTrans::iterator j = trans.find(i);
@@ -227,27 +244,33 @@ int State::make_relative(State *rel)
 
 /**
  * flatten_differential - remove differential encode from this state
+ * @nonmatching: the nonmatching state for the state machine
+ * @upper_bound: the largest value for an input transition (256 for a byte).
  */
-void State::flatten_relative(void)
+void State::flatten_relative(State *nonmatching, int upper_bound)
 {
 	if (!(flags & DiffEncodeFlag))
 		return;
 
 	map<State *, int> count;
 
-	for (int i = 0; i < 256; i++)
+	int first = 0;
+	if (next(-1) != nonmatching)
+		first = -1;
+
+	for (int i = first; i < upper_bound; i++)
 		count[next(i)] += 1;
 
-	int j = 0;
-	State *def = next(0);
-	for (int i = 1; i < 256; i++) {
+	int j = first;
+	State *def = next(first);
+	for (int i = first + 1; i < upper_bound; i++) {
 		if (count[next(i)] > count[next(j)]) {
 			j = i;
 			def = next(i);
 		}
 	}
 
-	for (int i = 0; i < 256; i++) {
+	for (int i = first; i < upper_bound; i++) {
 		if (trans.find(i) != trans.end()) {
 			if (trans[i] == def)
 				trans.erase(i);
@@ -348,8 +371,11 @@ void DFA::update_state_transitions(State *state)
 		/* Don't insert transition that the otherwise transition
 		 * already covers
 		 */
-		if (target != state->otherwise)
+		if (target != state->otherwise) {
 			state->trans[j->first] = target;
+			if (j->first.c < 0 && -j->first.c > oob_range)
+				oob_range = -j->first.c;
+		}
 	}
 }
 
@@ -397,6 +423,10 @@ void DFA::process_work_queue(const char *header, dfaflags_t flags)
 DFA::DFA(Node *root, dfaflags_t flags): root(root)
 {
 	diffcount = 0;		/* set by diff_encode */
+	max_range = 256;
+	upper_bound = 256;
+	oob_range = 0;
+	ord_range = 8;
 
 	if (flags & DFA_DUMP_PROGRESS)
 		fprintf(stderr, "Creating dfa:\r");
@@ -428,7 +458,10 @@ DFA::DFA(Node *root, dfaflags_t flags): root(root)
 	 */
 	work_queue.push_back(start);
 	process_work_queue("Creating dfa", flags);
-
+	max_range += oob_range;
+	/* if oob_range is ever greater than 256 need to move to computing this */
+	if (oob_range)
+		ord_range = 9;
 	/* cleanup Sets of nodes used computing the DFA as they are no longer
 	 * needed.
 	 */
@@ -746,12 +779,9 @@ void DFA::minimize(dfaflags_t flags)
 				c = rep->trans.erase(c);
 		}
 
-//if ((*p)->size() > 1)
-//cerr << rep->label << ": ";
 		/* clear the state label for all non representative states,
 		 * and accumulate permissions */
 		for (Partition::iterator i = ++(*p)->begin(); i != (*p)->end(); i++) {
-//cerr << " " << (*i)->label;
 			if (flags & DFA_DUMP_MIN_PARTS)
 				cerr << **i << ", ";
 			(*i)->label = -1;
@@ -759,8 +789,6 @@ void DFA::minimize(dfaflags_t flags)
 		}
 		if (rep->perms.is_accept())
 			final_accept++;
-//if ((*p)->size() > 1)
-//cerr << "\n";
 		if (flags & DFA_DUMP_MIN_PARTS)
 			cerr << "\n";
 	}
@@ -827,7 +855,7 @@ static unsigned int add_to_dag(DiffDag *dag, State *state,
 	return rc;
 }
 
-static int diff_partition(State *state, Partition &part, State **candidate)
+static int diff_partition(State *state, Partition &part, int max_range, int upper_bound, State **candidate)
 {
 	int weight = 0;
 	*candidate = NULL;
@@ -836,7 +864,7 @@ static int diff_partition(State *state, Partition &part, State **candidate)
 		if (*i == state)
 			continue;
 
-		int tmp = state->diff_weight(*i);
+		int tmp = state->diff_weight(*i, max_range, upper_bound);
 		if (tmp > weight) {
 			weight = tmp;
 			*candidate = *i;
@@ -923,14 +951,14 @@ void DFA::diff_encode(dfaflags_t flags)
 		State *candidate = NULL;
 
 		int weight = diff_partition(state,
-					    state->otherwise->diff->parents,
-					    &candidate);
+					    state->otherwise->diff->parents, max_range,
+					    upper_bound, &candidate);
 
 		for (StateTrans::iterator j = state->trans.begin(); j != state->trans.end(); j++) {
 			State *tmp_candidate;
 			int tmp = diff_partition(state,
-						 j->second->diff->parents,
-						 &tmp_candidate);
+						 j->second->diff->parents, max_range,
+						 upper_bound, &tmp_candidate);
 			if (tmp > weight) {
 				weight = tmp;
 				candidate = tmp_candidate;
@@ -958,7 +986,7 @@ void DFA::diff_encode(dfaflags_t flags)
 	diffcount = 0;
 	for (int i = tail - 1; i > 1; i--) {
 		if (dag[i].rel) {
-			int weight = dag[i].state->make_relative(dag[i].rel);
+			int weight = dag[i].state->make_relative(dag[i].rel, upper_bound);
 			aweight += weight;
 			diffcount++;
 		}
@@ -991,7 +1019,7 @@ void DFA::diff_encode(dfaflags_t flags)
 void DFA::undiff_encode(void)
 {
 	for (Partition::iterator i = states.begin(); i != states.end(); i++)
-		(*i)->flatten_relative();
+		(*i)->flatten_relative(nonmatching, upper_bound);
 	diffcount = 0;
 }
 
@@ -1058,39 +1086,52 @@ void DFA::dump(ostream & os)
 
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
 		Chars excluded;
+		bool first = true;
 
 		for (StateTrans::iterator j = (*i)->trans.begin();
 		     j != (*i)->trans.end(); j++) {
 			if (j->second == nonmatching) {
 				excluded.insert(j->first);
 			} else {
-				os << **i;
-				if ((*i)->perms.is_accept())
-					os << " ", (*i)->perms.dump(os);
-				os << " -> " << *(j)->second << ": 0x"
-				   << hex << (int) j->first;
-				if (isprint(j->first))
-					os << " " << j->first;
-				os << dec << "\n";
+				if (first) {
+					first = false;
+					os << **i << " perms: ";
+					if ((*i)->perms.is_accept())
+						(*i)->perms.dump(os);
+					else
+						os << "none";
+					os << "\n";
+				}
+				os << "    "; j->first.dump(os) << " -> " <<
+					*(j)->second;
+				if ((j)->second->perms.is_accept())
+					os << " ", (j->second)->perms.dump(os);
+				os << "\n";
 			}
 		}
 
 		if ((*i)->otherwise != nonmatching) {
-			os << **i;
-			if ((*i)->perms.is_accept())
-				os << " ", (*i)->perms.dump(os);
-			os << " -> " << *(*i)->otherwise << ": [";
+			if (first) {
+				first = false;
+				os << **i << " perms: ";
+				if ((*i)->perms.is_accept())
+					(*i)->perms.dump(os);
+				else
+					os << "none";
+				os << "\n";
+			}
+			os << "    [";
 			if (!excluded.empty()) {
 				os << "^";
 				for (Chars::iterator k = excluded.begin();
 				     k != excluded.end(); k++) {
-					if (isprint(*k))
-						os << *k;
-					else
-						os << "\\0x" << hex << (int) *k << dec;
+					os << *k;
 				}
 			}
-			os << "]\n";
+			os << "] -> " << *(*i)->otherwise;
+			if ((*i)->otherwise->perms.is_accept())
+				os << " ", (*i)->otherwise->perms.dump(os);
+			os << "\n";
 		}
 	}
 	os << "\n";
@@ -1128,11 +1169,7 @@ void DFA::dump_dot_graph(ostream & os)
 				os << "\t\"" << **i << "\" -> \"" << *j->second
 				   << "\" [" << "\n";
 				os << "\t\tlabel=\"";
-				if (isprint(j->first))
-					os << j->first;
-				else
-					os << "\\0x" << hex << (int) j->first << dec;
-
+				j->first.dump(os);
 				os << "\"\n\t]" << "\n";
 			}
 		}
@@ -1143,10 +1180,7 @@ void DFA::dump_dot_graph(ostream & os)
 				os << "\t\tlabel=\"[^";
 				for (Chars::iterator i = excluded.begin();
 				     i != excluded.end(); i++) {
-					if (isprint(*i))
-						os << *i;
-					else
-						os << "\\0x" << hex << (int) *i << dec;
+					i->dump(os);
 				}
 				os << "]\"" << "\n";
 			}
@@ -1160,42 +1194,44 @@ void DFA::dump_dot_graph(ostream & os)
  * Compute character equivalence classes in the DFA to save space in the
  * transition table.
  */
-map<uchar, uchar> DFA::equivalence_classes(dfaflags_t flags)
+map<transchar, transchar> DFA::equivalence_classes(dfaflags_t flags)
 {
-	map<uchar, uchar> classes;
-	uchar next_class = 1;
+	map<transchar, transchar> classes;
+	transchar next_class = 1;
 
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
 		/* Group edges to the same next state together */
 		map<const State *, Chars> node_sets;
-		for (StateTrans::iterator j = (*i)->trans.begin(); j != (*i)->trans.end(); j++)
+		for (StateTrans::iterator j = (*i)->trans.begin(); j != (*i)->trans.end(); j++) {
+			if (j->first.c < 0)
+				continue;
 			node_sets[j->second].insert(j->first);
-
+		}
 		for (map<const State *, Chars>::iterator j = node_sets.begin();
 		     j != node_sets.end(); j++) {
 			/* Group edges to the same next state together by class */
-			map<uchar, Chars> node_classes;
+			map<transchar, Chars> node_classes;
 			bool class_used = false;
 			for (Chars::iterator k = j->second.begin();
 			     k != j->second.end(); k++) {
-				pair<map<uchar, uchar>::iterator, bool> x = classes.insert(make_pair(*k, next_class));
+				pair<map<transchar, transchar>::iterator, bool> x = classes.insert(make_pair(*k, next_class));
 				if (x.second)
 					class_used = true;
-				pair<map<uchar, Chars>::iterator, bool> y = node_classes.insert(make_pair(x.first->second, Chars()));
+				pair<map<transchar, Chars>::iterator, bool> y = node_classes.insert(make_pair(x.first->second, Chars()));
 				y.first->second.insert(*k);
 			}
 			if (class_used) {
 				next_class++;
 				class_used = false;
 			}
-			for (map<uchar, Chars>::iterator k = node_classes.begin();
+			for (map<transchar, Chars>::iterator k = node_classes.begin();
 			     k != node_classes.end(); k++) {
 			  /**
 			   * If any other characters are in the same class, move
 			   * the characters in this class into their own new
 			   * class
 			   */
-				map<uchar, uchar>::iterator l;
+				map<transchar, transchar>::iterator l;
 				for (l = classes.begin(); l != classes.end(); l++) {
 					if (l->second == k->first &&
 					    k->second.find(l->first) == k->second.end()) {
@@ -1217,24 +1253,24 @@ map<uchar, uchar> DFA::equivalence_classes(dfaflags_t flags)
 
 	if (flags & DFA_DUMP_EQUIV_STATS)
 		fprintf(stderr, "Equiv class reduces to %d classes\n",
-			next_class - 1);
+			next_class.c - 1);
 	return classes;
 }
 
 /**
  * Text-dump the equivalence classes (for debugging).
  */
-void dump_equivalence_classes(ostream &os, map<uchar, uchar> &eq)
+void dump_equivalence_classes(ostream &os, map<transchar, transchar> &eq)
 {
-	map<uchar, Chars> rev;
+	map<transchar, Chars> rev;
 
-	for (map<uchar, uchar>::iterator i = eq.begin(); i != eq.end(); i++) {
+	for (map<transchar, transchar>::iterator i = eq.begin(); i != eq.end(); i++) {
 		Chars &chars = rev.insert(make_pair(i->second, Chars())).first->second;
 		chars.insert(i->first);
 	}
 	os << "(eq):" << "\n";
-	for (map<uchar, Chars>::iterator i = rev.begin(); i != rev.end(); i++) {
-		os << (int)i->first << ':';
+	for (map<transchar, Chars>::iterator i = rev.begin(); i != rev.end(); i++) {
+		os << i->first.c << ':';
 		Chars &chars = i->second;
 		for (Chars::iterator j = chars.begin(); j != chars.end(); j++) {
 			os << ' ' << *j;
@@ -1247,17 +1283,20 @@ void dump_equivalence_classes(ostream &os, map<uchar, uchar> &eq)
  * Replace characters with classes (which are also represented as
  * characters) in the DFA transition table.
  */
-void DFA::apply_equivalence_classes(map<uchar, uchar> &eq)
+void DFA::apply_equivalence_classes(map<transchar, transchar> &eq)
 {
     /**
      * Note: We only transform the transition table; the nodes continue to
      * contain the original characters.
      */
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
-		map<uchar, State *> tmp;
+		map<transchar, State *> tmp;
 		tmp.swap((*i)->trans);
-		for (StateTrans::iterator j = tmp.begin(); j != tmp.end(); j++)
+		for (StateTrans::iterator j = tmp.begin(); j != tmp.end(); j++) {
+			if (j->first.c < 0)
+				continue;
 			(*i)->trans.insert(make_pair(eq[j->first], j->second));
+		}
 	}
 }
 

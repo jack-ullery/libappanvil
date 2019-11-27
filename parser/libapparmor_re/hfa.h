@@ -37,10 +37,13 @@
 
 class State;
 
-typedef map<uchar, State *> StateTrans;
+typedef map<transchar, State *> StateTrans;
 typedef list<State *> Partition;
 
 #include "../immunix.h"
+
+ostream &operator<<(ostream &os, const State &state);
+ostream &operator<<(ostream &os, State &state);
 
 class perms_t {
 public:
@@ -212,7 +215,7 @@ public:
 		}
 	};
 
-	State *next(uchar c) {
+	State *next(transchar c) {
 		State *state = this;
 		do {
 			StateTrans::iterator i = state->trans.find(c);
@@ -229,9 +232,18 @@ public:
 		return NULL;
 	}
 
-	int diff_weight(State *rel);
-	int make_relative(State *rel);
-	void flatten_relative(void);
+	ostream &dump(ostream &os)
+	{
+		cerr << *this << "\n";
+		for (StateTrans::iterator i = trans.begin(); i != trans.end(); i++) {
+			os << "    " << i->first.c << " -> " << *i->second << "\n";
+		}
+		return os;
+	}
+
+	int diff_weight(State *rel, int max_range, int upper_bound);
+	int make_relative(State *rel, int upper_bound);
+	void flatten_relative(State *, int upper_bound);
 
 	int apply_and_clear_deny(void) { return perms.apply_and_clear_deny(); }
 
@@ -248,8 +260,6 @@ public:
 		DiffDag *diff;		/* used during diff encoding */
 	};
 };
-
-ostream &operator<<(ostream &os, const State &state);
 
 class NodeMap: public CacheStats
 {
@@ -326,15 +336,19 @@ public:
 	void dump_dot_graph(ostream &os);
 	void dump_uniq_perms(const char *s);
 
-	map<uchar, uchar> equivalence_classes(dfaflags_t flags);
-	void apply_equivalence_classes(map<uchar, uchar> &eq);
+	map<transchar, transchar> equivalence_classes(dfaflags_t flags);
+	void apply_equivalence_classes(map<transchar, transchar> &eq);
 
 	unsigned int diffcount;
+	int oob_range;
+	int max_range;
+	int ord_range;
+	int upper_bound;
 	Node *root;
 	State *nonmatching, *start;
 	Partition states;
 };
 
-void dump_equivalence_classes(ostream &os, map<uchar, uchar> &eq);
+void dump_equivalence_classes(ostream &os, map<transchar, transchar> &eq);
 
 #endif /* __LIBAA_RE_HFA_H */

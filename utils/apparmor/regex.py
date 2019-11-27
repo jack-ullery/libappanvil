@@ -30,7 +30,7 @@ RE_PATH                 = '/\S*|"/[^"]*"'  # filename (starting with '/') withou
 RE_PROFILE_PATH         = '(?P<%s>(' + RE_PATH + '))'  # quoted or unquoted filename. %s is the match group name
 RE_PROFILE_PATH_OR_VAR  = '(?P<%s>(' + RE_PATH + '|@{\S+}\S*|"@{\S+}[^"]*"))'  # quoted or unquoted filename or variable. %s is the match group name
 RE_SAFE_OR_UNSAFE       = '(?P<execmode>(safe|unsafe))'
-RE_XATTRS               = '(\s+xattrs\s*=\s*\((?P<xattrs>([^)=]+=[^)=]+\s?)+)\)\s*)?'
+RE_XATTRS               = '(\s+xattrs\s*=\s*\((?P<xattrs>([^)=]+(=[^)=]+)?\s?)+)\)\s*)?'
 RE_FLAGS                = '(\s+(flags\s*=\s*)?\((?P<flags>[^)]+)\))?'
 
 RE_PROFILE_END          = re.compile('^\s*\}' + RE_EOL)

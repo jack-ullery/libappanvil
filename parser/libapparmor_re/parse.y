@@ -38,17 +38,17 @@ void regex_error(Node **, const char *, const char *);
 #define YYLEX_PARAM &text
 int regex_lex(YYSTYPE *, const char **);
 
-static inline Chars *insert_char(Chars* cset, uchar a)
+static inline Chars *insert_char(Chars* cset, transchar a)
 {
 	cset->insert(a);
 	return cset;
 }
 
-static inline Chars* insert_char_range(Chars* cset, uchar a, uchar b)
+static inline Chars* insert_char_range(Chars* cset, transchar a, transchar b)
 {
 	if (a > b)
 		swap(a, b);
-	for (uchar i = a; i <= b; i++)
+	for (transchar i = a; i <= b; i++)
 		cset->insert(i);
 	return cset;
 }

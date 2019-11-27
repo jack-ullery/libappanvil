@@ -28,6 +28,7 @@
 
 #define BASE32_FLAGS 0xff000000
 #define DiffEncodeBit32 0x80000000
+#define MATCH_FLAG_OOB_TRANSITION 0x20000000
 #define base_mask_size(X) ((X) & ~BASE32_FLAGS)
 
 using namespace std;
@@ -36,7 +37,7 @@ class CHFA {
 	typedef vector<pair<const State *, size_t> > DefaultBase;
 	typedef vector<pair<const State *, const State *> > NextCheck;
       public:
-	CHFA(DFA &dfa, map<uchar, uchar> &eq, dfaflags_t flags);
+	CHFA(DFA &dfa, map<transchar, transchar> &eq, dfaflags_t flags);
 	void dump(ostream & os);
 	void flex_table(ostream &os, const char *name);
 	void init_free_list(vector<pair<size_t, size_t> > &free_list,
@@ -52,9 +53,9 @@ class CHFA {
 	DefaultBase default_base;
 	NextCheck next_check;
 	map<const State *, size_t> num;
-	map<uchar, uchar> &eq;
-	uchar max_eq;
-	size_t first_free;
+	map<transchar, transchar> &eq;
+	transchar max_eq;
+	ssize_t first_free;
 	unsigned int chfaflags;
 };
 

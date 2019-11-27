@@ -346,6 +346,7 @@ profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE
 			if (strcmp($3.name, "xattrs") != 0)
 				yyerror(_("profile id: invalid conditional group %s=()"), $3.name);
 			free ($3.name);
+			$3.name = NULL;
 			prof->xattrs = $3;
 		}
 		prof->flags = $4;
@@ -1202,6 +1203,15 @@ network_rule: TOK_NETWORK TOK_ID TOK_ID TOK_END_OF_RULE
 		free($2);
 		free($3);
 		$$ = entry;
+	}
+
+cond: TOK_CONDID
+	{
+		struct cond_entry *ent;
+		ent = new_cond_entry($1, 0, NULL);
+		if (!ent)
+			yyerror(_("Memory allocation error."));
+		$$ = ent;
 	}
 
 cond: TOK_CONDID TOK_EQUALS TOK_VALUE

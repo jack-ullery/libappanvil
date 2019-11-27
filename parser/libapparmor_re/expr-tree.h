@@ -45,10 +45,139 @@
 
 using namespace std;
 
-typedef unsigned char uchar;
-typedef set<uchar> Chars;
+/*
+ * transchar - representative input character for state transitions
+ *
+ * the transchar is used as the leaf node in the expr tree created
+ * by parsing an input regex (parse.y), and is used to build both the
+ * states and the transitions for a state machine (hfa.{h,cc}) built
+ * from the expression tree.
+ *
+ * While the state machine is currently based on byte inputs the
+ * transchar abstraction allows for flexibility and the option of
+ * moving to a larger input in the future. It also allows the ability
+ * to specify out of band transitions.
+ *
+ * Out of band transitions allow for code to specify special transitions
+ * that can not be triggered by an input byte stream. As such out of
+ * band transitions can be used to separate logical units of a match.
+ *
+ * eg.
+ * you need to allow an arbitrary data match (.*) followed by an arbitrary
+ * string match ([^\x00]*), and make an acceptance dission based
+ * on both matches.
+ *
+ * One way to do this is to chain the two matches in a single state
+ * machine. However without an out of band transition, the matche pattern
+ * for the data match (.*) could also consume the input for the string match.
+ * To ensure the data pattern match cannot consume characters for the second
+ * match a special character is used. This prevents state machine
+ * generation from intermixing the two expressions. For string matches
+ * this can be achieved with the pattern.
+ *    ([^\x00]*)\x00([\x00]*)
+ * since \x00 can not be matched by the first expression (and is not a
+ * valid character in a C string), the nul character can be used to
+ * separate the string match. This however is not possible when matching
+ * arbitrary data that can have any input character.
+ *
+ * Out of band transitions replace the \x00 transition in the string
+ * example with a new input transition that comes from the driver
+ * code. Once the first match is done, the driver supplies the non-input
+ * character, causing the state machine to transition to the second
+ * match pattern.
+ *
+ * Out of band transitions are specified using negative integers
+ * (-1..-32k). They llow for different transitions if needed (currently
+ * only -1 is used).
+ *
+ * Negative integers were chosen to represent out of band transitions
+ * because it makes the run time match simple, and also keeps the
+ * upper positive integer range open for future input character
+ * expansion.
+ *
+ * When a chfa is built, the out of band transition is encoded as
+ * a negative offset of the same value specified in the transchar from the
+ * state base base value. The check value at the negative offset will
+ * contain the owning state value. The chfa state machine is constructed
+ * in such a way that this value will always be in bounds, and only an
+ * unpack time verification is needed.
+ */
+class transchar {
+public:
+	short c;
 
-ostream &operator<<(ostream &os, uchar c);
+	transchar(unsigned char a): c((unsigned short) a) {}
+	transchar(short a, bool oob __attribute__((unused))): c(a) {}
+	transchar(const transchar &a): c(a.c) {}
+	transchar(): c(0) {}
+
+	bool operator==(const transchar &rhs) const {
+		return this->c == rhs.c;
+	}
+	bool operator==(const int &rhs) const {
+		return this->c == rhs;
+	}
+	bool operator!=(const transchar &rhs) const {
+		return this->c != rhs.c;
+	}
+	bool operator>(const transchar &rhs) const {
+		return this->c > rhs.c;
+	}
+	bool operator<(const transchar &rhs) const {
+		return this->c < rhs.c;
+	}
+	bool operator<=(const transchar &rhs) const {
+		return this->c <= rhs.c;
+	}
+	transchar &operator++() {		// prefix
+		(this->c)++;
+		return *this;
+	}
+	transchar operator++(int) {		// postfix
+		transchar tmp(*this);
+		(this->c)++;
+		return tmp;
+	}
+
+	ostream &dump(ostream &os) const;
+
+};
+
+class Chars {
+public:
+	set<transchar> chars;
+
+	typedef set<transchar>::iterator iterator;
+	iterator begin() { return chars.begin(); }
+	iterator end() { return chars.end(); }
+
+	Chars(): chars() {}
+
+	bool empty() const
+	{
+		return chars.empty();
+	}
+	std::size_t size() const
+	{
+		return chars.size();
+	}
+	iterator find(const transchar &key)
+	{
+		return chars.find(key);
+	}
+	pair<iterator,bool> insert(transchar c)
+	{
+		return chars.insert(c);
+	}
+	pair<iterator,bool> insert(char c)
+	{
+		transchar tmp(c);
+		return chars.insert(tmp);
+	}
+};
+
+
+ostream &operator<<(ostream &os, transchar c);
 
 /* Compute the union of two sets. */
 template<class T> set<T> operator+(const set<T> &a, const set<T> &b)
@@ -82,12 +211,12 @@ ostream &operator<<(ostream &os, const NodeSet &state);
  * enumerating all the explicit tranitions for default matches.
  */
 typedef struct Cases {
-	typedef map<uchar, NodeSet *>::iterator iterator;
+	typedef map<transchar, NodeSet *>::iterator iterator;
 	iterator begin() { return cases.begin(); }
 	iterator end() { return cases.end(); }
 
 	Cases(): otherwise(0) { }
-	map<uchar, NodeSet *> cases;
+	map<transchar, NodeSet *> cases;
 	NodeSet *otherwise;
 } Cases;
 
@@ -150,11 +279,11 @@ public:
 	 */
 	virtual int min_match_len() { return 0; }
 	/*
-	 * contains_null returns if the expression tree contains a null character.
-	 * Null characters indicate that the rest of the DFA matches the xattrs and
-	 * not the path. This is used to compute min_match_len.
+	 * contains_oob returns if the expression tree contains a oob character.
+	 * oob characters indicate that the rest of the DFA matches has an
+	 * out of band transition. This is used to compute min_match_len.
 	 */
-	virtual bool contains_null() { return false; }
+	virtual bool contains_oob() { return false; }
 
 	virtual int eq(Node *other) = 0;
 	virtual ostream &dump(ostream &os) = 0;
@@ -265,12 +394,12 @@ public:
 /* Match one specific character (/c/). */
 class CharNode: public CNode {
 public:
-	CharNode(uchar c): c(c) { }
+	CharNode(transchar c): c(c) { }
 	void follow(Cases &cases)
 	{
 		NodeSet **x = &cases.cases[c];
 		if (!*x) {
-			if (cases.otherwise)
+			if (cases.otherwise && c.c >= 0)
 				*x = new NodeSet(*cases.otherwise);
 			else
 				*x = new NodeSet;
@@ -292,16 +421,19 @@ public:
 
 	int min_match_len()
 	{
-		if (c == 0) {
-			// Null character indicates end of string.
+		if (c < 0) {
+			// oob characters indicates end of string.
+			// note: does NOT currently calc match len
+			// base on NULL char separator transitions
+			// which some match rules use.
 			return 0;
 		}
 		return 1;
 	}
 
-	bool contains_null() { return c == 0; }
+	bool contains_oob() { return c < 0; }
 
-	uchar c;
+	transchar c;
 };
 
 /* Match a set of characters (/[abc]/). */
@@ -313,7 +445,7 @@ public:
 		for (Chars::iterator i = chars.begin(); i != chars.end(); i++) {
 			NodeSet **x = &cases.cases[*i];
 			if (!*x) {
-				if (cases.otherwise)
+				if (cases.otherwise && i->c >= 0)
 					*x = new NodeSet(*cases.otherwise);
 				else
 					*x = new NodeSet;
@@ -344,16 +476,16 @@ public:
 
 	int min_match_len()
 	{
-		if (contains_null()) {
+		if (contains_oob()) {
 			return 0;
 		}
 		return 1;
 	}
 
-	bool contains_null()
+	bool contains_oob()
 	{
 		for (Chars::iterator i = chars.begin(); i != chars.end(); i++) {
-			if (*i == 0) {
+			if (*i < 0) {
 				return true;
 			}
 		}
@@ -382,7 +514,8 @@ public:
 		cases.otherwise->insert(followpos.begin(), followpos.end());
 		for (Cases::iterator i = cases.begin(); i != cases.end();
 		     i++) {
-			if (chars.find(i->first) == chars.end())
+			/* does not match oob transition chars */
+			if (i->first.c >=0 && chars.find(i->first) == chars.end())
 				i->second->insert(followpos.begin(),
 						  followpos.end());
 		}
@@ -410,16 +543,16 @@ public:
 
 	int min_match_len()
 	{
-		if (contains_null()) {
+		if (contains_oob()) {
 			return 0;
 		}
 		return 1;
 	}
 
-	bool contains_null()
+	bool contains_oob()
 	{
 		for (Chars::iterator i = chars.begin(); i != chars.end(); i++) {
-			if (*i == 0) {
+			if (*i < 0) {
 				return false;
 			}
 		}
@@ -440,7 +573,9 @@ public:
 		cases.otherwise->insert(followpos.begin(), followpos.end());
 		for (Cases::iterator i = cases.begin(); i != cases.end();
 		     i++)
-			i->second->insert(followpos.begin(), followpos.end());
+			/* does not match oob transition chars */
+			if (i->first.c >= 0)
+				i->second->insert(followpos.begin(), followpos.end());
 	}
 	int eq(Node *other)
 	{
@@ -449,8 +584,6 @@ public:
 		return 0;
 	}
 	ostream &dump(ostream &os) { return os << "."; }
-
-	bool contains_null() { return true; }
 };
 
 /* Match a node zero or more times. (This is a unary operator.) */
@@ -479,7 +612,7 @@ public:
 		return os << ")*";
 	}
 
-	bool contains_null() { return child[0]->contains_null(); }
+	bool contains_oob() { return child[0]->contains_oob(); }
 };
 
 /* Match a node zero or one times. */
@@ -528,7 +661,7 @@ public:
 		return os << ")+";
 	}
 	int min_match_len() { return child[0]->min_match_len(); }
-	bool contains_null() { return child[0]->contains_null(); }
+	bool contains_oob() { return child[0]->contains_oob(); }
 };
 
 /* Match a pair of consecutive nodes. */
@@ -579,18 +712,18 @@ public:
 	int min_match_len()
 	{
 		int len = child[0]->min_match_len();
-		if (child[0]->contains_null()) {
-			// Null characters are used to indicate when the DFA transitions
+		if (child[0]->contains_oob()) {
+			// oob characters are used to indicate when the DFA transitions
 			// from matching the path to matching the xattrs. If the left child
-			// contains a null character, the right side doesn't contribute to
+			// contains an oob character, the right side doesn't contribute to
 			// the path match.
 			return len;
 		}
 		return len + child[1]->min_match_len();
 	}
-	bool contains_null()
+	bool contains_oob()
 	{
-		return child[0]->contains_null() || child[1]->contains_null();
+		return child[0]->contains_oob() || child[1]->contains_oob();
 	}
 };
 
@@ -639,9 +772,9 @@ public:
 		}
 		return m2;
 	}
-	bool contains_null()
+	bool contains_oob()
 	{
-		return child[0]->contains_null() || child[1]->contains_null();
+		return child[0]->contains_oob() || child[1]->contains_oob();
 	}
 };
 

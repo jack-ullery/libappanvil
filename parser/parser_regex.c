@@ -227,7 +227,18 @@ pattern_t convert_aaregex_to_pcre(const char *aare, int anchor, int glob,
 			} else {
 				update_re_pos(sptr - aare);
 				ptype = ePatternRegex;
-				pcre.append("[^/\\x00]");
+				switch (glob) {
+				case glob_default:
+					pcre.append("[^/\\x00]");
+					break;
+				case glob_null:
+					pcre.append("[^/]");
+					break;
+				default:
+					PERROR(_("%s: Invalid glob type %d\n"), progname, glob);
+					error = e_parse_error;
+					break;
+				}
 			}
 			break;
 
@@ -446,6 +457,22 @@ char *get_xattr_value(struct cond_entry *entry)
 	return entry->vals->value;
 }
 
+/* do we want to warn once/profile or just once per compile?? */
+static void warn_once_xattr(const char *name)
+{
+	static const char *warned_name = NULL;
+
+	if ((warnflags & WARN_RULE_DOWNGRADED) && warned_name != name) {
+		cerr << "Warning from profile " << name << " (";
+		if (current_filename)
+			cerr << current_filename;
+		else
+			cerr << "stdin";
+		cerr << ") xattr attachment conditional ignored\n";
+		warned_name = name;
+	}
+}
+
 static int process_profile_name_xmatch(Profile *prof)
 {
 	std::string tbuf;
@@ -497,6 +524,12 @@ static int process_profile_name_xmatch(Profile *prof)
 			}
 		}
 		if (prof->xattrs.list) {
+			if (!(kernel_supports_domain_xattr && kernel_supports_oob)) {
+				warn_once_xattr(name);
+				free_cond_entry_list(prof->xattrs);
+				goto build;
+			}
+
 			for (entry = prof->xattrs.list; entry; entry = entry->next) {
 				xattr_value = get_xattr_value(entry);
 				if (!xattr_value)
@@ -509,15 +542,30 @@ static int process_profile_name_xmatch(Profile *prof)
 				 */
 				int len;
 				tbuf.clear();
+				/* prepend \x00 to every value. This is
+				 * done to separate the existance of the
+				 * xattr from a null value match.
+				 *
+				 * if an xattr exists, a single \x00 will
+				 * be done before matching any of the
+				 * xattr_value data.
+				 *
+				 * the pattern for a required xattr
+				 *    \x00{value_match}\x-1
+				 * optional xattr (null alternation)
+				 *    {\x00{value_match},}\x-1
+				 */
+				tbuf.append("\\x00");
 				convert_aaregex_to_pcre(xattr_value, 0,
-							glob_default, tbuf,
+							glob_null, tbuf,
 							&len);
-				if (!rules->append_rule(tbuf.c_str(), dfaflags)) {
+				if (!rules->append_rule(tbuf.c_str(), true, true, dfaflags)) {
 					delete rules;
 					return FALSE;
 				}
 			}
 		}
+build:
 		prof->xmatch = rules->create_dfa(&prof->xmatch_size, &prof->xmatch_len, dfaflags);
 		delete rules;
 		if (!prof->xmatch)
@@ -613,7 +661,7 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 			perms |= LINK_TO_LINK_SUBSET(perms);
 			vec[1] = "/[^/].*";
 		}
-		if (!dfarules->add_rule_vec(entry->deny, perms, entry->audit & AA_LINK_BITS, 2, vec, dfaflags))
+		if (!dfarules->add_rule_vec(entry->deny, perms, entry->audit & AA_LINK_BITS, 2, vec, dfaflags, false))
 			return FALSE;
 	}
 	if (is_change_profile_mode(entry->mode)) {
@@ -666,12 +714,12 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 		/* regular change_profile rule */
 		if (!dfarules->add_rule_vec(entry->deny,
 					    AA_CHANGE_PROFILE | onexec_perms,
-					    0, index - 1, &vec[1], dfaflags))
+					    0, index - 1, &vec[1], dfaflags, false))
 			return FALSE;
 
 		/* onexec rules - both rules are needed for onexec */
 		if (!dfarules->add_rule_vec(entry->deny, onexec_perms,
-					    0, 1, vec, dfaflags))
+					    0, 1, vec, dfaflags, false))
 			return FALSE;
 
 		/**
@@ -680,7 +728,7 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 		 */
 		onexec_perms |= (entry->mode & (AA_EXEC_BITS | ALL_AA_EXEC_UNSAFE));
 		if (!dfarules->add_rule_vec(entry->deny, onexec_perms,
-					    0, index, vec, dfaflags))
+					    0, index, vec, dfaflags, false))
 			return FALSE;
 	}
 	return TRUE;
