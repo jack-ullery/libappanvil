@@ -83,7 +83,7 @@ bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
 	for (int i = 1; i < count; i++) {
 		Node *subtree = NULL;
 		if (regex_parse(&subtree, rulev[i]))
-			return false;
+			goto err;
 		if (oob)
 			tree = cat_with_oob_seperator(tree, subtree);
 		else
@@ -136,13 +136,17 @@ bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
 	rule_count++;
 
 	return true;
+
+err:
+	delete tree;
+	return false;
 }
 
 /*
  * append_rule is like add_rule, but appends the rule to any existing rules
  * with a separating transition. The appended rule matches with the same
- * permissions
- * as the rule it's appended to.
+ * permissions as the rule it's appended to. If there are no existing rules
+ * append_rule returns true.
  *
  * This is used by xattrs matching where, after matching the path, the DFA is
  * advanced by a null character for each xattr.
@@ -171,6 +175,11 @@ bool aare_rules::append_rule(const char *rule, bool oob, bool with_perm,
 	 * lets each rule end up in an accepting state.
 	 */
 	tree = new CatNode(oob ? new CharNode(transchar(-1, true)) : new CharNode(0), tree);
+	if (expr_map.size() == 0) {
+		// There's nothing to append to. Free the tree reference.
+		delete tree;
+		return true;
+	}
 	PermExprMap::iterator it;
 	for (it = expr_map.begin(); it != expr_map.end(); it++) {
 		if (with_perm)
