@@ -34,6 +34,7 @@
   #include <abstractions/audio> # for alert messages
   #include <abstractions/base>
   #include <abstractions/dbus-accessibility-strict>
+  #include <abstractions/dbus-network-manager-strict>
   #include <abstractions/dbus-session-strict>
   #include <abstractions/dbus-strict>
   #include <abstractions/kde-icon-cache-write>
@@ -58,48 +59,6 @@
   owner /{,var/}run/user/[0-9]*/orcexec.* rwm, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
 
   # DBus
-
-  dbus send
-      bus=system
-      path=/org/freedesktop/NetworkManager
-      interface=org.freedesktop.DBus.Properties
-      member=GetAll
-      peer=(name=org.freedesktop.NetworkManager),
-
-  dbus send
-      bus=system
-      path=/org/freedesktop/NetworkManager
-      interface=org.freedesktop.NetworkManager
-      member=GetDevices
-      peer=(name=org.freedesktop.NetworkManager),
-
-  dbus send
-      bus=system
-      path=/org/freedesktop/NetworkManager/ActiveConnection/[0-9]*
-      interface=org.freedesktop.DBus.Properties
-      member=GetAll
-      peer=(name=org.freedesktop.NetworkManager),
-
-  dbus send
-      bus=system
-      path=/org/freedesktop/NetworkManager/Devices/[0-9]*
-      interface=org.freedesktop.DBus.Properties
-      member=GetAll
-      peer=(name=org.freedesktop.NetworkManager),
-
-  dbus send
-      bus=system
-      path=/org/freedesktop/NetworkManager/Settings/[0-9]*
-      interface=org.freedesktop.NetworkManager.Settings.Connection
-      member=GetSettings
-      peer=(name=org.freedesktop.NetworkManager),
-
-  dbus send
-      bus=system
-      path=/org/freedesktop/NetworkManager/Settings
-      interface=org.freedesktop.NetworkManager.Settings
-      member=ListConnections
-      peer=(name=org.freedesktop.NetworkManager),
 
   dbus send
      bus=session
