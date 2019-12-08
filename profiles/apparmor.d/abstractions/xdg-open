@@ -18,6 +18,14 @@
 # profile foo//xdg-open {
 #   #include <abstractions/xdg-open>
 #
+#   # Enable a11y support if considered required by
+#   # profile author for (rare) error message boxes.
+#   #include <abstractions/dbus-accessibility>
+#
+#   # Enable gstreamer support if considered required by
+#   # profile author for (rare) error message boxes.
+#   #include if exists <abstractions/gstreamer>
+#
 #   # needed for ubuntu-* abstractions
 #   #include <abstractions/ubuntu-helpers>
 #
