@@ -27,6 +27,10 @@
 #   #include <abstractions/ubuntu-browsers>
 #   #include <abstractions/ubuntu-email>
 #
+#   # Add if accesibility access is considered as required
+#   # (for message boxe in case exo-open fails)
+#   #include <abstractions/dbus-accessibility>
+#
 #   # < add additional allowed applications here >
 # }
 # ```
@@ -59,10 +63,6 @@
   owner /{,var/}run/user/[0-9]*/orcexec.* rwm, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
 
   # DBus
-
-  dbus send
-     bus=session
-     peer=(name=org.a11y.Bus),
 
   dbus
       bus=session
