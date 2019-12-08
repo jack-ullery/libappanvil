@@ -31,6 +31,10 @@
 #   # (for message boxe in case exo-open fails)
 #   #include <abstractions/dbus-accessibility>
 #
+#   # Add if audio support for message box is
+#   # considered as required.
+#   #include if exists <abstractions/gstreamer>
+#
 #   # < add additional allowed applications here >
 # }
 # ```
@@ -54,14 +58,6 @@
   /usr/bin/kde-open5 rix,
   /usr/lib/@{multiarch}/libexec/kf5/kioslave{,5} ix,
 
-  # Other executables
-
-  /usr/lib/gstreamer-[0-9]*.[0-9]*/gst-plugin-scanner PUx, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
-
-  # Additional libraries
-
-  owner /{,var/}run/user/[0-9]*/orcexec.* rwm, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
-
   # DBus
 
   dbus
@@ -82,16 +78,9 @@
 
   # System files
 
-  /dev/ r, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
   /dev/tty r,
-  /dev/video[0-9]* rw, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
   /etc/xdg/accept-languages.codes r,
   /etc/xdg/menus/{,*/} r,
-  /run/udev/data/c* r, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
-  /sys/bus/ r, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
-  /sys/class/ r, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
-  /sys/class/video4linux/ r, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
-  /sys/devices/pci[0-9]*/**/uevent r, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
   /usr/share/*fonts*/conf.avail/*.conf r, # for openSUSE, when showing error message box
   /usr/share/ghostscript/fonts/ r, # for openSUSE, when showing error message box
   /usr/share/hwdata/pnp.ids r, # for openSUSE, when showing error message box, for QXcbConnection::initializeScreens() from libQt5XcbQpa.so
@@ -109,6 +98,5 @@
   owner /tmp/xauth-[0-9]*-_[0-9] r, # for libQt5XcbQpa.so
   owner /{,var/}run/user/[0-9]*/#[0-9]* rw, # for /run/user/1000/#13
   owner /{,var/}run/user/[0-9]*/kioclient*slave-socket lrw -> /{,var/}/run/user/[0-9]/#[0-9]*, # for KIO::Slave::holdSlave(QString const&, QUrl const&) () from libKF5KIOCore.so (not 100% sure)
-  owner @{HOME}/.cache/gstreamer-[0-9]*.[0-9]*/registry.*.bin{,.tmp*} rw, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
   owner @{HOME}/.cache/kio_http/ rw,
 
