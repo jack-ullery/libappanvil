@@ -48,7 +48,7 @@
   # Main executables
 
   /usr/bin/kde-open5 rix,
-  /usr/lib/@{multiarch}/libexec/kf5/kioslave ix,
+  /usr/lib/@{multiarch}/libexec/kf5/kioslave{,5} ix,
 
   # Other executables
 
@@ -110,4 +110,5 @@
   owner /{,var/}run/user/[0-9]*/#[0-9]* rw, # for /run/user/1000/#13
   owner /{,var/}run/user/[0-9]*/kioclient*slave-socket lrw -> /{,var/}/run/user/[0-9]/#[0-9]*, # for KIO::Slave::holdSlave(QString const&, QUrl const&) () from libKF5KIOCore.so (not 100% sure)
   owner @{HOME}/.cache/gstreamer-[0-9]*.[0-9]*/registry.*.bin{,.tmp*} rw, # for error message alert sound with gstreamer backend. TODO: use gstreamer abstraction ?
+  owner @{HOME}/.cache/kio_http/ rw,
 
