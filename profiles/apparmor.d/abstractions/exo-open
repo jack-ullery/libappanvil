@@ -51,12 +51,10 @@
 
   # Deny DBus
 
-  # for GTK error message dialog? overkill?
+  # for GTK error message dialog, not required exo-open to work.
   deny dbus send
     bus=session
     path=/org/gtk/vfs/mounttracker,
-
-  # end for errmor message box
 
   # System files
 
