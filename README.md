@@ -45,6 +45,24 @@ Security issues can be filed as security bugs on launchpad
 or directed to `security@apparmor.net`. Additional details can be found
 in the [wiki](https://gitlab.com/apparmor/apparmor/wikis/home#reporting-security-vulnerabilities).
 
+
+--------------
+Privacy Policy
+--------------
+
+The AppArmor security project respects users privacy and data and does not collect data from or on its users beyond what is required for a given component to function.
+
+The AppArmor kernel security module will log violations to the audit subsystem, and those will be logged/forwarded/recorded on the user's system(s) according to how the administrator has logging configured. Again this is not forwarded to or collected by the AppArmor project.
+
+The AppArmor userspace tools do not collect information on the system user beyond the logs and information needed to interact with the user. This is not forwarded to, nor collected by the AppArmor project.
+
+Users may submit information as part of an email, bug report or merge request, etc. and that will be recorded as part of the mailing list, bug/issue tracker, or code repository but only as part of a user initiated action.
+
+The AppArmor project does not collect information from contributors beyond their interactions with the AppArmor project, code, and community. However contributors are subject to the terms and conditions and privacy policy of the individual platforms (currently GitLab and LaunchPad) should they choose to contribute through those platforms. And those platforms may collect data on the user that the AppArmor project does not.
+
+Currently both GitLab an LaunchPad require a user account to submit patches or report bugs and issues. If a contributor does not wish to create an account for these platforms the mailing list is available. Membership in the list is not required. Content from non-list members will be sent to moderation, to ensure that it is on topic, so there may be a delay in choosing to interact in this way.
+
+
 -------------
 Source Layout
 -------------
