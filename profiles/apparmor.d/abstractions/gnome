@@ -51,6 +51,8 @@
   owner @{HOME}/.gtk-bookmarks          r,
   owner @{HOME}/.themes/                r,
   owner @{HOME}/.themes/**              r,
+  owner @{user_share_dirs}/themes/      r,
+  owner @{user_share_dirs}/themes/**    r,
 
   # for gtk file dialog
   owner @{HOME}/.config/gtk-2.0/                    w,
