@@ -89,7 +89,7 @@ B<COMMENT> = '#' I<TEXT> [ '\r' ] '\n'
 
 B<TEXT> = any characters
 
-B<PROFILE> = ( I<PROFILE HEAD> ) [ I<ATTACHMENT SPECIFICATION> ] [ I<PROFILE XATTR CONDS> ] [ I<PROFILE FLAG CONDS> ] '{' ( I<RULES> )* '}'
+B<PROFILE> = ( I<PROFILE HEAD> ) [ I<ATTACHMENT SPECIFICATION> ] [ I<PROFILE FLAG CONDS> ] '{' ( I<RULES> )* '}'
 
 B<PROFILE HEAD> = [ 'profile' ] I<FILEGLOB> | 'profile' I<PROFILE NAME>
 
@@ -99,7 +99,9 @@ B<QUOTED PROFILE NAME> = '"' I<UNQUOTED PROFILE NAME> '"'
 
 B<UNQUOTED PROFILE NAME> = (must start with alphanumeric character (after variable expansion), or '/' B<AARE> have special meanings; see below. May include I<VARIABLE>. Rules with embedded spaces or tabs must be quoted.)
 
-B<ATTACHMENT SPECIFICATION> = I<FILEGLOB>
+B<ATTACHMENT SPECIFICATION> = [ I<PROFILE_EXEC_COND> ] [ I<PROFILE XATTR CONDS> ]
+
+B<PROFILE_EXEC_COND> = I<FILEGLOB>
 
 B<PROFILE XATTR CONDS> =  [ 'xattrs=' ] '(' comma or white space separated list of I<PROFILE XATTR> ')'
 
@@ -109,7 +111,11 @@ B<XATTR VALUE FILEGLOB> = I<FILEGLOB>
 
 B<PROFILE FLAG CONDS> =  [ 'flags=' ] '(' comma or white space separated list of I<PROFILE FLAGS> ')'
 
-B<PROFILE FLAGS> = 'complain' | 'audit' | 'enforce' | 'mediate_deleted' | 'attach_disconnected' | 'chroot_relative'
+B<PROFILE FLAGS> = I<PROFILE MODE> | I<AUDIT_MODE> | 'mediate_deleted' | 'attach_disconnected' | 'chroot_relative'
+
+B<PROFILE MODE> = 'enforce' | 'complain'
+
+B<AUDIT MODE> = 'audit'
 
 B<RULES> = [ ( I<LINE RULES> | I<COMMA RULES> ',' | I<BLOCK RULES> )
 
@@ -327,6 +333,136 @@ applications exist, including an Apache module, mod_apparmor(5); a PAM
 module, pam_apparmor; and a Tomcat valve, tomcat_apparmor. Applications
 written or modified to use change_profile(2) transition permanently to the
 specified profile. libvirt is one such application.
+
+=head2 Profile Head
+
+The profile head consists of a required name that is unique and optional
+attachment conditionals and control flags.
+
+=head3 Name
+
+The name of the profile is its identifier. It is what is displayed
+during introspection (eg. ps -Z), and defines how the profile is
+referenced by policy rules for any policy interaction via ipc or
+domain changes. It is recommended that the name be kept short and have
+meaning for the application it is being applied eg. I<firefox> for the
+firefox web browser or its functional role eg. log_admin.
+
+If the name is an applications full absolute path name
+eg. I</usr/bin/firefox> and an exec attachment conditional is not
+specified the name is also used as the profile's exec attachment
+conditional. This use however has been deprecated and is discouraged
+as it makes for long names that can make profile rules difficult to
+understand, and may not be fully displayed by some introspection
+tools.
+
+=head3 Attachment Conditionals
+
+The attachment conditionals are used during profile changes to
+determine whether a profile is a match for the proposed profile
+transition. The attachment conditionals are optional, how and when
+they are applied is determined by the specific condition(s) used.
+
+When attachment conditionals are used, the attachment conditionals for
+all profiles in the namespace will be evaluated. The profile with the
+set of attachments that result in the best match will become the new
+profile after a transition operation. Attachments that don't match
+will result in the profile not being available for transition.
+
+If no conditionals are specified the profile will only be used if a
+transition explicitly specifies the profile name.
+
+=head4 Exec Attachment Conditional
+
+The exec attachment conditional governs how closely the profile
+matches an executable program. This conditional is only used during an
+exec operation when the matching exec rule specifies either a B<px> or
+B<cx> (or their derivatives) transition type. The exec attachment
+conditional will also be used by tasks that are I<unconfined> as they
+use a B<pix> transition rule.
+
+If there are no attachment matches then it is up to the exec rule to
+determine what happens (fail or a fallback option).
+
+Note: see profile I<Name> for information around using the profile name
+as an attachment conditional.
+
+Exec attachment conditionals can contain variable names and pattern
+matching.  They use a longest left match heuristic to deterime the
+winner in the case of multiple matches at run time. The exact
+implementation of this resolution is kernel specific and has improved
+over time, while retaining backwards compatibility. If the heuristic
+can not determine a winner between multiple matches the exec will be
+denied.
+
+=head4 Extended Attributes Attachment Conditional
+
+AppArmor profiles have the ability to target files based on their xattr(7)
+values in addition to their path. For example, the following profile matches
+files in /usr/bin with the attribute "security.apparmor" and value "trusted":
+
+  /usr/bin/* xattrs(security.apparmor="trusted") {
+    # ...
+  }
+
+See apparmor_xattrs(7) for further details.
+
+
+=head3 Flags
+
+The profile flags allow modifying the behavior of the profile. If a
+profile flag is specified it takes priority over any conflicting flags
+that have been specified by rules in the profile body.
+
+=head4 Profile Mode
+
+The profile mode allow controlling the enforcement behavior of the
+profile rules.
+
+If no mode is specified the profile defaults to I<enforce> mode.
+
+=over 8
+
+=item B<enforce> For a given action, if the profile rules do not grant
+permission the action will be denied, with an I<EACCES> or I<EPERM>
+error code returned to userspace, and the violation will be logged
+with a tag of the access being B<DENIED>.
+
+=item B<complain> For a given action, if the profile rules do not grant
+permission the action will be allowed, but the violation will be logged
+with a tag of the access being B<ALLOWED>.
+
+=back
+
+=head4 Audit Mode
+
+The audit mode allows control of how AppArmor messages are are logged
+to the audit system.
+
+=over 8
+
+=item B<audit> This flag causes all actions whether allowed or denied to be
+logged.
+
+=back
+
+=head4 Misc modes
+
+=over 8
+
+=item B<mediate_deleted> This forces AppArmor to mediate deleted files
+as if they still exist in the file system.
+
+=item B<attach_disconnected> This forces AppArmor to attach
+disconnected objects to the task's namespace and mediate them as
+though they are part of the namespace. WARNING this mode is unsafe and
+can result in aliasing and access to objects that should not be
+allowed. Its intent is a debug and policy development tool.
+
+=item B<chroot_relative> This forces file names to be relative to a
+chroot and behave as if the chroot is a mount namespace.
+
+=back
 
 =head2 Access Modes
 
@@ -1400,18 +1536,6 @@ Files and directories anywhere underneath F</tmp>.
 Directories anywhere underneath F</tmp>.
 
 =back
-
-=head2 Extended Attributes
-
-AppArmor profiles have the ability to target files based on their xattr(7)
-values in addition to their path. For example, the following profile matches
-files in /usr/bin with the attribute "security.apparmor" and value "trusted":
-
-  /usr/bin/* xattrs(security.apparmor="trusted") {
-    # ...
-  }
-
-See apparmor_xattrs(7) for further details.
 
 =head2 Rule Qualifiers
 
