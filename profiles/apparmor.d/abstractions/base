@@ -27,9 +27,9 @@
   # time and getrandom()/{,u}random and, when available, runs under an
   # unprivilged, dedicated user).
   /run/uuidd/request             r,
-  /etc/locale/**                 r,
-  /etc/locale.alias              r,
-  /etc/localtime                 r,
+  /{usr/,}etc/locale/**          r,
+  /{usr/,}etc/locale.alias       r,
+  /{usr/,}etc/localtime          r,
   /usr/share/locale-bundle/**    r,
   /usr/share/locale-langpack/**  r,
   /usr/share/locale/**           r,
@@ -52,14 +52,14 @@
   /usr/lib/@{multiarch}/gconv/gconv-modules* mr,
 
   # used by glibc when binding to ephemeral ports
-  /etc/bindresvport.blacklist    r,
+  /{usr/,}etc/bindresvport.blacklist    r,
 
   # ld.so.cache and ld are used to load shared libraries; they are best
   # available everywhere
-  /etc/ld.so.cache               mr,
-  /etc/ld.so.conf                r,
-  /etc/ld.so.conf.d/{,*.conf}    r,
-  /etc/ld.so.preload             r,
+  /{usr/,}etc/ld.so.cache               mr,
+  /{usr/,}etc/ld.so.conf                r,
+  /{usr/,}etc/ld.so.conf.d/{,*.conf}    r,
+  /{usr/,}etc/ld.so.preload             r,
   /{usr/,}lib{,32,64}/ld{,32,64}-*.so   mr,
   /{usr/,}lib/@{multiarch}/ld{,32,64}-*.so    mr,
   /{usr/,}lib/tls/i686/{cmov,nosegneg}/ld-*.so     mr,
