@@ -44,6 +44,7 @@ test-all:
       - make -C utils check PYFLAKES=/usr/bin/pyflakes3 PYTHON_VERSIONS=/usr/bin/python3
       - make -C changehat/mod_apparmor check
       - make -C profiles check-parser
+      - make -C profiles check-abstractions.d
 
 # Disabled due to aa-logprof dependency on /sbin/apparmor_parser existing
 #      - make -C profiles check-profiles
