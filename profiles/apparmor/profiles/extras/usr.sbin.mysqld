@@ -41,6 +41,6 @@
   /var/log/mysql/mysqld-upgrade-run.log w,
   /var/log/mysql/mysqld.log w,
   /var/log/mysql/mysqld.log-20* w,
-  /{,var/}run/mysql/mysqld.pid w,
+  /{,var/}run/mysql{,d}/mysqld.pid w,
 
 }
