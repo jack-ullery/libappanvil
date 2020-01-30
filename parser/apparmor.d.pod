@@ -1196,7 +1196,7 @@ E.G.
 
     network unix stream,   =>  unix stream,
 
-Fine grained mediation rules however can not be lossly converted back
+Fine grained mediation rules however can not be losslessly converted back
 to the coarse grained network rule; e.g.
 
    unix bind addr=@example,
