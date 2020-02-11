@@ -80,3 +80,5 @@
 
   owner @{HOME}/.local/share/applications/{,*.desktop} r,
 
+  # Include additions to the abstraction
+  #include if exists <abstractions/xdg-open.d>
