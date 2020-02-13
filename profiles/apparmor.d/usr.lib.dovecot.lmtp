@@ -29,7 +29,7 @@
 
   @{HOME}/.dovecot.svbin r,
 
-  /proc/*/mounts r,
+  @{PROC}/*/mounts r,
   /tmp/dovecot.lmtp.* rw,
   /usr/lib/dovecot/lmtp mr,
   @{run}/dovecot/mounts r,
