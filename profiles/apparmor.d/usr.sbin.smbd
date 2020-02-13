@@ -52,6 +52,7 @@ profile smbd /usr/{bin,sbin}/smbd {
   /var/spool/samba/** rw,
 
   @{HOMEDIRS}/** lrwk,
+  /var/lib/samba/usershares/{,**} lrwk,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.smbd>
