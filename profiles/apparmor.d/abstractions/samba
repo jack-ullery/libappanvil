@@ -20,10 +20,12 @@
   /var/log/samba/cores/ rw,
   /var/log/samba/cores/** rw,
   /var/log/samba/* w,
-  /{,var/}run/samba/ w,
-  /{,var/}run/samba/*.tdb rw,
-  /{{var/,}run,var/cache}/samba/msg.lock/ rwk,
-  /{{var/,}run,var/cache}/samba/msg.lock/[0-9]* rwk,
+  @{run}/samba/ w,
+  @{run}/samba/*.tdb rw,
+  @{run}/samba/msg.lock/ rwk,
+  @{run}/samba/msg.lock/[0-9]* rwk,
+  /var/cache/samba/msg.lock/ rwk,
+  /var/cache/samba/msg.lock/[0-9]* rwk,
 
   # required for clustering
   /var/lib/ctdb/** rwk,

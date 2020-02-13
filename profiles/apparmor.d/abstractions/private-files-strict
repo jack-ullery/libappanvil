@@ -12,7 +12,7 @@
   audit deny @{HOME}/.gnome2/ w,
   audit deny @{HOME}/.gnome2/keyrings/{,**} mrwkl,
   # don't allow access to any gnome-keyring modules
-  audit deny /{,var/}run/user/[0-9]*/keyring** mrwkl,
+  audit deny @{run}/user/[0-9]*/keyring** mrwkl,
   audit deny @{HOME}/.mozilla/{,**} mrwkl,
   audit deny @{HOME}/.config/ w,
   audit deny @{HOME}/.config/chromium/{,**} mrwkl,

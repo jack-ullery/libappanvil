@@ -38,10 +38,10 @@
 
   /{usr/,}etc/resolv.conf r,
   # On systems where /etc/resolv.conf is managed programmatically, it is
-  # a symlink to /{,var/}run/(whatever program is managing it)/resolv.conf.
-  /{,var/}run/{resolvconf,NetworkManager,systemd/resolve,connman,netconfig}/resolv.conf r,
-  /{usr/,}etc/resolvconf/run/resolv.conf r,
-  /{,var/}run/systemd/resolve/stub-resolv.conf r,
+  # a symlink to @{run}/(whatever program is managing it)/resolv.conf.
+  @{run}/{resolvconf,NetworkManager,systemd/resolve,connman,netconfig}/resolv.conf r,
+  /{usr/,}etc/resolvconf/run/resolv.conf  r,
+  @{run}/systemd/resolve/stub-resolv.conf r,
 
   /{usr/,}etc/samba/lmhosts  r,
   /{usr/,}etc/services       r,
@@ -49,12 +49,12 @@
   /var/lib/misc/*.db      r,
   # The Name Service Cache Daemon can cache lookups, sometimes leading
   # to vast speed increases when working with network-based lookups.
-  /{,var/}run/.nscd_socket   rw,
-  /{,var/}run/nscd/socket    rw,
+  @{run}/.nscd_socket   rw,
+  @{run}/nscd/socket    rw,
   /{var/db,var/cache,var/lib,var/run,run}/nscd/{passwd,group,services,hosts}    r,
   # nscd renames and unlinks files in it's operation that clients will
   # have open
-  /{,var/}run/nscd/db*  rmix,
+  @{run}/nscd/db*  rmix,
 
   # The nss libraries are sometimes used in addition to PAM; make sure
   # they are available
@@ -63,7 +63,7 @@
   /{usr/,}etc/default/nss               r,
 
   # avahi-daemon is used for mdns4 resolution
-  /{,var/}run/avahi-daemon/socket rw,
+  @{run}/avahi-daemon/socket rw,
 
   # libnl-3-200 via libnss-gw-name
   @{PROC}/@{pid}/net/psched r,

@@ -34,8 +34,8 @@ profile syslogd /{usr/,}{bin,sbin}/syslogd {
   /etc/syslog.conf              r,
   /{usr/,}{bin,sbin}/syslogd    rmix,
   /var/log/**                   rw,
-  /{,var/}run/syslogd.pid          krwl,
-  /{,var/}run/utmp                 rw,
+  @{run}/syslogd.pid          krwl,
+  @{run}/utmp                 rw,
   /var/spool/compaq/nic/messages_fifo rw,
 
   # Site-specific additions and overrides. See local/README for details.

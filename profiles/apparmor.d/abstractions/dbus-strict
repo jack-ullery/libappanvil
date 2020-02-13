@@ -9,7 +9,7 @@
 #
 # ------------------------------------------------------------------
 
-  /{,var/}run/dbus/system_bus_socket rw,
+  @{run}/dbus/system_bus_socket rw,
 
   dbus send
        bus=system

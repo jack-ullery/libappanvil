@@ -15,8 +15,8 @@
   #include <abstractions/base>
   #include <abstractions/dovecot-common>
 
-  /run/dovecot/ssl-params rw,
-  /run/dovecot/login/ssl-params rw,
+  @{run}/dovecot/ssl-params rw,
+  @{run}/dovecot/login/ssl-params rw,
   /usr/lib/dovecot/ssl-params mr,
   /var/lib/dovecot/ssl-parameters.dat rw,
   /var/lib/dovecot/ssl-parameters.dat.tmp rwk,

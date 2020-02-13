@@ -65,9 +65,9 @@ profile dovecot /usr/{bin,sbin}/dovecot flags=(attach_disconnected) {
   /var/lib/dovecot/* rwkl,
   /var/spool/postfix/private/auth w,
   /var/spool/postfix/private/dovecot-lmtp w,
-  /{,var/}run/dovecot/ rw,
-  /{,var/}run/dovecot/** rw,
-  link /{,var/}run/dovecot/** -> /var/lib/dovecot/**,
+  @{run}/dovecot/ rw,
+  @{run}/dovecot/** rw,
+  link @{run}/dovecot/** -> /var/lib/dovecot/**,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.dovecot>
