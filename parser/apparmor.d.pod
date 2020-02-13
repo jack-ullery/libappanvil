@@ -1308,6 +1308,7 @@ provided AppArmor policy:
   @{apparmorfs}
   @{sys}
   @{tid}
+  @{run}
   @{XDG_DESKTOP_DIR}
   @{XDG_DOWNLOAD_DIR}
   @{XDG_TEMPLATES_DIR}
