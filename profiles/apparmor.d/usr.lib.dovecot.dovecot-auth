@@ -24,7 +24,7 @@
 
   @{PROC}/@{pid}/mounts r,
   /usr/lib/dovecot/dovecot-auth mr,
-  /{,var/}run/dovecot/** rw,
+  @{run}/dovecot/** rw,
   # required for postfix+dovecot integration
   /var/spool/postfix/private/dovecot-auth w,
 

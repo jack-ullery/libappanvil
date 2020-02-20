@@ -37,9 +37,9 @@
   /usr/bin/doveconf rix,
   /usr/lib/dovecot/imap mrix,
   /usr/share/dovecot/** r,
-  /run/dovecot/login/imap rw,
-  /{,var/}run/dovecot/auth-master rw,
-  /{,var/}run/dovecot/mounts r,
+  @{run}/dovecot/login/imap rw,
+  @{run}/dovecot/auth-master rw,
+  @{run}/dovecot/mounts r,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.lib.dovecot.imap>

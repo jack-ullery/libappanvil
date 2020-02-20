@@ -28,10 +28,10 @@ profile winbindd /usr/{bin,sbin}/winbindd {
   /var/cache/krb5rcache/* rw,
   /var/cache/samba/*.tdb rwk,
   /var/log/samba/log.winbindd rw,
-  /{var/,}run/{samba/,}winbindd.pid rwk,
-  /{var/,}run/samba/winbindd/ rw,
-  /{var/,}run/samba/winbindd/pipe w,
-  /{var/,}run/user/*/krb5cc/* rwk,
+  @{run}/{samba/,}winbindd.pid rwk,
+  @{run}/samba/winbindd/ rw,
+  @{run}/samba/winbindd/pipe w,
+  @{run}/user/*/krb5cc/* rwk,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.winbindd>

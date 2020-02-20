@@ -87,7 +87,7 @@
   /usr/share/gvfs/remote-volume-monitors/  r,
   /usr/share/gvfs/remote-volume-monitors/* r,
   @{PROC}/@{pid}/mounts                    r,
-  /run/mount/utab                          r,
+  @{run}/mount/utab                        r,
 
   # printing
   /etc/papersize                   r,
@@ -95,7 +95,7 @@
   /usr/share/cups/charmaps/**      r,
 
   # holds MIT-MAGIC-COOKIE for gnome
-  owner /{,var/}run/gdm/auth*/database r,
+  owner @{run}/gdm/auth*/database r,
 
   # mime-types
   /etc/gnome/defaults.list r,

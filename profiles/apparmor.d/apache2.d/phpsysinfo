@@ -43,6 +43,6 @@
     /var/lib/{misc,usbutils}/usb.ids r,
     /var/log/apache2/access.log w,
     /var/log/apache2/error.log w,
-    /{,var/}run/utmp rk,
+    @{run}/utmp rk,
     /usr/share/misc/pci.ids r,
   }

@@ -24,10 +24,10 @@
   network unix stream,
 
   /usr/lib/dovecot/pop3-login mr,
-  /{,var/}run/dovecot/anvil rw,
-  /{,var/}run/dovecot/login-master-notify* rw,
-  /{,var/}run/dovecot/login/ r,
-  /{,var/}run/dovecot/login/* rw,
+  @{run}/dovecot/anvil rw,
+  @{run}/dovecot/login-master-notify* rw,
+  @{run}/dovecot/login/ r,
+  @{run}/dovecot/login/* rw,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.lib.dovecot.pop3-login>

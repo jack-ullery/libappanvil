@@ -10,7 +10,7 @@
 
   # mdnsd
   /etc/nss_mdns.conf r,
-  /{,var/}run/mdnsd w,
+  @{run}/mdnsd w,
 
   # Include additions to the abstraction
   #include if exists <abstractions/mdns.d>

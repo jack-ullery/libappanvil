@@ -28,7 +28,7 @@
   @{sys}/fs/cgroup/cpuset/cpuset.{cpus,mems} r, # libpocl.so -> libhwloc.so
   @{sys}/kernel/mm/hugepages{/,/**} r, # libpocl.so -> libhwloc.so
   /usr/share/pocl/** r,
-  /{,var/}run/udev/data/*:* r, # libpocl.so -> hwloc_linux_block_class_fillinfos() from libhwloc.so
+  @{run}/udev/data/*:* r, # libpocl.so -> hwloc_linux_block_class_fillinfos() from libhwloc.so
 
   # User files
 
