@@ -7,14 +7,14 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2019-12-15 17:28+0000\n"
+"PO-Revision-Date: 2020-02-21 16:45+0000\n"
 "Last-Translator: Stephan Woidowski <swoidowski@t-online.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2019-12-16 05:37+0000\n"
-"X-Generator: Launchpad (build c597c3229eb023b1e626162d5947141bf7befb13)\n"
+"X-Launchpad-Export-Date: 2020-02-22 05:41+0000\n"
+"X-Generator: Launchpad (build 19413b719a8df7423ab1390528edadce9e0e4aca)\n"
 "Language: de\n"
 
 #: ../aa-genprof:56
@@ -881,7 +881,7 @@ msgstr ""
 #: ../apparmor/aa.py:3343
 #, python-format
 msgid "Invalid allow string: %(allow)s"
-msgstr ""
+msgstr "ungültiger allow string: %(allow)s"
 
 #: ../apparmor/aa.py:3778
 msgid "Can't find existing profile to modify"
@@ -1087,11 +1087,11 @@ msgstr "(B)enannte sauber ausführen"
 
 #: ../apparmor/ui.py:241
 msgid "(U)nconfined"
-msgstr "(U)ndefiniert"
+msgstr "(U)nbeschränkt"
 
 #: ../apparmor/ui.py:242
 msgid "(U)nconfined Clean Exec"
-msgstr "(U)ndefinierte sauber ausführen"
+msgstr "(U)nbeschränkte sauber ausführen"
 
 #: ../apparmor/ui.py:243
 msgid "(P)rofile Inherit"
@@ -1147,15 +1147,15 @@ msgstr ""
 
 #: ../apparmor/ui.py:256
 msgid "(A)dd Requested Hat"
-msgstr ""
+msgstr "Angeforderten Hat (H)inzufügen"
 
 #: ../apparmor/ui.py:257
 msgid "(U)se Default Hat"
-msgstr ""
+msgstr "Standard-Hat (N)utzen"
 
 #: ../apparmor/ui.py:258
 msgid "(S)can system log for AppArmor events"
-msgstr ""
+msgstr "Systemprotokoll nach AppArmor-Ereignissen (s)cannen"
 
 #: ../apparmor/ui.py:259
 msgid "(H)elp"
@@ -1195,11 +1195,11 @@ msgstr "Änderungen an(z)eigen"
 
 #: ../apparmor/ui.py:269
 msgid "View Changes b/w (C)lean profiles"
-msgstr ""
+msgstr "Änderungen zwischen sau(b)eren Profilen anzeigen"
 
 #: ../apparmor/ui.py:270
 msgid "(V)iew"
-msgstr ""
+msgstr "(A)nsicht"
 
 #: ../apparmor/ui.py:271
 msgid "(E)nable Repository"
@@ -1219,11 +1219,11 @@ msgstr "Später (n)achfragen"
 
 #: ../apparmor/ui.py:277
 msgid "Allow All (N)etwork"
-msgstr ""
+msgstr "Alle (N)etzwerke erlauben"
 
 #: ../apparmor/ui.py:278
 msgid "Allow Network Fa(m)ily"
-msgstr ""
+msgstr "Netzwerk-Fa(m)ilie erlauben"
 
 #: ../apparmor/ui.py:279
 msgid "(O)verwrite Profile"
