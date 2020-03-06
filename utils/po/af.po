@@ -8,13 +8,13 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2020-03-05 01:50+0000\n"
+"PO-Revision-Date: 2020-03-06 01:24+0000\n"
 "Last-Translator: bernard stafford <Unknown>\n"
 "Language-Team: Afrikaans <af@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2020-03-05 05:40+0000\n"
+"X-Launchpad-Export-Date: 2020-03-06 05:43+0000\n"
 "X-Generator: Launchpad (build e0878392dc799b267dea80578fa65500a5d74155)\n"
 
 #: ../aa-genprof:56
@@ -98,16 +98,27 @@ msgid ""
 "opportunity to choose whether the access should be \n"
 "allowed or denied."
 msgstr ""
+"Begin asseblief die aansoek om geprofileer te word in\n"
+"'n ander venster en uitoefening funksionaliteit daarvan nou.\n"
+"\n"
+"Sodra dit voltooi is, kies die \"Scan\" opsie hieronder in \n"
+"orde om skandering die die stelsel logs vir AppArmor gebeurtenise. \n"
+"\n"
+"Vir elke AppArmor gebeurtenis, jy sal gegee word om die \n"
+"geleentheid om te kies whether die toegang behoort te wees \n"
+"toegelaat of geweier."
 
 #: ../aa-genprof:147
 msgid "Profiling"
-msgstr ""
+msgstr "Profilering"
 
 #: ../aa-genprof:165
 msgid ""
 "\n"
 "Reloaded AppArmor profiles in enforce mode."
 msgstr ""
+"\n"
+"Weer gelaai AppArmor profiele in afdwing modus."
 
 #: ../aa-genprof:166
 msgid ""
@@ -115,279 +126,282 @@ msgid ""
 "Please consider contributing your new profile!\n"
 "See the following wiki page for more information:"
 msgstr ""
+"\n"
+"Oorweeg asseblief bydraende jou nuwe profiel!\n"
+"Sien die volgende wiki bladsy vir meer inligting:"
 
 #: ../aa-genprof:167
 #, python-format
 msgid "Finished generating profile for %s."
-msgstr ""
+msgstr "Afgewerkte genererende profiel vir %s."
 
 #: ../aa-logprof:24
 msgid "Process log entries to generate profiles"
-msgstr ""
+msgstr "Proses log inskrywings om profiele te genereer"
 
 #: ../aa-logprof:27
 msgid "mark in the log to start processing after"
-msgstr ""
+msgstr "merk in die log te begin met die verwerking na"
 
 #: ../aa-cleanprof:23
 msgid "Cleanup the profiles for the given programs"
-msgstr ""
+msgstr "Maak skoon die profiele vir die gegewe programme"
 
 #: ../aa-cleanprof:25 ../aa-autodep:26 ../aa-audit:27 ../aa-complain:25
 #: ../aa-enforce:25 ../aa-disable:25
 msgid "name of program"
-msgstr ""
+msgstr "naam van programe"
 
 #: ../aa-cleanprof:26
 msgid "Silently overwrite with a clean profile"
-msgstr ""
+msgstr "Oorskryf stilweg met 'n skoon profiel"
 
 #: ../aa-mergeprof:29
 msgid "Perform a 2-way or 3-way merge on the given profiles"
-msgstr ""
+msgstr "Presteer 'n 2-manier of 3-manier saamsmelt op die gegewe profiele"
 
 #: ../aa-mergeprof:31
 msgid "your profile"
-msgstr ""
+msgstr "jou profiel"
 
 #: ../aa-mergeprof:32
 msgid "base profile"
-msgstr ""
+msgstr "base profiel"
 
 #: ../aa-mergeprof:33
 msgid "other profile"
-msgstr ""
+msgstr "ander profiel"
 
 #: ../aa-mergeprof:67 ../apparmor/aa.py:2345
 msgid ""
 "The following local profiles were changed. Would you like to save them?"
-msgstr ""
+msgstr "Die volgende plaaslike profiele is verander. Wil jy hulle red?"
 
 #: ../aa-mergeprof:148 ../aa-mergeprof:430 ../apparmor/aa.py:1767
 msgid "Path"
-msgstr ""
+msgstr "Pad"
 
 #: ../aa-mergeprof:149
 msgid "Select the appropriate mode"
-msgstr ""
+msgstr "Kies die toepaslike modus"
 
 #: ../aa-mergeprof:166
 msgid "Unknown selection"
-msgstr ""
+msgstr "Onbekend seleksie"
 
 #: ../aa-mergeprof:183 ../aa-mergeprof:209
 msgid "File includes"
-msgstr ""
+msgstr "Lêer sluit in"
 
 #: ../aa-mergeprof:183 ../aa-mergeprof:209
 msgid "Select the ones you wish to add"
-msgstr ""
+msgstr "Seleksie die wat jy wil byvoeg"
 
 #: ../aa-mergeprof:195 ../aa-mergeprof:222
 #, python-format
 msgid "Adding %s to the file."
-msgstr ""
+msgstr "Toevoeging van %s na die lêer."
 
 #: ../aa-mergeprof:199 ../apparmor/aa.py:2258
 msgid "unknown"
-msgstr ""
+msgstr "onbekend"
 
 #: ../aa-mergeprof:224 ../aa-mergeprof:275 ../aa-mergeprof:516
 #: ../aa-mergeprof:558 ../aa-mergeprof:675 ../apparmor/aa.py:1620
 #: ../apparmor/aa.py:1859 ../apparmor/aa.py:1899 ../apparmor/aa.py:2012
 #, python-format
 msgid "Deleted %s previous matching profile entries."
-msgstr ""
+msgstr "Geskrap %s vorige ooreenstemmende profiel inskrywings."
 
 #: ../aa-mergeprof:244 ../aa-mergeprof:429 ../aa-mergeprof:629
 #: ../aa-mergeprof:656 ../apparmor/aa.py:992 ../apparmor/aa.py:1252
 #: ../apparmor/aa.py:1562 ../apparmor/aa.py:1603 ../apparmor/aa.py:1766
 #: ../apparmor/aa.py:1958 ../apparmor/aa.py:1994
 msgid "Profile"
-msgstr ""
+msgstr "Profiel"
 
 #: ../aa-mergeprof:245 ../apparmor/aa.py:1563 ../apparmor/aa.py:1604
 msgid "Capability"
-msgstr ""
+msgstr "Capvermoë"
 
 #: ../aa-mergeprof:246 ../aa-mergeprof:480 ../apparmor/aa.py:1258
 #: ../apparmor/aa.py:1564 ../apparmor/aa.py:1605 ../apparmor/aa.py:1817
 msgid "Severity"
-msgstr ""
+msgstr "Ernstigheidsgraad"
 
 #: ../aa-mergeprof:273 ../aa-mergeprof:514 ../apparmor/aa.py:1618
 #: ../apparmor/aa.py:1857
 #, python-format
 msgid "Adding %s to profile."
-msgstr ""
+msgstr "Toevoeging van %s na profiel."
 
 #: ../aa-mergeprof:282 ../apparmor/aa.py:1627
 #, python-format
 msgid "Adding capability %s to profile."
-msgstr ""
+msgstr "Die capvermoë %s by profiel gevoeg."
 
 #: ../aa-mergeprof:289 ../apparmor/aa.py:1634
 #, python-format
 msgid "Denying capability %s to profile."
-msgstr ""
+msgstr "Weier die capvermoë %s om te profiel."
 
 #: ../aa-mergeprof:439 ../aa-mergeprof:470 ../apparmor/aa.py:1776
 #: ../apparmor/aa.py:1807
 msgid "(owner permissions off)"
-msgstr ""
+msgstr "(toestemmings vir eienaars af)"
 
 #: ../aa-mergeprof:444 ../apparmor/aa.py:1781
 msgid "(force new perms to owner)"
-msgstr ""
+msgstr "(dwing nuwe permitte aan die eienaar)"
 
 #: ../aa-mergeprof:447 ../apparmor/aa.py:1784
 msgid "(force all rule perms to owner)"
-msgstr ""
+msgstr "(Dwing alle heerskappy perms om eienaar)"
 
 #: ../aa-mergeprof:459 ../apparmor/aa.py:1796
 msgid "Old Mode"
-msgstr ""
+msgstr "Ou Modus"
 
 #: ../aa-mergeprof:460 ../apparmor/aa.py:1797
 msgid "New Mode"
-msgstr ""
+msgstr "Nuwe Modus"
 
 #: ../aa-mergeprof:475 ../apparmor/aa.py:1812
 msgid "(force perms to owner)"
-msgstr ""
+msgstr "(dwing perms aan eienaar)"
 
 #: ../aa-mergeprof:478 ../apparmor/aa.py:1815
 msgid "Mode"
-msgstr ""
+msgstr "Modus"
 
 #: ../aa-mergeprof:556
 #, python-format
 msgid "Adding %(path)s %(mod)s to profile"
-msgstr ""
+msgstr "Toevoeging %(path)s %(mod)s om profiel"
 
 #: ../aa-mergeprof:574 ../apparmor/aa.py:1915
 msgid "Enter new path: "
-msgstr ""
+msgstr "Voer nuwe pad in: "
 
 #: ../aa-mergeprof:630 ../aa-mergeprof:657 ../apparmor/aa.py:1959
 #: ../apparmor/aa.py:1995
 msgid "Network Family"
-msgstr ""
+msgstr "Netwerk Familie"
 
 #: ../aa-mergeprof:631 ../aa-mergeprof:658 ../apparmor/aa.py:1960
 #: ../apparmor/aa.py:1996
 msgid "Socket Type"
-msgstr ""
+msgstr "Socket Tipe"
 
 #: ../aa-mergeprof:673 ../apparmor/aa.py:2010
 #, python-format
 msgid "Adding %s to profile"
-msgstr ""
+msgstr "Voeg %s by profiel"
 
 #: ../aa-mergeprof:683 ../apparmor/aa.py:2020
 #, python-format
 msgid "Adding network access %(family)s %(type)s to profile."
-msgstr ""
+msgstr "Voeg netwerk toegang %(family)s %(type)s na profiel."
 
 #: ../aa-mergeprof:689 ../apparmor/aa.py:2026
 #, python-format
 msgid "Denying network access %(family)s %(type)s to profile"
-msgstr ""
+msgstr "Ontken netwerk toegang %(family)s %(type)s na profiel"
 
 #: ../aa-autodep:23
 msgid "Generate a basic AppArmor profile by guessing requirements"
-msgstr ""
+msgstr "Genereer 'n basiese AppArmor profiel deur raai van vereistes"
 
 #: ../aa-autodep:24
 msgid "overwrite existing profile"
-msgstr ""
+msgstr "Oorskryf bestaande profiel"
 
 #: ../aa-audit:24
 msgid "Switch the given programs to audit mode"
-msgstr ""
+msgstr "Skakelaar die gegewe programme om oudit modus"
 
 #: ../aa-audit:26
 msgid "remove audit mode"
-msgstr ""
+msgstr "verwyder oudit modus"
 
 #: ../aa-audit:28
 msgid "Show full trace"
-msgstr ""
+msgstr "Wys volle spore"
 
 #: ../aa-complain:23
 msgid "Switch the given program to complain mode"
-msgstr ""
+msgstr "Skakelaar die gegewe programe om te kla modus"
 
 #: ../aa-enforce:23
 msgid "Switch the given program to enforce mode"
-msgstr ""
+msgstr "Skakelaar die gegewe programe om afdwing modus"
 
 #: ../aa-disable:23
 msgid "Disable the profile for the given programs"
-msgstr ""
+msgstr "Deaktiveer die profiel vir die gegewe programes"
 
 #: ../aa-unconfined:28
 msgid "Lists unconfined processes having tcp or udp ports"
-msgstr ""
+msgstr "Lys unconfined prosesse met tcp of udp poorte"
 
 #: ../aa-unconfined:29
 msgid "scan all processes from /proc"
-msgstr ""
+msgstr "skandeer alle prosesse vanaf / proc"
 
 #: ../aa-unconfined:81
 #, python-format
 msgid "%(pid)s %(program)s (%(commandline)s) not confined"
-msgstr ""
+msgstr "%(pid)s %(program)s (%(commandline)s) nie confined"
 
 #: ../aa-unconfined:85
 #, python-format
 msgid "%(pid)s %(program)s%(pname)s not confined"
-msgstr ""
+msgstr "%(pid)s %(program)s%(pname)s nie confined"
 
 #: ../aa-unconfined:90
 #, python-format
 msgid "%(pid)s %(program)s (%(commandline)s) confined by '%(attribute)s'"
-msgstr ""
+msgstr "%(pid)s %(program)s (%(commandline)s) confined deur '%(attribute)s'"
 
 #: ../aa-unconfined:94
 #, python-format
 msgid "%(pid)s %(program)s%(pname)s confined by '%(attribute)s'"
-msgstr ""
+msgstr "%(pid)s %(program)s%(pname)s confined deur '%(attribute)s'"
 
 #: ../apparmor/aa.py:196
 #, python-format
 msgid "Followed too many links while resolving %s"
-msgstr ""
+msgstr "Gevolg te veel links terwyl reoplossing %s"
 
 #: ../apparmor/aa.py:252 ../apparmor/aa.py:259
 #, python-format
 msgid "Can't find %s"
-msgstr ""
+msgstr "Kan nie vind %s"
 
 #: ../apparmor/aa.py:264 ../apparmor/aa.py:548
 #, python-format
 msgid "Setting %s to complain mode."
-msgstr ""
+msgstr "Instelling %s om kla modus."
 
 #: ../apparmor/aa.py:271
 #, python-format
 msgid "Setting %s to enforce mode."
-msgstr ""
+msgstr "Instellings %s om afdwing modus."
 
 #: ../apparmor/aa.py:286
 #, python-format
 msgid "Unable to find basename for %s."
-msgstr ""
+msgstr "Nie in staat om vind basenaam vir %s."
 
 #: ../apparmor/aa.py:301
 #, python-format
 msgid "Could not create %(link)s symlink to %(filename)s."
-msgstr ""
+msgstr "Kon skep nie %(link)s symlink om %(filename)s."
 
 #: ../apparmor/aa.py:314
 #, python-format
 msgid "Unable to read first line from %s: File Not Found"
-msgstr ""
+msgstr "Nie in staat om lees eerste reël vanaf %s: Lêer Nie Gevind"
 
 #: ../apparmor/aa.py:328
 #, python-format
@@ -395,33 +409,36 @@ msgid ""
 "Unable to fork: %(program)s\n"
 "\t%(error)s"
 msgstr ""
+"Nie in staat vurk: %(program)s\n"
+"\t%(error)s"
 
 #: ../apparmor/aa.py:449 ../apparmor/ui.py:303
 msgid ""
 "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr ""
+"Is jy seker jy wil hierdie stel laat vaar van profiel wysigings en uitgang?"
 
 #: ../apparmor/aa.py:451 ../apparmor/ui.py:305
 msgid "Abandoning all changes."
-msgstr ""
+msgstr "Laat vaar alle veranderinge."
 
 #: ../apparmor/aa.py:464
 msgid "Connecting to repository..."
-msgstr ""
+msgstr "Konnekteer tans na bewaarplek..."
 
 #: ../apparmor/aa.py:470
 msgid "WARNING: Error fetching profiles from the repository"
-msgstr ""
+msgstr "WAARSKUWING: Fout haal tans profiele van die repository"
 
 #: ../apparmor/aa.py:550
 #, python-format
 msgid "Error activating profiles: %s"
-msgstr ""
+msgstr "Fout aktiveer profiele: %s"
 
 #: ../apparmor/aa.py:605
 #, python-format
 msgid "%s contains no profile"
-msgstr ""
+msgstr "%s bevat geen profiel"
 
 #: ../apparmor/aa.py:706
 #, python-format
@@ -429,6 +446,8 @@ msgid ""
 "WARNING: Error synchronizing profiles with the repository:\n"
 "%s\n"
 msgstr ""
+"WAARSKUWING: Fout sinchronisasie profiele met die bewaarplek:\n"
+"%s\n"
 
 #: ../apparmor/aa.py:744
 #, python-format
@@ -436,6 +455,8 @@ msgid ""
 "WARNING: Error synchronizing profiles with the repository\n"
 "%s"
 msgstr ""
+"WAARSKUWING: Fout sinchronisasie profiele met die bewaarplek\n"
+"%s"
 
 #: ../apparmor/aa.py:832 ../apparmor/aa.py:883
 #, python-format
@@ -443,14 +464,16 @@ msgid ""
 "WARNING: An error occurred while uploading the profile %(profile)s\n"
 "%(ret)s"
 msgstr ""
+"WAARSKUWING: 'N fout tydens die oplaai van die profiel %(profile)s\n"
+"%(ret)s"
 
 #: ../apparmor/aa.py:833
 msgid "Uploaded changes to repository."
-msgstr ""
+msgstr "Opgelaaide verander na repository."
 
 #: ../apparmor/aa.py:865
 msgid "Changelog Entry: "
-msgstr ""
+msgstr "Verander log inskrywing: "
 
 #: ../apparmor/aa.py:885
 msgid ""
@@ -459,19 +482,23 @@ msgid ""
 "information is required to upload profiles to the repository.\n"
 "These changes could not be sent."
 msgstr ""
+"Bewaarplek Fout\n"
+"Registrasie of Inlog was onsuksesvol. Gebruiker aanmelding\n"
+"inligting word benodig om profiele na die bewaarplek op te laai.\n"
+"Hierdie veranderinge kon nie gestuur word nie."
 
 #: ../apparmor/aa.py:995
 msgid "Default Hat"
-msgstr ""
+msgstr "Verstek Hoed"
 
 #: ../apparmor/aa.py:997
 msgid "Requested Hat"
-msgstr ""
+msgstr "Aangevraagde Hoed"
 
 #: ../apparmor/aa.py:1218
 #, python-format
 msgid "%s has transition name but not transition mode"
-msgstr ""
+msgstr "%s het oorgangsnaam maar nie oorgangsmodus"
 
 #: ../apparmor/aa.py:1232
 #, python-format
