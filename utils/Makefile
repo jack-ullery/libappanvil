@@ -29,6 +29,8 @@ PYMODULES = $(wildcard apparmor/*.py apparmor/rule/*.py)
 
 MANPAGES = ${TOOLS:=.8} logprof.conf.5
 
+PYFLAKES ?= pyflakes3
+
 all: docs
 	$(MAKE) -C po all
 	$(MAKE) -C vim all
@@ -42,7 +44,6 @@ BINDIR=${DESTDIR}/usr/sbin
 CONFDIR=${DESTDIR}/etc/apparmor
 PYPREFIX=/usr
 
-PYFLAKES=pyflakes
 
 po/${NAME}.pot: ${TOOLS} ${PYMODULES}
 	$(MAKE) -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} ${PYMODULES}"
