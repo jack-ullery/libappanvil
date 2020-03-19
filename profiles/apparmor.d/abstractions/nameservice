@@ -29,6 +29,11 @@
   /var/lib/extrausers/group  r,
   /var/lib/extrausers/passwd r,
 
+  # NSS records from systemd-userdbd.service
+  @{run}/systemd/userdb/ r,
+  @{run}/systemd/userdb/io.systemd.{NameServiceSwitch,Multiplexer,DynamicUser,Home} r,
+  @{PROC}/sys/kernel/random/boot_id r,
+
   # When using sssd, the passwd and group files are stored in an alternate path
   # and the nss plugin also needs to talk to a pipe
   /var/lib/sss/mc/group   r,
