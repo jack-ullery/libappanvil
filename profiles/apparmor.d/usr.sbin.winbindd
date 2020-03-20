@@ -25,7 +25,7 @@ profile winbindd /usr/{bin,sbin}/winbindd {
   /usr/lib*/samba/nss_info/*.so mr,
   /usr/lib*/samba/pdb/*.so mr,
   /usr/{bin,sbin}/winbindd mr,
-  /var/cache/krb5rcache/* rw,
+  /var/cache/krb5rcache/* rwk,
   /var/cache/samba/*.tdb rwk,
   /var/log/samba/log.winbindd rw,
   @{run}/{samba/,}winbindd.pid rwk,
