@@ -75,19 +75,6 @@ pod_clean:
 	-rm -f ${MANPAGES} *.[0-9].gz ${HTMLMANPAGES} pod2htm*.tmp
 
 # =====================
-# generate list of capabilities based on
-# /usr/include/linux/capabilities.h for use in multiple locations in
-# the source tree
-# =====================
-
-# emits defined capabilities in a simple list, e.g. "CAP_NAME CAP_NAME2"
-CAPABILITIES=$(shell echo "\#include <linux/capability.h>" | cpp -dM | LC_ALL=C sed -n -e '/CAP_EMPTY_SET/d' -e 's/^\#define[ \t]\+CAP_\([A-Z0-9_]\+\)[ \t]\+\([0-9xa-f]\+\)\(.*\)$$/CAP_\1/p' | LC_ALL=C sort)
-
-.PHONY: list_capabilities
-list_capabilities: /usr/include/linux/capability.h
-	@echo "$(CAPABILITIES)"
-
-# =====================
 # manpages
 # =====================
 
