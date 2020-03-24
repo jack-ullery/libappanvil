@@ -79,7 +79,7 @@ clean: pod_clean
 .SILENT: check_severity_db
 check_severity_db: /usr/include/linux/capability.h severity.db
 	# The sed statement is based on the one in the parser's makefile
-	RC=0 ; for cap in ${CAPABILITIES} ; do \
+	RC=0 ; for cap in $(shell ../common/list_capabilities.sh) ; do \
 	    if !  grep -q -w $${cap} severity.db ; then \
 		echo "Warning! capability $${cap} not found in severity.db" ; \
 		RC=1 ; \

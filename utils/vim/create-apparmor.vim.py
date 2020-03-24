@@ -45,7 +45,7 @@ def cmd(command, input=None, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, s
     return [sp.returncode, out + outerr]
 
 # get capabilities list
-(rc, output) = cmd(['make', '-s', '--no-print-directory', 'list_capabilities'])
+(rc, output) = cmd(['../../common/list_capabilities.sh'])
 if rc != 0:
     sys.stderr.write("make list_capabilities failed: " + output)
     exit(rc)
