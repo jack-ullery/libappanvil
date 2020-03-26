@@ -13,6 +13,11 @@ AC_DEFUN([AC_PYTHON_DEVEL],[
            PYTHON_VERSION=""
         fi
 
+        AC_PATH_PROG([PYTHON_CONFIG],[`basename [$PYTHON]-config`])
+        if test -z "$PYTHON_CONFIG"; then
+           AC_MSG_ERROR([Cannot find python$PYTHON_VERSION-config in your system path])
+        fi
+
         #
         # Check for a version of Python >= 2.1.0
         #
@@ -79,8 +84,8 @@ $ac_distutils_result])
         # Check for Python include path
         #
         AC_MSG_CHECKING([for Python include path])
-        if type $PYTHON-config; then
-                PYTHON_CPPFLAGS=`$PYTHON-config --includes`
+        if type $PYTHON_CONFIG; then
+                PYTHON_CPPFLAGS=`$PYTHON_CONFIG --includes`
         fi
         if test -z "$PYTHON_CPPFLAGS"; then
                 python_path=`$PYTHON -c "import sys; import distutils.sysconfig;\
@@ -97,8 +102,8 @@ sys.stdout.write('%s\n' % distutils.sysconfig.get_python_inc());"`
         # Check for Python library path
         #
         AC_MSG_CHECKING([for Python library path])
-        if type $PYTHON-config; then
-                PYTHON_LDFLAGS=`$PYTHON-config --ldflags`
+        if type $PYTHON_CONFIG; then
+                PYTHON_LDFLAGS=`$PYTHON_CONFIG --ldflags`
         fi
         if test -z "$PYTHON_LDFLAGS"; then
                 # (makes two attempts to ensure we've got a version number
@@ -136,6 +141,10 @@ sys.stdout.write('%s\n' % distutils.sysconfig.get_python_lib(0,0));"`
         # libraries which must be linked in when embedding
         #
         AC_MSG_CHECKING(python extra libraries)
+        if type $PYTHON_CONFIG; then
+                PYTHON_EXTRA_LIBS=`$PYTHON_CONFIG --libs --embed` || \
+                        PYTHON_EXTRA_LIBS=''
+        fi
         if test -z "$PYTHON_EXTRA_LIBS"; then
            PYTHON_EXTRA_LIBS=`$PYTHON -c "import sys; import distutils.sysconfig; \
 conf = distutils.sysconfig.get_config_var; \
@@ -148,6 +157,10 @@ sys.stdout.write('%s %s %s\n' % (conf('BLDLIBRARY'), conf('LOCALMODLIBS'), conf(
         # linking flags needed when embedding
         #
         AC_MSG_CHECKING(python extra linking flags)
+        if type $PYTHON_CONFIG; then
+                PYTHON_EXTRA_LDFLAGS=`$PYTHON_CONFIG --ldflags --embed` || \
+                        PYTHON_EXTRA_LDFLAGS=''
+        fi
         if test -z "$PYTHON_EXTRA_LDFLAGS"; then
                 PYTHON_EXTRA_LDFLAGS=`$PYTHON -c "import sys; import distutils.sysconfig; \
 conf = distutils.sysconfig.get_config_var; \
@@ -164,7 +177,7 @@ sys.stdout.write('%s\n' % conf('LINKFORSHARED'))"`
         # save current global flags
         ac_save_LIBS="$LIBS"
         ac_save_CPPFLAGS="$CPPFLAGS"
-        LIBS="$ac_save_LIBS $PYTHON_LDFLAGS $PYTHON_EXTRA_LIBS"
+        LIBS="$ac_save_LIBS $PYTHON_EXTRA_LIBS $PYTHON_LDFLAGS"
         CPPFLAGS="$ac_save_CPPFLAGS $PYTHON_CPPFLAGS"
         AC_TRY_LINK([
                 #include <Python.h>
