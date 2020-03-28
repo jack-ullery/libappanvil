@@ -81,6 +81,7 @@ profile dnsmasq /usr/{bin,sbin}/dnsmasq flags=(attach_disconnected) {
 
   # libvirt lease helper
   /usr/lib{,64}/libvirt/libvirt_leaseshelper Cx -> libvirt_leaseshelper,
+  /usr/libexec/libvirt_leaseshelper Cx -> libvirt_leaseshelper,
 
   # lxc-net pid and lease files
   @{run}/lxc/dnsmasq.pid    rw,
