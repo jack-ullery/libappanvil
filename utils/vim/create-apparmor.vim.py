@@ -50,7 +50,7 @@ if rc != 0:
     sys.stderr.write("make list_capabilities failed: " + output)
     exit(rc)
 
-capabilities = re.sub('CAP_', '', output.strip()).lower().split(" ")
+capabilities = re.sub('CAP_', '', output.strip()).lower().split('\n')
 benign_caps = []
 for cap in capabilities:
     if cap not in danger_caps:
