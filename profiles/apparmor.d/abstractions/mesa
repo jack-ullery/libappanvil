@@ -4,6 +4,10 @@
   # System files
   /dev/dri/ r, # libGLX_mesa.so calls drmGetDevice2()
 
+  # Needed to check if the kernel supports the i915 perf interface
+  # (src/intel/perf/gen_perf.c, load_oa_metrics())
+  @{PROC}/sys/dev/i915/perf_stream_paranoid r,
+
   # User files
   owner @{HOME}/.cache/ w, # if user clears all caches
   owner @{HOME}/.cache/mesa_shader_cache/ w,
