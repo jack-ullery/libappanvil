@@ -9,6 +9,7 @@
 # ------------------------------------------------------------------
 
   # mdnsd
+  /etc/mdns.allow r,
   /etc/nss_mdns.conf r,
   @{run}/mdnsd w,
 
