@@ -42,12 +42,12 @@ def cmd(command, input=None, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, s
     # Handle redirection of stderr
     if outerr is None:
         outerr = ''
-    return [sp.returncode, out + outerr]
+    return [sp.returncode, out, outerr]
 
 # get capabilities list
-(rc, output) = cmd(['../../common/list_capabilities.sh'])
+(rc, output, outerr) = cmd(['../../common/list_capabilities.sh'])
 if rc != 0:
-    sys.stderr.write("make list_capabilities failed: " + output)
+    sys.stderr.write("make list_capabilities failed: " + output + outerr)
     exit(rc)
 
 capabilities = re.sub('CAP_', '', output.strip()).lower().split('\n')
@@ -57,9 +57,9 @@ for cap in capabilities:
         benign_caps.append(cap)
 
 # get network protos list
-(rc, output) = cmd(['../../common/list_af_names.sh'])
+(rc, output, outerr) = cmd(['../../common/list_af_names.sh'])
 if rc != 0:
-    sys.stderr.write("make list_af_names failed: " + output)
+    sys.stderr.write("make list_af_names failed: " + output + outerr)
     exit(rc)
 
 af_names = []
