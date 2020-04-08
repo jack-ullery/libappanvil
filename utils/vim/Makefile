@@ -9,7 +9,7 @@ VIM_INSTALL_PATH=${DESTDIR}/usr/share/apparmor
 all: apparmor.vim manpages htmlmanpages
 
 apparmor.vim: apparmor.vim.in Makefile create-apparmor.vim.py
-	${PYTHON} create-apparmor.vim.py > apparmor.vim
+	${PYTHON} create-apparmor.vim.py > apparmor.vim || { rm -f apparmor.vim ; exit 1; }
 
 manpages: $(MANPAGES)
 
