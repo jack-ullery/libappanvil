@@ -34,6 +34,8 @@ profile dnsmasq /usr/{bin,sbin}/dnsmasq flags=(attach_disconnected) {
 
   owner /dev/tty rw,
 
+  @{PROC}/@{pid}/fd/ r,
+
   /etc/dnsmasq.conf r,
   /etc/dnsmasq.d/ r,
   /etc/dnsmasq.d/* r,
