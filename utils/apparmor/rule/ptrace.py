@@ -138,7 +138,7 @@ class PtraceRule(BaseRule):
         if not self._is_covered_list(self.access, self.all_access, other_rule.access, other_rule.all_access, 'access'):
             return False
 
-        if not self._is_covered_aare_compat(self.peer, self.all_peers, other_rule.peer, other_rule.all_peers, 'peer'):
+        if not self._is_covered_aare(self.peer, self.all_peers, other_rule.peer, other_rule.all_peers, 'peer'):
             return False
 
         # still here? -> then it is covered

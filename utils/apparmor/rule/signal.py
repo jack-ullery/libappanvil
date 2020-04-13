@@ -188,7 +188,7 @@ class SignalRule(BaseRule):
         if not self._is_covered_list(self.signal, self.all_signals, other_rule.signal, other_rule.all_signals, 'signal'):
             return False
 
-        if not self._is_covered_aare_compat(self.peer, self.all_peers, other_rule.peer, other_rule.all_peers, 'peer'):
+        if not self._is_covered_aare(self.peer, self.all_peers, other_rule.peer, other_rule.all_peers, 'peer'):
             return False
 
         # still here? -> then it is covered
