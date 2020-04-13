@@ -82,18 +82,6 @@ def cmd(command):
     return [sp.returncode, out]
 
 
-def cmd_pipe(command1, command2):
-    '''Try to pipe command1 into command2.'''
-    try:
-        sp1 = subprocess.Popen(command1, stdout=subprocess.PIPE)
-        sp2 = subprocess.Popen(command2, stdin=sp1.stdout)
-    except OSError as ex:
-        return [127, str(ex)]
-
-    out = sp2.communicate()[0]
-    return [sp2.returncode, out]
-
-
 def debug(out):
     '''Print debug message'''
     if DEBUGGING:
