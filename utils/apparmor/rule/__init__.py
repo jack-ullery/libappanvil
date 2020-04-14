@@ -192,15 +192,6 @@ class BaseRule(object):
         # still here? -> then it is covered
         return True
 
-    def _is_covered_aare_compat(self, self_value, self_all, other_value, other_all, cond_name):
-        '''check if other_* is covered by self_* - for AARE
-           Note: this function checks against other_value.regex, which is not really correct, but avoids overly strict results when matching one regex against another
-        '''
-        if type(other_value) == AARE:
-            other_value = other_value.regex
-
-        return self._is_covered_aare(self_value, self_all, other_value, other_all, cond_name)
-
     def _is_covered_aare(self, self_value, self_all, other_value, other_all, cond_name):
         '''check if other_* is covered by self_* - for AARE'''
 
