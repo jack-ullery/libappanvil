@@ -94,14 +94,36 @@ class ProfileStorage:
             raise AppArmorBug('attempt to read unknown key %s' % key)
 
     def __setitem__(self, key, value):
-        # TODO: Most of the keys (containing *Ruleset, dict() or list()) should be read-only.
-        #       Their content needs to be changed, but the container shouldn't
-        #       Note: serialize_profile_from_old_profile.write_prior_segments() and write_prior_segments() expect the container to be writeable!
-        # TODO: check if value has the expected type
-        if key in self.data:
-            self.data[key] = value
-        else:
+        if key not in self.data:
             raise AppArmorBug('attempt to set unknown key %s' % key)
+
+        # allow writing bool values
+        if type(self.data[key]) == bool:
+            if type(value) == bool:
+                self.data[key] = value
+            else:
+                raise AppArmorBug('Attempt to change type of "%s" from %s to %s, value %s' % (key, type(self.data[key]), type(value), value))
+
+        # allow writing str or None to some keys
+        elif key in ('xattrs', 'flags', 'filename'):
+            if type_is_str(value) or value is None:
+                self.data[key] = value
+            else:
+                raise AppArmorBug('Attempt to change type of "%s" from %s to %s, value %s' % (key, type(self.data[key]), type(value), value))
+
+        # allow writing str values
+        elif type_is_str(self.data[key]):
+            if type_is_str(value):
+                self.data[key] = value
+            else:
+                raise AppArmorBug('Attempt to change type of "%s" from %s to %s, value %s' % (key, type(self.data[key]), type(value), value))
+
+        # don't allow overwriting of other types
+        else:
+            raise AppArmorBug('Attempt to overwrite "%s" with %s, type %s' % (key, value, type(value)))
+
+    def __repr__(self):
+        return('\n<ProfileStorage>\n%s\n</ProfileStorage>\n' % '\n'.join(self.get_rules_clean(1)))
 
     def get(self, key, fallback=None):
         if key in self.data:
