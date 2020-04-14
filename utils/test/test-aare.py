@@ -42,6 +42,7 @@ class Test_convert_expression_to_aare(AATest):
         ('/foo',        '/foo'                  ),
         ('/foo?',       '/foo\\?'               ),
         ('/foo*',       '/foo\\*'               ),
+        (r'/foo\*',     r'/foo\\\*'             ),  # raw string, no backslash doubling
         ('/foo[bar]',   '/foo\\[bar\\]'         ),
         ('/foo{bar}',   '/foo\\{bar\\}'         ),
         ('/foo{',       '/foo\\{'               ),
