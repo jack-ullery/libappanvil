@@ -46,7 +46,7 @@ if test "$with_python" = "yes"; then
    test -z "$PYTHON" && AC_MSG_ERROR([python is required when enabling python bindings])
    sinclude(m4/ac_python_devel.m4)
    AC_PYTHON_DEVEL
-   AM_PATH_PYTHON
+   AM_PATH_PYTHON([3.0])
 fi
 
 AC_MSG_CHECKING([whether perl bindings are enabled])

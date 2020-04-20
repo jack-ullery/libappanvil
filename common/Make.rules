@@ -47,7 +47,7 @@ endef
 REPO_VERSION_CMD=[ -x /usr/bin/git ] && /usr/bin/git describe --tags --long --abbrev=16 --match 'v*' 2> /dev/null || awk '{ print $2 }' common/.stamp_rev
 
 ifndef PYTHON_VERSIONS
-PYTHON_VERSIONS = $(call map, pathsearch, python2 python3)
+PYTHON_VERSIONS = $(call map, pathsearch, python3)
 endif
 
 ifndef PYTHON
