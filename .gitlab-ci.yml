@@ -27,7 +27,7 @@ build-all:
         - changehat/pam_apparmor/
         - profiles/
   script:
-      - cd libraries/libapparmor && ./autogen.sh && PYTHON=/usr/bin/python3 ./configure --with-perl --with-python --prefix=/usr && make PYTHON=/usr/bin/python3 && cd ../.. || { cat config.log ; exit 1 ; }
+      - cd libraries/libapparmor && ./autogen.sh && ./configure --with-perl --with-python --prefix=/usr && make && cd ../.. || { cat config.log ; exit 1 ; }
       - make -C parser
       - make -C binutils
       - make -C utils
@@ -38,10 +38,10 @@ build-all:
 test-all:
   stage: test
   script:
-      - make -C libraries/libapparmor check PYTHON=/usr/bin/python3
+      - make -C libraries/libapparmor check
       - make -C parser check
       - make -C binutils check
-      - make -C utils check PYFLAKES=/usr/bin/pyflakes3 PYTHON_VERSIONS=/usr/bin/python3
+      - make -C utils check
       - make -C changehat/mod_apparmor check
       - make -C profiles check-parser
       - make -C profiles check-abstractions.d
