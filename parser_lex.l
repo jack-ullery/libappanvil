@@ -20,9 +20,9 @@
 /* Definitions section */
 /* %option main */
 
-/* eliminates need to link with libfl */
+/* options set to noXXX eliminates need to link with libfl */
 %option noyywrap
-%option noyy_top_state
+/* set %option noyy_top_state in Makefile, so can be used when DEBUG=1 */
 %option nounput
 %option stack
 %option nodefault
