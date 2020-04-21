@@ -36,6 +36,10 @@ YACC	:= bison
 YFLAGS	:= -d
 LEX	:= flex
 LEXFLAGS = -B -v
+ifndef DEBUG
+LEXFLAGS += --noyy_top_state
+endif
+
 WARNINGS = -Wall
 CXX_WARNINGS = ${WARNINGS} ${EXTRA_WARNINGS}
 CPP_WARNINGS =
@@ -53,7 +57,9 @@ endif #CFLAGS
 EXTRA_CXXFLAGS = ${CFLAGS} ${CPPFLAGS} ${CXX_WARNINGS} -std=gnu++0x -D_GNU_SOURCE
 EXTRA_CFLAGS = ${EXTRA_CXXFLAGS} ${CPP_WARNINGS}
 
-#LEXLIB	:= -lfl
+ifdef DEBUG
+LEXLIB	:= -lfl
+endif
 
 # override this on the make command to point to where the immunix.h file is
 # (yeah this is lame, but since we are tied to the kernel so tightly...)
