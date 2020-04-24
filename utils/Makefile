@@ -22,7 +22,7 @@ include $(COMMONDIR)/Make.rules
 
 PYTOOLS = aa-easyprof aa-genprof aa-logprof aa-cleanprof aa-mergeprof \
           aa-autodep aa-audit aa-complain aa-enforce aa-disable \
-	        aa-notify aa-status aa-unconfined
+	        aa-notify aa-unconfined
 TOOLS = ${PYTOOLS} aa-decode aa-remove-unknown
 PYSETUP = python-tools-setup.py
 PYMODULES = $(wildcard apparmor/*.py apparmor/rule/*.py)
@@ -53,13 +53,11 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	install -d ${CONFDIR}
 	install -m 644 logprof.conf severity.db notify.conf ${CONFDIR}
 	install -d ${BINDIR}
-	ln -sf aa-status ${BINDIR}/apparmor_status
 	# aa-easyprof is installed by python-tools-setup.py
 	install -m 755 $(filter-out aa-easyprof, ${TOOLS}) ${BINDIR}
 	$(MAKE) -C po install DESTDIR=${DESTDIR} NAME=${NAME}
 	$(MAKE) install_manpages DESTDIR=${DESTDIR}
 	$(MAKE) -C vim install DESTDIR=${DESTDIR}
-	ln -sf aa-status.8 ${DESTDIR}/${MANDIR}/man8/apparmor_status.8
 	${PYTHON} ${PYSETUP} install --prefix=${PYPREFIX} --root=${DESTDIR} --version=${VERSION}
 
 .PHONY: clean

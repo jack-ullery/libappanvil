@@ -119,6 +119,10 @@ if the apparmor control files aren't available under /sys/kernel/security/.
 if the user running the script doesn't have enough privileges to read
 the apparmor control files.
 
+=item B<42>
+
+if an internal error occurred.
+
 =back
 
 =head1 BUGS
