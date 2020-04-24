@@ -356,7 +356,9 @@ INSTALLDEPS+=install-$(DISTRO)
 endif
 
 .PHONY: install
-install: install-indep install-arch
+install:
+	$(MAKE) install-indep
+	$(MAKE) install-arch
 
 .PHONY: install-arch
 install-arch: $(INSTALLDEPS)
