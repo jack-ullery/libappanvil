@@ -19,6 +19,7 @@
  *   Ltd.
  */
 
+#include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -108,8 +109,9 @@ static const char *cacheloc[MAX_CACHE_LOCS];
 static int cacheloc_n = 0;
 static bool print_cache_dir = false;
 
-static aa_features *policy_features = NULL;
-static aa_features *kernel_features = NULL;
+aa_features *policy_features = NULL;
+bool specified_policy_features = false;
+aa_features *kernel_features = NULL;
 
 static const char *config_file = "/etc/apparmor/parser.conf";
 
@@ -538,6 +540,7 @@ static int process_arg(int c, char *optarg)
 			exit(1);
 		}
 		kernel_features = aa_features_ref(policy_features);
+		specified_policy_features = true;
 		break;
 	case 'M':
 		if (policy_features)
@@ -551,6 +554,7 @@ static int process_arg(int c, char *optarg)
 			exit(1);
 		}
 		kernel_features = aa_features_ref(policy_features);
+		specified_policy_features = true;
 		break;
 	case 138:
 		if (kernel_features)
@@ -565,12 +569,19 @@ static int process_arg(int c, char *optarg)
 	case 139:
 		if (policy_features)
 			aa_features_unref(policy_features);
-		if (aa_features_new(&policy_features, AT_FDCWD, optarg)) {
+		if (strcmp(optarg, "<kernel>") == 0) {
+			if (aa_features_new_from_kernel(&policy_features)) {
+				fprintf(stderr,
+					"Failed to load kernel features into the policy-features abi: %m\n");
+				exit(1);
+			}
+		} else if (aa_features_new(&policy_features, AT_FDCWD, optarg)) {
 			fprintf(stderr,
-				"Failed to load compile features from '%s': %m\n",
+				"Failed to load policy-features from '%s': %m\n",
 				optarg);
 			exit(1);
 		}
+		specified_policy_features = true;
 		break;
 	case 'q':
 		conf_verbose = 0;
@@ -754,7 +765,7 @@ int features_intersect(aa_features *a, aa_features *b, const char *str)
 	return aa_features_supports(a, str) && aa_features_supports(b, str);
 }
 
-static void set_features_by_match_file(void)
+static bool set_features_by_match_file(struct aa_features **features)
 {
 	autofclose FILE *ms = fopen(MATCH_FILE, "r");
 	if (ms) {
@@ -764,20 +775,29 @@ static void set_features_by_match_file(void)
 		if (!fgets(match_string, 1000, ms))
 			goto no_match;
 		if (strstr(match_string, " perms=c"))
-			perms_create = 1;
-		features_supports_network = 1;
-		return;
+			return aa_features_new_from_string(features,
+							   match_cn_abi,
+							   strlen(match_cn_abi)) == 0;
+
+		return aa_features_new_from_string(features, match_n_abi,
+						   strlen(match_n_abi)) == 0;
 	}
 no_match:
-	perms_create = 1;
+	/* either extremely old kernel or a container without the interfaces
+	 * mounted
+	 */
+	return aa_features_new_from_string(features, match_c_abi,
+					  strlen(match_c_abi)) == 0;
 }
 
-static void set_supported_features(aa_features *kernel_features unused)
+void set_supported_features()
 {
+	assert(kernel_features != NULL);
+
 	/* has process_args() already assigned a match string? */
-	if (!policy_features && aa_features_new_from_kernel(&policy_features) == -1) {
-		set_features_by_match_file();
-		return;
+	if (!policy_features) {
+		policy_features = aa_features_ref(kernel_features);
+
 	}
 
 	/*
@@ -785,33 +805,29 @@ static void set_supported_features(aa_features *kernel_features unused)
 	 * rule down grades for a give kernel
 	 */
 	perms_create = 1;
-	kernel_supports_policydb = aa_features_supports(kernel_features, "file");
-	features_supports_network = features_intersect(kernel_features, policy_features, "network");
-	features_supports_unix = features_intersect(kernel_features, policy_features,
+	features_supports_network = features_intersect(kernel_features,
+						       policy_features,
+						       "network");
+	features_supports_unix = features_intersect(kernel_features,
+						    policy_features,
 						    "network/af_unix");
-	features_supports_mount = features_intersect(kernel_features, policy_features, "mount");
-	features_supports_dbus = features_intersect(kernel_features, policy_features, "dbus");
-	features_supports_signal = features_intersect(kernel_features, policy_features, "signal");
-	features_supports_ptrace = features_intersect(kernel_features, policy_features, "ptrace");
-	kernel_supports_setload = aa_features_supports(kernel_features,
-						       "policy/set_load");
-	kernel_supports_diff_encode = aa_features_supports(kernel_features,
-							   "policy/diff_encode");
-	features_supports_stacking = aa_features_supports(policy_features,
+	features_supports_mount = features_intersect(kernel_features,
+						     policy_features,
+						     "mount");
+	features_supports_dbus = features_intersect(kernel_features,
+						    policy_features, "dbus");
+	features_supports_signal = features_intersect(kernel_features,
+						      policy_features,
+						      "signal");
+	features_supports_ptrace = features_intersect(kernel_features,
+						      policy_features,
+						      "ptrace");
+	features_supports_stacking = features_intersect(kernel_features,
+							policy_features,
 							"domain/stack");
-	features_supports_domain_xattr = features_intersect(kernel_features, policy_features,
-							"domain/attach_conditions/xattr");
-	kernel_supports_oob = aa_features_supports(kernel_features,
-							"policy/outofband");
-
-	if (aa_features_supports(kernel_features, "policy/versions/v7"))
-		kernel_abi_version = 7;
-	else if (aa_features_supports(kernel_features, "policy/versions/v6"))
-		kernel_abi_version = 6;
-
-	if (!kernel_supports_diff_encode)
-		/* clear diff_encode because it is not supported */
-		dfaflags &= ~DFA_CONTROL_DIFF_ENCODE;
+	features_supports_domain_xattr = features_intersect(kernel_features,
+							    policy_features,
+							    "domain/attach_conditions/xattr");
 }
 
 static bool do_print_cache_dir(aa_features *features, int dirfd, const char *path)
@@ -904,6 +920,10 @@ void reset_parser(const char *filename)
 	free_symtabs();
 	free_policies();
 	reset_include_stack(filename);
+	if (!specified_policy_features) {
+		aa_features_unref(policy_features);
+		policy_features = NULL;
+	}
 }
 
 int test_for_dir_mode(const char *basename, const char *linkdir)
@@ -1265,19 +1285,39 @@ static int binary_dir_cb(int dirfd unused, const char *name, struct stat *st,
 	return rc;
 }
 
-static void setup_flags(void)
+static bool get_kernel_features(struct aa_features **features)
 {
 	/* Gracefully handle AppArmor kernel without compatibility patch */
-	if (!kernel_features && aa_features_new_from_kernel(&kernel_features) == -1) {
+	if (!kernel_features && aa_features_new_from_kernel(features) == -1) {
 		PERROR("Cache read/write disabled: interface file missing. "
 			"(Kernel needs AppArmor 2.4 compatibility patch.)\n");
 		write_cache = 0;
 		skip_read_cache = 1;
-		return;
+
+		/* Fall back to older match file */
+		if (!set_features_by_match_file(features))
+			return false;
 	}
 
-	/* Get the match string to determine type of regex support needed */
-	set_supported_features(kernel_features);
+	/* At this point we have features, extra commonly used values  */
+	kernel_supports_policydb = aa_features_supports(*features, "file");
+	kernel_supports_setload = aa_features_supports(*features,
+						       "policy/set_load");
+	kernel_supports_diff_encode = aa_features_supports(*features,
+							   "policy/diff_encode");
+	kernel_supports_oob = aa_features_supports(*features,
+						   "policy/outofband");
+
+	if (aa_features_supports(*features, "policy/versions/v7"))
+		kernel_abi_version = 7;
+	else if (aa_features_supports(*features, "policy/versions/v6"))
+		kernel_abi_version = 6;
+
+	if (!kernel_supports_diff_encode)
+		/* clear diff_encode because it is not supported */
+		dfaflags &= ~DFA_CONTROL_DIFF_ENCODE;
+
+	return true;
 }
 
 int main(int argc, char *argv[])
@@ -1311,7 +1351,10 @@ int main(int argc, char *argv[])
 
 	if (!binary_input) parse_default_paths();
 
-	setup_flags();
+	if (!get_kernel_features(&kernel_features)) {
+		PERROR(_("Kernel features abi not found"));
+		return 1;
+	}
 
 	if (!(UNPRIVILEGED_OPS) &&
 	    aa_kernel_interface_new(&kernel_interface, kernel_features, apparmorfs) == -1) {

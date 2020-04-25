@@ -143,6 +143,7 @@ extern int aa_query_link_path(const char *label, const char *target,
 
 typedef struct aa_features aa_features;
 extern int aa_features_new(aa_features **features, int dirfd, const char *path);
+extern int aa_features_new_from_file(aa_features **features, int file);
 extern int aa_features_new_from_string(aa_features **features,
 				       const char *string, size_t size);
 extern int aa_features_new_from_kernel(aa_features **features);

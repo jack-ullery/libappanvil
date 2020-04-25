@@ -418,6 +418,7 @@ fi
 		mv $profilenames ${profilenames}.old
 	fi
 
+	echo "abi <kernel>," >$profile
 	num_emitted=0
 
 	while /bin/true

@@ -5,6 +5,6 @@
 
 
 /does/not/exist {
-  abi abi/4.19,
+  abi simple_tests/includes/abi/4.19,
 
 }

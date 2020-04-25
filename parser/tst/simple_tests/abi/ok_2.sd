@@ -3,7 +3,7 @@
 #=EXRESULT PASS
 #
 
-abi "abi/4.19 ubuntu",
+abi "simple_tests/includes/abi/4.19 ubuntu",
 
 /does/not/exist {
 }

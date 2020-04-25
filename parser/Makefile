@@ -77,7 +77,7 @@ SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
        parser_yacc.c parser_regex.c parser_variable.c parser_policy.c \
        parser_alias.c common_optarg.c lib.c network.c \
        mount.cc dbus.cc profile.cc rule.cc signal.cc ptrace.cc \
-       af_rule.cc af_unix.cc policy_cache.c
+       af_rule.cc af_unix.cc policy_cache.c default_features.c
 HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h \
        rule.h common_optarg.h signal.h ptrace.h network.h af_rule.h af_unix.h \
        policy_cache.h
@@ -260,6 +260,9 @@ ptrace.o: ptrace.cc ptrace.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 network.o: network.c network.h parser.h immunix.h parser_yacc.h rule.h af_names.h $(APPARMOR_H)
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
+
+default_features.o: default_features.c parser.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 af_rule.o: af_rule.cc af_rule.h network.h parser.h profile.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)

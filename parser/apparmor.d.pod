@@ -69,7 +69,7 @@ to the policy; this behaviour is modelled after cpp(1).
 
 B<PROFILE FILE> = ( [ I<PREAMBLE> ] [ I<PROFILE> ] )*
 
-B<PREAMBLE> = ( I<COMMENT> | I<VARIABLE ASSIGNMENT> | I<ALIAS RULE> | I<INCLUDE> )*
+B<PREAMBLE> = ( I<COMMENT> | I<VARIABLE ASSIGNMENT> | I<ALIAS RULE> | I<INCLUDE> | I<ABI> )*
   Variable assignment and alias rules must come before the profile.
 
 B<VARIABLE ASSIGNMENT> = I<VARIABLE> ('=' | '+=') (space separated values)
@@ -79,6 +79,8 @@ B<VARIABLE> = '@{' I<ALPHA> [ ( I<ALPHANUMERIC> | '_' ) ... ] '}'
 B<ALIAS RULE> = 'alias' I<ABS PATH> '-E<gt>' I<REWRITTEN ABS PATH> ','
 
 B<INCLUDE> = ( '#include' | 'include' ) [ 'if exists' ] ( I<ABS PATH> | I<MAGIC PATH> )
+
+B<ABI> = ( 'abi' ) ( I<ABS PATH> | I<MAGIC PATH> ) ','
 
 B<ABS PATH> = '"' path '"' (the path is passed to open(2))
 
@@ -1692,9 +1694,34 @@ starting the profile definition. The aa-autodep(8) and aa-genprof(8) utilities
 will automatically emit B<#include E<lt>tunables/globalE<gt>> in
 generated profiles.
 
+=head2 Feature ABI
+
+The feature abi tells AppArmor which feature set the policy was
+developed under. This is important to ensure that kernels with a
+different feature set don't enforce features that the policy doesn't
+support, which can result in unexpected application failures.
+
+When policy is compiled both the kernel feature abi and policy feature
+abi are consulted to build a policy that will work for the system's
+kernel.
+
+If the kernel supports a feature not supported by the policy then
+policy will be built so that the kernel does NOT enforce that feature.
+
+If the policy supports a feature not supported by the kernel the
+compile may downgrade the rule with the feature to something the
+kernel supports, drop the rule completely, or fail the compile.
+
+If the policy abi is specified as B<kernel> then the running kernel's
+abi will be used. This should never be used in shipped policy as it
+can cause system breakage when a new kernel is installed.
+
 =head1 EXAMPLE
 
 An example AppArmor profile:
+
+	# which feature abi the policy was developed with
+        abi <abi/3.0>,
 
 	# a variable definition in the preamble
 	@{HOME} = /home/*/ /root/

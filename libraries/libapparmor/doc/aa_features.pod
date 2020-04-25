@@ -50,6 +50,8 @@ B<typedef struct aa_features aa_features;>
 
 B<int aa_features_new(aa_features **features, int dirfd, const char *path);>
 
+B<int aa_features_new_from_file(aa_features **features, int fd);>
+
 B<int aa_features_new_from_string(aa_features **features, const char *string, size_t size);>
 
 B<int aa_features_new_from_kernel(aa_features **features);>
@@ -81,6 +83,10 @@ The aa_features_new() function creates an I<aa_features> object based upon a
 directory file descriptor and path. The I<path> can point to a file or
 directory. See the openat(2) man page for examples of I<dirfd> and I<path>. The
 allocated I<features> object must be freed using aa_features_unref().
+
+The aa_features_new_from_file() function is similar except that it
+accepts an open file as the argument. The allocated I<features> object
+must be freed using aa_features_unref().
 
 The aa_features_new_from_string() function is similar except that it accepts a
 NUL-terminated string representation of the AppArmor features as the I<string>

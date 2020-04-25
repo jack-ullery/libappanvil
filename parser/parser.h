@@ -295,6 +295,9 @@ extern uint32_t policy_version;
 extern uint32_t parser_abi_version;
 extern uint32_t kernel_abi_version;
 
+extern aa_features *policy_features;
+extern aa_features *kernel_features;
+
 extern int force_complain;
 extern int perms_create;
 extern int net_af_max_override;
@@ -473,5 +476,14 @@ extern void dump_policy_names(void);
 void dump_policy(void);
 
 void free_policies(void);
+
+/* parser_main.c */
+extern void set_supported_features();
+
+/* default_features.c */
+extern const char *match_n_abi;
+extern const char *match_c_abi;
+extern const char *match_cn_abi;
+extern const char *default_features_abi;
 
 #endif /** __AA_PARSER_H */
