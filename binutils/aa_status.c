@@ -407,6 +407,14 @@ static int cmd_complaining(const char *command) {
         return simple_filtered_count("complain");
 }
 
+static int cmd_kill(const char *command) {
+        return simple_filtered_count("kill");
+}
+
+static int cmd_unconfined(const char *command) {
+        return simple_filtered_count("unconfined");
+}
+
 static int cmd_process_mixed(const char *command) {
         return simple_filtered_process_count("mixed");
 }
@@ -426,8 +434,8 @@ static int detailed_output(int json) {
         size_t nprofiles = 0, nprocesses = 0;
         struct profile *profiles = NULL;
         struct process *processes = NULL;
-        const char *profile_statuses[] = {"enforce", "complain"};
-        const char *process_statuses[] = {"enforce", "complain", "unconfined", "mixed"};
+        const char *profile_statuses[] = {"enforce", "complain", "kill", "unconfined"};
+        const char *process_statuses[] = {"enforce", "complain", "unconfined", "mixed", "kill"};
         int ret, i;
 
         ret = get_profiles(&profiles, &nprofiles);
@@ -551,6 +559,8 @@ static int print_usage(const char *command)
          "  --profiled      prints the number of loaded policies\n"
          "  --enforced      prints the number of loaded enforcing policies\n"
          "  --complaining   prints the number of loaded non-enforcing policies\n"
+         "  --kill          prints the number of loaded enforcing policies that kill tasks on policy violations\n"
+         "  --special-unconfined   prints the number of loaded non-enforcing policies in the special unconfined mode\n"
          "  --process-mixed prints the number processes with mixed profile modes\n"
          "  --json          displays multiple data points in machine-readable JSON format\n"
          "  --pretty-json   same data as --json, formatted for human consumption as well\n"
@@ -570,6 +580,8 @@ static struct command commands[] = {
         {"--profiled", cmd_profiled},
         {"--enforced", cmd_enforced},
         {"--complaining", cmd_complaining},
+        {"--kill", cmd_kill},
+        {"--special-unconfined", cmd_unconfined},
         {"--process-mixed", cmd_process_mixed},
         {"--json", cmd_json},
         {"--pretty-json", cmd_pretty_json},

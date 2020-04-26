@@ -70,8 +70,15 @@ displays the number of loaded enforcing AppArmor policies.
 
 displays the number of loaded non-enforcing AppArmor policies.
 
-=item --process-mixed
+=item --kill
 
+displays the number of loaded enforcing AppArmor policies that will kill tasks on policy violations.
+
+=item --special-unconfined
+
+displays the number of loaded non-enforcing AppArmor policies that are in the special unconfined mode.
+
+=item --process-mixed
 displays the number of processes confined by profile stacks with
 profiles in different modes.
 
