@@ -147,10 +147,35 @@ static inline pid_t aa_gettid(void)
 #endif
 }
 
+/*
+ * Check for the new apparmor proc interface once on the first api call
+ * and then reuse the result on all subsequent api calls. This avoids
+ * a double syscall overhead on each api call if the interface is not
+ * present.
+ */
+static pthread_once_t proc_attr_base_ctl = PTHREAD_ONCE_INIT;
+static char *proc_attr_base = "/proc/%d/attr/%s";
+static char *proc_attr_base_stacking = "/proc/%d/attr/apparmor/%s";
+
+static void proc_attr_base_init_once(void)
+{
+	autofree char *tmp;
+
+	/* if we fail we just fall back to the default value */
+	if (asprintf(&tmp, "/proc/%d/attr/apparmor/current", aa_gettid())) {
+		autoclose int fd = open(tmp, O_RDONLY);
+		if (fd != -1)
+			proc_attr_base = proc_attr_base_stacking;
+	}
+}
+
 static char *procattr_path(pid_t pid, const char *attr)
 {
 	char *path = NULL;
-	if (asprintf(&path, "/proc/%d/attr/%s", pid, attr) > 0)
+
+	/* ignore failure, we just fallback to the default value */
+	(void) pthread_once(&proc_attr_base_ctl, proc_attr_base_init_once);
+	if (asprintf(&path, proc_attr_base, pid, attr) > 0)
 		return path;
 	return NULL;
 }
