@@ -91,6 +91,10 @@ AAREOBJECTS = $(AAREOBJECT)
 AARE_LDFLAGS = -static-libgcc -static-libstdc++ -L. $(LDFLAGS)
 AALIB = -Wl,-Bstatic -lapparmor -Wl,-Bdynamic -lpthread
 
+ifdef WITH_LIBINTL
+	AALIB += -lintl
+endif
+
 ifdef USE_SYSTEM
   # Using the system libapparmor so Makefile dependencies can't be used
   LIBAPPARMOR_A =
@@ -356,7 +360,9 @@ INSTALLDEPS+=install-$(DISTRO)
 endif
 
 .PHONY: install
-install: install-indep install-arch
+install:
+	$(MAKE) install-indep
+	$(MAKE) install-arch
 
 .PHONY: install-arch
 install-arch: $(INSTALLDEPS)
