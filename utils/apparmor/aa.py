@@ -1631,7 +1631,8 @@ def match_includes(profile, rule_type, rule_obj):
     for incname in include.keys():
         # XXX type check should go away once we init all profiles correctly
         if valid_include(profile, incname) and include[incname][incname][rule_type].is_covered(rule_obj):
-            newincludes.append(incname)
+            if include[incname][incname]['logprof_suggest'] != 'no':
+                newincludes.append(incname)
 
     return newincludes
 
@@ -2333,6 +2334,14 @@ def parse_profile_data(data, file, do_include):
                         initial_comment = initial_comment + line + '\n'
                 else:
                     initial_comment = initial_comment + line + '\n'
+
+            if line.startswith('# LOGPROF-SUGGEST:'): # TODO: allow any number of spaces/tabs after '#'
+                parts = line.split()
+                if len(parts) > 2:
+                    profile_data[profile][hat]['logprof_suggest'] = parts[2]
+
+                # keep line as part of initial_comment (if we ever support writing abstractions, we should update serialize_profile())
+                initial_comment = initial_comment + line + '\n'
 
         elif FileRule.match(line):
             # leading permissions could look like a keyword, therefore handle file rules after everything else
