@@ -42,7 +42,7 @@ AC_ARG_WITH(python,
 [AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
 if test "$with_python" = "yes"; then
    test -z "$SWIG" && AC_MSG_ERROR([swig is required when enabling python bindings])
-   AC_PATH_PROG(PYTHON, python)
+   AC_PATH_PROG(PYTHON, python3)
    test -z "$PYTHON" && AC_MSG_ERROR([python is required when enabling python bindings])
    sinclude(m4/ac_python_devel.m4)
    AC_PYTHON_DEVEL
