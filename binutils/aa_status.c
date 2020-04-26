@@ -367,6 +367,28 @@ static int simple_filtered_count(const char *filter) {
         return ret;
 }
 
+static int simple_filtered_process_count(const char *filter) {
+	size_t nprocesses, nprofiles;
+        struct profile *profiles = NULL;
+        struct process *processes = NULL;
+        int ret;
+
+        ret = get_profiles(&profiles, &nprofiles);
+	if (ret != 0)
+		return ret;
+        ret = get_processes(profiles, nprofiles, &processes, &nprocesses);
+        if (ret == 0) {
+                size_t nfiltered;
+                struct process *filtered = NULL;
+                ret = filter_processes(processes, nprocesses, filter, &filtered, &nfiltered);
+                printf("%zd\n", nfiltered);
+                free_processes(filtered, nfiltered);
+        }
+        free_profiles(profiles, nprofiles);
+	free_processes(processes, nprocesses);
+        return ret;
+}
+
 static int cmd_enabled(const char *command) {
         int res = aa_is_enabled();
         return res == 1 ? 0 : 1;
@@ -385,6 +407,11 @@ static int cmd_complaining(const char *command) {
         return simple_filtered_count("complain");
 }
 
+static int cmd_process_mixed(const char *command) {
+        return simple_filtered_process_count("mixed");
+}
+
+
 static int compare_processes_by_profile(const void *a, const void *b) {
         return strcmp(((struct process *)a)->profile,
                       ((struct process *)b)->profile);
@@ -400,7 +427,7 @@ static int detailed_output(int json) {
         struct profile *profiles = NULL;
         struct process *processes = NULL;
         const char *profile_statuses[] = {"enforce", "complain"};
-        const char *process_statuses[] = {"enforce", "complain", "unconfined"};
+        const char *process_statuses[] = {"enforce", "complain", "unconfined", "mixed"};
         int ret, i;
 
         ret = get_profiles(&profiles, &nprofiles);
@@ -524,6 +551,7 @@ static int print_usage(const char *command)
          "  --profiled      prints the number of loaded policies\n"
          "  --enforced      prints the number of loaded enforcing policies\n"
          "  --complaining   prints the number of loaded non-enforcing policies\n"
+         "  --process-mixed prints the number processes with mixed profile modes\n"
          "  --json          displays multiple data points in machine-readable JSON format\n"
          "  --pretty-json   same data as --json, formatted for human consumption as well\n"
          "  --verbose       (default) displays multiple data points about loaded policy set\n"
@@ -542,6 +570,7 @@ static struct command commands[] = {
         {"--profiled", cmd_profiled},
         {"--enforced", cmd_enforced},
         {"--complaining", cmd_complaining},
+        {"--process-mixed", cmd_process_mixed},
         {"--json", cmd_json},
         {"--pretty-json", cmd_pretty_json},
         {"--verbose", cmd_verbose},

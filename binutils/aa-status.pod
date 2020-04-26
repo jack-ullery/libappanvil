@@ -70,6 +70,11 @@ displays the number of loaded enforcing AppArmor policies.
 
 displays the number of loaded non-enforcing AppArmor policies.
 
+=item --process-mixed
+
+displays the number of processes confined by profile stacks with
+profiles in different modes.
+
 =item --verbose
 
 displays multiple data points about loaded AppArmor policy
