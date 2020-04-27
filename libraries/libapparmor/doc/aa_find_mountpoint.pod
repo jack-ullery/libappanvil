@@ -87,6 +87,11 @@ Did not have sufficient permissions to determine if AppArmor is enabled.
 
 Did not have sufficient permissions to determine if AppArmor is enabled.
 
+=item B<EBUSY>
+
+AppArmor is enabled but does not have access to shared interfaces, and
+only private interfaces are available.
+
 =back
 
 B<aa_find_mountpoint>

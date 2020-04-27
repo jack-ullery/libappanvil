@@ -93,6 +93,70 @@ int aa_find_mountpoint(char **mnt)
 	return rc;
 }
 
+// done as a macro so we can paste the param
+
+#define param_check_base(PARAM)						\
+({									\
+	int rc, fd;							\
+	fd = open("/sys/module/apparmor/parameters/" PARAM, O_RDONLY);	\
+	if (fd == -1) {							\
+		rc = errno;						\
+	} else {							\
+		char buffer[2];						\
+		int size = read(fd, &buffer, 2);			\
+		rc = errno;						\
+		close(fd);						\
+		errno = rc;						\
+		if (size > 0) {						\
+			if (buffer[0] == 'Y')				\
+				rc = 0;					\
+			else						\
+				rc = ECANCELED;				\
+		}							\
+	}								\
+	(rc);								\
+})
+
+static pthread_once_t param_enabled_ctl = PTHREAD_ONCE_INIT;
+static int param_enabled = 0;
+
+static pthread_once_t param_private_enabled_ctl = PTHREAD_ONCE_INIT;
+static int param_private_enabled = 0;
+
+static void param_check_enabled_init_once(void)
+{
+	param_enabled = param_check_base("enabled");
+}
+
+static int param_check_enabled()
+{
+	if (pthread_once(&param_enabled_ctl, param_check_enabled_init_once) == 0)
+		return param_enabled;
+	return param_check_base("enabled");
+}
+
+static int is_enabled(void)
+{
+	return !param_check_enabled();
+}
+
+static void param_check_private_enabled_init_once(void)
+{
+	param_enabled = param_check_base("private_enabled");
+}
+
+static int param_check_private_enabled()
+{
+	if (pthread_once(&param_private_enabled_ctl, param_check_private_enabled_init_once) == 0)
+		return param_private_enabled;
+	return param_check_base("private_enabled");
+}
+
+static int is_private_enabled(void)
+{
+	return !param_check_private_enabled();
+}
+
 /**
  * aa_is_enabled - determine if apparmor is enabled
  *
@@ -105,36 +169,45 @@ int aa_find_mountpoint(char **mnt)
  */
 int aa_is_enabled(void)
 {
-	int serrno, fd, rc, size;
-	char buffer[2];
+	int rc;
 	char *mnt;
+	bool private = false;
 
-	/* if the interface mountpoint is available apparmor is enabled */
+	rc = param_check_enabled();
+	if (rc) {
+		if (rc == ENOENT)
+			errno = ENOSYS;
+		else
+			errno = rc;
+
+		if (!is_private_enabled())
+			return 0;
+
+		/* actually available but only on private interfaces */
+		private = true;
+	}
+
+	/* if the interface mountpoint is available apparmor may not
+	 * be locally enabled for older interfaces but still present
+	 * so make sure to check after, checking available status
+	 * also we don't cache the enabled status like available
+	 * because the mount status can change.
+	 */
 	rc = aa_find_mountpoint(&mnt);
 	if (rc == 0) {
 		free(mnt);
-		return 1;
+		if (!private)
+			return 1;
+		/* provide an error code to indicate apparmor is available
+		 * on private interfaces, but we can note that apparmor
+		 * is enabled because some applications hit the low level
+		 * interfaces directly and don't know about the new
+		 * private interfaces
+		 */
+		errno = EBUSY;
+		/* fall through to return 0 */
 	}
 
-	/* determine why the interface mountpoint isn't available */
-	fd = open("/sys/module/apparmor/parameters/enabled", O_RDONLY);
-	if (fd == -1) {
-		if (errno == ENOENT)
-			errno = ENOSYS;
-		return 0;
-	}
-
-	size = read(fd, &buffer, 2);
-	serrno = errno;
-	close(fd);
-	errno = serrno;
-
-	if (size > 0) {
-		if (buffer[0] == 'Y')
-			errno = ENOENT;
-		else
-			errno = ECANCELED;
-	}
 	return 0;
 }
 
@@ -156,6 +229,7 @@ static inline pid_t aa_gettid(void)
 static pthread_once_t proc_attr_base_ctl = PTHREAD_ONCE_INIT;
 static char *proc_attr_base = "/proc/%d/attr/%s";
 static char *proc_attr_base_stacking = "/proc/%d/attr/apparmor/%s";
+static char *proc_attr_base_unavailable = "/proc/%d/attr/apparmor/unavailable/%s";
 
 static void proc_attr_base_init_once(void)
 {
@@ -166,7 +240,15 @@ static void proc_attr_base_init_once(void)
 		autoclose int fd = open(tmp, O_RDONLY);
 		if (fd != -1)
 			proc_attr_base = proc_attr_base_stacking;
+	} else if (!is_enabled() && is_private_enabled()) {
+		/* new stacking interfaces aren't available and apparmor
+		 * is disabled, but available. do not use the
+		 * /proc/<pid>/attr/ * interfaces as they could be
+		 * in use by another LSM
+		 */
+		proc_attr_base = proc_attr_base_unavailable;
 	}
+	/* else default to pre-assigned value */
 }
 
 static char *procattr_path(pid_t pid, const char *attr)
@@ -725,6 +807,13 @@ int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode)
 		return -1;
 	}
 
+	if (!is_enabled()) {
+		errno = EINVAL;
+		return -1;
+	}
+	/* TODO: add check for private_enabled when alternate interface
+	 * is approved
+	 */
 	rc = getsockopt(fd, SOL_SOCKET, SO_PEERSEC, buf, &optlen);
 	if (rc == -1 || optlen <= 0)
 		goto out;
