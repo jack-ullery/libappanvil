@@ -34,98 +34,98 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 struct profile {
-        char *name;
-        char *status;
+	char *name;
+	char *status;
 };
 
 static void free_profiles(struct profile *profiles, size_t n) {
-        while (n > 0) {
-                n--;
-                free(profiles[n].name);
-                free(profiles[n].status);
-        }
-        free(profiles);
+	while (n > 0) {
+		n--;
+		free(profiles[n].name);
+		free(profiles[n].status);
+	}
+	free(profiles);
 }
 
 struct process {
-        char *pid;
-        char *profile;
-        char *exe;
-        char *mode;
+	char *pid;
+	char *profile;
+	char *exe;
+	char *mode;
 };
 
 static void free_processes(struct process *processes, size_t n) {
-        while (n > 0) {
-                n--;
-                free(processes[n].pid);
-                free(processes[n].profile);
-                free(processes[n].exe);
-                free(processes[n].mode);
+	while (n > 0) {
+		n--;
+		free(processes[n].pid);
+		free(processes[n].profile);
+		free(processes[n].exe);
+		free(processes[n].mode);
         }
-        free(processes);
+	free(processes);
 }
 
 static int verbose = 0;
 
 #define dprintf(...)                                                           \
-  do {                                                                         \
-    if (verbose)                                                               \
-      printf(__VA_ARGS__);                                                     \
-  } while (0)
+do {									       \
+	if (verbose)							       \
+		printf(__VA_ARGS__);					       \
+} while (0)
 
 #define dfprintf(...)                                                          \
-  do {                                                                         \
-    if (verbose)                                                               \
-      fprintf(__VA_ARGS__);                                                    \
-  } while (0)
+do {									       \
+	if (verbose)							       \
+		fprintf(__VA_ARGS__);					       \
+} while (0)
 
 
 static int get_profiles(struct profile **profiles, size_t *n) {
-        autofree char *apparmorfs = NULL;
-        autofree char *apparmor_profiles = NULL;
-        struct stat st;
-        autofclose FILE *fp = NULL;
-        autofree char *line = NULL;
-        size_t len = 0;
-        int ret;
+	autofree char *apparmorfs = NULL;
+	autofree char *apparmor_profiles = NULL;
+	struct stat st;
+	autofclose FILE *fp = NULL;
+	autofree char *line = NULL;
+	size_t len = 0;
+	int ret;
 
-        *profiles = NULL;
-        *n = 0;
+	*profiles = NULL;
+	*n = 0;
 
-        ret = stat("/sys/module/apparmor", &st);
-        if (ret != 0) {
-                dfprintf(stderr, "apparmor not present.\n");
-                ret = AA_EXIT_DISABLED;
-                goto exit;
+	ret = stat("/sys/module/apparmor", &st);
+	if (ret != 0) {
+		dfprintf(stderr, "apparmor not present.\n");
+		ret = AA_EXIT_DISABLED;
+		goto exit;
         }
-        dprintf("apparmor module is loaded.\n");
+	dprintf("apparmor module is loaded.\n");
 
-        ret = aa_find_mountpoint(&apparmorfs);
-        if (ret == -1) {
-                dfprintf(stderr, "apparmor filesystem is not mounted.\n");
-                ret = AA_EXIT_NO_CONTROL;
-                goto exit;
-        }
-
-        apparmor_profiles = malloc(strlen(apparmorfs) + 10); // /profiles\0
-        if (apparmor_profiles == NULL) {
-                ret = AA_EXIT_INTERNAL_ERROR;
-                goto exit;
-        }
-        sprintf(apparmor_profiles, "%s/profiles", apparmorfs);
-
-        fp = fopen(apparmor_profiles, "r");
-        if (fp == NULL) {
-                if (errno == EACCES) {
-                        dfprintf(stderr, "You do not have enough privilege to read the profile set.\n");
-                } else {
-                        dfprintf(stderr, "Could not open %s: %s", apparmor_profiles, strerror(errno));
-                }
-                ret = AA_EXIT_NO_PERM;
-                goto exit;
+	ret = aa_find_mountpoint(&apparmorfs);
+	if (ret == -1) {
+		dfprintf(stderr, "apparmor filesystem is not mounted.\n");
+		ret = AA_EXIT_NO_CONTROL;
+		goto exit;
         }
 
-        while (getline(&line, &len, fp) != -1) {
+	apparmor_profiles = malloc(strlen(apparmorfs) + 10); // /profiles\0
+	if (apparmor_profiles == NULL) {
+		ret = AA_EXIT_INTERNAL_ERROR;
+		goto exit;
+        }
+	sprintf(apparmor_profiles, "%s/profiles", apparmorfs);
+
+	fp = fopen(apparmor_profiles, "r");
+	if (fp == NULL) {
+		if (errno == EACCES) {
+			dfprintf(stderr, "You do not have enough privilege to read the profile set.\n");
+		} else {
+			dfprintf(stderr, "Could not open %s: %s", apparmor_profiles, strerror(errno));
+		}
+		ret = AA_EXIT_NO_PERM;
+		goto exit;
+	}
+
+	while (getline(&line, &len, fp) != -1) {
 		struct profile *_profiles;
 		autofree char *status = NULL;
 		autofree char *name = strdup(aa_splitcon(line, &status));
@@ -155,123 +155,123 @@ static int get_profiles(struct profile **profiles, size_t *n) {
 		status = NULL;
 		*n = *n + 1;
 		*profiles = _profiles;
-        }
+	}
 
 exit:
-        return ret == 0 ? (*n > 0 ? AA_EXIT_ENABLED : AA_EXIT_NO_POLICY) : ret;
+	return ret == 0 ? (*n > 0 ? AA_EXIT_ENABLED : AA_EXIT_NO_POLICY) : ret;
 }
 
 static int compare_profiles(const void *a, const void *b) {
-        return strcmp(((struct profile *)a)->name,
-                      ((struct profile *)b)->name);
+	return strcmp(((struct profile *)a)->name,
+		      ((struct profile *)b)->name);
 }
 
 static int filter_profiles(struct profile *profiles,
-                           size_t n,
-                           const char *filter,
-                           struct profile **filtered,
-                           size_t *nfiltered)
+			   size_t n,
+			   const char *filter,
+			   struct profile **filtered,
+			   size_t *nfiltered)
 {
-        int ret = 0;
-        size_t i;
+	int ret = 0;
+	size_t i;
 
-        *filtered = NULL;
-        *nfiltered = 0;
+	*filtered = NULL;
+	*nfiltered = 0;
 
-        for (i = 0; i < n; i++) {
-                if (filter == NULL || strcmp(profiles[i].status, filter) == 0) {
-                        struct profile *_filtered = realloc(*filtered, (*nfiltered + 1) * sizeof(**filtered));
-                        if (_filtered == NULL) {
-                                free_profiles(*filtered, *nfiltered);
-                                *filtered = NULL;
-                                *nfiltered = 0;
-                                ret = AA_EXIT_INTERNAL_ERROR;
-                                break;
+	for (i = 0; i < n; i++) {
+		if (filter == NULL || strcmp(profiles[i].status, filter) == 0) {
+			struct profile *_filtered = realloc(*filtered, (*nfiltered + 1) * sizeof(**filtered));
+			if (_filtered == NULL) {
+				free_profiles(*filtered, *nfiltered);
+				*filtered = NULL;
+				*nfiltered = 0;
+				ret = AA_EXIT_INTERNAL_ERROR;
+				break;
                         }
-                        _filtered[*nfiltered].name = strdup(profiles[i].name);
-                        _filtered[*nfiltered].status = strdup(profiles[i].status);
-                        *filtered = _filtered;
-                        *nfiltered = *nfiltered + 1;
-                }
-        }
-        if (*nfiltered != 0) {
-                qsort(*filtered, *nfiltered, sizeof(*profiles), compare_profiles);
-        }
-        return ret;
+			_filtered[*nfiltered].name = strdup(profiles[i].name);
+			_filtered[*nfiltered].status = strdup(profiles[i].status);
+			*filtered = _filtered;
+			*nfiltered = *nfiltered + 1;
+		}
+	}
+	if (*nfiltered != 0) {
+		qsort(*filtered, *nfiltered, sizeof(*profiles), compare_profiles);
+	}
+	return ret;
 }
 
 static int get_processes(struct profile *profiles,
-                         size_t n,
-                         struct process **processes,
-                         size_t *nprocesses)
+			 size_t n,
+			 struct process **processes,
+			 size_t *nprocesses)
 {
-        DIR *dir = NULL;
-        struct dirent *entry = NULL;
-        int ret = 0;
+	DIR *dir = NULL;
+	struct dirent *entry = NULL;
+	int ret = 0;
 
-        *processes = NULL;
-        *nprocesses = 0;
+	*processes = NULL;
+	*nprocesses = 0;
 
-        dir = opendir("/proc");
-        if (dir == NULL) {
-                ret = AA_EXIT_INTERNAL_ERROR;
-                goto exit;
+	dir = opendir("/proc");
+	if (dir == NULL) {
+		ret = AA_EXIT_INTERNAL_ERROR;
+		goto exit;
         }
-        while ((entry = readdir(dir)) != NULL) {
-                int i;
-                int ispid = 1;
+	while ((entry = readdir(dir)) != NULL) {
+		int i;
+		int ispid = 1;
 		autofree char *profile = NULL;
 		autofree char *mode = NULL; /* be careful */
-                autofree char *exe = NULL;
-                autofree char *real_exe = NULL;
-                autofclose FILE *fp = NULL;
-                autofree char *line = NULL;
-                size_t len = 0;
+		autofree char *exe = NULL;
+		autofree char *real_exe = NULL;
+		autofclose FILE *fp = NULL;
+		autofree char *line = NULL;
+		size_t len = 0;
 
-                // ignore non-pid entries
-                for (i = 0; ispid && i < strlen(entry->d_name); i++) {
-                        ispid = (isdigit(entry->d_name[i]) ? 1 : 0);
-                }
-                if (!ispid) {
-                        continue;
-                }
+		// ignore non-pid entries
+		for (i = 0; ispid && i < strlen(entry->d_name); i++) {
+			ispid = (isdigit(entry->d_name[i]) ? 1 : 0);
+		}
+		if (!ispid) {
+			continue;
+		}
 
 		i = aa_getprocattr(atoi(entry->d_name), "current", &profile, &mode);
 		if (i == -1 && errno != ENOMEM) {
 			/* fail to access */
 			continue;
 		} else if (i == -1 ||
-		    asprintf(&exe, "/proc/%s/exe", entry->d_name) == -1) {
+			   asprintf(&exe, "/proc/%s/exe", entry->d_name) == -1) {
 			fprintf(stderr, "ERROR: Failed to allocate memory\n");
-                        ret = AA_EXIT_INTERNAL_ERROR;
-                        goto exit;
+			ret = AA_EXIT_INTERNAL_ERROR;
+			goto exit;
 		} else if (mode) {
 			/* TODO: make this not needed. Mode can now be autofreed */
 			mode = strdup(mode);
 		}
-                // get executable - readpath can allocate for us but seems
-                // to fail in some cases with errno 2 - no such file or
-                // directory - whereas readlink() can succeed in these
-                // cases - and readpath() seems to have the same behaviour
-                // as in python with better canonicalized results so try it
-                // first and fallack to readlink if it fails
-                // coverity[toctou]
-                real_exe = realpath(exe, NULL);
-                if (real_exe == NULL) {
-                        int res;
-                        // ensure enough space for NUL terminator
-                        real_exe = calloc(PATH_MAX + 1, sizeof(char));
-                        if (real_exe == NULL) {
-                                fprintf(stderr, "ERROR: Failed to allocate memory\n");
-                                ret = AA_EXIT_INTERNAL_ERROR;
-                                goto exit;
-                        }
-                        res = readlink(exe, real_exe, PATH_MAX);
-                        if (res == -1) {
-                                continue;
-                        }
-                        real_exe[res] = '\0';
-                }
+		// get executable - readpath can allocate for us but seems
+		// to fail in some cases with errno 2 - no such file or
+		// directory - whereas readlink() can succeed in these
+		// cases - and readpath() seems to have the same behaviour
+		// as in python with better canonicalized results so try it
+		// first and fallack to readlink if it fails
+		// coverity[toctou]
+		real_exe = realpath(exe, NULL);
+		if (real_exe == NULL) {
+			int res;
+			// ensure enough space for NUL terminator
+			real_exe = calloc(PATH_MAX + 1, sizeof(char));
+			if (real_exe == NULL) {
+				fprintf(stderr, "ERROR: Failed to allocate memory\n");
+				ret = AA_EXIT_INTERNAL_ERROR;
+				goto exit;
+			}
+			res = readlink(exe, real_exe, PATH_MAX);
+			if (res == -1) {
+				continue;
+			}
+			real_exe[res] = '\0';
+		}
 
 
 		if (mode == NULL) {
@@ -305,66 +305,66 @@ static int get_processes(struct profile *profiles,
 			mode = NULL;
 			ret = AA_EXIT_ENABLED;
 		}
-        }
+	}
 
 exit:
-        if (dir != NULL) {
-                closedir(dir);
-        }
-        return ret;
+	if (dir != NULL) {
+		closedir(dir);
+	}
+	return ret;
 }
 
 static int filter_processes(struct process *processes,
-                            size_t n,
-                            const char *filter,
-                            struct process **filtered,
-                            size_t *nfiltered)
+			    size_t n,
+			    const char *filter,
+			    struct process **filtered,
+			    size_t *nfiltered)
 {
-        size_t i;
-        int ret = 0;
+	size_t i;
+	int ret = 0;
 
-        *filtered = NULL;
-        *nfiltered = 0;
+	*filtered = NULL;
+	*nfiltered = 0;
 
-        for (i = 0; i < n; i++) {
-                if (filter == NULL || strcmp(processes[i].mode, filter) == 0) {
-                        struct process *_filtered = realloc(*filtered, (*nfiltered + 1) * sizeof(**filtered));
-                        if (_filtered == NULL) {
-                                free_processes(*filtered, *nfiltered);
-                                *filtered = NULL;
-                                *nfiltered = 0;
-                                ret = AA_EXIT_INTERNAL_ERROR;
-                                break;
-                        }
-                        _filtered[*nfiltered].pid = strdup(processes[i].pid);
-                        _filtered[*nfiltered].profile = strdup(processes[i].profile);
-                        _filtered[*nfiltered].exe = strdup(processes[i].exe);
-                        _filtered[*nfiltered].mode = strdup(processes[i].mode);
-                        *filtered = _filtered;
-                        *nfiltered = *nfiltered + 1;
-                }
-        }
-        return ret;
+	for (i = 0; i < n; i++) {
+		if (filter == NULL || strcmp(processes[i].mode, filter) == 0) {
+			struct process *_filtered = realloc(*filtered, (*nfiltered + 1) * sizeof(**filtered));
+			if (_filtered == NULL) {
+				free_processes(*filtered, *nfiltered);
+				*filtered = NULL;
+				*nfiltered = 0;
+				ret = AA_EXIT_INTERNAL_ERROR;
+				break;
+			}
+			_filtered[*nfiltered].pid = strdup(processes[i].pid);
+			_filtered[*nfiltered].profile = strdup(processes[i].profile);
+			_filtered[*nfiltered].exe = strdup(processes[i].exe);
+			_filtered[*nfiltered].mode = strdup(processes[i].mode);
+			*filtered = _filtered;
+			*nfiltered = *nfiltered + 1;
+		}
+	}
+	return ret;
 }
 
 /**
  * Returns error code if AppArmor is not enabled
  */
 static int simple_filtered_count(const char *filter) {
-        size_t n;
-        struct profile *profiles;
-        int ret;
+	size_t n;
+	struct profile *profiles;
+	int ret;
 
-        ret = get_profiles(&profiles, &n);
-        if (ret == 0) {
-                size_t nfiltered;
-                struct profile *filtered = NULL;
-                ret = filter_profiles(profiles, n, filter, &filtered, &nfiltered);
-                printf("%zd\n", nfiltered);
-                free_profiles(filtered, nfiltered);
-        }
-        free_profiles(profiles, n);
-        return ret;
+	ret = get_profiles(&profiles, &n);
+	if (ret == 0) {
+		size_t nfiltered;
+		struct profile *filtered = NULL;
+		ret = filter_profiles(profiles, n, filter, &filtered, &nfiltered);
+		printf("%zd\n", nfiltered);
+		free_profiles(filtered, nfiltered);
+	}
+	free_profiles(profiles, n);
+	return ret;
 }
 
 static int simple_filtered_process_count(const char *filter) {
@@ -390,21 +390,21 @@ static int simple_filtered_process_count(const char *filter) {
 }
 
 static int cmd_enabled(const char *command) {
-        int res = aa_is_enabled();
-        return res == 1 ? 0 : 1;
+	int res = aa_is_enabled();
+	return res == 1 ? 0 : 1;
 }
 
 
 static int cmd_profiled(const char *command) {
-        return simple_filtered_count(NULL);
+	return simple_filtered_count(NULL);
 }
 
 static int cmd_enforced(const char *command) {
-        return simple_filtered_count("enforce");
+	return simple_filtered_count("enforce");
 }
 
 static int cmd_complaining(const char *command) {
-        return simple_filtered_count("complain");
+	return simple_filtered_count("complain");
 }
 
 static int cmd_kill(const char *command) {
@@ -421,204 +421,204 @@ static int cmd_process_mixed(const char *command) {
 
 
 static int compare_processes_by_profile(const void *a, const void *b) {
-        return strcmp(((struct process *)a)->profile,
+	return strcmp(((struct process *)a)->profile,
                       ((struct process *)b)->profile);
 }
 
 static int compare_processes_by_executable(const void *a, const void *b) {
-        return strcmp(((struct process *)a)->exe,
+	return strcmp(((struct process *)a)->exe,
                       ((struct process *)b)->exe);
 }
 
 static int detailed_output(int json) {
-        size_t nprofiles = 0, nprocesses = 0;
-        struct profile *profiles = NULL;
-        struct process *processes = NULL;
-        const char *profile_statuses[] = {"enforce", "complain", "kill", "unconfined"};
-        const char *process_statuses[] = {"enforce", "complain", "unconfined", "mixed", "kill"};
-        int ret, i;
+	size_t nprofiles = 0, nprocesses = 0;
+	struct profile *profiles = NULL;
+	struct process *processes = NULL;
+	const char *profile_statuses[] = {"enforce", "complain", "kill", "unconfined"};
+	const char *process_statuses[] = {"enforce", "complain", "unconfined", "mixed", "kill"};
+	int ret, i;
 
-        ret = get_profiles(&profiles, &nprofiles);
-        if (ret != 0) {
-                goto exit;
-        }
-        ret = get_processes(profiles, nprofiles, &processes, &nprocesses);
-        if (ret != 0) {
-                dfprintf(stderr, "Failed to get processes: %d....\n", ret);
-                goto exit;
-        }
+	ret = get_profiles(&profiles, &nprofiles);
+	if (ret != 0) {
+		goto exit;
+	}
+	ret = get_processes(profiles, nprofiles, &processes, &nprocesses);
+	if (ret != 0) {
+		dfprintf(stderr, "Failed to get processes: %d....\n", ret);
+		goto exit;
+	}
 
-        if (json) {
-                printf("{\"version\": \"1\", \"profiles\": {");
-        } else {
-                dprintf("%zd profiles are loaded.\n", nprofiles);
-        }
+	if (json) {
+		printf("{\"version\": \"1\", \"profiles\": {");
+	} else {
+		dprintf("%zd profiles are loaded.\n", nprofiles);
+	}
 
-        for (i = 0; i < ARRAY_SIZE(profile_statuses); i++) {
-                size_t nfiltered = 0, j;
-                struct profile *filtered = NULL;
-                ret = filter_profiles(profiles, nprofiles, profile_statuses[i], &filtered, &nfiltered);
-                if (ret != 0) {
-                        goto exit;
-                }
-                if (!json) {
-                        dprintf("%zd profiles are in %s mode.\n", nfiltered, profile_statuses[i]);
-                }
+	for (i = 0; i < ARRAY_SIZE(profile_statuses); i++) {
+		size_t nfiltered = 0, j;
+		struct profile *filtered = NULL;
+		ret = filter_profiles(profiles, nprofiles, profile_statuses[i], &filtered, &nfiltered);
+		if (ret != 0) {
+			goto exit;
+		}
+		if (!json) {
+			dprintf("%zd profiles are in %s mode.\n", nfiltered, profile_statuses[i]);
+		}
 
-                for (j = 0; j < nfiltered; j++) {
-                        if (json) {
-                                printf("%s\"%s\": \"%s\"",
-                                       i == 0 && j == 0 ? "" : ", ", filtered[j].name, profile_statuses[i]);
-                        } else {
-                                dprintf("   %s\n", filtered[j].name);
-                        }
-                }
+		for (j = 0; j < nfiltered; j++) {
+			if (json) {
+				printf("%s\"%s\": \"%s\"",
+				       i == 0 && j == 0 ? "" : ", ", filtered[j].name, profile_statuses[i]);
+			} else {
+				dprintf("   %s\n", filtered[j].name);
+			}
+		}
 
-                free_profiles(filtered, nfiltered);
-        }
-        if (json) {
-                printf("}, \"processes\": {");
-        } else {
-                dprintf("%zd processes have profiles defined.\n", nprocesses);
-        }
+		free_profiles(filtered, nfiltered);
+	}
+	if (json) {
+		printf("}, \"processes\": {");
+	} else {
+		dprintf("%zd processes have profiles defined.\n", nprocesses);
+	}
 
-        for (i = 0; i < ARRAY_SIZE(process_statuses); i++) {
-                size_t nfiltered = 0, j;
-                struct process *filtered = NULL;
-                ret = filter_processes(processes, nprocesses, process_statuses[i], &filtered, &nfiltered);
-                if (ret != 0) {
-                        goto exit;
-                }
-                if (!json) {
-                        if (strcmp(process_statuses[i], "unconfined") == 0) {
-                                dprintf("%zd processes are unconfined but have a profile defined.\n", nfiltered);
-                        } else {
-                                dprintf("%zd processes are in %s mode.\n", nfiltered, process_statuses[i]);
-                        }
-                }
+	for (i = 0; i < ARRAY_SIZE(process_statuses); i++) {
+		size_t nfiltered = 0, j;
+		struct process *filtered = NULL;
+		ret = filter_processes(processes, nprocesses, process_statuses[i], &filtered, &nfiltered);
+		if (ret != 0) {
+			goto exit;
+		}
+		if (!json) {
+			if (strcmp(process_statuses[i], "unconfined") == 0) {
+				dprintf("%zd processes are unconfined but have a profile defined.\n", nfiltered);
+			} else {
+				dprintf("%zd processes are in %s mode.\n", nfiltered, process_statuses[i]);
+			}
+		}
 
-                if (!json) {
-                        qsort(filtered, nfiltered, sizeof(*filtered), compare_processes_by_profile);
-                        for (j = 0; j < nfiltered; j++) {
-                                dprintf("   %s (%s) %s\n", filtered[j].exe, filtered[j].pid,
-                                        // hide profile name if matches executable
-                                        (strcmp(filtered[j].profile, filtered[j].exe) == 0 ?
-                                         "" :
-                                         filtered[j].profile));
-                        }
-                } else {
-                        // json output requires processes to be grouped per executable
-                        qsort(filtered, nfiltered, sizeof(*filtered), compare_processes_by_executable);
-                        for (j = 0; j < nfiltered; j++) {
-                                if (j > 0 && strcmp(filtered[j].exe, filtered[j - 1].exe) == 0) {
-                                        // same executable
-                                        printf(", {\"profile\": \"%s\", \"pid\": \"%s\", \"status\": \"%s\"}",
-                                               filtered[j].profile, filtered[j].pid, filtered[j].mode);
-                                } else {
-                                        printf("%s\"%s\": [{\"profile\": \"%s\", \"pid\": \"%s\", \"status\": \"%s\"}",
-                                               // first element will be a unique executable
-                                               i == 0 && j == 0 ? "" : "], ",
-                                               filtered[j].exe, filtered[j].profile, filtered[j].pid, filtered[j].mode);
-                                }
+		if (!json) {
+			qsort(filtered, nfiltered, sizeof(*filtered), compare_processes_by_profile);
+			for (j = 0; j < nfiltered; j++) {
+				dprintf("   %s (%s) %s\n", filtered[j].exe, filtered[j].pid,
+					// hide profile name if matches executable
+					(strcmp(filtered[j].profile, filtered[j].exe) == 0 ?
+					 "" :
+					 filtered[j].profile));
+			}
+		} else {
+			// json output requires processes to be grouped per executable
+			qsort(filtered, nfiltered, sizeof(*filtered), compare_processes_by_executable);
+			for (j = 0; j < nfiltered; j++) {
+				if (j > 0 && strcmp(filtered[j].exe, filtered[j - 1].exe) == 0) {
+					// same executable
+					printf(", {\"profile\": \"%s\", \"pid\": \"%s\", \"status\": \"%s\"}",
+					       filtered[j].profile, filtered[j].pid, filtered[j].mode);
+				} else {
+					printf("%s\"%s\": [{\"profile\": \"%s\", \"pid\": \"%s\", \"status\": \"%s\"}",
+					       // first element will be a unique executable
+					       i == 0 && j == 0 ? "" : "], ",
+					       filtered[j].exe, filtered[j].profile, filtered[j].pid, filtered[j].mode);
+				}
 
-                        }
-                }
-                free_processes(filtered, nfiltered);
-        }
-        if (json) {
-                printf("%s}}", nprocesses > 0 ? "]" : "");
-        }
+			}
+		}
+		free_processes(filtered, nfiltered);
+	}
+	if (json) {
+		printf("%s}}", nprocesses > 0 ? "]" : "");
+	}
 
 exit:
-        free_processes(processes, nprocesses);
-        free_profiles(profiles, nprofiles);
-        return ret == 0 ? (nprofiles > 0 ? AA_EXIT_ENABLED : AA_EXIT_NO_POLICY) : ret;
+	free_processes(processes, nprocesses);
+	free_profiles(profiles, nprofiles);
+	return ret == 0 ? (nprofiles > 0 ? AA_EXIT_ENABLED : AA_EXIT_NO_POLICY) : ret;
 }
 
 static int cmd_json(const char *command) {
-        detailed_output(1);
-        return 0;
+	detailed_output(1);
+	return 0;
 }
 
 static int cmd_pretty_json(const char *command) {
-        // TODO - add support for pretty printing json output
-        return cmd_json(command);
+	// TODO - add support for pretty printing json output
+	return cmd_json(command);
 }
 
 static int cmd_verbose(const char *command) {
-        verbose = 1;
-        return detailed_output(0);
+	verbose = 1;
+	return detailed_output(0);
 }
 
 static int print_usage(const char *command)
 {
-  printf("Usage: %s [OPTIONS]\n"
-         "Displays various information about the currently loaded AppArmor policy.\n"
-         "OPTIONS (one only):\n"
-         "  --enabled       returns error code if AppArmor not enabled\n"
-         "  --profiled      prints the number of loaded policies\n"
-         "  --enforced      prints the number of loaded enforcing policies\n"
-         "  --complaining   prints the number of loaded non-enforcing policies\n"
-         "  --kill          prints the number of loaded enforcing policies that kill tasks on policy violations\n"
-         "  --special-unconfined   prints the number of loaded non-enforcing policies in the special unconfined mode\n"
-         "  --process-mixed prints the number processes with mixed profile modes\n"
-         "  --json          displays multiple data points in machine-readable JSON format\n"
-         "  --pretty-json   same data as --json, formatted for human consumption as well\n"
-         "  --verbose       (default) displays multiple data points about loaded policy set\n"
-         "  --help          this message\n",
-         command);
-  return 0;
+	printf("Usage: %s [OPTIONS]\n"
+	 "Displays various information about the currently loaded AppArmor policy.\n"
+	 "OPTIONS (one only):\n"
+	 "  --enabled       returns error code if AppArmor not enabled\n"
+	 "  --profiled      prints the number of loaded policies\n"
+	 "  --enforced      prints the number of loaded enforcing policies\n"
+	 "  --complaining   prints the number of loaded non-enforcing policies\n"
+	 "  --kill          prints the number of loaded enforcing policies that kill tasks on policy violations\n"
+	 "  --special-unconfined   prints the number of loaded non-enforcing policies in the special unconfined mode\n"
+	 "  --process-mixed prints the number processes with mixed profile modes\n"
+	 "  --json          displays multiple data points in machine-readable JSON format\n"
+	 "  --pretty-json   same data as --json, formatted for human consumption as well\n"
+	 "  --verbose       (default) displays multiple data points about loaded policy set\n"
+	 "  --help          this message\n",
+	 command);
+	return 0;
 }
 
 struct command {
-        const char * const name;
-        int (*cmd)(const char *command);
+	const char * const name;
+	int (*cmd)(const char *command);
 };
 
 static struct command commands[] = {
-        {"--enabled", cmd_enabled},
-        {"--profiled", cmd_profiled},
-        {"--enforced", cmd_enforced},
-        {"--complaining", cmd_complaining},
-        {"--kill", cmd_kill},
-        {"--special-unconfined", cmd_unconfined},
-        {"--process-mixed", cmd_process_mixed},
-        {"--json", cmd_json},
-        {"--pretty-json", cmd_pretty_json},
-        {"--verbose", cmd_verbose},
-        {"-v", cmd_verbose},
-        {"--help", print_usage},
-        {"-h", print_usage},
+	{"--enabled", cmd_enabled},
+	{"--profiled", cmd_profiled},
+	{"--enforced", cmd_enforced},
+	{"--complaining", cmd_complaining},
+	{"--kill", cmd_kill},
+	{"--special-unconfined", cmd_unconfined},
+	{"--process-mixed", cmd_process_mixed},
+	{"--json", cmd_json},
+	{"--pretty-json", cmd_pretty_json},
+	{"--verbose", cmd_verbose},
+	{"-v", cmd_verbose},
+	{"--help", print_usage},
+	{"-h", print_usage},
 };
 
 int main(int argc, char **argv)
 {
-        int ret = EXIT_SUCCESS;
-        int _ret;
-        int (*cmd)(const char*) = cmd_verbose;
+	int ret = EXIT_SUCCESS;
+	int _ret;
+	int (*cmd)(const char*) = cmd_verbose;
 
-        if (argc > 2) {
-                dfprintf(stderr, "Error: Too many options.\n");
-                cmd = print_usage;
-                ret = EXIT_FAILURE;
-        } else if (argc == 2) {
-                int (*_cmd)(const char*) = NULL;
-                int i;
-                for (i = 0; i < ARRAY_SIZE(commands); i++) {
-                        if (strcmp(argv[1], commands[i].name) == 0) {
-                                _cmd = commands[i].cmd;
-                                break;
-                        }
-                }
-                if (_cmd == NULL) {
-                        dfprintf(stderr, "Error: Invalid command.\n");
-                        cmd = print_usage;
-                        ret = EXIT_FAILURE;
-                } else {
-                        cmd = _cmd;
-                }
-        }
+	if (argc > 2) {
+		dfprintf(stderr, "Error: Too many options.\n");
+		cmd = print_usage;
+		ret = EXIT_FAILURE;
+	} else if (argc == 2) {
+		int (*_cmd)(const char*) = NULL;
+		int i;
+		for (i = 0; i < ARRAY_SIZE(commands); i++) {
+			if (strcmp(argv[1], commands[i].name) == 0) {
+				_cmd = commands[i].cmd;
+				break;
+			}
+		}
+		if (_cmd == NULL) {
+			dfprintf(stderr, "Error: Invalid command.\n");
+			cmd = print_usage;
+			ret = EXIT_FAILURE;
+		} else {
+			cmd = _cmd;
+		}
+	}
 
-        _ret = cmd(argv[0]);
-        exit(ret == EXIT_FAILURE ? ret : _ret);
+	_ret = cmd(argv[0]);
+	exit(ret == EXIT_FAILURE ? ret : _ret);
 }
