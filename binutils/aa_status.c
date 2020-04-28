@@ -14,7 +14,6 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <regex.h>
 #include <errno.h>
 #include <ctype.h>
 #include <dirent.h>
@@ -86,7 +85,6 @@ static int get_profiles(struct profile **profiles, size_t *n) {
         autofree char *apparmor_profiles = NULL;
         struct stat st;
         autofclose FILE *fp = NULL;
-        regex_t regex;
         autofree char *line = NULL;
         size_t len = 0;
         int ret;
@@ -127,50 +125,37 @@ static int get_profiles(struct profile **profiles, size_t *n) {
                 goto exit;
         }
 
-        ret = regcomp(&regex, "^(.+)\\s+\\((.+)\\).*", REG_EXTENDED | REG_NEWLINE);
-        if (ret != 0) {
-                ret = AA_EXIT_INTERNAL_ERROR;
-                goto exit;
-        }
-
         while (getline(&line, &len, fp) != -1) {
-                regmatch_t match[3];
+		struct profile *_profiles;
+		autofree char *status = NULL;
+		autofree char *name = strdup(aa_splitcon(line, &status));
 
-                ret = regexec(&regex, line, 3, match, 0);
-                if (ret == 0) {
-                        size_t i;
-                        struct profile *_profiles;
-                        autofree char *name = strndup(line + match[1].rm_so,
-                                             match[1].rm_eo - match[1].rm_so);
-                        autofree char *status = strndup(line + match[2].rm_so,
-                                               match[2].rm_eo - match[2].rm_so);
-
-                        // give up if out of memory
-                        if (name == NULL || status == NULL) {
-                                free_profiles(*profiles, *n);
-                                *profiles = NULL;
-                                *n = 0;
-                                ret = AA_EXIT_INTERNAL_ERROR;
-                                break;
-                        }
-                        _profiles = realloc(*profiles, (*n + 1) * sizeof(**profiles));
-                        if (_profiles == NULL) {
-                                free_profiles(*profiles, *n);
-                                *profiles = NULL;
-                                *n = 0;
-                                ret = AA_EXIT_INTERNAL_ERROR;
-                                break;
-                        }
-                        // steal name and status
-                        _profiles[*n].name = name;
-                        _profiles[*n].status = status;
-                        name = NULL;
-                        status = NULL;
-                        *n = *n + 1;
-                        *profiles = _profiles;
-                }
+		if (status)
+			status = strdup(status);
+		// give up if out of memory
+		if (name == NULL || status == NULL) {
+			free_profiles(*profiles, *n);
+			*profiles = NULL;
+			*n = 0;
+			ret = AA_EXIT_INTERNAL_ERROR;
+			break;
+		}
+		_profiles = realloc(*profiles, (*n + 1) * sizeof(**profiles));
+		if (_profiles == NULL) {
+			free_profiles(*profiles, *n);
+			*profiles = NULL;
+			*n = 0;
+			ret = AA_EXIT_INTERNAL_ERROR;
+			break;
+		}
+		// steal name and status
+		_profiles[*n].name = name;
+		_profiles[*n].status = status;
+		name = NULL;
+		status = NULL;
+		*n = *n + 1;
+		*profiles = _profiles;
         }
-        regfree(&regex);
 
 exit:
         return ret == 0 ? (*n > 0 ? AA_EXIT_ENABLED : AA_EXIT_NO_POLICY) : ret;
@@ -222,26 +207,21 @@ static int get_processes(struct profile *profiles,
 {
         DIR *dir = NULL;
         struct dirent *entry = NULL;
-        regex_t regex;
-        int ret;
+        int ret = 0;
 
         *processes = NULL;
         *nprocesses = 0;
 
-        ret = regcomp(&regex, "^(.*)\\s+\\((.*)\\)\n$", REG_EXTENDED | REG_NEWLINE);
-        if (ret != 0) {
-                ret = AA_EXIT_INTERNAL_ERROR;
-                goto exit;
-        }
         dir = opendir("/proc");
         if (dir == NULL) {
                 ret = AA_EXIT_INTERNAL_ERROR;
-                goto free_regex;
+                goto exit;
         }
         while ((entry = readdir(dir)) != NULL) {
                 int i;
                 int ispid = 1;
-                autofree char *current = NULL;
+		autofree char *profile = NULL;
+		autofree char *mode = NULL; /* be careful */
                 autofree char *exe = NULL;
                 autofree char *real_exe = NULL;
                 autofclose FILE *fp = NULL;
@@ -255,12 +235,20 @@ static int get_processes(struct profile *profiles,
                 if (!ispid) {
                         continue;
                 }
-                if (asprintf(&current, "/proc/%s/attr/current", entry->d_name) == -1 ||
-                    asprintf(&exe, "/proc/%s/exe", entry->d_name) == -1) {
-                        fprintf(stderr, "ERROR: Failed to allocate memory\n");
+
+		i = aa_getprocattr(atoi(entry->d_name), "current", &profile, &mode);
+		if (i == -1 && errno != ENOMEM) {
+			/* fail to access */
+			continue;
+		} else if (i == -1 ||
+		    asprintf(&exe, "/proc/%s/exe", entry->d_name) == -1) {
+			fprintf(stderr, "ERROR: Failed to allocate memory\n");
                         ret = AA_EXIT_INTERNAL_ERROR;
-                        goto free_regex;
-                }
+                        goto exit;
+		} else if (mode) {
+			/* TODO: make this not needed. Mode can now be autofreed */
+			mode = strdup(mode);
+		}
                 // get executable - readpath can allocate for us but seems
                 // to fail in some cases with errno 2 - no such file or
                 // directory - whereas readlink() can succeed in these
@@ -276,7 +264,7 @@ static int get_processes(struct profile *profiles,
                         if (real_exe == NULL) {
                                 fprintf(stderr, "ERROR: Failed to allocate memory\n");
                                 ret = AA_EXIT_INTERNAL_ERROR;
-                                goto free_regex;
+                                goto exit;
                         }
                         res = readlink(exe, real_exe, PATH_MAX);
                         if (res == -1) {
@@ -284,59 +272,41 @@ static int get_processes(struct profile *profiles,
                         }
                         real_exe[res] = '\0';
                 }
-                // see if has a label
-                fp = fopen(current, "r");
-                if (fp == NULL) {
-                        continue;
-                }
-                while (getline(&line, &len, fp) != -1) {
-                        autofree char *profile = NULL;
-                        autofree char *mode = NULL;
-                        regmatch_t match[3];
-                        int res;
 
-                        res = regexec(&regex, line, 3, match, 0);
-                        if (res == 0) {
-                                profile = strndup(line + match[1].rm_so,
-                                                  match[1].rm_eo - match[1].rm_so);
-                                mode = strndup(line + match[2].rm_so,
-                                               match[2].rm_eo - match[2].rm_so);
-                        } else {
-                                // is unconfined so keep only if this has a
-                                // matching profile
-                                for (i = 0; i < n; i++) {
-                                        if (strcmp(profiles[i].name, real_exe) == 0) {
-                                                profile = strdup(real_exe);
-                                                mode = strdup("unconfined");
-                                                break;
-                                        }
-                                }
-                        }
-                        if (profile != NULL && mode != NULL) {
-                                struct process *_processes = realloc(*processes,
-                                                                     (*nprocesses + 1) * sizeof(**processes));
-                                if (_processes == NULL) {
-                                        free_processes(*processes, *nprocesses);
-                                        *processes = NULL;
-                                        *nprocesses = 0;
-                                        ret = AA_EXIT_INTERNAL_ERROR;
-                                        goto free_regex;
-                                }
-                                _processes[*nprocesses].pid = strdup(entry->d_name);
-                                _processes[*nprocesses].profile = profile;
-                                _processes[*nprocesses].exe = strdup(real_exe);
-                                _processes[*nprocesses].mode = mode;
-                                *processes = _processes;
-                                *nprocesses = *nprocesses + 1;
-                                profile = NULL;
-                                mode = NULL;
-                                ret = AA_EXIT_ENABLED;
-                        }
-                }
+
+		if (mode == NULL) {
+			// is unconfined so keep only if this has a
+			// matching profile. TODO: fix to use attachment
+			for (i = 0; i < n; i++) {
+				if (strcmp(profiles[i].name, real_exe) == 0) {
+					profile = strdup(real_exe);
+					mode = strdup("unconfined");
+					break;
+				}
+			}
+		}
+		if (profile != NULL && mode != NULL) {
+			struct process *_processes = realloc(*processes,
+							     (*nprocesses + 1) * sizeof(**processes));
+			if (_processes == NULL) {
+				free_processes(*processes, *nprocesses);
+				*processes = NULL;
+				*nprocesses = 0;
+				ret = AA_EXIT_INTERNAL_ERROR;
+				goto exit;
+			}
+			_processes[*nprocesses].pid = strdup(entry->d_name);
+			_processes[*nprocesses].profile = profile;
+			_processes[*nprocesses].exe = strdup(real_exe);
+			_processes[*nprocesses].mode = mode;
+			*processes = _processes;
+			*nprocesses = *nprocesses + 1;
+			profile = NULL;
+			mode = NULL;
+			ret = AA_EXIT_ENABLED;
+		}
         }
 
-free_regex:
-        regfree(&regex);
 exit:
         if (dir != NULL) {
                 closedir(dir);
