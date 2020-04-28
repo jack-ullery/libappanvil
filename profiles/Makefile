@@ -42,7 +42,7 @@ local:
 	for profile in ${TOPLEVEL_PROFILES}; do \
 		fn=$$(basename $$profile); \
 		echo "# Site-specific additions and overrides for '$$fn'" > ${PROFILES_SOURCE}/local/$$fn; \
-		grep "include[[:space:]]\\+<local/$$fn>" "$$profile" >/dev/null || { echo "$$profile doesn't contain #include <local/$$fn>" ; exit 1; } ; \
+		grep "include[[:space:]]\\+if[[:space:]]\\+exists[[:space:]]\\+<local/$$fn>" "$$profile" >/dev/null || { echo "$$profile doesn't contain include if exists <local/$$fn>" ; exit 1; } ; \
 	done; \
 
 .PHONY: install
