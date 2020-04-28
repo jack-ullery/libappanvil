@@ -18,5 +18,5 @@
   /usr/lib/dovecot/log mr,
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/usr.lib.dovecot.log>
+  include if exists <local/usr.lib.dovecot.log>
 }

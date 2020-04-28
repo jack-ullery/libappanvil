@@ -30,5 +30,5 @@ profile nmbd /usr/{bin,sbin}/nmbd {
   @{run}/systemd/notify w,
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/usr.sbin.nmbd>
+  include if exists <local/usr.sbin.nmbd>
 }

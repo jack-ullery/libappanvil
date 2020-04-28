@@ -53,5 +53,5 @@
   /var/spool/postfix/private/auth rw,
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/usr.lib.dovecot.auth>
+  include if exists <local/usr.lib.dovecot.auth>
 }

@@ -55,5 +55,5 @@ profile smbd /usr/{bin,sbin}/smbd {
   /var/lib/samba/usershares/{,**} lrwk,
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/usr.sbin.smbd>
+  include if exists <local/usr.sbin.smbd>
 }
