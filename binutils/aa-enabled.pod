@@ -48,6 +48,11 @@ Do not output anything to stdout. This option is intended to be used by
 scripts that simply want to use the exit code to determine if AppArmor is
 enabled.
 
+=item -x, --exclusive
+
+Require AppArmor to have exclusive access to shared LSM interfaces to
+be considered enabled.
+
 =back
 
 =head1 EXIT STATUS
@@ -75,6 +80,10 @@ if the AppArmor control files aren't available under /sys/kernel/security/.
 =item B<4>
 
 if B<aa-enabled> doesn't have enough privileges to read the apparmor control files.
+
+=item B<10>
+
+AppArmor is enabled but does not have access to shared LSM interaces.
 
 =item B<64>
 
