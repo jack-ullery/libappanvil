@@ -458,7 +458,8 @@ void sd_serialize_profile(std::ostringstream &buf, Profile *profile,
 
 	sd_serialize_rlimits(buf, &profile->rlimits);
 
-	if (profile->net.allow && kernel_supports_network) {
+	/* choice to support / downgrade needs to already have been made */
+	if (profile->net.allow && features_supports_network) {
 		size_t i;
 		sd_write_array(buf, "net_allowed_af", get_af_max());
 		for (i = 0; i < get_af_max(); i++) {

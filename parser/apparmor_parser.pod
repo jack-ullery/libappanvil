@@ -184,15 +184,29 @@ defined as an absolute paths.
 Set the location of the apparmor security filesystem (default is
 "/sys/kernel/security/apparmor").
 
+=item --policy-features n
+
+Specify the feature set that the policy was developed under.
+
+=item --kernel-features n
+
+Specify the feature set of the kernel that the policy is being compiled for. If not specified this will be determined by the system's kernel.
+
 =item -M n, --features-file n
 
 Use the features file located at path "n" (default is
 /etc/apparmor.d/cache/.features). If the --cache-loc option is present, the
 ".features" file in the specified cache directory is used.
 
+Note: this sets both the --kernel-features and --policy-features to be the
+same.
+
 =item -m n, --match-string n
 
 Only use match features "n".
+
+Note: this sets both the --kernel-features and --policy-features to be the
+same.
 
 =item -n n, --namespace-string n
 
