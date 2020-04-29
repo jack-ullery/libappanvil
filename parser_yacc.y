@@ -711,8 +711,10 @@ rules: rules opt_prefix network_rule
 			yyerror(_("Memory allocation error."));
 		list_for_each_safe($3, entry, tmp) {
 
-			/* map to extended mediation if available */
-			if (entry->family == AF_UNIX && kernel_supports_unix) {
+			/* map to extended mediation, let rule backend do
+			 * downgrade if needed
+			 */
+			if (entry->family == AF_UNIX) {
 				unix_rule *rule = new unix_rule(entry->type, $2.audit, $2.deny);
 				if (!rule)
 					yyerror(_("Memory allocation error."));
@@ -1531,7 +1533,7 @@ change_profile: TOK_CHANGE_PROFILE opt_exec_mode opt_id opt_named_transition TOK
 			if (exec_mode == EXEC_MODE_UNSAFE)
 				mode |= ALL_AA_EXEC_UNSAFE;
 			else if (exec_mode == EXEC_MODE_SAFE &&
-				 !kernel_supports_stacking &&
+				 !features_supports_stacking &&
 				 warnflags & WARN_RULE_DOWNGRADED) {
 				pwarn("downgrading change_profile safe rule to unsafe due to lack of necessary kernel support\n");
 				/**

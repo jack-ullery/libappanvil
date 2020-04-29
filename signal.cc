@@ -264,7 +264,7 @@ int signal_rule::gen_policy_re(Profile &prof)
 	 * it. We may want to switch this so that a compile could be
 	 * used for full support on kernels that don't support the feature
 	 */
-	if (!kernel_supports_signal) {
+	if (!features_supports_signal) {
 		warn_once(prof.name);
 		return RULE_NOT_SUPPORTED;
 	}

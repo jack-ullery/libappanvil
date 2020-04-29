@@ -322,8 +322,8 @@ int unix_rule::gen_policy_re(Profile &prof)
 	 * rules ability
 	 */
 	downgrade_rule(prof);
-	if (!kernel_supports_unix) {
-		if (kernel_supports_network) {
+	if (!features_supports_unix) {
+		if (features_supports_network) {
 			/* only warn if we are building against a kernel
 			 * that requires downgrading */
 			if (warnflags & WARN_RULE_DOWNGRADED)

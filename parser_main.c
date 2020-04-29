@@ -108,7 +108,7 @@ static const char *cacheloc[MAX_CACHE_LOCS];
 static int cacheloc_n = 0;
 static bool print_cache_dir = false;
 
-static aa_features *compile_features = NULL;
+static aa_features *policy_features = NULL;
 static aa_features *kernel_features = NULL;
 
 static const char *config_file = "/etc/apparmor/parser.conf";
@@ -161,7 +161,8 @@ struct option long_options[] = {
 	{"max-jobs",		1, 0, 136},	/* no short option */
 	{"print-cache-dir",	0, 0, 137},	/* no short option */
 	{"kernel-features",	1, 0, 138},	/* no short option */
-	{"compile-features",	1, 0, 139},	/* no short option */
+	{"policy-features",	1, 0, 139},	/* no short option */
+	{"compile-features",	1, 0, 139},	/* original name of policy-features */
 	{"print-config-file",	0, 0, 140},	/* no short option */
 	{"config-file",		1, 0, EARLY_ARG_CONFIG_FILE},	/* early option, no short option */
 
@@ -195,7 +196,7 @@ static void display_usage(const char *command)
 	       "-f n, --subdomainfs n	Set location of apparmor filesystem\n"
 	       "-m n, --match-string n  Use only features n\n"
 	       "-M n, --features-file n Set compile & kernel features to file n\n"
-	       "--compile-features n    Compile features set in file n\n"
+	       "--policy-features n     Policy features set in file n\n"
 	       "--kernel-features n     Kernel features set in file n\n"
 	       "-n n, --namespace n	Set Namespace for the profile\n"
 	       "-X, --readimpliesX	Map profile read permissions to mr\n"
@@ -526,25 +527,30 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'm':
-		if (aa_features_new_from_string(&compile_features,
+		if (policy_features)
+			aa_features_unref(policy_features);
+		if (kernel_features)
+			aa_features_unref(kernel_features);
+		if (aa_features_new_from_string(&policy_features,
 						optarg, strlen(optarg))) {
 			fprintf(stderr,
 				"Failed to parse features string: %m\n");
 			exit(1);
 		}
+		kernel_features = aa_features_ref(policy_features);
 		break;
 	case 'M':
-		if (compile_features)
-			aa_features_unref(compile_features);
+		if (policy_features)
+			aa_features_unref(policy_features);
 		if (kernel_features)
 			aa_features_unref(kernel_features);
-		if (aa_features_new(&compile_features, AT_FDCWD, optarg)) {
+		if (aa_features_new(&policy_features, AT_FDCWD, optarg)) {
 			fprintf(stderr,
 				"Failed to load features from '%s': %m\n",
 				optarg);
 			exit(1);
 		}
-		kernel_features = aa_features_ref(compile_features);
+		kernel_features = aa_features_ref(policy_features);
 		break;
 	case 138:
 		if (kernel_features)
@@ -557,9 +563,9 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 139:
-		if (compile_features)
-			aa_features_unref(compile_features);
-		if (aa_features_new(&compile_features, AT_FDCWD, optarg)) {
+		if (policy_features)
+			aa_features_unref(policy_features);
+		if (aa_features_new(&policy_features, AT_FDCWD, optarg)) {
 			fprintf(stderr,
 				"Failed to load compile features from '%s': %m\n",
 				optarg);
@@ -743,6 +749,11 @@ int have_enough_privilege(void)
 	return 0;
 }
 
+int features_intersect(aa_features *a, aa_features *b, const char *str)
+{
+	return aa_features_supports(a, str) && aa_features_supports(b, str);
+}
+
 static void set_features_by_match_file(void)
 {
 	autofclose FILE *ms = fopen(MATCH_FILE, "r");
@@ -754,7 +765,7 @@ static void set_features_by_match_file(void)
 			goto no_match;
 		if (strstr(match_string, " perms=c"))
 			perms_create = 1;
-		kernel_supports_network = 1;
+		features_supports_network = 1;
 		return;
 	}
 no_match:
@@ -764,7 +775,7 @@ no_match:
 static void set_supported_features(aa_features *kernel_features unused)
 {
 	/* has process_args() already assigned a match string? */
-	if (!compile_features && aa_features_new_from_kernel(&compile_features) == -1) {
+	if (!policy_features && aa_features_new_from_kernel(&policy_features) == -1) {
 		set_features_by_match_file();
 		return;
 	}
@@ -774,28 +785,28 @@ static void set_supported_features(aa_features *kernel_features unused)
 	 * rule down grades for a give kernel
 	 */
 	perms_create = 1;
-	kernel_supports_policydb = aa_features_supports(compile_features, "file");
-	kernel_supports_network = aa_features_supports(compile_features, "network");
-	kernel_supports_unix = aa_features_supports(compile_features,
+	kernel_supports_policydb = aa_features_supports(kernel_features, "file");
+	features_supports_network = features_intersect(kernel_features, policy_features, "network");
+	features_supports_unix = features_intersect(kernel_features, policy_features,
 						    "network/af_unix");
-	kernel_supports_mount = aa_features_supports(compile_features, "mount");
-	kernel_supports_dbus = aa_features_supports(compile_features, "dbus");
-	kernel_supports_signal = aa_features_supports(compile_features, "signal");
-	kernel_supports_ptrace = aa_features_supports(compile_features, "ptrace");
-	kernel_supports_setload = aa_features_supports(compile_features,
+	features_supports_mount = features_intersect(kernel_features, policy_features, "mount");
+	features_supports_dbus = features_intersect(kernel_features, policy_features, "dbus");
+	features_supports_signal = features_intersect(kernel_features, policy_features, "signal");
+	features_supports_ptrace = features_intersect(kernel_features, policy_features, "ptrace");
+	kernel_supports_setload = aa_features_supports(kernel_features,
 						       "policy/set_load");
-	kernel_supports_diff_encode = aa_features_supports(compile_features,
+	kernel_supports_diff_encode = aa_features_supports(kernel_features,
 							   "policy/diff_encode");
-	kernel_supports_stacking = aa_features_supports(compile_features,
+	features_supports_stacking = aa_features_supports(policy_features,
 							"domain/stack");
-	kernel_supports_domain_xattr = aa_features_supports(compile_features,
+	features_supports_domain_xattr = features_intersect(kernel_features, policy_features,
 							"domain/attach_conditions/xattr");
-	kernel_supports_oob = aa_features_supports(compile_features,
+	kernel_supports_oob = aa_features_supports(kernel_features,
 							"policy/outofband");
 
-	if (aa_features_supports(compile_features, "policy/versions/v7"))
+	if (aa_features_supports(kernel_features, "policy/versions/v7"))
 		kernel_abi_version = 7;
-	else if (aa_features_supports(compile_features, "policy/versions/v6"))
+	else if (aa_features_supports(kernel_features, "policy/versions/v6"))
 		kernel_abi_version = 6;
 
 	if (!kernel_supports_diff_encode)

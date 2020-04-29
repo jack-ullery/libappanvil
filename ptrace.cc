@@ -128,7 +128,7 @@ int ptrace_rule::gen_policy_re(Profile &prof)
 	 * the compile could be used on another kernel unchanged??
 	 * Current caching doesn't support this but in the future maybe
 	 */
-	if (!kernel_supports_ptrace) {
+	if (!features_supports_ptrace) {
 		warn_once(prof.name);
 		return RULE_NOT_SUPPORTED;
 	}
