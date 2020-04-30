@@ -140,7 +140,7 @@ class AAParserCachingCommon(testlib.AATestTemplate):
             self.assertEqual(expected_output, features,
                               "features contents differ, expected:\n%s\nresult:\n%s" % (expected_output, features))
         else:
-            self.assertNotEquals(expected_output, features,
+            self.assertNotEqual(expected_output, features,
                                  "features contents equal, expected:\n%s\nresult:\n%s" % (expected_output, features))
 
 
@@ -369,7 +369,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         # We check sizes here rather than whether the string monkey is
         # in cache_contents because of the difficulty coercing cache
         # file bytes into strings in python3
-        self.assertNotEquals(orig_stat.st_size, stat.st_size, 'Expected cache file to be updated, size is not changed.')
+        self.assertNotEqual(orig_stat.st_size, stat.st_size, 'Expected cache file to be updated, size is not changed.')
         self.assertEqual(os.stat(self.profile).st_mtime, stat.st_mtime)
 
     def test_cache_writing_clears_all_files(self):
@@ -456,7 +456,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
         stat = os.stat(self.cache_file)
-        self.assertNotEquals(orig_stat.st_ino, stat.st_ino)
+        self.assertNotEqual(orig_stat.st_ino, stat.st_ino)
         self._assertTimeStampEquals(profile_mtime, stat.st_mtime)
 
     def test_abstraction_newer_rewrites_cache(self):
@@ -473,7 +473,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
         stat = os.stat(self.cache_file)
-        self.assertNotEquals(orig_stat.st_ino, stat.st_ino)
+        self.assertNotEqual(orig_stat.st_ino, stat.st_ino)
         self._assertTimeStampEquals(abstraction_mtime, stat.st_mtime)
 
     def test_parser_newer_uses_cache(self):
