@@ -130,8 +130,11 @@ aa-enabled: aa_enabled.c $(LIBAPPARMOR_A)
 aa-exec: aa_exec.c $(LIBAPPARMOR_A)
 	$(CC) $(LDFLAGS) $(EXTRA_CFLAGS) -o $@ $< $(LIBS) $(AALIB)
 
-aa-status: aa_status.c $(LIBAPPARMOR_A)
-	$(CC) $(LDFLAGS) $(EXTRA_CFLAGS) -o $@ $< $(LIBS) $(AALIB)
+aa-status: aa_status.c cJSON.o $(LIBAPPARMOR_A)
+	$(CC) $(LDFLAGS) $(EXTRA_CFLAGS) -o $@ $< $(LIBS) $(AALIB) cJSON.o
+
+cJSON.o: cJSON.c cJSON.h
+	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
 .SILENT: check
 .PHONY: check

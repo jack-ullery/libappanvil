@@ -21,6 +21,8 @@
 #include <sys/apparmor.h>
 #include <sys/apparmor_private.h>
 
+#include "cJSON.h"
+
 #define autofree __attribute((cleanup(_aa_autofree)))
 #define autofclose __attribute((cleanup(_aa_autofclose)))
 
@@ -430,7 +432,7 @@ static int compare_processes_by_executable(const void *a, const void *b) {
                       ((struct process *)b)->exe);
 }
 
-static int detailed_output(int json) {
+static int detailed_output(FILE *json) {
 	size_t nprofiles = 0, nprocesses = 0;
 	struct profile *profiles = NULL;
 	struct process *processes = NULL;
@@ -467,7 +469,7 @@ static int detailed_output(int json) {
 
 		for (j = 0; j < nfiltered; j++) {
 			if (json) {
-				printf("%s\"%s\": \"%s\"",
+				fprintf(json, "%s\"%s\": \"%s\"",
 				       i == 0 && j == 0 ? "" : ", ", filtered[j].name, profile_statuses[i]);
 			} else {
 				dprintf("   %s\n", filtered[j].name);
@@ -477,7 +479,7 @@ static int detailed_output(int json) {
 		free_profiles(filtered, nfiltered);
 	}
 	if (json) {
-		printf("}, \"processes\": {");
+		fprintf(json, "}, \"processes\": {");
 	} else {
 		dprintf("%zd processes have profiles defined.\n", nprocesses);
 	}
@@ -512,10 +514,10 @@ static int detailed_output(int json) {
 			for (j = 0; j < nfiltered; j++) {
 				if (j > 0 && strcmp(filtered[j].exe, filtered[j - 1].exe) == 0) {
 					// same executable
-					printf(", {\"profile\": \"%s\", \"pid\": \"%s\", \"status\": \"%s\"}",
+					fprintf(json, ", {\"profile\": \"%s\", \"pid\": \"%s\", \"status\": \"%s\"}",
 					       filtered[j].profile, filtered[j].pid, filtered[j].mode);
 				} else {
-					printf("%s\"%s\": [{\"profile\": \"%s\", \"pid\": \"%s\", \"status\": \"%s\"}",
+					fprintf(json, "%s\"%s\": [{\"profile\": \"%s\", \"pid\": \"%s\", \"status\": \"%s\"}",
 					       // first element will be a unique executable
 					       i == 0 && j == 0 ? "" : "], ",
 					       filtered[j].exe, filtered[j].profile, filtered[j].pid, filtered[j].mode);
@@ -526,7 +528,7 @@ static int detailed_output(int json) {
 		free_processes(filtered, nfiltered);
 	}
 	if (json) {
-		printf("%s}}", nprocesses > 0 ? "]" : "");
+		fprintf(json, "%s}}", nprocesses > 0 ? "]" : "");
 	}
 
 exit:
@@ -536,18 +538,48 @@ exit:
 }
 
 static int cmd_json(const char *command) {
-	detailed_output(1);
+	detailed_output(stdout);
 	return 0;
 }
 
 static int cmd_pretty_json(const char *command) {
-	// TODO - add support for pretty printing json output
-	return cmd_json(command);
+	autofree char *buffer = NULL;
+	autofree char *pretty = NULL;
+	cJSON *json;
+	FILE *f;	/* no autofclose - want explicit close to sync */
+	size_t size;
+	int ret;
+
+	f = open_memstream(&buffer, &size);
+	if (!f) {
+		dfprintf(stderr, "Failed to open memstream: %m\n");
+		return AA_EXIT_INTERNAL_ERROR;
+	}
+
+	ret = detailed_output(f);
+	fclose(f);
+	if (ret)
+		return ret;
+
+	json = cJSON_Parse(buffer);
+	if (!json) {
+		dfprintf(stderr, "Failed to parse json output");
+		return AA_EXIT_INTERNAL_ERROR;
+	}
+
+	pretty = cJSON_Print(json);
+	if (!pretty) {
+		dfprintf(stderr, "Failed to print pretty json");
+		return AA_EXIT_INTERNAL_ERROR;
+	}
+	fprintf(stdout, "%s", pretty);
+
+	return AA_EXIT_ENABLED;
 }
 
 static int cmd_verbose(const char *command) {
 	verbose = 1;
-	return detailed_output(0);
+	return detailed_output(NULL);
 }
 
 static int print_usage(const char *command)
