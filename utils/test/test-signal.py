@@ -183,7 +183,7 @@ class InvalidSignalTest(AATest):
         obj = None
         self.assertFalse(SignalRule.match(rawrule))
         with self.assertRaises(AppArmorException):
-            obj = SignalRule(SignalRule.parse(rawrule))
+            obj = SignalRule.parse(rawrule)
 
         self.assertIsNone(obj, 'SignalRule handed back an object unexpectedly')
 

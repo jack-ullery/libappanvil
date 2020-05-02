@@ -220,7 +220,7 @@ class InvalidCapabilityTest(AATest):
     def _check_invalid_rawrule(self, rawrule):
         obj = None
         with self.assertRaises(AppArmorException):
-            obj = CapabilityRule(CapabilityRule.parse(rawrule))
+            obj = CapabilityRule.parse(rawrule)
 
         self.assertFalse(CapabilityRule.match(rawrule))
         self.assertIsNone(obj, 'CapbilityRule handed back an object unexpectedly')

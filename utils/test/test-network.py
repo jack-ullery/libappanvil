@@ -182,7 +182,7 @@ class InvalidNetworkTest(AATest):
         obj = None
         self.assertFalse(NetworkRule.match(rawrule))
         with self.assertRaises(AppArmorException):
-            obj = NetworkRule(NetworkRule.parse(rawrule))
+            obj = NetworkRule.parse(rawrule)
 
         self.assertIsNone(obj, 'NetworkRule handed back an object unexpectedly')
 

@@ -294,7 +294,7 @@ class InvalidFileTest(AATest):
         obj = None
         self.assertFalse(FileRule.match(rawrule))
         with self.assertRaises(AppArmorException):
-            obj = FileRule(FileRule.parse(rawrule))
+            obj = FileRule.parse(rawrule)
 
         self.assertIsNone(obj, 'FileRule handed back an object unexpectedly')
 
