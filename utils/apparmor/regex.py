@@ -143,18 +143,26 @@ def parse_profile_start_line(line, filename):
 
 RE_ABI = re.compile('^\s*#?abi\s*(<(?P<magicpath>.*)>|"(?P<quotedpath>.*)"|(?P<unquotedpath>[^<>"]*))' + RE_COMMA_EOL)
 
-RE_INCLUDE = re.compile('^\s*#?include\s*(<(?P<magicpath>.*)>|"(?P<quotedpath>.*)"|(?P<unquotedpath>[^<>"]*))' + RE_EOL)
+RE_INCLUDE = re.compile('^\s*#?include(?P<ifexists>\s+if\s+exists)?\s*(<(?P<magicpath>.*)>|"(?P<quotedpath>.*)"|(?P<unquotedpath>[^<>"]*))' + RE_EOL)
 
-def re_match_include(line):
-    """Matches the path for include and returns the include path"""
+def re_match_include_parse(line):
+    '''Matches the path for include or include if exists.
+    Returns a tuple with
+    - if the "if exists" condition is given
+    - the include path
+    - if the path is a magic path (enclosed in <...>)
+    '''
+
     matches = RE_INCLUDE.search(line)
 
     if not matches:
-        return None
+        return None, None, None
 
     path = None
+    ismagic = False
     if matches.group('magicpath'):
         path = matches.group('magicpath').strip()
+        ismagic = True
     elif matches.group('unquotedpath'):
         # LP: #1738879 - parser doesn't handle unquoted paths everywhere
         # path = matches.group('unquotedpath').strip()
@@ -174,7 +182,20 @@ def re_match_include(line):
     if re.search('\s', path):
         raise AppArmorException(_('Syntax error: #include rule filename cannot contain spaces'))
 
-    return path
+    ifexists = False
+    if matches.group('ifexists'):
+        ifexists = True
+
+    return path, ifexists, ismagic
+
+def re_match_include(line):
+    ''' return path of a 'include' rule '''
+    (path, ifexists, ismagic) = re_match_include_parse(line)
+
+    if not ifexists:
+        return path
+
+    return None
 
 def strip_parenthesis(data):
     '''strips parenthesis from the given string and returns the strip()ped result.
