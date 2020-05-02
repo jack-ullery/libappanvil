@@ -15,6 +15,7 @@ from common_test import AATest, setup_all_loops, setup_aa
 from apparmor.common import AppArmorBug, AppArmorException
 
 from apparmor.regex import ( strip_parenthesis, strip_quotes, parse_profile_start_line, re_match_include,
+     re_match_include_parse,
      RE_PROFILE_START, RE_PROFILE_DBUS, RE_PROFILE_CAP, RE_PROFILE_PTRACE, RE_PROFILE_SIGNAL )
 
 
@@ -437,6 +438,7 @@ class TestInvalid_parse_profile_start_line(AATest):
 
 class Test_re_match_include(AATest):
     tests = [
+        # #include
         ('#include <abstractions/base>',            'abstractions/base'         ),  # magic path
         ('#include <abstractions/base> # comment',  'abstractions/base'         ),
         ('#include<abstractions/base>#comment',     'abstractions/base'         ),
@@ -445,6 +447,7 @@ class Test_re_match_include(AATest):
         ('#include "/foo/bar" # comment',           '/foo/bar'                  ),
         ('#include "/foo/bar"#comment',             '/foo/bar'                  ),
         ('   #include "/foo/bar"  ',                '/foo/bar'                  ),
+        # include (without #)
         ('include <abstractions/base>',            'abstractions/base'          ),  # magic path
         ('include <abstractions/base> # comment',  'abstractions/base'          ),
         ('include<abstractions/base>#comment',     'abstractions/base'          ),
@@ -458,6 +461,8 @@ class Test_re_match_include(AATest):
         ('  /etc/fstab r,',                         None,                       ),
         ('/usr/include r,',                         None,                       ),
         ('/include r,',                             None,                       ),
+        (' #include if exists <abstractions/base>', None,                       ),  # include if exists
+        (' #include if exists "/foo/bar"',          None,                       ),
     ]
 
     def _run_test(self, params, expected):
@@ -518,6 +523,54 @@ class TestInvalid_re_match_include(AATest):
         with self.assertRaises(expected):
             re_match_include(params)
 
+class Test_re_match_include_parse(AATest):
+    tests = [
+        #                                                         path                      if exists   magic path
+        # #include
+        ('#include <abstractions/base>',                        ('abstractions/base',       False,      True )  ),  # magic path
+        ('#include <abstractions/base> # comment',              ('abstractions/base',       False,      True )  ),
+        ('#include<abstractions/base>#comment',                 ('abstractions/base',       False,      True )  ),
+        ('   #include     <abstractions/base>  ',               ('abstractions/base',       False,      True )  ),
+        ('#include "/foo/bar"',                                 ('/foo/bar',                False,      False)  ),  # absolute path
+        ('#include "/foo/bar" # comment',                       ('/foo/bar',                False,      False)  ),
+        ('#include "/foo/bar"#comment',                         ('/foo/bar',                False,      False)  ),
+        ('   #include "/foo/bar"  ',                            ('/foo/bar',                False,      False)  ),
+        # include (without #)
+        ('include <abstractions/base>',                         ('abstractions/base',       False,      True )  ),  # magic path
+        ('include <abstractions/base> # comment',               ('abstractions/base',       False,      True )  ),
+        ('include<abstractions/base>#comment',                  ('abstractions/base',       False,      True )  ),
+        ('   include     <abstractions/base>  ',                ('abstractions/base',       False,      True )  ),
+        ('include "/foo/bar"',                                  ('/foo/bar',                False,      False)  ),  # absolute path
+        ('include "/foo/bar" # comment',                        ('/foo/bar',                False,      False)  ),
+        ('include "/foo/bar"#comment',                          ('/foo/bar',                False,      False)  ),
+        ('   include "/foo/bar"  ',                             ('/foo/bar',                False,      False)  ),
+        # #include if exists
+        ('#include if exists <abstractions/base>',              ('abstractions/base',       True,       True )  ),  # magic path
+        ('#include if exists <abstractions/base> # comment',    ('abstractions/base',       True,       True )  ),
+        ('#include if exists<abstractions/base>#comment',       ('abstractions/base',       True,       True )  ),
+        ('   #include    if     exists<abstractions/base>  ',   ('abstractions/base',       True,       True )  ),
+        ('#include if exists "/foo/bar"',                       ('/foo/bar',                True,       False)  ),  # absolute path
+        ('#include if exists "/foo/bar" # comment',             ('/foo/bar',                True,       False)  ),
+        ('#include if exists "/foo/bar"#comment',               ('/foo/bar',                True,       False)  ),
+        ('   #include if exists "/foo/bar"  ',                  ('/foo/bar',                True,       False)  ),
+        # include if exists (without #)
+        ('include if exists <abstractions/base>',               ('abstractions/base',       True,       True )  ),  # magic path
+        ('include if exists <abstractions/base> # comment',     ('abstractions/base',       True,       True )  ),
+        ('include if exists<abstractions/base>#comment',        ('abstractions/base',       True,       True )  ),
+        ('   include    if     exists<abstractions/base>  ',    ('abstractions/base',       True,       True )  ),
+        ('include if exists "/foo/bar"',                        ('/foo/bar',                True,       False)  ),  # absolute path
+        ('include if exists "/foo/bar" # comment',              ('/foo/bar',                True,       False)  ),
+        ('include if exists "/foo/bar"#comment',                ('/foo/bar',                True,       False)  ),
+        ('   include if exists "/foo/bar"  ',                   ('/foo/bar',                True,       False)  ),
+
+        (' some #include if exists <abstractions/base>',        (None,                       None,      None )  ),  # non-matching
+        ('  /etc/fstab r,',                                     (None,                       None,      None )  ),
+        ('/usr/include r,',                                     (None,                       None,      None )  ),
+        ('/include r,',                                         (None,                       None,      None )  ),
+    ]
+
+    def _run_test(self, params, expected):
+        self.assertEqual(re_match_include_parse(params), expected)
 
 class TestStripParenthesis(AATest):
     tests = [
