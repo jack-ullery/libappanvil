@@ -1,5 +1,5 @@
 #
-#=DESCRIPTION include if existss testing - basic include if exists of global and local include
+#=DESCRIPTION include if exists testing - basic include if exists of global and local include
 #=EXRESULT PASS
 #
 /does/not/exist {
