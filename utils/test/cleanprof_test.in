@@ -13,6 +13,8 @@
 	# Just for the heck of it, this comment wont see the day of light
 	#include <abstractions/base>
 
+#include  if  exists <foo>
+
     capability sys_admin,
     audit capability,
 

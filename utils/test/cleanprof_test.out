@@ -15,6 +15,8 @@ alias /foo -> /bar,
 
   #include <abstractions/base>
 
+  include if exists <foo>
+
   set rlimit nofile <= 256,
 
   audit capability,

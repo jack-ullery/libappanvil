@@ -270,12 +270,9 @@ unknown_line = [
     'bare_include_tests/ok_80.sd',
     'bare_include_tests/ok_81.sd',
     'bare_include_tests/ok_82.sd',
-    'bare_include_tests/ok_83.sd',
     'bare_include_tests/ok_84.sd',
     'bare_include_tests/ok_85.sd',
     'bare_include_tests/ok_86.sd',
-    'bare_include_tests/ok_87.sd',
-    'bare_include_tests/ok_88.sd',
 ]
 
 # testcases with various unexpected failures
