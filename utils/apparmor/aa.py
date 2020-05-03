@@ -58,6 +58,7 @@ from apparmor.rule.capability       import CapabilityRule
 from apparmor.rule.change_profile   import ChangeProfileRule
 from apparmor.rule.dbus             import DbusRule
 from apparmor.rule.file             import FileRule
+from apparmor.rule.include          import IncludeRule
 from apparmor.rule.network          import NetworkRule
 from apparmor.rule.ptrace           import PtraceRule
 from apparmor.rule.rlimit           import RlimitRule
@@ -2189,6 +2190,13 @@ def parse_profile_data(data, file, do_include):
             else:
                 if not include.get(include_name, False):
                     load_include(include_name)
+
+        # IncludeRule can handle 'include' and 'include if exists' - place it after the "old" 'include' handling so that it only catches 'include if exists' for now
+        elif IncludeRule.match(line):
+            if not profile:
+                raise AppArmorException(_('"include if exists" outside of a profile not supported in the tools yet - found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })  # TODO
+
+            profile_data[profile][hat]['inc_ie'].add(IncludeRule.parse(line))
 
         elif NetworkRule.match(line):
             if not profile:

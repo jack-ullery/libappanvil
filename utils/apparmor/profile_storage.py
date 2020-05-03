@@ -20,6 +20,7 @@ from apparmor.rule.capability       import CapabilityRuleset
 from apparmor.rule.change_profile   import ChangeProfileRuleset
 from apparmor.rule.dbus             import DbusRuleset
 from apparmor.rule.file             import FileRuleset
+from apparmor.rule.include          import IncludeRuleset
 from apparmor.rule.network          import NetworkRuleset
 from apparmor.rule.ptrace           import PtraceRuleset
 from apparmor.rule.rlimit           import RlimitRuleset
@@ -32,6 +33,7 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 ruletypes = {
+    'inc_ie':           {'ruleset': IncludeRuleset},
     'capability':       {'ruleset': CapabilityRuleset},
     'change_profile':   {'ruleset': ChangeProfileRuleset},
     'dbus':             {'ruleset': DbusRuleset},
@@ -154,6 +156,7 @@ class ProfileStorage:
             'alias',
             'lvar',
             'include',
+            'inc_ie',
             'rlimit',
             'capability',
             'network',
