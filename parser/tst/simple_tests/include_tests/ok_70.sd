@@ -1,5 +1,5 @@
 #
-#=DESCRIPTION include if existss testing - basic include if exists of a directory
+#=DESCRIPTION include if exists testing - basic include if exists of a directory
 #=EXRESULT PASS
 #
 /does/not/exist {

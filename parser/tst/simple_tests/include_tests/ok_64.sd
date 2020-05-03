@@ -1,5 +1,5 @@
 #
-#=DESCRIPTION include if existss testing - test some "odd" locations of include if existss
+#=DESCRIPTION include if exists testing - test some "odd" locations of include if exists
 #=EXRESULT PASS
 #
 /does/not/exist {
