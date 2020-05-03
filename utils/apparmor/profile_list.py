@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------
-#    Copyright (C) 2018 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2018-2020 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -27,6 +27,15 @@ class ProfileList:
         self.profile_names = {}     # profile name -> filename
         self.attachments = {}       # attachment -> filename
         self.attachments_AARE = {}  # AARE(attachment) -> filename
+        self.files = {}             # filename -> content - see init_file()
+
+    def init_file(self, filename):
+        if self.files.get(filename):
+            return  # don't re-initialize / overwrite existing data
+
+        self.files[filename] = {
+            'profiles': [],
+        }
 
     def add_profile(self, filename, profile_name, attachment):
         ''' Add the given profile and attachment to the list '''
@@ -49,6 +58,13 @@ class ProfileList:
         if attachment:
             self.attachments[attachment] = filename
             self.attachments_AARE[attachment] = AARE(attachment, True)
+
+        self.init_file(filename)
+
+        if profile_name:
+            self.files[filename]['profiles'].append(profile_name)
+        else:
+            self.files[filename]['profiles'].append(attachment)
 
     def filename_from_profile_name(self, name):
         ''' Return profile filename for the given profile name, or None '''
