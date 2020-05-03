@@ -173,9 +173,9 @@ void post_process_file_entries(Profile *prof)
 	 * access to /proc/self/attr/current
 	 */
 	if (cp_mode & AA_CHANGE_PROFILE) {
-		/* FIXME: should use @{PROC}/@{PID}/attr/{current,exec} */
+		/* FIXME: should use @{PROC}/@{PID}/attr/{apparmor/,}{current,exec} */
 		struct cod_entry *new_ent;
-		char *buffer = strdup("/proc/*/attr/{current,exec}");
+		char *buffer = strdup("/proc/*/attr/{apparmor/,}{current,exec}");
 		if (!buffer) {
 			PERROR("Memory allocation error\n");
 			exit(1);
@@ -196,7 +196,7 @@ void post_process_rule_entries(Profile *prof)
 }
 
 
-#define CHANGEHAT_PATH "/proc/[0-9]*/attr/current"
+#define CHANGEHAT_PATH "/proc/[0-9]*/attr/{apparmor/,}current"
 
 /* add file rules to access /proc files to call change_hat()
  */
