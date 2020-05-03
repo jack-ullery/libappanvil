@@ -56,7 +56,7 @@ the newly generated minimal AppArmor profile.
 This program does not perform full static analysis of executables, so
 the profiles generated are necessarily incomplete. If you find any bugs,
 please report them at
-L<https://bugs.launchpad.net/apparmor/+filebug>.
+L<https://gitlab.com/apparmor/apparmor/-/issues>.
 
 =head1 SEE ALSO
 

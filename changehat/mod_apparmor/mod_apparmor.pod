@@ -135,7 +135,7 @@ may not work correctly. For Apache 2.4 users, you should enable the mpm_prefork
 module.
 
 There are likely other bugs lurking about; if you find any, please report
-them at L<https://bugs.launchpad.net/apparmor/+filebug>.
+them at L<https://gitlab.com/apparmor/apparmor/-/issues>.
 
 =head1 SEE ALSO
 

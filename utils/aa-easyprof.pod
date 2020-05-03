@@ -314,8 +314,8 @@ To output a manifest file based on aa-easyprof arguments:
 
 =head1 BUGS
 
-If you find any additional bugs, please report them to Launchpad at
-L<https://bugs.launchpad.net/apparmor/+filebug>.
+If you find any additional bugs, please report them to GitLab at
+L<https://gitlab.com/apparmor/apparmor/-/issues>.
 
 =head1 SEE ALSO
 

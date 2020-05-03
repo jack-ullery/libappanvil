@@ -179,8 +179,8 @@ Restarting the sandbox will resolve the issue.
 
 =head1 BUGS
 
-If you find any bugs, please report them to Launchpad at
-L<https://bugs.launchpad.net/apparmor/+filebug>.
+If you find any bugs, please report them to Gitlab at
+L<https://gitlab.com/apparmor/apparmor/-/issues>.
 
 =head1 SEE ALSO
 

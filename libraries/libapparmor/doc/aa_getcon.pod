@@ -127,7 +127,7 @@ confinement data.
 =head1 BUGS
 
 None known. If you find any, please report them at
-L<https://bugs.launchpad.net/apparmor/+filebug>.
+L<https://gitlab.com/apparmor/apparmor/-/issues>.
 
 =head1 SEE ALSO
 

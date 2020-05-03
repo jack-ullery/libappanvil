@@ -35,8 +35,8 @@ displays a short usage statement.
 
 =head1 BUGS
 
-None. Please report any you find to Launchpad at
-L<https://bugs.launchpad.net/apparmor/+filebug>.
+None. Please report any you find to gitlab at
+L<https://gitlab.com/apparmor/apparmor/-/issues>.
 
 =head1 SEE ALSO
 

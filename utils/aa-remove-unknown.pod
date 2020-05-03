@@ -41,8 +41,8 @@ dry run; only prints the names of profiles that would be removed
 
 =head1 BUGS
 
-None. Please report any you find to Launchpad at
-L<https://bugs.launchpad.net/apparmor/+filebug>.
+None. Please report any you find to Gitlab at
+L<https://gitlab.com/apparmor/apparmor/-/issues>.
 
 =head1 SEE ALSO
 

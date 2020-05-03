@@ -35,14 +35,13 @@ and questions to the
 [AppArmor mailing list](https://lists.ubuntu.com/mailman/listinfo/apparmor).
 
 Bug reports can be filed against the AppArmor project on
-[launchpad](https://bugs.launchpad.net/apparmor) or reported to the mailing
+[GitLab](https://gitlab.com/apparmor/apparmor/-/issues) or reported to the mailing
 list directly for those who wish not to register for an account on
-launchpad. See the
+GitLab. See the
 [wiki page](https://gitlab.com/apparmor/apparmor/wikis/home#reporting-bugs)
 for more information.
 
-Security issues can be filed as security bugs on launchpad
-or directed to `security@apparmor.net`. Additional details can be found
+Security issues can be filed in GitLab by opening up a new [issue](https://gitlab.com/apparmor/apparmor/-/issues) and selecting the tick box ```This issue is confidential and should only be visible to team members with at least Reporter access.``` or directed to `security@apparmor.net`. Additional details can be found
 in the [wiki](https://gitlab.com/apparmor/apparmor/wikis/home#reporting-security-vulnerabilities).
 
 
@@ -58,9 +57,9 @@ The AppArmor userspace tools do not collect information on the system user beyon
 
 Users may submit information as part of an email, bug report or merge request, etc. and that will be recorded as part of the mailing list, bug/issue tracker, or code repository but only as part of a user initiated action.
 
-The AppArmor project does not collect information from contributors beyond their interactions with the AppArmor project, code, and community. However contributors are subject to the terms and conditions and privacy policy of the individual platforms (currently GitLab and LaunchPad) should they choose to contribute through those platforms. And those platforms may collect data on the user that the AppArmor project does not.
+The AppArmor project does not collect information from contributors beyond their interactions with the AppArmor project, code, and community. However contributors are subject to the terms and conditions and privacy policy of the individual platforms (currently GitLab) should they choose to contribute through those platforms. And those platforms may collect data on the user that the AppArmor project does not.
 
-Currently both GitLab an LaunchPad require a user account to submit patches or report bugs and issues. If a contributor does not wish to create an account for these platforms the mailing list is available. Membership in the list is not required. Content from non-list members will be sent to moderation, to ensure that it is on topic, so there may be a delay in choosing to interact in this way.
+Currently GitLab requires a user account to submit patches or report bugs and issues. If a contributor does not wish to create an account for these platforms the mailing list is available. Membership in the list is not required. Content from non-list members will be sent to moderation, to ensure that it is on topic, so there may be a delay in choosing to interact in this way.
 
 
 -------------

@@ -32,7 +32,7 @@ together and removes all comments from the file.
 =head1 BUGS
 
 If you find any bugs, please report them at
-L<https://bugs.launchpad.net/apparmor/+filebug>.
+L<https://gitlab.com/apparmor/apparmor/-/issues>.
 
 =head1 SEE ALSO
 

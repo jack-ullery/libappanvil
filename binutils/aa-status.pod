@@ -144,7 +144,7 @@ policy from the apparmor module. It uses the /proc filesystem to determine
 which processes are confined and so is susceptible to race conditions.
 
 If you find any additional bugs, please report them at
-L<https://bugs.launchpad.net/apparmor/+filebug>.
+L<https://gitlab.com/apparmor/apparmor/-/issues>.
 
 =head1 SEE ALSO
 
