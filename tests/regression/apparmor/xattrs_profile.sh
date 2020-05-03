@@ -21,7 +21,7 @@ bin=$pwd
 file="$bin/xattrs_profile"
 
 requires_kernel_features domain/attach_conditions/xattr
-
+requires_kernel_features policy/outofband
 
 # Clean up existing xattrs
 clean_xattr()
