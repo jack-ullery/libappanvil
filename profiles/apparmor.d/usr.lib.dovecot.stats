@@ -21,5 +21,5 @@
   /usr/lib/dovecot/stats mr,
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/usr.lib.dovecot.stats>
+  include if exists <local/usr.lib.dovecot.stats>
 }

@@ -39,5 +39,5 @@ profile nscd /usr/{bin,sbin}/nscd {
   @{PROC}/@{pid}/mounts r,
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/usr.sbin.nscd>
+  include if exists <local/usr.sbin.nscd>
 }

@@ -46,5 +46,5 @@ profile lsb_release {
   deny /tmp/gtalkplugin.log w,
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/lsb_release>
+  include if exists <local/lsb_release>
 }

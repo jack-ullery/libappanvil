@@ -128,5 +128,5 @@ profile dnsmasq /usr/{bin,sbin}/dnsmasq flags=(attach_disconnected) {
   }
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/usr.sbin.dnsmasq>
+  include if exists <local/usr.sbin.dnsmasq>
 }

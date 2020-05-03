@@ -124,5 +124,5 @@
   # Site-specific additions and overrides. See local/README for details.
   # Local path is disabled, we only enable them for profiles we promote
   # out of extras.
-  ## include <local/usr.bin.firefox>
+  include if exists <local/usr.bin.firefox>
 }

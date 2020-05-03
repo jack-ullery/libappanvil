@@ -32,5 +32,5 @@ profile mdnsd /usr/{bin,sbin}/mdnsd {
   @{run}/mdnsd.pid w,
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/usr.sbin.mdnsd>
+  include if exists <local/usr.sbin.mdnsd>
 }

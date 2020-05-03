@@ -22,5 +22,5 @@
   /var/lib/dovecot/ssl-parameters.dat.tmp rwk,
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/usr.lib.dovecot.ssl-params>
+  include if exists <local/usr.lib.dovecot.ssl-params>
 }

@@ -29,5 +29,5 @@ profile identd /usr/{bin,sbin}/identd {
   @{run}/identd/identd.pid w,
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/usr.sbin.identd>
+  include if exists <local/usr.sbin.identd>
 }

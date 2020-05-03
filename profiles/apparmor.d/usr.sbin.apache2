@@ -105,5 +105,5 @@ profile apache2 /usr/{bin,sbin}/apache2 flags=(attach_disconnected) {
   #include <apache2.d>
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/usr.sbin.apache2>
+  include if exists <local/usr.sbin.apache2>
 }

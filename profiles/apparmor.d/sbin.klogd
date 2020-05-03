@@ -31,5 +31,5 @@ profile klogd /{usr/,}{bin,sbin}/klogd {
   @{run}/klogd/kmsg   r,
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/sbin.klogd>
+  include if exists <local/sbin.klogd>
 }
