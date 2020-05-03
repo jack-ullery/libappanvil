@@ -169,7 +169,7 @@ class InvalidPtraceTest(AATest):
         obj = None
         self.assertFalse(PtraceRule.match(rawrule))
         with self.assertRaises(AppArmorException):
-            obj = PtraceRule(PtraceRule.parse(rawrule))
+            obj = PtraceRule.parse(rawrule)
 
         self.assertIsNone(obj, 'PtraceRule handed back an object unexpectedly')
 

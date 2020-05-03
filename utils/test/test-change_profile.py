@@ -185,7 +185,7 @@ class InvalidChangeProfileTest(AATest):
         obj = None
         self.assertFalse(ChangeProfileRule.match(rawrule))
         with self.assertRaises(AppArmorException):
-            obj = ChangeProfileRule(ChangeProfileRule.parse(rawrule))
+            obj = ChangeProfileRule.parse(rawrule)
 
         self.assertIsNone(obj, 'ChangeProfileRule handed back an object unexpectedly')
 

@@ -299,7 +299,7 @@ class InvalidDbusTest(AATest):
         obj = None
         self.assertFalse(DbusRule.match(rawrule))
         with self.assertRaises(AppArmorException):
-            obj = DbusRule(DbusRule.parse(rawrule))
+            obj = DbusRule.parse(rawrule)
 
         self.assertIsNone(obj, 'DbusRule handed back an object unexpectedly')
 

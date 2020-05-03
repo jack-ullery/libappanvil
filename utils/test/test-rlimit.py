@@ -176,7 +176,7 @@ class InvalidRlimitTest(AATest):
         obj = None
         self.assertFalse(RlimitRule.match(rawrule))
         with self.assertRaises(AppArmorException):
-            obj = RlimitRule(RlimitRule.parse(rawrule))
+            obj = RlimitRule.parse(rawrule)
 
         self.assertIsNone(obj, 'RlimitRule handed back an object unexpectedly')
 
