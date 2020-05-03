@@ -28,7 +28,7 @@ class ProfileList:
         self.attachments = {}       # attachment -> filename
         self.attachments_AARE = {}  # AARE(attachment) -> filename
 
-    def add(self, filename, profile_name, attachment):
+    def add_profile(self, filename, profile_name, attachment):
         ''' Add the given profile and attachment to the list '''
 
         if not filename:
