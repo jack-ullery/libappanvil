@@ -240,35 +240,45 @@ unknown_line = [
     'bare_include_tests/ok_64.sd',
     'bare_include_tests/ok_69.sd',
 
-    # "include if exists" and various exotic "include" variants are not supported yet
+    # include with quoted relative path
     'bare_include_tests/ok_11.sd',
     'bare_include_tests/ok_12.sd',
     'bare_include_tests/ok_13.sd',
     'bare_include_tests/ok_15.sd',
+    # include with unquoted relative path
     'bare_include_tests/ok_16.sd',
     'bare_include_tests/ok_17.sd',
     'bare_include_tests/ok_18.sd',
     'bare_include_tests/ok_20.sd',
+    # include with quoted relative path with spaces
     'bare_include_tests/ok_26.sd',
     'bare_include_tests/ok_27.sd',
+    # include with quoted magic path with spaces
     'bare_include_tests/ok_28.sd',
     'bare_include_tests/ok_29.sd',
+    # include with magic path with spaces
     'bare_include_tests/ok_30.sd',
     'bare_include_tests/ok_31.sd',
+    # include if exists with quoted relative path
     'bare_include_tests/ok_61.sd',
     'bare_include_tests/ok_62.sd',
     'bare_include_tests/ok_63.sd',
+    # include if exists with unquoted relative path
     'bare_include_tests/ok_65.sd',
     'bare_include_tests/ok_66.sd',
     'bare_include_tests/ok_67.sd',
     'bare_include_tests/ok_68.sd',
     'bare_include_tests/ok_70.sd',
+    # include if exists with quoted relative path with spaces
     'bare_include_tests/ok_76.sd',
     'bare_include_tests/ok_77.sd',
+    # include if exists with quoted magic path with spaces
     'bare_include_tests/ok_78.sd',
     'bare_include_tests/ok_79.sd',
+    # include if exists with unquoted magic path with spaces
     'bare_include_tests/ok_80.sd',
     'bare_include_tests/ok_81.sd',
+    # include if exists with quoted relative path, non-existing include file
     'bare_include_tests/ok_82.sd',
     'bare_include_tests/ok_84.sd',
     'bare_include_tests/ok_85.sd',
@@ -277,7 +287,7 @@ unknown_line = [
 
 # testcases with various unexpected failures
 syntax_failure = [
-    # profile keyword?
+    # missing profile keywords
     'profile/re_named_ok2.sd',
 
     # Syntax Error: Unexpected hat definition found (external hat)
