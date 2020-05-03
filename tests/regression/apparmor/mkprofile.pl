@@ -97,6 +97,7 @@ sub gen_default_rules() {
 
   # give every profile access to change_hat
   gen_file("/proc/*/attr/current:w");
+  gen_file("/proc/*/attr/apparmor/current:w");
 
   # give every profile access to /dev/urandom (propolice, etc.)
   gen_file("/dev/urandom:r");
@@ -363,6 +364,7 @@ sub gen_hat($) {
     $hat = $rules[1];
     # give every profile/hat access to change_hat
     @{$output_rules{$hat}} = ( "  /proc/*/attr/current w,\n",);
+    push(@{$output_rules{$hat}}, "  /proc/*/attr/apparmor/current w,\n");
   }
 }
 
