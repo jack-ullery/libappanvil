@@ -1,6 +1,9 @@
 # A simple test comment which will persist
 #include <tunables/global>
 
+#include  if  exists <tunables/nothing>
+
+
 		alias /foo    ->    /bar	,
 
 @{xy}    =   y   x
