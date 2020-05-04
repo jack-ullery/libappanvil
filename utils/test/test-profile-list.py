@@ -14,6 +14,7 @@ from common_test import AATest, setup_all_loops
 
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.profile_list import ProfileList
+from apparmor.rule.include import IncludeRule
 
 class TestAdd_profile(AATest):
     def AASetup(self):
@@ -113,6 +114,40 @@ class TestFilename_from_attachment(AATest):
     def test_non_path_attachment(self):
         with self.assertRaises(AppArmorBug):
             self.pl.filename_from_attachment('foo')
+
+class TestAdd_inc_ie(AATest):
+    def AASetup(self):
+        self.pl = ProfileList()
+
+    def testAdd_inc_ie_1(self):
+        self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', IncludeRule('tunables/global', False, True))
+        self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['include <tunables/global>', ''])
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['include <tunables/global>', ''])
+
+    def testAdd_inc_ie_2(self):
+        self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', IncludeRule('tunables/global', False, True))
+        self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', IncludeRule('tunables/dovecot', False, True))
+        self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['include <tunables/global>', 'include <tunables/dovecot>', ''])
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['include <tunables/global>', 'include <tunables/dovecot>', ''])
+
+    def testAdd_inc_ie_error_1(self):
+        with self.assertRaises(AppArmorBug):
+            self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', 'tunables/global')  # str insteadd of IncludeRule
+        self.assertEqual(list(self.pl.files.keys()), [])
+
+class TestGet(AATest):
+    def AASetup(self):
+        self.pl = ProfileList()
+
+    def testGet_clean_error(self):
+        with self.assertRaises(AppArmorBug):
+            self.pl.get_clean('/etc/apparmor.d/not.found')
+
+    def testGet_raw_error(self):
+        with self.assertRaises(AppArmorBug):
+            self.pl.get_raw('/etc/apparmor.d/not.found')
 
 
 setup_all_loops(__name__)

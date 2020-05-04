@@ -14,6 +14,7 @@
 
 from apparmor.aare import AARE
 from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.rule.include import IncludeRule, IncludeRuleset
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -21,7 +22,12 @@ _ = init_translation()
 
 
 class ProfileList:
-    ''' Stores the list of profiles (both name and attachment) and in which files they live '''
+    ''' Stores the preamble section and the list of profile(s) (both name and
+        attachment) that live in profile files.
+
+        Also allows "reverse" lookups to find out in which file a profile
+        lives.
+    '''
 
     def __init__(self):
         self.profile_names = {}     # profile name -> filename
@@ -34,6 +40,7 @@ class ProfileList:
             return  # don't re-initialize / overwrite existing data
 
         self.files[filename] = {
+            'inc_ie': IncludeRuleset(),
             'profiles': [],
         }
 
@@ -65,6 +72,33 @@ class ProfileList:
             self.files[filename]['profiles'].append(profile_name)
         else:
             self.files[filename]['profiles'].append(attachment)
+
+    def add_inc_ie(self, filename, inc_rule):
+        ''' Store the given include / include if exists rule for the given profile filename preamble '''
+        if type(inc_rule) is not IncludeRule:
+            raise AppArmorBug('Wrong type given to ProfileList: %s' % inc_rule)
+
+        self.init_file(filename)
+
+        self.files[filename]['inc_ie'].add(inc_rule)
+
+    def get_raw(self, filename, depth=0):
+        ''' Get the preamble for the given profile filename (in original formatting) '''
+        if not self.files.get(filename):
+            raise AppArmorBug('%s not listed in ProfileList files' % filename)
+
+        data = []
+        data += self.files[filename]['inc_ie'].get_raw(depth)
+        return data
+
+    def get_clean(self, filename, depth=0):
+        ''' Get the preamble for the given profile filename (in clean formatting) '''
+        if not self.files.get(filename):
+            raise AppArmorBug('%s not listed in ProfileList files' % filename)
+
+        data = []
+        data += self.files[filename]['inc_ie'].get_clean_unsorted(depth)
+        return data
 
     def filename_from_profile_name(self, name):
         ''' Return profile filename for the given profile name, or None '''
