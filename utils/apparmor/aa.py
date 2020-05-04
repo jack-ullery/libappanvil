@@ -1949,9 +1949,9 @@ def read_profile(file, active_profile):
             filename = profile_data[profile][profile]['filename']
 
             if not attachment and name.startswith('/'):
-                active_profiles.add(filename, name, name)  # use name as name and attachment
+                active_profiles.add_profile(filename, name, name)  # use name as name and attachment
             else:
-                active_profiles.add(filename, name, attachment)
+                active_profiles.add_profile(filename, name, attachment)
 
     elif profile_data:
         attach_profile_data(extras, profile_data)
@@ -1962,9 +1962,9 @@ def read_profile(file, active_profile):
             filename = profile_data[profile][profile]['filename']
 
             if not attachment and name.startswith('/'):
-                extra_profiles.add(filename, name, name)  # use name as name and attachment
+                extra_profiles.add_profile(filename, name, name)  # use name as name and attachment
             else:
-                extra_profiles.add(filename, name, attachment)
+                extra_profiles.add_profile(filename, name, attachment)
 
 def attach_profile_data(profiles, profile_data):
     # Make deep copy of data to avoid changes to

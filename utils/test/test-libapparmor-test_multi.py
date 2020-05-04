@@ -238,9 +238,9 @@ def logfile_to_profile(logfile):
 
     # optional for now, might be needed one day
     # if profile.startswith('/'):
-    #     apparmor.aa.active_profiles.add(profile_dummy_file, profile, profile)
+    #     apparmor.aa.active_profiles.add_profile(profile_dummy_file, profile, profile)
     # else:
-    apparmor.aa.active_profiles.add(profile_dummy_file, profile, '')
+    apparmor.aa.active_profiles.add_profile(profile_dummy_file, profile, '')
 
     log_reader = ReadLog(logfile, apparmor.aa.active_profiles, '')
     hashlog = log_reader.read_log('')
