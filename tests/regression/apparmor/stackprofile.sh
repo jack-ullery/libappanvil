@@ -33,7 +33,7 @@ otherok="${otherfile}:${okperm}"
 thirdok="${thirdfile}:${okperm}"
 sharedok="${sharedfile}:${okperm}"
 
-getcon="/proc/*/attr/current:r"
+getcon="/proc/*/attr/current:r /proc/*/attr/apparmor/current:r"
 
 othertest="$pwd/rename"
 thirdtest="$pwd/exec"
@@ -125,7 +125,7 @@ $test {
 $nstest {
   $otherfile $okperm,
   $sharedfile $okperm,
-  /proc/*/attr/current r,
+  /proc/*/attr/{apparmor/,}current r,
 }
 EOF
 runchecktest_errno EACCES "STACKPROFILE (stacked with namespaced profile - file)" fail -p $nstest -f $file
