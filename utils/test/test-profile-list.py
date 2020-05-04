@@ -15,7 +15,7 @@ from common_test import AATest, setup_all_loops
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.profile_list import ProfileList
 
-class TestAdd(AATest):
+class TestAdd_profile(AATest):
     def AASetup(self):
         self.pl = ProfileList()
 
@@ -23,51 +23,51 @@ class TestAdd(AATest):
         self.assertEqual(self.pl.profile_names, {})
         self.assertEqual(self.pl.attachments, {})
 
-    def testAdd_1(self):
+    def testAdd_profile_1(self):
         self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
         self.assertEqual(self.pl.profile_names, {'foo': '/etc/apparmor.d/bin.foo'})
         self.assertEqual(self.pl.attachments, {'/bin/foo': '/etc/apparmor.d/bin.foo'})
 
-    def testAdd_2(self):
+    def testAdd_profile_2(self):
         self.pl.add_profile('/etc/apparmor.d/bin.foo', None, '/bin/foo')
         self.assertEqual(self.pl.profile_names, {})
         self.assertEqual(self.pl.attachments, {'/bin/foo': '/etc/apparmor.d/bin.foo'})
 
-    def testAdd_3(self):
+    def testAdd_profile_3(self):
         self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', None)
         self.assertEqual(self.pl.profile_names, {'foo': '/etc/apparmor.d/bin.foo'})
         self.assertEqual(self.pl.attachments, {})
 
 
-    def testAddError_1(self):
+    def testAdd_profileError_1(self):
         with self.assertRaises(AppArmorBug):
             self.pl.add_profile('', 'foo', '/bin/foo')  # no filename
 
-    def testAddError_2(self):
+    def testAdd_profileError_2(self):
         with self.assertRaises(AppArmorBug):
             self.pl.add_profile('/etc/apparmor.d/bin.foo', None, None)  # neither attachment or profile name
 
-    def testAddError_twice_1(self):
+    def testAdd_profileError_twice_1(self):
         self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
         with self.assertRaises(AppArmorException):
             self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
 
-    def testAddError_twice_2(self):
+    def testAdd_profileError_twice_2(self):
         self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
         with self.assertRaises(AppArmorException):
             self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', None)
 
-    def testAddError_twice_3(self):
+    def testAdd_profileError_twice_3(self):
         self.pl.add_profile('/etc/apparmor.d/bin.foo', None, '/bin/foo')
         with self.assertRaises(AppArmorException):
             self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
 
-    def testAddError_twice_4(self):
+    def testAdd_profileError_twice_4(self):
         self.pl.add_profile('/etc/apparmor.d/bin.foo', None, '/bin/foo')
         with self.assertRaises(AppArmorException):
             self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
 
-    def testAddError_twice_5(self):
+    def testAdd_profileError_twice_5(self):
         self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', None)
         with self.assertRaises(AppArmorException):
             self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
