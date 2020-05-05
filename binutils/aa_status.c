@@ -449,7 +449,7 @@ static int detailed_output(int json) {
 	}
 
 	if (json) {
-		printf("{\"version\": \"1\", \"profiles\": {");
+		printf("{\"version\": \"2\", \"profiles\": {");
 	} else {
 		dprintf("%zd profiles are loaded.\n", nprofiles);
 	}
