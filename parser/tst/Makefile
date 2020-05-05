@@ -41,6 +41,10 @@ error_output: $(PARSER)
 		grep -q "AppArmor parser error for errors/modefail.sd in errors/modefail.sd at line 6: syntax error"
 	LANG=C $(PARSER) $(PARSER_ARGS) -S -I errors 2>&1 >/dev/null errors/multi_include.sd | \
 		grep -q "AppArmor parser error for errors/multi_include.sd in errors/multi_include.sd at line 12: Could not open 'failure'"
+	LANG=C $(PARSER) $(PARSER_ARGS) -S -I errors 2>&1 >/dev/null errors/deprecation1.sd | \
+		grep -q "Warning from errors/deprecation1.sd (errors/deprecation1.sd line 6): The use of file paths as profile names is deprecated. See man apparmor.d for more information"
+	LANG=C $(PARSER) $(PARSER_ARGS) -S -I errors 2>&1 >/dev/null errors/deprecation2.sd | \
+		grep -q "Warning from errors/deprecation2.sd (errors/deprecation2.sd line 6): The use of file paths as profile names is deprecated. See man apparmor.d for more information"
 	@echo "Error Output: PASS"
 
 parser_sanity: $(PARSER) gen_xtrans gen_dbus
