@@ -1455,7 +1455,7 @@ def set_logfile(filename):
     elif os.path.isdir(logfile):
         raise AppArmorException(_('%s is a directory. Please specify a file as logfile') % logfile)
 
-def do_logprof_pass(logmark='', passno=0):
+def do_logprof_pass(logmark=''):
     # set up variables for this pass
 #    transitions = hasher()
     global active_profiles
@@ -1465,10 +1465,6 @@ def do_logprof_pass(logmark='', passno=0):
 #    filelist = hasher()
 
     aaui.UI_Info(_('Reading log entries from %s.') % logfile)
-
-    if not passno:
-        aaui.UI_Info(_('Updating AppArmor profiles in %s.') % profile_dir)
-        read_profiles()
 
     if not sev_db:
         sev_db = apparmor.severity.Severity(CONFDIR + '/severity.db', _('unknown'))
@@ -1656,12 +1652,15 @@ def is_skippable_dir(path):
         return True
     return False
 
-def read_profiles():
+def read_profiles(ui_msg=False):
     # we'll read all profiles from disk, so reset the storage first (autodep() might have created/stored
     # a profile already, which would cause a 'Conflicting profile' error in attach_profile_data())
     global aa, original_aa
     aa = hasher()
     original_aa = hasher()
+
+    if ui_msg:
+        aaui.UI_Info(_('Updating AppArmor profiles in %s.') % profile_dir)
 
     try:
         os.listdir(profile_dir)

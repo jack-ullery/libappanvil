@@ -53,5 +53,6 @@ if profiledir:
 
 apparmor.loadincludes()
 
+apparmor.read_profiles(True)
 apparmor.do_logprof_pass(logmark)
 
