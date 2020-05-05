@@ -10,6 +10,8 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
+
   /usr/share/AbiSuite/fonts/**          r,
 
   /usr/lib/xorg/modules/fonts/**.so*    mr,

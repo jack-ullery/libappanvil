@@ -2,6 +2,8 @@
 # privacy-violations-strict contains additional rules for sensitive
 # files that you want to explicitly deny access
 
+  abi <abi/3.0>,
+
   #include <abstractions/private-files>
 
   # potentially extremely sensitive files

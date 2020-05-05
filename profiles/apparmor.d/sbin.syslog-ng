@@ -10,6 +10,8 @@
 #
 # ------------------------------------------------------------------
 
+abi <abi/3.0>,
+
 #include <tunables/global>
 
 #define this to be where syslog-ng is chrooted

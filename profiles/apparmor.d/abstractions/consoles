@@ -9,6 +9,7 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
 
 
   # there are three common ways to refer to consoles

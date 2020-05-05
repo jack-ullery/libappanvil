@@ -10,6 +10,8 @@
 # vim:syntax=apparmor
 # Last Modified: Mon Mar 13 15:55:30 2006
 
+abi <abi/3.0>,
+
 #include <tunables/global>
 
 profile resmgrd /{usr/,}sbin/resmgrd {

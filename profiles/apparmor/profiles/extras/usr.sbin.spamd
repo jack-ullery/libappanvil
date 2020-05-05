@@ -10,6 +10,8 @@
 # vim:syntax=apparmor
 # Last Modified: Wed Feb 23 11:03:18 2005
 
+abi <abi/3.0>,
+
 #include <tunables/global>
 
 /usr/sbin/spamd {

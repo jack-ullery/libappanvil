@@ -1,6 +1,8 @@
 # vim:syntax=apparmor
 # Rules for changing KDE settings (for KFileDialog and other).
 
+  abi <abi/3.0>,
+
   # User files
  
   owner @{HOME}/.config/#[0-9]* rw,

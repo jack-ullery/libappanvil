@@ -10,6 +10,8 @@
 # vim:syntax=apparmor
 # Last Modified: Mon Aug 29 10:49:30 2005
 
+abi <abi/3.0>,
+
 #include <tunables/global>
 
 /usr/lib/bonobo/bonobo-activation-server {

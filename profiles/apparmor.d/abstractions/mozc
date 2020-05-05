@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
+
   unix (connect, receive, send) type=stream peer=(addr="@tmp/.mozc.*"),
 
   # Include additions to the abstraction

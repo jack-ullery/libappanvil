@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
+
   # abstraction for Enchant spellchecking frontend
 
   /usr/share/enchant/                              r,

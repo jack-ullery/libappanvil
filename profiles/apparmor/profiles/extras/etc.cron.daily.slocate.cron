@@ -12,6 +12,8 @@
 # that it can traverse the whole filesystem.
 # 
 
+  abi <abi/3.0>,
+
 #include <tunables/global>
 
 /etc/cron.daily/slocate.cron {

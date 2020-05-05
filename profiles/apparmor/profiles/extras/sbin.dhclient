@@ -19,6 +19,8 @@
 # /usr/bin/vmstat             mrix,
 # /usr/bin/w                  mrix,
 
+abi <abi/3.0>,
+
 #include <tunables/global>
 
 profile dhclient /{usr/,}sbin/dhclient {

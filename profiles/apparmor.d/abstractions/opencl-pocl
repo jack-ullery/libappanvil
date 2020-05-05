@@ -1,6 +1,8 @@
 # vim:syntax=apparmor
 # OpenCL access requirements for POCL implementation
 
+  abi <abi/3.0>,
+
   #include <abstractions/opencl-common>
 
   # Executables

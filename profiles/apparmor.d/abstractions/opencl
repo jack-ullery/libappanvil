@@ -1,4 +1,7 @@
 # vim:syntax=apparmor
+
+  abi <abi/3.0>,
+
 # OpenCL access requirements
 
   # TODO: use conditionals to select allowed implementations

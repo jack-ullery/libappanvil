@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+abi <abi/3.0>,
+
 #include <abstractions/base>
 #include <abstractions/fonts>
 #include <abstractions/X>

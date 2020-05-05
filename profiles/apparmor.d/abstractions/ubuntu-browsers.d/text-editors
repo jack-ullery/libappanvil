@@ -3,6 +3,8 @@
 # in the toplevel profile. Eg:
 # #include <abstractions/ubuntu-helpers>
 
+  abi <abi/3.0>,
+
   # Text editors (It's All Text [https://addons.mozilla.org/en-US/firefox/addon/4125])
   /usr/bin/emacsclient.emacs-snapshot Cxr -> sanitized_helper,
   /usr/bin/emacsclient.emacs2[2-9] Cxr -> sanitized_helper,

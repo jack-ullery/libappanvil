@@ -1,3 +1,5 @@
+abi <abi/3.0>,
+
 #include <tunables/global>
 
 profile nmbd /usr/{bin,sbin}/nmbd {

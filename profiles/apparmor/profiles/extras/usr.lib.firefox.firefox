@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+abi <abi/3.0>,
+
 #include <tunables/global>
 
 # We want to confine the binaries that match:

@@ -1,6 +1,8 @@
 # vim:syntax=apparmor
 # Allow updating recent documents
 
+  abi <abi/3.0>,
+
   # User files
 
   owner @{HOME}/.local/share/RecentDocuments/ rw,

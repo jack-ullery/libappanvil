@@ -1,5 +1,7 @@
 # vim:syntax=apparmor
 
+  abi <abi/3.0>,
+
 # This file contains common DRI-specific rules useful for GUI applications that
 # needs to enumerate graphic devices (as with drmParsePciDeviceInfo() from
 # libdrm).

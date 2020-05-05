@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+abi <abi/3.0>,
+
 #include <tunables/global>
 #include <tunables/ntpd>
 profile ntpd /usr/{bin,sbin}/{,open}ntpd flags=(attach_disconnected) {

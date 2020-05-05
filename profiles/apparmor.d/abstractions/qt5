@@ -1,6 +1,8 @@
 # vim:syntax=apparmor
 # Common rules for Qt5-based applications
 
+  abi <abi/3.0>,
+
   # Additional libraries
 
   /usr/lib{,64,/@{multiarch}}/qt5/plugins/**.so mr,

@@ -8,6 +8,8 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
+
   # user-specific bash files
   @{HOMEDIRS}                      r,
   @{HOME}/.bashrc                  r,

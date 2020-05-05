@@ -1,5 +1,7 @@
 # Author: Marc Deslauriers <marc.deslauriers@ubuntu.com>
 
+abi <abi/3.0>,
+
 #include <tunables/global>
 /usr/lib/apache2/mpm-prefork/apache2 {
 

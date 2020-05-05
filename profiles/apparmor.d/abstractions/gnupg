@@ -1,6 +1,8 @@
 # vim:syntax=apparmor
 # gnupg sub-process running permissions
 
+  abi <abi/3.0>,
+
   # user configurations
   owner @{HOME}/.gnupg/options     r,
   owner @{HOME}/.gnupg/pubring.gpg r,

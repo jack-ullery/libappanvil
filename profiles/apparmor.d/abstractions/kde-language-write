@@ -1,4 +1,7 @@
 # vim:syntax=apparmor
+
+  abi <abi/3.0>,
+
 # Rules for changing per-application language settings on KDE. Some KDE
 # applications have "Help -> Switch Application Language..." option, that needs
 # write access to language settings file.

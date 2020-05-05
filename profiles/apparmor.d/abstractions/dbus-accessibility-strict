@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
+
   dbus send
        bus=accessibility
        path=/org/freedesktop/DBus

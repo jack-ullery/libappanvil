@@ -10,6 +10,8 @@
 #
 # ------------------------------------------------------------------
 
+abi <abi/3.0>,
+
 #include <tunables/global>
 
 profile postfix-trivial-rewrite /usr/lib/postfix/{bin/,sbin/,}trivial-rewrite {

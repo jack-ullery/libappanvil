@@ -38,6 +38,8 @@
 # 
 #
 
+abi <abi/3.0>,
+
 #include <tunables/global>
 
 /usr/bin/evolution-2.10 {

@@ -1,5 +1,7 @@
 # vim:syntax=apparmor
 
+  abi <abi/3.0>,
+
   # firefox-notify
   #include <abstractions/python>
   /usr/bin/python2.[4567] ix,

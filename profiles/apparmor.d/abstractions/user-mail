@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
+
   # location of user mail, spool and mboxes
   owner @{HOME}/[mM]ail/      r,
   owner @{HOME}/[mM]ail/**    rwl,

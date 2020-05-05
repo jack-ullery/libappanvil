@@ -10,6 +10,7 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
 
 
   # Some services need to perform authentication of users
