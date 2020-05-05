@@ -29,7 +29,6 @@ class TestHotkeyConflicts(AATest):
         (['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_GLOB', 'CMD_GLOBEXT', 'CMD_NEW', 'CMD_AUDIT_NEW', 'CMD_USER_OFF', 'CMD_ABORT', 'CMD_FINISHED'], True),  # aa.py available_buttons() with CMD_AUDIT_NEW and CMD_USER_OFF
         (['CMD_SAVE_CHANGES', 'CMD_SAVE_SELECTED', 'CMD_VIEW_CHANGES', 'CMD_VIEW_CHANGES_CLEAN', 'CMD_ABORT'],                              True),  # aa.py save_profiles()
         (['CMD_VIEW_PROFILE', 'CMD_USE_PROFILE', 'CMD_CREATE_PROFILE', 'CMD_ABORT'],                                                        True),  # aa.py get_profile()
-        (['CMD_UPLOAD_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ASK_LATER', 'CMD_ASK_NEVER', 'CMD_ABORT'],                                         True),  # aa.py console_select_and_upload_profiles()
         (['CMD_ix', 'CMD_pix', 'CMD_cix', 'CMD_nix', 'CMD_EXEC_IX_OFF', 'CMD_ux', 'CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED'],                 True),  # aa.py build_x_functions() with exec_toggle
         (['CMD_ix', 'CMD_cx', 'CMD_px', 'CMD_nx', 'CMD_ux', 'CMD_EXEC_IX_ON', 'CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED'],                     True),  # aa.py build_x_functions() without exec_toggle
         (['CMD_ADDHAT', 'CMD_USEDEFAULT', 'CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED'],                                                         True),  # aa.py ask_addhat()

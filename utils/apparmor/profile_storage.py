@@ -63,7 +63,6 @@ class ProfileStorage:
         data['abi']              = []
         data['include']          = dict()
         data['lvar']             = dict()
-        data['repo']             = dict()
 
         data['filename']         = ''
         data['logprof_suggest']  = ''  # set in abstractions that should be suggested by aa-logprof
