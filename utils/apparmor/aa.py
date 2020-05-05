@@ -81,7 +81,6 @@ logfile = None
 CONFDIR = None
 conf = None
 cfg = None
-repo_cfg = None
 
 parser = None
 profile_dir = None
@@ -499,25 +498,14 @@ def confirm_and_abort():
 
 def get_profile(prof_name):
     profile_data = None
-    distro = cfg['repository']['distro']
-    repo_url = cfg['repository']['url']
     # local_profiles = []
     profile_hash = hasher()
-    if repo_is_enabled():
-        aaui.UI_BusyStart(_('Connecting to repository...'))
-        status_ok, ret = fetch_profiles_by_name(repo_url, distro, prof_name)
-        aaui.UI_BusyStop()
-        if status_ok:
-            profile_hash = ret
-        else:
-            aaui.UI_Important(_('WARNING: Error fetching profiles from the repository'))
     inactive_profile = get_inactive_profile(prof_name)
     if inactive_profile:
         uname = 'Inactive local profile for %s' % prof_name
         inactive_profile[prof_name][prof_name]['flags'] = 'complain'
         orig_filename = inactive_profile[prof_name][prof_name]['filename']  # needed for CMD_VIEW_PROFILE
         inactive_profile[prof_name][prof_name]['filename'] = ''
-        profile_hash[uname]['username'] = uname
         profile_hash[uname]['profile_type'] = 'INACTIVE_LOCAL'
         profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name, {})
         profile_hash[uname]['profile_data'] = inactive_profile
@@ -525,23 +513,11 @@ def get_profile(prof_name):
         # no longer necessary after splitting active and extra profiles
         # existing_profiles.pop(prof_name)  # remove profile filename from list to force storing in /etc/apparmor.d/ instead of extra_profile_dir
 
-    # If no profiles in repo and no inactive profiles
+    # If no inactive profiles
     if not profile_hash.keys():
         return None
-    options = []
-    tmp_list = []
-    preferred_present = False
-    preferred_user = cfg['repository'].get('preferred_user', 'NOVELL')
 
-    for p in profile_hash.keys():
-        if profile_hash[p]['username'] == preferred_user:
-            preferred_present = True
-        else:
-            tmp_list.append(profile_hash[p]['username'])
-
-    if preferred_present:
-        options.append(preferred_user)
-    options += tmp_list
+    options = [uname]
 
     q = aaui.PromptQuestion()
     q.headers = ['Profile', prof_name]
@@ -562,18 +538,10 @@ def get_profile(prof_name):
             if p['profile_type'] == 'INACTIVE_LOCAL':
                 profile_data = p['profile_data']
                 created.append(prof_name)
-            else:
-                profile_data = parse_repo_profile(prof_name, repo_url, p)
     return profile_data
 
 def autodep(bin_name, pname=''):
     bin_full = None
-    global repo_cfg
-    if not repo_cfg and not cfg['repository'].get('url', False):
-        repo_conf = apparmor.config.Config('shell', CONFDIR)
-        repo_cfg = repo_conf.read_config('repository.conf')
-        if not repo_cfg.get('repository', False) or repo_cfg['repository']['enabled'] == 'later':
-            UI_ask_to_enable_repo()
     if bin_name:
         bin_full = find_executable(bin_name)
         #if not bin_full:
@@ -705,145 +673,6 @@ def profile_exists(program):
         # return True
     return False
 
-def sync_profile():
-    user, passw = get_repo_user_pass()
-    if not user or not passw:
-        return None
-    repo_profiles = []
-    changed_profiles = []
-    new_profiles = []
-    status_ok, ret = fetch_profiles_by_user(cfg['repository']['url'],
-                                            cfg['repository']['distro'], user)
-    if not status_ok:
-        if not ret:
-            ret = 'UNKNOWN ERROR'
-        aaui.UI_Important(_('WARNING: Error synchronizing profiles with the repository:\n%s\n') % ret)
-    else:
-        users_repo_profiles = ret
-        serialize_opts = {'FLAGS': False}
-        for prof in sorted(aa.keys()):
-            if is_repo_profile([aa[prof][prof]]):
-                repo_profiles.append(prof)
-            if prof in created:
-                p_local = serialize_profile(aa[prof], prof, serialize_opts)
-                if not users_repo_profiles.get(prof, False):
-                    new_profiles.append(prof)
-                    new_profiles.append(p_local)
-                    new_profiles.append('')
-                else:
-                    p_repo = users_repo_profiles[prof]['profile']
-                    if p_local != p_repo:
-                        changed_profiles.append(prof)
-                        changed_profiles.append(p_local)
-                        changed_profiles.append(p_repo)
-        if repo_profiles:
-            for prof in repo_profiles:
-                p_local = serialize_profile(aa[prof], prof, serialize_opts)
-                if not users_repo_profiles.get(prof, False):
-                    new_profiles.append(prof)
-                    new_profiles.append(p_local)
-                    new_profiles.append('')
-                else:
-                    p_repo = ''
-                    if aa[prof][prof]['repo']['user'] == user:
-                        p_repo = users_repo_profiles[prof]['profile']
-                    else:
-                        status_ok, ret = fetch_profile_by_id(cfg['repository']['url'],
-                                                             aa[prof][prof]['repo']['id'])
-                        if status_ok:
-                            p_repo = ret['profile']
-                        else:
-                            if not ret:
-                                ret = 'UNKNOWN ERROR'
-                            aaui.UI_Important(_('WARNING: Error synchronizing profiles with the repository\n%s') % ret)
-                            continue
-                    if p_repo != p_local:
-                        changed_profiles.append(prof)
-                        changed_profiles.append(p_local)
-                        changed_profiles.append(p_repo)
-        if changed_profiles:
-            submit_changed_profiles(changed_profiles)
-        if new_profiles:
-            submit_created_profiles(new_profiles)
-
-def fetch_profile_by_id(url, id):
-    #To-Do
-    return None, None
-
-def fetch_profiles_by_name(url, distro, user):
-    #to-Do
-    return None, None
-
-def fetch_profiles_by_user(url, distro, user):
-    #to-Do
-    return None, None
-
-def submit_created_profiles(new_profiles):
-    #url = cfg['repository']['url']
-    if new_profiles:
-        title = 'Submit newly created profiles to the repository'
-        message = 'Would you like to upload newly created profiles?'
-        console_select_and_upload_profiles(title, message, new_profiles)
-
-def submit_changed_profiles(changed_profiles):
-    #url = cfg['repository']['url']
-    if changed_profiles:
-        title = 'Submit changed profiles to the repository'
-        message = 'The following profiles from the repository were changed.\nWould you like to upload your changes?'
-        console_select_and_upload_profiles(title, message, changed_profiles)
-
-def upload_profile(url, user, passw, distro, p, profile_string, changelog):
-    # To-Do
-    return None, None
-
-def console_select_and_upload_profiles(title, message, profiles_up):
-    url = cfg['repository']['url']
-    profiles = profiles_up[:]
-    q = aaui.PromptQuestion()
-    q.title = title
-    q.headers = ['Repository', url]
-    q.explanation = message
-    q.functions = ['CMD_UPLOAD_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ASK_LATER',
-                      'CMD_ASK_NEVER', 'CMD_ABORT']
-    q.default = 'CMD_VIEW_CHANGES'
-    q.options = [i[0] for i in profiles]
-    q.selected = 0
-    ans = ''
-    while 'CMD_UPLOAD_CHANGES' not in ans and 'CMD_ASK_NEVER' not in ans and 'CMD_ASK_LATER' not in ans:
-        ans, arg = q.promptUser()
-        if ans == 'CMD_VIEW_CHANGES':
-            aaui.UI_Changes(profiles[arg][2], profiles[arg][1])
-    if ans == 'CMD_NEVER_ASK':
-        set_profiles_local_only([i[0] for i in profiles])
-    elif ans == 'CMD_UPLOAD_CHANGES':
-        changelog = aaui.UI_GetString(_('Changelog Entry: '), '')
-        user, passw = get_repo_user_pass()
-        if user and passw:
-            for p_data in profiles:
-                prof = p_data[0]
-                prof_string = p_data[1]
-                status_ok, ret = upload_profile(url, user, passw,
-                                                cfg['repository']['distro'],
-                                                prof, prof_string, changelog)
-                if status_ok:
-                    newprof = ret
-                    newid = newprof['id']
-                    set_repo_info(aa[prof][prof], url, user, newid)
-                    write_profile_ui_feedback(prof)
-                    aaui.UI_Info('Uploaded %s to repository' % prof)
-                else:
-                    if not ret:
-                        ret = 'UNKNOWN ERROR'
-                    aaui.UI_Important(_('WARNING: An error occurred while uploading the profile %(profile)s\n%(ret)s') % { 'profile': prof, 'ret': ret })
-        else:
-            aaui.UI_Important(_('Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the repository.\nThese changes could not be sent.'))
-
-def set_profiles_local_only(profiles):
-    for p in profiles:
-        aa[profiles][profiles]['repo']['neversubmit'] = True
-        write_profile_ui_feedback(profiles)
-
-
 def build_x_functions(default, options, exec_toggle):
     ret_list = []
     fallback_toggle = False
@@ -899,10 +728,6 @@ def ask_addhat(hashlog):
 
                 if aa[profile].get(hat, False):
                     continue  # no need to ask if the hat already exists
-
-                new_p = update_repo_profile(aa[profile][profile])
-                if new_p and UI_SelectUpdatedRepoProfile(profile, new_p) and aa[profile].get(hat, False):
-                    continue
 
                 default_hat = None
                 for hatglob in cfg.options('defaulthat'):
@@ -981,10 +806,6 @@ def ask_exec(hashlog):
 
                     exec_event = FileRule(exec_target, None, FileRule.ANY_EXEC, FileRule.ALL, owner=False, log_event=True)
                     if is_known_rule(aa[profile][hat], 'file', exec_event):
-                        continue
-
-                    p = update_repo_profile(aa[profile][profile])
-                    if UI_SelectUpdatedRepoProfile(profile, p) and is_known_rule(aa[profile][hat], 'file', exec_event):
                         continue
 
                     # nx is not used in profiles but in log files.
@@ -1189,50 +1010,6 @@ def ask_exec(hashlog):
                     elif ans.startswith('CMD_ux'):
                         continue
 
-##### Repo related functions
-
-def UI_SelectUpdatedRepoProfile(profile, p):
-    # To-Do
-    return False
-
-def UI_repo_signup():
-    # To-Do
-    return None, None
-
-def UI_ask_to_enable_repo():
-    # To-Do
-    pass
-
-def UI_ask_to_upload_profiles():
-    # To-Do
-    pass
-
-def parse_repo_profile(fqdbin, repo_url, profile):
-    # To-Do
-    pass
-
-def set_repo_info(profile_data, repo_url, username, iden):
-    # To-Do
-    pass
-
-def is_repo_profile(profile_data):
-    # To-Do
-    pass
-
-def get_repo_user_pass():
-    # To-Do
-    pass
-def get_preferred_user(repo_url):
-    # To-Do
-    pass
-def repo_is_enabled():
-    # To-Do
-    return False
-
-def update_repo_profile(profile):
-    # To-Do
-    return None
-
 def order_globs(globs, original_path):
     """Returns the globs in sorted order, more specific behind"""
     # To-Do
@@ -1260,11 +1037,6 @@ def ask_the_questions(log_dict):
             raise AppArmorBug(_('Invalid mode found: %s') % aamode)
 
         for profile in sorted(log_dict[aamode].keys()):
-            # Update the repo profiles
-            p = update_repo_profile(aa[profile][profile])
-            if p:
-                UI_SelectUpdatedRepoProfile(profile, p)
-
             sev_db.unload_variables()
             sev_db.load_variables(get_profile_filename_from_profile_name(profile, True))
 
@@ -1694,10 +1466,6 @@ def do_logprof_pass(logmark='', passno=0):
         sev_db = apparmor.severity.Severity(CONFDIR + '/severity.db', _('unknown'))
     #print(pid)
     #print(active_profiles)
-    ##if not repo_cf and cfg['repostory']['url']:
-    ##    repo_cfg = read_config('repository.conf')
-    ##    if not repo_cfg['repository'].get('enabled', False) or repo_cfg['repository]['enabled'] not in ['yes', 'no']:
-    ##    UI_ask_to_enable_repo()
 
     log_reader = apparmor.logparser.ReadLog(logfile, active_profiles, profile_dir)
     hashlog = log_reader.read_log(logmark)
@@ -1710,13 +1478,6 @@ def do_logprof_pass(logmark='', passno=0):
     ask_the_questions(log_dict)
 
     save_profiles()
-
-    ##if not repo_cfg['repository'].get('upload', False) or repo['repository']['upload'] == 'later':
-    ##    UI_ask_to_upload_profiles()
-    ##if repo_enabled():
-    ##    if repo_cgf['repository']['upload'] == 'yes':
-    ##        sync_profiles()
-    ##    created = []
 
 def save_profiles():
     # Ensure the changed profiles are actual active profiles
@@ -2021,7 +1782,6 @@ def parse_profile_data(data, file, do_include):
     profile = None
     hat = None
     in_contained_hat = None
-    repo_data = None
     parsed_profiles = []
     initial_comment = ''
     lastline = None
@@ -2070,10 +1830,6 @@ def parse_profile_data(data, file, do_include):
                 profile_data[profile][hat]['initial_comment'] = initial_comment
 
             initial_comment = ''
-
-            if repo_data:
-                profile_data[profile][profile]['repo']['url'] = repo_data['url']
-                profile_data[profile][profile]['repo']['user'] = repo_data['user']
 
         elif RE_PROFILE_END.search(line):
             # If profile ends and we're not in one
@@ -2329,17 +2085,6 @@ def parse_profile_data(data, file, do_include):
             if not profile:
                 if line.startswith('# Last Modified:'):
                     continue
-                elif line.startswith('# REPOSITORY:'): # TODO: allow any number of spaces/tabs
-                    parts = line.split()
-                    if len(parts) == 3 and parts[2] == 'NEVERSUBMIT':
-                        repo_data = {'neversubmit': True}
-                    elif len(parts) == 5:
-                        repo_data = {'url': parts[2],
-                                     'user': parts[3],
-                                     'id': parts[4]}
-                    else:
-                        aaui.UI_Important(_('Warning: invalid "REPOSITORY:" line in %s, ignoring.') % file)
-                        initial_comment = initial_comment + line + '\n'
                 else:
                     initial_comment = initial_comment + line + '\n'
 
@@ -2535,15 +2280,6 @@ def serialize_profile(profile_data, name, options):
 
     if include_metadata:
         string = '# Last Modified: %s\n' % time.asctime()
-
-        if (profile_data[name].get('repo', False) and
-                profile_data[name]['repo']['url'] and
-                profile_data[name]['repo']['user'] and
-                profile_data[name]['repo']['id']):
-            repo = profile_data[name]['repo']
-            string += '# REPOSITORY: %s %s %s\n' % (repo['url'], repo['user'], repo['id'])
-        elif profile_data[name]['repo'].get('neversubmit'):
-            string += '# REPOSITORY: NEVERSUBMIT\n'
 
 #     if profile_data[name].get('initial_comment', False):
 #         comment = profile_data[name]['initial_comment']

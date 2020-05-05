@@ -60,14 +60,9 @@ class Config(object):
 
     def read_config(self, filename):
         """Reads the file and returns a config[section][attribute]=property object"""
-        # LP: Bug #692406
-        # Explicitly disabled repository
         filepath = self.CONF_DIR + '/' + filename
         self.input_file = filepath
-        if filename == "repository.conf":
-            config = dict()
-            config['repository'] = {'enabled': 'no'}
-        elif self.conf_type == 'shell':
+        if self.conf_type == 'shell':
             config = self.read_shell(filepath)
         elif self.conf_type == 'ini':
             if sys.version_info > (3, 0):
