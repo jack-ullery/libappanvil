@@ -498,7 +498,7 @@ def find_and_setup_test_profiles(profile_dir):
 
     apparmor.profile_dir = profile_dir
 
-    print('Searching for parser simpe_tests... (this will take a while)')
+    print('Searching for parser simple_tests... (this will take a while)')
 
     for root, dirs, files in os.walk(profile_dir):
         relpath = os.path.relpath(root, profile_dir)
