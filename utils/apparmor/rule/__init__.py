@@ -402,6 +402,20 @@ class BaseRuleset(object):
 
         return cleandata
 
+    def get_clean_unsorted(self, depth=0):
+        '''return all rules (in clean/default formatting) in original order
+           Returns an array of lines, with depth * leading whitespace'''
+
+        all_rules = []
+
+        for rule in self.rules:
+            all_rules.append(rule.get_clean(depth))
+
+        if all_rules:
+            all_rules.append('')
+
+        return all_rules
+
     def is_covered(self, rule, check_allow_deny=True, check_audit=False):
         '''return True if rule is covered by existing rules, otherwise False'''
 

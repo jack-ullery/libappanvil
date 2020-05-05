@@ -2193,10 +2193,10 @@ def parse_profile_data(data, file, do_include):
 
         # IncludeRule can handle 'include' and 'include if exists' - place it after the "old" 'include' handling so that it only catches 'include if exists' for now
         elif IncludeRule.match(line):
-            if not profile:
-                raise AppArmorException(_('"include if exists" outside of a profile not supported in the tools yet - found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })  # TODO
-
-            profile_data[profile][hat]['inc_ie'].add(IncludeRule.parse(line))
+            if profile:
+                profile_data[profile][hat]['inc_ie'].add(IncludeRule.parse(line))
+            else:
+                active_profiles.add_inc_ie(file, IncludeRule.parse(line))
 
         elif NetworkRule.match(line):
             if not profile:
@@ -2560,6 +2560,8 @@ def serialize_profile(profile_data, name, options):
         data += write_alias(filelist[prof_filename], 0)
         data += write_list_vars(filelist[prof_filename], 0)
         data += write_includes(filelist[prof_filename], 0)
+
+        data += active_profiles.get_clean(prof_filename, 0)
 
     #Here should be all the profiles from the files added write after global/common stuff
     for prof in sorted(filelist[prof_filename]['profiles'].keys()):

@@ -346,6 +346,7 @@ class IncludeRulesTest(AATest):
         self.assertEqual([], ruleset.get_clean(2))
         self.assertEqual([], ruleset_2.get_raw(2))
         self.assertEqual([], ruleset_2.get_clean(2))
+        self.assertEqual([], ruleset_2.get_clean_unsorted(2))
 
     def test_ruleset_1(self):
         ruleset = IncludeRuleset()
@@ -366,26 +367,33 @@ class IncludeRulesTest(AATest):
             '',
         ]
 
+        expected_clean_unsorted = [
+            'include <foo>',
+            'include "/bar"',
+            '',
+        ]
+
         for rule in rules:
             ruleset.add(IncludeRule.parse(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())
+        self.assertEqual(expected_clean_unsorted, ruleset.get_clean_unsorted())
 
     def test_ruleset_2(self):
         ruleset = IncludeRuleset()
         rules = [
+            '   include   if  exists  <baz> ',
             ' include  <foo>  ',
             ' #include   "/bar" ',
             '#include if   exists   "/asdf"  ',
-            '   include   if  exists  <baz> ',
         ]
 
         expected_raw = [
+            'include   if  exists  <baz>',
             'include  <foo>',
             '#include   "/bar"',
             '#include if   exists   "/asdf"',
-            'include   if  exists  <baz>',
             '',
         ]
 
@@ -397,11 +405,20 @@ class IncludeRulesTest(AATest):
             '',
         ]
 
+        expected_clean_unsorted = [
+            'include if exists <baz>',
+            'include <foo>',
+            'include "/bar"',
+            'include if exists "/asdf"',
+            '',
+        ]
+
         for rule in rules:
             ruleset.add(IncludeRule.parse(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())
+        self.assertEqual(expected_clean_unsorted, ruleset.get_clean_unsorted())
 
 class IncludeGlobTestAATest(AATest):
     def setUp(self):
