@@ -437,11 +437,6 @@ def get_interpreter_and_abstraction(exec_target):
 
     return interpreter_path, abstraction
 
-def get_inactive_profile(local_profile):
-    if extras.get(local_profile, False):
-        return {local_profile: extras[local_profile]}
-    return dict()
-
 def create_new_profile(localfile, is_stub=False):
     local_profile = hasher()
     local_profile[localfile] = ProfileStorage('NEW', localfile, 'create_new_profile()')
@@ -497,25 +492,25 @@ def confirm_and_abort():
         sys.exit(0)
 
 def get_profile(prof_name):
-    profile_data = None
-    # local_profiles = []
-    profile_hash = hasher()
-    inactive_profile = get_inactive_profile(prof_name)
-    if inactive_profile:
-        uname = 'Inactive local profile for %s' % prof_name
-        inactive_profile[prof_name][prof_name]['flags'] = 'complain'
-        orig_filename = inactive_profile[prof_name][prof_name]['filename']  # needed for CMD_VIEW_PROFILE
-        inactive_profile[prof_name][prof_name]['filename'] = ''
-        profile_hash[uname]['profile_type'] = 'INACTIVE_LOCAL'
-        profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name, {})
-        profile_hash[uname]['profile_data'] = inactive_profile
+    '''search for inactive/extra profile, and ask if it should be used'''
 
-        # no longer necessary after splitting active and extra profiles
-        # existing_profiles.pop(prof_name)  # remove profile filename from list to force storing in /etc/apparmor.d/ instead of extra_profile_dir
+    if not extras.get(prof_name, False):
+        return None  # no inactive profile found
 
-    # If no inactive profiles
-    if not profile_hash.keys():
-        return None
+    # TODO: search based on the attachment, not (only?) based on the profile name
+    #       (Note: in theory, multiple inactive profiles (with different profile names) could exist for a binary.)
+    inactive_profile = {prof_name: extras[prof_name]}
+    inactive_profile[prof_name][prof_name]['flags'] = 'complain'
+    orig_filename = inactive_profile[prof_name][prof_name]['filename']  # needed for CMD_VIEW_PROFILE
+    inactive_profile[prof_name][prof_name]['filename'] = ''
+
+    uname = 'Inactive local profile for %s' % prof_name
+    profile_hash = {
+        uname: {
+            'profile': serialize_profile(inactive_profile[prof_name], prof_name, {}),
+            'profile_data': inactive_profile,
+        }
+    }
 
     options = [uname]
 
@@ -535,10 +530,10 @@ def get_profile(prof_name):
             pager = get_pager()
             subprocess.call([pager, orig_filename])
         elif ans == 'CMD_USE_PROFILE':
-            if p['profile_type'] == 'INACTIVE_LOCAL':
-                profile_data = p['profile_data']
-                created.append(prof_name)
-    return profile_data
+            created.append(prof_name)
+            return p['profile_data']
+
+    return None  # CMD_CREATE_PROFILE chosen
 
 def autodep(bin_name, pname=''):
     bin_full = None
