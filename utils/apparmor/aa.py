@@ -493,7 +493,6 @@ def confirm_and_abort():
 
 def get_profile(prof_name):
     profile_data = None
-    profile_hash = hasher()
 
     if not extras.get(prof_name, False):
         return None  # no inactive profile found
@@ -504,9 +503,13 @@ def get_profile(prof_name):
     inactive_profile[prof_name][prof_name]['filename'] = ''
 
     uname = 'Inactive local profile for %s' % prof_name
-    profile_hash[uname]['profile_type'] = 'INACTIVE_LOCAL'
-    profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name, {})
-    profile_hash[uname]['profile_data'] = inactive_profile
+    profile_hash = {
+        uname: {
+            'profile_type': 'INACTIVE_LOCAL',
+            'profile': serialize_profile(inactive_profile[prof_name], prof_name, {}),
+            'profile_data': inactive_profile,
+        }
+    }
 
     options = [uname]
 
