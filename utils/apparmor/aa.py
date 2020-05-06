@@ -527,8 +527,7 @@ def get_profile(prof_name):
         p = profile_hash[options[arg]]
         q.selected = options.index(options[arg])
         if ans == 'CMD_VIEW_PROFILE':
-            pager = get_pager()
-            subprocess.call([pager, orig_filename])
+            aaui.UI_ShowFile(uname, orig_filename)
         elif ans == 'CMD_USE_PROFILE':
             created.append(prof_name)
             return p['profile_data']
