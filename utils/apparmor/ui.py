@@ -290,13 +290,16 @@ def UI_Changes(oldprofile, newprofile, comments=False):
     else:
         difftemp = generate_diff_with_comments(oldprofile, newprofile)
         header = 'View Changes with comments'
-    if UI_mode == 'json':
-        jsonout = {'dialog': 'changes', 'header': header, 'filename': difftemp.name}
-        write_json(jsonout)
-        json_response('changes')["response"]  # wait for response to delay deletion of difftemp (and ignore response content)
-    else:
-        subprocess.call('less %s' % difftemp.name, shell=True)
+    UI_ShowFile(header, difftemp.name)
     difftemp.close()
+
+def UI_ShowFile(header, filename):
+    if UI_mode == 'json':
+        jsonout = {'dialog': 'changes', 'header': header, 'filename': filename}
+        write_json(jsonout)
+        json_response('changes')["response"]  # wait for response to delay deletion of filename (and ignore response content)
+    else:
+        subprocess.call('less %s' % filename, shell=True)
 
 
 CMDS = {'CMD_ALLOW': _('(A)llow'),
