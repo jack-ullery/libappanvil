@@ -507,7 +507,6 @@ def get_profile(prof_name):
     uname = 'Inactive local profile for %s' % prof_name
     profile_hash = {
         uname: {
-            'profile_type': 'INACTIVE_LOCAL',
             'profile': serialize_profile(inactive_profile[prof_name], prof_name, {}),
             'profile_data': inactive_profile,
         }
@@ -531,9 +530,8 @@ def get_profile(prof_name):
             pager = get_pager()
             subprocess.call([pager, orig_filename])
         elif ans == 'CMD_USE_PROFILE':
-            if p['profile_type'] == 'INACTIVE_LOCAL':
-                created.append(prof_name)
-                return p['profile_data']
+            created.append(prof_name)
+            return p['profile_data']
 
     return None  # CMD_CREATE_PROFILE chosen
 
