@@ -492,11 +492,13 @@ def confirm_and_abort():
         sys.exit(0)
 
 def get_profile(prof_name):
-    profile_data = None
+    '''search for inactive/extra profile, and ask if it should be used'''
 
     if not extras.get(prof_name, False):
         return None  # no inactive profile found
 
+    # TODO: search based on the attachment, not (only?) based on the profile name
+    #       (Note: in theory, multiple inactive profiles (with different profile names) could exist for a binary.)
     inactive_profile = {prof_name: extras[prof_name]}
     inactive_profile[prof_name][prof_name]['flags'] = 'complain'
     orig_filename = inactive_profile[prof_name][prof_name]['filename']  # needed for CMD_VIEW_PROFILE
@@ -530,9 +532,10 @@ def get_profile(prof_name):
             subprocess.call([pager, orig_filename])
         elif ans == 'CMD_USE_PROFILE':
             if p['profile_type'] == 'INACTIVE_LOCAL':
-                profile_data = p['profile_data']
                 created.append(prof_name)
-    return profile_data
+                return p['profile_data']
+
+    return None  # CMD_CREATE_PROFILE chosen
 
 def autodep(bin_name, pname=''):
     bin_full = None
