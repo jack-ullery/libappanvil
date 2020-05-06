@@ -1535,9 +1535,6 @@ def save_profiles():
             write_profile_ui_feedback(profile_name)
             reload_base(profile_name)
 
-def get_pager():
-    return 'less'
-
 def collapse_log(hashlog, ignore_null_profiles=True):
     log_dict = hasher()
 
