@@ -107,6 +107,8 @@ apparmor.check_qualifiers(program)
 
 apparmor.loadincludes()
 
+apparmor.read_profiles(True)
+
 profile_filename = apparmor.get_profile_filename_from_attachment(program, True)
 if os.path.exists(profile_filename):
     apparmor.helpers[program] = apparmor.get_profile_flags(profile_filename, program)
@@ -141,7 +143,6 @@ done_profiling = False
 if os.path.exists('/var/log/audit/audit.log'):
     syslog = False
 
-passno = 0
 while not done_profiling:
     if syslog:
         logmark = subprocess.check_output(['date | md5sum'], shell=True)
@@ -160,8 +161,7 @@ while not done_profiling:
     ans, arg = q.promptUser('noexit')
 
     if ans == 'CMD_SCAN':
-        apparmor.do_logprof_pass(logmark, passno)
-        passno += 1
+        apparmor.do_logprof_pass(logmark)
     else:
         done_profiling = True
 
