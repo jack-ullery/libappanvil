@@ -493,24 +493,20 @@ def confirm_and_abort():
 
 def get_profile(prof_name):
     profile_data = None
-    # local_profiles = []
     profile_hash = hasher()
-    if extras.get(prof_name, False):
-        inactive_profile = {prof_name: extras[prof_name]}
-        uname = 'Inactive local profile for %s' % prof_name
-        inactive_profile[prof_name][prof_name]['flags'] = 'complain'
-        orig_filename = inactive_profile[prof_name][prof_name]['filename']  # needed for CMD_VIEW_PROFILE
-        inactive_profile[prof_name][prof_name]['filename'] = ''
-        profile_hash[uname]['profile_type'] = 'INACTIVE_LOCAL'
-        profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name, {})
-        profile_hash[uname]['profile_data'] = inactive_profile
 
-        # no longer necessary after splitting active and extra profiles
-        # existing_profiles.pop(prof_name)  # remove profile filename from list to force storing in /etc/apparmor.d/ instead of extra_profile_dir
+    if not extras.get(prof_name, False):
+        return None  # no inactive profile found
 
-    # If no inactive profiles
-    if not profile_hash.keys():
-        return None
+    inactive_profile = {prof_name: extras[prof_name]}
+    inactive_profile[prof_name][prof_name]['flags'] = 'complain'
+    orig_filename = inactive_profile[prof_name][prof_name]['filename']  # needed for CMD_VIEW_PROFILE
+    inactive_profile[prof_name][prof_name]['filename'] = ''
+
+    uname = 'Inactive local profile for %s' % prof_name
+    profile_hash[uname]['profile_type'] = 'INACTIVE_LOCAL'
+    profile_hash[uname]['profile'] = serialize_profile(inactive_profile[prof_name], prof_name, {})
+    profile_hash[uname]['profile_data'] = inactive_profile
 
     options = [uname]
 
