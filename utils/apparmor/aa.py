@@ -437,11 +437,6 @@ def get_interpreter_and_abstraction(exec_target):
 
     return interpreter_path, abstraction
 
-def get_inactive_profile(local_profile):
-    if extras.get(local_profile, False):
-        return {local_profile: extras[local_profile]}
-    return dict()
-
 def create_new_profile(localfile, is_stub=False):
     local_profile = hasher()
     local_profile[localfile] = ProfileStorage('NEW', localfile, 'create_new_profile()')
@@ -500,8 +495,8 @@ def get_profile(prof_name):
     profile_data = None
     # local_profiles = []
     profile_hash = hasher()
-    inactive_profile = get_inactive_profile(prof_name)
-    if inactive_profile:
+    if extras.get(prof_name, False):
+        inactive_profile = {prof_name: extras[prof_name]}
         uname = 'Inactive local profile for %s' % prof_name
         inactive_profile[prof_name][prof_name]['flags'] = 'complain'
         orig_filename = inactive_profile[prof_name][prof_name]['filename']  # needed for CMD_VIEW_PROFILE
