@@ -33,6 +33,9 @@
 #define AA_EXIT_NO_PERM 4
 #define AA_EXIT_INTERNAL_ERROR 42
 
+/* NOTE: Increment this whenever the JSON format changes */
+static const unsigned char aa_status_json_version[] = "2";
+
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 struct profile {
@@ -451,7 +454,7 @@ static int detailed_output(FILE *json) {
 	}
 
 	if (json) {
-		printf("{\"version\": \"2\", \"profiles\": {");
+		fprintf(json, "{\"version\": \"%s\", \"profiles\": {", aa_status_json_version);
 	} else {
 		dprintf("%zd profiles are loaded.\n", nprofiles);
 	}
