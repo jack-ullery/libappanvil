@@ -299,7 +299,7 @@ def UI_ShowFile(header, filename):
         write_json(jsonout)
         json_response('changes')["response"]  # wait for response to delay deletion of filename (and ignore response content)
     else:
-        subprocess.call('less %s' % filename, shell=True)
+        subprocess.call(['less', filename])
 
 
 CMDS = {'CMD_ALLOW': _('(A)llow'),
