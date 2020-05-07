@@ -37,6 +37,7 @@
 static const unsigned char aa_status_json_version[] = "2";
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+#define __unused __attribute__ ((__unused__))
 
 struct profile {
 	char *name;
@@ -223,7 +224,8 @@ static int get_processes(struct profile *profiles,
 		goto exit;
         }
 	while ((entry = readdir(dir)) != NULL) {
-		int i;
+		size_t i;
+		int rc;
 		int ispid = 1;
 		autofree char *profile = NULL;
 		autofree char *mode = NULL; /* be careful */
@@ -241,11 +243,11 @@ static int get_processes(struct profile *profiles,
 			continue;
 		}
 
-		i = aa_getprocattr(atoi(entry->d_name), "current", &profile, &mode);
-		if (i == -1 && errno != ENOMEM) {
+		rc = aa_getprocattr(atoi(entry->d_name), "current", &profile, &mode);
+		if (rc == -1 && errno != ENOMEM) {
 			/* fail to access */
 			continue;
-		} else if (i == -1 ||
+		} else if (rc == -1 ||
 			   asprintf(&exe, "/proc/%s/exe", entry->d_name) == -1) {
 			fprintf(stderr, "ERROR: Failed to allocate memory\n");
 			ret = AA_EXIT_INTERNAL_ERROR;
@@ -394,33 +396,33 @@ static int simple_filtered_process_count(const char *filter) {
         return ret;
 }
 
-static int cmd_enabled(const char *command) {
+static int cmd_enabled(__unused const char *command) {
 	int res = aa_is_enabled();
 	return res == 1 ? 0 : 1;
 }
 
 
-static int cmd_profiled(const char *command) {
+static int cmd_profiled(__unused const char *command) {
 	return simple_filtered_count(NULL);
 }
 
-static int cmd_enforced(const char *command) {
+static int cmd_enforced(__unused const char *command) {
 	return simple_filtered_count("enforce");
 }
 
-static int cmd_complaining(const char *command) {
+static int cmd_complaining(__unused const char *command) {
 	return simple_filtered_count("complain");
 }
 
-static int cmd_kill(const char *command) {
+static int cmd_kill(__unused const char *command) {
         return simple_filtered_count("kill");
 }
 
-static int cmd_unconfined(const char *command) {
+static int cmd_unconfined(__unused const char *command) {
         return simple_filtered_count("unconfined");
 }
 
-static int cmd_process_mixed(const char *command) {
+static int cmd_process_mixed(__unused const char *command) {
         return simple_filtered_process_count("mixed");
 }
 
@@ -441,7 +443,8 @@ static int detailed_output(FILE *json) {
 	struct process *processes = NULL;
 	const char *profile_statuses[] = {"enforce", "complain", "kill", "unconfined"};
 	const char *process_statuses[] = {"enforce", "complain", "unconfined", "mixed", "kill"};
-	int ret, i;
+	int ret;
+	size_t i;
 
 	ret = get_profiles(&profiles, &nprofiles);
 	if (ret != 0) {
@@ -540,12 +543,12 @@ exit:
 	return ret == 0 ? (nprofiles > 0 ? AA_EXIT_ENABLED : AA_EXIT_NO_POLICY) : ret;
 }
 
-static int cmd_json(const char *command) {
+static int cmd_json(__unused const char *command) {
 	detailed_output(stdout);
 	return 0;
 }
 
-static int cmd_pretty_json(const char *command) {
+static int cmd_pretty_json(__unused const char *command) {
 	autofree char *buffer = NULL;
 	autofree char *pretty = NULL;
 	cJSON *json;
@@ -580,7 +583,7 @@ static int cmd_pretty_json(const char *command) {
 	return AA_EXIT_ENABLED;
 }
 
-static int cmd_verbose(const char *command) {
+static int cmd_verbose(__unused const char *command) {
 	verbose = 1;
 	return detailed_output(NULL);
 }
@@ -638,7 +641,7 @@ int main(int argc, char **argv)
 		ret = EXIT_FAILURE;
 	} else if (argc == 2) {
 		int (*_cmd)(const char*) = NULL;
-		int i;
+		size_t i;
 		for (i = 0; i < ARRAY_SIZE(commands); i++) {
 			if (strcmp(argv[1], commands[i].name) == 0) {
 				_cmd = commands[i].cmd;
