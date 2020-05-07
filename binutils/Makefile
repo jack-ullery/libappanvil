@@ -168,6 +168,6 @@ endif
 clean: pod_clean
 	rm -f core core.* *.o *.s *.a *~ *.gcda *.gcno
 	rm -f gmon.out
-	rm -f $(TOOLS) $(TESTS)
+	rm -f $(BINTOOLS) $(SBINTOOLS) $(TESTS)
 	$(MAKE) -s -C po clean
 
