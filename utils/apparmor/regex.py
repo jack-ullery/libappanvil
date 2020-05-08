@@ -145,16 +145,23 @@ RE_MAGIC_OR_QUOTED_PATH = '(<(?P<magicpath>.*)>|"(?P<quotedpath>.*)"|(?P<unquote
 RE_ABI = re.compile('^\s*#?abi\s*' + RE_MAGIC_OR_QUOTED_PATH + RE_COMMA_EOL)
 RE_INCLUDE = re.compile('^\s*#?include(?P<ifexists>\s+if\s+exists)?\s*' + RE_MAGIC_OR_QUOTED_PATH + RE_EOL)
 
+def re_match_include_parse(line, rule_name):
+    '''Matches the path for include, include if exists and abi rules
 
-def re_match_include_parse(line):
-    '''Matches the path for include or include if exists.
+    rule_name can be 'include' or 'abi'
+
     Returns a tuple with
     - if the "if exists" condition is given
-    - the include path
+    - the include/abi path
     - if the path is a magic path (enclosed in <...>)
     '''
 
-    matches = RE_INCLUDE.search(line)
+    if rule_name == 'include':
+        matches = RE_INCLUDE.search(line)
+    elif rule_name == 'abi':
+        matches = RE_ABI.search(line)
+    else:
+        raise AppArmorBug('re_match_include_parse() called with invalid rule name %s' % rule_name)
 
     if not matches:
         return None, None, None
@@ -167,31 +174,31 @@ def re_match_include_parse(line):
     elif matches.group('unquotedpath'):
         # LP: #1738879 - parser doesn't handle unquoted paths everywhere
         # path = matches.group('unquotedpath').strip()
-        raise AppArmorException(_('Syntax error: #include must use quoted path or <...>'))
+        raise AppArmorException(_('Syntax error: %s must use quoted path or <...>') % rule_name)
     elif matches.group('quotedpath'):
         path = matches.group('quotedpath')
         # LP: 1738880 - parser doesn't handle relative paths everywhere, and
         # neither do we (see aa.py)
         if len(path) > 0 and path[0] != '/':
-            raise AppArmorException(_('Syntax error: #include must use quoted path or <...>'))
+            raise AppArmorException(_('Syntax error: %s must use quoted path or <...>') % rule_name)
 
     # if path is empty or the empty string
     if path is None or path == "":
-        raise AppArmorException(_('Syntax error: #include rule with empty filename'))
+        raise AppArmorException(_('Syntax error: %s rule with empty filename') % rule_name)
 
     # LP: #1738877 - parser doesn't handle files with spaces in the name
     if re.search('\s', path):
-        raise AppArmorException(_('Syntax error: #include rule filename cannot contain spaces'))
+        raise AppArmorException(_('Syntax error: %s rule filename cannot contain spaces') % rule_name)
 
     ifexists = False
-    if matches.group('ifexists'):
+    if rule_name == 'include' and matches.group('ifexists'):
         ifexists = True
 
     return path, ifexists, ismagic
 
 def re_match_include(line):
     ''' return path of a 'include' rule '''
-    (path, ifexists, ismagic) = re_match_include_parse(line)
+    (path, ifexists, ismagic) = re_match_include_parse(line, 'include')
 
     if not ifexists:
         return path

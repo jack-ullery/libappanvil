@@ -68,7 +68,7 @@ class IncludeRule(BaseRule):
         comment = parse_comment(matches)
 
         # TODO: move re_match_include_parse() from regex.py to this class after converting all code to use IncludeRule
-        path, ifexists, ismagic = re_match_include_parse(raw_rule)
+        path, ifexists, ismagic = re_match_include_parse(raw_rule, cls.rule_name)
 
         return IncludeRule(path, ifexists, ismagic,
                            audit=False, deny=False, allow_keyword=False, comment=comment)

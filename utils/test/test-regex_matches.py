@@ -567,10 +567,47 @@ class Test_re_match_include_parse(AATest):
         ('  /etc/fstab r,',                                     (None,                       None,      None )  ),
         ('/usr/include r,',                                     (None,                       None,      None )  ),
         ('/include r,',                                         (None,                       None,      None )  ),
+        ('abi <abi/4.19>,',                                     (None,                       None,      None )  ),  # abi rule
     ]
 
     def _run_test(self, params, expected):
-        self.assertEqual(re_match_include_parse(params), expected)
+        self.assertEqual(re_match_include_parse(params, 'include'), expected)
+
+class Test_re_match_include_parse_abi(AATest):
+    tests = [
+        #                                                         path                      if exists   magic path
+        ('abi <abi/4.19>,',                                     ('abi/4.19',                False,      True )  ),  # magic path
+        ('abi <abi/4.19>, # comment',                           ('abi/4.19',                False,      True )  ),
+        ('   abi    <abi/4.19>   ,    #    comment',            ('abi/4.19',                False,      True )  ),
+        ('abi "/abi/4.19" ,',                                   ('/abi/4.19',               False,      False)  ),  # quoted path starting with /
+        ('abi "/abi/4.19",     #  comment',                     ('/abi/4.19',               False,      False)  ),
+        ('  abi     "/abi/4.19"    ,    #      comment  ',      ('/abi/4.19',               False,      False)  ),
+#       ('  abi     "abi/4.19"    ,    #      comment  ',       ('abi/4.19',                False,      False)  ),  # quoted path, no leading /
+#       ('abi abi/4.19,',                                       ('abi/4.19',                False,      False)  ),  # without quotes
+        ('some abi <abi/4.19>,',                                (None,                      None,       None )  ),  # non-matching
+        ('  /etc/fstab r,',                                     (None,                      None,       None )  ),
+        ('/usr/abi r,',                                         (None,                      None,       None )  ),
+        ('/abi r,',                                             (None,                      None,       None )  ),
+        ('#include <abstractions/base>',                        (None,                      None,       None )  ),  # include rule path
+    ]
+
+    def _run_test(self, params, expected):
+        self.assertEqual(re_match_include_parse(params, 'abi'), expected)
+
+class Test_re_match_include_parse_empty_filename(AATest):
+    tests = [
+        (('include <>',             'include'),                 AppArmorException),
+        (('include ""',             'include'),                 AppArmorException),
+        (('include   ',             'include'),                 AppArmorException),
+        (('abi <>,',                'abi'),                     AppArmorException),
+        (('abi "",',                'abi'),                     AppArmorException),
+        (('abi   ,',                'abi'),                     AppArmorException),
+     ]
+
+    def _run_test(self, params, expected):
+        with self.assertRaises(expected):
+            rule, rule_name = params
+            re_match_include_parse(rule, rule_name)
 
 class TestStripParenthesis(AATest):
     tests = [
