@@ -2061,7 +2061,11 @@ def parse_profile_data(data, file, do_include):
             hat = matches.group('hat')
             hat = strip_quotes(hat)
 
-            # if hat is already known, the filelist check some lines below will error out.
+            if profile_data[profile].get(hat, False) and not do_include:
+                raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
+                    { 'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat) })
+
+            # if hat is already known, the check above will error out (if not do_include)
             # nevertheless, just to be sure, don't overwrite existing profile_data.
             if not profile_data[profile].get(hat, False):
                 profile_data[profile][hat] = ProfileStorage(profile, hat, 'parse_profile_data() hat_def')
@@ -2074,8 +2078,6 @@ def parse_profile_data(data, file, do_include):
             if initial_comment:
                 profile_data[profile][hat]['initial_comment'] = initial_comment
             initial_comment = ''
-            if filelist[file]['profiles'][profile].get(hat, False) and not do_include:
-                raise AppArmorException(_('Error: Multiple definitions for hat %(hat)s in profile %(profile)s.') % { 'hat': hat, 'profile': profile })
             filelist[file]['profiles'][profile][hat] = True
 
         elif line[0] == '#':
