@@ -121,3 +121,10 @@ class ProfileList:
                 return self.attachments[path]  # XXX this returns the first match, not necessarily the best one
 
         return None  # nothing found
+
+    def profiles_in_file(self, filename):
+        ''' Return list of profiles in the given file '''
+        if not self.files.get(filename):
+            raise AppArmorBug('%s not listed in ProfileList files' % filename)
+
+        return self.files[filename]['profiles']
