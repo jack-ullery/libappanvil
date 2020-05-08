@@ -570,8 +570,6 @@ def autodep(bin_name, pname=''):
         if not filelist.get(file, False):
             filelist[file] = hasher()
         filelist[file]['include']['tunables/global'] = True
-        filelist[file]['profiles'][pname] = hasher()
-        filelist[file]['profiles'][pname][pname] = True
     write_profile_ui_feedback(pname)
 
 def get_profile_flags(filename, program):
@@ -998,9 +996,6 @@ def ask_exec(hashlog):
                                     aa[profile][exec_target]['flags'] = aa[profile][profile]['flags']
 
                                 aa[profile][exec_target]['flags'] = 'complain'
-
-                                file_name = aa[profile][profile]['filename']
-                                filelist[file_name]['profiles'][profile][exec_target] = True
 
                                 if target_profile:
                                     hashlog[aamode][target_profile]['final_name'] = '%s//%s' % (profile, exec_target)
@@ -1818,7 +1813,6 @@ def parse_profile_data(data, file, do_include):
             # save profile name and filename
             profile_data[profile][hat]['name'] = profile
             profile_data[profile][hat]['filename'] = file
-            filelist[file]['profiles'][profile][hat] = True
 
             profile_data[profile][hat]['xattrs'] = xattrs
             profile_data[profile][hat]['flags'] = flags
@@ -2078,7 +2072,6 @@ def parse_profile_data(data, file, do_include):
             if initial_comment:
                 profile_data[profile][hat]['initial_comment'] = initial_comment
             initial_comment = ''
-            filelist[file]['profiles'][profile][hat] = True
 
         elif line[0] == '#':
             # Handle initial comments
