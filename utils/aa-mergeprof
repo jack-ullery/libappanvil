@@ -63,7 +63,7 @@ def find_profiles_from_files(files):
     profile_to_filename = dict()
     for file_name in files:
         apparmor.aa.read_profile(file_name, True)
-        for profile_name in apparmor.aa.filelist[file_name]['profiles'].keys():
+        for profile_name in apparmor.aa.active_profiles.profiles_in_file(file_name):
             profile_to_filename[profile_name] = file_name
         reset_aa()
 

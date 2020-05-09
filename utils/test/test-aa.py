@@ -576,10 +576,20 @@ class AaTest_parse_profile_data(AATest):
         self.assertEqual(prof['/foo']['/foo']['filename'], 'somefile')
         self.assertEqual(prof['/foo']['/foo']['flags'], None)
 
-    def test_parse_empty_profile_02(self):
+    def test_parse_duplicate_profile(self):
         with self.assertRaises(AppArmorException):
             # file contains two profiles with the same name
             parse_profile_data('profile /foo {\n}\nprofile /foo {\n}\n'.split(), 'somefile', False)
+
+    def test_parse_duplicate_child_profile(self):
+        with self.assertRaises(AppArmorException):
+            # file contains two child profiles with the same name
+            parse_profile_data('profile /foo {\nprofile /bar {\n}\nprofile /bar {\n}\n}\n'.split(), 'somefile', False)
+
+    def test_parse_duplicate_hat(self):
+        with self.assertRaises(AppArmorException):
+            # file contains two hats with the same name
+            parse_profile_data('profile /foo {\n^baz {\n}\n^baz {\n}\n}\n'.split(), 'somefile', False)
 
     def test_parse_xattrs_01(self):
         prof = parse_profile_data('/foo xattrs=(user.bar=bar) {\n}\n'.split(), 'somefile', False)

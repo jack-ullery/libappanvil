@@ -570,8 +570,6 @@ def autodep(bin_name, pname=''):
         if not filelist.get(file, False):
             filelist[file] = hasher()
         filelist[file]['include']['tunables/global'] = True
-        filelist[file]['profiles'][pname] = hasher()
-        filelist[file]['profiles'][pname][pname] = True
     write_profile_ui_feedback(pname)
 
 def get_profile_flags(filename, program):
@@ -998,9 +996,6 @@ def ask_exec(hashlog):
                                     aa[profile][exec_target]['flags'] = aa[profile][profile]['flags']
 
                                 aa[profile][exec_target]['flags'] = 'complain'
-
-                                file_name = aa[profile][profile]['filename']
-                                filelist[file_name]['profiles'][profile][exec_target] = True
 
                                 if target_profile:
                                     hashlog[aamode][target_profile]['final_name'] = '%s//%s' % (profile, exec_target)
@@ -1818,7 +1813,6 @@ def parse_profile_data(data, file, do_include):
             # save profile name and filename
             profile_data[profile][hat]['name'] = profile
             profile_data[profile][hat]['filename'] = file
-            filelist[file]['profiles'][profile][hat] = True
 
             profile_data[profile][hat]['xattrs'] = xattrs
             profile_data[profile][hat]['flags'] = flags
@@ -2061,7 +2055,11 @@ def parse_profile_data(data, file, do_include):
             hat = matches.group('hat')
             hat = strip_quotes(hat)
 
-            # if hat is already known, the filelist check some lines below will error out.
+            if profile_data[profile].get(hat, False) and not do_include:
+                raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
+                    { 'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat) })
+
+            # if hat is already known, the check above will error out (if not do_include)
             # nevertheless, just to be sure, don't overwrite existing profile_data.
             if not profile_data[profile].get(hat, False):
                 profile_data[profile][hat] = ProfileStorage(profile, hat, 'parse_profile_data() hat_def')
@@ -2074,9 +2072,6 @@ def parse_profile_data(data, file, do_include):
             if initial_comment:
                 profile_data[profile][hat]['initial_comment'] = initial_comment
             initial_comment = ''
-            if filelist[file]['profiles'][profile].get(hat, False) and not do_include:
-                raise AppArmorException(_('Error: Multiple definitions for hat %(hat)s in profile %(profile)s.') % { 'hat': hat, 'profile': profile })
-            filelist[file]['profiles'][profile][hat] = True
 
         elif line[0] == '#':
             # Handle initial comments
@@ -2298,7 +2293,7 @@ def serialize_profile(profile_data, name, options):
         data += active_profiles.get_clean(prof_filename, 0)
 
     #Here should be all the profiles from the files added write after global/common stuff
-    for prof in sorted(filelist[prof_filename]['profiles'].keys()):
+    for prof in sorted(active_profiles.profiles_in_file(prof_filename)):
         if prof != name:
             if original_aa[prof][prof].get('initial_comment', False):
                 comment = original_aa[prof][prof]['initial_comment']

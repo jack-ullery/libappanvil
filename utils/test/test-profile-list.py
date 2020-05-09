@@ -28,16 +28,19 @@ class TestAdd_profile(AATest):
         self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
         self.assertEqual(self.pl.profile_names, {'foo': '/etc/apparmor.d/bin.foo'})
         self.assertEqual(self.pl.attachments, {'/bin/foo': '/etc/apparmor.d/bin.foo'})
+        self.assertEqual(self.pl.profiles_in_file('/etc/apparmor.d/bin.foo'), ['foo'])
 
     def testAdd_profile_2(self):
         self.pl.add_profile('/etc/apparmor.d/bin.foo', None, '/bin/foo')
         self.assertEqual(self.pl.profile_names, {})
         self.assertEqual(self.pl.attachments, {'/bin/foo': '/etc/apparmor.d/bin.foo'})
+        self.assertEqual(self.pl.profiles_in_file('/etc/apparmor.d/bin.foo'), ['/bin/foo'])
 
     def testAdd_profile_3(self):
         self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', None)
         self.assertEqual(self.pl.profile_names, {'foo': '/etc/apparmor.d/bin.foo'})
         self.assertEqual(self.pl.attachments, {})
+        self.assertEqual(self.pl.profiles_in_file('/etc/apparmor.d/bin.foo'), ['foo'])
 
 
     def testAdd_profileError_1(self):
@@ -47,6 +50,11 @@ class TestAdd_profile(AATest):
     def testAdd_profileError_2(self):
         with self.assertRaises(AppArmorBug):
             self.pl.add_profile('/etc/apparmor.d/bin.foo', None, None)  # neither attachment or profile name
+
+    def testAdd_profileError_list_nonexisting_file(self):
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', None)
+        with self.assertRaises(AppArmorBug):
+            self.pl.profiles_in_file('/etc/apparmor.d/not.found')  # different filename
 
     def testAdd_profileError_twice_1(self):
         self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')

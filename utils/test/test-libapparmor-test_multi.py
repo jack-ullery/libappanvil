@@ -261,7 +261,6 @@ def logfile_to_profile(logfile):
         log_dict[aamode][profile][profile] = apparmor.aa.ProfileStorage('TEST DUMMY for empty parent profile', profile_dummy_file, 'logfile_to_profile()')
 
     apparmor.aa.filelist = apparmor.aa.hasher()
-    apparmor.aa.filelist[profile_dummy_file]['profiles'][profile] = True
 
     log_is_empty = True
 
