@@ -14,6 +14,7 @@
 
 from apparmor.aare import AARE
 from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.rule.abi import AbiRule, AbiRuleset
 from apparmor.rule.include import IncludeRule, IncludeRuleset
 
 # setup module translations
@@ -40,6 +41,7 @@ class ProfileList:
             return  # don't re-initialize / overwrite existing data
 
         self.files[filename] = {
+            'abi': AbiRuleset(),
             'inc_ie': IncludeRuleset(),
             'profiles': [],
         }
@@ -73,6 +75,16 @@ class ProfileList:
         else:
             self.files[filename]['profiles'].append(attachment)
 
+    def add_abi(self, filename, abi_rule):
+        ''' Store the given abi rule for the given profile filename preamble '''
+
+        if type(abi_rule) is not AbiRule:
+            raise AppArmorBug('Wrong type given to ProfileList: %s' % abi_rule)
+
+        self.init_file(filename)
+
+        self.files[filename]['abi'].add(abi_rule)
+
     def add_inc_ie(self, filename, inc_rule):
         ''' Store the given include / include if exists rule for the given profile filename preamble '''
         if type(inc_rule) is not IncludeRule:
@@ -88,6 +100,7 @@ class ProfileList:
             raise AppArmorBug('%s not listed in ProfileList files' % filename)
 
         data = []
+        data += self.files[filename]['abi'].get_raw(depth)
         data += self.files[filename]['inc_ie'].get_raw(depth)
         return data
 
@@ -97,7 +110,20 @@ class ProfileList:
             raise AppArmorBug('%s not listed in ProfileList files' % filename)
 
         data = []
+        # commented out for now because abi rules need to be written first - for now, use get_clean_first() instead
+        # data += self.files[filename]['abi'].get_clean_unsorted(depth)
         data += self.files[filename]['inc_ie'].get_clean_unsorted(depth)
+        return data
+
+    def get_clean_first(self, filename, depth=0):
+        ''' Get preamble rules for the given profile filename (in clean formatting) that need to be at the beginning.
+            This is a temporary function, and will be dropped / merged with get_clean() when the whole preamble is moved to ProfileList
+            '''
+        if not self.files.get(filename):
+            raise AppArmorBug('%s not listed in ProfileList files' % filename)
+
+        data = []
+        data += self.files[filename]['abi'].get_clean_unsorted(depth)
         return data
 
     def filename_from_profile_name(self, name):

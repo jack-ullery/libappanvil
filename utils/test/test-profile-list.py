@@ -14,6 +14,7 @@ from common_test import AATest, setup_all_loops
 
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.profile_list import ProfileList
+from apparmor.rule.abi import AbiRule
 from apparmor.rule.include import IncludeRule
 
 class TestAdd_profile(AATest):
@@ -135,6 +136,30 @@ class TestAdd_inc_ie(AATest):
     def testAdd_inc_ie_error_1(self):
         with self.assertRaises(AppArmorBug):
             self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', 'tunables/global')  # str insteadd of IncludeRule
+        self.assertEqual(list(self.pl.files.keys()), [])
+
+class TestAdd_abi(AATest):
+    def AASetup(self):
+        self.pl = ProfileList()
+
+    def testAdd_abi_1(self):
+        self.pl.add_abi('/etc/apparmor.d/bin.foo', AbiRule('abi/4.19', False, True))
+        self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
+        # self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])
+        self.assertEqual(self.pl.get_clean_first('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])  # TODO switch to get_clean() once merged
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])
+
+    def testAdd_abi_2(self):
+        self.pl.add_abi('/etc/apparmor.d/bin.foo', AbiRule('abi/4.19', False, True))
+        self.pl.add_abi('/etc/apparmor.d/bin.foo', AbiRule('foo', False, False))
+        self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
+        # self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', 'abi "foo",', ''])
+        self.assertEqual(self.pl.get_clean_first('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', 'abi "foo",', ''])  # TODO switch to get_clean() once merged
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', 'abi "foo",', ''])
+
+    def testAdd_abi_error_1(self):
+        with self.assertRaises(AppArmorBug):
+            self.pl.add_abi('/etc/apparmor.d/bin.foo', 'abi/4.19')  # str insteadd of AbiRule
         self.assertEqual(list(self.pl.files.keys()), [])
 
 class TestGet(AATest):
