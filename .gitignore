@@ -4,6 +4,9 @@ binutils/aa-enabled
 binutils/aa-enabled.1
 binutils/aa-exec
 binutils/aa-exec.1
+binutils/aa-status
+binutils/aa-status.8
+binutils/cJSON.o
 binutils/po/*.mo
 parser/po/*.mo
 parser/af_names.h
