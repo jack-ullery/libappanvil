@@ -582,8 +582,8 @@ class Test_re_match_include_parse_abi(AATest):
         ('abi "/abi/4.19" ,',                                   ('/abi/4.19',               False,      False)  ),  # quoted path starting with /
         ('abi "/abi/4.19",     #  comment',                     ('/abi/4.19',               False,      False)  ),
         ('  abi     "/abi/4.19"    ,    #      comment  ',      ('/abi/4.19',               False,      False)  ),
-#       ('  abi     "abi/4.19"    ,    #      comment  ',       ('abi/4.19',                False,      False)  ),  # quoted path, no leading /
-#       ('abi abi/4.19,',                                       ('abi/4.19',                False,      False)  ),  # without quotes
+        ('  abi     "abi/4.19"    ,    #      comment  ',       ('abi/4.19',                False,      False)  ),  # quoted path, no leading /
+        ('abi abi/4.19,',                                       ('abi/4.19',                False,      False)  ),  # without quotes
         ('some abi <abi/4.19>,',                                (None,                      None,       None )  ),  # non-matching
         ('  /etc/fstab r,',                                     (None,                      None,       None )  ),
         ('/usr/abi r,',                                         (None,                      None,       None )  ),

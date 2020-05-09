@@ -172,14 +172,17 @@ def re_match_include_parse(line, rule_name):
         path = matches.group('magicpath').strip()
         ismagic = True
     elif matches.group('unquotedpath'):
+        path = matches.group('unquotedpath').strip()
+        if re.search('\s', path):
+            raise AppArmorException(_('Syntax error: %s must use quoted path or <...>') % rule_name)
         # LP: #1738879 - parser doesn't handle unquoted paths everywhere
-        # path = matches.group('unquotedpath').strip()
-        raise AppArmorException(_('Syntax error: %s must use quoted path or <...>') % rule_name)
+        if rule_name == 'include':
+            raise AppArmorException(_('Syntax error: %s must use quoted path or <...>') % rule_name)
     elif matches.group('quotedpath'):
         path = matches.group('quotedpath')
         # LP: 1738880 - parser doesn't handle relative paths everywhere, and
         # neither do we (see aa.py)
-        if len(path) > 0 and path[0] != '/':
+        if rule_name == 'include' and len(path) > 0 and path[0] != '/':
             raise AppArmorException(_('Syntax error: %s must use quoted path or <...>') % rule_name)
 
     # if path is empty or the empty string
@@ -187,7 +190,7 @@ def re_match_include_parse(line, rule_name):
         raise AppArmorException(_('Syntax error: %s rule with empty filename') % rule_name)
 
     # LP: #1738877 - parser doesn't handle files with spaces in the name
-    if re.search('\s', path):
+    if rule_name == 'include' and re.search('\s', path):
         raise AppArmorException(_('Syntax error: %s rule filename cannot contain spaces') % rule_name)
 
     ifexists = False
