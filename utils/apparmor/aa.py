@@ -1919,7 +1919,7 @@ def parse_profile_data(data, file, do_include):
 
         elif AbiRule.match(line):
             if profile:
-                profile_data[profile][hat]['abi'].append(line)
+                profile_data[profile][hat]['abi'].add(AbiRule.parse(line))
             else:
                 active_profiles.add_abi(file, AbiRule.parse(line))
 

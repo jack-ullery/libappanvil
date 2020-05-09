@@ -13,7 +13,7 @@ include if exists <tunables/nothing>
 
 
 /usr/bin/a/simple/cleanprof/test/profile {
-  abi  "abi/4.20"    ,
+  abi "abi/4.20",
 
   #include <abstractions/base>
 
