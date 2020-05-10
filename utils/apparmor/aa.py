@@ -1476,7 +1476,7 @@ def do_logprof_pass(logmark=''):
 def save_profiles():
     # Ensure the changed profiles are actual active profiles
     for prof_name in changed.keys():
-        if not is_active_profile(prof_name):
+        if not aa.get(prof_name, False):
             print("*** save_profiles(): removing %s" % prof_name)
             print('*** This should not happen. Please open a bugreport!')
             changed.pop(prof_name)
@@ -2150,12 +2150,6 @@ def separate_vars(vs):
         raise AppArmorException('Variable assignments contains invalid parts (unbalanced quotes?): %s' % vs)
 
     return data
-
-def is_active_profile(pname):
-    if aa.get(pname, False):
-        return True
-    else:
-        return False
 
 def store_list_var(var, list_var, value, var_operation, filename):
     """Store(add new variable or add values to variable) the variables encountered in the given list_var
