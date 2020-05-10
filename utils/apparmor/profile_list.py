@@ -13,7 +13,8 @@
 # ----------------------------------------------------------------------
 
 from apparmor.aare import AARE
-from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.profile_storage import write_alias
 from apparmor.rule.abi import AbiRule, AbiRuleset
 from apparmor.rule.include import IncludeRule, IncludeRuleset
 
@@ -42,6 +43,7 @@ class ProfileList:
 
         self.files[filename] = {
             'abi': AbiRuleset(),
+            'alias': {},
             'inc_ie': IncludeRuleset(),
             'profiles': [],
         }
@@ -85,6 +87,22 @@ class ProfileList:
 
         self.files[filename]['abi'].add(abi_rule)
 
+    def add_alias(self, filename, alias, target):
+        ''' Store the given alias rule for the given profile filename preamble '''
+
+        if not type_is_str(alias):
+            raise AppArmorBug('Wrong type given to ProfileList: %s' % alias)
+        if not type_is_str(target):
+            raise AppArmorBug('Wrong type given to ProfileList: %s' % target)
+
+        self.init_file(filename)
+
+        # allowed in the parser
+        # if self.files[filename]['alias'].get(alias):
+        #     raise AppArmorException('Trying to re-define alias %s' % alias)
+
+        self.files[filename]['alias'][alias] = target
+
     def add_inc_ie(self, filename, inc_rule):
         ''' Store the given include / include if exists rule for the given profile filename preamble '''
         if type(inc_rule) is not IncludeRule:
@@ -101,6 +119,7 @@ class ProfileList:
 
         data = []
         data += self.files[filename]['abi'].get_raw(depth)
+        data += write_alias(self.files[filename], 0)
         data += self.files[filename]['inc_ie'].get_raw(depth)
         return data
 
@@ -112,6 +131,7 @@ class ProfileList:
         data = []
         # commented out for now because abi rules need to be written first - for now, use get_clean_first() instead
         # data += self.files[filename]['abi'].get_clean_unsorted(depth)
+        # data += write_alias(self.files[filename], 0)
         data += self.files[filename]['inc_ie'].get_clean_unsorted(depth)
         return data
 
@@ -124,6 +144,7 @@ class ProfileList:
 
         data = []
         data += self.files[filename]['abi'].get_clean_unsorted(depth)
+        data += write_alias(self.files[filename], 0)
         return data
 
     def filename_from_profile_name(self, name):
