@@ -14,7 +14,7 @@
 
 from apparmor.aare import AARE
 from apparmor.common import AppArmorBug, AppArmorException, type_is_str
-from apparmor.profile_storage import write_alias
+from apparmor.rule import quote_if_needed
 from apparmor.rule.abi import AbiRule, AbiRuleset
 from apparmor.rule.include import IncludeRule, IncludeRuleset
 
@@ -175,3 +175,15 @@ class ProfileList:
             raise AppArmorBug('%s not listed in ProfileList files' % filename)
 
         return self.files[filename]['profiles']
+
+def write_alias(prof_data, depth):
+    pre = '  ' * depth
+    data = []
+
+    if prof_data['alias']:
+        for key in sorted(prof_data['alias'].keys()):
+            data.append('%salias %s -> %s,' % (pre, quote_if_needed(key), quote_if_needed(prof_data['alias'][key])))
+
+        data.append('')
+
+    return data
