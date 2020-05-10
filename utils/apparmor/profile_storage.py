@@ -61,7 +61,6 @@ class ProfileStorage:
         for rule in ruletypes:
             data[rule] = ruletypes[rule]['ruleset']()
 
-        data['alias']            = dict()
         data['include']          = dict()
         data['lvar']             = dict()
 
@@ -142,7 +141,6 @@ class ProfileStorage:
 
         # "old" write functions for rule types not implemented as *Rule class yet
         write_functions = {
-            'alias': write_alias,
             'include': write_includes,
             'lvar': write_list_vars,
             'mount': write_mount,
@@ -152,7 +150,6 @@ class ProfileStorage:
 
         write_order = [
             'abi',
-            'alias',
             'lvar',
             'include',
             'inc_ie',
