@@ -2205,18 +2205,6 @@ def write_header(prof_data, depth, name, embedded_hat, write_flags):
 
     return data
 
-def write_rules(prof_data, depth):
-    if type(prof_data) is not ProfileStorage:
-        # TODO: find out why prof_data is not a ProfileStorage object in 11 of the libapparmor test_multi testcases
-        #       (mostly seems to affect profiles with child profiles, which could mean the libapparmor test code
-        #       doesn't initialize empty parent profiles.)
-        #       "normal" aa-logprof usage doesn't seem to trigger this
-
-        print('*** WARNING: prof_data is not a ProfileStorage object ***')
-        return []
-
-    return prof_data.get_rules_clean(depth)
-
 def write_piece(profile_data, depth, name, nhat, write_flags):
     pre = '  ' * depth
     data = []
@@ -2229,7 +2217,7 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
         name = nhat
         inhat = True
     data += write_header(profile_data[name], depth, wname, False, write_flags)
-    data += write_rules(profile_data[name], depth + 1)
+    data += profile_data[name].get_rules_clean(depth + 1)
 
     pre2 = '  ' * (depth + 1)
 
@@ -2243,7 +2231,7 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
                 else:
                     data += write_header(profile_data[hat], depth + 1, '^' + hat, True, write_flags)
 
-                data += write_rules(profile_data[hat], depth + 2)
+                data += profile_data[hat].get_rules_clean(depth + 2)
 
                 data.append('%s}' % pre2)
 
