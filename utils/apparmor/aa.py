@@ -38,7 +38,7 @@ from apparmor.common import (AppArmorException, AppArmorBug, open_file_read, val
 import apparmor.ui as aaui
 
 from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
-                            RE_ABI, RE_PROFILE_ALIAS,
+                            RE_PROFILE_ALIAS,
                             RE_PROFILE_BOOLEAN, RE_PROFILE_VARIABLE, RE_PROFILE_CONDITIONAL,
                             RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
                             RE_PROFILE_CHANGE_HAT,
@@ -50,10 +50,11 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
 from apparmor.profile_list import ProfileList
 
 from apparmor.profile_storage import (ProfileStorage, add_or_remove_flag, ruletypes, write_alias,
-                            write_abi, write_includes, write_list_vars )
+                            write_includes, write_list_vars )
 
 import apparmor.rules as aarules
 
+from apparmor.rule.abi              import AbiRule
 from apparmor.rule.capability       import CapabilityRule
 from apparmor.rule.change_profile   import ChangeProfileRule
 from apparmor.rule.dbus             import DbusRule
@@ -1910,15 +1911,11 @@ def parse_profile_data(data, file, do_include):
             # Conditional Boolean defined
             pass
 
-        elif RE_ABI.search(line):
+        elif AbiRule.match(line):
             if profile:
-                profile_data[profile][hat]['abi'].append(line)
+                profile_data[profile][hat]['abi'].add(AbiRule.parse(line))
             else:
-                if not filelist.get(file):
-                    filelist[file] = hasher()
-                if not filelist[file].get('abi'):
-                    filelist[file]['abi'] = []
-                filelist[file]['abi'].append(line)
+                active_profiles.add_abi(file, AbiRule.parse(line))
 
         elif re_match_include(line):
             # Include files
@@ -2285,7 +2282,7 @@ def serialize_profile(profile_data, name, options):
         prof_filename = get_profile_filename_from_profile_name(name, True)
 
     if filelist.get(prof_filename, False):
-        data += write_abi(filelist[prof_filename], 0)
+        data += active_profiles.get_clean_first(prof_filename, 0)
         data += write_alias(filelist[prof_filename], 0)
         data += write_list_vars(filelist[prof_filename], 0)
         data += write_includes(filelist[prof_filename], 0)

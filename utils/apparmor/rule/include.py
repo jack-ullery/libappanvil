@@ -36,18 +36,18 @@ class IncludeRule(BaseRule):
 
         # include doesn't support audit or deny
         if audit:
-            raise AppArmorBug('Attempt to initialize IncludeRule with audit flag')
+            raise AppArmorBug('Attempt to initialize %s with audit flag' % self.__class__.__name__)
         if deny:
-            raise AppArmorBug('Attempt to initialize IncludeRule with deny flag')
+            raise AppArmorBug('Attempt to initialize %s with deny flag' % self.__class__.__name__)
 
         if type(ifexists) is not bool:
-            raise AppArmorBug('Passed unknown type for ifexists to IncludeRule: %s' % ifexists)
+            raise AppArmorBug('Passed unknown type for ifexists to %s: %s' % (self.__class__.__name__, ifexists))
         if type(ismagic) is not bool:
-            raise AppArmorBug('Passed unknown type for ismagic to IncludeRule: %s' % ismagic)
+            raise AppArmorBug('Passed unknown type for ismagic to %s: %s' % (self.__class__.__name__, ismagic))
         if not type_is_str(path):
-            raise AppArmorBug('Passed unknown type for path to IncludeRule: %s' % path)
+            raise AppArmorBug('Passed unknown type for path to %s: %s' % (self.__class__.__name__, path))
         if not path:
-            raise AppArmorBug('Passed empty path to IncludeRule: %s' % path)
+            raise AppArmorBug('Passed empty path to %s: %s' % (self.__class__.__name__, path))
 
         self.path = path
         self.ifexists = ifexists
@@ -63,14 +63,14 @@ class IncludeRule(BaseRule):
 
         matches = cls._match(raw_rule)
         if not matches:
-            raise AppArmorException(_("Invalid include rule '%s'") % raw_rule)
+            raise AppArmorException(_("Invalid %s rule '%s'") % (cls.rule_name, raw_rule))
 
         comment = parse_comment(matches)
 
         # TODO: move re_match_include_parse() from regex.py to this class after converting all code to use IncludeRule
-        path, ifexists, ismagic = re_match_include_parse(raw_rule)
+        path, ifexists, ismagic = re_match_include_parse(raw_rule, cls.rule_name)
 
-        return IncludeRule(path, ifexists, ismagic,
+        return cls(path, ifexists, ismagic,
                            audit=False, deny=False, allow_keyword=False, comment=comment)
 
     def get_clean(self, depth=0):
@@ -83,9 +83,9 @@ class IncludeRule(BaseRule):
             ifexists_txt = ' if exists'
 
         if self.ismagic:
-            return('%sinclude%s <%s>%s' % (space, ifexists_txt, self.path, self.comment))
+            return('%s%s%s <%s>%s' % (space, self.rule_name, ifexists_txt, self.path, self.comment))
         else:
-            return('%sinclude%s "%s"%s' % (space, ifexists_txt, self.path, self.comment))
+            return('%s%s%s "%s"%s' % (space, self.rule_name, ifexists_txt, self.path, self.comment))
 
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
@@ -105,8 +105,8 @@ class IncludeRule(BaseRule):
     def is_equal_localvars(self, rule_obj, strict):
         '''compare if rule-specific variables are equal'''
 
-        if not type(rule_obj) == IncludeRule:
-            raise AppArmorBug('Passed non-include rule: %s' % str(rule_obj))
+        if not type(rule_obj) == type(self):
+            raise AppArmorBug('Passed non-%s rule: %s' % (self.rule_name, str(rule_obj)))
 
         if (self.path != rule_obj.path):
             return False
