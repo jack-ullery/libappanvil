@@ -119,7 +119,7 @@ class ProfileList:
 
         data = []
         data += self.files[filename]['abi'].get_raw(depth)
-        data += write_alias(self.files[filename], 0)
+        data += write_alias(self.files[filename])
         data += self.files[filename]['inc_ie'].get_raw(depth)
         return data
 
@@ -131,7 +131,7 @@ class ProfileList:
         data = []
         # commented out for now because abi rules need to be written first - for now, use get_clean_first() instead
         # data += self.files[filename]['abi'].get_clean_unsorted(depth)
-        # data += write_alias(self.files[filename], 0)
+        # data += write_alias(self.files[filename])
         data += self.files[filename]['inc_ie'].get_clean_unsorted(depth)
         return data
 
@@ -144,7 +144,7 @@ class ProfileList:
 
         data = []
         data += self.files[filename]['abi'].get_clean_unsorted(depth)
-        data += write_alias(self.files[filename], 0)
+        data += write_alias(self.files[filename])
         return data
 
     def filename_from_profile_name(self, name):
@@ -176,13 +176,12 @@ class ProfileList:
 
         return self.files[filename]['profiles']
 
-def write_alias(prof_data, depth):
-    pre = '  ' * depth
+def write_alias(prof_data):
     data = []
 
     if prof_data['alias']:
         for key in sorted(prof_data['alias'].keys()):
-            data.append('%salias %s -> %s,' % (pre, quote_if_needed(key), quote_if_needed(prof_data['alias'][key])))
+            data.append('alias %s -> %s,' % (quote_if_needed(key), quote_if_needed(prof_data['alias'][key])))
 
         data.append('')
 
