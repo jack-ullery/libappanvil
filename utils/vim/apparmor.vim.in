@@ -113,7 +113,7 @@ syn match sdError /^.*$/ contains=sdComment "highlight all non-valid lines as er
 " TODO: make a separate pattern for variable definitions, then mark sdGlob as contained
 syn match sdGlob /\v\?|\*|\{.*,.*\}|[[^\]]\+\]|\@\{[a-zA-Z][a-zA-Z0-9_]*\}/
 
-syn match sdAlias /\v^alias\s+@@FILENAME@@\s+-\>\s+@@FILENAME@@@@EOL@@/ contains=sdGlob,sdComment
+syn match sdAlias /\v^\s*alias\s+@@FILENAME@@\s+-\>\s+@@FILENAME@@@@EOL@@/ contains=sdGlob,sdComment
 
 " syn match sdComment /#.*/
 
