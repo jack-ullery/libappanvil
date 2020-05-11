@@ -1688,7 +1688,8 @@ def read_profile(file, active_profile):
     try:
         with open_file_read(file) as f_in:
             data = f_in.readlines()
-    except IOError:
+    except IOError as e:
+        aaui.UI_Important('WARNING: Error reading file %s, skipping.\n    %s' % (file, e))
         debug_logger.debug("read_profile: can't read %s - skipping" % file)
         return None
 
