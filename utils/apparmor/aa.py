@@ -49,7 +49,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
 
 from apparmor.profile_list import ProfileList
 
-from apparmor.profile_storage import (ProfileStorage, add_or_remove_flag, ruletypes, write_alias,
+from apparmor.profile_storage import (ProfileStorage, add_or_remove_flag, ruletypes,
                             write_includes, write_list_vars )
 
 import apparmor.rules as aarules
@@ -1860,9 +1860,7 @@ def parse_profile_data(data, file, do_include):
                 raise AppArmorException(_('Syntax Error: Unexpected alias definition found inside profile in file: %(file)s line: %(line)s') % {
                         'file': file, 'line': lineno + 1 })
             else:
-                if not filelist.get(file, False):
-                    filelist[file] = hasher()
-                filelist[file]['alias'][from_name] = to_name
+                active_profiles.add_alias(file, from_name, to_name)
 
         elif RlimitRule.match(line):
             if not profile:
@@ -2265,7 +2263,6 @@ def serialize_profile(profile_data, name, options):
 
     if filelist.get(prof_filename, False):
         data += active_profiles.get_clean_first(prof_filename, 0)
-        data += write_alias(filelist[prof_filename], 0)
         data += write_list_vars(filelist[prof_filename], 0)
         data += write_includes(filelist[prof_filename], 0)
 
