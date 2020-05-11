@@ -19,6 +19,7 @@ class Prof(object):
         apparmor.init_aa()
         self.aa = apparmor.aa
         self.filelist = apparmor.filelist
+        self.active_profiles = apparmor.active_profiles
         self.include = apparmor.include
         self.filename = filename
 
