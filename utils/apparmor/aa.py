@@ -1111,7 +1111,7 @@ def ask_the_questions(log_dict):
                     elif ans == 'CMD_ALLOW':
                         selection = options[selected]
                         inc = re_match_include(selection)
-                        deleted = apparmor.aa.delete_duplicates(aa[profile][hat], inc)
+                        deleted = delete_all_duplicates(aa[profile][hat], inc, ruletypes)
                         aa[profile][hat]['include'][inc] = True
                         options.pop(selected)
                         aaui.UI_Info(_('Adding %s to the file.') % selection)
@@ -1220,7 +1220,7 @@ def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
 
                                 inc = re_match_include(selection)
                                 if inc:
-                                    deleted = delete_duplicates(the_profile, inc)
+                                    deleted = delete_all_duplicates(the_profile, inc, r_types)
 
                                     the_profile['include'][inc] = True
 
@@ -1368,17 +1368,17 @@ def add_to_options(options, newpath):
     default_option = options.index(newpath) + 1
     return (options, default_option)
 
-def delete_duplicates(profile, incname):
+def delete_all_duplicates(profile, incname, r_types):
     deleted = 0
     # Allow rules covered by denied rules shouldn't be deleted
     # only a subset allow rules may actually be denied
 
     if include.get(incname, False):
-        for rule_type in ruletypes:
+        for rule_type in r_types:
             deleted += profile[rule_type].delete_duplicates(include[incname][incname][rule_type])
 
     elif filelist.get(incname, False):
-        for rule_type in ruletypes:
+        for rule_type in r_types:
             deleted += profile[rule_type].delete_duplicates(filelist[incname][incname][rule_type])
 
     return deleted
