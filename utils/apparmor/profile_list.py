@@ -37,6 +37,9 @@ class ProfileList:
         self.attachments_AARE = {}  # AARE(attachment) -> filename
         self.files = {}             # filename -> content - see init_file()
 
+    def __repr__(self):
+        return('\n<ProfileList>\n%s\n</ProfileList>\n' % '\n'.join(self.files))
+
     def init_file(self, filename):
         if self.files.get(filename):
             return  # don't re-initialize / overwrite existing data
