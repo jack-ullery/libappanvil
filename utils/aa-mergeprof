@@ -23,7 +23,6 @@ import apparmor.cleanprofile as cleanprofile
 import apparmor.ui as aaui
 
 from apparmor.common import AppArmorException
-from apparmor.regex import re_match_include
 
 
 # setup exception handling
@@ -130,38 +129,6 @@ class Merge(object):
         log_dict = {'merge': other.aa}
 
         apparmor.aa.loadincludes()
-        done = False
-
-        #Add the file-wide includes from the other profile to the user profile
-        options = []
-        for inc in other.filelist[other.filename]['include'].keys():
-            if not inc in self.user.filelist[self.user.filename]['include'].keys():
-                if inc.startswith('/'):
-                    options.append('#include "%s"' %inc)
-                else:
-                    options.append('#include <%s>' %inc)
-
-        default_option = 1
-
-        q = aaui.PromptQuestion()
-        q.options = options
-        q.selected = default_option - 1
-        q.headers = [_('File includes'), _('Select the ones you wish to add')]
-        q.functions = ['CMD_ALLOW', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
-        q.default = 'CMD_ALLOW'
-
-        while not done and options:
-            ans, selected = q.promptUser()
-            if ans == 'CMD_IGNORE_ENTRY':
-                done = True
-            elif ans == 'CMD_ALLOW':
-                selection = options[selected]
-                inc = re_match_include(selection)
-                self.user.filelist[self.user.filename]['include'][inc] = True
-                options.pop(selected)
-                aaui.UI_Info(_('Adding %s to the file.') % selection)
-            elif ans == 'CMD_FINISHED':
-                return
 
         if not apparmor.aa.sev_db:
             apparmor.aa.sev_db = apparmor.severity.Severity(apparmor.aa.CONFDIR + '/severity.db', _('unknown'))

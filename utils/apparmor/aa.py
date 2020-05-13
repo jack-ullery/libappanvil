@@ -1092,42 +1092,6 @@ def ask_the_questions(log_dict):
                         aa[profile][hat] = ProfileStorage(profile, hat, 'mergeprof ask_the_questions() - missing hat')
                         aa[profile][hat]['profile'] = False
 
-                #Add the includes from the other profile to the user profile
-                done = False
-
-                options = []
-                for inc in log_dict[aamode][profile][hat]['include'].keys():
-                    if not inc in aa[profile][hat]['include'].keys():
-                        if inc.startswith('/'):
-                            options.append('#include "%s"' %inc)
-                        else:
-                            options.append('#include <%s>' %inc)
-
-                default_option = 1
-
-                q = aaui.PromptQuestion()
-                q.options = options
-                q.selected = default_option - 1
-                q.headers = [_('File includes'), _('Select the ones you wish to add')]
-                q.functions = ['CMD_ALLOW', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
-                q.default = 'CMD_ALLOW'
-
-                while not done and options:
-                    ans, selected = q.promptUser()
-                    if ans == 'CMD_IGNORE_ENTRY':
-                        done = True
-                    elif ans == 'CMD_ALLOW':
-                        selection = options[selected]
-                        inc = re_match_include(selection)
-                        deleted = delete_all_duplicates(aa[profile][hat], inc, ruletypes)
-                        aa[profile][hat]['include'][inc] = True
-                        options.pop(selected)
-                        aaui.UI_Info(_('Adding %s to the file.') % selection)
-                        if deleted:
-                            aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
-                    elif ans == 'CMD_FINISHED':
-                        return
-
                 # check for and ask about conflicting exec modes
                 ask_conflict_mode(profile, hat, aa[profile][hat], log_dict[aamode][profile][hat])
 
