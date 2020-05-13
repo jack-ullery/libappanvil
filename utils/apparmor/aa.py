@@ -50,7 +50,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
 from apparmor.profile_list import ProfileList
 
 from apparmor.profile_storage import (ProfileStorage, add_or_remove_flag, ruletypes,
-                            write_includes, write_list_vars )
+                            write_list_vars )
 
 import apparmor.rules as aarules
 
@@ -443,6 +443,8 @@ def create_new_profile(localfile, is_stub=False):
     local_profile[localfile] = ProfileStorage('NEW', localfile, 'create_new_profile()')
     local_profile[localfile]['flags'] = 'complain'
     local_profile[localfile]['include']['abstractions/base'] = 1
+    # currently store in both 'include' (above) and 'inc_ie' (below). TODO: Drop 'include' once all code using it is migrated.
+    local_profile[localfile]['inc_ie'].add(IncludeRule('abstractions/base', False, True))
 
     if os.path.exists(localfile) and os.path.isfile(localfile):
         interpreter_path, abstraction = get_interpreter_and_abstraction(localfile)
@@ -453,6 +455,8 @@ def create_new_profile(localfile, is_stub=False):
 
             if abstraction:
                 local_profile[localfile]['include'][abstraction] = True
+                # currently store in both 'include' (above) and 'inc_ie' (below). TODO: Drop 'include' once all code using it is migrated.
+                local_profile[localfile]['inc_ie'].add(IncludeRule(abstraction, False, True))
 
             handle_binfmt(local_profile[localfile], interpreter_path)
         else:
@@ -571,6 +575,8 @@ def autodep(bin_name, pname=''):
         if not filelist.get(file, False):
             filelist[file] = hasher()
         filelist[file]['include']['tunables/global'] = True
+        # currently store in both 'include' (above) and 'inc_ie' (below). TODO: Drop 'include' once all code using it is migrated.
+        active_profiles.add_inc_ie(file, IncludeRule('tunables/global', False, True))
     write_profile_ui_feedback(pname)
 
 def get_profile_flags(filename, program):
@@ -946,6 +952,8 @@ def ask_exec(hashlog):
 
                                     if abstraction:
                                         aa[profile][hat]['include'][abstraction] = True
+                                        # currently store in both 'include' (above) and 'inc_ie' (below). TODO: Drop 'include' once all code using it is migrated.
+                                        aa[profile][hat]['inc_ie'].add(IncludeRule(abstraction, False, True))
 
                                     handle_binfmt(aa[profile][hat], interpreter_path)
 
@@ -1223,6 +1231,8 @@ def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
                                     deleted = delete_all_duplicates(the_profile, inc, r_types)
 
                                     the_profile['include'][inc] = True
+                                    # currently store in both 'include' (above) and 'inc_ie' (below). TODO: Drop 'include' once all code using it is migrated.
+                                    the_profile['inc_ie'].add(IncludeRule.parse(selection))
 
                                     aaui.UI_Info(_('Adding %s to profile.') % selection)
                                     if deleted:
@@ -1955,10 +1965,15 @@ def parse_profile_data(data, file, do_include):
 
             if profile:
                 profile_data[profile][hat]['include'][include_name] = True
+                # currently store in both 'include' (above) and 'inc_ie' (below). TODO: Drop 'include' once all code using it is migrated.
+                profile_data[profile][hat]['inc_ie'].add(IncludeRule.parse(line))
             else:
                 if not filelist.get(file):
                     filelist[file] = hasher()
                 filelist[file]['include'][include_name] = True
+                # currently store in both 'include' (above) and 'inc_ie' (below). TODO: Drop 'include' once all code using it is migrated.
+                active_profiles.add_inc_ie(file, IncludeRule.parse(line))
+
             # If include is a directory
             if os.path.isdir(get_include_path(include_name)):
                 for file_name in include_dir_filelist(profile_dir, include_name):
@@ -2298,7 +2313,6 @@ def serialize_profile(profile_data, name, options):
     if filelist.get(prof_filename, False):
         data += active_profiles.get_clean_first(prof_filename, 0)
         data += write_list_vars(filelist[prof_filename], 0)
-        data += write_includes(filelist[prof_filename], 0)
 
         data += active_profiles.get_clean(prof_filename, 0)
 

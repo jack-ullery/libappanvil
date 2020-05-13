@@ -219,21 +219,7 @@ def write_list_vars(ref, depth):
     return data
 
 def write_includes(prof_data, depth):
-    pre = '  ' * depth
-    data = []
-
-    for key in sorted(prof_data['include'].keys()):
-        if key.startswith('/'):
-            qkey = '"%s"' % key
-        else:
-            qkey = '<%s>' % quote_if_needed(key)
-
-        data.append('%s#include %s' % (pre, qkey))
-
-    if data:
-        data.append('')
-
-    return data
+    return []  # now handled via 'inc_ie' / IncludeRulset
 
 def var_transform(ref):
     data = []
