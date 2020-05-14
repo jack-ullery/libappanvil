@@ -1398,19 +1398,23 @@ def get_include_path(incname):
     return profile_dir + '/' + incname
 
 def match_includes(profile, rule_type, rule_obj):
+    ''' propose abstractions that allow the given rule '''
+
     newincludes = []
     for incname in include.keys():
+        # never propose includes that are already in the profile (shouldn't happen because of is_known_rule())
+        if profile and profile['include'].get(incname, False):
+            continue
+
         # XXX type check should go away once we init all profiles correctly
-        if valid_include(profile, incname) and include[incname][incname][rule_type].is_covered(rule_obj):
+        if valid_include(incname) and include[incname][incname][rule_type].is_covered(rule_obj):
             if include[incname][incname]['logprof_suggest'] != 'no':
                 newincludes.append(incname)
 
     return newincludes
 
-def valid_include(profile, incname):
-    if profile and profile['include'].get(incname, False):
-        return False
-
+def valid_include(incname):
+    ''' check if the given include file exists or is whitelisted in custom_includes '''
     if cfg['settings']['custom_includes']:
         for incm in cfg['settings']['custom_includes'].split():
             if incm == incname:
