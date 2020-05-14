@@ -92,12 +92,12 @@ def main():
         user_file = user_profile_to_file[profile_name]
         base_file = base_profile_to_file.get(profile_name, None)
 
-        act([user_file, base_file], profile_name)
+        act(user_file, base_file, profile_name)
 
         reset_aa()
 
-def act(files, merging_profile):
-    mergeprofiles = Merge(files)
+def act(user_file, base_file, merging_profile):
+    mergeprofiles = Merge(user_file, base_file)
     #Get rid of common/superfluous stuff
     mergeprofiles.clear_common()
 
@@ -133,9 +133,7 @@ def act(files, merging_profile):
 
 
 class Merge(object):
-    def __init__(self, profiles):
-        user, base = profiles
-
+    def __init__(self, user, base):
         #Read and parse base profile and save profile data, include data from it and reset them
         apparmor.aa.read_profile(base, True)
         self.base = cleanprofile.Prof(base)
