@@ -149,6 +149,21 @@ class TestAdd_inc_ie(AATest):
             self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', 'tunables/global')  # str insteadd of IncludeRule
         self.assertEqual(list(self.pl.files.keys()), [])
 
+    def test_dedup_inc_ie_1(self):
+        self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', IncludeRule.parse('include <tunables/global>'))
+        self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', IncludeRule.parse('#include if exists <tunables/global>  # comment'))
+        self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', IncludeRule.parse('   #include         <tunables/global>    '))
+        deleted = self.pl.delete_preamble_duplicates('/etc/apparmor.d/bin.foo')
+        self.assertEqual(deleted, 2)
+        self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['include <tunables/global>', ''])
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['include <tunables/global>', ''])
+
+    def test_dedup_error_1(self):
+        with self.assertRaises(AppArmorBug):
+            self.pl.delete_preamble_duplicates('/file/not/found')
+        self.assertEqual(list(self.pl.files.keys()), [])
+
 class TestAdd_abi(AATest):
     def AASetup(self):
         self.pl = ProfileList()
@@ -172,6 +187,15 @@ class TestAdd_abi(AATest):
         with self.assertRaises(AppArmorBug):
             self.pl.add_abi('/etc/apparmor.d/bin.foo', 'abi/4.19')  # str insteadd of AbiRule
         self.assertEqual(list(self.pl.files.keys()), [])
+
+    def test_dedup_abi_1(self):
+        self.pl.add_abi('/etc/apparmor.d/bin.foo', AbiRule.parse('abi <abi/4.19>,'))
+        self.pl.add_abi('/etc/apparmor.d/bin.foo', AbiRule.parse('   abi     <abi/4.19>  ,  # comment'))
+        self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
+        deleted = self.pl.delete_preamble_duplicates('/etc/apparmor.d/bin.foo')
+        self.assertEqual(deleted, 1)
+        self.assertEqual(self.pl.get_clean_first('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])  # TODO switch to get_clean() once merged
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])
 
 class TestAdd_alias(AATest):
     def AASetup(self):
@@ -209,6 +233,9 @@ class TestAdd_alias(AATest):
         with self.assertRaises(AppArmorBug):
             self.pl.add_alias('/etc/apparmor.d/bin.foo', '/foo', None)  # target None insteadd of str
         self.assertEqual(list(self.pl.files.keys()), [])
+
+#    def test_dedup_alias_1(self):
+#        TODO: implement after fixing alias handling (when a profile has two aliases with the same path on the left side)
 
 class TestGet(AATest):
     def AASetup(self):

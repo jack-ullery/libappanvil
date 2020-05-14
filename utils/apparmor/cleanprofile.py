@@ -46,9 +46,15 @@ class CleanProf(object):
 
     def remove_duplicate_rules(self, program):
         #Process the profile of the program
+
+        deleted = 0
+
+        # remove duplicate rules from the preamble
+        deleted += self.profile.active_profiles.delete_preamble_duplicates(self.profile.filename)
+
         #Process every hat in the profile individually
         file_includes = list(self.profile.filelist[self.profile.filename]['include'].keys())
-        deleted = 0
+
         for hat in sorted(self.profile.aa[program].keys()):
             #The combined list of includes from profile and the file
             includes = list(self.profile.aa[program][hat]['include'].keys()) + file_includes

@@ -116,6 +116,19 @@ class ProfileList:
 
         self.files[filename]['inc_ie'].add(inc_rule)
 
+    def delete_preamble_duplicates(self, filename):
+        ''' Delete duplicates in the preamble of the given profile file '''
+
+        if not self.files.get(filename):
+            raise AppArmorBug('%s not listed in ProfileList files' % filename)
+
+        deleted = 0
+
+        for r_type in ['abi', 'inc_ie']:  # TODO: don't hardcode
+            deleted += self.files[filename][r_type].delete_duplicates(None)  # None means not to check includes -- TODO check if this makes sense for all preamble rule types
+
+        return deleted
+
     def get_raw(self, filename, depth=0):
         ''' Get the preamble for the given profile filename (in original formatting) '''
         if not self.files.get(filename):

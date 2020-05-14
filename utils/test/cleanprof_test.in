@@ -3,6 +3,8 @@
 
 #include  if  exists <tunables/nothing>
 
+  #include if exists <tunables/global>
+  include if exists <tunables/global>
 
 		alias /foo    ->    /bar	,
 
