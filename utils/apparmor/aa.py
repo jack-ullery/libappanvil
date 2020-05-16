@@ -2339,22 +2339,27 @@ def is_known_rule(profile, rule_type, rule_obj):
         if profile[rule_type].is_covered(rule_obj, False):
             return True
 
-    includelist = list(profile['include'].keys())
+    includelist = profile['inc_ie'].get_all_full_paths(profile_dir)
     checked = []
 
     while includelist:
         incname = includelist.pop(0)
+
+        if incname in checked:
+            continue
         checked.append(incname)
 
-        if os.path.isdir(get_include_path(incname)):
-            includelist += include_dir_filelist(profile_dir, incname)
-        else:
-            if include[incname][incname][rule_type].is_covered(rule_obj, False):
-                return True
+        # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
+        if incname.startswith(profile_dir):
+            incname = incname.replace('%s/' % profile_dir, '')
 
-            for childinc in include[incname][incname]['include'].keys():
-                if childinc not in checked:
-                    includelist += [childinc]
+        if include[incname][incname][rule_type].is_covered(rule_obj, False):
+            return True
+
+        for childinc in include[incname][incname]['inc_ie'].rules:
+            for childinc_file in childinc.get_full_paths(profile_dir):
+                if childinc_file not in checked:
+                    includelist += [childinc_file]
 
     return False
 
