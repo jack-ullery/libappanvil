@@ -13,8 +13,9 @@
 # ----------------------------------------------------------------------
 
 from apparmor.regex import RE_INCLUDE, re_match_include_parse
-from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.common import AppArmorBug, AppArmorException, is_skippable_file, type_is_str
 from apparmor.rule import BaseRule, BaseRuleset, parse_comment
+import os
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -124,6 +125,34 @@ class IncludeRule(BaseRule):
             _('Include'), self.get_clean(),
         ]
 
+    def get_full_paths(self, profile_dir):
+        ''' get list of full paths of an include (can contain multiple paths if self.path is a directory) '''
+
+        # currently this section is based on aa.py get_include_path() (with variable names changed)
+        # TODO: improve/fix logic to honor magic vs. quoted include paths
+        if self.path.startswith('/'):
+            full_path = self.path
+        else:
+            full_path = os.path.join(profile_dir, self.path)
+
+        files = []
+
+        if os.path.isdir(full_path):
+            for path in os.listdir(full_path):
+                if is_skippable_file(path):
+                    continue
+
+                file_name = os.path.join(full_path, path)
+                if os.path.isfile(file_name):  # only add files, but not subdirectories etc.
+                    files.append(file_name)
+
+        elif os.path.exists(full_path):
+            files.append(full_path)
+
+        elif self.ifexists == False:
+            files.append(full_path)  # add full_path even if it doesn't exist on disk. Might cause a 'file not found' error later.
+
+        return files
 
 class IncludeRuleset(BaseRuleset):
     '''Class to handle and store a collection of include rules'''

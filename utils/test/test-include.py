@@ -15,7 +15,10 @@
 
 import unittest
 from collections import namedtuple
-from common_test import AATest, setup_all_loops
+from common_test import AATest, setup_all_loops, write_file
+
+import os
+import shutil
 
 from apparmor.rule.include import IncludeRule, IncludeRuleset
 #from apparmor.rule import BaseRule
@@ -335,6 +338,45 @@ class IncludeLogprofHeaderTest(AATest):
     def _run_test(self, params, expected):
         obj = IncludeRule._parse(params)
         self.assertEqual(obj.logprof_header(), expected)
+
+class IncludeFullPathsTest(AATest):
+    def AASetup(self):
+        self.createTmpdir()
+
+        #copy the local profiles to the test directory
+        self.profile_dir = '%s/profiles' % self.tmpdir
+        shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
+
+        inc_dir = os.path.join(self.profile_dir, 'abstractions/inc.d')
+        os.mkdir(inc_dir, 0o755)
+        write_file(inc_dir, 'incfoo', '/incfoo r,')
+        write_file(inc_dir, 'incbar', '/incbar r,')
+        write_file(inc_dir, 'README', '# README')  # gets skipped
+
+        sub_dir = os.path.join(self.profile_dir, 'abstractions/inc.d/subdir')  # gets skipped
+        os.mkdir(sub_dir, 0o755)
+
+        empty_dir = os.path.join(self.profile_dir, 'abstractions/empty.d')
+        os.mkdir(empty_dir, 0o755)
+
+    tests = [
+        #                                                 @@ will be replaced with self.profile_dir
+        ('include <abstractions/base>',                 ['@@/abstractions/base']                                            ),
+#       ('include "foo"',                               ['@@/foo']                                                          ),  # TODO: adjust logic to honor quoted vs. magic paths (and allow quoted relative paths in re_match_include_parse())
+        ('include "/foo/bar"',                          ['/foo/bar']                                                        ),
+        ('include <abstractions/inc.d>',                ['@@/abstractions/inc.d/incfoo', '@@/abstractions/inc.d/incbar']    ),
+        ('include <abstractions/empty.d>',              []                                                                  ),
+        ('include <abstractions/not_found>',            ['@@/abstractions/not_found']                                       ),
+        ('include if exists <abstractions/not_found>',  []                                                                  ),
+    ]
+
+    def _run_test(self, params, expected):
+        exp2 = []
+        for path in expected:
+            exp2.append(path.replace('@@', self.profile_dir))
+
+        obj = IncludeRule._parse(params)
+        self.assertEqual(obj.get_full_paths(self.profile_dir), exp2)
 
 ## --- tests for IncludeRuleset --- #
 
