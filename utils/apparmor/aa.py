@@ -1400,8 +1400,14 @@ def match_includes(profile, rule_type, rule_obj):
 
     newincludes = []
     for incname in include.keys():
+        # TODO: improve/fix logic to honor magic vs. quoted include paths
+        if incname.startswith('/'):
+            is_magic = False
+        else:
+            is_magic = True
+
         # never propose includes that are already in the profile (shouldn't happen because of is_known_rule())
-        if profile and profile['include'].get(incname, False):
+        if profile and profile['inc_ie'].is_covered(IncludeRule(incname, False, is_magic)):
             continue
 
         # XXX type check should go away once we init all profiles correctly
