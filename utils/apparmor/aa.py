@@ -2357,7 +2357,7 @@ def get_file_perms(profile, path, audit, deny):
 
     perms = profile['file'].get_perms_for_path(path, audit, deny)
 
-    includelist = list(profile['include'].keys())
+    includelist = profile['inc_ie'].get_all_full_paths(profile_dir)
     checked = []
 
     while includelist:
@@ -2367,25 +2367,27 @@ def get_file_perms(profile, path, audit, deny):
             continue
         checked.append(incname)
 
-        if os.path.isdir(get_include_path(incname)):
-            includelist += include_dir_filelist(profile_dir, incname)
-        else:
-            incperms = include[incname][incname]['file'].get_perms_for_path(path, audit, deny)
+        # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
+        if incname.startswith(profile_dir):
+            incname = incname.replace('%s/' % profile_dir, '')
 
-            for allow_or_deny in ['allow', 'deny']:
-                for owner_or_all in ['all', 'owner']:
-                    for perm in incperms[allow_or_deny][owner_or_all]:
-                        perms[allow_or_deny][owner_or_all].add(perm)
+        incperms = include[incname][incname]['file'].get_perms_for_path(path, audit, deny)
 
-                    if 'a' in perms[allow_or_deny][owner_or_all] and 'w' in perms[allow_or_deny][owner_or_all]:
-                        perms[allow_or_deny][owner_or_all].remove('a')  # a is a subset of w, so remove it
+        for allow_or_deny in ['allow', 'deny']:
+            for owner_or_all in ['all', 'owner']:
+                for perm in incperms[allow_or_deny][owner_or_all]:
+                    perms[allow_or_deny][owner_or_all].add(perm)
 
-            for incpath in incperms['paths']:
-                perms['paths'].add(incpath)
+                if 'a' in perms[allow_or_deny][owner_or_all] and 'w' in perms[allow_or_deny][owner_or_all]:
+                    perms[allow_or_deny][owner_or_all].remove('a')  # a is a subset of w, so remove it
 
-            for childinc in include[incname][incname]['include'].keys():
-                if childinc not in checked:
-                    includelist += [childinc]
+        for incpath in incperms['paths']:
+            perms['paths'].add(incpath)
+
+        for childinc in include[incname][incname]['inc_ie'].rules:
+            for childinc_file in childinc.get_full_paths(profile_dir):
+                if childinc_file not in checked:
+                    includelist += [childinc_file]
 
     return perms
 
