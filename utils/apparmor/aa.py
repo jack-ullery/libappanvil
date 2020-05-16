@@ -1555,6 +1555,11 @@ def collapse_log(hashlog, ignore_null_profiles=True):
             profile, hat = split_name(hashlog[aamode][full_profile]['final_name'])  # XXX limited to two levels to avoid an Exception on nested child profiles or nested null-*
             # TODO: support nested child profiles
 
+            # used to avoid to accidently initialize aa[profile][hat] or calling is_known_rule() on events for a non-existing profile
+            hat_exists = False
+            if aa.get(profile) and aa[profile].get(hat):
+                hat_exists = True
+
             if True:
                 if not log_dict[aamode][profile].get(hat):
                     # with execs in ix mode, we already have ProfileStorage initialized and should keep the content it already has
@@ -1570,13 +1575,13 @@ def collapse_log(hashlog, ignore_null_profiles=True):
 
                         file_event = FileRule(path, mode, None, FileRule.ALL, owner=owner, log_event=True)
 
-                        if not is_known_rule(aa[profile][hat], 'file', file_event):
+                        if not hat_exists or not is_known_rule(aa[profile][hat], 'file', file_event):
                             log_dict[aamode][profile][hat]['file'].add(file_event)
                             # TODO: check for existing rules with this path, and merge them into one rule
 
                 for cap in hashlog[aamode][full_profile]['capability'].keys():
                     cap_event = CapabilityRule(cap, log_event=True)
-                    if not is_known_rule(aa[profile][hat], 'capability', cap_event):
+                    if not hat_exists or not is_known_rule(aa[profile][hat], 'capability', cap_event):
                         log_dict[aamode][profile][hat]['capability'].add(cap_event)
 
                 dbus = hashlog[aamode][full_profile]['dbus']
@@ -1599,20 +1604,21 @@ def collapse_log(hashlog, ignore_null_profiles=True):
                                             else:
                                                 raise AppArmorBug('unexpected dbus access: %s')
 
-                                            log_dict[aamode][profile][hat]['dbus'].add(dbus_event)
+                                            if not hat_exists or not is_known_rule(aa[profile][hat], 'dbus', dbus_event):
+                                                log_dict[aamode][profile][hat]['dbus'].add(dbus_event)
 
                 nd = hashlog[aamode][full_profile]['network']
                 for family in nd.keys():
                     for sock_type in nd[family].keys():
                         net_event = NetworkRule(family, sock_type, log_event=True)
-                        if not is_known_rule(aa[profile][hat], 'network', net_event):
+                        if not hat_exists or not is_known_rule(aa[profile][hat], 'network', net_event):
                             log_dict[aamode][profile][hat]['network'].add(net_event)
 
                 ptrace = hashlog[aamode][full_profile]['ptrace']
                 for peer in ptrace.keys():
                     for access in ptrace[peer].keys():
                         ptrace_event = PtraceRule(access, peer, log_event=True)
-                        if not is_known_rule(aa[profile][hat], 'ptrace', ptrace_event):
+                        if not hat_exists or not is_known_rule(aa[profile][hat], 'ptrace', ptrace_event):
                             log_dict[aamode][profile][hat]['ptrace'].add(ptrace_event)
 
                 sig = hashlog[aamode][full_profile]['signal']
@@ -1620,7 +1626,7 @@ def collapse_log(hashlog, ignore_null_profiles=True):
                     for access in sig[peer].keys():
                         for signal in sig[peer][access].keys():
                             signal_event = SignalRule(access, signal, peer, log_event=True)
-                            if not is_known_rule(aa[profile][hat], 'signal', signal_event):
+                            if not hat_exists or not is_known_rule(aa[profile][hat], 'signal', signal_event):
                                 log_dict[aamode][profile][hat]['signal'].add(signal_event)
 
     return log_dict
