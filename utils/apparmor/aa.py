@@ -32,7 +32,7 @@ from copy import deepcopy
 
 from apparmor.aare import AARE
 
-from apparmor.common import (AppArmorException, AppArmorBug, open_file_read, valid_path, hasher,
+from apparmor.common import (AppArmorException, AppArmorBug, is_skippable_file, open_file_read, valid_path, hasher,
                              split_name, open_file_write, DebugLogger)
 
 import apparmor.ui as aaui
@@ -1624,22 +1624,6 @@ def collapse_log(hashlog, ignore_null_profiles=True):
                                 log_dict[aamode][profile][hat]['signal'].add(signal_event)
 
     return log_dict
-
-def is_skippable_file(path):
-    """Returns True if filename matches something to be skipped (rpm or dpkg backup files, hidden files etc.)
-        The list of skippable files needs to be synced with apparmor initscript and libapparmor _aa_is_blacklisted()
-        path: filename (with or without directory)"""
-
-    basename = os.path.basename(path)
-
-    if not basename or basename[0] == '.' or basename == 'README':
-        return True
-
-    skippable_suffix = ('.dpkg-new', '.dpkg-old', '.dpkg-dist', '.dpkg-bak', '.dpkg-remove', '.pacsave', '.pacnew', '.rpmnew', '.rpmsave', '.orig', '.rej', '~')
-    if basename.endswith(skippable_suffix):
-        return True
-
-    return False
 
 def is_skippable_dir(path):
     if re.search('^(.*/)?(disable|cache|cache\.d|force-complain|lxc|\.git)/?$', path):

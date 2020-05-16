@@ -172,6 +172,22 @@ def get_directory_contents(path):
     files.sort()
     return files
 
+def is_skippable_file(path):
+    """Returns True if filename matches something to be skipped (rpm or dpkg backup files, hidden files etc.)
+        The list of skippable files needs to be synced with apparmor initscript and libapparmor _aa_is_blacklisted()
+        path: filename (with or without directory)"""
+
+    basename = os.path.basename(path)
+
+    if not basename or basename[0] == '.' or basename == 'README':
+        return True
+
+    skippable_suffix = ('.dpkg-new', '.dpkg-old', '.dpkg-dist', '.dpkg-bak', '.dpkg-remove', '.pacsave', '.pacnew', '.rpmnew', '.rpmsave', '.orig', '.rej', '~')
+    if basename.endswith(skippable_suffix):
+        return True
+
+    return False
+
 def open_file_read(path, encoding='UTF-8'):
     '''Open specified file read-only'''
     return open_file_anymode('r', path, encoding)
