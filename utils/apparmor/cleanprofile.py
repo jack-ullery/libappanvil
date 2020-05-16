@@ -54,18 +54,14 @@ class CleanProf(object):
 
         #Process every hat in the profile individually
         for hat in sorted(self.profile.aa[program].keys()):
-            includes = list(self.profile.aa[program][hat]['include'].keys())
-
-            #If different files remove duplicate includes in the other profile
-            if not self.same_file:
-                if self.other.aa[program].get(hat):  # carefully avoid to accidently initialize self.other.aa[program][hat]
-                    for inc in includes:
-                        if self.other.aa[program][hat]['include'].get(inc, False):
-                            self.other.aa[program][hat]['include'].pop(inc)
-                            deleted += 1
+            includes = self.profile.aa[program][hat]['inc_ie'].get_all_full_paths(apparmor.profile_dir)
 
             #Clean up superfluous rules from includes in the other profile
             for inc in includes:
+                # apparmor.include[] keys can be a) 'abstractions/foo' and b) '/full/path'
+                if inc.startswith(apparmor.profile_dir):
+                    inc = inc.replace('%s/' % apparmor.profile_dir, '')
+
                 if not self.profile.include.get(inc, {}).get(inc, False):
                     apparmor.load_include(inc)
                 if self.other.aa[program].get(hat):  # carefully avoid to accidently initialize self.other.aa[program][hat]
