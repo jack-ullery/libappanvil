@@ -156,4 +156,12 @@ class IncludeRule(BaseRule):
 
 class IncludeRuleset(BaseRuleset):
     '''Class to handle and store a collection of include rules'''
-    pass
+
+    def get_all_full_paths(self, profile_dir):
+        ''' get full path of all includes '''
+
+        paths = []
+        for rule_obj in self.rules:
+            paths += rule_obj.get_full_paths(profile_dir)
+
+        return paths
