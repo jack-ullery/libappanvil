@@ -1933,10 +1933,18 @@ def parse_profile_data(data, file, do_include):
 
         # IncludeRule can handle 'include' and 'include if exists' - place it after the "old" 'include' handling so that it only catches 'include if exists' for now
         elif IncludeRule.match(line):
+            rule_obj = IncludeRule.parse(line)
             if profile:
-                profile_data[profile][hat]['inc_ie'].add(IncludeRule.parse(line))
+                profile_data[profile][hat]['inc_ie'].add(rule_obj)
             else:
-                active_profiles.add_inc_ie(file, IncludeRule.parse(line))
+                active_profiles.add_inc_ie(file, rule_obj)
+
+            for incname in rule_obj.get_full_paths(profile_dir):
+                # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
+                if incname.startswith(profile_dir):
+                    incname = incname.replace('%s/' % profile_dir, '')
+
+                load_include(incname)
 
         elif NetworkRule.match(line):
             if not profile:
