@@ -1473,7 +1473,7 @@ def do_logprof_pass(logmark=''):
 
     save_profiles()
 
-def save_profiles():
+def save_profiles(is_mergeprof=False):
     # Ensure the changed profiles are actual active profiles
     for prof_name in changed.keys():
         if not aa.get(prof_name, False):
@@ -1488,6 +1488,8 @@ def save_profiles():
         q.title = 'Changed Local Profiles'
         q.explanation = _('The following local profiles were changed. Would you like to save them?')
         q.functions = ['CMD_SAVE_CHANGES', 'CMD_SAVE_SELECTED', 'CMD_VIEW_CHANGES', 'CMD_VIEW_CHANGES_CLEAN', 'CMD_ABORT']
+        if is_mergeprof:
+            q.functions = ['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ABORT', 'CMD_IGNORE_ENTRY']
         q.default = 'CMD_VIEW_CHANGES'
         q.selected = 0
         ans = ''
@@ -1526,6 +1528,9 @@ def save_profiles():
                 newprofile = serialize_profile(aa[which], which, {})
 
                 aaui.UI_Changes(oldprofile, newprofile)
+
+            elif ans == 'CMD_IGNORE_ENTRY':
+                changed.pop(options[arg])
 
         for profile_name in sorted(changed.keys()):
             write_profile_ui_feedback(profile_name)
