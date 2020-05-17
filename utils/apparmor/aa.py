@@ -442,8 +442,6 @@ def create_new_profile(localfile, is_stub=False):
     local_profile = hasher()
     local_profile[localfile] = ProfileStorage('NEW', localfile, 'create_new_profile()')
     local_profile[localfile]['flags'] = 'complain'
-    local_profile[localfile]['include']['abstractions/base'] = 1
-    # currently store in both 'include' (above) and 'inc_ie' (below). TODO: Drop 'include' once all code using it is migrated.
     local_profile[localfile]['inc_ie'].add(IncludeRule('abstractions/base', False, True))
 
     if os.path.exists(localfile) and os.path.isfile(localfile):
@@ -454,8 +452,6 @@ def create_new_profile(localfile, is_stub=False):
             local_profile[localfile]['file'].add(FileRule(interpreter_path, None, 'ix', FileRule.ALL, owner=False))
 
             if abstraction:
-                local_profile[localfile]['include'][abstraction] = True
-                # currently store in both 'include' (above) and 'inc_ie' (below). TODO: Drop 'include' once all code using it is migrated.
                 local_profile[localfile]['inc_ie'].add(IncludeRule(abstraction, False, True))
 
             handle_binfmt(local_profile[localfile], interpreter_path)
@@ -574,8 +570,6 @@ def autodep(bin_name, pname=''):
     if os.path.isfile(profile_dir + '/tunables/global'):
         if not filelist.get(file, False):
             filelist[file] = hasher()
-        filelist[file]['include']['tunables/global'] = True
-        # currently store in both 'include' (above) and 'inc_ie' (below). TODO: Drop 'include' once all code using it is migrated.
         active_profiles.add_inc_ie(file, IncludeRule('tunables/global', False, True))
     write_profile_ui_feedback(pname)
 
@@ -951,8 +945,6 @@ def ask_exec(hashlog):
                                     aa[profile][hat]['file'].add(FileRule(interpreter_path, None, 'ix', FileRule.ALL, owner=False))
 
                                     if abstraction:
-                                        aa[profile][hat]['include'][abstraction] = True
-                                        # currently store in both 'include' (above) and 'inc_ie' (below). TODO: Drop 'include' once all code using it is migrated.
                                         aa[profile][hat]['inc_ie'].add(IncludeRule(abstraction, False, True))
 
                                     handle_binfmt(aa[profile][hat], interpreter_path)
@@ -1194,8 +1186,6 @@ def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
                                 if inc:
                                     deleted = delete_all_duplicates(the_profile, inc, r_types)
 
-                                    the_profile['include'][inc] = True
-                                    # currently store in both 'include' (above) and 'inc_ie' (below). TODO: Drop 'include' once all code using it is migrated.
                                     the_profile['inc_ie'].add(IncludeRule.parse(selection))
 
                                     aaui.UI_Info(_('Adding %s to profile.') % selection)
@@ -1924,14 +1914,10 @@ def parse_profile_data(data, file, do_include):
             include_name = re_match_include(line)
 
             if profile:
-                profile_data[profile][hat]['include'][include_name] = True
-                # currently store in both 'include' (above) and 'inc_ie' (below). TODO: Drop 'include' once all code using it is migrated.
                 profile_data[profile][hat]['inc_ie'].add(IncludeRule.parse(line))
             else:
                 if not filelist.get(file):
                     filelist[file] = hasher()
-                filelist[file]['include'][include_name] = True
-                # currently store in both 'include' (above) and 'inc_ie' (below). TODO: Drop 'include' once all code using it is migrated.
                 active_profiles.add_inc_ie(file, IncludeRule.parse(line))
 
             # If include is a directory
