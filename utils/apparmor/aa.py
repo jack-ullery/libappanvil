@@ -2333,33 +2333,45 @@ def write_profile(profile, is_attachment=False):
 
     original_aa[profile] = deepcopy(aa[profile])
 
+def include_list_recursive(profile):
+    ''' get a list of all includes in a profile and its included files '''
+
+    includelist = profile['inc_ie'].get_all_full_paths(profile_dir)
+    full_list = []
+
+    while includelist:
+        incname = includelist.pop(0)
+
+        if incname in full_list:
+            continue
+        full_list.append(incname)
+
+        # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
+        if incname.startswith(profile_dir):
+            incname = incname.replace('%s/' % profile_dir, '')
+
+        for childinc in include[incname][incname]['inc_ie'].rules:
+            for childinc_file in childinc.get_full_paths(profile_dir):
+                if childinc_file not in full_list:
+                    includelist += [childinc_file]
+
+    return full_list
+
 def is_known_rule(profile, rule_type, rule_obj):
     # XXX get rid of get() checks after we have a proper function to initialize a profile
     if profile.get(rule_type, False):
         if profile[rule_type].is_covered(rule_obj, False):
             return True
 
-    includelist = profile['inc_ie'].get_all_full_paths(profile_dir)
-    checked = []
+    includelist = include_list_recursive(profile)
 
-    while includelist:
-        incname = includelist.pop(0)
-
-        if incname in checked:
-            continue
-        checked.append(incname)
-
+    for incname in includelist:
         # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
         if incname.startswith(profile_dir):
             incname = incname.replace('%s/' % profile_dir, '')
 
         if include[incname][incname][rule_type].is_covered(rule_obj, False):
             return True
-
-        for childinc in include[incname][incname]['inc_ie'].rules:
-            for childinc_file in childinc.get_full_paths(profile_dir):
-                if childinc_file not in checked:
-                    includelist += [childinc_file]
 
     return False
 
@@ -2368,16 +2380,9 @@ def get_file_perms(profile, path, audit, deny):
 
     perms = profile['file'].get_perms_for_path(path, audit, deny)
 
-    includelist = profile['inc_ie'].get_all_full_paths(profile_dir)
-    checked = []
+    includelist = include_list_recursive(profile)
 
-    while includelist:
-        incname = includelist.pop(0)
-
-        if incname in checked:
-            continue
-        checked.append(incname)
-
+    for incname in includelist:
         # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
         if incname.startswith(profile_dir):
             incname = incname.replace('%s/' % profile_dir, '')
@@ -2394,11 +2399,6 @@ def get_file_perms(profile, path, audit, deny):
 
         for incpath in incperms['paths']:
             perms['paths'].add(incpath)
-
-        for childinc in include[incname][incname]['inc_ie'].rules:
-            for childinc_file in childinc.get_full_paths(profile_dir):
-                if childinc_file not in checked:
-                    includelist += [childinc_file]
 
     return perms
 
