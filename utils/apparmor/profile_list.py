@@ -47,7 +47,6 @@ class ProfileList:
         self.files[filename] = {
             'abi': AbiRuleset(),
             'alias': {},
-            'include': {},  # not filled, but avoids errors in is_known_rule() and some other functions when aa-mergeprof asks about the preamble
             'inc_ie': IncludeRuleset(),
             'profiles': [],
         }
