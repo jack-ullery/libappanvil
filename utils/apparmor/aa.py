@@ -1909,27 +1909,6 @@ def parse_profile_data(data, file, do_include):
             else:
                 active_profiles.add_abi(file, AbiRule.parse(line))
 
-        elif re_match_include(line):
-            # Include files
-            include_name = re_match_include(line)
-
-            if profile:
-                profile_data[profile][hat]['inc_ie'].add(IncludeRule.parse(line))
-            else:
-                if not filelist.get(file):
-                    filelist[file] = hasher()
-                active_profiles.add_inc_ie(file, IncludeRule.parse(line))
-
-            # If include is a directory
-            if os.path.isdir(get_include_path(include_name)):
-                for file_name in include_dir_filelist(profile_dir, include_name):
-                    if not include.get(file_name, False):
-                        load_include(file_name)
-            else:
-                if not include.get(include_name, False):
-                    load_include(include_name)
-
-        # IncludeRule can handle 'include' and 'include if exists' - place it after the "old" 'include' handling so that it only catches 'include if exists' for now
         elif IncludeRule.match(line):
             rule_obj = IncludeRule.parse(line)
             if profile:
