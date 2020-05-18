@@ -101,36 +101,10 @@ def act(user_file, base_file, merging_profile):
     #Get rid of common/superfluous stuff
     mergeprofiles.clear_common()
 
-#    if not args.auto:
-    if 1 == 1:  # workaround to avoid lots of whitespace changes
-        mergeprofiles.ask_merge_questions()
+    mergeprofiles.ask_merge_questions()
 
-        q = aaui.PromptQuestion()
-        q.title = _('Changed Local Profiles')
-        q.explanation = _('The following local profiles were changed. Would you like to save them?')
-        q.functions = ['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ABORT', 'CMD_IGNORE_ENTRY']
-        q.default = 'CMD_VIEW_CHANGES'
-        q.options = [merging_profile]
-        q.selected = 0
-
-        ans = ''
-        arg = None
-        programs = list(mergeprofiles.user.aa.keys())
-        program = programs[0]
-        while ans != 'CMD_SAVE_CHANGES':
-            ans, arg = q.promptUser()
-            if ans == 'CMD_SAVE_CHANGES':
-                apparmor.aa.write_profile_ui_feedback(program)
-                apparmor.aa.reload_base(program)
-            elif ans == 'CMD_VIEW_CHANGES':
-                for program in programs:
-                    apparmor.aa.original_aa[program] = apparmor.aa.deepcopy(apparmor.aa.aa[program])
-                #oldprofile = apparmor.serialize_profile(apparmor.original_aa[program], program, {})
-                newprofile = apparmor.aa.serialize_profile(mergeprofiles.user.aa[program], program, {})
-                aaui.UI_Changes(mergeprofiles.user.filename, newprofile, comments=True)
-            elif ans == 'CMD_IGNORE_ENTRY':
-                break
-
+    apparmor.aa.changed[merging_profile] = True  # force asking to save the profile
+    apparmor.aa.save_profiles(True)
 
 class Merge(object):
     def __init__(self, user, base):
