@@ -1111,7 +1111,7 @@ def ask_the_questions(log_dict):
                     elif ans == 'CMD_ALLOW':
                         selection = options[selected]
                         inc = re_match_include(selection)
-                        deleted = apparmor.aa.delete_duplicates(aa[profile][hat], inc)
+                        deleted = delete_all_duplicates(aa[profile][hat], inc, ruletypes)
                         aa[profile][hat]['include'][inc] = True
                         options.pop(selected)
                         aaui.UI_Info(_('Adding %s to the file.') % selection)
@@ -1123,21 +1123,43 @@ def ask_the_questions(log_dict):
                 # check for and ask about conflicting exec modes
                 ask_conflict_mode(profile, hat, aa[profile][hat], log_dict[aamode][profile][hat])
 
-                for ruletype in ruletypes:
-                    for rule_obj in log_dict[aamode][profile][hat][ruletype].rules:
+                prof_changed, end_profiling = ask_rule_questions(log_dict[aamode][profile][hat], combine_name(profile, hat), aa[profile][hat], ruletypes)
+                if prof_changed:
+                    changed[profile] = True
+                if end_profiling:
+                    return  # end profiling loop
 
-                        if is_known_rule(aa[profile][hat], ruletype, rule_obj):
+def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
+    ''' ask questions about rules to add to a single profile/hat
+
+        parameter       typical value
+        prof_events     log_dict[aamode][profile][hat]
+        profile_name    profile name (possible profile//hat)
+        the_profile     aa[profile][hat] -- will be modified
+        r_types         ruletypes
+
+        returns:
+        changed         True if the profile was changed
+        end_profiling   True if the user wants to end profiling
+    '''
+
+    changed = False
+
+    for ruletype in r_types:
+        for rule_obj in prof_events[ruletype].rules:
+
+                        if is_known_rule(the_profile, ruletype, rule_obj):
                             continue
 
                         default_option = 1
                         options = []
-                        newincludes = match_includes(aa[profile][hat], ruletype, rule_obj)
+                        newincludes = match_includes(the_profile, ruletype, rule_obj)
                         q = aaui.PromptQuestion()
                         if newincludes:
                             options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
 
                         if ruletype == 'file' and rule_obj.path:
-                            options += propose_file_rules(aa[profile][hat], rule_obj)
+                            options += propose_file_rules(the_profile, rule_obj)
                         else:
                             options.append(rule_obj.get_clean())
 
@@ -1145,7 +1167,7 @@ def ask_the_questions(log_dict):
                         while not done:
                             q.options = options
                             q.selected = default_option - 1
-                            q.headers = [_('Profile'), combine_name(profile, hat)]
+                            q.headers = [_('Profile'), profile_name]
                             q.headers += rule_obj.logprof_header()
 
                             # Load variables into sev_db? Not needed/used for capabilities and network rules.
@@ -1170,7 +1192,7 @@ def ask_the_questions(log_dict):
                                 break
 
                             elif ans == 'CMD_FINISHED':
-                                return
+                                return changed, True
 
                             elif ans.startswith('CMD_AUDIT'):
                                 if ans == 'CMD_AUDIT_NEW':
@@ -1194,13 +1216,13 @@ def ask_the_questions(log_dict):
 
                             elif ans == 'CMD_ALLOW':
                                 done = True
-                                changed[profile] = True
+                                changed = True
 
                                 inc = re_match_include(selection)
                                 if inc:
-                                    deleted = delete_duplicates(aa[profile][hat], inc)
+                                    deleted = delete_all_duplicates(the_profile, inc, r_types)
 
-                                    aa[profile][hat]['include'][inc] = True
+                                    the_profile['include'][inc] = True
 
                                     aaui.UI_Info(_('Adding %s to profile.') % selection)
                                     if deleted:
@@ -1208,7 +1230,7 @@ def ask_the_questions(log_dict):
 
                                 else:
                                     rule_obj = selection_to_rule_obj(rule_obj, selection)
-                                    deleted = aa[profile][hat][ruletype].add(rule_obj, cleanup=True)
+                                    deleted = the_profile[ruletype].add(rule_obj, cleanup=True)
 
                                     aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
                                     if deleted:
@@ -1220,12 +1242,12 @@ def ask_the_questions(log_dict):
 
                                 else:
                                     done = True
-                                    changed[profile] = True
+                                    changed = True
 
                                     rule_obj = selection_to_rule_obj(rule_obj, selection)
                                     rule_obj.deny = True
                                     rule_obj.raw_rule = None  # reset raw rule after manually modifying rule_obj
-                                    deleted = aa[profile][hat][ruletype].add(rule_obj, cleanup=True)
+                                    deleted = the_profile[ruletype].add(rule_obj, cleanup=True)
                                     aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
                                     if deleted:
                                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
@@ -1267,6 +1289,8 @@ def ask_the_questions(log_dict):
 
                             else:
                                 done = False
+
+    return changed, False
 
 def selection_to_rule_obj(rule_obj, selection):
     rule_type = type(rule_obj)
@@ -1344,17 +1368,17 @@ def add_to_options(options, newpath):
     default_option = options.index(newpath) + 1
     return (options, default_option)
 
-def delete_duplicates(profile, incname):
+def delete_all_duplicates(profile, incname, r_types):
     deleted = 0
     # Allow rules covered by denied rules shouldn't be deleted
     # only a subset allow rules may actually be denied
 
     if include.get(incname, False):
-        for rule_type in ruletypes:
+        for rule_type in r_types:
             deleted += profile[rule_type].delete_duplicates(include[incname][incname][rule_type])
 
     elif filelist.get(incname, False):
-        for rule_type in ruletypes:
+        for rule_type in r_types:
             deleted += profile[rule_type].delete_duplicates(filelist[incname][incname][rule_type])
 
     return deleted
