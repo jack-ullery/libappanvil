@@ -429,8 +429,6 @@ def main():
     # Initialize aa.logfile
     aa.set_logfile(args.file)
 
-    aa.loadincludes()
-
     # Load global config reader
     shell_config = aaconfig.Config('shell')
 
