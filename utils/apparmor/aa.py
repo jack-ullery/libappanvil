@@ -63,7 +63,7 @@ from apparmor.rule.network          import NetworkRule
 from apparmor.rule.ptrace           import PtraceRule
 from apparmor.rule.rlimit           import RlimitRule
 from apparmor.rule.signal           import SignalRule
-from apparmor.rule.variable         import VariableRule, separate_vars
+from apparmor.rule.variable         import VariableRule
 from apparmor.rule import quote_if_needed
 
 # setup module translations
@@ -2104,25 +2104,6 @@ def parse_pivot_root_rule(line):
 def parse_unix_rule(line):
     # XXX Do real parsing here
     return aarules.Raw_Unix_Rule(line)
-
-def store_list_var(var, list_var, value, var_operation, filename):
-    """Store(add new variable or add values to variable) the variables encountered in the given list_var
-       - the 'var' parameter will be modified
-       - 'list_var' is the variable name, for example '@{foo}'
-        """
-    vlist = separate_vars(value)
-    if var_operation == '=':
-        if not var.get(list_var, False):
-            var[list_var] = set(vlist)
-        else:
-            raise AppArmorException(_('Redefining existing variable %(variable)s: %(value)s in %(file)s') % { 'variable': list_var, 'value': value, 'file': filename })
-    elif var_operation == '+=':
-        if var.get(list_var, False):
-            var[list_var] |= vlist
-        else:
-            raise AppArmorException(_('Values added to a non-existing variable %(variable)s: %(value)s in %(file)s') % { 'variable': list_var, 'value': value, 'file': filename })
-    else:
-        raise AppArmorException(_('Unknown variable operation %(operation)s for variable %(variable)s in %(file)s') % { 'operation': var_operation, 'variable': list_var, 'file': filename })
 
 def write_header(prof_data, depth, name, embedded_hat, write_flags):
     pre = ' ' * int(depth * 2)

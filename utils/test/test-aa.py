@@ -20,7 +20,7 @@ import sys
 import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
      get_profile_flags, change_profile_flags, set_options_audit_mode, set_options_owner_mode, is_skippable_file, is_skippable_dir,
-     parse_profile_start, parse_profile_data, store_list_var, write_header,
+     parse_profile_start, parse_profile_data, write_header,
      get_file_perms, propose_file_rules)
 from apparmor.aare import AARE
 from apparmor.common import AppArmorException, AppArmorBug
@@ -628,45 +628,6 @@ class AaTest_parse_profile_data(AATest):
             # flags before xattrs
             d = '/foo flags=(complain) xattrs=(user.bar=bar) {\n}\n'
             parse_profile_data(d.split(), 'somefile', False)
-
-
-class AaTest_store_list_var(AATest):
-    tests = [
-        #  old var                        value        operation   expected (False for exception)
-        ([ {}                           , 'foo'         , '='   ], {'foo'}                      ), # set
-        ([ {}                           , 'foo bar'     , '='   ], {'foo', 'bar'}               ), # set multi
-        ([ {'@{var}': {'foo'}}          , 'bar'         , '='   ], False                        ), # redefine var
-        ([ {}                           , 'bar'         , '+='  ], False                        ), # add to undefined var
-        ([ {'@{var}': {'foo'}}          , 'bar'         , '+='  ], {'foo', 'bar'}               ), # add
-        ([ {'@{var}': {'foo'}}          , 'bar baz'     , '+='  ], {'foo', 'bar', 'baz'}        ), # add multi
-        ([ {'@{var}': {'foo', 'xy'}}    , 'bar baz'     , '+='  ], {'foo', 'xy', 'bar', 'baz'}  ), # add multi to multi
-        ([ {}                           , 'foo'         , '-='  ], False                        ), # unknown operation
-    ]
-
-    def _run_test(self, params, expected):
-        var         = params[0]
-        value       = params[1]
-        operation   = params[2]
-
-        if not expected:
-            with self.assertRaises(AppArmorException):
-                store_list_var(var, '@{var}', value, operation, 'somefile')
-            return
-
-        # dumy value that must not be changed
-        var['@{foo}'] = {'one', 'two'}
-
-        exp_var = {
-            '@{foo}':   {'one', 'two'},
-            '@{var}':   expected,
-        }
-
-        store_list_var(var, '@{var}', value, operation, 'somefile')
-
-        self.assertEqual(var.keys(), exp_var.keys())
-
-        for key in exp_var:
-            self.assertEqual(var[key], exp_var[key])
 
 class AaTest_write_header(AATest):
     tests = [
