@@ -39,7 +39,7 @@ import apparmor.ui as aaui
 
 from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
                             RE_PROFILE_ALIAS,
-                            RE_PROFILE_BOOLEAN, RE_PROFILE_VARIABLE, RE_PROFILE_CONDITIONAL,
+                            RE_PROFILE_BOOLEAN, RE_PROFILE_CONDITIONAL,
                             RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
                             RE_PROFILE_CHANGE_HAT,
                             RE_PROFILE_HAT_DEF, RE_PROFILE_MOUNT,
@@ -49,8 +49,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
 
 from apparmor.profile_list import ProfileList
 
-from apparmor.profile_storage import (ProfileStorage, add_or_remove_flag, ruletypes,
-                            write_list_vars )
+from apparmor.profile_storage import ProfileStorage, add_or_remove_flag, ruletypes
 
 import apparmor.rules as aarules
 
@@ -64,7 +63,7 @@ from apparmor.rule.network          import NetworkRule
 from apparmor.rule.ptrace           import PtraceRule
 from apparmor.rule.rlimit           import RlimitRule
 from apparmor.rule.signal           import SignalRule
-from apparmor.rule.variable         import separate_vars
+from apparmor.rule.variable         import VariableRule, separate_vars
 from apparmor.rule import quote_if_needed
 
 # setup module translations
@@ -1875,22 +1874,12 @@ def parse_profile_data(data, file, do_include):
 
             profile_data[profile][hat]['lvar'][bool_var] = value
 
-        elif RE_PROFILE_VARIABLE.search(line):
-            # variable additions += and =
-            matches = RE_PROFILE_VARIABLE.search(line).groups()
-
-            list_var = strip_quotes(matches[0])
-            var_operation = matches[1]
-            value = matches[2]
-
-            if profile:
-                if not profile_data[profile][hat].get('lvar', False):
-                    profile_data[profile][hat]['lvar'][list_var] = []
-                store_list_var(profile_data[profile]['lvar'], list_var, value, var_operation, file)
+        elif VariableRule.match(line):
+            if profile and not do_include:
+                raise AppArmorException(_('Syntax Error: Unexpected variable definition found inside profile in file: %(file)s line: %(line)s') % {
+                        'file': file, 'line': lineno + 1 })
             else:
-                if not filelist[file].get('lvar', False):
-                    filelist[file]['lvar'][list_var] = []
-                store_list_var(filelist[file]['lvar'], list_var, value, var_operation, file)
+                active_profiles.add_variable(file, VariableRule.parse(line))
 
         elif RE_PROFILE_CONDITIONAL.search(line):
             # Conditional Boolean
@@ -2229,7 +2218,6 @@ def serialize_profile(profile_data, name, options):
         prof_filename = get_profile_filename_from_profile_name(name, True)
 
     data += active_profiles.get_clean_first(prof_filename, 0)
-    data += write_list_vars(filelist[prof_filename], 0)
 
     data += active_profiles.get_clean(prof_filename, 0)
 

@@ -157,7 +157,7 @@ exception_not_raised = [
     'vars/vars_bad_4.sd',
     'vars/vars_bad_5.sd',
     'vars/vars_bad_7.sd',
-    'vars/vars_bad_8.sd',
+    'vars/vars_bad_add_assignment_1.sd',  # adding to non-existing variable
     'vars/vars_bad_trailing_comma_1.sd',
     'vars/vars_bad_trailing_comma_2.sd',
     'vars/vars_bad_trailing_comma_3.sd',
@@ -169,7 +169,6 @@ exception_not_raised = [
     'vars/vars_dbus_bad_05.sd',
     'vars/vars_dbus_bad_06.sd',
     'vars/vars_dbus_bad_07.sd',
-    'vars/vars_file_evaluation_7.sd',
     'vars/vars_file_evaluation_8.sd',
 
     # profile name in var doesn't start with /
@@ -391,7 +390,6 @@ syntax_failure = [
     # misc
     'vars/vars_dbus_8.sd',  # Path doesn't start with / or variable: {/@{TLDS}/foo,/com/@{DOMAINS}}
     'vars/vars_simple_assignment_12.sd',  # Redefining existing variable @{BAR} ('\' not handled)
-    'rewrite/alias_good_5.sd',  # Values added to a non-existing variable @{FOO} (defined in include, lp:1331856)
     'bare_include_tests/ok_2.sd',  # two #include<...> in one line
 ]
 
