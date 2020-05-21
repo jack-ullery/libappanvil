@@ -2190,8 +2190,6 @@ def serialize_profile(profile_data, name, options):
     else:
         prof_filename = get_profile_filename_from_profile_name(name, True)
 
-    data += active_profiles.get_clean_first(prof_filename, 0)
-
     data += active_profiles.get_clean(prof_filename, 0)
 
     #Here should be all the profiles from the files added write after global/common stuff

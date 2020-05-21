@@ -157,23 +157,10 @@ class ProfileList:
             raise AppArmorBug('%s not listed in ProfileList files' % filename)
 
         data = []
-        # commented out for now because abi rules need to be written first - for now, use get_clean_first() instead
-        # data += self.files[filename]['abi'].get_clean_unsorted(depth)
-        # data += write_alias(self.files[filename])
-        data += self.files[filename]['inc_ie'].get_clean_unsorted(depth)
-        data += self.files[filename]['variable'].get_clean_unsorted(depth)
-        return data
-
-    def get_clean_first(self, filename, depth=0):
-        ''' Get preamble rules for the given profile filename (in clean formatting) that need to be at the beginning.
-            This is a temporary function, and will be dropped / merged with get_clean() when the whole preamble is moved to ProfileList
-            '''
-        if not self.files.get(filename):
-            raise AppArmorBug('%s not listed in ProfileList files' % filename)
-
-        data = []
         data += self.files[filename]['abi'].get_clean_unsorted(depth)
         data += write_alias(self.files[filename])
+        data += self.files[filename]['inc_ie'].get_clean_unsorted(depth)
+        data += self.files[filename]['variable'].get_clean_unsorted(depth)
         return data
 
     def filename_from_profile_name(self, name):

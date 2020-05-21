@@ -172,16 +172,14 @@ class TestAdd_abi(AATest):
     def testAdd_abi_1(self):
         self.pl.add_abi('/etc/apparmor.d/bin.foo', AbiRule('abi/4.19', False, True))
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
-        # self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])
-        self.assertEqual(self.pl.get_clean_first('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])  # TODO switch to get_clean() once merged
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])
 
     def testAdd_abi_2(self):
         self.pl.add_abi('/etc/apparmor.d/bin.foo', AbiRule('abi/4.19', False, True))
         self.pl.add_abi('/etc/apparmor.d/bin.foo', AbiRule('foo', False, False))
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
-        # self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', 'abi "foo",', ''])
-        self.assertEqual(self.pl.get_clean_first('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', 'abi "foo",', ''])  # TODO switch to get_clean() once merged
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', 'abi "foo",', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', 'abi "foo",', ''])
 
     def testAdd_abi_error_1(self):
@@ -195,7 +193,7 @@ class TestAdd_abi(AATest):
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
         deleted = self.pl.delete_preamble_duplicates('/etc/apparmor.d/bin.foo')
         self.assertEqual(deleted, 1)
-        self.assertEqual(self.pl.get_clean_first('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])  # TODO switch to get_clean() once merged
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])
 
 class TestAdd_alias(AATest):
@@ -205,14 +203,14 @@ class TestAdd_alias(AATest):
     def testAdd_alias_1(self):
         self.pl.add_alias('/etc/apparmor.d/bin.foo', '/foo', '/bar')
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
-        self.assertEqual(self.pl.get_clean_first('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', ''])  # TODO switch to get_clean() once merged
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', ''])
 
     def testAdd_alias_2(self):
         self.pl.add_alias('/etc/apparmor.d/bin.foo', '/foo', '/bar')
         self.pl.add_alias('/etc/apparmor.d/bin.foo', '/xyz', '/zyx')
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
-        self.assertEqual(self.pl.get_clean_first('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', 'alias /xyz -> /zyx,', ''])  # TODO switch to get_clean() once merged
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', 'alias /xyz -> /zyx,', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', 'alias /xyz -> /zyx,', ''])
 
     def testAdd_alias_dupe(self):
@@ -222,7 +220,7 @@ class TestAdd_alias(AATest):
         #     self.pl.add_alias('/etc/apparmor.d/bin.foo', '/foo', '/redefine')  # attempt to redefine alias
         self.pl.add_alias('/etc/apparmor.d/bin.foo', '/foo', '/redefine')  # redefine alias
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
-        self.assertEqual(self.pl.get_clean_first('/etc/apparmor.d/bin.foo'), ['alias /foo -> /redefine,', ''])  # TODO switch to get_clean() once merged
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['alias /foo -> /redefine,', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['alias /foo -> /redefine,', ''])
 
     def testAdd_alias_error_1(self):
