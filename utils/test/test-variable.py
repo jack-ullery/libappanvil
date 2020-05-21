@@ -354,6 +354,12 @@ class VariableRulesTest(AATest):
         self.assertEqual(expected_clean, ruleset.get_clean())
         self.assertEqual(expected_clean_unsorted, ruleset.get_clean_unsorted())
 
+    def test_ruleset_overwrite(self):
+        ruleset = VariableRuleset()
+
+        ruleset.add(VariableRule.parse('@{foo} = /bar'))
+        with self.assertRaises(AppArmorException):
+            ruleset.add(VariableRule.parse('@{foo} = /asdf'))  # attempt to redefine @{foo}
 
 class VariableGlobTestAATest(AATest):
     def setUp(self):

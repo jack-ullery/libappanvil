@@ -137,7 +137,19 @@ class VariableRule(BaseRule):
 
 class VariableRuleset(BaseRuleset):
     '''Class to handle and store a collection of variable rules'''
-    pass
+
+    def add(self, rule, cleanup=False):
+        ''' Add variable rule object
+
+            If the variable name is already known, raise an exception because re-defining a variable isn't allowed.
+        '''
+
+        if rule.mode == '=':
+            for knownrule in self.rules:
+                if rule.varname == knownrule.varname:
+                    raise AppArmorException(_('Redefining existing variable %(variable)s: %(value)s') % { 'variable': rule.varname, 'value': rule.values })
+
+        super(VariableRuleset, self).add(rule, cleanup)
 
 def separate_vars(vs):
     """Returns a list of all the values for a variable"""
