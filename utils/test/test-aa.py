@@ -20,7 +20,7 @@ import sys
 import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
      get_profile_flags, change_profile_flags, set_options_audit_mode, set_options_owner_mode, is_skippable_file, is_skippable_dir,
-     parse_profile_start, parse_profile_data, separate_vars, store_list_var, write_header,
+     parse_profile_start, parse_profile_data, store_list_var, write_header,
      get_file_perms, propose_file_rules)
 from apparmor.aare import AARE
 from apparmor.common import AppArmorException, AppArmorBug
@@ -628,36 +628,6 @@ class AaTest_parse_profile_data(AATest):
             # flags before xattrs
             d = '/foo flags=(complain) xattrs=(user.bar=bar) {\n}\n'
             parse_profile_data(d.split(), 'somefile', False)
-
-
-class AaTest_separate_vars(AATest):
-    tests = [
-        (''                             , set()                      ),
-        ('       '                      , set()                      ),
-        ('  foo bar'                    , {'foo', 'bar'             }),
-        ('foo "  '                      , AppArmorException          ),
-        (' " foo '                      , AppArmorException          ), # half-quoted
-        ('  foo bar   '                 , {'foo', 'bar'             }),
-        ('  foo bar   # comment'        , {'foo', 'bar', '#', 'comment'}), # XXX should comments be stripped?
-        ('foo'                          , {'foo'                    }),
-        ('"foo" "bar baz"'              , {'foo', 'bar baz'         }),
-        ('foo "bar baz" xy'             , {'foo', 'bar baz', 'xy'   }),
-        ('foo "bar baz '                , AppArmorException          ), # half-quoted
-        ('  " foo" bar'                 , {' foo', 'bar'            }),
-        ('  " foo" bar x'               , {' foo', 'bar', 'x'       }),
-        ('""'                           , {''                       }), # empty value
-        ('"" foo'                       , {'', 'foo'                }), # empty value + 'foo'
-        ('"" foo "bar"'                 , {'', 'foo', 'bar'         }), # empty value + 'foo' + 'bar' (bar has superfluous quotes)
-        ('"bar"'                        , {'bar'                    }), # 'bar' with superfluous quotes
-    ]
-
-    def _run_test(self, params, expected):
-        if expected == AppArmorException:
-            with self.assertRaises(expected):
-                separate_vars(params)
-        else:
-            result = separate_vars(params)
-            self.assertEqual(result, expected)
 
 
 class AaTest_store_list_var(AATest):

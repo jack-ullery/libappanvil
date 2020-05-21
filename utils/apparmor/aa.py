@@ -64,6 +64,7 @@ from apparmor.rule.network          import NetworkRule
 from apparmor.rule.ptrace           import PtraceRule
 from apparmor.rule.rlimit           import RlimitRule
 from apparmor.rule.signal           import SignalRule
+from apparmor.rule.variable         import separate_vars
 from apparmor.rule import quote_if_needed
 
 # setup module translations
@@ -2114,22 +2115,6 @@ def parse_pivot_root_rule(line):
 def parse_unix_rule(line):
     # XXX Do real parsing here
     return aarules.Raw_Unix_Rule(line)
-
-def separate_vars(vs):
-    """Returns a list of all the values for a variable"""
-    data = set()
-    vs = vs.strip()
-
-    RE_VARS = re.compile('^(("[^"]*")|([^"\s]+))\s*(.*)$')
-    while RE_VARS.search(vs):
-        matches = RE_VARS.search(vs).groups()
-        data.add(strip_quotes(matches[0]))
-        vs = matches[3].strip()
-
-    if vs:
-        raise AppArmorException('Variable assignments contains invalid parts (unbalanced quotes?): %s' % vs)
-
-    return data
 
 def store_list_var(var, list_var, value, var_operation, filename):
     """Store(add new variable or add values to variable) the variables encountered in the given list_var

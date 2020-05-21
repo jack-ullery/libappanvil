@@ -17,7 +17,7 @@ import unittest
 from collections import namedtuple
 from common_test import AATest, setup_all_loops
 
-from apparmor.rule.variable import VariableRule, VariableRuleset
+from apparmor.rule.variable import VariableRule, VariableRuleset, separate_vars
 from apparmor.rule import BaseRule
 from apparmor.common import AppArmorException, AppArmorBug
 from apparmor.translations import init_translation
@@ -39,6 +39,35 @@ class VariableTest(AATest):
         self.assertEqual(expected.mode, obj.mode)
         self.assertEqual(expected.values, obj.values)
         self.assertEqual(expected.comment, obj.comment)
+
+class AaTest_separate_vars(AATest):
+    tests = [
+        (''                             , set()                      ),
+        ('       '                      , set()                      ),
+        ('  foo bar'                    , {'foo', 'bar'             }),
+        ('foo "  '                      , AppArmorException          ),
+        (' " foo '                      , AppArmorException          ), # half-quoted
+        ('  foo bar   '                 , {'foo', 'bar'             }),
+        ('  foo bar   # comment'        , {'foo', 'bar', '#', 'comment'}), # XXX should comments be stripped?
+        ('foo'                          , {'foo'                    }),
+        ('"foo" "bar baz"'              , {'foo', 'bar baz'         }),
+        ('foo "bar baz" xy'             , {'foo', 'bar baz', 'xy'   }),
+        ('foo "bar baz '                , AppArmorException          ), # half-quoted
+        ('  " foo" bar'                 , {' foo', 'bar'            }),
+        ('  " foo" bar x'               , {' foo', 'bar', 'x'       }),
+        ('""'                           , {''                       }), # empty value
+        ('"" foo'                       , {'', 'foo'                }), # empty value + 'foo'
+        ('"" foo "bar"'                 , {'', 'foo', 'bar'         }), # empty value + 'foo' + 'bar' (bar has superfluous quotes)
+        ('"bar"'                        , {'bar'                    }), # 'bar' with superfluous quotes
+    ]
+
+    def _run_test(self, params, expected):
+        if expected == AppArmorException:
+            with self.assertRaises(expected):
+                separate_vars(params)
+        else:
+            result = separate_vars(params)
+            self.assertEqual(result, expected)
 
 class VariableTestParse(VariableTest):
     tests = [

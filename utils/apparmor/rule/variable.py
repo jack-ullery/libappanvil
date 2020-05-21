@@ -1,4 +1,5 @@
 # ----------------------------------------------------------------------
+#    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
 #    Copyright (C) 2020 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
@@ -12,9 +13,11 @@
 #
 # ----------------------------------------------------------------------
 
-from apparmor.regex import RE_PROFILE_VARIABLE
+from apparmor.regex import RE_PROFILE_VARIABLE, strip_quotes
 from apparmor.common import AppArmorBug, AppArmorException, type_is_str
 from apparmor.rule import BaseRule, BaseRuleset, parse_comment, quote_if_needed
+
+import re
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -135,3 +138,19 @@ class VariableRule(BaseRule):
 class VariableRuleset(BaseRuleset):
     '''Class to handle and store a collection of variable rules'''
     pass
+
+def separate_vars(vs):
+    """Returns a list of all the values for a variable"""
+    data = set()
+    vs = vs.strip()
+
+    RE_VARS = re.compile('^(("[^"]*")|([^"\s]+))\s*(.*)$')
+    while RE_VARS.search(vs):
+        matches = RE_VARS.search(vs).groups()
+        data.add(strip_quotes(matches[0]))
+        vs = matches[3].strip()
+
+    if vs:
+        raise AppArmorException('Variable assignments contains invalid parts (unbalanced quotes?): %s' % vs)
+
+    return data
