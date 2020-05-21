@@ -131,9 +131,13 @@ static char **parse_args(int argc, char **argv)
 			usage(argv[0], false);
 			break;
 		case 'p':
+			if (opt_profile)
+				error("Multiple -p/--profile parameters given");
 			opt_profile = optarg;
 			break;
 		case 'n':
+			if (opt_namespace)
+				error("Multiple -n/--namespace parameters given");
 			opt_namespace = optarg;
 			break;
 		case 'i':
