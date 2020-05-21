@@ -534,7 +534,7 @@ static int detailed_output(FILE *json) {
 		free_processes(filtered, nfiltered);
 	}
 	if (json) {
-		fprintf(json, "%s}}", nprocesses > 0 ? "]" : "");
+		fprintf(json, "%s}}\n", nprocesses > 0 ? "]" : "");
 	}
 
 exit:
@@ -578,7 +578,7 @@ static int cmd_pretty_json(__unused const char *command) {
 		dfprintf(stderr, "Failed to print pretty json");
 		return AA_EXIT_INTERNAL_ERROR;
 	}
-	fprintf(stdout, "%s", pretty);
+	fprintf(stdout, "%s\n", pretty);
 
 	return AA_EXIT_ENABLED;
 }
