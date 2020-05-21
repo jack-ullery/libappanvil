@@ -110,7 +110,6 @@ created = []
 helpers = dict()  # Preserve this between passes # was our
 ### logprof ends
 
-filelist = hasher()    # File level variables and stuff in config files
 
 def on_exit():
     """Shutdowns the logger and records exit if debugging enabled"""
@@ -568,8 +567,6 @@ def autodep(bin_name, pname=''):
         active_profiles.add_profile(file, pname, attachment)
 
     if os.path.isfile(profile_dir + '/tunables/global'):
-        if not filelist.get(file, False):
-            filelist[file] = hasher()
         active_profiles.add_inc_ie(file, IncludeRule('tunables/global', False, True))
     write_profile_ui_feedback(pname)
 
@@ -1341,10 +1338,6 @@ def delete_all_duplicates(profile, incname, r_types):
         for rule_type in r_types:
             deleted += profile[rule_type].delete_duplicates(include[incname][incname][rule_type])
 
-    elif filelist.get(incname, False):
-        for rule_type in r_types:
-            deleted += profile[rule_type].delete_duplicates(filelist[incname][incname][rule_type])
-
     return deleted
 
 def ask_conflict_mode(profile, hat, old_profile, merge_profile):
@@ -1450,7 +1443,6 @@ def do_logprof_pass(logmark=''):
     global sev_db
 #    aa = hasher()
 #     changed = dict()
-#    filelist = hasher()
 
     aaui.UI_Info(_('Reading log entries from %s.') % logfile)
 

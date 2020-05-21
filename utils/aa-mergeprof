@@ -53,7 +53,6 @@ if profiledir:
 
 def reset_aa():
     apparmor.aa.aa = apparmor.aa.hasher()
-    apparmor.aa.filelist = apparmor.aa.hasher()
     apparmor.aa.include = dict()
     apparmor.aa.active_profiles = apparmor.aa.ProfileList()
     apparmor.aa.original_aa = apparmor.aa.hasher()
