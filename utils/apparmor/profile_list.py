@@ -17,6 +17,7 @@ from apparmor.common import AppArmorBug, AppArmorException, type_is_str
 from apparmor.rule import quote_if_needed
 from apparmor.rule.abi import AbiRule, AbiRuleset
 from apparmor.rule.include import IncludeRule, IncludeRuleset
+from apparmor.rule.variable import VariableRule, VariableRuleset
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -48,6 +49,7 @@ class ProfileList:
             'abi': AbiRuleset(),
             'alias': {},
             'inc_ie': IncludeRuleset(),
+            'variable': VariableRuleset(),
             'profiles': [],
         }
 
@@ -115,6 +117,15 @@ class ProfileList:
 
         self.files[filename]['inc_ie'].add(inc_rule)
 
+    def add_variable(self, filename, var_rule):
+        ''' Store the given variable rule for the given profile filename preamble '''
+        if type(var_rule) is not VariableRule:
+            raise AppArmorBug('Wrong type given to ProfileList: %s' % var_rule)
+
+        self.init_file(filename)
+
+        self.files[filename]['variable'].add(var_rule)
+
     def delete_preamble_duplicates(self, filename):
         ''' Delete duplicates in the preamble of the given profile file '''
 
@@ -123,7 +134,7 @@ class ProfileList:
 
         deleted = 0
 
-        for r_type in ['abi', 'inc_ie']:  # TODO: don't hardcode
+        for r_type in ['abi', 'inc_ie', 'variable']:  # TODO: don't hardcode
             deleted += self.files[filename][r_type].delete_duplicates(None)  # None means not to check includes -- TODO check if this makes sense for all preamble rule types
 
         return deleted
@@ -137,6 +148,7 @@ class ProfileList:
         data += self.files[filename]['abi'].get_raw(depth)
         data += write_alias(self.files[filename])
         data += self.files[filename]['inc_ie'].get_raw(depth)
+        data += self.files[filename]['variable'].get_raw(depth)
         return data
 
     def get_clean(self, filename, depth=0):
@@ -149,6 +161,7 @@ class ProfileList:
         # data += self.files[filename]['abi'].get_clean_unsorted(depth)
         # data += write_alias(self.files[filename])
         data += self.files[filename]['inc_ie'].get_clean_unsorted(depth)
+        data += self.files[filename]['variable'].get_clean_unsorted(depth)
         return data
 
     def get_clean_first(self, filename, depth=0):

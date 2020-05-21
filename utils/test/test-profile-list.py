@@ -16,6 +16,7 @@ from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.profile_list import ProfileList
 from apparmor.rule.abi import AbiRule
 from apparmor.rule.include import IncludeRule
+from apparmor.rule.variable import VariableRule
 
 class TestAdd_profile(AATest):
     def AASetup(self):
@@ -236,6 +237,43 @@ class TestAdd_alias(AATest):
 
 #    def test_dedup_alias_1(self):
 #        TODO: implement after fixing alias handling (when a profile has two aliases with the same path on the left side)
+
+class TestAdd_variable(AATest):
+    def AASetup(self):
+        self.pl = ProfileList()
+
+    def testAdd_variable_1(self):
+        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule('@{foo}', '=', {'/foo'}))
+        self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['@{foo} = /foo', ''])
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['@{foo} = /foo', ''])
+
+    def testAdd_variable_2(self):
+        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule('@{foo}', '=', {'/foo'}))
+        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule('@{bar}', '=', {'/bar'}))
+        self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['@{foo} = /foo', '@{bar} = /bar', ''])
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['@{foo} = /foo', '@{bar} = /bar', ''])
+
+    def testAdd_variable_error_1(self):
+        with self.assertRaises(AppArmorBug):
+            self.pl.add_variable('/etc/apparmor.d/bin.foo', '@{foo}')  # str insteadd of IncludeRule
+        self.assertEqual(list(self.pl.files.keys()), [])
+
+    def test_dedup_variable_1(self):
+        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule.parse('@{foo} = /foo'))
+        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule.parse('@{foo} += /bar  # comment'))
+        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule.parse('@{foo}    += /bar /baz'))
+        deleted = self.pl.delete_preamble_duplicates('/etc/apparmor.d/bin.foo')
+        self.assertEqual(deleted, 1)
+        self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['@{foo} = /foo', '@{foo} += /bar /baz', ''])
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['@{foo} = /foo', '@{foo}    += /bar /baz', ''])
+
+    def test_dedup_error_1(self):
+        with self.assertRaises(AppArmorBug):
+            self.pl.delete_preamble_duplicates('/file/not/found')
+        self.assertEqual(list(self.pl.files.keys()), [])
 
 class TestGet(AATest):
     def AASetup(self):
