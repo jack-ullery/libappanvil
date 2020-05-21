@@ -24,7 +24,7 @@ LOCALEDIR=/usr/share/locale
 MANPAGES=aa-enabled.1 aa-exec.1 aa-status.8
 
 WARNINGS = -Wall
-EXTRA_WARNINGS = -Wsign-compare -Wmissing-field-initializers -Wformat-security -Wunused-parameter
+EXTRA_WARNINGS = -Wsign-compare -Wmissing-field-initializers -Wformat -Wformat-security -Wunused-parameter
 CPP_WARNINGS =
 ifndef CFLAGS
 CFLAGS	= -g -O2 -pipe
