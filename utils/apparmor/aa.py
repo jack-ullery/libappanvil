@@ -32,7 +32,7 @@ from copy import deepcopy
 
 from apparmor.aare import AARE
 
-from apparmor.common import (AppArmorException, AppArmorBug, open_file_read, valid_path, hasher,
+from apparmor.common import (AppArmorException, AppArmorBug, is_skippable_file, open_file_read, valid_path, hasher,
                              split_name, open_file_write, DebugLogger)
 
 import apparmor.ui as aaui
@@ -50,7 +50,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
 from apparmor.profile_list import ProfileList
 
 from apparmor.profile_storage import (ProfileStorage, add_or_remove_flag, ruletypes,
-                            write_includes, write_list_vars )
+                            write_list_vars )
 
 import apparmor.rules as aarules
 
@@ -442,7 +442,7 @@ def create_new_profile(localfile, is_stub=False):
     local_profile = hasher()
     local_profile[localfile] = ProfileStorage('NEW', localfile, 'create_new_profile()')
     local_profile[localfile]['flags'] = 'complain'
-    local_profile[localfile]['include']['abstractions/base'] = 1
+    local_profile[localfile]['inc_ie'].add(IncludeRule('abstractions/base', False, True))
 
     if os.path.exists(localfile) and os.path.isfile(localfile):
         interpreter_path, abstraction = get_interpreter_and_abstraction(localfile)
@@ -452,7 +452,7 @@ def create_new_profile(localfile, is_stub=False):
             local_profile[localfile]['file'].add(FileRule(interpreter_path, None, 'ix', FileRule.ALL, owner=False))
 
             if abstraction:
-                local_profile[localfile]['include'][abstraction] = True
+                local_profile[localfile]['inc_ie'].add(IncludeRule(abstraction, False, True))
 
             handle_binfmt(local_profile[localfile], interpreter_path)
         else:
@@ -570,7 +570,7 @@ def autodep(bin_name, pname=''):
     if os.path.isfile(profile_dir + '/tunables/global'):
         if not filelist.get(file, False):
             filelist[file] = hasher()
-        filelist[file]['include']['tunables/global'] = True
+        active_profiles.add_inc_ie(file, IncludeRule('tunables/global', False, True))
     write_profile_ui_feedback(pname)
 
 def get_profile_flags(filename, program):
@@ -945,7 +945,7 @@ def ask_exec(hashlog):
                                     aa[profile][hat]['file'].add(FileRule(interpreter_path, None, 'ix', FileRule.ALL, owner=False))
 
                                     if abstraction:
-                                        aa[profile][hat]['include'][abstraction] = True
+                                        aa[profile][hat]['inc_ie'].add(IncludeRule(abstraction, False, True))
 
                                     handle_binfmt(aa[profile][hat], interpreter_path)
 
@@ -1084,42 +1084,6 @@ def ask_the_questions(log_dict):
                         aa[profile][hat] = ProfileStorage(profile, hat, 'mergeprof ask_the_questions() - missing hat')
                         aa[profile][hat]['profile'] = False
 
-                #Add the includes from the other profile to the user profile
-                done = False
-
-                options = []
-                for inc in log_dict[aamode][profile][hat]['include'].keys():
-                    if not inc in aa[profile][hat]['include'].keys():
-                        if inc.startswith('/'):
-                            options.append('#include "%s"' %inc)
-                        else:
-                            options.append('#include <%s>' %inc)
-
-                default_option = 1
-
-                q = aaui.PromptQuestion()
-                q.options = options
-                q.selected = default_option - 1
-                q.headers = [_('File includes'), _('Select the ones you wish to add')]
-                q.functions = ['CMD_ALLOW', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
-                q.default = 'CMD_ALLOW'
-
-                while not done and options:
-                    ans, selected = q.promptUser()
-                    if ans == 'CMD_IGNORE_ENTRY':
-                        done = True
-                    elif ans == 'CMD_ALLOW':
-                        selection = options[selected]
-                        inc = re_match_include(selection)
-                        deleted = delete_all_duplicates(aa[profile][hat], inc, ruletypes)
-                        aa[profile][hat]['include'][inc] = True
-                        options.pop(selected)
-                        aaui.UI_Info(_('Adding %s to the file.') % selection)
-                        if deleted:
-                            aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
-                    elif ans == 'CMD_FINISHED':
-                        return
-
                 # check for and ask about conflicting exec modes
                 ask_conflict_mode(profile, hat, aa[profile][hat], log_dict[aamode][profile][hat])
 
@@ -1222,7 +1186,7 @@ def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
                                 if inc:
                                     deleted = delete_all_duplicates(the_profile, inc, r_types)
 
-                                    the_profile['include'][inc] = True
+                                    the_profile['inc_ie'].add(IncludeRule.parse(selection))
 
                                     aaui.UI_Info(_('Adding %s to profile.') % selection)
                                     if deleted:
@@ -1426,8 +1390,14 @@ def match_includes(profile, rule_type, rule_obj):
 
     newincludes = []
     for incname in include.keys():
+        # TODO: improve/fix logic to honor magic vs. quoted include paths
+        if incname.startswith('/'):
+            is_magic = False
+        else:
+            is_magic = True
+
         # never propose includes that are already in the profile (shouldn't happen because of is_known_rule())
-        if profile and profile['include'].get(incname, False):
+        if profile and profile['inc_ie'].is_covered(IncludeRule(incname, False, is_magic)):
             continue
 
         # XXX type check should go away once we init all profiles correctly
@@ -1581,6 +1551,11 @@ def collapse_log(hashlog, ignore_null_profiles=True):
             profile, hat = split_name(hashlog[aamode][full_profile]['final_name'])  # XXX limited to two levels to avoid an Exception on nested child profiles or nested null-*
             # TODO: support nested child profiles
 
+            # used to avoid to accidently initialize aa[profile][hat] or calling is_known_rule() on events for a non-existing profile
+            hat_exists = False
+            if aa.get(profile) and aa[profile].get(hat):
+                hat_exists = True
+
             if True:
                 if not log_dict[aamode][profile].get(hat):
                     # with execs in ix mode, we already have ProfileStorage initialized and should keep the content it already has
@@ -1596,13 +1571,13 @@ def collapse_log(hashlog, ignore_null_profiles=True):
 
                         file_event = FileRule(path, mode, None, FileRule.ALL, owner=owner, log_event=True)
 
-                        if not is_known_rule(aa[profile][hat], 'file', file_event):
+                        if not hat_exists or not is_known_rule(aa[profile][hat], 'file', file_event):
                             log_dict[aamode][profile][hat]['file'].add(file_event)
                             # TODO: check for existing rules with this path, and merge them into one rule
 
                 for cap in hashlog[aamode][full_profile]['capability'].keys():
                     cap_event = CapabilityRule(cap, log_event=True)
-                    if not is_known_rule(aa[profile][hat], 'capability', cap_event):
+                    if not hat_exists or not is_known_rule(aa[profile][hat], 'capability', cap_event):
                         log_dict[aamode][profile][hat]['capability'].add(cap_event)
 
                 dbus = hashlog[aamode][full_profile]['dbus']
@@ -1625,20 +1600,21 @@ def collapse_log(hashlog, ignore_null_profiles=True):
                                             else:
                                                 raise AppArmorBug('unexpected dbus access: %s')
 
-                                            log_dict[aamode][profile][hat]['dbus'].add(dbus_event)
+                                            if not hat_exists or not is_known_rule(aa[profile][hat], 'dbus', dbus_event):
+                                                log_dict[aamode][profile][hat]['dbus'].add(dbus_event)
 
                 nd = hashlog[aamode][full_profile]['network']
                 for family in nd.keys():
                     for sock_type in nd[family].keys():
                         net_event = NetworkRule(family, sock_type, log_event=True)
-                        if not is_known_rule(aa[profile][hat], 'network', net_event):
+                        if not hat_exists or not is_known_rule(aa[profile][hat], 'network', net_event):
                             log_dict[aamode][profile][hat]['network'].add(net_event)
 
                 ptrace = hashlog[aamode][full_profile]['ptrace']
                 for peer in ptrace.keys():
                     for access in ptrace[peer].keys():
                         ptrace_event = PtraceRule(access, peer, log_event=True)
-                        if not is_known_rule(aa[profile][hat], 'ptrace', ptrace_event):
+                        if not hat_exists or not is_known_rule(aa[profile][hat], 'ptrace', ptrace_event):
                             log_dict[aamode][profile][hat]['ptrace'].add(ptrace_event)
 
                 sig = hashlog[aamode][full_profile]['signal']
@@ -1646,26 +1622,10 @@ def collapse_log(hashlog, ignore_null_profiles=True):
                     for access in sig[peer].keys():
                         for signal in sig[peer][access].keys():
                             signal_event = SignalRule(access, signal, peer, log_event=True)
-                            if not is_known_rule(aa[profile][hat], 'signal', signal_event):
+                            if not hat_exists or not is_known_rule(aa[profile][hat], 'signal', signal_event):
                                 log_dict[aamode][profile][hat]['signal'].add(signal_event)
 
     return log_dict
-
-def is_skippable_file(path):
-    """Returns True if filename matches something to be skipped (rpm or dpkg backup files, hidden files etc.)
-        The list of skippable files needs to be synced with apparmor initscript and libapparmor _aa_is_blacklisted()
-        path: filename (with or without directory)"""
-
-    basename = os.path.basename(path)
-
-    if not basename or basename[0] == '.' or basename == 'README':
-        return True
-
-    skippable_suffix = ('.dpkg-new', '.dpkg-old', '.dpkg-dist', '.dpkg-bak', '.dpkg-remove', '.pacsave', '.pacnew', '.rpmnew', '.rpmsave', '.orig', '.rej', '~')
-    if basename.endswith(skippable_suffix):
-        return True
-
-    return False
 
 def is_skippable_dir(path):
     if re.search('^(.*/)?(disable|cache|cache\.d|force-complain|lxc|\.git)/?$', path):
@@ -1949,31 +1909,19 @@ def parse_profile_data(data, file, do_include):
             else:
                 active_profiles.add_abi(file, AbiRule.parse(line))
 
-        elif re_match_include(line):
-            # Include files
-            include_name = re_match_include(line)
-
-            if profile:
-                profile_data[profile][hat]['include'][include_name] = True
-            else:
-                if not filelist.get(file):
-                    filelist[file] = hasher()
-                filelist[file]['include'][include_name] = True
-            # If include is a directory
-            if os.path.isdir(get_include_path(include_name)):
-                for file_name in include_dir_filelist(profile_dir, include_name):
-                    if not include.get(file_name, False):
-                        load_include(file_name)
-            else:
-                if not include.get(include_name, False):
-                    load_include(include_name)
-
-        # IncludeRule can handle 'include' and 'include if exists' - place it after the "old" 'include' handling so that it only catches 'include if exists' for now
         elif IncludeRule.match(line):
+            rule_obj = IncludeRule.parse(line)
             if profile:
-                profile_data[profile][hat]['inc_ie'].add(IncludeRule.parse(line))
+                profile_data[profile][hat]['inc_ie'].add(rule_obj)
             else:
-                active_profiles.add_inc_ie(file, IncludeRule.parse(line))
+                active_profiles.add_inc_ie(file, rule_obj)
+
+            for incname in rule_obj.get_full_paths(profile_dir):
+                # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
+                if incname.startswith(profile_dir):
+                    incname = incname.replace('%s/' % profile_dir, '')
+
+                load_include(incname)
 
         elif NetworkRule.match(line):
             if not profile:
@@ -2295,12 +2243,10 @@ def serialize_profile(profile_data, name, options):
     else:
         prof_filename = get_profile_filename_from_profile_name(name, True)
 
-    if filelist.get(prof_filename, False):
-        data += active_profiles.get_clean_first(prof_filename, 0)
-        data += write_list_vars(filelist[prof_filename], 0)
-        data += write_includes(filelist[prof_filename], 0)
+    data += active_profiles.get_clean_first(prof_filename, 0)
+    data += write_list_vars(filelist[prof_filename], 0)
 
-        data += active_profiles.get_clean(prof_filename, 0)
+    data += active_profiles.get_clean(prof_filename, 0)
 
     #Here should be all the profiles from the files added write after global/common stuff
     for prof in sorted(active_profiles.profiles_in_file(prof_filename)):
@@ -2357,28 +2303,45 @@ def write_profile(profile, is_attachment=False):
 
     original_aa[profile] = deepcopy(aa[profile])
 
+def include_list_recursive(profile):
+    ''' get a list of all includes in a profile and its included files '''
+
+    includelist = profile['inc_ie'].get_all_full_paths(profile_dir)
+    full_list = []
+
+    while includelist:
+        incname = includelist.pop(0)
+
+        if incname in full_list:
+            continue
+        full_list.append(incname)
+
+        # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
+        if incname.startswith(profile_dir):
+            incname = incname.replace('%s/' % profile_dir, '')
+
+        for childinc in include[incname][incname]['inc_ie'].rules:
+            for childinc_file in childinc.get_full_paths(profile_dir):
+                if childinc_file not in full_list:
+                    includelist += [childinc_file]
+
+    return full_list
+
 def is_known_rule(profile, rule_type, rule_obj):
     # XXX get rid of get() checks after we have a proper function to initialize a profile
     if profile.get(rule_type, False):
         if profile[rule_type].is_covered(rule_obj, False):
             return True
 
-    includelist = list(profile['include'].keys())
-    checked = []
+    includelist = include_list_recursive(profile)
 
-    while includelist:
-        incname = includelist.pop(0)
-        checked.append(incname)
+    for incname in includelist:
+        # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
+        if incname.startswith(profile_dir):
+            incname = incname.replace('%s/' % profile_dir, '')
 
-        if os.path.isdir(get_include_path(incname)):
-            includelist += include_dir_filelist(profile_dir, incname)
-        else:
-            if include[incname][incname][rule_type].is_covered(rule_obj, False):
-                return True
-
-            for childinc in include[incname][incname]['include'].keys():
-                if childinc not in checked:
-                    includelist += [childinc]
+        if include[incname][incname][rule_type].is_covered(rule_obj, False):
+            return True
 
     return False
 
@@ -2387,35 +2350,25 @@ def get_file_perms(profile, path, audit, deny):
 
     perms = profile['file'].get_perms_for_path(path, audit, deny)
 
-    includelist = list(profile['include'].keys())
-    checked = []
+    includelist = include_list_recursive(profile)
 
-    while includelist:
-        incname = includelist.pop(0)
+    for incname in includelist:
+        # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
+        if incname.startswith(profile_dir):
+            incname = incname.replace('%s/' % profile_dir, '')
 
-        if incname in checked:
-            continue
-        checked.append(incname)
+        incperms = include[incname][incname]['file'].get_perms_for_path(path, audit, deny)
 
-        if os.path.isdir(get_include_path(incname)):
-            includelist += include_dir_filelist(profile_dir, incname)
-        else:
-            incperms = include[incname][incname]['file'].get_perms_for_path(path, audit, deny)
+        for allow_or_deny in ['allow', 'deny']:
+            for owner_or_all in ['all', 'owner']:
+                for perm in incperms[allow_or_deny][owner_or_all]:
+                    perms[allow_or_deny][owner_or_all].add(perm)
 
-            for allow_or_deny in ['allow', 'deny']:
-                for owner_or_all in ['all', 'owner']:
-                    for perm in incperms[allow_or_deny][owner_or_all]:
-                        perms[allow_or_deny][owner_or_all].add(perm)
+                if 'a' in perms[allow_or_deny][owner_or_all] and 'w' in perms[allow_or_deny][owner_or_all]:
+                    perms[allow_or_deny][owner_or_all].remove('a')  # a is a subset of w, so remove it
 
-                    if 'a' in perms[allow_or_deny][owner_or_all] and 'w' in perms[allow_or_deny][owner_or_all]:
-                        perms[allow_or_deny][owner_or_all].remove('a')  # a is a subset of w, so remove it
-
-            for incpath in incperms['paths']:
-                perms['paths'].add(incpath)
-
-            for childinc in include[incname][incname]['include'].keys():
-                if childinc not in checked:
-                    includelist += [childinc]
+        for incpath in incperms['paths']:
+            perms['paths'].add(incpath)
 
     return perms
 

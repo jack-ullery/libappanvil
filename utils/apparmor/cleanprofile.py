@@ -32,12 +32,8 @@ class CleanProf(object):
 
     def compare_profiles(self):
         deleted = 0
-        other_file_includes = list(self.other.filelist[self.other.filename]['include'].keys())
 
-        #Remove the duplicate file-level includes from other
-        for rule in self.profile.filelist[self.profile.filename]['include'].keys():
-            if rule in other_file_includes:
-                self.other.filelist[self.other.filename]['include'].pop(rule)
+        deleted += self.other.active_profiles.delete_preamble_duplicates(self.other.filename)
 
         for profile in self.profile.aa.keys():
             deleted += self.remove_duplicate_rules(profile)
@@ -46,23 +42,22 @@ class CleanProf(object):
 
     def remove_duplicate_rules(self, program):
         #Process the profile of the program
-        #Process every hat in the profile individually
-        file_includes = list(self.profile.filelist[self.profile.filename]['include'].keys())
-        deleted = 0
-        for hat in sorted(self.profile.aa[program].keys()):
-            #The combined list of includes from profile and the file
-            includes = list(self.profile.aa[program][hat]['include'].keys()) + file_includes
 
-            #If different files remove duplicate includes in the other profile
-            if not self.same_file:
-                if self.other.aa[program].get(hat):  # carefully avoid to accidently initialize self.other.aa[program][hat]
-                    for inc in includes:
-                        if self.other.aa[program][hat]['include'].get(inc, False):
-                            self.other.aa[program][hat]['include'].pop(inc)
-                            deleted += 1
+        deleted = 0
+
+        # remove duplicate rules from the preamble
+        deleted += self.profile.active_profiles.delete_preamble_duplicates(self.profile.filename)
+
+        #Process every hat in the profile individually
+        for hat in sorted(self.profile.aa[program].keys()):
+            includes = self.profile.aa[program][hat]['inc_ie'].get_all_full_paths(apparmor.profile_dir)
 
             #Clean up superfluous rules from includes in the other profile
             for inc in includes:
+                # apparmor.include[] keys can be a) 'abstractions/foo' and b) '/full/path'
+                if inc.startswith(apparmor.profile_dir):
+                    inc = inc.replace('%s/' % apparmor.profile_dir, '')
+
                 if not self.profile.include.get(inc, {}).get(inc, False):
                     apparmor.load_include(inc)
                 if self.other.aa[program].get(hat):  # carefully avoid to accidently initialize self.other.aa[program][hat]

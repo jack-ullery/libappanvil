@@ -3,6 +3,8 @@
 
 #include  if  exists <tunables/nothing>
 
+  #include if exists <tunables/global>
+  include if exists <tunables/global>
 
 		alias /foo    ->    /bar	,
 
@@ -17,6 +19,8 @@
 	#include <abstractions/base>
 
 #include  if  exists <foo>
+	#include if exists <abstractions/base>
+	include <abstractions/base>
 
     capability sys_admin,
     audit capability,

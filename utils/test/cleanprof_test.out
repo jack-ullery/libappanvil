@@ -5,8 +5,7 @@ alias /foo -> /bar,
 @{asdf} = "" foo
 @{xy} = x y
 
-#include <tunables/global>
-
+include <tunables/global>
 include if exists <tunables/nothing>
 
 # A simple test comment which will persist
@@ -15,8 +14,7 @@ include if exists <tunables/nothing>
 /usr/bin/a/simple/cleanprof/test/profile {
   abi "abi/4.20",
 
-  #include <abstractions/base>
-
+  include <abstractions/base>
   include if exists <foo>
 
   set rlimit nofile <= 256,

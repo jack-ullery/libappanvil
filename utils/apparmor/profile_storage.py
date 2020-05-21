@@ -61,7 +61,6 @@ class ProfileStorage:
         for rule in ruletypes:
             data[rule] = ruletypes[rule]['ruleset']()
 
-        data['include']          = dict()
         data['lvar']             = dict()
 
         data['filename']         = ''
@@ -141,7 +140,6 @@ class ProfileStorage:
 
         # "old" write functions for rule types not implemented as *Rule class yet
         write_functions = {
-            'include': write_includes,
             'lvar': write_list_vars,
             'mount': write_mount,
             'pivot_root': write_pivot_root,
@@ -151,7 +149,6 @@ class ProfileStorage:
         write_order = [
             'abi',
             'lvar',
-            'include',
             'inc_ie',
             'rlimit',
             'capability',
@@ -215,23 +212,6 @@ def write_list_vars(ref, depth):
             data.append('%s%s = %s' % (pre, key, value))
         if ref[name].keys():
             data.append('')
-
-    return data
-
-def write_includes(prof_data, depth):
-    pre = '  ' * depth
-    data = []
-
-    for key in sorted(prof_data['include'].keys()):
-        if key.startswith('/'):
-            qkey = '"%s"' % key
-        else:
-            qkey = '<%s>' % quote_if_needed(key)
-
-        data.append('%s#include %s' % (pre, qkey))
-
-    if data:
-        data.append('')
 
     return data
 

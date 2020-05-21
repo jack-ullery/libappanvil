@@ -25,6 +25,7 @@ from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpret
 from apparmor.aare import AARE
 from apparmor.common import AppArmorException, AppArmorBug
 from apparmor.rule.file import FileRule
+from apparmor.rule.include import IncludeRule
 
 class AaTestWithTempdir(AATest):
     def AASetup(self):
@@ -149,9 +150,9 @@ class AaTest_create_new_profile(AATest):
             self.assertEqual(set(profile[program][program]['file'].get_clean()), {'%s mr,' % program, ''})
 
         if exp_abstraction:
-            self.assertEqual(set(profile[program][program]['include'].keys()), {exp_abstraction, 'abstractions/base'})
+            self.assertEqual(profile[program][program]['inc_ie'].get_clean(), ['include <abstractions/base>', 'include <%s>' % exp_abstraction, ''])
         else:
-            self.assertEqual(set(profile[program][program]['include'].keys()), {'abstractions/base'})
+            self.assertEqual(profile[program][program]['inc_ie'].get_clean(), ['include <abstractions/base>', ''])
 
 class AaTest_get_interpreter_and_abstraction(AATest):
     tests = [
@@ -829,9 +830,9 @@ class AaTest_get_file_perms_2(AATest):
         apparmor.aa.load_include('abstractions/aspell')
 
         profile = apparmor.aa.ProfileStorage('/test', '/test', 'test-aa.py')
-        profile['include']['abstractions/base'] = True
-        profile['include']['abstractions/bash'] = True
-        profile['include']['abstractions/enchant'] = True  # includes abstractions/aspell
+        profile['inc_ie'].add(IncludeRule.parse('include <abstractions/base>'))
+        profile['inc_ie'].add(IncludeRule.parse('include <abstractions/bash>'))
+        profile['inc_ie'].add(IncludeRule.parse('include <abstractions/enchant>'))
 
         profile['file'].add(FileRule.parse('owner /usr/share/common-licenses/**  w,'))
         profile['file'].add(FileRule.parse('owner /usr/share/common-licenses/what/ever a,'))  # covered by the above 'w' rule, so 'a' should be ignored
@@ -871,9 +872,10 @@ class AaTest_propose_file_rules(AATest):
         apparmor.aa.user_globs['/no/thi*ng'] = AARE('/no/thi*ng', True)
 
         profile = apparmor.aa.ProfileStorage('/test', '/test', 'test-aa.py')
-        profile['include']['abstractions/base'] = True
-        profile['include']['abstractions/bash'] = True
-        profile['include']['abstractions/enchant'] = True  # includes abstractions/aspell
+        profile['inc_ie'].add(IncludeRule.parse('include <abstractions/base>'))
+        profile['inc_ie'].add(IncludeRule.parse('include <abstractions/bash>'))
+        profile['inc_ie'].add(IncludeRule.parse('include <abstractions/enchant>'))
+
 
         profile['file'].add(FileRule.parse('owner /usr/share/common-licenses/**  w,'))
         profile['file'].add(FileRule.parse('/dev/null rwk,'))
@@ -915,10 +917,10 @@ class AaTest_propose_file_rules_with_absolute_includes(AATest):
         apparmor.aa.load_include(abs_include3)
 
         profile = apparmor.aa.ProfileStorage('/test', '/test', 'test-aa.py')
-        profile['include']['abstractions/base'] = False
-        profile['include'][abs_include1] = False
-        profile['include'][abs_include2] = False
-        profile['include'][abs_include3] = False
+        profile['inc_ie'].add(IncludeRule.parse('include <abstractions/base>'))
+        profile['inc_ie'].add(IncludeRule.parse('include "%s"' % abs_include1))
+        profile['inc_ie'].add(IncludeRule.parse('include "%s"' % abs_include2))
+        profile['inc_ie'].add(IncludeRule.parse('include "%s"' % abs_include3))
 
         rule_obj = FileRule(params[0], params[1], None, FileRule.ALL, owner=False, log_event=True)
         proposals = propose_file_rules(profile, rule_obj)
