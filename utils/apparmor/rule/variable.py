@@ -78,7 +78,7 @@ class VariableRule(BaseRule):
 
         varname = matches.group('varname')
         mode = matches.group('mode')
-        values = {matches.group('values')}  # TODO: split
+        values = separate_vars(matches.group('values'))
 
         return VariableRule(varname, mode, values,
                            audit=False, deny=False, allow_keyword=False, comment=comment)

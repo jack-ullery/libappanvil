@@ -78,7 +78,7 @@ class VariableTestParse(VariableTest):
         ('  @{foo}   +=    /bar',                       exp('',             '@{foo}',  '+=',    {'/bar'}         )),
         ('  @{foo} =   /bar        # comment',          exp(' # comment',   '@{foo}',  '=',     {'/bar'}         )),
         ('  @{foo}   +=    /bar   # comment',           exp(' # comment',   '@{foo}',  '+=',    {'/bar'}         )),
-        ('@{foo}=/bar /baz',                            exp('',             '@{foo}',  '=',     {'/bar /baz'}    )),  # TODO: split values
+        ('@{foo}=/bar /baz',                            exp('',             '@{foo}',  '=',     {'/bar', '/baz'} )),
      ]
 
     def _run_test(self, rawrule, expected):
@@ -177,12 +177,13 @@ class WriteVariableTestAATest(AATest):
         #  raw rule                                                      clean rule
         ('  @{foo}  =  /bar   ',                                        '@{foo} = /bar'),
         ('  @{foo}  =  /bar   # comment',                               '@{foo} = /bar'),
+        ('  @{foo}  =  /bar  ""',                                       '@{foo} = "" /bar'),
         ('  @{foo}  +=  /bar   ',                                       '@{foo} += /bar'),
         ('  @{foo}  +=  /bar   # comment',                              '@{foo} += /bar'),
-#       ('  @{foo}  +=  /bar       /baz',                               '@{foo} += /bar /baz'),  # TODO
-#       ('  @{foo}  +=  /bar       /baz',                               '@{foo} += /bar /baz'),  # TODO
-#       ('  @{foo}  +=  /bar      @{baz}',                              '@{foo} += /bar @{baz}'),  # TODO
-#       ('  @{foo}  +=  /bar      @{baz}',                              '@{foo} += /bar @{baz}'),  # TODO
+        ('  @{foo}  +=  /bar       /baz',                               '@{foo} += /bar /baz'),
+        ('  @{foo}  +=  /bar       /baz',                               '@{foo} += /bar /baz'),
+        ('  @{foo}  +=  /bar      @{baz}',                              '@{foo} += /bar @{baz}'),
+        ('  @{foo}  +=  /bar      @{baz}',                              '@{foo} += /bar @{baz}'),
     ]
 
     def _run_test(self, rawrule, expected):
@@ -245,19 +246,19 @@ class VariableCoveredTest_02(VariableCoveredTest):
 
     tests = [
         #   rule                                       equal     strict equal    covered     covered exact
-#       ('           @{foo} = /bar /baz'            , [ True    , True          , True      , True      ]),  # TODO
+        ('           @{foo} = /bar /baz'            , [ True    , True          , True      , True      ]),
         ('           @{foo} += /bar /baz'           , [ False   , False         , False     , False     ]),
         ('           @{foo} = /bar /baz # cmt'      , [ True    , False         , True      , True      ]),
         ('           @{foo} += /bar /baz # cmt'     , [ False   , False         , False     , False     ]),
         # changed order of values
-#       ('           @{foo} = /baz /bar'            , [ True    , False         , True      , True      ]),  # TODO
-#       ('           @{foo} += /baz /bar'           , [ False   , False         , False     , False     ]),  # TODO
-#       ('           @{foo} = /baz /bar # cmt'      , [ True    , False         , True      , False     ]),  # TODO
-#       ('           @{foo} += /baz /bar # cmt'     , [ False   , False         , False     , False     ]),  # TODO
+        ('           @{foo} = /baz /bar'            , [ True    , False         , True      , True      ]),
+        ('           @{foo} += /baz /bar'           , [ False   , False         , False     , False     ]),
+        ('           @{foo} = /baz /bar # cmt'      , [ True    , False         , True      , True      ]),
+        ('           @{foo} += /baz /bar # cmt'     , [ False   , False         , False     , False     ]),
         # only one value
-#       ('           @{foo} = /bar'                 , [ False   , False         , True      , True      ]),  # TODO
+        ('           @{foo} = /bar'                 , [ False   , False         , True      , True      ]),
         ('           @{foo} += /bar'                , [ False   , False         , False     , False     ]),
-#       ('           @{foo} = /bar   # comment'     , [ False   , False         , True      , False     ]),  # TODO
+        ('           @{foo} = /bar   # comment'     , [ False   , False         , True      , True      ]),
         ('           @{foo} += /bar  # comment'     , [ False   , False         , False     , False     ]),
         ('           @{bar} = /bar'                 , [ False   , False         , False     , False     ]),  # different variable name
         ]
