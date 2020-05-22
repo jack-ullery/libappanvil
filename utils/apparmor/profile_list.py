@@ -185,6 +185,66 @@ class ProfileList:
 
         return None  # nothing found
 
+    def get_all_merged_variables(self, filename, all_incfiles, profile_dir):
+        ''' Get merged variables of a file and its includes
+
+            Note that this function is more forgiving than apparmor_parser.
+            It detects variable redefinitions and adding values to non-existing variables.
+            However, it doesn't honor the order - so adding to a variable first and defining
+            it later won't trigger an error.
+        '''
+
+        if not self.files.get(filename):
+            raise AppArmorBug('%s not listed in ProfileList files' % filename)
+
+        merged_variables = {}
+
+        mainfile_variables = self.files[filename]['variable'].get_merged_variables()
+
+        # keep track in which file a variable gets set
+        set_in = {}
+        for var in mainfile_variables['=']:
+            merged_variables[var] = mainfile_variables['='][var]
+            set_in[var] = filename
+
+        # collect variable additions (+=)
+        inc_add = {}
+        if mainfile_variables['+=']:
+            inc_add[filename] = mainfile_variables['+=']  # variable additions from main file
+
+        for incname in all_incfiles:
+            # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
+            if incname.startswith(profile_dir):
+                incname = incname.replace('%s/' % profile_dir, '')
+
+            if not self.files.get(incname):
+                continue  # tunables/* only end up in self.files if they contain variable or alias definitions
+
+            inc_vars = self.files[incname]['variable'].get_merged_variables()
+
+            for var in inc_vars['=']:
+                if merged_variables.get(var):
+                    raise AppArmorException('While parsing %(profile)s: Conflicting variable definitions for variable %(var)s found in %(file1)s and %(file2)s.' % {
+                            'var': var, 'profile': filename, 'file1': set_in[var], 'file2': incname})
+                else:
+                    merged_variables[var] = inc_vars['='][var]
+                    set_in[var] = incname
+
+            # variable additions can happen in other files than the variable definition. First collect them from all files...
+            if inc_vars['+=']:
+                inc_add[incname] = inc_vars['+=']
+
+        for incname in inc_add:
+            # ... and then check if the variables that get extended have an initial definition. If yes, merge them.
+            for var in inc_add[incname]:
+                if merged_variables.get(var):
+                    merged_variables[var] |= inc_add[incname][var]
+                else:
+                    raise AppArmorException('While parsing %(profile)s: Variable %(var)s was not previously declared, but is being assigned additional value in file %(file)s.' % {
+                            'var': var, 'profile': filename, 'file': incname})
+
+        return merged_variables
+
     def profiles_in_file(self, filename):
         ''' Return list of profiles in the given file '''
         if not self.files.get(filename):
