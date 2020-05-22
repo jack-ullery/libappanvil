@@ -317,6 +317,7 @@ class VariableRulesTest(AATest):
         self.assertEqual([], ruleset.get_clean(2))
         self.assertEqual([], ruleset_2.get_raw(2))
         self.assertEqual([], ruleset_2.get_clean(2))
+        self.assertEqual({'=': {}, '+=': {}}, ruleset_2.get_merged_variables())
 
     def test_ruleset_1(self):
         ruleset = VariableRuleset()
@@ -324,17 +325,20 @@ class VariableRulesTest(AATest):
             '@{foo} = /bar',
             '@{baz}= /asdf',
             '@{foo}    +=   /whatever',
+            '@{foo}    +=   /morestuff',
         ]
 
         expected_raw = [
             '@{foo} = /bar',
             '@{baz}= /asdf',
             '@{foo}    +=   /whatever',
+            '@{foo}    +=   /morestuff',
             '',
         ]
 
         expected_clean = [
             '@{baz} = /asdf',
+            '@{foo} += /morestuff',
             '@{foo} += /whatever',
             '@{foo} = /bar',
             '',
@@ -344,8 +348,19 @@ class VariableRulesTest(AATest):
             '@{foo} = /bar',
             '@{baz} = /asdf',
             '@{foo} += /whatever',
+            '@{foo} += /morestuff',
             '',
         ]
+
+        expected_merged = {
+            '=': {
+                '@{foo}': {'/bar'},
+                '@{baz}': {'/asdf'},
+            },
+            '+=': {
+                '@{foo}': {'/whatever', '/morestuff'},
+            }
+        }
 
         for rule in rules:
             ruleset.add(VariableRule.parse(rule))
@@ -353,6 +368,7 @@ class VariableRulesTest(AATest):
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())
         self.assertEqual(expected_clean_unsorted, ruleset.get_clean_unsorted())
+        self.assertEqual(expected_merged, ruleset.get_merged_variables())
 
     def test_ruleset_overwrite(self):
         ruleset = VariableRuleset()
@@ -360,6 +376,7 @@ class VariableRulesTest(AATest):
         ruleset.add(VariableRule.parse('@{foo} = /bar'))
         with self.assertRaises(AppArmorException):
             ruleset.add(VariableRule.parse('@{foo} = /asdf'))  # attempt to redefine @{foo}
+        self.assertEqual({'=': {'@{foo}': {'/bar'} }, '+=': {}}, ruleset.get_merged_variables())
 
 class VariableGlobTestAATest(AATest):
     def setUp(self):

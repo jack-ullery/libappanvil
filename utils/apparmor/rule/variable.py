@@ -151,6 +151,26 @@ class VariableRuleset(BaseRuleset):
 
         super(VariableRuleset, self).add(rule, cleanup)
 
+    def get_merged_variables(self):
+        ''' Get merged variables of this VariableRuleset.
+
+            Note that no error checking is done because variables can be defined in one file and extended in another.
+        '''
+
+        var_set = {}
+        var_add = {}
+
+        for rule in self.rules:
+            if rule.mode == '=':
+                var_set[rule.varname] = rule.values  # blindly set, add() prevents redefinition of variables
+            else:
+                if not var_add.get(rule.varname):
+                    var_add[rule.varname] = rule.values
+                else:
+                    var_add[rule.varname] |= rule.values
+
+        return {'=': var_set, '+=': var_add}
+
 def separate_vars(vs):
     """Returns a list of all the values for a variable"""
     data = set()
