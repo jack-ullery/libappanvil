@@ -110,6 +110,18 @@ created = []
 helpers = dict()  # Preserve this between passes # was our
 ### logprof ends
 
+def reset_aa():
+    ''' Reset the most important global variables
+
+        Used by aa-mergeprof and some tests.
+    '''
+
+    global aa, include, active_profiles, original_aa
+
+    aa = hasher()
+    include = dict()
+    active_profiles = ProfileList()
+    original_aa = hasher()
 
 def on_exit():
     """Shutdowns the logger and records exit if debugging enabled"""
