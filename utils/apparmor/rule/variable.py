@@ -47,6 +47,8 @@ class VariableRule(BaseRule):
             raise AppArmorBug('Passed unknown type for varname to %s: %s' % (self.__class__.__name__, varname))
         if not varname.startswith('@{'):
             raise AppArmorException("Passed invalid varname to %s (doesn't start with '@{'): %s" % (self.__class__.__name__, varname))
+        if not varname.endswith('}'):
+            raise AppArmorException("Passed invalid varname to %s (doesn't end with '}'): %s" % (self.__class__.__name__, varname))
 
         if not type_is_str(mode):
             raise AppArmorBug('Passed unknown type for variable assignment mode to %s: %s' % (self.__class__.__name__, mode))

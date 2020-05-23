@@ -156,7 +156,6 @@ exception_not_raised = [
     'vars/vars_bad_3.sd',
     'vars/vars_bad_4.sd',
     'vars/vars_bad_5.sd',
-    'vars/vars_bad_7.sd',
     'vars/vars_bad_trailing_comma_1.sd',
     'vars/vars_bad_trailing_comma_2.sd',
     'vars/vars_bad_trailing_comma_3.sd',

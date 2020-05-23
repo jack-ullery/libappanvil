@@ -89,14 +89,16 @@ class VariableTestParse(VariableTest):
 
 class VariableTestParseInvalid(VariableTest):
     tests = [
-        ('@{foo} =',                                 AppArmorException),
-        ('@ {foo} =      # comment',                 AppArmorException),
-        ('@ {foo} =      ',                          AppArmorException),
+        # rawrule                                   matches regex   exception
+        ('@{foo} =',                                (False,         AppArmorException)),
+        ('@ {foo} =      # comment',                (False,         AppArmorException)),
+        ('@ {foo} =      ',                         (False,         AppArmorException)),
+        ('@{foo = /foo f',                          (True,          AppArmorException)),  # missing } in varname
     ]
 
     def _run_test(self, rawrule, expected):
-        self.assertFalse(VariableRule.match(rawrule))
-        with self.assertRaises(expected):
+        self.assertEqual(VariableRule.match(rawrule), expected[0])
+        with self.assertRaises(expected[1]):
             VariableRule.parse(rawrule)
 
 class VariableFromInit(VariableTest):
