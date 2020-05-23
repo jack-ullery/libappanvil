@@ -157,7 +157,6 @@ exception_not_raised = [
     'vars/vars_bad_4.sd',
     'vars/vars_bad_5.sd',
     'vars/vars_bad_7.sd',
-    'vars/vars_bad_add_assignment_1.sd',  # adding to non-existing variable
     'vars/vars_bad_trailing_comma_1.sd',
     'vars/vars_bad_trailing_comma_2.sd',
     'vars/vars_bad_trailing_comma_3.sd',
@@ -409,11 +408,17 @@ class TestParseParserTests(AATest):
             # this makes sure we notice any behaviour change, especially not being wrong anymore
             expected = not expected
 
+        # make sure the profile is known in active_profiles.files
+        apparmor.active_profiles.init_file(params['file'])
+
         if expected:
             apparmor.parse_profile_data(data, params['file'], 0)
+            apparmor.active_profiles.get_all_merged_variables(params['file'], apparmor.include_list_recursive(apparmor.active_profiles.files[params['file']]), profile_dir)
+
         else:
             with self.assertRaises(AppArmorException):
                 apparmor.parse_profile_data(data, params['file'], 0)
+                apparmor.active_profiles.get_all_merged_variables(params['file'], apparmor.include_list_recursive(apparmor.active_profiles.files[params['file']]), profile_dir)
 
 def parse_test_profiles(file_with_path):
     '''parse the test-related headers of a profile (for example EXRESULT) and add the profile to the set of tests'''
@@ -519,7 +524,8 @@ def find_and_setup_test_profiles(profile_dir):
 
 
 setup_aa(apparmor)
-find_and_setup_test_profiles('../../parser/tst/simple_tests/')
+profile_dir = os.path.abspath('../../parser/tst/simple_tests/')
+find_and_setup_test_profiles(profile_dir)
 
 setup_all_loops(__name__)
 if __name__ == '__main__':
