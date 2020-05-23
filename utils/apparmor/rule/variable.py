@@ -181,6 +181,10 @@ def separate_vars(vs):
     RE_VARS = re.compile('^(("[^"]*")|([^"\s]+))\s*(.*)$')
     while RE_VARS.search(vs):
         matches = RE_VARS.search(vs).groups()
+
+        if matches[0].endswith(','):
+            raise AppArmorException(_('Variable declarations do not accept trailing commas'))
+
         data.add(strip_quotes(matches[0]))
         vs = matches[3].strip()
 

@@ -79,6 +79,7 @@ class VariableTestParse(VariableTest):
         ('  @{foo} =   /bar        # comment',          exp(' # comment',   '@{foo}',  '=',     {'/bar'}         )),
         ('  @{foo}   +=    /bar   # comment',           exp(' # comment',   '@{foo}',  '+=',    {'/bar'}         )),
         ('@{foo}=/bar /baz',                            exp('',             '@{foo}',  '=',     {'/bar', '/baz'} )),
+        ('@{foo} = "/bar,"   # comment',                exp(' # comment',   '@{foo}',  '=',     {'/bar,'}        )),  # value with trailing comma, needs to be quoted
      ]
 
     def _run_test(self, rawrule, expected):
@@ -93,7 +94,11 @@ class VariableTestParseInvalid(VariableTest):
         ('@{foo} =',                                (False,         AppArmorException)),
         ('@ {foo} =      # comment',                (False,         AppArmorException)),
         ('@ {foo} =      ',                         (False,         AppArmorException)),
-        ('@{foo = /foo f',                          (True,          AppArmorException)),  # missing } in varname
+        ('@{foo} = /foo,',                          (True,          AppArmorException)),  # trailing comma
+        ('@{foo} = /foo,   ',                       (True,          AppArmorException)),  # trailing comma
+        ('@{foo} = /foo,   # comment',              (True,          AppArmorException)),  # trailing comma
+        ('@{foo} = /foo, /bar',                     (True,          AppArmorException)),  # trailing comma in first value
+        ('@{foo = /foo f',                          (True,          AppArmorException)),  # variable name broken, missing }
     ]
 
     def _run_test(self, rawrule, expected):
