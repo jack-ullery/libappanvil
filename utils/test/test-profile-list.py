@@ -355,6 +355,10 @@ class AaTest_get_all_merged_variables(AATest):
         with self.assertRaises(AppArmorException):
             apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]), self.profile_dir)
 
+    def test_vars_from_nonexisting_profile(self):
+        with self.assertRaises(AppArmorBug):
+            apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'file.not.found'), list(), self.profile_dir)
+
 
 setup_aa(apparmor.aa)
 setup_all_loops(__name__)

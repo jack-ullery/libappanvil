@@ -75,32 +75,6 @@ class SeverityTestCap(SeverityBaseTest):
 
 
 class SeverityVarsTest(SeverityBaseTest):
-
-    VARIABLE_DEFINITIONS = '''
-@{HOME}=@{HOMEDIRS}/*/ /root/
-@{HOMEDIRS}=/home/
-# add another path to @{HOMEDIRS}
-@{HOMEDIRS}+=/storage/
-@{multiarch}=*-linux-gnu*
-@{TFTP_DIR}=/var/tftp /srv/tftpboot
-@{PROC}=/proc/
-@{pid}={[1-9],[1-9][0-9],[1-9][0-9][0-9],[1-9][0-9][0-9][0-9],[1-9][0-9][0-9][0-9][0-9],[1-9][0-9][0-9][0-9][0-9][0-9]}
-@{tid}=@{pid}
-@{pids}=@{pid}
-@{somepaths}=/home/foo/downloads @{HOMEDIRS}/foo/.ssh/
-'''
-
-    def _init_tunables(self, content=''):
-        if not content:
-            content = self.VARIABLE_DEFINITIONS
-
-        self.rules_file = self.writeTmpfile('tunables', content)
-
-        self.sev_db.load_variables(self.rules_file)
-
-    def AATeardown(self):
-        self.sev_db.unload_variables()
-
     tests = [
         (['@{PROC}/sys/vm/overcommit_memory',           'r'],    6),
         (['@{HOME}/sys/@{PROC}/overcommit_memory',      'r'],    4),
@@ -110,21 +84,16 @@ class SeverityVarsTest(SeverityBaseTest):
     ]
 
     def _run_test(self, params, expected):
-        self._init_tunables()
+        vars = {
+            '@{HOME}':      {'@{HOMEDIRS}/*/', '/root/'},
+            '@{HOMEDIRS}':  {'/home/', '/storage/'},
+            '@{multiarch}': {'*-linux-gnu*'},
+            '@{TFTP_DIR}':  {'/var/tftp /srv/tftpboot'},
+            '@{PROC}':      {'/proc/'},
+            '@{somepaths}': {'/home/foo/downloads', '@{HOMEDIRS}/foo/.ssh/'},
+        }
+        self.sev_db.set_variables(vars)
         self._simple_severity_w_perm(params[0], params[1], expected)
-
-    def test_include(self):
-        self._init_tunables('#include <file/not/found>')  # including non-existing files doesn't raise an exception
-
-        self.assertTrue(True)  # this test only makes sure that loading the tunables file works
-
-    def test_invalid_variable_add(self):
-        with self.assertRaises(AppArmorException):
-            self._init_tunables('@{invalid} += /home/')
-
-    def test_invalid_variable_double_definition(self):
-        with self.assertRaises(AppArmorException):
-            self._init_tunables('@{foo} = /home/\n@{foo} = /root/')
 
 class SeverityDBTest(AATest):
     def _test_db(self, contents):

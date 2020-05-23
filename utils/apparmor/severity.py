@@ -12,10 +12,8 @@
 #
 # ----------------------------------------------------------------------
 from __future__ import with_statement
-import os
 import re
 from apparmor.common import AppArmorException, open_file_read, warn, convert_regexp  # , msg, error, debug
-from apparmor.regex import re_match_include
 
 class Severity(object):
     def __init__(self, dbname=None, default_rank=10):
@@ -176,37 +174,6 @@ class Severity(object):
             replacement = replacement[:-1]
         return resource.replace(variable, replacement)
 
-    def load_variables(self, prof_path):
-        """Loads the variables for the given profile"""
-        if os.path.isfile(prof_path):
-            with open_file_read(prof_path) as f_in:
-                for line in f_in:
-                    line = line.strip()
-                    # If any includes, load variables from them first
-                    match = re_match_include(line)
-                    if match:
-                        new_path = match
-                        if not new_path.startswith('/'):
-                            new_path = self.PROF_DIR + '/' + match
-                        self.load_variables(new_path)
-                    else:
-                        # Remove any comments
-                        if '#' in line:
-                            line = line.split('#')[0].rstrip()
-                        # Expected format is @{Variable} = value1 value2 ..
-                        if line.startswith('@') and '=' in line:
-                            if '+=' in line:
-                                line = line.split('+=')
-                                try:
-                                    self.severity['VARIABLES'][line[0]] += [i.strip('"') for i in line[1].split()]
-                                except KeyError:
-                                    raise AppArmorException("Variable %s was not previously declared, but is being assigned additional value in file: %s" % (line[0], prof_path))
-                            else:
-                                line = line.split('=')
-                                if line[0] in self.severity['VARIABLES'].keys():
-                                    raise AppArmorException("Variable %s was previously declared in file: %s" % (line[0], prof_path))
-                                self.severity['VARIABLES'][line[0]] = [i.strip('"') for i in line[1].split()]
-
-    def unload_variables(self):
-        """Clears all loaded variables"""
-        self.severity['VARIABLES'] = dict()
+    def set_variables(self, vars):
+        ''' Set the profile variables to use for rating the severity '''
+        self.severity['VARIABLES'] = vars

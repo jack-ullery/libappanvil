@@ -852,8 +852,12 @@ def ask_exec(hashlog):
                         #
                         parent_uses_ld_xxx = check_for_LD_XXX(profile)
 
-                        sev_db.unload_variables()
-                        sev_db.load_variables(get_profile_filename_from_profile_name(profile, True))
+                        prof_filename = get_profile_filename_from_profile_name(profile)
+                        if prof_filename and active_profiles.files.get(prof_filename):
+                            sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename]), profile_dir))
+                        else:
+                            sev_db.set_variables( {} )
+
                         severity = sev_db.rank_path(exec_target, 'x')
 
                         # Prompt portion starts
@@ -1044,8 +1048,11 @@ def ask_the_questions(log_dict):
             raise AppArmorBug(_('Invalid mode found: %s') % aamode)
 
         for profile in sorted(log_dict[aamode].keys()):
-            sev_db.unload_variables()
-            sev_db.load_variables(get_profile_filename_from_profile_name(profile, True))
+            prof_filename = get_profile_filename_from_profile_name(profile)
+            if prof_filename and active_profiles.files.get(prof_filename):
+                sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename]), profile_dir))
+            else:
+                sev_db.set_variables( {} )
 
             # Sorted list of hats with the profile name coming first
             hats = list(filter(lambda key: key != profile, sorted(log_dict[aamode][profile].keys())))
