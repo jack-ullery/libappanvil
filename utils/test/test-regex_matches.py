@@ -628,23 +628,22 @@ class TestStripParenthesis(AATest):
         self.assertEqual(strip_parenthesis(params), expected)
 
 class TestStripQuotes(AATest):
-    def test_strip_quotes_01(self):
-        self.assertEqual('foo', strip_quotes('foo'))
-    def test_strip_quotes_02(self):
-        self.assertEqual('foo', strip_quotes('"foo"'))
-    def test_strip_quotes_03(self):
-        self.assertEqual('"foo', strip_quotes('"foo'))
-    def test_strip_quotes_04(self):
-        self.assertEqual('foo"', strip_quotes('foo"'))
-    def test_strip_quotes_05(self):
-        self.assertEqual('', strip_quotes('""'))
-    def test_strip_quotes_06(self):
-        self.assertEqual('foo"bar', strip_quotes('foo"bar'))
-    def test_strip_quotes_07(self):
-        self.assertEqual('foo"bar', strip_quotes('"foo"bar"'))
-    def test_strip_quotes_08(self):
-        self.assertEqual('"""foo"bar"""', strip_quotes('""""foo"bar""""'))
+    tests = [
+        ('foo',                     'foo'),
+        ('"foo"',                   'foo'),
+        ('"foo',                    '"foo'),
+        ('foo"',                    'foo"'),
+        ('""',                      ''),
+        ('foo"bar',                 'foo"bar'),
+        ('"foo"bar"',               'foo"bar'),
+        ('""""foo"bar""""',         '"""foo"bar"""'),
+        ('',                        ''),
+        ('/',                       '/'),
+        ('"',                       '"'),
+    ]
 
+    def _run_test(self, params, expected):
+        self.assertEqual(strip_quotes(params), expected)
 
 
 setup_aa(aa)
