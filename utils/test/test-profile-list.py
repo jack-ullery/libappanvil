@@ -19,6 +19,7 @@ import shutil
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.profile_list import ProfileList
 from apparmor.rule.abi import AbiRule
+from apparmor.rule.alias import AliasRule
 from apparmor.rule.include import IncludeRule
 from apparmor.rule.variable import VariableRule
 
@@ -205,40 +206,44 @@ class TestAdd_alias(AATest):
         self.pl = ProfileList()
 
     def testAdd_alias_1(self):
-        self.pl.add_alias('/etc/apparmor.d/bin.foo', '/foo', '/bar')
+        self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/foo', '/bar'))
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
         self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', ''])
 
     def testAdd_alias_2(self):
-        self.pl.add_alias('/etc/apparmor.d/bin.foo', '/foo', '/bar')
-        self.pl.add_alias('/etc/apparmor.d/bin.foo', '/xyz', '/zyx')
+        self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/foo', '/bar'))
+        self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/xyz', '/zyx'))
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
         self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', 'alias /xyz -> /zyx,', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', 'alias /xyz -> /zyx,', ''])
 
-    def testAdd_alias_dupe(self):
-        self.pl.add_alias('/etc/apparmor.d/bin.foo', '/foo', '/bar')
-        # parser allows re-defining aliases
-        # with self.assertRaises(AppArmorException):
-        #     self.pl.add_alias('/etc/apparmor.d/bin.foo', '/foo', '/redefine')  # attempt to redefine alias
-        self.pl.add_alias('/etc/apparmor.d/bin.foo', '/foo', '/redefine')  # redefine alias
+    def testAdd_alias_two_targets(self):
+        self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/foo', '/bar'))
+        self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/foo', '/another_target'))
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
-        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['alias /foo -> /redefine,', ''])
-        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['alias /foo -> /redefine,', ''])
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', 'alias /foo -> /another_target,', ''])
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', 'alias /foo -> /another_target,', ''])
 
     def testAdd_alias_error_1(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_alias('/etc/apparmor.d/bin.foo', None, '/foo')  # alias None insteadd of str
+            self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule(None, '/foo'))  # alias None insteadd of str
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def testAdd_alias_error_2(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_alias('/etc/apparmor.d/bin.foo', '/foo', None)  # target None insteadd of str
+            self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/foo', None))  # target None insteadd of str
         self.assertEqual(list(self.pl.files.keys()), [])
 
-#    def test_dedup_alias_1(self):
-#        TODO: implement after fixing alias handling (when a profile has two aliases with the same path on the left side)
+    def test_dedup_alias_1(self):
+        self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/foo', '/bar'))
+        self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/foo', '/another_target'))
+        self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/foo', '/bar'))  # duplicate
+        deleted = self.pl.delete_preamble_duplicates('/etc/apparmor.d/bin.foo')
+        self.assertEqual(deleted, 1)
+        self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', 'alias /foo -> /another_target,', ''])
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', 'alias /foo -> /another_target,', ''])
 
 class TestAdd_variable(AATest):
     def AASetup(self):

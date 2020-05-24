@@ -38,7 +38,6 @@ from apparmor.common import (AppArmorException, AppArmorBug, is_skippable_file, 
 import apparmor.ui as aaui
 
 from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
-                            RE_PROFILE_ALIAS,
                             RE_PROFILE_BOOLEAN, RE_PROFILE_CONDITIONAL,
                             RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
                             RE_PROFILE_CHANGE_HAT,
@@ -54,6 +53,7 @@ from apparmor.profile_storage import ProfileStorage, add_or_remove_flag, ruletyp
 import apparmor.rules as aarules
 
 from apparmor.rule.abi              import AbiRule
+from apparmor.rule.alias            import AliasRule
 from apparmor.rule.capability       import CapabilityRule
 from apparmor.rule.change_profile   import ChangeProfileRule
 from apparmor.rule.dbus             import DbusRule
@@ -1855,17 +1855,12 @@ def parse_profile_data(data, file, do_include):
 
             profile_data[profile][hat]['change_profile'].add(ChangeProfileRule.parse(line))
 
-        elif RE_PROFILE_ALIAS.search(line):
-            matches = RE_PROFILE_ALIAS.search(line).groups()
-
-            from_name = strip_quotes(matches[0])
-            to_name = strip_quotes(matches[1])
-
+        elif AliasRule.match(line):
             if profile and not do_include:
                 raise AppArmorException(_('Syntax Error: Unexpected alias definition found inside profile in file: %(file)s line: %(line)s') % {
                         'file': file, 'line': lineno + 1 })
             else:
-                active_profiles.add_alias(file, from_name, to_name)
+                active_profiles.add_alias(file, AliasRule.parse(line))
 
         elif RlimitRule.match(line):
             if not profile:
