@@ -219,7 +219,7 @@ def strip_parenthesis(data):
         return data.strip()
 
 def strip_quotes(data):
-    if data[0] + data[-1] == '""':
+    if len(data) > 1 and data[0] + data[-1] == '""':
         return data[1:-1]
     else:
         return data
