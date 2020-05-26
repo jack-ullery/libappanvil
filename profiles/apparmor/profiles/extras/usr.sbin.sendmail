@@ -60,6 +60,7 @@
   /usr/sbin/sendmail          rmix,
   /usr/sbin/sendmail.postfix  rmix,
   /usr/sbin/sendmail.sendmail rmix,
+  /usr/share/icu/[0-9]*.[0-9]*/*.dat r,
   /var/lib/sendmail/statistics rwl,
   /{,var/}run/sendmail.pid       rwl,
   /{,var/}run/sendmail/control   rw,

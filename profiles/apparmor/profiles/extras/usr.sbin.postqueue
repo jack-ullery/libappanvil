@@ -23,6 +23,7 @@
   /etc/postfix                         r,
   /usr/sbin/postqueue                  rmix,
   /usr/lib/postfix/{bin/,sbin/,}showq  Px,
+  /usr/share/icu/[0-9]*.[0-9]*/*.dat   r,
   /var/spool/postfix                   r,
   /var/spool/postfix/maildrop          r,
   /var/spool/postfix/maildrop/*        rwl,
