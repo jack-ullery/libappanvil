@@ -17,6 +17,7 @@ from apparmor.common import AppArmorBug, AppArmorException, type_is_str
 from apparmor.rule import quote_if_needed
 from apparmor.rule.abi import AbiRule, AbiRuleset
 from apparmor.rule.include import IncludeRule, IncludeRuleset
+from apparmor.rule.variable import VariableRule, VariableRuleset
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -48,6 +49,7 @@ class ProfileList:
             'abi': AbiRuleset(),
             'alias': {},
             'inc_ie': IncludeRuleset(),
+            'variable': VariableRuleset(),
             'profiles': [],
         }
 
@@ -115,6 +117,15 @@ class ProfileList:
 
         self.files[filename]['inc_ie'].add(inc_rule)
 
+    def add_variable(self, filename, var_rule):
+        ''' Store the given variable rule for the given profile filename preamble '''
+        if type(var_rule) is not VariableRule:
+            raise AppArmorBug('Wrong type given to ProfileList: %s' % var_rule)
+
+        self.init_file(filename)
+
+        self.files[filename]['variable'].add(var_rule)
+
     def delete_preamble_duplicates(self, filename):
         ''' Delete duplicates in the preamble of the given profile file '''
 
@@ -123,7 +134,7 @@ class ProfileList:
 
         deleted = 0
 
-        for r_type in ['abi', 'inc_ie']:  # TODO: don't hardcode
+        for r_type in ['abi', 'inc_ie', 'variable']:  # TODO: don't hardcode
             deleted += self.files[filename][r_type].delete_duplicates(None)  # None means not to check includes -- TODO check if this makes sense for all preamble rule types
 
         return deleted
@@ -137,6 +148,7 @@ class ProfileList:
         data += self.files[filename]['abi'].get_raw(depth)
         data += write_alias(self.files[filename])
         data += self.files[filename]['inc_ie'].get_raw(depth)
+        data += self.files[filename]['variable'].get_raw(depth)
         return data
 
     def get_clean(self, filename, depth=0):
@@ -145,22 +157,10 @@ class ProfileList:
             raise AppArmorBug('%s not listed in ProfileList files' % filename)
 
         data = []
-        # commented out for now because abi rules need to be written first - for now, use get_clean_first() instead
-        # data += self.files[filename]['abi'].get_clean_unsorted(depth)
-        # data += write_alias(self.files[filename])
-        data += self.files[filename]['inc_ie'].get_clean_unsorted(depth)
-        return data
-
-    def get_clean_first(self, filename, depth=0):
-        ''' Get preamble rules for the given profile filename (in clean formatting) that need to be at the beginning.
-            This is a temporary function, and will be dropped / merged with get_clean() when the whole preamble is moved to ProfileList
-            '''
-        if not self.files.get(filename):
-            raise AppArmorBug('%s not listed in ProfileList files' % filename)
-
-        data = []
         data += self.files[filename]['abi'].get_clean_unsorted(depth)
         data += write_alias(self.files[filename])
+        data += self.files[filename]['inc_ie'].get_clean_unsorted(depth)
+        data += self.files[filename]['variable'].get_clean_unsorted(depth)
         return data
 
     def filename_from_profile_name(self, name):
@@ -184,6 +184,66 @@ class ProfileList:
                 return self.attachments[path]  # XXX this returns the first match, not necessarily the best one
 
         return None  # nothing found
+
+    def get_all_merged_variables(self, filename, all_incfiles, profile_dir):
+        ''' Get merged variables of a file and its includes
+
+            Note that this function is more forgiving than apparmor_parser.
+            It detects variable redefinitions and adding values to non-existing variables.
+            However, it doesn't honor the order - so adding to a variable first and defining
+            it later won't trigger an error.
+        '''
+
+        if not self.files.get(filename):
+            raise AppArmorBug('%s not listed in ProfileList files' % filename)
+
+        merged_variables = {}
+
+        mainfile_variables = self.files[filename]['variable'].get_merged_variables()
+
+        # keep track in which file a variable gets set
+        set_in = {}
+        for var in mainfile_variables['=']:
+            merged_variables[var] = mainfile_variables['='][var]
+            set_in[var] = filename
+
+        # collect variable additions (+=)
+        inc_add = {}
+        if mainfile_variables['+=']:
+            inc_add[filename] = mainfile_variables['+=']  # variable additions from main file
+
+        for incname in all_incfiles:
+            # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
+            if incname.startswith(profile_dir):
+                incname = incname.replace('%s/' % profile_dir, '')
+
+            if not self.files.get(incname):
+                continue  # tunables/* only end up in self.files if they contain variable or alias definitions
+
+            inc_vars = self.files[incname]['variable'].get_merged_variables()
+
+            for var in inc_vars['=']:
+                if merged_variables.get(var):
+                    raise AppArmorException('While parsing %(profile)s: Conflicting variable definitions for variable %(var)s found in %(file1)s and %(file2)s.' % {
+                            'var': var, 'profile': filename, 'file1': set_in[var], 'file2': incname})
+                else:
+                    merged_variables[var] = inc_vars['='][var]
+                    set_in[var] = incname
+
+            # variable additions can happen in other files than the variable definition. First collect them from all files...
+            if inc_vars['+=']:
+                inc_add[incname] = inc_vars['+=']
+
+        for incname in inc_add:
+            # ... and then check if the variables that get extended have an initial definition. If yes, merge them.
+            for var in inc_add[incname]:
+                if merged_variables.get(var):
+                    merged_variables[var] |= inc_add[incname][var]
+                else:
+                    raise AppArmorException('While parsing %(profile)s: Variable %(var)s was not previously declared, but is being assigned additional value in file %(file)s.' % {
+                            'var': var, 'profile': filename, 'file': incname})
+
+        return merged_variables
 
     def profiles_in_file(self, filename):
         ''' Return list of profiles in the given file '''

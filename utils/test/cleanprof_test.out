@@ -2,11 +2,11 @@ abi <abi/4.19>,
 
 alias /foo -> /bar,
 
-@{asdf} = "" foo
-@{xy} = x y
-
 include <tunables/global>
 include if exists <tunables/nothing>
+
+@{xy} = x y
+@{asdf} = "" foo
 
 # A simple test comment which will persist
 

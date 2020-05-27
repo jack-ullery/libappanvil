@@ -39,7 +39,7 @@ import apparmor.ui as aaui
 
 from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
                             RE_PROFILE_ALIAS,
-                            RE_PROFILE_BOOLEAN, RE_PROFILE_VARIABLE, RE_PROFILE_CONDITIONAL,
+                            RE_PROFILE_BOOLEAN, RE_PROFILE_CONDITIONAL,
                             RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
                             RE_PROFILE_CHANGE_HAT,
                             RE_PROFILE_HAT_DEF, RE_PROFILE_MOUNT,
@@ -49,8 +49,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
 
 from apparmor.profile_list import ProfileList
 
-from apparmor.profile_storage import (ProfileStorage, add_or_remove_flag, ruletypes,
-                            write_list_vars )
+from apparmor.profile_storage import ProfileStorage, add_or_remove_flag, ruletypes
 
 import apparmor.rules as aarules
 
@@ -64,6 +63,7 @@ from apparmor.rule.network          import NetworkRule
 from apparmor.rule.ptrace           import PtraceRule
 from apparmor.rule.rlimit           import RlimitRule
 from apparmor.rule.signal           import SignalRule
+from apparmor.rule.variable         import VariableRule
 from apparmor.rule import quote_if_needed
 
 # setup module translations
@@ -110,7 +110,18 @@ created = []
 helpers = dict()  # Preserve this between passes # was our
 ### logprof ends
 
-filelist = hasher()    # File level variables and stuff in config files
+def reset_aa():
+    ''' Reset the most important global variables
+
+        Used by aa-mergeprof and some tests.
+    '''
+
+    global aa, include, active_profiles, original_aa
+
+    aa = hasher()
+    include = dict()
+    active_profiles = ProfileList()
+    original_aa = hasher()
 
 def on_exit():
     """Shutdowns the logger and records exit if debugging enabled"""
@@ -568,8 +579,6 @@ def autodep(bin_name, pname=''):
         active_profiles.add_profile(file, pname, attachment)
 
     if os.path.isfile(profile_dir + '/tunables/global'):
-        if not filelist.get(file, False):
-            filelist[file] = hasher()
         active_profiles.add_inc_ie(file, IncludeRule('tunables/global', False, True))
     write_profile_ui_feedback(pname)
 
@@ -843,8 +852,12 @@ def ask_exec(hashlog):
                         #
                         parent_uses_ld_xxx = check_for_LD_XXX(profile)
 
-                        sev_db.unload_variables()
-                        sev_db.load_variables(get_profile_filename_from_profile_name(profile, True))
+                        prof_filename = get_profile_filename_from_profile_name(profile)
+                        if prof_filename and active_profiles.files.get(prof_filename):
+                            sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename]), profile_dir))
+                        else:
+                            sev_db.set_variables( {} )
+
                         severity = sev_db.rank_path(exec_target, 'x')
 
                         # Prompt portion starts
@@ -1035,8 +1048,11 @@ def ask_the_questions(log_dict):
             raise AppArmorBug(_('Invalid mode found: %s') % aamode)
 
         for profile in sorted(log_dict[aamode].keys()):
-            sev_db.unload_variables()
-            sev_db.load_variables(get_profile_filename_from_profile_name(profile, True))
+            prof_filename = get_profile_filename_from_profile_name(profile)
+            if prof_filename and active_profiles.files.get(prof_filename):
+                sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename]), profile_dir))
+            else:
+                sev_db.set_variables( {} )
 
             # Sorted list of hats with the profile name coming first
             hats = list(filter(lambda key: key != profile, sorted(log_dict[aamode][profile].keys())))
@@ -1341,10 +1357,6 @@ def delete_all_duplicates(profile, incname, r_types):
         for rule_type in r_types:
             deleted += profile[rule_type].delete_duplicates(include[incname][incname][rule_type])
 
-    elif filelist.get(incname, False):
-        for rule_type in r_types:
-            deleted += profile[rule_type].delete_duplicates(filelist[incname][incname][rule_type])
-
     return deleted
 
 def ask_conflict_mode(profile, hat, old_profile, merge_profile):
@@ -1450,7 +1462,6 @@ def do_logprof_pass(logmark=''):
     global sev_db
 #    aa = hasher()
 #     changed = dict()
-#    filelist = hasher()
 
     aaui.UI_Info(_('Reading log entries from %s.') % logfile)
 
@@ -1874,22 +1885,12 @@ def parse_profile_data(data, file, do_include):
 
             profile_data[profile][hat]['lvar'][bool_var] = value
 
-        elif RE_PROFILE_VARIABLE.search(line):
-            # variable additions += and =
-            matches = RE_PROFILE_VARIABLE.search(line).groups()
-
-            list_var = strip_quotes(matches[0])
-            var_operation = matches[1]
-            value = matches[2]
-
-            if profile:
-                if not profile_data[profile][hat].get('lvar', False):
-                    profile_data[profile][hat]['lvar'][list_var] = []
-                store_list_var(profile_data[profile]['lvar'], list_var, value, var_operation, file)
+        elif VariableRule.match(line):
+            if profile and not do_include:
+                raise AppArmorException(_('Syntax Error: Unexpected variable definition found inside profile in file: %(file)s line: %(line)s') % {
+                        'file': file, 'line': lineno + 1 })
             else:
-                if not filelist[file].get('lvar', False):
-                    filelist[file]['lvar'][list_var] = []
-                store_list_var(filelist[file]['lvar'], list_var, value, var_operation, file)
+                active_profiles.add_variable(file, VariableRule.parse(line))
 
         elif RE_PROFILE_CONDITIONAL.search(line):
             # Conditional Boolean
@@ -2115,41 +2116,6 @@ def parse_unix_rule(line):
     # XXX Do real parsing here
     return aarules.Raw_Unix_Rule(line)
 
-def separate_vars(vs):
-    """Returns a list of all the values for a variable"""
-    data = set()
-    vs = vs.strip()
-
-    RE_VARS = re.compile('^(("[^"]*")|([^"\s]+))\s*(.*)$')
-    while RE_VARS.search(vs):
-        matches = RE_VARS.search(vs).groups()
-        data.add(strip_quotes(matches[0]))
-        vs = matches[3].strip()
-
-    if vs:
-        raise AppArmorException('Variable assignments contains invalid parts (unbalanced quotes?): %s' % vs)
-
-    return data
-
-def store_list_var(var, list_var, value, var_operation, filename):
-    """Store(add new variable or add values to variable) the variables encountered in the given list_var
-       - the 'var' parameter will be modified
-       - 'list_var' is the variable name, for example '@{foo}'
-        """
-    vlist = separate_vars(value)
-    if var_operation == '=':
-        if not var.get(list_var, False):
-            var[list_var] = set(vlist)
-        else:
-            raise AppArmorException(_('Redefining existing variable %(variable)s: %(value)s in %(file)s') % { 'variable': list_var, 'value': value, 'file': filename })
-    elif var_operation == '+=':
-        if var.get(list_var, False):
-            var[list_var] |= vlist
-        else:
-            raise AppArmorException(_('Values added to a non-existing variable %(variable)s: %(value)s in %(file)s') % { 'variable': list_var, 'value': value, 'file': filename })
-    else:
-        raise AppArmorException(_('Unknown variable operation %(operation)s for variable %(variable)s in %(file)s') % { 'operation': var_operation, 'variable': list_var, 'file': filename })
-
 def write_header(prof_data, depth, name, embedded_hat, write_flags):
     pre = ' ' * int(depth * 2)
     data = []
@@ -2242,9 +2208,6 @@ def serialize_profile(profile_data, name, options):
         prof_filename = get_profile_filename_from_attachment(name, True)
     else:
         prof_filename = get_profile_filename_from_profile_name(name, True)
-
-    data += active_profiles.get_clean_first(prof_filename, 0)
-    data += write_list_vars(filelist[prof_filename], 0)
 
     data += active_profiles.get_clean(prof_filename, 0)
 

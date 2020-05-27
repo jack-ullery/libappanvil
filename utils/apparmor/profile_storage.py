@@ -61,8 +61,6 @@ class ProfileStorage:
         for rule in ruletypes:
             data[rule] = ruletypes[rule]['ruleset']()
 
-        data['lvar']             = dict()
-
         data['filename']         = ''
         data['logprof_suggest']  = ''  # set in abstractions that should be suggested by aa-logprof
         data['name']             = ''
@@ -140,7 +138,6 @@ class ProfileStorage:
 
         # "old" write functions for rule types not implemented as *Rule class yet
         write_functions = {
-            'lvar': write_list_vars,
             'mount': write_mount,
             'pivot_root': write_pivot_root,
             'unix': write_unix,
@@ -148,7 +145,6 @@ class ProfileStorage:
 
         write_order = [
             'abi',
-            'lvar',
             'inc_ie',
             'rlimit',
             'capability',
@@ -200,20 +196,6 @@ def add_or_remove_flag(flags, flag_to_change, set_flag):
 
     return sorted(flags)
 
-
-def write_list_vars(ref, depth):
-    name = 'lvar'
-    pre = '  ' * depth
-    data = []
-
-    if ref.get(name, False):
-        for key in sorted(ref[name].keys()):
-            value = var_transform(ref[name][key])
-            data.append('%s%s = %s' % (pre, key, value))
-        if ref[name].keys():
-            data.append('')
-
-    return data
 
 def var_transform(ref):
     data = []

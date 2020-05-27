@@ -10,12 +10,17 @@
 # ------------------------------------------------------------------
 
 import unittest
-from common_test import AATest, setup_all_loops
+from common_test import AATest, setup_aa, setup_all_loops, write_file
+
+import apparmor.aa
+import os
+import shutil
 
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.profile_list import ProfileList
 from apparmor.rule.abi import AbiRule
 from apparmor.rule.include import IncludeRule
+from apparmor.rule.variable import VariableRule
 
 class TestAdd_profile(AATest):
     def AASetup(self):
@@ -171,16 +176,14 @@ class TestAdd_abi(AATest):
     def testAdd_abi_1(self):
         self.pl.add_abi('/etc/apparmor.d/bin.foo', AbiRule('abi/4.19', False, True))
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
-        # self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])
-        self.assertEqual(self.pl.get_clean_first('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])  # TODO switch to get_clean() once merged
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])
 
     def testAdd_abi_2(self):
         self.pl.add_abi('/etc/apparmor.d/bin.foo', AbiRule('abi/4.19', False, True))
         self.pl.add_abi('/etc/apparmor.d/bin.foo', AbiRule('foo', False, False))
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
-        # self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', 'abi "foo",', ''])
-        self.assertEqual(self.pl.get_clean_first('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', 'abi "foo",', ''])  # TODO switch to get_clean() once merged
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', 'abi "foo",', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', 'abi "foo",', ''])
 
     def testAdd_abi_error_1(self):
@@ -194,7 +197,7 @@ class TestAdd_abi(AATest):
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
         deleted = self.pl.delete_preamble_duplicates('/etc/apparmor.d/bin.foo')
         self.assertEqual(deleted, 1)
-        self.assertEqual(self.pl.get_clean_first('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])  # TODO switch to get_clean() once merged
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])
 
 class TestAdd_alias(AATest):
@@ -204,14 +207,14 @@ class TestAdd_alias(AATest):
     def testAdd_alias_1(self):
         self.pl.add_alias('/etc/apparmor.d/bin.foo', '/foo', '/bar')
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
-        self.assertEqual(self.pl.get_clean_first('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', ''])  # TODO switch to get_clean() once merged
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', ''])
 
     def testAdd_alias_2(self):
         self.pl.add_alias('/etc/apparmor.d/bin.foo', '/foo', '/bar')
         self.pl.add_alias('/etc/apparmor.d/bin.foo', '/xyz', '/zyx')
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
-        self.assertEqual(self.pl.get_clean_first('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', 'alias /xyz -> /zyx,', ''])  # TODO switch to get_clean() once merged
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', 'alias /xyz -> /zyx,', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', 'alias /xyz -> /zyx,', ''])
 
     def testAdd_alias_dupe(self):
@@ -221,7 +224,7 @@ class TestAdd_alias(AATest):
         #     self.pl.add_alias('/etc/apparmor.d/bin.foo', '/foo', '/redefine')  # attempt to redefine alias
         self.pl.add_alias('/etc/apparmor.d/bin.foo', '/foo', '/redefine')  # redefine alias
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
-        self.assertEqual(self.pl.get_clean_first('/etc/apparmor.d/bin.foo'), ['alias /foo -> /redefine,', ''])  # TODO switch to get_clean() once merged
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['alias /foo -> /redefine,', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['alias /foo -> /redefine,', ''])
 
     def testAdd_alias_error_1(self):
@@ -237,6 +240,43 @@ class TestAdd_alias(AATest):
 #    def test_dedup_alias_1(self):
 #        TODO: implement after fixing alias handling (when a profile has two aliases with the same path on the left side)
 
+class TestAdd_variable(AATest):
+    def AASetup(self):
+        self.pl = ProfileList()
+
+    def testAdd_variable_1(self):
+        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule('@{foo}', '=', {'/foo'}))
+        self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['@{foo} = /foo', ''])
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['@{foo} = /foo', ''])
+
+    def testAdd_variable_2(self):
+        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule('@{foo}', '=', {'/foo'}))
+        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule('@{bar}', '=', {'/bar'}))
+        self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['@{foo} = /foo', '@{bar} = /bar', ''])
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['@{foo} = /foo', '@{bar} = /bar', ''])
+
+    def testAdd_variable_error_1(self):
+        with self.assertRaises(AppArmorBug):
+            self.pl.add_variable('/etc/apparmor.d/bin.foo', '@{foo}')  # str insteadd of IncludeRule
+        self.assertEqual(list(self.pl.files.keys()), [])
+
+    def test_dedup_variable_1(self):
+        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule.parse('@{foo} = /foo'))
+        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule.parse('@{foo} += /bar  # comment'))
+        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule.parse('@{foo}    += /bar /baz'))
+        deleted = self.pl.delete_preamble_duplicates('/etc/apparmor.d/bin.foo')
+        self.assertEqual(deleted, 1)
+        self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['@{foo} = /foo', '@{foo} += /bar /baz', ''])
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['@{foo} = /foo', '@{foo}    += /bar /baz', ''])
+
+    def test_dedup_error_1(self):
+        with self.assertRaises(AppArmorBug):
+            self.pl.delete_preamble_duplicates('/file/not/found')
+        self.assertEqual(list(self.pl.files.keys()), [])
+
 class TestGet(AATest):
     def AASetup(self):
         self.pl = ProfileList()
@@ -249,7 +289,78 @@ class TestGet(AATest):
         with self.assertRaises(AppArmorBug):
             self.pl.get_raw('/etc/apparmor.d/not.found')
 
+class AaTest_get_all_merged_variables(AATest):
+    tests = []
 
+    def AASetup(self):
+        self.createTmpdir()
+
+        # copy the local profiles to the test directory
+        self.profile_dir = '%s/profiles' % self.tmpdir
+        apparmor.aa.profile_dir = self.profile_dir
+        shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
+
+    def _load_profiles(self):
+        apparmor.aa.reset_aa()
+
+        # load the profiles and abstractions
+        apparmor.aa.profiledir = self.profile_dir
+        apparmor.aa.loadincludes()
+        apparmor.aa.read_profiles()
+
+    def test_unchanged(self):
+        self._load_profiles()
+        prof_filename = os.path.join(self.profile_dir, 'usr.sbin.dnsmasq')
+        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]), self.profile_dir)
+        self.assertEqual(vars['@{TFTP_DIR}'], {'/var/tftp', '/srv/tftp', '/srv/tftpboot'})
+        self.assertEqual(vars['@{HOME}'], {'@{HOMEDIRS}/*/', '/root/'})
+
+    def test_extended_home(self):
+        write_file(self.profile_dir, 'tunables/home.d/extend_home', '@{HOME} += /my/castle/')
+        self._load_profiles()
+        prof_filename = os.path.join(self.profile_dir, 'usr.sbin.dnsmasq')
+        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]), self.profile_dir)
+        self.assertEqual(vars['@{TFTP_DIR}'], {'/var/tftp', '/srv/tftp', '/srv/tftpboot'})
+        self.assertEqual(vars['@{HOME}'], {'@{HOMEDIRS}/*/', '/root/', '/my/castle/'})
+
+    def test_extended_home_2(self):
+        write_file(self.profile_dir, 'tunables/home.d/extend_home', '@{HOME} += /my/castle/')
+        write_file(self.profile_dir, 'tunables/home.d/moving_around', '@{HOME} += /on/the/road/')
+        self._load_profiles()
+        prof_filename = os.path.join(self.profile_dir, 'usr.sbin.dnsmasq')
+        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]), self.profile_dir)
+        self.assertEqual(vars['@{TFTP_DIR}'], {'/var/tftp', '/srv/tftp', '/srv/tftpboot'})
+        self.assertEqual(vars['@{HOME}'], {'@{HOMEDIRS}/*/', '/root/', '/my/castle/', '/on/the/road/'})
+
+    def test_extend_home_in_mainfile(self):
+        write_file(self.profile_dir, 'tunables/home.d/extend_home', '@{HOME} += /my/castle/')
+        write_file(self.profile_dir, 'dummy_profile', 'include <tunables/global>\n@{HOME} += /in/the/profile/')
+        self._load_profiles()
+        prof_filename = os.path.join(self.profile_dir, 'dummy_profile')
+        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'dummy_profile'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]), self.profile_dir)
+        self.assertEqual(vars.get('@{TFTP_DIR}', None), None)
+        self.assertEqual(vars['@{HOME}'], {'@{HOMEDIRS}/*/', '/root/', '/my/castle/', '/in/the/profile/'})
+
+    def test_redefine_home(self):
+        write_file(self.profile_dir, 'tunables/home.d/overwrite_home', '@{HOME} = /my/castle/')  # note: =, not +=
+        self._load_profiles()
+        prof_filename = os.path.join(self.profile_dir, 'usr.sbin.dnsmasq')
+        with self.assertRaises(AppArmorException):
+            apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]), self.profile_dir)
+
+    def test_add_to_nonexisting(self):
+        write_file(self.profile_dir, 'tunables/home.d/no_such_var', '@{NO_SUCH_HOME} += /my/castle/')  # add to non-existing variable
+        self._load_profiles()
+        prof_filename = os.path.join(self.profile_dir, 'usr.sbin.dnsmasq')
+        with self.assertRaises(AppArmorException):
+            apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]), self.profile_dir)
+
+    def test_vars_from_nonexisting_profile(self):
+        with self.assertRaises(AppArmorBug):
+            apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'file.not.found'), list(), self.profile_dir)
+
+
+setup_aa(apparmor.aa)
 setup_all_loops(__name__)
 if __name__ == '__main__':
     unittest.main(verbosity=1)

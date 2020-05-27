@@ -51,20 +51,13 @@ if profiledir:
     if not os.path.isdir(apparmor.aa.profile_dir):
         raise AppArmorException(_("%s is not a directory.") %profiledir)
 
-def reset_aa():
-    apparmor.aa.aa = apparmor.aa.hasher()
-    apparmor.aa.filelist = apparmor.aa.hasher()
-    apparmor.aa.include = dict()
-    apparmor.aa.active_profiles = apparmor.aa.ProfileList()
-    apparmor.aa.original_aa = apparmor.aa.hasher()
-
 def find_profiles_from_files(files):
     profile_to_filename = dict()
     for file_name in files:
         apparmor.aa.read_profile(file_name, True)
         for profile_name in apparmor.aa.active_profiles.profiles_in_file(file_name):
             profile_to_filename[profile_name] = file_name
-        reset_aa()
+        apparmor.aa.reset_aa()
 
     return profile_to_filename
 
@@ -75,7 +68,7 @@ def find_files_from_profiles(profiles):
     for profile_name in profiles:
         profile_to_filename[profile_name] = apparmor.aa.get_profile_filename_from_profile_name(profile_name, True)
 
-    reset_aa()
+    apparmor.aa.reset_aa()
 
     return profile_to_filename
 
@@ -93,7 +86,7 @@ def main():
 
         act(user_file, base_file, profile_name)
 
-        reset_aa()
+        apparmor.aa.reset_aa()
 
 def act(user_file, base_file, merging_profile):
     mergeprofiles = Merge(user_file, base_file)
@@ -111,7 +104,7 @@ class Merge(object):
         apparmor.aa.read_profile(base, True)
         self.base = cleanprofile.Prof(base)
 
-        reset_aa()
+        apparmor.aa.reset_aa()
 
         #Read and parse user profile
         apparmor.aa.read_profile(user, True)

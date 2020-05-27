@@ -156,12 +156,6 @@ exception_not_raised = [
     'vars/vars_bad_3.sd',
     'vars/vars_bad_4.sd',
     'vars/vars_bad_5.sd',
-    'vars/vars_bad_7.sd',
-    'vars/vars_bad_8.sd',
-    'vars/vars_bad_trailing_comma_1.sd',
-    'vars/vars_bad_trailing_comma_2.sd',
-    'vars/vars_bad_trailing_comma_3.sd',
-    'vars/vars_bad_trailing_comma_4.sd',
     'vars/vars_dbus_bad_01.sd',
     'vars/vars_dbus_bad_02.sd',
     'vars/vars_dbus_bad_03.sd',
@@ -169,7 +163,6 @@ exception_not_raised = [
     'vars/vars_dbus_bad_05.sd',
     'vars/vars_dbus_bad_06.sd',
     'vars/vars_dbus_bad_07.sd',
-    'vars/vars_file_evaluation_7.sd',
     'vars/vars_file_evaluation_8.sd',
 
     # profile name in var doesn't start with /
@@ -391,7 +384,6 @@ syntax_failure = [
     # misc
     'vars/vars_dbus_8.sd',  # Path doesn't start with / or variable: {/@{TLDS}/foo,/com/@{DOMAINS}}
     'vars/vars_simple_assignment_12.sd',  # Redefining existing variable @{BAR} ('\' not handled)
-    'rewrite/alias_good_5.sd',  # Values added to a non-existing variable @{FOO} (defined in include, lp:1331856)
     'bare_include_tests/ok_2.sd',  # two #include<...> in one line
 ]
 
@@ -411,11 +403,17 @@ class TestParseParserTests(AATest):
             # this makes sure we notice any behaviour change, especially not being wrong anymore
             expected = not expected
 
+        # make sure the profile is known in active_profiles.files
+        apparmor.active_profiles.init_file(params['file'])
+
         if expected:
             apparmor.parse_profile_data(data, params['file'], 0)
+            apparmor.active_profiles.get_all_merged_variables(params['file'], apparmor.include_list_recursive(apparmor.active_profiles.files[params['file']]), profile_dir)
+
         else:
             with self.assertRaises(AppArmorException):
                 apparmor.parse_profile_data(data, params['file'], 0)
+                apparmor.active_profiles.get_all_merged_variables(params['file'], apparmor.include_list_recursive(apparmor.active_profiles.files[params['file']]), profile_dir)
 
 def parse_test_profiles(file_with_path):
     '''parse the test-related headers of a profile (for example EXRESULT) and add the profile to the set of tests'''
@@ -521,7 +519,8 @@ def find_and_setup_test_profiles(profile_dir):
 
 
 setup_aa(apparmor)
-find_and_setup_test_profiles('../../parser/tst/simple_tests/')
+profile_dir = os.path.abspath('../../parser/tst/simple_tests/')
+find_and_setup_test_profiles(profile_dir)
 
 setup_all_loops(__name__)
 if __name__ == '__main__':
