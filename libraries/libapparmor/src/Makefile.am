@@ -35,7 +35,7 @@ SUFFIXES = .pc.in .pc
 BUILT_SOURCES = grammar.h scanner.h af_protos.h
 AM_LFLAGS = -v
 AM_YFLAGS = -d -p aalogparse_
-AM_CFLAGS = -Wall -fPIC
+AM_CFLAGS = -Wall -Wsign-compare -Wmissing-field-initializers -Wformat -Wformat-security -Wunused-parameter -fPIC
 AM_CPPFLAGS = -D_GNU_SOURCE -I$(top_srcdir)/include/
 scanner.h: scanner.l
 	$(LEX) -v $<

@@ -54,7 +54,7 @@ libapparmor by adding USE_SYSTEM=1 to your make command.${nl}\
   AA_LINK_FLAGS = -L$(LIBAPPARMOR_PATH)
   AA_LDLIBS = -lapparmor
 endif
-EXTRA_CFLAGS=$(CFLAGS) $(CPPFLAGS) -fPIC -shared -Wall $(LIBAPPARMOR_INCLUDE)
+EXTRA_CFLAGS=$(CFLAGS) $(CPPFLAGS) -fPIC -shared -Wall -Wsign-compare -Wmissing-field-initializers -Wformat -Wformat-security -Wunused-parameter $(LIBAPPARMOR_INCLUDE)
 LINK_FLAGS=-Xlinker -x $(AA_LINK_FLAGS) $(LDFLAGS)
 LIBS=-lpam $(AA_LDLIBS)
 OBJECTS=${NAME}.o get_options.o
