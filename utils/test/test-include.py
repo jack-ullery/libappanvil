@@ -360,11 +360,11 @@ class IncludeFullPathsTest(AATest):
         os.mkdir(empty_dir, 0o755)
 
     tests = [
-        #                                                 @@ will be replaced with self.profile_dir
+        #                                                 @@ will be replaced with self.profile_dir; if multiple entries, need to be sorted
         ('include <abstractions/base>',                 ['@@/abstractions/base']                                            ),
 #       ('include "foo"',                               ['@@/foo']                                                          ),  # TODO: adjust logic to honor quoted vs. magic paths (and allow quoted relative paths in re_match_include_parse())
         ('include "/foo/bar"',                          ['/foo/bar']                                                        ),
-        ('include <abstractions/inc.d>',                ['@@/abstractions/inc.d/incfoo', '@@/abstractions/inc.d/incbar']    ),
+        ('include <abstractions/inc.d>',                ['@@/abstractions/inc.d/incbar', '@@/abstractions/inc.d/incfoo']    ),
         ('include <abstractions/empty.d>',              []                                                                  ),
         ('include <abstractions/not_found>',            ['@@/abstractions/not_found']                                       ),
         ('include if exists <abstractions/not_found>',  []                                                                  ),
@@ -376,7 +376,7 @@ class IncludeFullPathsTest(AATest):
             exp2.append(path.replace('@@', self.profile_dir))
 
         obj = IncludeRule._parse(params)
-        self.assertEqual(obj.get_full_paths(self.profile_dir), exp2)
+        self.assertEqual(sorted(obj.get_full_paths(self.profile_dir)), exp2)
 
 ## --- tests for IncludeRuleset --- #
 
