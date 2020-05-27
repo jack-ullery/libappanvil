@@ -260,7 +260,7 @@ static int cache_dir_from_path_and_features(char **cache_path,
 {
 	autofree const char *features_id = NULL;
 	char *cache_dir;
-	size_t len;
+	ssize_t len;
 	int rc;
 
 	features_id = aa_features_id(features);
