@@ -57,6 +57,18 @@ endif
 #Helper function to be used with $(call pyalldo, run_test_with_all.py)
 pyalldo=set -e; $(foreach py, $(PYTHON_VERSIONS), $(py) $(1);)
 
+# Common set of compiler warnings
+_EXTRA_WARNINGS = -Wall -Wsign-compare -Wmissing-field-initializers -Wformat -Wformat-security -Wunused-parameter
+EXTRA_WARNINGS := $(shell for warning in ${_EXTRA_WARNINGS} ; do \
+			if ${CC} $${warning} -S -o /dev/null -xc /dev/null >/dev/null 2>&1; then \
+				echo "$${warning}"; \
+			else \
+				echo "***" >&2 ; \
+				echo "WARNING: unable to use $${warning} with ${CC}, dropping" >&2 ; \
+				echo "***" >&2 ; \
+			fi ; \
+		    done)
+
 .PHONY: version
 .SILENT: version
 version:

@@ -37,12 +37,7 @@ YFLAGS	:= -d
 LEX	:= flex
 LEXFLAGS = -B -v
 WARNINGS = -Wall
-EXTRA_WARNINGS = -Wsign-compare -Wmissing-field-initializers -Wformat -Wformat-security -Wunused-parameter
-CXX_WARNINGS = ${WARNINGS} $(shell for warning in ${EXTRA_WARNINGS} ; do \
-			if ${CXX} $${warning} -S -o /dev/null -xc /dev/null >/dev/null 2>&1; then \
-				echo "$${warning}"; \
-			fi ; \
-		done)
+CXX_WARNINGS = ${WARNINGS} ${EXTRA_WARNINGS}
 CPP_WARNINGS =
 ifndef CFLAGS
 CFLAGS	= -g -O2 -pipe
