@@ -1,6 +1,8 @@
 # vim:syntax=apparmor
 # video device access
 
+  abi <abi/3.0>,
+
   # System devices
   @{sys}/class/video4linux r,
   @{sys}/class/video4linux/** r,

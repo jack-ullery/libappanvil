@@ -1,6 +1,8 @@
 # vim:syntax=apparmor
 # nvidia access requirements
-  
+
+  abi <abi/3.0>,
+
   # configuration queries
   capability ipc_lock,
 

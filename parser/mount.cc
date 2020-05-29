@@ -593,7 +593,7 @@ int mnt_rule::gen_policy_re(Profile &prof)
 	int count = 0;
 	unsigned int tmpflags, tmpinv_flags;
 
-	if (!kernel_supports_mount) {
+	if (!features_supports_mount) {
 		warn_once(prof.name);
 		return RULE_NOT_SUPPORTED;
 	}

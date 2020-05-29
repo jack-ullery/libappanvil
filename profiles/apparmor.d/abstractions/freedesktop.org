@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
+
   # system configuration
   @{system_share_dirs}/applications/{**,} r,
   @{system_share_dirs}/icons/{**,}        r,

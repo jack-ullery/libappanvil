@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+abi <abi/3.0>,
+
 @{TFTP_DIR}=/var/tftp /srv/tftp /srv/tftpboot
 
 #include <tunables/global>

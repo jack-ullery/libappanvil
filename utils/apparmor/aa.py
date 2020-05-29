@@ -1639,7 +1639,7 @@ def collapse_log(hashlog, ignore_null_profiles=True):
     return log_dict
 
 def is_skippable_dir(path):
-    if re.search('^(.*/)?(disable|cache|cache\.d|force-complain|lxc|\.git)/?$', path):
+    if re.search('^(.*/)?(disable|cache|cache\.d|force-complain|lxc|abi|\.git)/?$', path):
         return True
     return False
 

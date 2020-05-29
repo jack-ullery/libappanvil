@@ -8,6 +8,8 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
+
   # perhaps your configuration has users elsewhere, or you don't wish
   # them to read their own manpages
   owner @{HOME}/man/                          r,

@@ -189,6 +189,25 @@ void include_filename(char *filename, int search, bool if_exists)
 	}
 }
 
+static char *lsntrim(char *s, int l)
+{
+	const char *end = s + l;
+
+	while (s <= end && isspace(*s))
+		s++;
+	return s;
+}
+
+static int rsntrim(const char *s, int l)
+{
+	const char *r = s + l;
+
+	while (r > s && isspace(*--r))
+		l--;
+	return l;
+}
+
+
 %}
 
 CARET		"^"
@@ -207,6 +226,8 @@ NUMBER		[[:digit:]]+
 ID_CHARS	[^ \t\r\n"!,]
 ID 		{ID_CHARS}|(,{ID_CHARS}|\\[ ]|\\\t|\\\"|\\!|\\,)
 IDS		{ID}+
+INC_ID 		[^ \t\r\n"!,<>]|(,[^ \t\r\n"!,<>]|\\[ ]|\\\t|\\\"|\\!|\\,)
+INC_IDS		{INC_ID}+
 POST_VAR_ID_CHARS	[^ \t\n"!,]{-}[=\+]
 POST_VAR_ID 	{POST_VAR_ID_CHARS}|(,{POST_VAR_ID_CHARS}|\\[ ]|\\\t|\\\"|\\!|\\,|\\\(|\\\))
 LIST_VALUE_ID_CHARS	([^ \t\n"!,]{-}[()]|\\[ ]|\\\t|\\\"|\\!|\\,|\\\(|\\\))
@@ -277,21 +298,27 @@ GT		>
 	}
 %}
 
-<INITIAL,SUB_ID_WS,INCLUDE,INCLUDE_EXISTS,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE>{
+<INITIAL,SUB_ID_WS,INCLUDE,INCLUDE_EXISTS,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE,ABI_MODE>{
 	{WS}+	{  DUMP_PREPROCESS; /* Ignoring whitespace */ }
 }
 
 <INCLUDE,INCLUDE_EXISTS,ABI_MODE>{
-	(\<(([^"\>\t\r\n]+)|{QUOTED_ID})\>|{QUOTED_ID}|{IDS})	{ /* <filename> | <"filename"> | "filename" | filename */
+	(\<((([^"\>\t\r\n])+)|{QUOTED_ID})\>|{QUOTED_ID}|({INC_IDS}))	{ /* <filename> | <"filename"> | "filename" | filename */
 		int lt = *yytext == '<'  ? 1 : 0;
-		char *filename = processid(yytext + lt, yyleng - lt*2);
+		int len = yyleng - lt*2;
+		char *s = yytext + lt;
+		char * filename = lsntrim(s, yyleng);
 		bool exists = YYSTATE == INCLUDE_EXISTS;
 
+		filename = processid(filename, rsntrim(filename, len - (filename - s)));
 		if (!filename)
 			yyerror(_("Failed to process filename\n"));
 		if (YYSTATE == ABI_MODE) {
 			yylval.id = filename;
-			POP_AND_RETURN(TOK_ID);
+			if (lt)
+				RETURN_TOKEN(TOK_ID);
+			else
+				RETURN_TOKEN(TOK_VALUE);
 		}
 		include_filename(filename, lt, exists);
 		free(filename);
@@ -659,7 +686,7 @@ include/{WS}	{
 	PUSH_AND_RETURN(state, token);
 }
 
-<INITIAL,NETWORK_MODE,RLIMIT_MODE,CHANGE_PROFILE_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE>{
+<INITIAL,NETWORK_MODE,RLIMIT_MODE,CHANGE_PROFILE_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE,ABI_MODE>{
 	{END_OF_RULE}	{
 		if (YY_START != INITIAL)
 			POP_NODUMP();

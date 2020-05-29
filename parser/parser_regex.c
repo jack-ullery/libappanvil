@@ -524,7 +524,7 @@ static int process_profile_name_xmatch(Profile *prof)
 			}
 		}
 		if (prof->xattrs.list) {
-			if (!(kernel_supports_domain_xattr && kernel_supports_oob)) {
+			if (!(features_supports_domain_xattr && kernel_supports_oob)) {
 				warn_once_xattr(name);
 				free_cond_entry_list(prof->xattrs);
 				goto build;
@@ -689,7 +689,7 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 			/* allow change_profile for all execs */
 			vec[0] = "/[^/\\x00][^\\x00]*";
 
-		if (!kernel_supports_stacking) {
+		if (!features_supports_stacking) {
 			bool stack;
 
 			if (!parse_label(&stack, &ns, &name,
@@ -881,19 +881,19 @@ int process_profile_policydb(Profile *prof)
 	if (kernel_abi_version > 5 &&
 	    !prof->policy.rules->add_rule(mediates_file, 0, AA_MAY_READ, 0, dfaflags))
 		goto out;
-	if (kernel_supports_mount &&
+	if (features_supports_mount &&
 	    !prof->policy.rules->add_rule(mediates_mount, 0, AA_MAY_READ, 0, dfaflags))
 			goto out;
-	if (kernel_supports_dbus &&
+	if (features_supports_dbus &&
 	    !prof->policy.rules->add_rule(mediates_dbus, 0, AA_MAY_READ, 0, dfaflags))
 		goto out;
-	if (kernel_supports_signal &&
+	if (features_supports_signal &&
 	    !prof->policy.rules->add_rule(mediates_signal, 0, AA_MAY_READ, 0, dfaflags))
 		goto out;
-	if (kernel_supports_ptrace &&
+	if (features_supports_ptrace &&
 	    !prof->policy.rules->add_rule(mediates_ptrace, 0, AA_MAY_READ, 0, dfaflags))
 		goto out;
-	if (kernel_supports_unix &&
+	if (features_supports_unix &&
 	    (!prof->policy.rules->add_rule(mediates_extended_net, 0, AA_MAY_READ, 0, dfaflags) ||
 	     !prof->policy.rules->add_rule(mediates_net_unix, 0, AA_MAY_READ, 0, dfaflags)))
 		goto out;

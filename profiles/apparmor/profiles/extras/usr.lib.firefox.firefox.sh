@@ -1,4 +1,7 @@
 # Last Modified: Wed Nov  5 03:32:59 2008
+
+abi <abi/3.0>,
+
 #include <tunables/global>
 
 /usr/lib/firefox/firefox.sh {

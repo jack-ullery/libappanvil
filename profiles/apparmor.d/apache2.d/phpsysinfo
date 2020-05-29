@@ -1,6 +1,8 @@
 # Last Modified: Fri Sep 11 13:27:22 2009
 # Author: Marc Deslauriers <marc.deslauriers@ubuntu.com>
 
+  abi <abi/3.0>,
+
   ^phpsysinfo {
     #include <abstractions/apache2-common>
     #include <abstractions/base>

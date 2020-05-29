@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
+
   # abstraction for ibus input methods
   owner @{HOME}/.config/ibus/ r,
   owner @{HOME}/.config/ibus/bus/ rw,

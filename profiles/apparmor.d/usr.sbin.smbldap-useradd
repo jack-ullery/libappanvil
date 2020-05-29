@@ -1,4 +1,7 @@
 # Last Modified: Tue Jan  3 00:17:40 2012
+
+abi <abi/3.0>,
+
 #include <tunables/global>
 
 profile smbldap-useradd /usr/{bin,sbin}/smbldap-useradd {

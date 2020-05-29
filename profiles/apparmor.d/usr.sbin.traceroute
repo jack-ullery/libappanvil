@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+abi <abi/3.0>,
+
 #include <tunables/global>
 profile traceroute /usr/{{bin,sbin}/traceroute,bin/linux-traceroute,bin/traceroute.db} {
   #include <abstractions/base>

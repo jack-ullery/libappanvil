@@ -9,6 +9,8 @@
 # ------------------------------------------------------------------
 # used with dovecot/*
 
+  abi <abi/3.0>,
+
   capability setgid,
 
   deny capability block_suspend,

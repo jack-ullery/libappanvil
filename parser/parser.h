@@ -295,21 +295,24 @@ extern uint32_t policy_version;
 extern uint32_t parser_abi_version;
 extern uint32_t kernel_abi_version;
 
+extern aa_features *policy_features;
+extern aa_features *kernel_features;
+
 extern int force_complain;
 extern int perms_create;
 extern int net_af_max_override;
 extern int kernel_load;
 extern int kernel_supports_setload;
-extern int kernel_supports_network;
+extern int features_supports_network;
 extern int kernel_supports_policydb;
 extern int kernel_supports_diff_encode;
-extern int kernel_supports_mount;
-extern int kernel_supports_dbus;
-extern int kernel_supports_signal;
-extern int kernel_supports_ptrace;
-extern int kernel_supports_unix;
-extern int kernel_supports_stacking;
-extern int kernel_supports_domain_xattr;
+extern int features_supports_mount;
+extern int features_supports_dbus;
+extern int features_supports_signal;
+extern int features_supports_ptrace;
+extern int features_supports_unix;
+extern int features_supports_stacking;
+extern int features_supports_domain_xattr;
 extern int kernel_supports_oob;
 extern int conf_verbose;
 extern int conf_quiet;
@@ -473,5 +476,14 @@ extern void dump_policy_names(void);
 void dump_policy(void);
 
 void free_policies(void);
+
+/* parser_main.c */
+extern void set_supported_features();
+
+/* default_features.c */
+extern const char *match_n_abi;
+extern const char *match_c_abi;
+extern const char *match_cn_abi;
+extern const char *default_features_abi;
 
 #endif /** __AA_PARSER_H */

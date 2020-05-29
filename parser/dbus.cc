@@ -219,7 +219,7 @@ int dbus_rule::gen_policy_re(Profile &prof)
 	pattern_t ptype;
 	int pos;
 
-	if (!kernel_supports_dbus) {
+	if (!features_supports_dbus) {
 		warn_once(prof.name);
 		return RULE_NOT_SUPPORTED;
 	}

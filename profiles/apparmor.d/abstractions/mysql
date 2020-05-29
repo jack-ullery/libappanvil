@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
+
    /var/lib/mysql{,d}/mysql{,d}.sock rw,
    @{run}/mysql{,d}/mysql{,d}.sock rw,
    /usr/share/{mysql,mysql-community-server,mariadb}/charsets/ r,

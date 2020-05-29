@@ -10,6 +10,7 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
 
 
   # (Note that the ldd profile has inlined this file; if you make

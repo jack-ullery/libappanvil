@@ -3,6 +3,8 @@
 # in the toplevel profile. Eg:
 # #include <abstractions/ubuntu-helpers>
 
+  abi <abi/3.0>,
+
   #include <abstractions/X>
 
   # Pulseaudio

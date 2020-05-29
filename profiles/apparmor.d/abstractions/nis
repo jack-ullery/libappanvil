@@ -8,6 +8,8 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
+
   # NIS rules
   /var/yp/binding/*           r,
   # portmapper may ask root processes to do nis/ldap at low ports

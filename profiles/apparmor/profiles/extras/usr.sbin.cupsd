@@ -1,4 +1,7 @@
 # Last Modified: Sun Sep 16 18:11:15 2007
+
+abi <abi/3.0>,
+
 #include <tunables/global>
 /usr/sbin/cupsd {
   #include <abstractions/base>

@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
+
   # per-user write  directories
   owner @{HOME}/                          r,
   owner @{HOME}/@{XDG_DESKTOP_DIR}/       r,

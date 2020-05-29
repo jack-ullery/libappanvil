@@ -6,6 +6,8 @@
 #
 # ------------------------------------------------------------------
 
+abi <abi/3.0>,
+
 # permissions needed for aa_is_enabled
 
 # Make sure to include tunables/apparmorfs and tunables/global

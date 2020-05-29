@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
+
   #include <abstractions/dbus-session-strict>
 
   dbus send

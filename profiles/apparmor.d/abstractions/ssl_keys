@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
+
   # private ssl permissions
 
   # Just include the whole /etc/ssl directory if we should have access to

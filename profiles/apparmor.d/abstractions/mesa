@@ -1,6 +1,8 @@
 # vim:syntax=apparmor
 # Rules for Mesa implementation of the OpenGL API
 
+  abi <abi/3.0>,
+
   # System files
   /dev/dri/ r, # libGLX_mesa.so calls drmGetDevice2()
 

@@ -2,6 +2,8 @@
 
 # This file contains basic permissions for Apache and every vHost
 
+  abi <abi/3.0>,
+
   #include <abstractions/nameservice>
 
   # Allow unconfined processes to send us signals by default

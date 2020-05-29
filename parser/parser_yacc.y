@@ -32,6 +32,7 @@
 
 /* #define DEBUG */
 
+#include "lib.h"
 #include "parser.h"
 #include "profile.h"
 #include "mount.h"
@@ -81,6 +82,7 @@ mnt_rule *do_mnt_rule(struct cond_entry *src_conds, char *src,
 		      int mode);
 mnt_rule *do_pivot_rule(struct cond_entry *old, char *root,
 			char *transition);
+static void abi_features(char *filename, bool search);
 void add_local_entry(Profile *prof);
 
 %}
@@ -285,8 +287,22 @@ void add_local_entry(Profile *prof);
 %%
 
 
-list:	 preamble profilelist
-	{ /* nothing */ };
+list:	 preamble
+	{
+		/* make sure abi is setup */
+		if (policy_features == NULL) {
+			/* use default feature abi */
+			if (aa_features_new_from_string(&policy_features,
+					default_features_abi,
+					strlen(default_features_abi))) {
+				yyerror(_("Failed to setup default policy feature abi"));
+			}
+			pwarn(_("%s: File '%s' missing feature abi, falling back to default policy feature abi\n"), progname, current_filename);
+		}
+		set_supported_features();
+
+	}
+	profilelist;
 
 profilelist:	{ /* nothing */ };
 
@@ -711,8 +727,10 @@ rules: rules opt_prefix network_rule
 			yyerror(_("Memory allocation error."));
 		list_for_each_safe($3, entry, tmp) {
 
-			/* map to extended mediation if available */
-			if (entry->family == AF_UNIX && kernel_supports_unix) {
+			/* map to extended mediation, let rule backend do
+			 * downgrade if needed
+			 */
+			if (entry->family == AF_UNIX) {
 				unix_rule *rule = new unix_rule(entry->type, $2.audit, $2.deny);
 				if (!rule)
 					yyerror(_("Memory allocation error."));
@@ -1087,9 +1105,16 @@ rule: file_rule { $$ = $1; }
 
 abi_rule: TOK_ABI TOK_ID TOK_END_OF_RULE
 	{
-		pwarn(_("%s: Profile abi not supported, falling back to system abi.\n"), progname);
+		abi_features($2, true);
 		free($2);
-	};
+		/* $$ = nothing, not used */
+	}
+	| TOK_ABI TOK_VALUE TOK_END_OF_RULE
+	{
+		abi_features($2, false);
+		free($2);
+		/* $$ = nothing, not used */
+	}
 
 opt_exec_mode: { /* nothing */ $$ = EXEC_MODE_EMPTY; }
 	| TOK_UNSAFE { $$ = EXEC_MODE_UNSAFE; };
@@ -1531,7 +1556,7 @@ change_profile: TOK_CHANGE_PROFILE opt_exec_mode opt_id opt_named_transition TOK
 			if (exec_mode == EXEC_MODE_UNSAFE)
 				mode |= ALL_AA_EXEC_UNSAFE;
 			else if (exec_mode == EXEC_MODE_SAFE &&
-				 !kernel_supports_stacking &&
+				 !features_supports_stacking &&
 				 warnflags & WARN_RULE_DOWNGRADED) {
 				pwarn("downgrading change_profile safe rule to unsafe due to lack of necessary kernel support\n");
 				/**
@@ -1728,3 +1753,53 @@ mnt_rule *do_pivot_rule(struct cond_entry *old, char *root, char *transition)
 
 	return ent;
 }
+
+static int abi_features_base(struct aa_features **features, char *filename, bool search)
+{
+	autofclose FILE *f = NULL;
+	struct stat my_stat;
+	char *fullpath = NULL;
+
+	if (search) {
+		if (strcmp(filename, "kernel") == 0)
+			return aa_features_new_from_kernel(features);
+		f = search_path(filename, &fullpath);
+		PDEBUG("abi lookup '%s' -> '%s' f %p\n", filename, fullpath, f);
+	} else {
+		f = fopen(filename, "r");
+		PDEBUG("abi relpath '%s' f %p\n", filename, f);
+	}
+
+	if (!f) {
+		yyerror(_("Could not open '%s': %m"),
+                        fullpath ? fullpath: filename);
+	}
+
+	if (fstat(fileno(f), &my_stat))
+		yyerror(_("fstat failed for '%s': %m"), fullpath ? fullpath : filename);
+
+        if (S_ISREG(my_stat.st_mode)) {
+		return aa_features_new_from_file(features, fileno(f));
+	}
+
+	return -1;
+}
+
+static void abi_features(char *filename, bool search)
+{
+	struct aa_features *tmp_features;
+
+	if (abi_features_base(&tmp_features, filename, search) == -1) {
+			yyerror(_("failed to find features abi '%s': %m"), filename);
+	}
+	if (policy_features) {
+		if (!aa_features_is_equal(tmp_features, policy_features)) {
+			pwarn(_("%s: %s features abi '%s' differes from policy declared feature abi, using the features abi declared in policy\n"), progname, current_filename, filename);
+		}
+		aa_features_unref(tmp_features);
+	} else {
+		/* first features abi declaration */
+		policy_features = tmp_features;
+	}
+
+};

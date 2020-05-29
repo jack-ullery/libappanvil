@@ -9,6 +9,8 @@
 #
 # ------------------------------------------------------------------
 
+  abi <abi/3.0>,
+
   # per-user tmp directories
   owner @{HOME}/tmp/**  rwkl,
   owner @{HOME}/tmp/    rw,

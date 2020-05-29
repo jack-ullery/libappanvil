@@ -2,6 +2,9 @@
 # Additional profiling based on work by:
 # - Андрей Калинин, LP: #226624
 # - Jamie Strandboge and Ivan Frederiks, LP: #933440
+
+abi <abi/3.0>,
+
 #include <tunables/global>
 /usr/bin/skype flags=(complain) {
   #include <abstractions/audio>
