@@ -13,8 +13,8 @@
 # ----------------------------------------------------------------------
 
 from apparmor.aare import AARE
-from apparmor.common import AppArmorBug, AppArmorException, type_is_str
-from apparmor.rule import quote_if_needed
+from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.rule.alias import AliasRule, AliasRuleset
 from apparmor.rule.abi import AbiRule, AbiRuleset
 from apparmor.rule.include import IncludeRule, IncludeRuleset
 from apparmor.rule.variable import VariableRule, VariableRuleset
@@ -47,7 +47,7 @@ class ProfileList:
 
         self.files[filename] = {
             'abi': AbiRuleset(),
-            'alias': {},
+            'alias': AliasRuleset(),
             'inc_ie': IncludeRuleset(),
             'variable': VariableRuleset(),
             'profiles': [],
@@ -92,21 +92,15 @@ class ProfileList:
 
         self.files[filename]['abi'].add(abi_rule)
 
-    def add_alias(self, filename, alias, target):
+    def add_alias(self, filename, alias_rule):
         ''' Store the given alias rule for the given profile filename preamble '''
 
-        if not type_is_str(alias):
-            raise AppArmorBug('Wrong type given to ProfileList: %s' % alias)
-        if not type_is_str(target):
-            raise AppArmorBug('Wrong type given to ProfileList: %s' % target)
+        if type(alias_rule) is not AliasRule:
+            raise AppArmorBug('Wrong type given to ProfileList: %s' % alias_rule)
 
         self.init_file(filename)
 
-        # allowed in the parser
-        # if self.files[filename]['alias'].get(alias):
-        #     raise AppArmorException('Trying to re-define alias %s' % alias)
-
-        self.files[filename]['alias'][alias] = target
+        self.files[filename]['alias'].add(alias_rule)
 
     def add_inc_ie(self, filename, inc_rule):
         ''' Store the given include / include if exists rule for the given profile filename preamble '''
@@ -134,7 +128,7 @@ class ProfileList:
 
         deleted = 0
 
-        for r_type in ['abi', 'inc_ie', 'variable']:  # TODO: don't hardcode
+        for r_type in ['abi', 'alias', 'inc_ie', 'variable']:  # TODO: don't hardcode
             deleted += self.files[filename][r_type].delete_duplicates(None)  # None means not to check includes -- TODO check if this makes sense for all preamble rule types
 
         return deleted
@@ -146,7 +140,7 @@ class ProfileList:
 
         data = []
         data += self.files[filename]['abi'].get_raw(depth)
-        data += write_alias(self.files[filename])
+        data += self.files[filename]['alias'].get_raw(depth)
         data += self.files[filename]['inc_ie'].get_raw(depth)
         data += self.files[filename]['variable'].get_raw(depth)
         return data
@@ -158,7 +152,7 @@ class ProfileList:
 
         data = []
         data += self.files[filename]['abi'].get_clean_unsorted(depth)
-        data += write_alias(self.files[filename])
+        data += self.files[filename]['alias'].get_clean_unsorted(depth)
         data += self.files[filename]['inc_ie'].get_clean_unsorted(depth)
         data += self.files[filename]['variable'].get_clean_unsorted(depth)
         return data
@@ -251,14 +245,3 @@ class ProfileList:
             raise AppArmorBug('%s not listed in ProfileList files' % filename)
 
         return self.files[filename]['profiles']
-
-def write_alias(prof_data):
-    data = []
-
-    if prof_data['alias']:
-        for key in sorted(prof_data['alias'].keys()):
-            data.append('alias %s -> %s,' % (quote_if_needed(key), quote_if_needed(prof_data['alias'][key])))
-
-        data.append('')
-
-    return data
