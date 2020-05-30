@@ -15,4 +15,4 @@
   /var/lib/aspell/* r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/aspell.d>
+  include if exists <abstractions/aspell.d>

@@ -25,4 +25,4 @@
   /etc/perl/**                   r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/perl.d>
+  include if exists <abstractions/perl.d>

@@ -56,4 +56,4 @@
   owner @{PROC}/@{pid}/fd/ r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/gio-open.d>
+  include if exists <abstractions/gio-open.d>

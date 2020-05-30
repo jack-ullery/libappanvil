@@ -30,4 +30,4 @@
        peer=(name=org.freedesktop.DBus),
 
   # Include additions to the abstraction
-  #include if exists <abstractions/dbus-session-strict.d>
+  include if exists <abstractions/dbus-session-strict.d>

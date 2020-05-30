@@ -86,4 +86,4 @@ owner @{HOME}/.local/share/openal/hrtf/{,**} r,
 /etc/wildmidi/wildmidi.cfg r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/audio.d>
+  include if exists <abstractions/audio.d>

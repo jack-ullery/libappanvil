@@ -59,4 +59,4 @@
   owner @{run}/user/*/.mutter-Xwaylandauth.* r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/X.d>
+  include if exists <abstractions/X.d>

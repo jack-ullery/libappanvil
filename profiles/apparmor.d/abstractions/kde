@@ -79,4 +79,4 @@ owner @{HOME}/.config/trashrc r, # Used by KFileWidget
 /usr/share/qt4/** r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/kde.d>
+  include if exists <abstractions/kde.d>

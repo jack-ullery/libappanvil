@@ -13,4 +13,4 @@
 
 
   # Include additions to the abstraction
-  #include if exists <abstractions/opencl-common.d>
+  include if exists <abstractions/opencl-common.d>

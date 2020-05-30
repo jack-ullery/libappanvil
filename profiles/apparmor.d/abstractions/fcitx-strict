@@ -23,4 +23,4 @@
   owner @{HOME}/.config/fcitx/dbus/* r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/fcitx-strict.d>
+  include if exists <abstractions/fcitx-strict.d>

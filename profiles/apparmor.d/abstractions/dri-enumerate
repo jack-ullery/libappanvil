@@ -10,4 +10,4 @@
 
 
   # Include additions to the abstraction
-  #include if exists <abstractions/dri-enumerate.d>
+  include if exists <abstractions/dri-enumerate.d>

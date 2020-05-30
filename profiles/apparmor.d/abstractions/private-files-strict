@@ -27,4 +27,4 @@
 
 
   # Include additions to the abstraction
-  #include if exists <abstractions/private-files-strict.d>
+  include if exists <abstractions/private-files-strict.d>

@@ -46,4 +46,4 @@
   /etc/certbot/archive/*/fullchain*.pem r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/ssl_certs.d>
+  include if exists <abstractions/ssl_certs.d>

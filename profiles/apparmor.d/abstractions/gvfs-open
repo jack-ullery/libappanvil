@@ -44,4 +44,4 @@
   /{,usr/}bin/dash mr,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/gvfs-open.d>
+  include if exists <abstractions/gvfs-open.d>

@@ -27,4 +27,4 @@
 
   @{PROC}/sys/kernel/random/boot_id r,
 
-  #include if exists <abstractions/nss-systemd.d>
+  include if exists <abstractions/nss-systemd.d>

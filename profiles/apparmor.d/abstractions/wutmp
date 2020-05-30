@@ -18,4 +18,4 @@
   @{run}/utmp       rwk,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/wutmp.d>
+  include if exists <abstractions/wutmp.d>

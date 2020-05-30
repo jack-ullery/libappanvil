@@ -27,4 +27,4 @@
   /var/www/html/** r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/web-data.d>
+  include if exists <abstractions/web-data.d>

@@ -29,4 +29,4 @@
   # included in this abstraction.
 
   # Include additions to the abstraction
-  #include if exists <abstractions/p11-kit.d>
+  include if exists <abstractions/p11-kit.d>

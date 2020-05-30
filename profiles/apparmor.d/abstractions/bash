@@ -46,4 +46,4 @@
   /usr/bin/dircolors               mix,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/bash.d>
+  include if exists <abstractions/bash.d>

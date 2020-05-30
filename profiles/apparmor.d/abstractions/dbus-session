@@ -19,4 +19,4 @@
   dbus bus=session,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/dbus-session.d>
+  include if exists <abstractions/dbus-session.d>

@@ -19,4 +19,4 @@
        peer=(name=org.freedesktop.DBus),
 
   # Include additions to the abstraction
-  #include if exists <abstractions/dbus-accessibility-strict.d>
+  include if exists <abstractions/dbus-accessibility-strict.d>

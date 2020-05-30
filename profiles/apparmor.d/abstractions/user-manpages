@@ -26,4 +26,4 @@
   /usr/man/**				r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/user-manpages.d>
+  include if exists <abstractions/user-manpages.d>

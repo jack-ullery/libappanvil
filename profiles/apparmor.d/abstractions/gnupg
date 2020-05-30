@@ -13,4 +13,4 @@
   owner @{HOME}/.gnupg/trustdb.gpg rw,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/gnupg.d>
+  include if exists <abstractions/gnupg.d>

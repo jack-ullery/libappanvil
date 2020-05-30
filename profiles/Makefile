@@ -114,10 +114,10 @@ check-logprof: local
 
 .PHONY: check-abstractions.d
 check-abstractions.d:
-	@echo "*** Checking if all abstractions (with a few exceptions) contain #include if exists <abstractions/*.d>"
+	@echo "*** Checking if all abstractions (with a few exceptions) contain include if exists <abstractions/*.d>"
 	$(Q)cd apparmor.d/abstractions && for file in * ; do \
 		test -d "$$file" &&  continue ;  \
 		test "$$file" = 'ubuntu-browsers' && continue ; \
 		test "$$file" = 'ubuntu-helpers' && continue ; \
-		grep -q "^  #include if exists <abstractions/$${file}.d>$$" $$file || { echo "$$file does not contain '#include if exists <abstractions/$${file}.d>'"; exit 1; } ; \
+		grep -q "^  include if exists <abstractions/$${file}.d>$$" $$file || { echo "$$file does not contain 'include if exists <abstractions/$${file}.d>'"; exit 1; } ; \
 	done

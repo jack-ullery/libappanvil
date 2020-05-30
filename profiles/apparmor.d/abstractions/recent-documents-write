@@ -12,4 +12,4 @@
 
 
   # Include additions to the abstraction
-  #include if exists <abstractions/recent-documents-write.d>
+  include if exists <abstractions/recent-documents-write.d>

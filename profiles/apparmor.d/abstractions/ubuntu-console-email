@@ -20,4 +20,4 @@
 
 
   # Include additions to the abstraction
-  #include if exists <abstractions/ubuntu-console-email.d>
+  include if exists <abstractions/ubuntu-console-email.d>

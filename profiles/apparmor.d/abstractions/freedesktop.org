@@ -30,4 +30,4 @@
   owner @{user_share_dirs}/mime/{**,}         r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/freedesktop.org.d>
+  include if exists <abstractions/freedesktop.org.d>

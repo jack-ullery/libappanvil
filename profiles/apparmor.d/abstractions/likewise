@@ -15,4 +15,4 @@
   /var/lib/likewise-open/lwidentity_privileged/pipe rw,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/likewise.d>
+  include if exists <abstractions/likewise.d>
