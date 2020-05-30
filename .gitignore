@@ -26,6 +26,7 @@ parser/af_rule.o
 parser/af_unix.o
 parser/common_optarg.o
 parser/dbus.o
+parser/default_features.o
 parser/lib.o
 parser/libapparmor_re/aare_rules.o
 parser/libapparmor_re/chfa.o
