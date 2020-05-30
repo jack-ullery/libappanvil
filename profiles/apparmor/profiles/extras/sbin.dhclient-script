@@ -1,4 +1,7 @@
 # Last Modified: Tue Jan 25 16:48:30 2011
+
+abi <abi/3.0>,
+
 #include <tunables/global>
 
 # dhclient-script will call plugins from /etc/netconfig.d, so this
