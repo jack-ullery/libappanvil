@@ -102,7 +102,7 @@ check-parser: local
 	@echo "*** Checking abstractions from ${ABSTRACTIONS_SOURCE} against apparmor_parser"
 	$(Q)for abstraction in ${CHECK_ABSTRACTIONS} ; do \
 	        [ -n "${VERBOSE}" ] && echo "Testing $${abstraction}" ; \
-		echo "#include <tunables/global> profile test { #include <$${abstraction}> }" \
+		echo "abi <abi/3.0>, #include <tunables/global> profile test { #include <$${abstraction}> }" \
 		| ${PARSER} --config-file=../parser/tst/parser.conf -S -b ${PWD}/apparmor.d -I ${PWD} > /dev/null \
 		|| exit 1; \
 	done
