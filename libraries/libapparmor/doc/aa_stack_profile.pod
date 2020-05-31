@@ -137,12 +137,12 @@ aa_stack_profile().
  {
          int fd;
          char buf[10];
- 
+
          if ((fd=open("/etc/passwd", O_RDONLY)) < 0) {
                 perror("Failure opening /etc/passwd");
                 _exit(1);
          }
- 
+
          /* Verify that we can read /etc/passwd */
          memset(&buf, 0, 10);
          if (read(fd, &buf, 10) == -1) {
@@ -153,19 +153,19 @@ aa_stack_profile().
          printf("/etc/passwd: %s\n", buf);
          close(fd);
  }
- 
+
  int main(int argc, char * argv[])
  {
          printf("Before aa_stack_profile():\n");
          read_passwd();
- 
+
          /* stack the "i_cant_be_trusted_anymore" profile, which
           * should not have read access to /etc/passwd. */
          if (aa_stack_profile("i_cant_be_trusted_anymore") < 0) {
              perror("Failure changing profile -- aborting");
              _exit(1);
          }
- 
+
          printf("After aa_stack_profile():\n");
          read_passwd();
          _exit(0);
