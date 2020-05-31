@@ -131,7 +131,7 @@ char *hex_to_string(char *hexstring)
 	char *ret = NULL;
 	char buf[3], *endptr;
 	size_t len;
-	int i;
+	size_t i;
 
 	if (!hexstring)
 		goto out;
