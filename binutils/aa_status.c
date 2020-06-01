@@ -233,7 +233,6 @@ static int get_processes(struct profile *profiles,
 		autofree char *real_exe = NULL;
 		autofclose FILE *fp = NULL;
 		autofree char *line = NULL;
-		size_t len = 0;
 
 		// ignore non-pid entries
 		for (i = 0; ispid && i < strlen(entry->d_name); i++) {
