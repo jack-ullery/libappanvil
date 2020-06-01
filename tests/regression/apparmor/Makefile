@@ -67,7 +67,7 @@ system aa-exec by adding USE_SYSTEM=1 to your make command.${nl}\
   LDLIBS += -Wl,-Bstatic -lapparmor -Wl,-Bdynamic -lpthread
 endif # USE_SYSTEM
 
-CFLAGS += -g -O0 -Wall -Wstrict-prototypes -Wsign-compare -Wmissing-field-initializers -Wformat -Wformat-security -Wunused-parameter
+CFLAGS += -g -O0 $(EXTRA_WARNINGS)
 
 SRC=access.c \
     at_secure.c \

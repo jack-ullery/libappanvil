@@ -70,7 +70,7 @@ libapparmor by adding USE_SYSTEM=1 to your make command.${nl}\
   LDLIBS = -lapparmor
 endif
 
-APXS_CFLAGS="-Wc,-Wsign-compare -Wmissing-field-initializers -Wformat -Wformat-security -Wunused-parameter"
+APXS_CFLAGS="-Wc,$(EXTRA_WARNINGS)"
 
 .PHONY: libapparmor_check
 .SILENT: libapparmor_check

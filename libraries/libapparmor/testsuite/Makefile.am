@@ -2,6 +2,9 @@ SUBDIRS = lib config libaalogparse.test
 PACKAGE = libaalogparse
 AUTOMAKE_OPTIONS = dejagnu
 
+COMMONDIR=$(top_srcdir)/../../common
+include $(COMMONDIR)/Make.rules
+
 INCLUDES = -I. -I$(top_srcdir)/include
 
 AM_CPPFLAGS = $(DEBUG_FLAGS) -DLOCALEDIR=\"${localedir}\"
@@ -10,7 +13,7 @@ AM_CFLAGS = -Wall
 noinst_PROGRAMS = test_multi.multi
 
 test_multi_multi_SOURCES	= test_multi.c
-test_multi_multi_CFLAGS		= -Wall
+test_multi_multi_CFLAGS		= -Wall $(EXTRA_WARNINGS)
 test_multi_multi_LDADD		= -L../src/.libs -lapparmor
 
 clean-local:
