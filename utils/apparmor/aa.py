@@ -2391,18 +2391,20 @@ def get_include_data(filename):
         raise AppArmorException(_('File Not Found: %s') % filename)
     return data
 
-def include_dir_filelist(profile_dir, include_name):
-    '''returns a list of files in the given profile_dir/include_name directory,
-       except skippable files. If include_name is an absolute path, ignore
-       profile_dir.
+def include_dir_filelist(include_name):
+    '''returns a list of files in the given include_name directory,
+       except skippable files.
     '''
+
+    if not include_name.startswith('/'):
+        raise AppArmorBug('incfile %s not starting with /' % include_name)
+
     files = []
-    include_name_abs = get_include_path(include_name)
-    for path in os.listdir(include_name_abs):
+    for path in os.listdir(include_name):
         path = path.strip()
         if is_skippable_file(path):
             continue
-        if os.path.isfile(include_name_abs + '/' + path):
+        if os.path.isfile(include_name + '/' + path):
             file_name = include_name + '/' + path
             files.append(file_name)
 
@@ -2423,7 +2425,7 @@ def load_include(incname):
             attach_profile_data(include, incdata)
         #If the include is a directory means include all subfiles
         elif os.path.isdir(incfile):
-            load_includeslist += include_dir_filelist(profile_dir, incfile)
+            load_includeslist += include_dir_filelist(incfile)
         else:
             raise AppArmorException("Include file %s not found" % (incfile))
 
