@@ -136,7 +136,7 @@ static ssize_t load_features_file(int file, char *buffer, size_t size)
 		if (len > 0)
 			errno = ENOBUFS;
 
-		PDEBUG("Error reading features file '%s': %m\n", path);
+		PDEBUG("Error reading features file: %m\n");
 		return -1;
 	}
 
@@ -162,6 +162,7 @@ static ssize_t open_and_load_features_file(int dirfd, const char *path,
 					   char *buffer, size_t size)
 {
 	autoclose int file = -1;
+	ssize_t rc;
 
 	file = openat(dirfd, path, O_RDONLY);
 	if (file < 0) {
@@ -175,7 +176,10 @@ static ssize_t open_and_load_features_file(int dirfd, const char *path,
 		return -1;
 	}
 
-	return load_features_file(file, buffer, size);
+	rc = load_features_file(file, buffer, size);
+	if (rc == -1)
+		PDEBUG("Error failed to load features file '%s': %m\n", path);
+	return rc;
 }
 
 static int features_dir_cb(int dirfd, const char *name, struct stat *st,
