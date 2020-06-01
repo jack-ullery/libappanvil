@@ -309,7 +309,7 @@ class AaTest_get_all_merged_variables(AATest):
         apparmor.aa.reset_aa()
 
         # load the profiles and abstractions
-        apparmor.aa.profiledir = self.profile_dir
+        apparmor.aa.profile_dir = self.profile_dir
         apparmor.aa.loadincludes()
         apparmor.aa.read_profiles()
 

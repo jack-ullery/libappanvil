@@ -131,7 +131,7 @@ class AaTest_create_new_profile(AATest):
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
         # load the abstractions we need in the test
-        apparmor.aa.profiledir = self.profile_dir
+        apparmor.aa.profile_dir = self.profile_dir
         apparmor.aa.load_include('abstractions/base')
         apparmor.aa.load_include('abstractions/bash')
 
@@ -754,7 +754,7 @@ class AaTest_get_file_perms_2(AATest):
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
         # load the abstractions we need in the test
-        apparmor.aa.profiledir = self.profile_dir
+        apparmor.aa.profile_dir = self.profile_dir
         apparmor.aa.load_include('abstractions/base')
         apparmor.aa.load_include('abstractions/bash')
         apparmor.aa.load_include('abstractions/enchant')
@@ -792,7 +792,7 @@ class AaTest_propose_file_rules(AATest):
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
         # load the abstractions we need in the test
-        apparmor.aa.profiledir = self.profile_dir
+        apparmor.aa.profile_dir = self.profile_dir
         apparmor.aa.load_include('abstractions/base')
         apparmor.aa.load_include('abstractions/bash')
         apparmor.aa.load_include('abstractions/enchant')
@@ -835,7 +835,7 @@ class AaTest_propose_file_rules_with_absolute_includes(AATest):
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
         # load the abstractions we need in the test
-        apparmor.aa.profiledir = self.profile_dir
+        apparmor.aa.profile_dir = self.profile_dir
         apparmor.aa.load_include('abstractions/base')
 
         abs_include1 = write_file(self.tmpdir, 'test-abs1', "/some/random/include rw,")
