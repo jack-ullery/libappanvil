@@ -2415,18 +2415,17 @@ def load_include(incname):
         if not incfile.startswith('/'):
             raise AppArmorBug('incfile %s not starting with /' % incfile)
 
-        incfile_abs = get_include_path(incfile)
         if include.get(incfile, {}).get(incfile, False):
             pass  # already read, do nothing
-        elif os.path.isfile(incfile_abs):
-            data = get_include_data(incfile_abs)
+        elif os.path.isfile(incfile):
+            data = get_include_data(incfile)
             incdata = parse_profile_data(data, incfile, True)
             attach_profile_data(include, incdata)
         #If the include is a directory means include all subfiles
-        elif os.path.isdir(incfile_abs):
+        elif os.path.isdir(incfile):
             load_includeslist += include_dir_filelist(profile_dir, incfile)
         else:
-            raise AppArmorException("Include file %s not found" % (incfile_abs))
+            raise AppArmorException("Include file %s not found" % (incfile))
 
     return 0
 
