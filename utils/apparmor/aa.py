@@ -1398,24 +1398,29 @@ def get_include_path(incname):
     return profile_dir + '/' + incname
 
 def match_includes(profile, rule_type, rule_obj):
-    ''' propose abstractions that allow the given rule '''
+    ''' propose abstractions that allow the given rule_obj
+
+        Note: This function will return relative paths for includes inside profile_dir
+    '''
 
     newincludes = []
     for incname in include.keys():
+        rel_incname = incname.replace(profile_dir + '/', '')
+
         # TODO: improve/fix logic to honor magic vs. quoted include paths
-        if incname.startswith('/'):
+        if rel_incname.startswith('/'):
             is_magic = False
         else:
             is_magic = True
 
         # never propose includes that are already in the profile (shouldn't happen because of is_known_rule())
-        if profile and profile['inc_ie'].is_covered(IncludeRule(incname, False, is_magic)):
+        if profile and profile['inc_ie'].is_covered(IncludeRule(rel_incname, False, is_magic)):
             continue
 
         # XXX type check should go away once we init all profiles correctly
         if valid_include(incname) and include[incname][incname][rule_type].is_covered(rule_obj):
             if include[incname][incname]['logprof_suggest'] != 'no':
-                newincludes.append(incname)
+                newincludes.append(rel_incname)
 
     return newincludes
 
