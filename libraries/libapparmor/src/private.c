@@ -126,7 +126,7 @@ bool atomic_dec_and_test(unsigned int *v)
 
 int _aa_is_blacklisted(const char *name)
 {
-	size_t name_len = strlen(name);
+	ssize_t name_len = strlen(name);
 	struct ignored_suffix_t *suffix;
 
 	/* skip dot files and files with no name */
@@ -315,8 +315,7 @@ static ssize_t readdirfd(int dirfd, struct dirent ***out,
 			  int (*dircmp)(const struct dirent **, const struct dirent **))
 {
 	struct dirent **dents = NULL, *dent;
-	ssize_t n = 0;
-	size_t i;
+	ssize_t n = 0, i;
 	int save;
 	DIR *dir;
 
