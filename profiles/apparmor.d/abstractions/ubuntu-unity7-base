@@ -102,4 +102,4 @@
   deny dbus bus=session path=/com/canonical/[Uu]nity/[Dd]ebug**,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/ubuntu-unity7-base.d>
+  include if exists <abstractions/ubuntu-unity7-base.d>

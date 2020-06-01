@@ -10,4 +10,4 @@
 
 
   # Include additions to the abstraction
-  #include if exists <abstractions/qt5-compose-cache-write.d>
+  include if exists <abstractions/qt5-compose-cache-write.d>

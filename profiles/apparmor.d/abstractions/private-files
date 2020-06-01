@@ -49,4 +49,4 @@
   audit deny @{HOME}/.zshenv wl,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/private-files.d>
+  include if exists <abstractions/private-files.d>

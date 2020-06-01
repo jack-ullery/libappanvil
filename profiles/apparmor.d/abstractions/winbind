@@ -24,4 +24,4 @@
 
 
   # Include additions to the abstraction
-  #include if exists <abstractions/winbind.d>
+  include if exists <abstractions/winbind.d>

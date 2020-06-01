@@ -9,4 +9,4 @@
        path="/com/canonical/indicator/messages/*",
 
   # Include additions to the abstraction
-  #include if exists <abstractions/ubuntu-unity7-messaging.d>
+  include if exists <abstractions/ubuntu-unity7-messaging.d>

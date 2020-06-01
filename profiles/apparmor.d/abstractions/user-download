@@ -26,4 +26,4 @@
   owner "@{HOME}/My Downloads/**" 	rwl,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/user-download.d>
+  include if exists <abstractions/user-download.d>

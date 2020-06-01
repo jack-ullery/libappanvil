@@ -15,4 +15,4 @@
   owner @{run}/user/*/{mesa,mutter,sdl,wayland-cursor,weston,xwayland}-shared-* rw,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/wayland.d>
+  include if exists <abstractions/wayland.d>

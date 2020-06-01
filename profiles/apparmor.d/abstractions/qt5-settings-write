@@ -13,4 +13,4 @@
 
 
   # Include additions to the abstraction
-  #include if exists <abstractions/qt5-settings-write.d>
+  include if exists <abstractions/qt5-settings-write.d>

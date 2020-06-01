@@ -33,4 +33,4 @@
   /var/lib/ctdb/** rwk,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/samba.d>
+  include if exists <abstractions/samba.d>

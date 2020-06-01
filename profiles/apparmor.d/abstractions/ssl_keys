@@ -32,4 +32,4 @@
   /etc/certbot/archive/*/privkey*.pem r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/ssl_keys.d>
+  include if exists <abstractions/ssl_keys.d>

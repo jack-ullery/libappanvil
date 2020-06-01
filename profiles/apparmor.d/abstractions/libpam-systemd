@@ -21,4 +21,4 @@
     member={CreateSession,ReleaseSession},
 
   # Include additions to the abstraction
-  #include if exists <abstractions/libpam-systemd.d>
+  include if exists <abstractions/libpam-systemd.d>

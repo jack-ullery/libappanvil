@@ -18,4 +18,4 @@
   dbus bus=system,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/dbus.d>
+  include if exists <abstractions/dbus.d>

@@ -35,7 +35,7 @@
 #
 #   # Add if audio support for message box is
 #   # considered as required.
-#   #include if exists <abstractions/gstreamer>
+#   include if exists <abstractions/gstreamer>
 #
 #   # < add additional allowed applications here >
 # }
@@ -103,4 +103,4 @@
   owner @{HOME}/.cache/kio_http/ rw,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/kde-open5.d>
+  include if exists <abstractions/kde-open5.d>

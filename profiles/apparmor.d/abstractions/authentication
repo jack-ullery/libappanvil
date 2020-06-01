@@ -53,4 +53,4 @@
   #include <abstractions/p11-kit>
 
   # Include additions to the abstraction
-  #include if exists <abstractions/authentication.d>
+  include if exists <abstractions/authentication.d>

@@ -26,4 +26,4 @@
   /usr/lib/thunderbird*/thunderbird{,.sh,-bin} Cx -> sanitized_helper,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/ubuntu-email.d>
+  include if exists <abstractions/ubuntu-email.d>

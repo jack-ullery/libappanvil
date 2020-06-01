@@ -19,4 +19,4 @@
 
 
   # Include additions to the abstraction
-  #include if exists <abstractions/ubuntu-konsole.d>
+  include if exists <abstractions/ubuntu-konsole.d>

@@ -8,4 +8,4 @@
   @{sys}/class/video4linux/** r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/video.d>
+  include if exists <abstractions/video.d>

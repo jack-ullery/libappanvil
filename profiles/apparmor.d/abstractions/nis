@@ -17,4 +17,4 @@
 
 
   # Include additions to the abstraction
-  #include if exists <abstractions/nis.d>
+  include if exists <abstractions/nis.d>

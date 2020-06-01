@@ -9,4 +9,4 @@
 
 
   # Include additions to the abstraction
-  #include if exists <abstractions/kde-icon-cache-write.d>
+  include if exists <abstractions/kde-icon-cache-write.d>

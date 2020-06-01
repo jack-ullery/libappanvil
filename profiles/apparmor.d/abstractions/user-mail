@@ -25,4 +25,4 @@
   owner @{HOME}/Maildir/**    rwl,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/user-mail.d>
+  include if exists <abstractions/user-mail.d>

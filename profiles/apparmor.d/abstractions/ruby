@@ -23,4 +23,4 @@
   /usr/lib{,32,64}/ruby/gems/1.[89]{.[0-9],}/** r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/ruby.d>
+  include if exists <abstractions/ruby.d>

@@ -21,4 +21,4 @@
   owner @{run}/dovecot/config rw,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/dovecot-common.d>
+  include if exists <abstractions/dovecot-common.d>

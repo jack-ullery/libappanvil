@@ -10,4 +10,4 @@
   owner @{HOME}/.config/dconf/user r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/dconf.d>
+  include if exists <abstractions/dconf.d>

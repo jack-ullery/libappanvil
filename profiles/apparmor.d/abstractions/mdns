@@ -16,4 +16,4 @@
   @{run}/mdnsd w,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/mdns.d>
+  include if exists <abstractions/mdns.d>

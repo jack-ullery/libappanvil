@@ -63,4 +63,4 @@
   /usr/share/libthai/thbrk.tri          r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/fonts.d>
+  include if exists <abstractions/fonts.d>

@@ -22,4 +22,4 @@
 
 
   # Include additions to the abstraction
-  #include if exists <abstractions/vulkan.d>
+  include if exists <abstractions/vulkan.d>

@@ -22,4 +22,4 @@
   /tmp/                 rw,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/user-tmp.d>
+  include if exists <abstractions/user-tmp.d>

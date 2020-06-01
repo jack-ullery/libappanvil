@@ -20,4 +20,4 @@
   owner @{HOME}/.cups/lpoptions r,
 
   # Include additions to the abstraction
-  #include if exists <abstractions/cups-client.d>
+  include if exists <abstractions/cups-client.d>

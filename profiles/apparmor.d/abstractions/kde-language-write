@@ -15,4 +15,4 @@
 
 
   # Include additions to the abstraction
-  #include if exists <abstractions/kde-language-write.d>
+  include if exists <abstractions/kde-language-write.d>

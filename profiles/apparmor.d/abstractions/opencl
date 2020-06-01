@@ -12,4 +12,4 @@
 
 
   # Include additions to the abstraction
-  #include if exists <abstractions/opencl.d>
+  include if exists <abstractions/opencl.d>

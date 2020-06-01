@@ -78,4 +78,4 @@
 
 
   # Include additions to the abstraction
-  #include if exists <abstractions/opencl-pocl.d>
+  include if exists <abstractions/opencl-pocl.d>
