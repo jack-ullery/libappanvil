@@ -137,11 +137,11 @@ First, a simple high-level overview of aa_change_hat() use:
 
  void foo (void) {
  	unsigned long magic_token;
-  
+
  	/* get a random magic token value
  	from our huge entropy pool */
  	magic_token = random_function();
- 
+
  	/* change into the subprofile while
  	 * we do stuff we don't trust */
  	aa_change_hat("stuff_we_dont_trust", magic_token);
@@ -166,20 +166,20 @@ aren't accessible after an aa_change_hat() call:
  #include <fcntl.h>
  #include <stdio.h>
  #include <unistd.h>
- 
- 
+
+
  int main(int argc, char *argv[]) {
         int fd;
         unsigned long tok;
         char buf[10];
- 
+
         /* random() is a poor choice */
         tok = random();
- 
+
         /* open /etc/passwd outside of any hat */
         if ((fd=open("/etc/passwd", O_RDONLY)) < 0)
                 perror("Failure opening /etc/passwd");
- 
+
         /* confirm for ourselves that we can really read /etc/passwd */
         memset(&buf, 0, 10);
         if (read(fd, &buf, 10) == -1) {
@@ -188,7 +188,7 @@ aren't accessible after an aa_change_hat() call:
         }
         buf[9] = '\0';
         printf("/etc/passwd: %s\n", buf);
- 
+
         /* change hat to the "hat" subprofile, which should not have
          * read access to /etc/passwd -- even though we have a valid
          * file descriptor at the time of the aa_change_hat() call. */
@@ -196,7 +196,7 @@ aren't accessible after an aa_change_hat() call:
                 perror("Failure changing hat -- aborting");
                 _exit(1);
         }
- 
+
         /* confirm that we cannot read /etc/passwd */
         lseek(fd,0,SEEK_SET);
         memset(&buf, 0, 10);
@@ -204,7 +204,7 @@ aren't accessible after an aa_change_hat() call:
                 perror("Failure reading /etc/passwd post-hat");
         buf[9] = '\0';
         printf("/etc/passwd: %s\n", buf);
- 
+
         return 0;
  }
 
