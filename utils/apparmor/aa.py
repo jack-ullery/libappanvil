@@ -2412,6 +2412,9 @@ def load_include(incname):
     load_includeslist = [incname]
     while load_includeslist:
         incfile = load_includeslist.pop(0)
+        if not incfile.startswith('/'):
+            raise AppArmorBug('incfile %s not starting with /' % incfile)
+
         incfile_abs = get_include_path(incfile)
         if include.get(incfile, {}).get(incfile, False):
             pass  # already read, do nothing

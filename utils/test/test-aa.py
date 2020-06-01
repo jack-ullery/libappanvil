@@ -859,15 +859,14 @@ class AaTest_propose_file_rules_with_absolute_includes(AATest):
 
 
 class AaTest_nonexistent_includes(AATest):
-    def test_bad_includes(self):
-        tests = [
-            "/nonexistent/absolute/path",
-            "nonexistent/relative/path",
-        ]
+    tests = [
+        ("/nonexistent/absolute/path",      AppArmorException),
+        ("nonexistent/relative/path",       AppArmorBug),       # load_include() only accepts absolute paths
+    ]
 
-        for i in tests:
-            with self.assertRaises(AppArmorException):
-                apparmor.aa.load_include(i)
+    def _run_test(self, params, expected):
+        with self.assertRaises(expected):
+            apparmor.aa.load_include(params)
 
 
 setup_aa(apparmor.aa)
