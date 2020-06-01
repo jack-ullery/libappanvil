@@ -854,7 +854,7 @@ def ask_exec(hashlog):
 
                         prof_filename = get_profile_filename_from_profile_name(profile)
                         if prof_filename and active_profiles.files.get(prof_filename):
-                            sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename]), profile_dir))
+                            sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename])))
                         else:
                             sev_db.set_variables( {} )
 
@@ -1050,7 +1050,7 @@ def ask_the_questions(log_dict):
         for profile in sorted(log_dict[aamode].keys()):
             prof_filename = get_profile_filename_from_profile_name(profile)
             if prof_filename and active_profiles.files.get(prof_filename):
-                sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename]), profile_dir))
+                sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename])))
             else:
                 sev_db.set_variables( {} )
 

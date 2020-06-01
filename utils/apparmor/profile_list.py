@@ -179,7 +179,7 @@ class ProfileList:
 
         return None  # nothing found
 
-    def get_all_merged_variables(self, filename, all_incfiles, profile_dir):
+    def get_all_merged_variables(self, filename, all_incfiles):
         ''' Get merged variables of a file and its includes
 
             Note that this function is more forgiving than apparmor_parser.

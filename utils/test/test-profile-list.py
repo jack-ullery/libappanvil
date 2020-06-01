@@ -316,7 +316,7 @@ class AaTest_get_all_merged_variables(AATest):
     def test_unchanged(self):
         self._load_profiles()
         prof_filename = os.path.join(self.profile_dir, 'usr.sbin.dnsmasq')
-        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]), self.profile_dir)
+        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]))
         self.assertEqual(vars['@{TFTP_DIR}'], {'/var/tftp', '/srv/tftp', '/srv/tftpboot'})
         self.assertEqual(vars['@{HOME}'], {'@{HOMEDIRS}/*/', '/root/'})
 
@@ -324,7 +324,7 @@ class AaTest_get_all_merged_variables(AATest):
         write_file(self.profile_dir, 'tunables/home.d/extend_home', '@{HOME} += /my/castle/')
         self._load_profiles()
         prof_filename = os.path.join(self.profile_dir, 'usr.sbin.dnsmasq')
-        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]), self.profile_dir)
+        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]))
         self.assertEqual(vars['@{TFTP_DIR}'], {'/var/tftp', '/srv/tftp', '/srv/tftpboot'})
         self.assertEqual(vars['@{HOME}'], {'@{HOMEDIRS}/*/', '/root/', '/my/castle/'})
 
@@ -333,7 +333,7 @@ class AaTest_get_all_merged_variables(AATest):
         write_file(self.profile_dir, 'tunables/home.d/moving_around', '@{HOME} += /on/the/road/')
         self._load_profiles()
         prof_filename = os.path.join(self.profile_dir, 'usr.sbin.dnsmasq')
-        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]), self.profile_dir)
+        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]))
         self.assertEqual(vars['@{TFTP_DIR}'], {'/var/tftp', '/srv/tftp', '/srv/tftpboot'})
         self.assertEqual(vars['@{HOME}'], {'@{HOMEDIRS}/*/', '/root/', '/my/castle/', '/on/the/road/'})
 
@@ -342,7 +342,7 @@ class AaTest_get_all_merged_variables(AATest):
         write_file(self.profile_dir, 'dummy_profile', 'include <tunables/global>\n@{HOME} += /in/the/profile/')
         self._load_profiles()
         prof_filename = os.path.join(self.profile_dir, 'dummy_profile')
-        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'dummy_profile'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]), self.profile_dir)
+        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'dummy_profile'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]))
         self.assertEqual(vars.get('@{TFTP_DIR}', None), None)
         self.assertEqual(vars['@{HOME}'], {'@{HOMEDIRS}/*/', '/root/', '/my/castle/', '/in/the/profile/'})
 
@@ -351,18 +351,18 @@ class AaTest_get_all_merged_variables(AATest):
         self._load_profiles()
         prof_filename = os.path.join(self.profile_dir, 'usr.sbin.dnsmasq')
         with self.assertRaises(AppArmorException):
-            apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]), self.profile_dir)
+            apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]))
 
     def test_add_to_nonexisting(self):
         write_file(self.profile_dir, 'tunables/home.d/no_such_var', '@{NO_SUCH_HOME} += /my/castle/')  # add to non-existing variable
         self._load_profiles()
         prof_filename = os.path.join(self.profile_dir, 'usr.sbin.dnsmasq')
         with self.assertRaises(AppArmorException):
-            apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]), self.profile_dir)
+            apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename]))
 
     def test_vars_from_nonexisting_profile(self):
         with self.assertRaises(AppArmorBug):
-            apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'file.not.found'), list(), self.profile_dir)
+            apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'file.not.found'), list())
 
 
 setup_aa(apparmor.aa)
