@@ -1417,6 +1417,10 @@ def match_includes(profile, rule_type, rule_obj):
         if profile and profile['inc_ie'].is_covered(IncludeRule(rel_incname, False, is_magic)):
             continue
 
+        # never propose a local/ include (they are meant to be included in exactly one profile)
+        if rel_incname.startswith('local/'):
+            continue
+
         # XXX type check should go away once we init all profiles correctly
         if valid_include(incname) and include[incname][incname][rule_type].is_covered(rule_obj):
             if include[incname][incname]['logprof_suggest'] != 'no':
