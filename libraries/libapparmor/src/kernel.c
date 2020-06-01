@@ -799,13 +799,14 @@ int aa_getcon(char **label, char **mode)
  */
 int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode)
 {
-	socklen_t optlen = *len;
+	socklen_t optlen;
 	int rc;
 
-	if (optlen <= 0 || buf == NULL) {
+	if (*len <= 0 || buf == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
+	optlen = (socklen_t) *len;
 
 	if (!is_enabled()) {
 		errno = EINVAL;
@@ -820,7 +821,7 @@ int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode)
 
 	/* check for null termination */
 	if (buf[optlen - 1] != 0) {
-		if (optlen < *len) {
+		if (optlen < (socklen_t) *len) {
 			buf[optlen] = 0;
 			optlen++;
 		} else {
@@ -963,7 +964,7 @@ int query_label(uint32_t mask, char *query, size_t size, int *allowed,
 	memcpy(query, AA_QUERY_CMD_LABEL, AA_QUERY_CMD_LABEL_SIZE);
 	errno = 0;
 	ret = write(fd, query, size);
-	if (ret != size) {
+	if (ret < 0 || ((size_t) ret != size)) {
 		if (ret >= 0)
 			errno = EPROTO;
 		/* IMPORTANT: This is the only valid error path that can have
