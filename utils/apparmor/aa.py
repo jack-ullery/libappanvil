@@ -1913,10 +1913,6 @@ def parse_profile_data(data, file, do_include):
                 active_profiles.add_inc_ie(file, rule_obj)
 
             for incname in rule_obj.get_full_paths(profile_dir):
-                # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
-                if incname.startswith(profile_dir):
-                    incname = incname.replace('%s/' % profile_dir, '')
-
                 load_include(incname)
 
         elif NetworkRule.match(line):
@@ -2274,10 +2270,6 @@ def include_list_recursive(profile):
             continue
         full_list.append(incname)
 
-        # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
-        if incname.startswith(profile_dir):
-            incname = incname.replace('%s/' % profile_dir, '')
-
         for childinc in include[incname][incname]['inc_ie'].rules:
             for childinc_file in childinc.get_full_paths(profile_dir):
                 if childinc_file not in full_list:
@@ -2294,10 +2286,6 @@ def is_known_rule(profile, rule_type, rule_obj):
     includelist = include_list_recursive(profile)
 
     for incname in includelist:
-        # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
-        if incname.startswith(profile_dir):
-            incname = incname.replace('%s/' % profile_dir, '')
-
         if include[incname][incname][rule_type].is_covered(rule_obj, False):
             return True
 
@@ -2311,10 +2299,6 @@ def get_file_perms(profile, path, audit, deny):
     includelist = include_list_recursive(profile)
 
     for incname in includelist:
-        # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
-        if incname.startswith(profile_dir):
-            incname = incname.replace('%s/' % profile_dir, '')
-
         incperms = include[incname][incname]['file'].get_perms_for_path(path, audit, deny)
 
         for allow_or_deny in ['allow', 'deny']:
@@ -2411,9 +2395,6 @@ def include_dir_filelist(profile_dir, include_name):
             continue
         if os.path.isfile(include_name_abs + '/' + path):
             file_name = include_name + '/' + path
-            # strip off profile_dir for non-absolute paths
-            if not include_name.startswith('/'):
-                file_name = file_name.replace(profile_dir + '/', '')
             files.append(file_name)
 
     return files
@@ -2463,7 +2444,6 @@ def loadincludes():
                     continue
                 else:
                     fi = dirpath + '/' + fi
-                    fi = fi.replace(profile_dir + '/', '', 1)
                     load_include(fi)
 
 def glob_common(path):

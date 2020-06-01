@@ -207,10 +207,6 @@ class ProfileList:
             inc_add[filename] = mainfile_variables['+=']  # variable additions from main file
 
         for incname in all_incfiles:
-            # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
-            if incname.startswith(profile_dir):
-                incname = incname.replace('%s/' % profile_dir, '')
-
             if not self.files.get(incname):
                 continue  # tunables/* only end up in self.files if they contain variable or alias definitions
 

@@ -53,10 +53,6 @@ class CleanProf(object):
 
             #Clean up superfluous rules from includes in the other profile
             for inc in includes:
-                # apparmor.include[] keys can be a) 'abstractions/foo' and b) '/full/path'
-                if inc.startswith(apparmor.profile_dir):
-                    inc = inc.replace('%s/' % apparmor.profile_dir, '')
-
                 if not self.profile.include.get(inc, {}).get(inc, False):
                     apparmor.load_include(inc)
                 if self.other.aa[program].get(hat):  # carefully avoid to accidently initialize self.other.aa[program][hat]

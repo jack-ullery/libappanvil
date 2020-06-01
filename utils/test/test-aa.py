@@ -132,8 +132,8 @@ class AaTest_create_new_profile(AATest):
 
         # load the abstractions we need in the test
         apparmor.aa.profile_dir = self.profile_dir
-        apparmor.aa.load_include('abstractions/base')
-        apparmor.aa.load_include('abstractions/bash')
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/base'))
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/bash'))
 
         exp_interpreter_path, exp_abstraction = expected
         # damn symlinks!
@@ -755,10 +755,10 @@ class AaTest_get_file_perms_2(AATest):
 
         # load the abstractions we need in the test
         apparmor.aa.profile_dir = self.profile_dir
-        apparmor.aa.load_include('abstractions/base')
-        apparmor.aa.load_include('abstractions/bash')
-        apparmor.aa.load_include('abstractions/enchant')
-        apparmor.aa.load_include('abstractions/aspell')
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/base'))
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/bash'))
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/enchant'))
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/aspell'))
 
         profile = apparmor.aa.ProfileStorage('/test', '/test', 'test-aa.py')
         profile['inc_ie'].add(IncludeRule.parse('include <abstractions/base>'))
@@ -793,10 +793,10 @@ class AaTest_propose_file_rules(AATest):
 
         # load the abstractions we need in the test
         apparmor.aa.profile_dir = self.profile_dir
-        apparmor.aa.load_include('abstractions/base')
-        apparmor.aa.load_include('abstractions/bash')
-        apparmor.aa.load_include('abstractions/enchant')
-        apparmor.aa.load_include('abstractions/aspell')
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/base'))
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/bash'))
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/enchant'))
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/aspell'))
 
         # add some user_globs ('(N)ew') to simulate a professional aa-logprof user (and to make sure that part of the code also gets tested)
         apparmor.aa.user_globs['/usr/share/common*/foo/*'] = AARE('/usr/share/common*/foo/*', True)
@@ -836,7 +836,7 @@ class AaTest_propose_file_rules_with_absolute_includes(AATest):
 
         # load the abstractions we need in the test
         apparmor.aa.profile_dir = self.profile_dir
-        apparmor.aa.load_include('abstractions/base')
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/base'))
 
         abs_include1 = write_file(self.tmpdir, 'test-abs1', "/some/random/include rw,")
         apparmor.aa.load_include(abs_include1)
