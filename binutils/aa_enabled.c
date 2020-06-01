@@ -31,8 +31,6 @@ void print_help(const char *command)
 /* Exit statuses and meanings are documented in the aa-enabled.pod file */
 static void exit_with_error(int saved_errno, int quiet)
 {
-	int err;
-
 	switch(saved_errno) {
 	case ENOSYS:
 		if (!quiet)
