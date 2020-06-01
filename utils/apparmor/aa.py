@@ -1392,11 +1392,6 @@ def ask_conflict_mode(profile, hat, old_profile, merge_profile):
 
                     done = True
 
-def get_include_path(incname):
-    if incname.startswith('/'):
-        return incname
-    return profile_dir + '/' + incname
-
 def match_includes(profile, rule_type, rule_obj):
     ''' propose abstractions that allow the given rule_obj
 
