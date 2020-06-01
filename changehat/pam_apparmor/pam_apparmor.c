@@ -45,6 +45,10 @@
 
 int debug_flag = 0;
 
+#ifndef unused_
+#define unused_ __attribute__ ((unused))
+#endif
+
 static struct config default_config = {
 	.hat_type[0] = eGroupname,
 	.hat_type[1] = eDefault,
@@ -54,14 +58,14 @@ static struct config default_config = {
 /* --- session management functions (only) --- */
 
 PAM_EXTERN int
-pam_sm_close_session (pam_handle_t *pamh, int flags,
-		      int argc, const char **argv)
+pam_sm_close_session (unused_ pam_handle_t *pamh, unused_ int flags,
+		      unused_ int argc, unused_ const char **argv)
 {
 	return PAM_IGNORE;
 }
 
 PAM_EXTERN
-int pam_sm_open_session(pam_handle_t *pamh, int flags,
+int pam_sm_open_session(pam_handle_t *pamh, unused_ int flags,
 			int argc, const char **argv)
 {
 	int fd, retval, pam_retval = PAM_SUCCESS;
