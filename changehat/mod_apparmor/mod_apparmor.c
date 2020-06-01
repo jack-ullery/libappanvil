@@ -30,6 +30,10 @@
 
 /* #define DEBUG */
 
+#ifndef unused_
+#define unused_ __attribute__ ((unused))
+#endif
+
 /* should the following be configurable? */
 #define DEFAULT_HAT "HANDLING_UNTRUSTED_INPUT"
 #define DEFAULT_URI_HAT "DEFAULT_URI"
@@ -65,7 +69,7 @@ typedef struct {
  * memory will be wiped out, and the magic_token will be lost, so apache
  * wouldn't be able to change_hat back out. */
 static int
-aa_init(apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s)
+aa_init(apr_pool_t *p, unused_ apr_pool_t *plog, unused_ apr_pool_t *ptemp, unused_ server_rec *s)
 {
     apr_file_t *file;
     apr_size_t size = sizeof(magic_token);
@@ -89,7 +93,7 @@ aa_init(apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s)
  * to protect ourselves from bugs in parsing network input, but before
  * we change_hat to the uri specific hat. */
 static void
-aa_child_init(apr_pool_t *p, server_rec *s)
+aa_child_init(unused_ apr_pool_t *p, unused_ server_rec *s)
 {
     int ret;
 
@@ -260,7 +264,7 @@ aa_exit_hat(request_rec *r)
 }
 
 static const char *
-aa_cmd_ch_path(cmd_parms *cmd, void *mconfig, const char *parm1)
+aa_cmd_ch_path(unused_ cmd_parms *cmd, unused_ void *mconfig, const char *parm1)
 {
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "directory config change hat %s",
                  parm1 ? parm1 : "DEFAULT");
@@ -287,7 +291,7 @@ immunix_cmd_ch_path(cmd_parms *cmd, void *mconfig, const char *parm1)
 }
 
 static const char *
-aa_cmd_ch_srv(cmd_parms *cmd, void *mconfig, const char *parm1)
+aa_cmd_ch_srv(cmd_parms *cmd, unused_ void *mconfig, const char *parm1)
 {
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "server config change hat %s",
                             parm1 ? parm1 : "DEFAULT");
@@ -347,7 +351,7 @@ aa_merge_dir_config(apr_pool_t *p, void *parent, void *child)
 */
 
 static void *
-aa_create_srv_config(apr_pool_t *p, server_rec *srv)
+aa_create_srv_config(apr_pool_t *p, unused_ server_rec *srv)
 {
     apparmor_srv_cfg *newcfg = (apparmor_srv_cfg *) apr_pcalloc(p, sizeof(*newcfg));
 
@@ -397,7 +401,7 @@ static const command_rec mod_apparmor_cmds[] = {
 };
 
 static void
-register_hooks(apr_pool_t *p)
+register_hooks(unused_ apr_pool_t *p)
 {
     ap_hook_post_config(aa_init, NULL, NULL, APR_HOOK_MIDDLE);
     ap_hook_child_init(aa_child_init, NULL, NULL, APR_HOOK_MIDDLE);
