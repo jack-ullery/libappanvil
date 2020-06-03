@@ -138,7 +138,7 @@ class IncludeRule(BaseRule):
         files = []
 
         if os.path.isdir(full_path):
-            for path in os.listdir(full_path):
+            for path in sorted(os.listdir(full_path)):
                 if is_skippable_file(path):
                     continue
 
