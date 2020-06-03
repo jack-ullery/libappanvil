@@ -366,7 +366,7 @@ pattern_t convert_aaregex_to_pcre(const char *aare, int anchor, int glob,
 		case '(':
 		case ')':
 			pcre.append("\\");
-			// fall through to default
+			/* Fall through */
 
 		default:
 			if (bEscape) {

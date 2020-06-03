@@ -346,10 +346,13 @@ template<class Iter>
 		case 4:
 			os.put((char)(*pos >> 24));
 			os.put((char)(*pos >> 16));
+			/* Fall through */
 		case 2:
 			os.put((char)(*pos >> 8));
+			/* Fall through */
 		case 1:
 			os.put((char)*pos);
+			/* Fall through */
 		}
 	}
 

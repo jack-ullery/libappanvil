@@ -797,15 +797,16 @@ int aa_getcon(char **label, char **mode)
  * Returns: length of confinement context including null termination or -1 on
  *          error if errno == ERANGE then @len will hold the size needed
  */
-int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode)
+int aa_getpeercon_raw(int fd, char *buf, socklen_t *len, char **mode)
 {
-	socklen_t optlen = *len;
+	socklen_t optlen;
 	int rc;
 
-	if (optlen <= 0 || buf == NULL) {
+	if (*len <= 0 || buf == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
+	optlen = *len;
 
 	if (!is_enabled()) {
 		errno = EINVAL;
@@ -861,7 +862,8 @@ out:
  */
 int aa_getpeercon(int fd, char **label, char **mode)
 {
-	int rc, last_size, size = INITIAL_GUESS_SIZE;
+	socklen_t last_size, size = INITIAL_GUESS_SIZE;
+	int rc;
 	char *buffer = NULL;
 
 	if (!label) {
@@ -963,7 +965,7 @@ int query_label(uint32_t mask, char *query, size_t size, int *allowed,
 	memcpy(query, AA_QUERY_CMD_LABEL, AA_QUERY_CMD_LABEL_SIZE);
 	errno = 0;
 	ret = write(fd, query, size);
-	if (ret != size) {
+	if (ret < 0 || ((size_t) ret != size)) {
 		if (ret >= 0)
 			errno = EPROTO;
 		/* IMPORTANT: This is the only valid error path that can have

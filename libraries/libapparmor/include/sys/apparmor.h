@@ -20,6 +20,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <unistd.h>
 #include <sys/types.h>
 
 #ifdef __cplusplus
@@ -93,7 +94,7 @@ extern int aa_getprocattr(pid_t tid, const char *attr, char **label,
 			  char **mode);
 extern int aa_gettaskcon(pid_t target, char **label, char **mode);
 extern int aa_getcon(char **label, char **mode);
-extern int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode);
+extern int aa_getpeercon_raw(int fd, char *buf, socklen_t *len, char **mode);
 extern int aa_getpeercon(int fd, char **label, char **mode);
 
 /* A NUL character is used to separate the query command prefix string from the
