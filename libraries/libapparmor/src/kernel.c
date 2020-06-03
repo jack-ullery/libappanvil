@@ -797,7 +797,7 @@ int aa_getcon(char **label, char **mode)
  * Returns: length of confinement context including null termination or -1 on
  *          error if errno == ERANGE then @len will hold the size needed
  */
-int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode)
+int aa_getpeercon_raw(int fd, char *buf, socklen_t *len, char **mode)
 {
 	socklen_t optlen;
 	int rc;
@@ -806,7 +806,7 @@ int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode)
 		errno = EINVAL;
 		return -1;
 	}
-	optlen = (socklen_t) *len;
+	optlen = *len;
 
 	if (!is_enabled()) {
 		errno = EINVAL;
@@ -821,7 +821,7 @@ int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode)
 
 	/* check for null termination */
 	if (buf[optlen - 1] != 0) {
-		if (optlen < (socklen_t) *len) {
+		if (optlen < *len) {
 			buf[optlen] = 0;
 			optlen++;
 		} else {
@@ -862,7 +862,8 @@ out:
  */
 int aa_getpeercon(int fd, char **label, char **mode)
 {
-	int rc, last_size, size = INITIAL_GUESS_SIZE;
+	socklen_t last_size, size = INITIAL_GUESS_SIZE;
+	int rc;
 	char *buffer = NULL;
 
 	if (!label) {
