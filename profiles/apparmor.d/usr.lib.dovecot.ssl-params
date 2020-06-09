@@ -11,11 +11,11 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/lib/dovecot/ssl-params {
-  #include <abstractions/base>
-  #include <abstractions/dovecot-common>
+  include <abstractions/base>
+  include <abstractions/dovecot-common>
 
   @{run}/dovecot/ssl-params rw,
   @{run}/dovecot/login/ssl-params rw,

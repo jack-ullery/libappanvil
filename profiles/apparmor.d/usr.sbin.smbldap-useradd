@@ -2,13 +2,13 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 profile smbldap-useradd /usr/{bin,sbin}/smbldap-useradd {
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/nameservice>
-  #include <abstractions/perl>
+  include <abstractions/base>
+  include <abstractions/bash>
+  include <abstractions/nameservice>
+  include <abstractions/perl>
 
   /dev/tty rw,
   /{,usr/}bin/bash ix,
@@ -24,8 +24,8 @@ profile smbldap-useradd /usr/{bin,sbin}/smbldap-useradd {
   include if exists <local/usr.sbin.smbldap-useradd>
 
   profile /etc/init.d/nscd {
-    #include <abstractions/base>
-    #include <abstractions/nameservice>
+    include <abstractions/base>
+    include <abstractions/nameservice>
 
     capability sys_ptrace,
 

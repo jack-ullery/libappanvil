@@ -2,10 +2,10 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 profile nvidia_modprobe {
-  #include <abstractions/base>
+  include <abstractions/base>
 
   # Capabilities
 
@@ -35,7 +35,7 @@ profile nvidia_modprobe {
   # Child profiles
 
   profile kmod {
-    #include <abstractions/base>
+    include <abstractions/base>
 
     # Capabilities
 

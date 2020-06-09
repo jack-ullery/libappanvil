@@ -12,16 +12,16 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 profile dovecot /usr/{bin,sbin}/dovecot flags=(attach_disconnected) {
-  #include <abstractions/authentication>
-  #include <abstractions/base>
-  #include <abstractions/dovecot-common>
-  #include <abstractions/mysql>
-  #include <abstractions/nameservice>
-  #include <abstractions/ssl_certs>
-  #include <abstractions/ssl_keys>
+  include <abstractions/authentication>
+  include <abstractions/base>
+  include <abstractions/dovecot-common>
+  include <abstractions/mysql>
+  include <abstractions/nameservice>
+  include <abstractions/ssl_certs>
+  include <abstractions/ssl_keys>
 
   capability chown,
   capability dac_override,

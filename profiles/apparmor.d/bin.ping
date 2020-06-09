@@ -11,11 +11,11 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 profile ping /{usr/,}bin/{,iputils-}ping {
-  #include <abstractions/base>
-  #include <abstractions/consoles>
-  #include <abstractions/nameservice>
+  include <abstractions/base>
+  include <abstractions/consoles>
+  include <abstractions/nameservice>
 
   capability net_raw,
   capability setuid,

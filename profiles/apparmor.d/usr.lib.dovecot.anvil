@@ -11,11 +11,11 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/lib/dovecot/anvil {
-  #include <abstractions/base>
-  #include <abstractions/dovecot-common>
+  include <abstractions/base>
+  include <abstractions/dovecot-common>
 
   capability setuid,
   capability sys_chroot,

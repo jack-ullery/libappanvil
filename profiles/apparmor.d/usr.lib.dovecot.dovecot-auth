@@ -12,14 +12,14 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/lib/dovecot/dovecot-auth {
-  #include <abstractions/authentication>
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/wutmp>
-  #include <abstractions/dovecot-common>
+  include <abstractions/authentication>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/wutmp>
+  include <abstractions/dovecot-common>
 
   capability chown,
   capability dac_override,

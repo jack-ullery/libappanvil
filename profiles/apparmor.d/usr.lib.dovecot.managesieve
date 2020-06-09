@@ -12,12 +12,12 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
-#include <tunables/dovecot>
+include <tunables/global>
+include <tunables/dovecot>
 
 /usr/lib/dovecot/managesieve {
-  #include <abstractions/base>
-  #include <abstractions/dovecot-common>
+  include <abstractions/base>
+  include <abstractions/dovecot-common>
 
   capability setuid,
 

@@ -11,11 +11,11 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 profile traceroute /usr/{{bin,sbin}/traceroute,bin/linux-traceroute,bin/traceroute.db} {
-  #include <abstractions/base>
-  #include <abstractions/consoles>
-  #include <abstractions/nameservice>
+  include <abstractions/base>
+  include <abstractions/consoles>
+  include <abstractions/nameservice>
 
   deny capability net_admin, # noisy setsockopt() calls
   capability net_raw,

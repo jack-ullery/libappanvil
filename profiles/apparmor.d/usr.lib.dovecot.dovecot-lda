@@ -11,13 +11,13 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
-#include <tunables/dovecot>
+include <tunables/global>
+include <tunables/dovecot>
 
 /usr/lib/dovecot/dovecot-lda flags=(attach_disconnected) {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/dovecot-common>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/dovecot-common>
 
   capability setuid,
 
@@ -43,11 +43,11 @@ abi <abi/3.0>,
     # this profile is based on the usr.sbin.sendmail profile in extras
     # and should support both postfix' and sendmail's sendmail binary
 
-    #include <abstractions/base>
-    #include <abstractions/consoles>
-    #include <abstractions/nameservice>
-    #include <abstractions/user-tmp>
-    #include <abstractions/postfix-common>
+    include <abstractions/base>
+    include <abstractions/consoles>
+    include <abstractions/nameservice>
+    include <abstractions/user-tmp>
+    include <abstractions/postfix-common>
 
     capability sys_ptrace,
 
