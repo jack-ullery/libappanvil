@@ -20,20 +20,20 @@
 #
 # # out-of-line child profile
 # profile foo//gio-open {
-#   #include <abstractions/gio-open>
+#   include <abstractions/gio-open>
 #
 #   # needed for ubuntu-* abstractions
-#   #include <abstractions/ubuntu-helpers>
+#   include <abstractions/ubuntu-helpers>
 #
 #   # Only allow to handle http[s]: and mailto: links
-#   #include <abstractions/ubuntu-browsers>
-#   #include <abstractions/ubuntu-email>
+#   include <abstractions/ubuntu-browsers>
+#   include <abstractions/ubuntu-email>
 #
 #   # < add additional allowed applications here >
 # }
 
-  #include <abstractions/base>
-  #include <abstractions/dbus-session-strict>
+  include <abstractions/base>
+  include <abstractions/dbus-session-strict>
 
   # Main executables
 

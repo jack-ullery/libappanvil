@@ -32,25 +32,25 @@
   /{usr/,}lib/@{multiarch}/security/              r,
 
   # kerberos
-  #include <abstractions/kerberosclient>
+  include <abstractions/kerberosclient>
   # SuSE's pwdutils are different:
   /{usr/,}etc/default/passwd         r,
   /{usr/,}etc/login.defs             r,
 
   # nis
-  #include <abstractions/nis>
+  include <abstractions/nis>
 
   # winbind
-  #include <abstractions/winbind>
+  include <abstractions/winbind>
 
   # likewise
-  #include <abstractions/likewise>
+  include <abstractions/likewise>
 
   # smbpass
-  #include <abstractions/smbpass>
+  include <abstractions/smbpass>
 
   # p11-kit (PKCS#11 modules configuration)
-  #include <abstractions/p11-kit>
+  include <abstractions/p11-kit>
 
   # Include additions to the abstraction
   include if exists <abstractions/authentication.d>

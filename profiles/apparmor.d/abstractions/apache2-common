@@ -4,7 +4,7 @@
 
   abi <abi/3.0>,
 
-  #include <abstractions/nameservice>
+  include <abstractions/nameservice>
 
   # Allow unconfined processes to send us signals by default
   signal (receive) peer=unconfined,

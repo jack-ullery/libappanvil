@@ -5,7 +5,7 @@
 
   abi <abi/3.0>,
 
-  #include <abstractions/gnome>
+  include <abstractions/gnome>
 
   # do not use ux or PUx here. Use at a minimum ix
   /usr/bin/gnome-terminal ix,

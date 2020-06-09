@@ -4,13 +4,13 @@
 
 # OpenCL access requirements for Intel implementation
 
-  #include <abstractions/opencl-common>
+  include <abstractions/opencl-common>
 
   # for libcl.so (libOpenCL.so -> beignet/libcl.so calls XOpenDisplay())
-  #include <abstractions/X>
+  include <abstractions/X>
 
   # for libOpenCL.so -> beignet/libcl.so -> libpciaccess.so
-  #include <abstractions/dri-enumerate>
+  include <abstractions/dri-enumerate>
 
   # System files
 

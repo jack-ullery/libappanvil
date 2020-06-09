@@ -2,7 +2,7 @@
 
   abi <abi/3.0>,
 
-#include <abstractions/php>
+  include <abstractions/php>
 
   # Include additions to the abstraction
   include if exists <abstractions/php5.d>

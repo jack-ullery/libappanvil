@@ -11,7 +11,7 @@
 
   abi <abi/3.0>,
 
-#include <abstractions/dbus-strict>
+include <abstractions/dbus-strict>
 
   # libpam-systemd notifies systemd-logind about session logins/logouts
   dbus send

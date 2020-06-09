@@ -5,8 +5,8 @@
 
   abi <abi/3.0>,
 
-  #include <abstractions/consoles>
-  #include <abstractions/kde>
+  include <abstractions/consoles>
+  include <abstractions/kde>
   capability sys_ptrace,
   @{PROC}/@{pid}/status r,
   @{PROC}/@{pid}/stat r,
