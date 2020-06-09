@@ -72,25 +72,25 @@
   /{usr/,}etc/libnl-*/classid r,
 
   # nis
-  #include <abstractions/nis>
+  include <abstractions/nis>
 
   # ldap
-  #include <abstractions/ldapclient>
+  include <abstractions/ldapclient>
 
   # winbind
-  #include <abstractions/winbind>
+  include <abstractions/winbind>
 
   # likewise
-  #include <abstractions/likewise>
+  include <abstractions/likewise>
 
   # mdnsd
-  #include <abstractions/mdns>
+  include <abstractions/mdns>
 
   # kerberos
-  #include <abstractions/kerberosclient>
+  include <abstractions/kerberosclient>
 
   #libnss-systemd
-  #include <abstractions/nss-systemd>
+  include <abstractions/nss-systemd>
 
   # Also allow lookups for systemd-exec's DynamicUsers via D-Bus
   #   https://www.freedesktop.org/software/systemd/man/systemd.exec.html

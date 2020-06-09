@@ -10,11 +10,11 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/dhcpd {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
+  include <abstractions/base>
+  include <abstractions/nameservice>
 
   capability dac_override,
   capability net_bind_service,

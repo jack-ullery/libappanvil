@@ -11,12 +11,12 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 profile syslogd /{usr/,}{bin,sbin}/syslogd {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/consoles>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/consoles>
 
   capability sys_tty_config,
   capability dac_override,

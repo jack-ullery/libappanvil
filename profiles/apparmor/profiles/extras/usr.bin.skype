@@ -5,21 +5,21 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 /usr/bin/skype flags=(complain) {
-  #include <abstractions/audio>
-  #include <abstractions/base>
-  #include <abstractions/dbus-session>
-  #include <abstractions/fonts>
-  #include <abstractions/freedesktop.org>
-  #include <abstractions/gnome>
-  #include <abstractions/ibus>
-  #include <abstractions/kde>
-  #include <abstractions/nameservice>
-  #include <abstractions/nvidia>
-  #include <abstractions/ssl_certs>
-  #include <abstractions/user-tmp>
-  #include <abstractions/X>
+  include <abstractions/audio>
+  include <abstractions/base>
+  include <abstractions/dbus-session>
+  include <abstractions/fonts>
+  include <abstractions/freedesktop.org>
+  include <abstractions/gnome>
+  include <abstractions/ibus>
+  include <abstractions/kde>
+  include <abstractions/nameservice>
+  include <abstractions/nvidia>
+  include <abstractions/ssl_certs>
+  include <abstractions/user-tmp>
+  include <abstractions/X>
 
   @{PROC}/sys/kernel/{ostype,osrelease} r,
   @{PROC}/@{pid}/net/arp r,

@@ -2,15 +2,15 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 # dhclient-script will call plugins from /etc/netconfig.d, so this
 # will need to be extended on a per-site basis.
 
 profile dhclient-script /{usr/,}sbin/dhclient-script {
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/consoles>
+  include <abstractions/base>
+  include <abstractions/bash>
+  include <abstractions/consoles>
 
   /{usr/,}bin/bash rix,
   /{usr/,}bin/grep rix,

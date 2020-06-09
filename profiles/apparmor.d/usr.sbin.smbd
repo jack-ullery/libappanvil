@@ -1,16 +1,16 @@
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 profile smbd /usr/{bin,sbin}/smbd {
-  #include <abstractions/authentication>
-  #include <abstractions/base>
-  #include <abstractions/consoles>
-  #include <abstractions/cups-client>
-  #include <abstractions/nameservice>
-  #include <abstractions/samba>
-  #include <abstractions/user-tmp>
-  #include <abstractions/wutmp>
+  include <abstractions/authentication>
+  include <abstractions/base>
+  include <abstractions/consoles>
+  include <abstractions/cups-client>
+  include <abstractions/nameservice>
+  include <abstractions/samba>
+  include <abstractions/user-tmp>
+  include <abstractions/wutmp>
 
   capability audit_write,
   capability dac_override,

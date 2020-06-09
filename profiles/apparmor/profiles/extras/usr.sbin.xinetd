@@ -10,11 +10,11 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/xinetd {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
+  include <abstractions/base>
+  include <abstractions/nameservice>
 
   capability net_bind_service,
   capability setgid,

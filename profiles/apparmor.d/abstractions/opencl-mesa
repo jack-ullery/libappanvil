@@ -4,7 +4,7 @@
 
 # OpenCL access requirements for Mesa implementation
 
-  #include <abstractions/opencl-common>
+  include <abstractions/opencl-common>
 
   # Additional libraries
 

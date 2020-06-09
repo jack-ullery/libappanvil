@@ -11,14 +11,14 @@
 
   abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 profile postfix-local /usr/lib/postfix/{bin/,sbin/,}local {
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/nameservice>
-  #include <abstractions/user-mail>
-  #include <abstractions/postfix-common>
+  include <abstractions/base>
+  include <abstractions/bash>
+  include <abstractions/nameservice>
+  include <abstractions/user-mail>
+  include <abstractions/postfix-common>
 
   /usr/bin/procmail                                     Px,
 

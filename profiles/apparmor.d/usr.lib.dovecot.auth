@@ -12,16 +12,16 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/lib/dovecot/auth {
-  #include <abstractions/authentication>
-  #include <abstractions/base>
-  #include <abstractions/mysql>
-  #include <abstractions/nameservice>
-  #include <abstractions/openssl>
-  #include <abstractions/wutmp>
-  #include <abstractions/dovecot-common>
+  include <abstractions/authentication>
+  include <abstractions/base>
+  include <abstractions/mysql>
+  include <abstractions/nameservice>
+  include <abstractions/openssl>
+  include <abstractions/wutmp>
+  include <abstractions/dovecot-common>
 
   capability audit_write,
   capability dac_override,

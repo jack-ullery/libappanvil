@@ -12,15 +12,15 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 profile postfix-smtpd /usr/lib/postfix/{bin/,sbin/,}smtpd {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/postfix-common>
-  #include <abstractions/openssl>
-  #include <abstractions/ssl_certs>
-  #include <abstractions/ssl_keys>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/postfix-common>
+  include <abstractions/openssl>
+  include <abstractions/ssl_certs>
+  include <abstractions/ssl_keys>
 
   capability dac_override,
   capability dac_read_search,

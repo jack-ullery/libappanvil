@@ -12,7 +12,7 @@
 
   abi <abi/3.0>,
 
-  #include <abstractions/dri-common>
+  include <abstractions/dri-common>
 
 
   # .ICEauthority files required for X authentication, per user

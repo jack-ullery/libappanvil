@@ -15,10 +15,10 @@
 # Rules common to applications running under Unity 7
 #
 
-#include <abstractions/gnome>
+include <abstractions/gnome>
 
-#include <abstractions/dbus-session-strict>
-#include <abstractions/dbus-strict>
+include <abstractions/dbus-session-strict>
+include <abstractions/dbus-strict>
 
   #
   # Access required for connecting to/communication with Unity HUD

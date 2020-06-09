@@ -17,7 +17,7 @@
   /usr/share/enchant/enchant.ordering              r,
 
   # aspell
-  #include <abstractions/aspell>
+  include <abstractions/aspell>
   /var/lib/dictionaries-common/aspell/             r,
   /var/lib/dictionaries-common/aspell/*            r,
 

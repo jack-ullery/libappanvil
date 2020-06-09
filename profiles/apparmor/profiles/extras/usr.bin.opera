@@ -11,16 +11,16 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 /usr/bin/opera {
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/consoles>
-  #include <abstractions/kde>
-  #include <abstractions/nameservice>
-  #include <abstractions/user-write>
-  #include <abstractions/user-download>
-  #include <abstractions/X>
+  include <abstractions/base>
+  include <abstractions/bash>
+  include <abstractions/consoles>
+  include <abstractions/kde>
+  include <abstractions/nameservice>
+  include <abstractions/user-write>
+  include <abstractions/user-download>
+  include <abstractions/X>
 
   capability dac_override,
 

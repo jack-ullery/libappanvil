@@ -6,12 +6,12 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 # Do not attach to /usr/bin/lsb_release by default
 profile lsb_release {
-  #include <abstractions/base>
-  #include <abstractions/python>
+  include <abstractions/base>
+  include <abstractions/python>
 
   owner @{PROC}/@{pid}/fd/ r,
 

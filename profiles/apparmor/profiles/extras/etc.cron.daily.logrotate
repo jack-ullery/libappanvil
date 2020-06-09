@@ -13,12 +13,12 @@
 
   abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /etc/cron.daily/logrotate {
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/nameservice>
+  include <abstractions/base>
+  include <abstractions/bash>
+  include <abstractions/nameservice>
 
   capability chown,
   capability dac_override,

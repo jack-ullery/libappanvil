@@ -11,15 +11,15 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/NX/bin/nxclient {
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/consoles>
-  #include <abstractions/nameservice>
-  #include <abstractions/kde>
-  #include <abstractions/X>
+  include <abstractions/base>
+  include <abstractions/bash>
+  include <abstractions/consoles>
+  include <abstractions/nameservice>
+  include <abstractions/kde>
+  include <abstractions/X>
 
   /{usr/,}bin/bash     mix,
   /usr/bin/cut         mix,

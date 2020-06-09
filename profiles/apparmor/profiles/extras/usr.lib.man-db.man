@@ -11,13 +11,13 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/lib/man-db/man {
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/consoles>
-  #include <abstractions/user-manpages>
+  include <abstractions/base>
+  include <abstractions/bash>
+  include <abstractions/consoles>
+  include <abstractions/user-manpages>
 
   /{usr/,}bin/bash rmix,
   /{usr/,}bin/cat rmix,

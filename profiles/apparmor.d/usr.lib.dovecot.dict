@@ -11,14 +11,14 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/lib/dovecot/dict {
-  #include <abstractions/base>
-  #include <abstractions/mysql>
-  #include <abstractions/nameservice>
-  #include <abstractions/openssl>
-  #include <abstractions/dovecot-common>
+  include <abstractions/base>
+  include <abstractions/mysql>
+  include <abstractions/nameservice>
+  include <abstractions/openssl>
+  include <abstractions/dovecot-common>
 
   capability setuid,
 

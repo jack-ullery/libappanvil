@@ -18,11 +18,11 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 profile dhcpcd /{usr/,}sbin/dhcpcd {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
+  include <abstractions/base>
+  include <abstractions/nameservice>
 
   capability net_raw,
   capability net_admin,

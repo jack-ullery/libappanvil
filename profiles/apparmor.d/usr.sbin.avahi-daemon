@@ -1,11 +1,11 @@
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 profile avahi-daemon /usr/{bin,sbin}/avahi-daemon {
-  #include <abstractions/base>
-  #include <abstractions/consoles>
-  #include <abstractions/dbus>
-  #include <abstractions/nameservice>
+  include <abstractions/base>
+  include <abstractions/consoles>
+  include <abstractions/dbus>
+  include <abstractions/nameservice>
 
   capability chown,
   capability dac_override,

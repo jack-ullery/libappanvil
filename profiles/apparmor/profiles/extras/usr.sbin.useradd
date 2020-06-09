@@ -11,16 +11,16 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/useradd {
-  #include <abstractions/authentication>
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/perl>
-  #include <abstractions/consoles>
-  #include <abstractions/nameservice>
-  #include <abstractions/wutmp>
+  include <abstractions/authentication>
+  include <abstractions/base>
+  include <abstractions/bash>
+  include <abstractions/perl>
+  include <abstractions/consoles>
+  include <abstractions/nameservice>
+  include <abstractions/wutmp>
 
   capability audit_write,
   capability chown,
@@ -62,9 +62,9 @@ abi <abi/3.0>,
   /var/spool/mail/* rw,
 
   profile pam_tally2 {
-    #include <abstractions/base>
-    #include <abstractions/consoles>
-    #include <abstractions/nameservice>
+    include <abstractions/base>
+    include <abstractions/consoles>
+    include <abstractions/nameservice>
 
     capability audit_write,
 

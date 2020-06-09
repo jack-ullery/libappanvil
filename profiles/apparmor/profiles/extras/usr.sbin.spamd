@@ -12,13 +12,13 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/spamd {
-  #include <abstractions/authentication>
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/perl>
+  include <abstractions/authentication>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/perl>
 
   capability net_bind_service,
   capability setgid,

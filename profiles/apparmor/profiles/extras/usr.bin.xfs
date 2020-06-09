@@ -10,11 +10,11 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/bin/xfs {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
+  include <abstractions/base>
+  include <abstractions/nameservice>
 
   /					r,
   /dev/tty				wr,

@@ -12,18 +12,18 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/bin/gaim {
-  #include <abstractions/audio>
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/consoles>
-  #include <abstractions/kde>
-  #include <abstractions/nameservice>
-  #include <abstractions/perl>
-  #include <abstractions/gnome>
-  #include <abstractions/user-tmp>
+  include <abstractions/audio>
+  include <abstractions/base>
+  include <abstractions/bash>
+  include <abstractions/consoles>
+  include <abstractions/kde>
+  include <abstractions/nameservice>
+  include <abstractions/perl>
+  include <abstractions/gnome>
+  include <abstractions/user-tmp>
 
   /{usr/,}bin/bash mixr,
   /dev/random r,

@@ -16,15 +16,15 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/sshd {
-  #include <abstractions/authentication>
-  #include <abstractions/base>
-  #include <abstractions/consoles>
-  #include <abstractions/libpam-systemd>
-  #include <abstractions/nameservice>
-  #include <abstractions/wutmp>
+  include <abstractions/authentication>
+  include <abstractions/base>
+  include <abstractions/consoles>
+  include <abstractions/libpam-systemd>
+  include <abstractions/nameservice>
+  include <abstractions/wutmp>
 
   capability sys_chroot,
   capability sys_resource,
@@ -101,9 +101,9 @@ abi <abi/3.0>,
   # to set memory protection for passwd
   @{PROC}/@{pid}/task/@{pid}/attr/exec w,
   profile passwd {
-    #include <abstractions/authentication>
-    #include <abstractions/base>
-    #include <abstractions/nameservice>
+    include <abstractions/authentication>
+    include <abstractions/base>
+    include <abstractions/nameservice>
 
     capability audit_write,
     capability chown,

@@ -12,11 +12,11 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/bin/mlmmj-send {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
+  include <abstractions/base>
+  include <abstractions/nameservice>
 
   /usr/bin/mlmmj-send mr,
   /var/spool/mlmmj/*/archive/* w,

@@ -12,13 +12,13 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/popper {
-  #include <abstractions/authentication>
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/user-mail>
+  include <abstractions/authentication>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/user-mail>
 
   capability setgid,
   capability setuid,

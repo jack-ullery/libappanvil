@@ -2,7 +2,7 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 profile apache2 /usr/{bin,sbin}/apache2 flags=(attach_disconnected) {
 
   # This profile is completely permissive.
@@ -28,7 +28,7 @@ profile apache2 /usr/{bin,sbin}/apache2 flags=(attach_disconnected) {
   #    the "apache2-common" abstraction:
   #
   #    ^example.com {
-  #        #include <abstractions/apache2-common>
+  #        include <abstractions/apache2-common>
   #        /var/www/html/             r,
   #        /var/www/html/**           r,
   #        /var/log/apache2/*.log     w,
@@ -69,8 +69,8 @@ profile apache2 /usr/{bin,sbin}/apache2 flags=(attach_disconnected) {
   #    </Location>
   #
 
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
+  include <abstractions/base>
+  include <abstractions/nameservice>
 
   # Send signals to all hats.
   signal (send) peer=@{profile_name}//*,
@@ -87,15 +87,15 @@ profile apache2 /usr/{bin,sbin}/apache2 flags=(attach_disconnected) {
 
 
   ^DEFAULT_URI flags=(attach_disconnected) {
-    #include <abstractions/base>
-    #include <abstractions/apache2-common>
+    include <abstractions/base>
+    include <abstractions/apache2-common>
 
     / rw,
     /** mrwlkix,
   }
 
   ^HANDLING_UNTRUSTED_INPUT flags=(attach_disconnected) {
-    #include <abstractions/apache2-common>
+    include <abstractions/apache2-common>
 
     / rw,
     /** mrwlkix,
@@ -104,7 +104,7 @@ profile apache2 /usr/{bin,sbin}/apache2 flags=(attach_disconnected) {
   # This directory contains web application
   # package-specific apparmor files.
 
-  #include <apache2.d>
+  include <apache2.d>
 
   # Site-specific additions and overrides. See local/README for details.
   include if exists <local/usr.sbin.apache2>

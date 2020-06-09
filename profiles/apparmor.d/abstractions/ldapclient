@@ -23,7 +23,7 @@
   # local LDAP name service daemon
   @{run}/nslcd/socket  rw,
 
-  #include <abstractions/ssl_certs>
+  include <abstractions/ssl_certs>
 
   # Include additions to the abstraction
   include if exists <abstractions/ldapclient.d>

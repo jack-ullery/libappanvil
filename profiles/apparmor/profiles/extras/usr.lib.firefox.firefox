@@ -11,7 +11,7 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 # We want to confine the binaries that match:
 #  /usr/lib/firefox-4.0b8/firefox
@@ -19,13 +19,13 @@ abi <abi/3.0>,
 # but not:
 #  /usr/lib/firefox-4.0b8/firefox.sh
 /usr/lib/firefox{,-[0-9]*}/firefox{,*[^s][^h]} {
-  #include <abstractions/audio>
-  #include <abstractions/cups-client>
-  #include <abstractions/dbus-session>
-  #include <abstractions/gnome>
-  #include <abstractions/ibus>
-  #include <abstractions/kde>
-  #include <abstractions/nameservice>
+  include <abstractions/audio>
+  include <abstractions/cups-client>
+  include <abstractions/dbus-session>
+  include <abstractions/gnome>
+  include <abstractions/ibus>
+  include <abstractions/kde>
+  include <abstractions/nameservice>
 
   # for networking
   network inet stream,

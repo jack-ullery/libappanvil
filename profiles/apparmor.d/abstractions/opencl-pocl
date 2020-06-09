@@ -3,7 +3,7 @@
 
   abi <abi/3.0>,
 
-  #include <abstractions/opencl-common>
+  include <abstractions/opencl-common>
 
   # Executables
 
@@ -43,7 +43,7 @@
   # Child profiles
 
   profile opencl_pocl_ld {
-    #include <abstractions/base>
+    include <abstractions/base>
 
     # Main executables
 
@@ -56,7 +56,7 @@
   }
 
   profile opencl_pocl_clang {
-    #include <abstractions/base>
+    include <abstractions/base>
 
     # Main executables
 

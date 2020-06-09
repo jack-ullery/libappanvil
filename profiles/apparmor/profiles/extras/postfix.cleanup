@@ -12,12 +12,12 @@
 
   abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 profile postfix-cleanup /usr/lib/postfix/{bin/,sbin/,}cleanup {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/postfix-common>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/postfix-common>
 
   capability net_bind_service,
   capability dac_read_search,

@@ -11,12 +11,12 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 profile nscd /usr/{bin,sbin}/nscd {
-  #include <abstractions/base>
-  #include <abstractions/consoles>
-  #include <abstractions/nameservice>
-  #include <abstractions/ssl_certs>
+  include <abstractions/base>
+  include <abstractions/consoles>
+  include <abstractions/nameservice>
+  include <abstractions/ssl_certs>
 
   deny capability block_suspend,
   capability net_bind_service,

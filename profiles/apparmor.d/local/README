@@ -12,7 +12,7 @@
 # it is appropriate for your site.
 #
 # For example, if the shipped /etc/apparmor.d/usr.sbin.smbd profile has:
-#   #include <local/usr.sbin.smbd>
+#   include <local/usr.sbin.smbd>
 #
 # then an administrator can adjust /etc/apparmor.d/local/usr.sbin.smbd to
 # contain any additional paths to be allowed, such as:

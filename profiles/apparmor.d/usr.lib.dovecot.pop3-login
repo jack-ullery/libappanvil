@@ -12,11 +12,11 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 /usr/lib/dovecot/pop3-login {
-  #include <abstractions/base>
-  #include <abstractions/dovecot-common>
-  #include <abstractions/openssl>
+  include <abstractions/base>
+  include <abstractions/dovecot-common>
+  include <abstractions/openssl>
 
   capability setuid,
   capability sys_chroot,

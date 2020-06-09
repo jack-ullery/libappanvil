@@ -4,8 +4,8 @@
 
 # OpenCL access requirements for NVIDIA implementation
 
-  #include <abstractions/nvidia>
-  #include <abstractions/opencl-common>
+  include <abstractions/nvidia>
+  include <abstractions/opencl-common>
 
   # Executables
 

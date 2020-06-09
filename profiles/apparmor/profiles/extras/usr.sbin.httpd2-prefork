@@ -11,16 +11,16 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/httpd2-prefork {
-  #include <abstractions/apache2-common>
-  #include <abstractions/base>
-  #include <abstractions/consoles>
-  #include <abstractions/kerberosclient>
-  #include <abstractions/nameservice>
-  #include <abstractions/perl>
-  #include <abstractions/openssl>
+  include <abstractions/apache2-common>
+  include <abstractions/base>
+  include <abstractions/consoles>
+  include <abstractions/kerberosclient>
+  include <abstractions/nameservice>
+  include <abstractions/perl>
+  include <abstractions/openssl>
 
   capability kill,
   capability net_bind_service,
@@ -132,13 +132,13 @@ abi <abi/3.0>,
 
 
   ^HANDLING_UNTRUSTED_INPUT {
-    #include <abstractions/apache2-common>
+    include <abstractions/apache2-common>
     /var/log/apache2/*     w,
   }
 
   ^DEFAULT_URI {
-    #include <abstractions/apache2-common>
-    #include <abstractions/base>
+    include <abstractions/apache2-common>
+    include <abstractions/base>
 
     # Note that mod_perl, mod_php, mod_python, etc, allows in-apache
     # execution of content regardless of 'x' permissions, as no exec(2)

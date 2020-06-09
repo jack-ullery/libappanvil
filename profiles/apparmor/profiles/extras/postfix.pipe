@@ -12,12 +12,12 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 profile postfix-pipe /usr/lib/postfix/{bin/,sbin/,}pipe {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/postfix-common>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/postfix-common>
 
   /usr/lib/postfix/{bin/,sbin/,}pipe mrix,
 

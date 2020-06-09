@@ -12,24 +12,24 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/bin/wireshark {
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/consoles>
-  #include <abstractions/dconf>
-  #include <abstractions/dbus-session-strict>
-  #include <abstractions/ibus>
-  #include <abstractions/kde>
-  #include <abstractions/nameservice>
-  #include <abstractions/gnome>
-  #include <abstractions/user-write>
-  #include <abstractions/X>
+  include <abstractions/base>
+  include <abstractions/bash>
+  include <abstractions/consoles>
+  include <abstractions/dconf>
+  include <abstractions/dbus-session-strict>
+  include <abstractions/ibus>
+  include <abstractions/kde>
+  include <abstractions/nameservice>
+  include <abstractions/gnome>
+  include <abstractions/user-write>
+  include <abstractions/X>
 
   signal (send) peer=/usr/bin/dumpcap,
 
-  #include <abstractions/dbus-accessibility-strict>
+  include <abstractions/dbus-accessibility-strict>
   dbus (send)
        bus=session
        peer=(name=org.a11y.Bus),

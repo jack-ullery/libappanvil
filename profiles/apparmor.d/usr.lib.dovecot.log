@@ -11,11 +11,11 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/lib/dovecot/log flags=(attach_disconnected) {
-  #include <abstractions/base>
-  #include <abstractions/dovecot-common>
+  include <abstractions/base>
+  include <abstractions/dovecot-common>
 
   /usr/lib/dovecot/log mr,
 

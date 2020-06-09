@@ -11,13 +11,13 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/lighttpd {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/perl>
-  #include <abstractions/web-data>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/perl>
+  include <abstractions/web-data>
 
   # needed to change max file descriptors
   capability sys_resource,

@@ -15,4 +15,4 @@
 
   # Since all the ubuntu-browsers.d abstractions need this, just include it
   # here
-  #include <abstractions/ubuntu-helpers>
+  include <abstractions/ubuntu-helpers>
