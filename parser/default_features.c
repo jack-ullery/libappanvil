@@ -155,6 +155,11 @@ profile {yes\
 mount {mask {mount umount pivot_root\
 }\
 }\
+network {af_unix {yes\
+}\
+af_mask {unspec unix inet ax25 ipx appletalk netrom bridge atmpvc x25 inet6 rose netbeui security key netlink packet ash econet atmsvc rds sna irda pppox wanpipe llc ib mpls can tipc bluetooth iucv rxrpc isdn phonet ieee802154 caif alg nfc vsock kcm qipcrtr smc xdp\
+}\
+}\
 file {mask {create read write exec append mmap_exec link lock\
 }\
 }\
