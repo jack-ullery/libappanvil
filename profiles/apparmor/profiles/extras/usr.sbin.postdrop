@@ -11,13 +11,13 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/postdrop {
-  #include <abstractions/base>
-  #include <abstractions/kerberosclient>
-  #include <abstractions/nameservice>
-  #include <abstractions/postfix-common>
+  include <abstractions/base>
+  include <abstractions/kerberosclient>
+  include <abstractions/nameservice>
+  include <abstractions/postfix-common>
 
   # This is needed at least for permissions=paranoid
   capability dac_override,

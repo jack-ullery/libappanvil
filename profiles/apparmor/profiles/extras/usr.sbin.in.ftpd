@@ -10,12 +10,12 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/in.ftpd {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/authentication>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/authentication>
 
   /                                 r,
   /dev/urandom                      r,

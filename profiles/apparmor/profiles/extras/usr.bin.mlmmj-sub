@@ -12,10 +12,10 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/bin/mlmmj-sub {
-  #include <abstractions/base>
+  include <abstractions/base>
 
   capability setuid,
 

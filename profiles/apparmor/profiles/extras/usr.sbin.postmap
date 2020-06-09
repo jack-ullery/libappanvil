@@ -10,13 +10,13 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/postmap {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/kerberosclient>
-  #include <abstractions/postfix-common>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/kerberosclient>
+  include <abstractions/postfix-common>
 
   /etc/fstab                        r,
   /etc/mtab                         r,

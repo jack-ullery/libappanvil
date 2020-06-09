@@ -10,10 +10,10 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 profile postfix-postscreen /usr/lib/postfix/{bin/,sbin/,}postscreen {
-  #include <abstractions/base>
+  include <abstractions/base>
 
   /usr/lib/postfix/{bin/,sbin/,}postscreen mrix,
 }

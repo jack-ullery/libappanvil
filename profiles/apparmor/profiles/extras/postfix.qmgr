@@ -11,12 +11,12 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 profile postfix-qmgr /usr/lib/postfix/{bin/,sbin/,}qmgr {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/postfix-common>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/postfix-common>
 
   /usr/lib/postfix/{bin/,sbin/,}qmgr                              mrix,
 

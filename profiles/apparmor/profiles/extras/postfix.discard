@@ -12,10 +12,10 @@
 
   abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 profile postfix-discard /usr/lib/postfix/{bin/,sbin/,}discard {
-  #include <abstractions/base>
+  include <abstractions/base>
 
   /usr/lib/postfix/{bin/,sbin/,}discard mrix,
 }

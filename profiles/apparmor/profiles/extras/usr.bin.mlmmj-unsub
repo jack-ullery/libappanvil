@@ -12,10 +12,10 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/bin/mlmmj-unsub {
-  #include <abstractions/base>
+  include <abstractions/base>
 
   /usr/bin/mlmmj-unsub mr,
   /usr/bin/mlmmj-send Px,

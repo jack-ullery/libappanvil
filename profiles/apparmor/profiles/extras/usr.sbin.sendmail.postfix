@@ -10,15 +10,15 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/sendmail.postfix {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/consoles>
-  #include <abstractions/kerberosclient>
-  #include <abstractions/user-tmp>
-  #include <abstractions/postfix-common>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/consoles>
+  include <abstractions/kerberosclient>
+  include <abstractions/user-tmp>
+  include <abstractions/postfix-common>
 
   /etc/mtab                                r,
   /etc/postfix                             r,

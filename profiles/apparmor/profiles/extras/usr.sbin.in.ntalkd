@@ -10,12 +10,12 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/in.ntalkd {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/consoles>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/consoles>
 
   /usr/sbin/in.ntalkd   r,
   /{,var/}run/utmp		r,

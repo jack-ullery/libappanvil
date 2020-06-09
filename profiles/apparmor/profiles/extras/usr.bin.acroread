@@ -12,17 +12,17 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/X11R6/bin/acroread {
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/consoles>
-  #include <abstractions/fonts>
-  #include <abstractions/kde>
-  #include <abstractions/nameservice>
-  #include <abstractions/gnome>
-  #include <abstractions/X>
+  include <abstractions/base>
+  include <abstractions/bash>
+  include <abstractions/consoles>
+  include <abstractions/fonts>
+  include <abstractions/kde>
+  include <abstractions/nameservice>
+  include <abstractions/gnome>
+  include <abstractions/X>
 
   capability dac_override,
 

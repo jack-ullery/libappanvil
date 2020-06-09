@@ -10,14 +10,14 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/postalias {
-  #include <abstractions/base>
-  #include <abstractions/kerberosclient>
-  #include <abstractions/nameservice>
-  #include <abstractions/consoles>
-  #include <abstractions/postfix-common>
+  include <abstractions/base>
+  include <abstractions/kerberosclient>
+  include <abstractions/nameservice>
+  include <abstractions/consoles>
+  include <abstractions/postfix-common>
   /etc/aliases                         r,
   /etc/aliases.db                      rwlk,
   /etc/postfix                         r,

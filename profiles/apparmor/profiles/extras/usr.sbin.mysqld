@@ -14,13 +14,13 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/mysqld {
-  #include <abstractions/base>
-  #include <abstractions/mysql>
-  #include <abstractions/nameservice>
-  #include <abstractions/user-tmp>
+  include <abstractions/base>
+  include <abstractions/mysql>
+  include <abstractions/nameservice>
+  include <abstractions/user-tmp>
 
   capability dac_override,
   capability setgid,

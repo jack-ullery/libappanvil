@@ -12,12 +12,12 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/lib/bonobo/bonobo-activation-server {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/user-tmp>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/user-tmp>
 
   /etc/bonobo-activation/bonobo-activation-config.xml r,
   /usr/lib/bonobo/bonobo-activation-server rmix,

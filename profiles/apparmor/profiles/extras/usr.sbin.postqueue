@@ -10,14 +10,14 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/postqueue {
-  #include <abstractions/base>
-  #include <abstractions/consoles>
-  #include <abstractions/nameservice>
-  #include <abstractions/kerberosclient>
-  #include <abstractions/postfix-common>
+  include <abstractions/base>
+  include <abstractions/consoles>
+  include <abstractions/nameservice>
+  include <abstractions/kerberosclient>
+  include <abstractions/postfix-common>
 
   # This is needed at least for permissions=paranoid
   capability dac_override,

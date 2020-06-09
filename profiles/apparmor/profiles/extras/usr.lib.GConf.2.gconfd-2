@@ -12,12 +12,12 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/lib/GConf/2/gconfd-2 {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/user-tmp>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/user-tmp>
 
   /etc/gconf/2/path r,
   /etc/gconf/gconf.xml.defaults r,

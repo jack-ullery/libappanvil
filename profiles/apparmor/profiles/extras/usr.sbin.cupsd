@@ -2,13 +2,13 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 /usr/sbin/cupsd {
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/dbus>
-  #include <abstractions/nameservice>
-  #include <abstractions/perl>
+  include <abstractions/base>
+  include <abstractions/bash>
+  include <abstractions/dbus>
+  include <abstractions/nameservice>
+  include <abstractions/perl>
 
   capability chown,
   capability dac_override,

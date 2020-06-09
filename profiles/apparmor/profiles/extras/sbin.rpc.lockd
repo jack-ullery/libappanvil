@@ -10,9 +10,9 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 profile rpc.lockd /{usr/,}sbin/rpc.lockd {
-  #include <abstractions/base>
+  include <abstractions/base>
   /{usr/,}sbin/rpc.lockd	rmix,
 }

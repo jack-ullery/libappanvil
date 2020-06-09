@@ -12,12 +12,12 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/lib/evolution-data-server/evolution-data-server-1.10 {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/user-tmp>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/user-tmp>
 
   /etc/mtab r,
   /etc/** r,

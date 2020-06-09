@@ -12,12 +12,12 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 profile postfix-trivial-rewrite /usr/lib/postfix/{bin/,sbin/,}trivial-rewrite {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <abstractions/postfix-common>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/postfix-common>
 
   capability dac_read_search,
 

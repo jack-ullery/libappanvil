@@ -13,15 +13,15 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/sbin/sendmail {
-  #include <abstractions/base>
-  #include <abstractions/consoles>
-  #include <abstractions/kerberosclient>
-  #include <abstractions/nameservice>
-  #include <abstractions/user-tmp>
-  #include <abstractions/postfix-common>
+  include <abstractions/base>
+  include <abstractions/consoles>
+  include <abstractions/kerberosclient>
+  include <abstractions/nameservice>
+  include <abstractions/user-tmp>
+  include <abstractions/postfix-common>
 
   /usr/bin/procmail           Px,
 

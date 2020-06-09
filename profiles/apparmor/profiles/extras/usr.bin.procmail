@@ -10,13 +10,13 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/bin/procmail {
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/nameservice>
-  #include <abstractions/user-mail>
+  include <abstractions/base>
+  include <abstractions/bash>
+  include <abstractions/nameservice>
+  include <abstractions/user-mail>
 
   # procmail configuration
   /etc/procmailrc       r,

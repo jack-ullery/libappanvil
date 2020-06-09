@@ -40,19 +40,19 @@
 
 abi <abi/3.0>,
 
-#include <tunables/global>
+include <tunables/global>
 
 /usr/bin/evolution-2.10 {
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/consoles>
-  #include <abstractions/fonts>
-  #include <abstractions/kde>
-  #include <abstractions/nameservice>
-  #include <abstractions/perl>
-  #include <abstractions/gnome>
-  #include <abstractions/user-mail>
-  #include <abstractions/user-write>
+  include <abstractions/base>
+  include <abstractions/bash>
+  include <abstractions/consoles>
+  include <abstractions/fonts>
+  include <abstractions/kde>
+  include <abstractions/nameservice>
+  include <abstractions/perl>
+  include <abstractions/gnome>
+  include <abstractions/user-mail>
+  include <abstractions/user-write>
 
   capability ipc_lock,
   capability setuid,
