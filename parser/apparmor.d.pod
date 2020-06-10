@@ -115,7 +115,7 @@ B<PROFILE FLAG CONDS> =  [ 'flags=' ] '(' comma or white space separated list of
 
 B<PROFILE FLAGS> = I<PROFILE MODE> | I<AUDIT_MODE> | 'mediate_deleted' | 'attach_disconnected' | 'chroot_relative'
 
-B<PROFILE MODE> = 'enforce' | 'complain'
+B<PROFILE MODE> = 'enforce' | 'complain' | 'kill' | 'unconfined'
 
 B<AUDIT MODE> = 'audit'
 
@@ -430,9 +430,20 @@ permission the action will be denied, with an I<EACCES> or I<EPERM>
 error code returned to userspace, and the violation will be logged
 with a tag of the access being B<DENIED>.
 
+=item B<kill> This is a variant of enforce mode where in addition to
+returning I<EACCES> or I<EPERM> for a violation, the task is also sent
+a signal to kill it.
+
 =item B<complain> For a given action, if the profile rules do not grant
 permission the action will be allowed, but the violation will be logged
 with a tag of the access being B<ALLOWED>.
+
+=item B<unconfined> This mode allows a task confined by the profile to
+behave as though they are I<unconfined>. This mode allow for an
+unconfined behavior that can be later changed to confinement by using
+profile replacement. This mode is should not be used under regular
+deployment but can be useful during debugging and some system
+initialization scenarios.
 
 =back
 
