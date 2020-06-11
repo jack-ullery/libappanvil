@@ -1,7 +1,6 @@
 #
 #=DESCRIPTION abi testing - abi relative path in quotes
 #=EXRESULT FAIL
-#=TODO
 
 abi "simple_tests/includes/abi/4.19,
 
