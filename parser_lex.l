@@ -25,6 +25,7 @@
 %option noyy_top_state
 %option nounput
 %option stack
+%option nodefault
 
 %{
 #include <stdio.h>
