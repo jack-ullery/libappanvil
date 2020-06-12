@@ -26,12 +26,15 @@ include <tunables/global>
 profile dhclient /{usr/,}sbin/dhclient {
   include <abstractions/base>
   include <abstractions/bash>
+  include <abstractions/openssl>
   include <abstractions/nameservice>
 
   capability net_raw,
 
   network packet packet,
   network packet raw,
+
+  signal (send,receive) set=(term) peer=NetworkManager,
 
   /{usr/,}sbin/dhclient       mrix,
 
@@ -48,21 +51,21 @@ profile dhclient /{usr/,}sbin/dhclient {
   # following rule shouldn't work, self is a symlink
   @{PROC}/self/status         r,
   /{usr/,}sbin/arp            mrix,
-  /usr/bin/dig                mrix,
-  /usr/bin/uptime             mrix,
-  /usr/bin/vmstat             mrix,
-  /usr/bin/w                  mrix,
-  /usr/lib/nm-dhcp-helper     rix,
+  /{usr/,}bin/dig             mrix,
+  /{usr/,}bin/uptime          mrix,
+  /{usr/,}bin/vmstat          mrix,
+  /{usr/,}bin/w               mrix,
+  /usr/lib/{NetworkManager/,}nm-dhcp-helper rix,
   /var/lib/dhclient/dhclient{6,}.leases*	rw,
   /var/lib/dhcp/dhclient*.leases   rw,
   /var/lib/dhcp6/dhclient.leases    rw,
-  /var/lib/NetworkManager/dhclient-*.conf  r,
-  /var/lib/NetworkManager/dhclient-*.lease rw,
+  /var/lib/NetworkManager/dhclient{6,}-*.conf r,
+  /var/lib/NetworkManager/dhclient{6,}-*.lease rw,
   /var/log/lastlog            r,
   /var/log/messages           r,
   /var/log/wtmp               r,
-  /{,var/}run/dhclient.pid    rw,
-  /{,var/}run/dhclient-*.pid  rw,
+  /{,var/}run/dhclient{6,}.pid    rw,
+  /{,var/}run/dhclient{6,}-*.pid  rw,
   /var/spool                  r,
   /var/spool/mail             r,
 
@@ -79,4 +82,5 @@ profile dhclient /{usr/,}sbin/dhclient {
   /var/lib/dhcp/* rw,
   /{,var/}run/nm-dhclient-*.conf r,
 
+  include if exists <local/sbin.dhclient>
 }
