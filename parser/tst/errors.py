@@ -45,25 +45,25 @@ class AAErrorTests(testlib.AATestTemplate):
     def test_single(self):
         self._run_test(
             'errors/single.sd',
-            "AppArmor parser error for errors/single.sd in errors/single.sd at line 3: Could not open 'failure'",
+            "AppArmor parser error for errors/single.sd in profile errors/single.sd at line 3: Could not open 'failure'",
         )
 
     def test_double(self):
         self._run_test(
             'errors/double.sd',
-            "AppArmor parser error for errors/double.sd in errors/includes/busted at line 66: Could not open 'does-not-exist'",
+            "AppArmor parser error for errors/double.sd in profile errors/includes/busted at line 66: Could not open 'does-not-exist'",
         )
 
     def test_modefail(self):
         self._run_test(
             'errors/modefail.sd',
-            "AppArmor parser error for errors/modefail.sd in errors/modefail.sd at line 6: syntax error",
+            "AppArmor parser error for errors/modefail.sd in profile errors/modefail.sd at line 6: syntax error, unexpected TOK_ID, expecting TOK_MODE",
         )
 
     def test_multi_include(self):
         self._run_test(
             'errors/multi_include.sd',
-            "AppArmor parser error for errors/multi_include.sd in errors/multi_include.sd at line 12: Could not open 'failure'",
+            "AppArmor parser error for errors/multi_include.sd in profile errors/multi_include.sd at line 12: Could not open 'failure'",
         )
 
     def test_deprecation1(self):

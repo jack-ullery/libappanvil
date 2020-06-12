@@ -1636,13 +1636,11 @@ void vprintyyerror(const char *msg, va_list argptr)
 	if (profilename) {
 		PERROR(_("AppArmor parser error for %s%s%s at line %d: %s\n"),
 		       profilename,
-		       current_filename ? " in " : "",
+		       current_filename ? " in profile " : "",
 		       current_filename ? current_filename : "",
 		       current_lineno, buf);
 	} else {
-		PERROR(_("AppArmor parser error,%s%s line %d: %s\n"),
-		       current_filename ? " in " : "",
-		       current_filename ? current_filename : "",
+		PERROR(_("AppArmor parser error at line %d: %s\n"),
 		       current_lineno, buf);
 	}
 }
