@@ -476,6 +476,7 @@ GT		>
 	\\\n	{ DUMP_PREPROCESS; current_lineno++ ; }
 
 	\r?\n	{
+		/* don't use shared rule because we need POP() here */
 		DUMP_PREPROCESS;
 		current_lineno++;
 		POP();
@@ -702,8 +703,10 @@ include/{WS}	{
 			POP_NODUMP();
 		RETURN_TOKEN(TOK_END_OF_RULE);
 	}
+}
 
-	\r?\n		{
+<INITIAL,NETWORK_MODE,RLIMIT_MODE,CHANGE_PROFILE_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE,ABI_MODE>{
+	\r?\n	{
 		DUMP_PREPROCESS;
 		current_lineno++;
 	}
