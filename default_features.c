@@ -133,6 +133,9 @@ perms {allow deny audit quiet\
 }\
 }\
 }\
+dbus {mask {acquire send receive\
+}\
+}\
 signal {mask {hup int quit ill trap abrt bus fpe kill usr1 segv usr2 pipe alrm term stkflt chld cont stop stp ttin ttou urg xcpu xfsz vtalrm prof winch io pwr sys emt lost\
 }\
 }\
