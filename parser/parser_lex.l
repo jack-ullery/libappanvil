@@ -25,6 +25,7 @@
 %option noyy_top_state
 %option nounput
 %option stack
+%option nodefault
 
 %{
 #include <stdio.h>
@@ -264,7 +265,16 @@ LT_EQUAL	<=
 LT		<
 GT		>
 
-/* IF adding new state please update state_names table at eof */
+/* IF adding new state please update state_names table and default rule (just
+ * above the state_names table) at the eof.
+ *
+ * The nodefault option is set so missing adding to the default rule isn't
+ * fatal but can't take advantage of additional debug the default rule might
+ * have.
+ *
+ * If a state is not added to the default rule it can result in the message
+ * "flex scanner jammed"
+ */
 %x SUB_ID
 %x SUB_ID_WS
 %x SUB_VALUE
@@ -466,6 +476,7 @@ GT		>
 	\\\n	{ DUMP_PREPROCESS; current_lineno++ ; }
 
 	\r?\n	{
+		/* don't use shared rule because we need POP() here */
 		DUMP_PREPROCESS;
 		current_lineno++;
 		POP();
@@ -692,18 +703,20 @@ include/{WS}	{
 			POP_NODUMP();
 		RETURN_TOKEN(TOK_END_OF_RULE);
 	}
+}
 
-	\r?\n		{
+<INITIAL,SUB_ID_WS,INCLUDE,INCLUDE_EXISTS,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE,ABI_MODE>{
+	\r?\n	{
 		DUMP_PREPROCESS;
 		current_lineno++;
 	}
 }
 
-<INITIAL,SUB_ID,SUB_ID_WS,SUB_VALUE,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE>{
-	[^\n]	{
+<INITIAL,SUB_ID,SUB_ID_WS,SUB_VALUE,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE,RLIMIT_MODEINCLUDE,INCLUDE_EXISTS,ABI_MODE>{
+	(.|\n)	{
 		DUMP_PREPROCESS;
 		/* Something we didn't expect */
-		yyerror(_("Found unexpected character: '%s'"), yytext);
+		yyerror(_("Lexer found unexpected character: '%s' (0x%x) in state: %s"), yytext, yytext[0], state_names[YY_START].c_str());
 	}
 }
 %%
