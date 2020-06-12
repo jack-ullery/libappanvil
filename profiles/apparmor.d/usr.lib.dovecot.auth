@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2013-2018 Christian Boltz
+#    Copyright (C) 2013-2020 Christian Boltz
 #    Copyright (C) 2014 Christian Wittmer
 #
 #    This program is free software; you can redistribute it and/or
@@ -14,7 +14,7 @@ abi <abi/3.0>,
 
 include <tunables/global>
 
-/usr/lib/dovecot/auth {
+profile dovecot-auth /usr/lib/dovecot/auth {
   include <abstractions/authentication>
   include <abstractions/base>
   include <abstractions/mysql>
