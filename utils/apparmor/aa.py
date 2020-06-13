@@ -578,6 +578,8 @@ def autodep(bin_name, pname=''):
     else:
         active_profiles.add_profile(file, pname, attachment)
 
+    if os.path.isfile(profile_dir + '/abi/3.0'):
+        active_profiles.add_abi(file, AbiRule('abi/3.0', False, True))
     if os.path.isfile(profile_dir + '/tunables/global'):
         active_profiles.add_inc_ie(file, IncludeRule('tunables/global', False, True))
     write_profile_ui_feedback(pname)
