@@ -285,8 +285,18 @@ af_names.h: ../common/list_af_names.sh
 	../common/list_af_names.sh | LC_ALL=C sed -n -e 's/AF_MAX[ \t]\+\([0-9]\+\),\?.*/\n#define AA_AF_MAX \1\n/p' >> $@
 	# cat $@
 
-cap_names.h: /usr/include/linux/capability.h
+generated_cap_names.h: /usr/include/linux/capability.h
 	../common/list_capabilities.sh | LC_ALL=C sed -n -e "s/[ \\t]\\?CAP_\\([A-Z0-9_]\\+\\)/\{\"\\L\\1\", \\UCAP_\\1\},\\n/pg" > $@
+
+cap_names.h: generated_cap_names.h base_cap_names.h
+	@ diff -u base_cap_names.h generated_cap_names.h | grep '^\+[^+]' ; \
+	if [ $$? -eq 1 ] ; then \
+		cp base_cap_names.h $@ ; \
+	else \
+		echo "Error: new capabilities detected please update base_cap_names.h with values from generated_cap_names.h" ; \
+		diff -u base_cap_names.h generated_cap_names.h ; \
+		exit 1; \
+	fi
 
 tst_lib: lib.c parser.h $(filter-out lib.o, ${TEST_OBJECTS})
 	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS) $(TEST_LDLIBS)
@@ -398,7 +408,7 @@ clean: pod_clean
 	rm -f parser_version.h
 	rm -f $(NAME)*.tar.gz $(NAME)*.tgz
 	rm -f af_names.h
-	rm -f cap_names.h
+	rm -f cap_names.h generated_cap_names.h
 	rm -rf techdoc.aux techdoc.out techdoc.log techdoc.pdf techdoc.toc techdoc.txt techdoc/
 	$(MAKE) -s -C $(AAREDIR) clean
 	$(MAKE) -s -C po clean
