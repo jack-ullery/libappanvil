@@ -42,6 +42,7 @@ aa_features_supports - provides aa_features object support status
 
 aa_features_id - provides unique identifier for an aa_features object
 
+aa_features_value - the value associated with a given feature.
 =head1 SYNOPSIS
 
 B<#include E<lt>sys/apparmor.hE<gt>>
@@ -67,6 +68,8 @@ B<bool aa_features_is_equal(aa_features *features1, aa_features *features2);>
 B<bool aa_features_supports(aa_features *features, const char *str);>
 
 B<char *aa_features_id(aa_features *features);>
+
+B<char *aa_features_value(aa_features *features, const char *str, size_t *len);>
 
 Link with B<-lapparmor> when compiling.
 
@@ -145,6 +148,11 @@ supported and false if it is not supported.
 aa_features_id() returns a string identifying I<features> which must be
 freed by the caller. NULL is returned on error, with errno set
 appropriately.
+
+aa_features_value() returns a null terminated string with is
+associated length which must be freed by the caller. NULL is returned
+on error, with errno set to ENOENT if the feature was not found,
+ENODIR if the specified feature does not resolve to a leaf feature.
 
 =head1 ERRORS
 
