@@ -856,7 +856,7 @@ def ask_exec(hashlog):
 
                         prof_filename = get_profile_filename_from_profile_name(profile)
                         if prof_filename and active_profiles.files.get(prof_filename):
-                            sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename]), profile_dir))
+                            sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename])))
                         else:
                             sev_db.set_variables( {} )
 
@@ -1052,7 +1052,7 @@ def ask_the_questions(log_dict):
         for profile in sorted(log_dict[aamode].keys()):
             prof_filename = get_profile_filename_from_profile_name(profile)
             if prof_filename and active_profiles.files.get(prof_filename):
-                sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename]), profile_dir))
+                sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename])))
             else:
                 sev_db.set_variables( {} )
 
@@ -1394,30 +1394,34 @@ def ask_conflict_mode(profile, hat, old_profile, merge_profile):
 
                     done = True
 
-def get_include_path(incname):
-    if incname.startswith('/'):
-        return incname
-    return profile_dir + '/' + incname
-
 def match_includes(profile, rule_type, rule_obj):
-    ''' propose abstractions that allow the given rule '''
+    ''' propose abstractions that allow the given rule_obj
+
+        Note: This function will return relative paths for includes inside profile_dir
+    '''
 
     newincludes = []
     for incname in include.keys():
+        rel_incname = incname.replace(profile_dir + '/', '')
+
         # TODO: improve/fix logic to honor magic vs. quoted include paths
-        if incname.startswith('/'):
+        if rel_incname.startswith('/'):
             is_magic = False
         else:
             is_magic = True
 
         # never propose includes that are already in the profile (shouldn't happen because of is_known_rule())
-        if profile and profile['inc_ie'].is_covered(IncludeRule(incname, False, is_magic)):
+        if profile and profile['inc_ie'].is_covered(IncludeRule(rel_incname, False, is_magic)):
+            continue
+
+        # never propose a local/ include (they are meant to be included in exactly one profile)
+        if rel_incname.startswith('local/'):
             continue
 
         # XXX type check should go away once we init all profiles correctly
         if valid_include(incname) and include[incname][incname][rule_type].is_covered(rule_obj):
             if include[incname][incname]['logprof_suggest'] != 'no':
-                newincludes.append(incname)
+                newincludes.append(rel_incname)
 
     return newincludes
 
@@ -1915,10 +1919,6 @@ def parse_profile_data(data, file, do_include):
                 active_profiles.add_inc_ie(file, rule_obj)
 
             for incname in rule_obj.get_full_paths(profile_dir):
-                # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
-                if incname.startswith(profile_dir):
-                    incname = incname.replace('%s/' % profile_dir, '')
-
                 load_include(incname)
 
         elif NetworkRule.match(line):
@@ -2276,10 +2276,6 @@ def include_list_recursive(profile):
             continue
         full_list.append(incname)
 
-        # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
-        if incname.startswith(profile_dir):
-            incname = incname.replace('%s/' % profile_dir, '')
-
         for childinc in include[incname][incname]['inc_ie'].rules:
             for childinc_file in childinc.get_full_paths(profile_dir):
                 if childinc_file not in full_list:
@@ -2296,10 +2292,6 @@ def is_known_rule(profile, rule_type, rule_obj):
     includelist = include_list_recursive(profile)
 
     for incname in includelist:
-        # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
-        if incname.startswith(profile_dir):
-            incname = incname.replace('%s/' % profile_dir, '')
-
         if include[incname][incname][rule_type].is_covered(rule_obj, False):
             return True
 
@@ -2313,10 +2305,6 @@ def get_file_perms(profile, path, audit, deny):
     includelist = include_list_recursive(profile)
 
     for incname in includelist:
-        # include[] keys can be a) 'abstractions/foo' and b) '/full/path'
-        if incname.startswith(profile_dir):
-            incname = incname.replace('%s/' % profile_dir, '')
-
         incperms = include[incname][incname]['file'].get_perms_for_path(path, audit, deny)
 
         for allow_or_deny in ['allow', 'deny']:
@@ -2400,22 +2388,21 @@ def get_include_data(filename):
         raise AppArmorException(_('File Not Found: %s') % filename)
     return data
 
-def include_dir_filelist(profile_dir, include_name):
-    '''returns a list of files in the given profile_dir/include_name directory,
-       except skippable files. If include_name is an absolute path, ignore
-       profile_dir.
+def include_dir_filelist(include_name):
+    '''returns a list of files in the given include_name directory,
+       except skippable files.
     '''
+
+    if not include_name.startswith('/'):
+        raise AppArmorBug('incfile %s not starting with /' % include_name)
+
     files = []
-    include_name_abs = get_include_path(include_name)
-    for path in os.listdir(include_name_abs):
+    for path in os.listdir(include_name):
         path = path.strip()
         if is_skippable_file(path):
             continue
-        if os.path.isfile(include_name_abs + '/' + path):
+        if os.path.isfile(include_name + '/' + path):
             file_name = include_name + '/' + path
-            # strip off profile_dir for non-absolute paths
-            if not include_name.startswith('/'):
-                file_name = file_name.replace(profile_dir + '/', '')
             files.append(file_name)
 
     return files
@@ -2424,18 +2411,20 @@ def load_include(incname):
     load_includeslist = [incname]
     while load_includeslist:
         incfile = load_includeslist.pop(0)
-        incfile_abs = get_include_path(incfile)
+        if not incfile.startswith('/'):
+            raise AppArmorBug('incfile %s not starting with /' % incfile)
+
         if include.get(incfile, {}).get(incfile, False):
             pass  # already read, do nothing
-        elif os.path.isfile(incfile_abs):
-            data = get_include_data(incfile_abs)
+        elif os.path.isfile(incfile):
+            data = get_include_data(incfile)
             incdata = parse_profile_data(data, incfile, True)
             attach_profile_data(include, incdata)
         #If the include is a directory means include all subfiles
-        elif os.path.isdir(incfile_abs):
-            load_includeslist += include_dir_filelist(profile_dir, incfile)
+        elif os.path.isdir(incfile):
+            load_includeslist += include_dir_filelist(incfile)
         else:
-            raise AppArmorException("Include file %s not found" % (incfile_abs))
+            raise AppArmorException("Include file %s not found" % (incfile))
 
     return 0
 
@@ -2465,7 +2454,6 @@ def loadincludes():
                     continue
                 else:
                     fi = dirpath + '/' + fi
-                    fi = fi.replace(profile_dir + '/', '', 1)
                     load_include(fi)
 
 def glob_common(path):
@@ -2525,6 +2513,7 @@ def init_aa(confdir="/etc/apparmor"):
         cfg['settings']['default_owner_prompt'] = ''
 
     profile_dir = conf.find_first_dir(cfg['settings'].get('profiledir')) or '/etc/apparmor.d'
+    profile_dir = os.path.abspath(profile_dir)
     if not os.path.isdir(profile_dir):
         raise AppArmorException('Can\'t find AppArmor profiles in %s' % (profile_dir))
 

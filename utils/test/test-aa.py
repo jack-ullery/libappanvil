@@ -131,9 +131,9 @@ class AaTest_create_new_profile(AATest):
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
         # load the abstractions we need in the test
-        apparmor.aa.profiledir = self.profile_dir
-        apparmor.aa.load_include('abstractions/base')
-        apparmor.aa.load_include('abstractions/bash')
+        apparmor.aa.profile_dir = self.profile_dir
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/base'))
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/bash'))
 
         exp_interpreter_path, exp_abstraction = expected
         # damn symlinks!
@@ -754,11 +754,11 @@ class AaTest_get_file_perms_2(AATest):
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
         # load the abstractions we need in the test
-        apparmor.aa.profiledir = self.profile_dir
-        apparmor.aa.load_include('abstractions/base')
-        apparmor.aa.load_include('abstractions/bash')
-        apparmor.aa.load_include('abstractions/enchant')
-        apparmor.aa.load_include('abstractions/aspell')
+        apparmor.aa.profile_dir = self.profile_dir
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/base'))
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/bash'))
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/enchant'))
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/aspell'))
 
         profile = apparmor.aa.ProfileStorage('/test', '/test', 'test-aa.py')
         profile['inc_ie'].add(IncludeRule.parse('include <abstractions/base>'))
@@ -792,11 +792,11 @@ class AaTest_propose_file_rules(AATest):
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
         # load the abstractions we need in the test
-        apparmor.aa.profiledir = self.profile_dir
-        apparmor.aa.load_include('abstractions/base')
-        apparmor.aa.load_include('abstractions/bash')
-        apparmor.aa.load_include('abstractions/enchant')
-        apparmor.aa.load_include('abstractions/aspell')
+        apparmor.aa.profile_dir = self.profile_dir
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/base'))
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/bash'))
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/enchant'))
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/aspell'))
 
         # add some user_globs ('(N)ew') to simulate a professional aa-logprof user (and to make sure that part of the code also gets tested)
         apparmor.aa.user_globs['/usr/share/common*/foo/*'] = AARE('/usr/share/common*/foo/*', True)
@@ -835,8 +835,8 @@ class AaTest_propose_file_rules_with_absolute_includes(AATest):
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
         # load the abstractions we need in the test
-        apparmor.aa.profiledir = self.profile_dir
-        apparmor.aa.load_include('abstractions/base')
+        apparmor.aa.profile_dir = self.profile_dir
+        apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/base'))
 
         abs_include1 = write_file(self.tmpdir, 'test-abs1', "/some/random/include rw,")
         apparmor.aa.load_include(abs_include1)
@@ -859,15 +859,14 @@ class AaTest_propose_file_rules_with_absolute_includes(AATest):
 
 
 class AaTest_nonexistent_includes(AATest):
-    def test_bad_includes(self):
-        tests = [
-            "/nonexistent/absolute/path",
-            "nonexistent/relative/path",
-        ]
+    tests = [
+        ("/nonexistent/absolute/path",      AppArmorException),
+        ("nonexistent/relative/path",       AppArmorBug),       # load_include() only accepts absolute paths
+    ]
 
-        for i in tests:
-            with self.assertRaises(AppArmorException):
-                apparmor.aa.load_include(i)
+    def _run_test(self, params, expected):
+        with self.assertRaises(expected):
+            apparmor.aa.load_include(params)
 
 
 setup_aa(apparmor.aa)

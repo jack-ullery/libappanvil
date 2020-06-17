@@ -128,7 +128,6 @@ class IncludeRule(BaseRule):
     def get_full_paths(self, profile_dir):
         ''' get list of full paths of an include (can contain multiple paths if self.path is a directory) '''
 
-        # currently this section is based on aa.py get_include_path() (with variable names changed)
         # TODO: improve/fix logic to honor magic vs. quoted include paths
         if self.path.startswith('/'):
             full_path = self.path

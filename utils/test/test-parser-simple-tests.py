@@ -426,12 +426,12 @@ class TestParseParserTests(AATest):
 
         if expected:
             apparmor.parse_profile_data(data, params['file'], 0)
-            apparmor.active_profiles.get_all_merged_variables(params['file'], apparmor.include_list_recursive(apparmor.active_profiles.files[params['file']]), profile_dir)
+            apparmor.active_profiles.get_all_merged_variables(params['file'], apparmor.include_list_recursive(apparmor.active_profiles.files[params['file']]))
 
         else:
             with self.assertRaises(AppArmorException):
                 apparmor.parse_profile_data(data, params['file'], 0)
-                apparmor.active_profiles.get_all_merged_variables(params['file'], apparmor.include_list_recursive(apparmor.active_profiles.files[params['file']]), profile_dir)
+                apparmor.active_profiles.get_all_merged_variables(params['file'], apparmor.include_list_recursive(apparmor.active_profiles.files[params['file']]))
 
 def parse_test_profiles(file_with_path):
     '''parse the test-related headers of a profile (for example EXRESULT) and add the profile to the set of tests'''
