@@ -176,9 +176,7 @@ static int get_table_token(const char *name unused, struct keyword_table *table,
 static struct keyword_table capability_table[] = {
 	/* capabilities */
 	#include "cap_names.h"
-#ifndef CAP_SYSLOG
-	{"syslog", 34},
-#endif
+
 	/* terminate */
 	{NULL, 0}
 };
