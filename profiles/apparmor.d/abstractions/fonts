@@ -16,8 +16,8 @@
 
   /usr/lib/xorg/modules/fonts/**.so*    mr,
 
-  /usr/share/fonts/                     r,
-  /usr/share/fonts/**                   r,
+  /usr/share/fonts/{,**}                r,
+  /usr/share/fonts-*/{,**}              r,
 
   /etc/fonts/**                         r,
   # Debian, openSUSE paths are different
