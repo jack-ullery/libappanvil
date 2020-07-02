@@ -165,6 +165,18 @@ static int get_table_token(const char *name unused, struct keyword_table *table,
 	return -1;
 }
 
+/* for alpha matches, check for keywords */
+int get_keyword_token(const char *keyword)
+{
+	return get_table_token("keyword", keyword_table, keyword);
+}
+
+int get_rlimit(const char *name)
+{
+	return get_table_token("rlimit", rlimit_table, name);
+}
+
+
 #define NO_BACKMAP_CAP 0xff
 
 #ifndef CAP_PERFMON
@@ -174,6 +186,12 @@ static int get_table_token(const char *name unused, struct keyword_table *table,
 #ifndef CAP_BPF
 #define CAP_BPF 39
 #endif
+
+typedef enum capability_flags {
+	CAP_KERNEL_FEATURE = 1,
+	CAP_POLICY_FEATURE = 2,
+	CAP_EXTERNAL_FEATURE = 4,
+} capability_flags;
 
 struct capability_table {
 	const char *cap;
@@ -206,21 +224,34 @@ static int get_cap_token(const char *name unused, struct capability_table *table
 	return -1;
 }
 
-
-/* for alpha matches, check for keywords */
-int get_keyword_token(const char *keyword)
-{
-	return get_table_token("keyword", keyword_table, keyword);
-}
-
 int name_to_capability(const char *keyword)
 {
 	return get_cap_token("capability", base_capability_table, keyword);
 }
 
-int get_rlimit(const char *name)
+const char *capability_to_name(unsigned int cap)
 {
-	return get_table_token("rlimit", rlimit_table, name);
+	int i;
+
+	for (i = 0; base_capability_table[i].cap; i++) {
+		if (base_capability_table[i].token == cap)
+			return base_capability_table[i].cap;
+	}
+
+	return "invalid-capability";
+}
+
+void __debug_capabilities(uint64_t capset, const char *name)
+{
+	unsigned int i;
+
+	printf("%s:", name);
+
+	for (i = 0; base_capability_table[i].cap; i++) {
+		if ((1ull << base_capability_table[i].token) & capset)
+			printf (" %s", base_capability_table[i].cap);
+	}
+	printf("\n");
 }
 
 char *processunquoted(const char *string, int len)
@@ -864,31 +895,6 @@ void debug_cod_entries(struct cod_entry *list)
 			printf("\tlink:\t(%s)\n", item->link_name ? item->link_name : "/**");
 
 	}
-}
-
-const char *capability_to_name(unsigned int cap)
-{
-	int i;
-
-	for (i = 0; base_capability_table[i].cap; i++) {
-		if (base_capability_table[i].token == cap)
-			return base_capability_table[i].cap;
-	}
-
-	return "invalid-capability";
-}
-
-void __debug_capabilities(uint64_t capset, const char *name)
-{
-	unsigned int i;
-
-	printf("%s:", name);
-
-	for (i = 0; base_capability_table[i].cap; i++) {
-		if ((1ull << base_capability_table[i].token) & capset)
-			printf (" %s", base_capability_table[i].cap);
-	}
-	printf("\n");
 }
 
 struct value_list *new_value_list(char *value)
