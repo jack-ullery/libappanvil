@@ -165,6 +165,8 @@ static int get_table_token(const char *name unused, struct keyword_table *table,
 	return -1;
 }
 
+#define NO_BACKMAP_CAP 0xff
+
 #ifndef CAP_PERFMON
 #define CAP_PERFMON 38
 #endif
@@ -173,13 +175,37 @@ static int get_table_token(const char *name unused, struct keyword_table *table,
 #define CAP_BPF 39
 #endif
 
-static struct keyword_table capability_table[] = {
+struct capability_table {
+	const char *cap;
+	unsigned int token;
+	unsigned int backmap;
+};
+
+static struct capability_table base_capability_table[] = {
 	/* capabilities */
 	#include "cap_names.h"
 
 	/* terminate */
-	{NULL, 0}
+	{NULL, 0, 0}
 };
+
+static int get_cap_token(const char *name unused, struct capability_table *table,
+			 const char *cap)
+{
+	int i;
+
+	for (i = 0; table[i].cap; i++) {
+		PDEBUG("Checking %s %s\n", name, table[i].cap);
+		if (strcmp(cap, table[i].cap) == 0) {
+			PDEBUG("Found %s %s\n", name, table[i].cap);
+			return table[i].token;
+		}
+	}
+
+	PDEBUG("Unable to find %s %s\n", name, cap);
+	return -1;
+}
+
 
 /* for alpha matches, check for keywords */
 int get_keyword_token(const char *keyword)
@@ -189,7 +215,7 @@ int get_keyword_token(const char *keyword)
 
 int name_to_capability(const char *keyword)
 {
-	return get_table_token("capability", capability_table, keyword);
+	return get_cap_token("capability", base_capability_table, keyword);
 }
 
 int get_rlimit(const char *name)
@@ -844,9 +870,9 @@ const char *capability_to_name(unsigned int cap)
 {
 	int i;
 
-	for (i = 0; capability_table[i].keyword; i++) {
-		if (capability_table[i].token == cap)
-			return capability_table[i].keyword;
+	for (i = 0; base_capability_table[i].cap; i++) {
+		if (base_capability_table[i].token == cap)
+			return base_capability_table[i].cap;
 	}
 
 	return "invalid-capability";
@@ -858,9 +884,9 @@ void __debug_capabilities(uint64_t capset, const char *name)
 
 	printf("%s:", name);
 
-	for (i = 0; capability_table[i].keyword; i++) {
-		if ((1ull << capability_table[i].token) & capset)
-			printf (" %s", capability_table[i].keyword);
+	for (i = 0; base_capability_table[i].cap; i++) {
+		if ((1ull << base_capability_table[i].token) & capset)
+			printf (" %s", base_capability_table[i].cap);
 	}
 	printf("\n");
 }
