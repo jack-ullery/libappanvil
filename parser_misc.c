@@ -188,15 +188,18 @@ int get_rlimit(const char *name)
 #endif
 
 typedef enum capability_flags {
-	CAP_KERNEL_FEATURE = 1,
-	CAP_POLICY_FEATURE = 2,
-	CAP_EXTERNAL_FEATURE = 4,
+	CAPFLAGS_CLEAR = 0,
+	CAPFLAG_BASE_FEATURE = 1,
+	CAPFLAG_KERNEL_FEATURE = 2,
+	CAPFLAG_POLICY_FEATURE = 4,
+	CAPFLAG_EXTERNAL_FEATURE = 8,
 } capability_flags;
 
 struct capability_table {
 	const char *cap;
 	unsigned int token;
 	unsigned int backmap;
+	capability_flags flags;
 };
 
 static struct capability_table base_capability_table[] = {
@@ -204,7 +207,7 @@ static struct capability_table base_capability_table[] = {
 	#include "cap_names.h"
 
 	/* terminate */
-	{NULL, 0, 0}
+	{NULL, 0, 0, CAPFLAGS_CLEAR}
 };
 
 static int get_cap_token(const char *name unused, struct capability_table *table,
