@@ -1332,6 +1332,7 @@ int main(int argc, char *argv[])
 	progname = argv[0];
 
 	init_base_dir();
+	capabilities_init();
 
 	process_early_args(argc, argv);
 	process_config_file(config_file);

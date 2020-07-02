@@ -398,6 +398,7 @@ extern char *processquoted(const char *string, int len);
 extern char *processunquoted(const char *string, int len);
 extern int get_keyword_token(const char *keyword);
 extern int name_to_capability(const char *keyword);
+extern void capabilities_init(void);
 extern int get_rlimit(const char *name);
 extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);

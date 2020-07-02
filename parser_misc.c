@@ -210,6 +210,18 @@ static struct capability_table base_capability_table[] = {
 	{NULL, 0, 0, CAPFLAGS_CLEAR}
 };
 
+static struct capability_table *cap_table;
+static int cap_table_size;
+
+void capabilities_init(void)
+{
+	cap_table = (struct capability_table *) malloc(sizeof(base_capability_table));
+	if (!cap_table)
+		yyerror(_("Memory allocation error."));
+	memcpy(cap_table, base_capability_table, sizeof(base_capability_table));
+	cap_table_size = sizeof(base_capability_table)/sizeof(struct capability_table);
+}
+
 static int get_cap_token(const char *name unused, struct capability_table *table,
 			 const char *cap)
 {
@@ -229,16 +241,16 @@ static int get_cap_token(const char *name unused, struct capability_table *table
 
 int name_to_capability(const char *keyword)
 {
-	return get_cap_token("capability", base_capability_table, keyword);
+	return get_cap_token("capability", cap_table, keyword);
 }
 
 const char *capability_to_name(unsigned int cap)
 {
 	int i;
 
-	for (i = 0; base_capability_table[i].cap; i++) {
-		if (base_capability_table[i].token == cap)
-			return base_capability_table[i].cap;
+	for (i = 0; cap_table[i].cap; i++) {
+		if (cap_table[i].token == cap)
+			return cap_table[i].cap;
 	}
 
 	return "invalid-capability";
@@ -250,9 +262,9 @@ void __debug_capabilities(uint64_t capset, const char *name)
 
 	printf("%s:", name);
 
-	for (i = 0; base_capability_table[i].cap; i++) {
-		if ((1ull << base_capability_table[i].token) & capset)
-			printf (" %s", base_capability_table[i].cap);
+	for (i = 0; cap_table[i].cap; i++) {
+		if ((1ull << cap_table[i].token) & capset)
+			printf (" %s", cap_table[i].cap);
 	}
 	printf("\n");
 }
