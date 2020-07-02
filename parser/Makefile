@@ -286,15 +286,15 @@ af_names.h: ../common/list_af_names.sh
 	# cat $@
 
 generated_cap_names.h: /usr/include/linux/capability.h
-	../common/list_capabilities.sh | LC_ALL=C sed -n -e "s/[ \\t]\\?CAP_\\([A-Z0-9_]\\+\\)/\{\"\\L\\1\", \\UCAP_\\1\},\\n/pg" > $@
+	../common/list_capabilities.sh | LC_ALL=C sed -n -e "s/[ \\t]\\?CAP_\\([A-Z0-9_]\\+\\)/\{\"\\L\\1\", \\UCAP_\\1, NO_BACKMAP_CAP\},\\n/pg" > $@
 
 cap_names.h: generated_cap_names.h base_cap_names.h
-	@ diff -u base_cap_names.h generated_cap_names.h | grep '^\+[^+]' ; \
+	@sed -e 's/CAP_[A-Z0-9_]\+}/NO_BACKMAP_CAP}/g' base_cap_names.h | diff -u - generated_cap_names.h | grep '^\+[^+]' ; \
 	if [ $$? -eq 1 ] ; then \
 		cp base_cap_names.h $@ ; \
 	else \
 		echo "Error: new capabilities detected please update base_cap_names.h with values from generated_cap_names.h" ; \
-		diff -u base_cap_names.h generated_cap_names.h ; \
+		sed -e 's/CAP_[A-Z0-9_]\+}/NO_BACKMAP_CAP}/g' base_cap_names.h | diff -u - generated_cap_names.h ; \
 		exit 1; \
 	fi
 
