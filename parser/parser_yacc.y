@@ -32,6 +32,7 @@
 
 /* #define DEBUG */
 
+#include "capability.h"
 #include "lib.h"
 #include "parser.h"
 #include "profile.h"
@@ -299,6 +300,9 @@ list:	 preamble
 			}
 			pwarn(_("%s: File '%s' missing feature abi, falling back to default policy feature abi\n"), progname, current_filename);
 		}
+		if (!add_cap_feature_mask(policy_features,
+					  CAPFLAG_POLICY_FEATURE))
+			yyerror(_("Failed to add policy capabilities to known capabilities set"));
 		set_supported_features();
 
 	}

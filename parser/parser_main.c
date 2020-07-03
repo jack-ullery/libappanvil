@@ -41,7 +41,7 @@
 
 #include <sys/apparmor.h>
 
-
+#include "capability.h"
 #include "lib.h"
 #include "features.h"
 #include "parser.h"
@@ -923,6 +923,7 @@ void reset_parser(const char *filename)
 	if (!specified_policy_features) {
 		aa_features_unref(policy_features);
 		policy_features = NULL;
+		clear_cap_flag(CAPFLAG_POLICY_FEATURE);
 	}
 }
 
@@ -1354,6 +1355,10 @@ int main(int argc, char *argv[])
 
 	if (!get_kernel_features(&kernel_features)) {
 		PERROR(_("Kernel features abi not found"));
+		return 1;
+	}
+	if (!add_cap_feature_mask(kernel_features, CAPFLAG_KERNEL_FEATURE)) {
+		PERROR(_("Failed to add kernel capabilities to known capabilities set"));
 		return 1;
 	}
 
