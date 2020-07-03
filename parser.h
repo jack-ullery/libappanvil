@@ -397,8 +397,6 @@ extern char *processid(const char *string, int len);
 extern char *processquoted(const char *string, int len);
 extern char *processunquoted(const char *string, int len);
 extern int get_keyword_token(const char *keyword);
-extern int name_to_capability(const char *keyword);
-extern void capabilities_init(void);
 extern int get_rlimit(const char *name);
 extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
@@ -412,7 +410,6 @@ extern struct cod_entry *new_entry(char *id, int mode, char *link_id);
 extern int str_to_boolean(const char* str);
 extern struct cod_entry *copy_cod_entry(struct cod_entry *cod);
 extern void free_cod_entries(struct cod_entry *list);
-extern void __debug_capabilities(uint64_t capset, const char *name);
 void debug_cod_entries(struct cod_entry *list);
 
 #define SECONDS_P_MS (1000LL * 1000LL)

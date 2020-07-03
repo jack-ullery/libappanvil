@@ -18,6 +18,7 @@
 #include <string>
 #include <iostream>
 
+#include "capability.h"
 #include "parser.h"
 #include "rule.h"
 #include "libapparmor_re/aare_rules.h"
