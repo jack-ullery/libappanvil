@@ -220,6 +220,21 @@ struct capability_table *find_cap_entry_by_name(const char *name)
 	return NULL;
 }
 
+struct capability_table *find_cap_entry_by_num(unsigned int cap)
+{
+	int i;
+
+	for (i = 0; cap_table[i].name; i++) {
+		PDEBUG("Checking %d %d\n",  cap, cap_table[i].cap);
+		if (cap == cap_table[i].cap) {
+			PDEBUG("Found %d %d\n", cap, cap_table[i].cap);
+			return &cap_table[i];
+		}
+	}
+
+	return NULL;
+}
+
 /* don't mark up str with \0 */
 static const char *strn_token(const char *str, size_t &len)
 {
@@ -343,14 +358,35 @@ int name_to_capability(const char *cap)
 
 const char *capability_to_name(unsigned int cap)
 {
-	int i;
+	struct capability_table *ent;
 
-	for (i = 0; cap_table[i].name; i++) {
-		if (cap_table[i].cap == cap)
-			return cap_table[i].name;
-	}
+	ent = find_cap_entry_by_num(cap);
+	if (ent)
+		return ent->name;
 
 	return "invalid-capability";
+}
+
+int capability_backmap(unsigned int cap)
+{
+	struct capability_table *ent;
+
+	ent = find_cap_entry_by_num(cap);
+	if (ent)
+		return ent->backmap;
+
+	return NO_BACKMAP_CAP;
+}
+
+bool capability_in_kernel(unsigned int cap)
+{
+	struct capability_table *ent;
+
+	ent = find_cap_entry_by_num(cap);
+	if (ent)
+		return ent->flags & CAPFLAG_KERNEL_FEATURE;
+
+	return false;
 }
 
 void __debug_capabilities(uint64_t capset, const char *name)

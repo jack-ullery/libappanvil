@@ -42,6 +42,7 @@ void capabilities_init(void);
 void __debug_capabilities(uint64_t capset, const char *name);
 bool add_cap_feature_mask(struct aa_features *features, capability_flags flags);
 void clear_cap_flag(capability_flags flags);
-
+int capability_backmap(unsigned int cap);
+bool capability_in_kernel(unsigned int cap);
 
 #endif /* __AA_CAPABILITY_H */
