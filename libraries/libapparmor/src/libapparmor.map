@@ -115,6 +115,13 @@ APPARMOR_2.13.1 {
         *;
 } APPARMOR_2.13;
 
+APPARMOR_3.0 {
+  global:
+	aa_features_value;
+  local:
+	*;
+} APPARMOR_2.13.1;
+
 PRIVATE {
 	global:
 		_aa_is_blacklisted;

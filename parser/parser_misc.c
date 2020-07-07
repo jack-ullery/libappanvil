@@ -34,6 +34,7 @@
 #include <sys/apparmor.h>
 #include <sys/apparmor_private.h>
 
+#include "capability.h"
 #include "lib.h"
 #include "parser.h"
 #include "profile.h"
@@ -63,7 +64,7 @@ int is_blacklisted(const char *name, const char *path)
 
 struct keyword_table {
 	const char *keyword;
-	int token;
+	unsigned int token;
 };
 
 static struct keyword_table keyword_table[] = {
@@ -165,30 +166,240 @@ static int get_table_token(const char *name unused, struct keyword_table *table,
 	return -1;
 }
 
-static struct keyword_table capability_table[] = {
-	/* capabilities */
-	#include "cap_names.h"
-#ifndef CAP_SYSLOG
-	{"syslog", 34},
-#endif
-	/* terminate */
-	{NULL, 0}
-};
-
 /* for alpha matches, check for keywords */
 int get_keyword_token(const char *keyword)
 {
 	return get_table_token("keyword", keyword_table, keyword);
 }
 
-int name_to_capability(const char *keyword)
-{
-	return get_table_token("capability", capability_table, keyword);
-}
-
 int get_rlimit(const char *name)
 {
 	return get_table_token("rlimit", rlimit_table, name);
+}
+
+
+struct capability_table {
+	const char *name;
+	unsigned int cap;
+	unsigned int backmap;
+	capability_flags flags;
+};
+
+static struct capability_table base_capability_table[] = {
+	/* capabilities */
+	#include "cap_names.h"
+
+	/* terminate */
+	{NULL, 0, 0, CAPFLAGS_CLEAR}
+};
+
+static struct capability_table *cap_table;
+static int cap_table_size;
+
+void capabilities_init(void)
+{
+	cap_table = (struct capability_table *) malloc(sizeof(base_capability_table));
+	if (!cap_table)
+		yyerror(_("Memory allocation error."));
+	memcpy(cap_table, base_capability_table, sizeof(base_capability_table));
+	cap_table_size = sizeof(base_capability_table)/sizeof(struct capability_table);
+}
+
+struct capability_table *find_cap_entry_by_name(const char *name)
+{
+	int i;
+
+	for (i = 0; cap_table[i].name; i++) {
+		PDEBUG("Checking %s %s\n", name, cap_table[i].name);
+		if (strcmp(name, cap_table[i].name) == 0) {
+			PDEBUG("Found %s %s\n", name, cap_table[i].name);
+			return &cap_table[i];
+		}
+	}
+
+	return NULL;
+}
+
+struct capability_table *find_cap_entry_by_num(unsigned int cap)
+{
+	int i;
+
+	for (i = 0; cap_table[i].name; i++) {
+		PDEBUG("Checking %d %d\n",  cap, cap_table[i].cap);
+		if (cap == cap_table[i].cap) {
+			PDEBUG("Found %d %d\n", cap, cap_table[i].cap);
+			return &cap_table[i];
+		}
+	}
+
+	return NULL;
+}
+
+/* don't mark up str with \0 */
+static const char *strn_token(const char *str, size_t &len)
+{
+	const char *start;
+
+	while (isspace(*str))
+		str++;
+	start = str;
+	while (*str && !isspace(*str))
+		str++;
+	if (start == str)
+		return NULL;
+
+	len = str - start;
+	return start;
+}
+
+/*
+ * Returns: -1: error
+ *           0: no change - capability already in table
+ *           1: added flag to capability in table
+ *           2: added new capability
+ */
+static int capable_add_cap(const char *str, int len, unsigned int cap,
+			    capability_flags flag)
+{
+	/* extract name from str so we can treat as a string */
+	autofree char *name = strndup(str, len);
+
+	if (!name) {
+		yyerror(_("Out of memory"));
+		return -1;
+	}
+	struct capability_table *ent = find_cap_entry_by_name(name);
+	if (ent) {
+		if (ent->cap != cap) {
+			pwarn("feature capability '%s:%d' does not equal expected %d. Ignoring ...\n", name, cap, ent->cap);
+			/* TODO: make warn to error config */
+			return 0;
+		}
+		if (ent->flags & flag)
+			return 0;	/* no change */
+		ent->flags = (capability_flags) (ent->flags | flag);
+		return 1;		/* modified */
+	} else {
+		struct capability_table *tmp;
+
+		tmp = (struct capability_table *) reallocarray(cap_table, sizeof(struct capability_table), cap_table_size+1);
+		if (!tmp) {
+			yyerror(_("Out of memory"));
+			/* TODO: change away from yyerror */
+			return -1;
+		}
+		cap_table = tmp;
+		ent = &cap_table[cap_table_size - 1]; /* overwrite null */
+		ent->name = strndup(name, len);
+		if (!ent->name) {
+			/* TODO: change away from yyerror */
+			yyerror(_("Out of memory"));
+			return -1;
+		}
+		ent->cap = cap;
+		ent->flags = flag;
+		cap_table[cap_table_size].name = NULL; /* new null */
+		cap_table_size++;
+	}
+
+	return 2;			/* added */
+}
+
+bool add_cap_feature_mask(struct aa_features *features, capability_flags flags)
+{
+	autofree char *value = NULL;
+	const char *capstr;
+	size_t valuelen, len = 0;
+	int n;
+
+	value = aa_features_value(features, "caps/mask", &valuelen);
+	if (!value)
+		return false;
+
+	n = 0;
+	for (capstr = strn_token(value, len);
+	     capstr;
+	     capstr = strn_token(capstr + len, len)) {
+		if (capable_add_cap(capstr, len, n, flags) < 0)
+			return false;
+		n++;
+		if (len > valuelen) {
+			PDEBUG("caplen is > remaining feature string");
+			return false;
+		}
+		valuelen -= len;
+		PDEBUG("Adding %d capabilities\n", n);
+	}
+
+	return true;
+}
+
+void clear_cap_flag(capability_flags flags)
+{
+	int i;
+
+	for (i = 0; cap_table[i].name; i++) {
+		PDEBUG("Checking %s %s\n", name, cap_table[i].name);
+		cap_table[i].flags = (capability_flags) (cap_table[i].flags & ~flags);
+	}
+}
+
+int name_to_capability(const char *cap)
+{
+	struct capability_table *ent;
+
+	ent = find_cap_entry_by_name(cap);
+	if (ent)
+		return ent->cap;
+
+	PDEBUG("Unable to find %s %s\n", "capability", cap);
+	return -1;
+}
+
+const char *capability_to_name(unsigned int cap)
+{
+	struct capability_table *ent;
+
+	ent = find_cap_entry_by_num(cap);
+	if (ent)
+		return ent->name;
+
+	return "invalid-capability";
+}
+
+int capability_backmap(unsigned int cap)
+{
+	struct capability_table *ent;
+
+	ent = find_cap_entry_by_num(cap);
+	if (ent)
+		return ent->backmap;
+
+	return NO_BACKMAP_CAP;
+}
+
+bool capability_in_kernel(unsigned int cap)
+{
+	struct capability_table *ent;
+
+	ent = find_cap_entry_by_num(cap);
+	if (ent)
+		return ent->flags & CAPFLAG_KERNEL_FEATURE;
+
+	return false;
+}
+
+void __debug_capabilities(uint64_t capset, const char *name)
+{
+	unsigned int i;
+
+	printf("%s:", name);
+
+	for (i = 0; cap_table[i].name; i++) {
+		if ((1ull << cap_table[i].cap) & capset)
+			printf (" %s", cap_table[i].name);
+	}
+	printf("\n");
 }
 
 char *processunquoted(const char *string, int len)
@@ -832,67 +1043,6 @@ void debug_cod_entries(struct cod_entry *list)
 			printf("\tlink:\t(%s)\n", item->link_name ? item->link_name : "/**");
 
 	}
-}
-
-
-static const char *capnames[] = {
-	"chown",
-	"dac_override",
-	"dac_read_search",
-	"fowner",
-	"fsetid",
-	"kill",
-	"setgid",
-	"setuid",
-	"setpcap",
-	"linux_immutable",
-	"net_bind_service",
-	"net_broadcast",
-	"net_admin",
-	"net_raw",
-	"ipc_lock",
-	"ipc_owner",
-	"sys_module",
-	"sys_rawio",
-	"sys_chroot",
-	"sys_ptrace",
-	"sys_pacct",
-	"sys_admin",
-	"sys_boot",
-	"sys_nice",
-	"sys_resource",
-	"sys_time",
-	"sys_tty_config",
-	"mknod",
-	"lease",
-	"audit_write",
-	"audit_control",
-	"setfcap",
-	"mac_override",
-	"syslog",
-};
-
-const char *capability_to_name(unsigned int cap)
-{
-	const char *capname;
-
-	capname = (cap < (sizeof(capnames) / sizeof(char *))
-		   ? capnames[cap] : "invalid-capability");
-
-	return capname;
-}
-
-void __debug_capabilities(uint64_t capset, const char *name)
-{
-	unsigned int i;
-
-	printf("%s:", name);
-	for (i = 0; i < (sizeof(capnames)/sizeof(char *)); i++) {
-		if (((1ull << i) & capset) != 0) {
-			printf (" %s", capability_to_name(i));
-		}
-	}
-	printf("\n");
 }
 
 struct value_list *new_value_list(char *value)

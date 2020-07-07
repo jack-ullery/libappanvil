@@ -32,6 +32,7 @@
 
 /* #define DEBUG */
 
+#include "capability.h"
 #include "lib.h"
 #include "parser.h"
 #include "profile.h"
@@ -299,6 +300,9 @@ list:	 preamble
 			}
 			pwarn(_("%s: File '%s' missing feature abi, falling back to default policy feature abi\n"), progname, current_filename);
 		}
+		if (!add_cap_feature_mask(policy_features,
+					  CAPFLAG_POLICY_FEATURE))
+			yyerror(_("Failed to add policy capabilities to known capabilities set"));
 		set_supported_features();
 
 	}
@@ -1601,10 +1605,15 @@ capability:	TOK_CAPABILITY caps TOK_END_OF_RULE
 caps: { /* nothing */ $$ = 0; }
 	| caps TOK_ID
 	{
-		int cap = name_to_capability($2);
+		int backmap, cap = name_to_capability($2);
 		if (cap == -1)
 			yyerror(_("Invalid capability %s."), $2);
 		free($2);
+		backmap = capability_backmap(cap);
+		if (backmap != NO_BACKMAP_CAP && !capability_in_kernel(cap)) {
+			/* TODO: special backmap warning */
+			cap = backmap;
+		}
 		$$ = $1 | CAP_TO_MASK(cap);
 	}
 

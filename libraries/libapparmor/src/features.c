@@ -643,17 +643,7 @@ bool aa_features_is_equal(aa_features *features1, aa_features *features2)
 	       strcmp(features1->string, features2->string) == 0;
 }
 
-/**
- * aa_features_supports - provides aa_features object support status
- * @features: the features
- * @str: the string representation of a feature to check
- *
- * Example @str values are "dbus/mask/send", "caps/mask/audit_read", and
- * "policy/versions/v7".
- *
- * Returns: a bool specifying the support status of @str feature
- */
-bool aa_features_supports(aa_features *features, const char *str)
+static const char *features_lookup(aa_features *features, const char *str)
 {
 	const char *features_string = features->string;
 	struct component components[32];
@@ -679,10 +669,71 @@ bool aa_features_supports(aa_features *features, const char *str)
 	/* Ensure that all components are valid and found */
 	for (i = 0; i < num_components; i++) {
 		if (!walk_one(&features_string, &components[i], i == 0))
-			return false;
+			return NULL;
 	}
 
+	return features_string;
+}
+
+/**
+ * aa_features_supports - provides aa_features object support status
+ * @features: the features
+ * @str: the string representation of a feature to check
+ *
+ * Example @str values are "dbus/mask/send", "caps/mask/audit_read", and
+ * "policy/versions/v7".
+ *
+ * Returns: a bool specifying the support status of @str feature
+ */
+bool aa_features_supports(aa_features *features, const char *str)
+{
+	const char *value = features_lookup(features, str);
+
+	if (!value)
+		return false;
+
 	return true;
+}
+
+/**
+ * aa_features_value - lookup the value for a give feature
+ * @features: the features
+ * @str: the feature to look up the value for
+ * @len: return: if set length of returned str on success
+ *
+ * Returns: null terminated string or NULL on error with errno set to
+ * ENOENT - @str not found
+ * EISDIR - @str is not a leaf node in the feature tree
+ */
+
+char *aa_features_value(aa_features *features, const char *str, size_t *len)
+{
+	const char *start, *cur = features_lookup(features, str);
+
+	errno = ENOENT;
+	if (!cur)
+		return NULL;
+
+	if (!islbrace(*cur))
+		return NULL;
+	cur++;
+	start = cur;
+
+	while (!isbrace_or_nul(*cur)) {
+		if (!isascii(*cur))
+			return NULL;
+		if (islbrace(*cur)) {
+			/* component is not leaf */
+			errno = EISDIR;
+			return NULL;
+		}
+		cur++;
+	}
+
+	errno = 0;
+	if (len)
+		*len = cur - start;
+	return strndup(start, cur - start);
 }
 
 /**
