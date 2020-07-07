@@ -59,11 +59,11 @@ public:
 	}
 
 	void clear(void) { allow = deny = audit = quiet = 0; }
-	void add(perms_t &rhs)
+	void add(perms_t &rhs, bool filedfa)
 	{
 		deny |= rhs.deny;
 
-		if (!is_merged_x_consistent(allow & ALL_USER_EXEC,
+		if (filedfa && !is_merged_x_consistent(allow & ALL_USER_EXEC,
 					    rhs.allow & ALL_USER_EXEC)) {
 			if ((exact & AA_USER_EXEC_TYPE) &&
 			    !(rhs.exact & AA_USER_EXEC_TYPE)) {
@@ -74,10 +74,10 @@ public:
 					(rhs.allow & AA_USER_EXEC_TYPE);
 			} else
 				throw 1;
-		} else
+		} else if (filedfa)
 			allow |= rhs.allow & AA_USER_EXEC_TYPE;
 
-		if (!is_merged_x_consistent(allow & ALL_OTHER_EXEC,
+		if (filedfa && !is_merged_x_consistent(allow & ALL_OTHER_EXEC,
 					    rhs.allow & ALL_OTHER_EXEC)) {
 			if ((exact & AA_OTHER_EXEC_TYPE) &&
 			    !(rhs.exact & AA_OTHER_EXEC_TYPE)) {
@@ -88,11 +88,13 @@ public:
 					(rhs.allow & AA_OTHER_EXEC_TYPE);
 			} else
 				throw 1;
-		} else
+		} else if (filedfa)
 			allow |= rhs.allow & AA_OTHER_EXEC_TYPE;
 
-
-		allow = (allow | (rhs.allow & ~ALL_AA_EXEC_TYPE));
+		if (filedfa)
+			allow = (allow | (rhs.allow & ~ALL_AA_EXEC_TYPE));
+		else
+			allow |= rhs.allow;
 		audit |= rhs.audit;
 		quiet = (quiet | rhs.quiet);
 
@@ -131,7 +133,7 @@ public:
 	uint32_t allow, deny, audit, quiet, exact;
 };
 
-int accept_perms(NodeSet *state, perms_t &perms);
+int accept_perms(NodeSet *state, perms_t &perms, bool filedfa);
 
 /*
  * ProtoState - NodeSet and ancillery information used to create a state
@@ -195,7 +197,7 @@ struct DiffDag {
  */
 class State {
 public:
-	State(int l, ProtoState &n, State *other):
+	State(int l, ProtoState &n, State *other, bool filedfa):
 		label(l), flags(0), perms(), trans()
 	{
 		int error;
@@ -208,7 +210,7 @@ public:
 		proto = n;
 
 		/* Compute permissions associated with the State. */
-		error = accept_perms(n.anodes, perms);
+		error = accept_perms(n.anodes, perms, filedfa);
 		if (error) {
 			//cerr << "Failing on accept perms " << error << "\n";
 			throw error;
@@ -316,7 +318,7 @@ class DFA {
 	list<State *> work_queue;
 
 public:
-	DFA(Node *root, dfaflags_t flags);
+	DFA(Node *root, dfaflags_t flags, bool filedfa);
 	virtual ~DFA();
 
 	State *match_len(State *state, const char *str, size_t len);
@@ -347,6 +349,7 @@ public:
 	Node *root;
 	State *nonmatching, *start;
 	Partition states;
+	bool filedfa;
 };
 
 void dump_equivalence_classes(ostream &os, map<transchar, transchar> &eq);

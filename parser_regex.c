@@ -557,7 +557,7 @@ static int process_profile_name_xmatch(Profile *prof)
 			}
 		}
 build:
-		prof->xmatch = rules->create_dfa(&prof->xmatch_size, &prof->xmatch_len, dfaflags);
+		prof->xmatch = rules->create_dfa(&prof->xmatch_size, &prof->xmatch_len, dfaflags, true);
 		delete rules;
 		if (!prof->xmatch)
 			return FALSE;
@@ -755,7 +755,7 @@ int process_profile_regex(Profile *prof)
 	if (prof->dfa.rules->rule_count > 0) {
 		int xmatch_len = 0;
 		prof->dfa.dfa = prof->dfa.rules->create_dfa(&prof->dfa.size,
-							    &xmatch_len, dfaflags);
+							    &xmatch_len, dfaflags, true);
 		delete prof->dfa.rules;
 		prof->dfa.rules = NULL;
 		if (!prof->dfa.dfa)
@@ -973,7 +973,7 @@ int process_profile_policydb(Profile *prof)
 	if (prof->policy.rules->rule_count > 0) {
 		int xmatch_len = 0;
 		prof->policy.dfa = prof->policy.rules->create_dfa(&prof->policy.size,
-														  &xmatch_len, dfaflags);
+								  &xmatch_len, dfaflags, false);
 		delete prof->policy.rules;
 
 		prof->policy.rules = NULL;

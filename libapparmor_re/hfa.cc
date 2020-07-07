@@ -309,7 +309,7 @@ State *DFA::add_new_state(NodeSet *anodes, NodeSet *nnodes, State *other)
 
 	ProtoState proto;
 	proto.init(nnodev, anodes);
-	State *state = new State(node_map.size(), proto, other);
+	State *state = new State(node_map.size(), proto, other, filedfa);
 	pair<NodeMap::iterator,bool> x = node_map.insert(proto, state);
 	if (x.second == false) {
 		delete state;
@@ -420,7 +420,7 @@ void DFA::process_work_queue(const char *header, dfaflags_t flags)
 /**
  * Construct a DFA from a syntax tree.
  */
-DFA::DFA(Node *root, dfaflags_t flags): root(root)
+DFA::DFA(Node *root, dfaflags_t flags, bool buildfiledfa): root(root), filedfa(buildfiledfa)
 {
 	diffcount = 0;		/* set by diff_encode */
 	max_range = 256;
@@ -785,7 +785,7 @@ void DFA::minimize(dfaflags_t flags)
 			if (flags & DFA_DUMP_MIN_PARTS)
 				cerr << **i << ", ";
 			(*i)->label = -1;
-			rep->perms.add((*i)->perms);
+			rep->perms.add((*i)->perms, filedfa);
 		}
 		if (rep->perms.is_accept())
 			final_accept++;
@@ -1340,7 +1340,7 @@ static inline int diff_qualifiers(uint32_t perm1, uint32_t perm2)
  * have any exact matches, then they override the execute and safe
  * execute flags.
  */
-int accept_perms(NodeSet *state, perms_t &perms)
+int accept_perms(NodeSet *state, perms_t &perms, bool filedfa)
 {
 	int error = 0;
 	uint32_t exact_match_allow = 0;
@@ -1357,7 +1357,7 @@ int accept_perms(NodeSet *state, perms_t &perms)
 			continue;
 		if (dynamic_cast<ExactMatchFlag *>(match)) {
 			/* exact match only ever happens with x */
-			if (!is_merged_x_consistent(exact_match_allow,
+			if (filedfa && !is_merged_x_consistent(exact_match_allow,
 						    match->flag))
 				error = 1;;
 			exact_match_allow |= match->flag;
@@ -1366,16 +1366,20 @@ int accept_perms(NodeSet *state, perms_t &perms)
 			perms.deny |= match->flag;
 			perms.quiet |= match->audit;
 		} else {
-			if (!is_merged_x_consistent(perms.allow, match->flag))
+			if (filedfa && !is_merged_x_consistent(perms.allow, match->flag))
 				error = 1;
 			perms.allow |= match->flag;
 			perms.audit |= match->audit;
 		}
 	}
 
-	perms.allow |= exact_match_allow & ~(ALL_AA_EXEC_TYPE);
-	perms.audit |= exact_audit & ~(ALL_AA_EXEC_TYPE);
-	
+	if (filedfa) {
+		perms.allow |= exact_match_allow & ~(ALL_AA_EXEC_TYPE);
+		perms.audit |= exact_audit & ~(ALL_AA_EXEC_TYPE);
+	} else {
+		perms.allow |= exact_match_allow;
+		perms.audit |= exact_audit;
+	}
 	if (exact_match_allow & AA_USER_EXEC) {
 		perms.allow = (exact_match_allow & AA_USER_EXEC_TYPE) |
 			(perms.allow & ~AA_USER_EXEC_TYPE);
@@ -1386,10 +1390,10 @@ int accept_perms(NodeSet *state, perms_t &perms)
 			(perms.allow & ~AA_OTHER_EXEC_TYPE);
 		perms.exact |= AA_OTHER_EXEC_TYPE;
 	}
-	if (AA_USER_EXEC & perms.deny)
+	if (filedfa && (AA_USER_EXEC & perms.deny))
 		perms.deny |= AA_USER_EXEC_TYPE;
 
-	if (AA_OTHER_EXEC & perms.deny)
+	if (filedfa && (AA_OTHER_EXEC & perms.deny))
 		perms.deny |= AA_OTHER_EXEC_TYPE;
 
 	perms.allow &= ~perms.deny;
