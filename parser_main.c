@@ -109,8 +109,8 @@ static const char *cacheloc[MAX_CACHE_LOCS];
 static int cacheloc_n = 0;
 static bool print_cache_dir = false;
 
+aa_features *pinned_features = NULL;
 aa_features *policy_features = NULL;
-bool specified_policy_features = false;
 aa_features *kernel_features = NULL;
 
 static const char *config_file = "/etc/apparmor/parser.conf";
@@ -407,6 +407,7 @@ bool early_arg(int c) {
  */
 static int process_arg(int c, char *optarg)
 {
+	struct aa_features *tmp_features = NULL;
 	int count = 0;
 
 	switch (c) {
@@ -529,32 +530,32 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'm':
-		if (policy_features)
-			aa_features_unref(policy_features);
+		if (pinned_features)
+			aa_features_unref(pinned_features);
 		if (kernel_features)
 			aa_features_unref(kernel_features);
-		if (aa_features_new_from_string(&policy_features,
+		if (aa_features_new_from_string(&tmp_features,
 						optarg, strlen(optarg))) {
 			fprintf(stderr,
 				"Failed to parse features string: %m\n");
 			exit(1);
 		}
-		kernel_features = aa_features_ref(policy_features);
-		specified_policy_features = true;
+		kernel_features = aa_features_ref(tmp_features);
+		pinned_features = tmp_features;
 		break;
 	case 'M':
-		if (policy_features)
-			aa_features_unref(policy_features);
+		if (pinned_features)
+			aa_features_unref(pinned_features);
 		if (kernel_features)
 			aa_features_unref(kernel_features);
-		if (aa_features_new(&policy_features, AT_FDCWD, optarg)) {
+		if (aa_features_new(&tmp_features, AT_FDCWD, optarg)) {
 			fprintf(stderr,
 				"Failed to load features from '%s': %m\n",
 				optarg);
 			exit(1);
 		}
-		kernel_features = aa_features_ref(policy_features);
-		specified_policy_features = true;
+		kernel_features = aa_features_ref(tmp_features);
+		pinned_features = tmp_features;
 		break;
 	case 138:
 		if (kernel_features)
@@ -567,21 +568,21 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 139:
-		if (policy_features)
-			aa_features_unref(policy_features);
+		if (pinned_features)
+			aa_features_unref(pinned_features);
 		if (strcmp(optarg, "<kernel>") == 0) {
-			if (aa_features_new_from_kernel(&policy_features)) {
+			if (aa_features_new_from_kernel(&tmp_features)) {
 				fprintf(stderr,
 					"Failed to load kernel features into the policy-features abi: %m\n");
 				exit(1);
 			}
-		} else if (aa_features_new(&policy_features, AT_FDCWD, optarg)) {
+		} else if (aa_features_new(&tmp_features, AT_FDCWD, optarg)) {
 			fprintf(stderr,
 				"Failed to load policy-features from '%s': %m\n",
 				optarg);
 			exit(1);
 		}
-		specified_policy_features = true;
+		pinned_features = tmp_features;
 		break;
 	case 'q':
 		conf_verbose = 0;
@@ -920,11 +921,9 @@ void reset_parser(const char *filename)
 	free_symtabs();
 	free_policies();
 	reset_include_stack(filename);
-	if (!specified_policy_features) {
-		aa_features_unref(policy_features);
-		policy_features = NULL;
-		clear_cap_flag(CAPFLAG_POLICY_FEATURE);
-	}
+	aa_features_unref(policy_features);
+	policy_features = NULL;
+	clear_cap_flag(CAPFLAG_POLICY_FEATURE);
 }
 
 int test_for_dir_mode(const char *basename, const char *linkdir)
