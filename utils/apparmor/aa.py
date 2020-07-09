@@ -187,7 +187,7 @@ def which(file):
         return shutil.which(file)
     env_dirs = os.getenv('PATH').split(':')
     for env_dir in env_dirs:
-        env_path = env_dir + '/' + file
+        env_path = os.path.join(env_dir, file)
         # Test if the path is executable or not
         if os.access(env_path, os.X_OK):
             return env_path
@@ -198,7 +198,7 @@ def get_full_path(original_path):
     path = original_path
     link_count = 0
     if not path.startswith('/'):
-        path = os.getcwd() + '/' + path
+        path = os.path.join(os.getcwd(), path)
     while os.path.islink(path):
         link_count += 1
         if link_count > 64:
@@ -210,7 +210,7 @@ def get_full_path(original_path):
             path = link
         else:
             # Link is relative path
-            path = direc + '/' + link
+            path = os.path.join(direc, link)
     return os.path.realpath(path)
 
 def find_executable(bin_path):
@@ -255,7 +255,7 @@ def get_new_profile_filename(profile):
     else:
         profile = "profile_" + profile
     profile = profile.replace('/', '.')
-    full_profilename = profile_dir + '/' + profile
+    full_profilename = os.path.join(profile_dir, profile)
     return full_profilename
 
 def name_to_prof_filename(prof_filename):
@@ -1432,7 +1432,7 @@ def valid_include(incname):
             if incm == incname:
                 return True
 
-    if incname.startswith('abstractions/') and os.path.isfile(profile_dir + '/' + incname):
+    if incname.startswith('abstractions/') and os.path.isfile(os.path.join(profile_dir, incname)):
         return True
     elif incname.startswith('/') and os.path.isfile(incname):
         return True
@@ -1665,11 +1665,12 @@ def read_profiles(ui_msg=False):
         fatal_error(_("Can't read AppArmor profiles in %s") % profile_dir)
 
     for file in os.listdir(profile_dir):
-        if os.path.isfile(profile_dir + '/' + file):
+        full_file = os.path.join(profile_dir, file)
+        if os.path.isfile(full_file):
             if is_skippable_file(file):
                 continue
             else:
-                read_profile(profile_dir + '/' + file, True)
+                read_profile(full_file, True)
 
 def read_inactive_profiles():
     if hasattr(read_inactive_profiles, 'already_read'):
@@ -1687,11 +1688,12 @@ def read_inactive_profiles():
         fatal_error(_("Can't read AppArmor profiles in %s") % extra_profile_dir)
 
     for file in os.listdir(extra_profile_dir):
-        if os.path.isfile(extra_profile_dir + '/' + file):
+        full_file = os.path.join(extra_profile_dir, file)
+        if os.path.isfile(full_file):
             if is_skippable_file(file):
                 continue
             else:
-                read_profile(extra_profile_dir + '/' + file, False)
+                read_profile(full_file, False)
 
 def read_profile(file, active_profile):
     data = None
@@ -2380,7 +2382,7 @@ def reload(bin_path):
 def get_include_data(filename):
     data = []
     if not filename.startswith('/'):
-        filename = profile_dir + '/' + filename
+        filename = os.path.join(profile_dir, filename)
     if os.path.exists(filename):
         with open_file_read(filename) as f_in:
             data = f_in.readlines()
@@ -2401,8 +2403,8 @@ def include_dir_filelist(include_name):
         path = path.strip()
         if is_skippable_file(path):
             continue
-        if os.path.isfile(include_name + '/' + path):
-            file_name = include_name + '/' + path
+        file_name = os.path.join(include_name, path)
+        if os.path.isfile(file_name):
             files.append(file_name)
 
     return files
@@ -2446,14 +2448,14 @@ def loadincludes():
     for idir in incdirs:
         if is_skippable_dir(idir):
             continue
-        for dirpath, dirname, files in os.walk(profile_dir + '/' + idir):
+        for dirpath, dirname, files in os.walk(os.path.join(profile_dir, idir)):
             if is_skippable_dir(dirpath):
                 continue
             for fi in files:
                 if is_skippable_file(fi):
                     continue
                 else:
-                    fi = dirpath + '/' + fi
+                    fi = os.path.join(dirpath, fi)
                     load_include(fi)
 
 def glob_common(path):
