@@ -35,10 +35,36 @@ EXTRAS_SOURCE=./apparmor/profiles/extras/
 SUBDIRS=$(shell find ${PROFILES_SOURCE} -type d -print)
 TOPLEVEL_PROFILES=$(filter-out ${SUBDIRS}, $(wildcard ${PROFILES_SOURCE}/*))
 
+ifdef USE_SYSTEM
+    PYTHONPATH=
+    PARSER?=apparmor_parser
+    LOGPROF?=aa-logprof
+else
+    # PYTHON_DIST_BUILD_PATH based on libapparmor/swig/python/test/Makefile.am
+    PYTHON_DIST_BUILD_PATH = ../libraries/libapparmor/swig/python/build/$$($(PYTHON) -c "import distutils.util; import platform; print(\"lib.%s-%s\" %(distutils.util.get_platform(), platform.python_version()[:3]))")
+    LD_LIBRARY_PATH=../libraries/libapparmor/src/.libs/
+    PYTHONPATH=../utils/:$(PYTHON_DIST_BUILD_PATH)
+    PARSER?=../parser/apparmor_parser
+    # use ../utils logprof
+    LOGPROF?=PYTHONPATH=../utils $(PYTHON) ../utils/aa-logprof
+endif
+
 # $(PWD) is wrong when using "make -C profiles" - explicitely set it here to get the right value
 PWD=$(shell pwd)
 
-local:
+
+.PHONY: __parser
+__parser:
+ifndef USE_SYSTEM
+	@if [ ! -f $(PARSER) ]; then \
+		echo "error: $(PARSER) is missing. Pick one of these possible solutions:" 1>&2; \
+		echo "  1) Test using the in-tree parser by building it first and then trying again. See the top-level README for help." 1>&2; \
+		echo "  2) Test using the system parser by adding USE_SYSTEM=1 to your make command." 1>&2; \
+		exit 1; \
+	fi
+endif
+
+local: __parser
 	for profile in ${TOPLEVEL_PROFILES}; do \
 		fn=$$(basename $$profile); \
 		echo "# Site-specific additions and overrides for '$$fn'" > ${PROFILES_SOURCE}/local/$$fn; \
@@ -67,16 +93,6 @@ ifndef VERBOSE
   Q=@
 else
   Q=
-endif
-
-ifndef PARSER
-# use system parser
-PARSER=../parser/apparmor_parser
-endif
-
-ifndef LOGPROF
-# use ../utils logprof
-LOGPROF=PYTHONPATH=../utils $(PYTHON) ../utils/aa-logprof
 endif
 
 .PHONY: docs
