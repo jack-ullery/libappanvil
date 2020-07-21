@@ -297,6 +297,7 @@ extern uint32_t kernel_abi_version;
 
 extern aa_features *pinned_features;
 extern aa_features *policy_features;
+extern aa_features *override_features;
 extern aa_features *kernel_features;
 
 extern int force_complain;
