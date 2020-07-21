@@ -26,6 +26,7 @@
   owner @{run}/lightdm/*/xauthority r,
   owner @{run}/user/*/gdm/Xauthority r,
   owner @{run}/user/*/X11/Xauthority r,
+  owner @{run}/user/*/xauth_* r,
 
   # the unix socket to use to connect to the display
   /tmp/.X11-unix/* r,
