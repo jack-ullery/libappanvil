@@ -111,6 +111,7 @@ static bool print_cache_dir = false;
 
 aa_features *pinned_features = NULL;
 aa_features *policy_features = NULL;
+aa_features *override_features = NULL;
 aa_features *kernel_features = NULL;
 
 static const char *config_file = "/etc/apparmor/parser.conf";
@@ -166,6 +167,7 @@ struct option long_options[] = {
 	{"policy-features",	1, 0, 139},	/* no short option */
 	{"compile-features",	1, 0, 139},	/* original name of policy-features */
 	{"print-config-file",	0, 0, 140},	/* no short option */
+	{"override-policy-abi",	1, 0, 142},	/* no short option */
 	{"config-file",		1, 0, EARLY_ARG_CONFIG_FILE},	/* early option, no short option */
 
 	{NULL, 0, 0, 0},
@@ -199,6 +201,7 @@ static void display_usage(const char *command)
 	       "-m n, --match-string n  Use only features n\n"
 	       "-M n, --features-file n Set compile & kernel features to file n\n"
 	       "--policy-features n     Policy features set in file n\n"
+	       "--override-policy-abi n     As policy-features but override ABI rules\n"
 	       "--kernel-features n     Kernel features set in file n\n"
 	       "-n n, --namespace n	Set Namespace for the profile\n"
 	       "-X, --readimpliesX	Map profile read permissions to mr\n"
@@ -583,6 +586,23 @@ static int process_arg(int c, char *optarg)
 			exit(1);
 		}
 		pinned_features = tmp_features;
+		break;
+	case 142:
+		if (override_features)
+			aa_features_unref(override_features);
+		if (strcmp(optarg, "<kernel>") == 0) {
+			if (aa_features_new_from_kernel(&tmp_features)) {
+				fprintf(stderr,
+					"Failed to load kernel features into the policy-features abi: %m\n");
+				exit(1);
+			}
+		} else if (aa_features_new(&tmp_features, AT_FDCWD, optarg)) {
+			fprintf(stderr,
+				"Failed to load policy-features from '%s': %m\n",
+				optarg);
+			exit(1);
+		}
+		override_features = tmp_features;
 		break;
 	case 'q':
 		conf_verbose = 0;

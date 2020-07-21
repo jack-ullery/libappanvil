@@ -291,7 +291,11 @@ void add_local_entry(Profile *prof);
 list:	 preamble
 	{
 		/* make sure abi is setup */
-		if (policy_features == NULL) {
+		if (override_features) {
+			if (policy_features)
+				aa_features_unref(policy_features);
+			policy_features = aa_features_ref(override_features);
+		} else if (policy_features == NULL) {
 			if (pinned_features) {
 				policy_features = aa_features_ref(pinned_features);
 			/* use default feature abi */
