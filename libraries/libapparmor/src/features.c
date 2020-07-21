@@ -240,7 +240,7 @@ static int init_features_hash(aa_features *features)
 	/* portable murmur3 hash
 	 * https://github.com/aappleby/smhasher/wiki/MurmurHash3
 	 */
-	PMurHash32_Process(&hash, &carry, features, len);
+	PMurHash32_Process(&hash, &carry, string, len);
 	hash = PMurHash32_Result(hash, carry, len);
 
 	if (snprintf(features->hash, HASH_SIZE,
