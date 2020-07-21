@@ -110,3 +110,8 @@ shellcheck:
 #  - stage: test
 #  - script:
 #    - cd changehat/pam_apparmor && make check
+
+include:
+  - template: SAST.gitlab-ci.yml
+  - template: Secret-Detection.gitlab-ci.yml
+  - template: Dependency-Scanning.gitlab-ci.yml
