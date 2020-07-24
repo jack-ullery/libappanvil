@@ -52,6 +52,8 @@ endif
 # $(PWD) is wrong when using "make -C profiles" - explicitely set it here to get the right value
 PWD=$(shell pwd)
 
+.PHONY: test-dependencies
+test-dependencies: __parser
 
 .PHONY: __parser
 __parser:
@@ -64,7 +66,7 @@ ifndef USE_SYSTEM
 	fi
 endif
 
-local: __parser
+local:
 	for profile in ${TOPLEVEL_PROFILES}; do \
 		fn=$$(basename $$profile); \
 		echo "# Site-specific additions and overrides for '$$fn'" > ${PROFILES_SOURCE}/local/$$fn; \
@@ -108,7 +110,7 @@ CHECK_ABSTRACTIONS=$(shell find ${ABSTRACTIONS_SOURCE} -type f -print)
 check: check-parser check-logprof check-abstractions.d
 
 .PHONY: check-parser
-check-parser: local
+check-parser: test-dependencies local
 	@echo "*** Checking profiles from ${PROFILES_SOURCE} and ${EXTRAS_SOURCE} against apparmor_parser"
 	$(Q)for profile in ${CHECK_PROFILES} ; do \
 	        [ -n "${VERBOSE}" ] && echo "Testing $${profile}" ; \
@@ -124,7 +126,7 @@ check-parser: local
 	done
 
 .PHONY: check-logprof
-check-logprof: local
+check-logprof: test-dependencies local
 	@echo "*** Checking profiles from ${PROFILES_SOURCE} against logprof"
 	$(Q)${LOGPROF} -d ${PROFILES_SOURCE} -f /dev/null || exit 1
 
