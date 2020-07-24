@@ -53,15 +53,26 @@ endif
 PWD=$(shell pwd)
 
 .PHONY: test-dependencies
-test-dependencies: __parser
+test-dependencies: __parser __libapparmor
 
-.PHONY: __parser
+
+.PHONY: __parser __libapparmor
 __parser:
 ifndef USE_SYSTEM
 	@if [ ! -f $(PARSER) ]; then \
 		echo "error: $(PARSER) is missing. Pick one of these possible solutions:" 1>&2; \
 		echo "  1) Test using the in-tree parser by building it first and then trying again. See the top-level README for help." 1>&2; \
 		echo "  2) Test using the system parser by adding USE_SYSTEM=1 to your make command." 1>&2; \
+		exit 1; \
+	fi
+endif
+
+__libapparmor:
+ifndef USE_SYSTEM
+	@if [ ! -f $(LD_LIBRARY_PATH)libapparmor.so ]; then \
+		echo "error: $(LD_LIBRARY_PATH)libapparmor.so is missing. Pick one of these possible solutions:" 1>&2; \
+		echo "  1) Build against the in-tree libapparmor by building it first and then trying again. See the top-level README for help." 1>&2; \
+		echo "  2) Build against the system libapparmor by adding USE_SYSTEM=1 to your make command." 1>&2; \
 		exit 1; \
 	fi
 endif
