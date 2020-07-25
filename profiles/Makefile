@@ -42,18 +42,22 @@ ifdef USE_SYSTEM
 else
     # PYTHON_DIST_BUILD_PATH based on libapparmor/swig/python/test/Makefile.am
     PYTHON_DIST_BUILD_PATH = ../libraries/libapparmor/swig/python/build/$$($(PYTHON) -c "import distutils.util; import platform; print(\"lib.%s-%s\" %(distutils.util.get_platform(), platform.python_version()[:3]))")
-    LD_LIBRARY_PATH=../libraries/libapparmor/src/.libs/
+    LIBAPPARMOR_PATH=../libraries/libapparmor/src/.libs/
+    LD_LIBRARY_PATH=$(LIBAPPARMOR_PATH):$(PYTHON_DIST_BUILD_PATH)
     PYTHONPATH=../utils/:$(PYTHON_DIST_BUILD_PATH)
     PARSER?=../parser/apparmor_parser
     # use ../utils logprof
-    LOGPROF?=PYTHONPATH=../utils $(PYTHON) ../utils/aa-logprof
+    LOGPROF?=LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) PYTHONPATH=$(PYTHONPATH) $(PYTHON) ../utils/aa-logprof
 endif
 
 # $(PWD) is wrong when using "make -C profiles" - explicitely set it here to get the right value
 PWD=$(shell pwd)
 
+.PHONY: test-dependencies
+test-dependencies: __parser __libapparmor
 
-.PHONY: __parser
+
+.PHONY: __parser __libapparmor
 __parser:
 ifndef USE_SYSTEM
 	@if [ ! -f $(PARSER) ]; then \
@@ -64,7 +68,17 @@ ifndef USE_SYSTEM
 	fi
 endif
 
-local: __parser
+__libapparmor:
+ifndef USE_SYSTEM
+	@if [ ! -f $(LIBAPPARMOR_PATH)libapparmor.so ]; then \
+		echo "error: $(LIBAPPARMOR_PATH)libapparmor.so is missing. Pick one of these possible solutions:" 1>&2; \
+		echo "  1) Build against the in-tree libapparmor by building it first and then trying again. See the top-level README for help." 1>&2; \
+		echo "  2) Build against the system libapparmor by adding USE_SYSTEM=1 to your make command." 1>&2; \
+		exit 1; \
+	fi
+endif
+
+local:
 	for profile in ${TOPLEVEL_PROFILES}; do \
 		fn=$$(basename $$profile); \
 		echo "# Site-specific additions and overrides for '$$fn'" > ${PROFILES_SOURCE}/local/$$fn; \
@@ -108,7 +122,7 @@ CHECK_ABSTRACTIONS=$(shell find ${ABSTRACTIONS_SOURCE} -type f -print)
 check: check-parser check-logprof check-abstractions.d
 
 .PHONY: check-parser
-check-parser: local
+check-parser: test-dependencies local
 	@echo "*** Checking profiles from ${PROFILES_SOURCE} and ${EXTRAS_SOURCE} against apparmor_parser"
 	$(Q)for profile in ${CHECK_PROFILES} ; do \
 	        [ -n "${VERBOSE}" ] && echo "Testing $${profile}" ; \
@@ -124,7 +138,7 @@ check-parser: local
 	done
 
 .PHONY: check-logprof
-check-logprof: local
+check-logprof: test-dependencies local
 	@echo "*** Checking profiles from ${PROFILES_SOURCE} against logprof"
 	$(Q)${LOGPROF} -d ${PROFILES_SOURCE} -f /dev/null || exit 1
 

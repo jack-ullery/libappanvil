@@ -29,7 +29,8 @@ ifdef USE_SYSTEM
 else
     # PYTHON_DIST_BUILD_PATH based on libapparmor/swig/python/test/Makefile.am
     PYTHON_DIST_BUILD_PATH = ../../libraries/libapparmor/swig/python/build/$$($(PYTHON) -c "import distutils.util; import platform; print(\"lib.%s-%s\" %(distutils.util.get_platform(), platform.python_version()[:3]))")
-    LD_LIBRARY_PATH=../../libraries/libapparmor/src/.libs/
+    LIBAPPARMOR_PATH=../../libraries/libapparmor/src/.libs/
+    LD_LIBRARY_PATH=$(LIBAPPARMOR_PATH):$(PYTHON_DIST_BUILD_PATH)
     PYTHONPATH=..:$(PYTHON_DIST_BUILD_PATH)
     CONFDIR=$(CURDIR)
     BASEDIR=../../profiles/apparmor.d
@@ -39,8 +40,8 @@ endif
 .PHONY: __libapparmor __parser
 __libapparmor:
 ifndef USE_SYSTEM
-	@if [ ! -f $(LD_LIBRARY_PATH)libapparmor.so ]; then \
-		echo "error: $(LD_LIBRARY_PATH)libapparmor.so is missing. Pick one of these possible solutions:" 1>&2; \
+	@if [ ! -f $(LIBAPPARMOR_PATH)libapparmor.so ]; then \
+		echo "error: $(LIBAPPARMOR_PATH)libapparmor.so is missing. Pick one of these possible solutions:" 1>&2; \
 		echo "  1) Build against the in-tree libapparmor by building it first and then trying again. See the top-level README for help." 1>&2; \
 		echo "  2) Build against the system libapparmor by adding USE_SYSTEM=1 to your make command." 1>&2; \
 		exit 1; \
