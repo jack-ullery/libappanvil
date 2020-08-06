@@ -43,6 +43,7 @@ aa_features_supports - provides aa_features object support status
 aa_features_id - provides unique identifier for an aa_features object
 
 aa_features_value - the value associated with a given feature.
+
 =head1 SYNOPSIS
 
 B<#include E<lt>sys/apparmor.hE<gt>>
