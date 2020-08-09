@@ -16,8 +16,16 @@
  *   Ltd.
  */
 #include "rule.h"
+#include "parser.h"
+#include <iostream>
 
 std::ostream &operator<<(std::ostream &os, rule_t &rule)
 {
 	return rule.dump(os);
 };
+
+/* do we want to warn once/profile or just once per compile?? */
+void rule_t::warn_once(const char *name, const char *msg)
+{
+    common_warn_once(name, msg, &warned_name);
+}
