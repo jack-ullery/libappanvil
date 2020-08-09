@@ -15,6 +15,7 @@
  *   along with this program; if not, contact Novell, Inc. or Canonical,
  *   Ltd.
  */
+#include <iostream>
 #include <stdlib.h>
 #include <stdarg.h>
 
@@ -119,4 +120,18 @@ void pwarn(const char *fmt, ...)
         va_end(arg);
 
         free(newfmt);
+}
+
+/* do we want to warn once/profile or just once per compile?? */
+void common_warn_once(const char *name, const char *msg, const char **warned_name)
+{
+	if ((warnflags & WARN_RULE_NOT_ENFORCED) && *warned_name != name) {
+		cerr << "Warning from profile " << name << " (";
+		if (current_filename)
+			cerr << current_filename;
+		else
+			cerr << "stdin";
+		cerr << "): " << msg << "\n";
+		*warned_name = name;
+	}
 }
