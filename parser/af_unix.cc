@@ -22,7 +22,6 @@
 
 #include <iomanip>
 #include <string>
-#include <iostream>
 #include <sstream>
 
 #include "network.h"
@@ -158,26 +157,10 @@ int unix_rule::expand_variables(void)
 	return 0;
 }
 
-/* do we want to warn once/profile or just once per compile?? */
-static void warn_once(const char *name, const char *msg)
-{
-	static const char *warned_name = NULL;
 
-	if (warned_name != name) {
-		cerr << "Warning from profile " << name << " (";
-		if (current_filename)
-			cerr << current_filename;
-		else
-			cerr << "stdin";
-		cerr << "): " << msg << "\n";
-		warned_name = name;
-	}
-}
-
-static void warn_once(const char *name)
+void unix_rule::warn_once(const char *name)
 {
-	if (warnflags & WARN_RULE_NOT_ENFORCED)
-		warn_once(name, "extended network unix socket rules not enforced");
+	rule_t::warn_once(name, "extended network unix socket rules not enforced");
 }
 
 static void writeu16(std::ostringstream &o, int v)
@@ -327,7 +310,7 @@ int unix_rule::gen_policy_re(Profile &prof)
 			/* only warn if we are building against a kernel
 			 * that requires downgrading */
 			if (warnflags & WARN_RULE_DOWNGRADED)
-				warn_once(prof.name, "downgrading extended network unix socket rule to generic network rule\n");
+				rule_t::warn_once(prof.name, "downgrading extended network unix socket rule to generic network rule\n");
 			/* TODO: add ability to abort instead of downgrade */
 			return RULE_OK;
 		}

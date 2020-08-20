@@ -22,7 +22,6 @@
 
 #include <iomanip>
 #include <string>
-#include <iostream>
 #include <sstream>
 
 #include "parser.h"
@@ -189,20 +188,9 @@ int dbus_rule::expand_variables(void)
 	return 0;
 }
 
-/* do we want to warn once/profile or just once per compile?? */
-static void warn_once(const char *name)
+void dbus_rule::warn_once(const char *name)
 {
-	static const char *warned_name = NULL;
-
-	if ((warnflags & WARN_RULE_NOT_ENFORCED) && warned_name != name) {
-		cerr << "Warning from profile " << name << " (";
-		if (current_filename)
-			cerr << current_filename;
-		else
-			cerr << "stdin";
-		cerr << ") dbus rules not enforced\n";
-		warned_name = name;
-	}
+	rule_t::warn_once(name, "dbus rules not enforced");
 }
 
 int dbus_rule::gen_policy_re(Profile &prof)
