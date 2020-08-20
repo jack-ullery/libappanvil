@@ -60,7 +60,6 @@
 #define PRIVILEGED_OPS (kernel_load)
 #define UNPRIVILEGED_OPS (!(PRIVILEGED_OPS))
 
-#define EARLY_ARG_CONFIG_FILE 141
 
 const char *parser_title	= "AppArmor parser";
 const char *parser_copyright	= "Copyright (C) 1999-2008 Novell Inc.\nCopyright 2009-2018 Canonical Ltd.";
@@ -109,12 +108,27 @@ static const char *cacheloc[MAX_CACHE_LOCS];
 static int cacheloc_n = 0;
 static bool print_cache_dir = false;
 
+aa_features *pinned_features = NULL;
 aa_features *policy_features = NULL;
-bool specified_policy_features = false;
+aa_features *override_features = NULL;
 aa_features *kernel_features = NULL;
 
 static const char *config_file = "/etc/apparmor/parser.conf";
 
+#define ARG_SKIP_BAD_CACHE		129
+#define ARG_PURGE_CACHE			130
+#define ARG_CREATE_CACHE_DIR		131
+#define ARG_SKIP_BAD_CACHE_REBUILD	132
+#define ARG_DEBUG_CACHE			133
+#define ARG_PRINT_CACHE_DIR		134
+#define ARG_ABORT_ON_ERROR		135
+#define ARG_WARN			136
+#define ARG_MAX_JOBS			137
+#define ARG_KERNEL_FEATURES		138
+#define ARG_POLICY_FEATURES		139
+#define ARG_PRINT_CONFIG_FILE		140
+#define ARG_OVERRIDE_POLICY_ABI		141
+#define EARLY_ARG_CONFIG_FILE		142
 
 /* Make sure to update BOTH the short and long_options */
 static const char *short_options = "ad::f:h::rRVvI:b:BCD:NSm:M:qQn:XKTWkL:O:po:j:";
@@ -153,19 +167,20 @@ struct option long_options[] = {
 	{"Optimize",		1, 0, 'O'},
 	{"preprocess",		0, 0, 'p'},
 	{"jobs",		1, 0, 'j'},
-	{"skip-bad-cache",	0, 0, 129},	/* no short option */
-	{"purge-cache",		0, 0, 130},	/* no short option */
-	{"create-cache-dir",	0, 0, 131},	/* no short option */
-	{"abort-on-error",	0, 0, 132},	/* no short option */
-	{"skip-bad-cache-rebuild",	0, 0, 133},	/* no short option */
-	{"warn",		1, 0, 134},	/* no short option */
-	{"debug-cache",		0, 0, 135},	/* no short option */
-	{"max-jobs",		1, 0, 136},	/* no short option */
-	{"print-cache-dir",	0, 0, 137},	/* no short option */
-	{"kernel-features",	1, 0, 138},	/* no short option */
-	{"policy-features",	1, 0, 139},	/* no short option */
-	{"compile-features",	1, 0, 139},	/* original name of policy-features */
-	{"print-config-file",	0, 0, 140},	/* no short option */
+	{"skip-bad-cache",	0, 0, ARG_SKIP_BAD_CACHE},/* no short option */
+	{"purge-cache",		0, 0, ARG_PURGE_CACHE},	/* no short option */
+	{"create-cache-dir",	0, 0, ARG_CREATE_CACHE_DIR},/* no short option */
+	{"abort-on-error",	0, 0, ARG_ABORT_ON_ERROR},	/* no short option */
+	{"skip-bad-cache-rebuild",	0, 0, ARG_SKIP_BAD_CACHE_REBUILD},/* no short option */
+	{"warn",		1, 0, ARG_WARN},	/* no short option */
+	{"debug-cache",		0, 0, ARG_DEBUG_CACHE},	/* no short option */
+	{"max-jobs",		1, 0, ARG_MAX_JOBS},	/* no short option */
+	{"print-cache-dir",	0, 0, ARG_PRINT_CACHE_DIR},	/* no short option */
+	{"kernel-features",	1, 0, ARG_KERNEL_FEATURES},	/* no short option */
+	{"policy-features",	1, 0, ARG_POLICY_FEATURES},	/* no short option */
+	{"compile-features",	1, 0, ARG_POLICY_FEATURES},	/* original name of policy-features */
+	{"print-config-file",	0, 0, ARG_PRINT_CONFIG_FILE},	/* no short option */
+	{"override-policy-abi",	1, 0, ARG_OVERRIDE_POLICY_ABI},	/* no short option */
 	{"config-file",		1, 0, EARLY_ARG_CONFIG_FILE},	/* early option, no short option */
 
 	{NULL, 0, 0, 0},
@@ -199,6 +214,7 @@ static void display_usage(const char *command)
 	       "-m n, --match-string n  Use only features n\n"
 	       "-M n, --features-file n Set compile & kernel features to file n\n"
 	       "--policy-features n     Policy features set in file n\n"
+	       "--override-policy-abi n     As policy-features but override ABI rules\n"
 	       "--kernel-features n     Kernel features set in file n\n"
 	       "-n n, --namespace n	Set Namespace for the profile\n"
 	       "-X, --readimpliesX	Map profile read permissions to mr\n"
@@ -407,6 +423,7 @@ bool early_arg(int c) {
  */
 static int process_arg(int c, char *optarg)
 {
+	struct aa_features *tmp_features = NULL;
 	int count = 0;
 
 	switch (c) {
@@ -529,34 +546,34 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'm':
-		if (policy_features)
-			aa_features_unref(policy_features);
+		if (pinned_features)
+			aa_features_unref(pinned_features);
 		if (kernel_features)
 			aa_features_unref(kernel_features);
-		if (aa_features_new_from_string(&policy_features,
+		if (aa_features_new_from_string(&tmp_features,
 						optarg, strlen(optarg))) {
 			fprintf(stderr,
 				"Failed to parse features string: %m\n");
 			exit(1);
 		}
-		kernel_features = aa_features_ref(policy_features);
-		specified_policy_features = true;
+		kernel_features = aa_features_ref(tmp_features);
+		pinned_features = tmp_features;
 		break;
 	case 'M':
-		if (policy_features)
-			aa_features_unref(policy_features);
+		if (pinned_features)
+			aa_features_unref(pinned_features);
 		if (kernel_features)
 			aa_features_unref(kernel_features);
-		if (aa_features_new(&policy_features, AT_FDCWD, optarg)) {
+		if (aa_features_new(&tmp_features, AT_FDCWD, optarg)) {
 			fprintf(stderr,
 				"Failed to load features from '%s': %m\n",
 				optarg);
 			exit(1);
 		}
-		kernel_features = aa_features_ref(policy_features);
-		specified_policy_features = true;
+		kernel_features = aa_features_ref(tmp_features);
+		pinned_features = tmp_features;
 		break;
-	case 138:
+	case ARG_KERNEL_FEATURES:
 		if (kernel_features)
 			aa_features_unref(kernel_features);
 		if (aa_features_new(&kernel_features, AT_FDCWD, optarg)) {
@@ -566,22 +583,39 @@ static int process_arg(int c, char *optarg)
 			exit(1);
 		}
 		break;
-	case 139:
-		if (policy_features)
-			aa_features_unref(policy_features);
+	case ARG_POLICY_FEATURES:
+		if (pinned_features)
+			aa_features_unref(pinned_features);
 		if (strcmp(optarg, "<kernel>") == 0) {
-			if (aa_features_new_from_kernel(&policy_features)) {
+			if (aa_features_new_from_kernel(&tmp_features)) {
 				fprintf(stderr,
 					"Failed to load kernel features into the policy-features abi: %m\n");
 				exit(1);
 			}
-		} else if (aa_features_new(&policy_features, AT_FDCWD, optarg)) {
+		} else if (aa_features_new(&tmp_features, AT_FDCWD, optarg)) {
 			fprintf(stderr,
 				"Failed to load policy-features from '%s': %m\n",
 				optarg);
 			exit(1);
 		}
-		specified_policy_features = true;
+		pinned_features = tmp_features;
+		break;
+	case ARG_OVERRIDE_POLICY_ABI:
+		if (override_features)
+			aa_features_unref(override_features);
+		if (strcmp(optarg, "<kernel>") == 0) {
+			if (aa_features_new_from_kernel(&tmp_features)) {
+				fprintf(stderr,
+					"Failed to load kernel features into the policy-features abi: %m\n");
+				exit(1);
+			}
+		} else if (aa_features_new(&tmp_features, AT_FDCWD, optarg)) {
+			fprintf(stderr,
+				"Failed to load policy-features from '%s': %m\n",
+				optarg);
+			exit(1);
+		}
+		override_features = tmp_features;
 		break;
 	case 'q':
 		conf_verbose = 0;
@@ -610,19 +644,19 @@ static int process_arg(int c, char *optarg)
 	case 'T':
 		skip_read_cache = 1;
 		break;
-	case 129:
+	case ARG_SKIP_BAD_CACHE:
 		cond_clear_cache = 0;
 		break;
-	case 130:
+	case ARG_PURGE_CACHE:
 		force_clear_cache = 1;
 		break;
-	case 131:
+	case ARG_CREATE_CACHE_DIR:
 		create_cache_dir = 1;
 		break;
-	case 132:
+	case ARG_ABORT_ON_ERROR:
 		abort_on_error = 1;
 		break;
-	case 133:
+	case ARG_SKIP_BAD_CACHE_REBUILD:
 		skip_bad_cache_rebuild = 1;
 		break;
 	case 'L':
@@ -642,7 +676,7 @@ static int process_arg(int c, char *optarg)
 		preprocess_only = 1;
 		skip_mode_force = 1;
 		break;
-	case 134:
+	case ARG_WARN:
 		if (!handle_flag_table(warnflag_table, optarg,
 				       &warnflags)) {
 			PERROR("%s: Invalid --warn option %s\n",
@@ -650,7 +684,7 @@ static int process_arg(int c, char *optarg)
 			exit(1);
 		}
 		break;
-	case 135:
+	case ARG_DEBUG_CACHE:
 		debug_cache = 1;
 		break;
 	case 'j':
@@ -658,10 +692,10 @@ static int process_arg(int c, char *optarg)
 		if (jobs == 0)
 			jobs_max = 0;
 		break;
-	case 136:
+	case ARG_MAX_JOBS:
 		jobs_max = process_jobs_arg("max-jobs", optarg);
 		break;
-	case 137:
+	case ARG_PRINT_CACHE_DIR:
 		kernel_load = 0;
 		print_cache_dir = true;
 		break;
@@ -672,7 +706,7 @@ static int process_arg(int c, char *optarg)
 			exit(1);
 		}
 		break;
-	case 140:
+	case ARG_PRINT_CONFIG_FILE:
 		printf("%s\n", config_file);
 		break;
 	default:
@@ -920,11 +954,9 @@ void reset_parser(const char *filename)
 	free_symtabs();
 	free_policies();
 	reset_include_stack(filename);
-	if (!specified_policy_features) {
-		aa_features_unref(policy_features);
-		policy_features = NULL;
-		clear_cap_flag(CAPFLAG_POLICY_FEATURE);
-	}
+	aa_features_unref(policy_features);
+	policy_features = NULL;
+	clear_cap_flag(CAPFLAG_POLICY_FEATURE);
 }
 
 int test_for_dir_mode(const char *basename, const char *linkdir)

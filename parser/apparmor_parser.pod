@@ -186,7 +186,13 @@ Set the location of the apparmor security filesystem (default is
 
 =item --policy-features n
 
-Specify the feature set that the policy was developed under.
+Specify the feature set that the policy was developed under. This does
+not override feature ABI rules.
+
+=item --override-policy-abi n
+
+Specify the feature set that the policy was developed under and
+override any feature ABI rules that the policy may be using.
 
 =item --kernel-features n
 

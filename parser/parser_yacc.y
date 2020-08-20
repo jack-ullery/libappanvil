@@ -291,14 +291,22 @@ void add_local_entry(Profile *prof);
 list:	 preamble
 	{
 		/* make sure abi is setup */
-		if (policy_features == NULL) {
+		if (override_features) {
+			if (policy_features)
+				aa_features_unref(policy_features);
+			policy_features = aa_features_ref(override_features);
+		} else if (policy_features == NULL) {
+			if (pinned_features) {
+				policy_features = aa_features_ref(pinned_features);
 			/* use default feature abi */
-			if (aa_features_new_from_string(&policy_features,
-					default_features_abi,
-					strlen(default_features_abi))) {
-				yyerror(_("Failed to setup default policy feature abi"));
+			} else {
+				if (aa_features_new_from_string(&policy_features,
+								default_features_abi,
+								strlen(default_features_abi))) {
+					yyerror(_("Failed to setup default policy feature abi"));
+				}
+				pwarn(_("%s: File '%s' missing feature abi, falling back to default policy feature abi\n"), progname, current_filename);
 			}
-			pwarn(_("%s: File '%s' missing feature abi, falling back to default policy feature abi\n"), progname, current_filename);
 		}
 		if (!add_cap_feature_mask(policy_features,
 					  CAPFLAG_POLICY_FEATURE))
