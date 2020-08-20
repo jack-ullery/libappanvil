@@ -149,6 +149,9 @@ public:
 	virtual int expand_variables(void);
 	virtual int gen_policy_re(Profile &prof);
 	virtual void post_process(Profile &prof unused);
+
+protected:
+	virtual void warn_once(const char *name) override;
 };
 
 int is_valid_mnt_cond(const char *name, int src);

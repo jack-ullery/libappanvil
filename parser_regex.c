@@ -461,16 +461,7 @@ char *get_xattr_value(struct cond_entry *entry)
 static void warn_once_xattr(const char *name)
 {
 	static const char *warned_name = NULL;
-
-	if ((warnflags & WARN_RULE_DOWNGRADED) && warned_name != name) {
-		cerr << "Warning from profile " << name << " (";
-		if (current_filename)
-			cerr << current_filename;
-		else
-			cerr << "stdin";
-		cerr << ") xattr attachment conditional ignored\n";
-		warned_name = name;
-	}
+    common_warn_once(name, "xattr attachment conditional ignored", &warned_name);
 }
 
 static int process_profile_name_xmatch(Profile *prof)

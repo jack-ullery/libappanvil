@@ -38,6 +38,13 @@ public:
 	virtual int expand_variables(void) = 0;
 	virtual int gen_policy_re(Profile &prof) = 0;
 	virtual void post_process(Profile &prof) = 0;
+
+protected:
+	const char *warned_name = NULL;
+	virtual void warn_once(const char *name, const char *msg);
+	virtual void warn_once(const char *name) = 0;
+
+
 };
 
 std::ostream &operator<<(std::ostream &os, rule_t &rule);
