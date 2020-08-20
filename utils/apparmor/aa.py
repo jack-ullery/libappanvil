@@ -956,11 +956,19 @@ def ask_exec(hashlog):
                                 interpreter_path, abstraction = get_interpreter_and_abstraction(exec_target)
 
                                 if interpreter_path:
-                                    aa[profile][hat]['file'].add(FileRule(exec_target,      'r',  None, FileRule.ALL, owner=False))
-                                    aa[profile][hat]['file'].add(FileRule(interpreter_path, None, 'ix', FileRule.ALL, owner=False))
+                                    exec_target_rule = FileRule(exec_target,      'r',  None, FileRule.ALL, owner=False)
+                                    interpreter_rule = FileRule(interpreter_path, None, 'ix', FileRule.ALL, owner=False)
+
+                                    if not is_known_rule(aa[profile][hat], 'file', exec_target_rule):
+                                        aa[profile][hat]['file'].add(exec_target_rule)
+                                    if not is_known_rule(aa[profile][hat], 'file', interpreter_rule):
+                                        aa[profile][hat]['file'].add(interpreter_rule)
 
                                     if abstraction:
-                                        aa[profile][hat]['inc_ie'].add(IncludeRule(abstraction, False, True))
+                                        abstraction_rule = IncludeRule(abstraction, False, True)
+                                        
+                                        if not aa[profile][hat]['inc_ie'].is_covered(abstraction_rule):
+                                            aa[profile][hat]['inc_ie'].add(abstraction_rule)
 
                                     handle_binfmt(aa[profile][hat], interpreter_path)
 
