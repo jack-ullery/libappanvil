@@ -289,12 +289,12 @@ generated_cap_names.h: /usr/include/linux/capability.h
 	../common/list_capabilities.sh | LC_ALL=C sed -n -e "s/[ \\t]\\?CAP_\\([A-Z0-9_]\\+\\)/\{\"\\L\\1\", \\UCAP_\\1, NO_BACKMAP_CAP, CAPFLAG_BASE_FEATURE\},\\n/pg" > $@
 
 cap_names.h: generated_cap_names.h base_cap_names.h
-	@LC_ALL=C sed -e 's/CAP_[A-Z0-9_]\+}/NO_BACKMAP_CAP,/g' base_cap_names.h | diff -u - generated_cap_names.h | grep '^\+[^+]' ; \
+	@LC_ALL=C sed -e 's/\([^,]*,[^,]*,\) CAP_[A-Z0-9_]\+,/\1 NO_BACKMAP_CAP,/g' base_cap_names.h | diff -u - generated_cap_names.h | grep '^\+[^+]' ; \
 	if [ $$? -eq 1 ] ; then \
 		cp base_cap_names.h $@ ; \
 	else \
 		echo "Error: new capabilities detected please update base_cap_names.h with values from generated_cap_names.h" ; \
-		LC_ALL=C sed -e 's/CAP_[A-Z0-9_]\+}/NO_BACKMAP_CAP,/g' base_cap_names.h | diff -u - generated_cap_names.h ; \
+		LC_ALL=C sed -e 's/\([^,]*,[^,]*,\) CAP_[A-Z0-9_]\+,/\1 NO_BACKMAP_CAP,/g' base_cap_names.h | diff -u - generated_cap_names.h ; \
 		exit 1; \
 	fi
 
