@@ -178,6 +178,11 @@ int get_rlimit(const char *name)
 }
 
 
+/*
+ * WARNING: if the format of the following table is changed then
+ *          the Makefile targets, cap_names.h and generated_cap_names.h
+ *          must be updated.
+ */
 struct capability_table {
 	const char *name;
 	unsigned int cap;
