@@ -249,6 +249,7 @@ static void display_usage(const char *command)
 optflag_table_t warnflag_table[] = {
 	{ 0, "rule-not-enforced", "warn if a rule is not enforced", WARN_RULE_NOT_ENFORCED },
 	{ 0, "rule-downgraded", "warn if a rule is downgraded to a lesser but still enforcing rule", WARN_RULE_DOWNGRADED },
+	{ 0, "abi", "warn if there are abi issues in the profile", WARN_ABI },
 	{ 0, NULL, NULL, 0 },
 };
 

@@ -305,7 +305,7 @@ list:	 preamble
 								strlen(default_features_abi))) {
 					yyerror(_("Failed to setup default policy feature abi"));
 				}
-				pwarn(_("%s: File '%s' missing feature abi, falling back to default policy feature abi\n"), progname, current_filename);
+				pwarn_onflag(WARN_ABI, _("%s: File '%s' missing feature abi, falling back to default policy feature abi\n"), progname, current_filename);
 			}
 		}
 		if (!add_cap_feature_mask(policy_features,
@@ -1813,7 +1813,7 @@ static void abi_features(char *filename, bool search)
 	}
 	if (policy_features) {
 		if (!aa_features_is_equal(tmp_features, policy_features)) {
-			pwarn(_("%s: %s features abi '%s' differes from policy declared feature abi, using the features abi declared in policy\n"), progname, current_filename, filename);
+			pwarn_onflag(WARN_ABI, _("%s: %s features abi '%s' differs from policy declared feature abi, using the features abi declared in policy\n"), progname, current_filename, filename);
 		}
 		aa_features_unref(tmp_features);
 	} else {
