@@ -84,7 +84,7 @@ int current_lineno = 1;
 int option = OPTION_ADD;
 
 dfaflags_t dfaflags = (dfaflags_t)(DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE | DFA_CONTROL_MINIMIZE | DFA_CONTROL_DIFF_ENCODE);
-dfaflags_t warnflags = 0;
+dfaflags_t warnflags = DEFAULT_WARNINGS;
 
 const char *progname = __FILE__;
 char *profile_ns = NULL;
@@ -99,7 +99,7 @@ int read_implies_exec = 1;
 int read_implies_exec = 0;
 #endif
 
-void pwarn(const char *fmt, ...)
+void pwarnf(const char *fmt, ...)
 {
         va_list arg;
         char *newfmt;

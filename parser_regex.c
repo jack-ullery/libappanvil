@@ -382,7 +382,7 @@ pattern_t convert_aaregex_to_pcre(const char *aare, int anchor, int glob,
 					/* quoting mark used for something that
 					 * does not need to be quoted; give a
 					 * warning */
-					pwarn("Character %c was quoted "
+					pwarn(WARN_FORMAT, "Character %c was quoted"
 					      "unnecessarily, dropped preceding"
 					      " quote ('\\') character\n",
 					      *sptr);

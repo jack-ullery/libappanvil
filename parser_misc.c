@@ -276,7 +276,7 @@ static int capable_add_cap(const char *str, int len, unsigned int cap,
 	struct capability_table *ent = find_cap_entry_by_name(name);
 	if (ent) {
 		if (ent->cap != cap) {
-			pwarn("feature capability '%s:%d' does not equal expected %d. Ignoring ...\n", name, cap, ent->cap);
+			pwarn(WARN_UNEXPECTED, "feature capability '%s:%d' does not equal expected %d. Ignoring ...\n", name, cap, ent->cap);
 			/* TODO: make warn to error config */
 			return 0;
 		}
@@ -522,7 +522,7 @@ static int warned_uppercase = 0;
 void warn_uppercase(void)
 {
 	if (!warned_uppercase) {
-		pwarn_onflag(WARN_DEPRECATED, _("Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
+		pwarn(WARN_DEPRECATED, _("Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 			"See the apparmor.d(5) manpage for details.\n"));
 		warned_uppercase = 1;
 	}
@@ -598,7 +598,7 @@ reeval:
 
 		case COD_UNSAFE_UNCONFINED_CHAR:
 			tmode = AA_EXEC_UNSAFE;
-			pwarn(_("Unconfined exec qualifier (%c%c) allows some dangerous environment variables "
+			pwarn(WARN_DANGEROUS, _("Unconfined exec qualifier (%c%c) allows some dangerous environment variables "
 				"to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"),
 			      COD_UNSAFE_UNCONFINED_CHAR, COD_EXEC_CHAR);
 			/* fall through */

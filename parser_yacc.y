@@ -305,7 +305,7 @@ list:	 preamble
 								strlen(default_features_abi))) {
 					yyerror(_("Failed to setup default policy feature abi"));
 				}
-				pwarn_onflag(WARN_ABI, _("%s: File '%s' missing feature abi, falling back to default policy feature abi\n"), progname, current_filename);
+				pwarn(WARN_ABI, _("%s: File '%s' missing feature abi, falling back to default policy feature abi\n"), progname, current_filename);
 			}
 		}
 		if (!add_cap_feature_mask(policy_features,
@@ -358,7 +358,7 @@ profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE
 			 * --namespace-string command line option
 			 */
 			if (prof->ns && strcmp(prof->ns, profile_ns))
-				pwarn("%s: -n %s overriding policy specified namespace :%s:\n",
+				pwarn(WARN_OVERRIDE, "%s: -n %s overriding policy specified namespace :%s:\n",
 				      progname, profile_ns, prof->ns);
 
 			free(prof->ns);
@@ -401,7 +401,7 @@ profile:  opt_profile_flag profile_base
 			PDEBUG("Matched: %s { ... }\n", $2->name);
 
 		if ($2->name[0] == '/')
-			pwarn_onflag(WARN_DEPRECATED, _("The use of file paths as profile names is deprecated. See man apparmor.d for more information\n"));
+			pwarn(WARN_DEPRECATED, _("The use of file paths as profile names is deprecated. See man apparmor.d for more information\n"));
 
 		if ($2->name[0] != '/' && !($1 || $2->ns))
 			yyerror(_("Profile names must begin with a '/', namespace or keyword 'profile' or 'hat'."));
@@ -951,7 +951,7 @@ rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE opt_id TOK_END_OF_RULE
 				else if (tmp < 0LL)
 					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
 				if (!$7)
-					pwarn(_("RLIMIT 'cpu' no units specified using default units of seconds\n"));
+					pwarn(WARN_MISSING, _("RLIMIT 'cpu' no units specified using default units of seconds\n"));
 				value = tmp;
 				break;
 #ifdef RLIMIT_RTTIME
@@ -963,7 +963,7 @@ rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE opt_id TOK_END_OF_RULE
 				if (tmp < 0LL)
 					yyerror("RLIMIT '%s' invalid value %s %s\n", $4, $6, $7 ? $7 : "");
 				if (!$7)
-					pwarn(_("RLIMIT 'rttime' no units specified using default units of microseconds\n"));
+					pwarn(WARN_MISSING, _("RLIMIT 'rttime' no units specified using default units of microseconds\n"));
 				value = tmp;
 				break;
 #endif
@@ -1570,9 +1570,8 @@ change_profile: TOK_CHANGE_PROFILE opt_exec_mode opt_id opt_named_transition TOK
 			if (exec_mode == EXEC_MODE_UNSAFE)
 				mode |= ALL_AA_EXEC_UNSAFE;
 			else if (exec_mode == EXEC_MODE_SAFE &&
-				 !features_supports_stacking &&
-				 warnflags & WARN_RULE_DOWNGRADED) {
-				pwarn("downgrading change_profile safe rule to unsafe due to lack of necessary kernel support\n");
+				 !features_supports_stacking) {
+				pwarn(WARN_RULE_DOWNGRADED, "downgrading change_profile safe rule to unsafe due to lack of necessary kernel support\n");
 				/**
 				 * No need to do anything because 'unsafe' exec
 				 * mode is the only supported mode of
@@ -1813,7 +1812,7 @@ static void abi_features(char *filename, bool search)
 	}
 	if (policy_features) {
 		if (!aa_features_is_equal(tmp_features, policy_features)) {
-			pwarn_onflag(WARN_ABI, _("%s: %s features abi '%s' differs from policy declared feature abi, using the features abi declared in policy\n"), progname, current_filename, filename);
+			pwarn(WARN_ABI, _("%s: %s features abi '%s' differs from policy declared feature abi, using the features abi declared in policy\n"), progname, current_filename, filename);
 		}
 		aa_features_unref(tmp_features);
 	} else {

@@ -80,7 +80,6 @@ int skip_mode_force = 0;
 int abort_on_error = 0;			/* stop processing profiles if error */
 int skip_bad_cache_rebuild = 0;
 int mru_skip_cache = 1;
-int debug_cache = 0;
 
 /* for jobs_max and jobs
  * LONG_MAX : no limit
@@ -251,7 +250,17 @@ optflag_table_t warnflag_table[] = {
 	{ 0, "rule-downgraded", "warn if a rule is downgraded to a lesser but still enforcing rule", WARN_RULE_DOWNGRADED },
 	{ 0, "abi", "warn if there are abi issues in the profile", WARN_ABI },
 	{ 0, "deprecated", "warn if something in the profile is deprecated", WARN_DEPRECATED },
+	{ 0, "config", "enable configuration warnings", WARN_CONFIG },
+	{ 0, "cache", "enable regular cache warnings", WARN_CACHE },
+	{ 0, "debug-cache", "enable warnings for debug cache file checks", WARN_DEBUG_CACHE },
+	{ 0, "jobs", "enable job control warnings", WARN_JOBS },
+	{ 0, "dangerous", "warn on dangerous policy", WARN_DANGEROUS },
+	{ 0, "unexpected", "warn when an unexpected condition is found", WARN_UNEXPECTED },
+	{ 0, "format", "warn on unnecessary or confusing formating", WARN_FORMAT },
+	{ 0, "missing", "warn when missing qualifier and a default is used", WARN_MISSING },
+	{ 0, "override", "warn when overriding", WARN_OVERRIDE },
 	{ 0, "dev", "turn on warnings that are useful for profile development", WARN_DEV },
+	{ 0, "all", "turn on all warnings", WARN_ALL},
 	{ 0, NULL, NULL, 0 },
 };
 
@@ -688,7 +697,7 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case ARG_DEBUG_CACHE:
-		debug_cache = 1;
+		warnflags |= WARN_DEBUG_CACHE;
 		break;
 	case 'j':
 		jobs = process_jobs_arg("-j", optarg);
@@ -766,7 +775,7 @@ static int process_config_file(const char *name)
 
 	f = fopen(name, "r");
 	if (!f) {
-		pwarn("config file '%s' not found\n", name);
+		pwarn(WARN_CONFIG, "config file '%s' not found\n", name);
 		return 0;
 	}
 
@@ -1001,7 +1010,7 @@ int process_profile(int option, aa_kernel_interface *kernel_interface,
 		}
 	} else {
 		if (write_cache)
-			pwarn("%s: cannot use or update cache, disable, or force-complain via stdin\n", progname);
+			pwarn(WARN_CACHE, "%s: cannot use or update cache, disable, or force-complain via stdin\n", progname);
 		skip_cache = write_cache = 0;
 	}
 
@@ -1034,7 +1043,7 @@ int process_profile(int option, aa_kernel_interface *kernel_interface,
 								basename,
 								O_RDONLY);
 				if (fd != -1)
-					pwarn(_("Could not get cachename for '%s'\n"), basename);
+					pwarn(WARN_CACHE, _("Could not get cachename for '%s'\n"), basename);
 			} else {
 				valid_read_cache(cachename);
 			}
@@ -1107,12 +1116,12 @@ int process_profile(int option, aa_kernel_interface *kernel_interface,
 	if (pc && write_cache && !force_complain) {
 		writecachename = cache_filename(pc, 0, basename);
 		if (!writecachename) {
-			pwarn("Cache write disabled: Cannot create cache file name '%s': %m\n", basename);
+			pwarn(WARN_CACHE, "Cache write disabled: Cannot create cache file name '%s': %m\n", basename);
 			write_cache = 0;
 		}
 		cachetmp = setup_cache_tmp(&cachetmpname, writecachename);
 		if (cachetmp == -1) {
-			pwarn("Cache write disabled: Cannot create setup tmp cache file '%s': %m\n", writecachename);
+			pwarn(WARN_CACHE, "Cache write disabled: Cannot create setup tmp cache file '%s': %m\n", writecachename);
 			write_cache = 0;
 		}
 	}
@@ -1121,7 +1130,7 @@ int process_profile(int option, aa_kernel_interface *kernel_interface,
 	if (retval == 0 && write_cache) {
 		if (cachetmp == -1) {
 			unlink(cachetmpname);
-			pwarn("Warning failed to create cache: %s\n",
+			pwarn(WARN_CACHE, "Warning failed to create cache: %s\n",
 			       basename);
 		} else {
 			install_cache(cachetmpname, writecachename);
@@ -1259,7 +1268,7 @@ static void setup_parallel_compile(void)
 	jobs_max = compute_jobs(maxn, jobs_max);
 
 	if (jobs > jobs_max) {
-		pwarn("%s: Warning capping number of jobs to %ld * # of cpus == '%ld'",
+		pwarn(WARN_JOBS, "%s: Warning capping number of jobs to %ld * # of cpus == '%ld'",
 		      progname, jobs_max, jobs);
 		jobs = jobs_max;
 	} else if (jobs < jobs_max)
@@ -1429,7 +1438,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (create_cache_dir)
-			pwarn_onflag(WARN_DEPRECATED, _("The --create-cache-dir option is deprecated. Please use --write-cache.\n"));
+			pwarn(WARN_DEPRECATED, _("The --create-cache-dir option is deprecated. Please use --write-cache.\n"));
 		retval = aa_policy_cache_new(&policy_cache, kernel_features,
 					     AT_FDCWD, cacheloc[0], max_caches);
 		if (retval) {
@@ -1454,9 +1463,9 @@ int main(int argc, char *argv[])
 			for (i = 1; i < cacheloc_n; i++) {
 				if (aa_policy_cache_add_ro_dir(policy_cache, AT_FDCWD,
 							       cacheloc[i])) {
-					pwarn("Cache: failed to add read only location '%s', does not contain valid cache directory for the specified feature set\n", cacheloc[i]);
+					pwarn(WARN_CACHE, "Cache: failed to add read only location '%s', does not contain valid cache directory for the specified feature set\n", cacheloc[i]);
 				} else if (show_cache)
-					pwarn("Cache: added readonly location '%s'\n", cacheloc[i]);
+					pwarn(WARN_CACHE, "Cache: added readonly location '%s'\n", cacheloc[i]);
 			}
 		}
 	}
