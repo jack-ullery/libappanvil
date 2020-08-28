@@ -128,6 +128,7 @@ static const char *config_file = "/etc/apparmor/parser.conf";
 #define ARG_PRINT_CONFIG_FILE		140
 #define ARG_OVERRIDE_POLICY_ABI		141
 #define EARLY_ARG_CONFIG_FILE		142
+#define ARG_WERROR			143
 
 /* Make sure to update BOTH the short and long_options */
 static const char *short_options = "ad::f:h::rRVvI:b:BCD:NSm:M:qQn:XKTWkL:O:po:j:";
@@ -172,6 +173,7 @@ struct option long_options[] = {
 	{"abort-on-error",	0, 0, ARG_ABORT_ON_ERROR},	/* no short option */
 	{"skip-bad-cache-rebuild",	0, 0, ARG_SKIP_BAD_CACHE_REBUILD},/* no short option */
 	{"warn",		1, 0, ARG_WARN},	/* no short option */
+	{"Werror",		2, 0, ARG_WERROR},
 	{"debug-cache",		0, 0, ARG_DEBUG_CACHE},	/* no short option */
 	{"max-jobs",		1, 0, ARG_MAX_JOBS},	/* no short option */
 	{"print-cache-dir",	0, 0, ARG_PRINT_CACHE_DIR},	/* no short option */
@@ -242,6 +244,7 @@ static void display_usage(const char *command)
 	       "--config-file n		Specify the parser config file location, processed early before other options.\n"
 	       "--print-config		Print config file location\n"
 	       "--warn n		Enable warnings (see --help=warn)\n"
+	       "--Werror [n]		Convert warnings to errors. If n is specified turn warn n into an error\n"
 	       ,command);
 }
 
@@ -471,7 +474,8 @@ static int process_arg(int c, char *optarg)
 			   strcmp(optarg, "optimize") == 0 ||
 			   strcmp(optarg, "O") == 0) {
 			display_optimize(progname);
-		} else if (strcmp(optarg, "warn") == 0) {
+		} else if (strcmp(optarg, "warn") == 0 ||
+			   strcmp(optarg, "Werror") == 0) {
 			display_warn(progname);
 		} else {
 			PERROR("%s: Invalid --help option %s\n",
@@ -692,6 +696,16 @@ static int process_arg(int c, char *optarg)
 		if (!handle_flag_table(warnflag_table, optarg,
 				       &warnflags)) {
 			PERROR("%s: Invalid --warn option %s\n",
+			       progname, optarg);
+			exit(1);
+		}
+		break;
+	case ARG_WERROR:
+		if (!optarg) {
+			werrflags = -1;
+		} else if (optarg && !handle_flag_table(warnflag_table, optarg,
+					      &werrflags)) {
+			PERROR("%s: Invalid --Werror option %s\n",
 			       progname, optarg);
 			exit(1);
 		}

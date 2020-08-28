@@ -295,13 +295,26 @@ Report on the profiles as they are loaded, and show warnings.
 
 =item --warn=n
 
-Enable various warnings during policy compilation. A single dump flag
+Enable various warnings during policy compilation. A single warn flag
 can be specified per --warn option, but the --warn flag can be passed
 multiple times.
 
   apparmor_parser --warn=rules-not-enforced ...
 
 Use --help=warn to see a full list of which warn flags are supported.
+
+=item --Werror[=n]
+
+Convert warnings into errors during policy compilation. If the
+optional flag is not specified all warnings become errors. If the
+optional flag is specified only the class of warnings specified will
+become errors. A single flag can be specified per --Werror option, but
+the --Werror flag can be passed multiple times.
+
+  apparmor_parser --Werror=deprecated ...
+
+Use --help=warn or --help=Werror to see a full list of which warn flags
+are supported.
 
 =item -d, --debug
 

@@ -79,6 +79,7 @@ extern int parser_token;
 		  WARN_UNEXPECTED | WARN_FORMAT | WARN_MISSING | WARN_OVERRIDE)
 
 extern dfaflags_t warnflags;
+extern dfaflags_t werrflags;
 
 
 typedef enum pattern_t pattern_t;
@@ -351,10 +352,10 @@ extern char *profile_ns;
 extern char *current_filename;
 extern FILE *ofile;
 extern int read_implies_exec;
-extern void pwarnf(const char *fmt, ...) __attribute__((__format__(__printf__, 1, 2)));
+extern void pwarnf(bool werr, const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
 extern void common_warn_once(const char *name, const char *msg, const char **warned_name);
 
-#define pwarn(F, args...) do { if (warnflags & (F)) pwarnf(args); } while (0)
+#define pwarn(F, args...) do { if (warnflags & (F)) pwarnf((werrflags & (F)), ## args); } while (0)
 
 /* from parser_main (cannot be used in tst builds) */
 extern int force_complain;
