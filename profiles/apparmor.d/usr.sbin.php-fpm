@@ -36,8 +36,8 @@ profile php-fpm /usr/sbin/php-fpm* flags=(attach_disconnected) {
   /var/log/php*-fpm.log rw,
 
   # we need to be able to create all sockets
-  /run/php/php*-fpm.pid rw,
-  /run/php/php*-fpm.sock rwlk,
+  @{run}/php{,-fpm}/php*-fpm.pid rw,
+  @{run}/php{,-fpm}/php*-fpm.sock rwlk,
 
   # to reload
   /usr/sbin/php-fpm* rix,
