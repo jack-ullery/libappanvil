@@ -85,6 +85,7 @@ int option = OPTION_ADD;
 
 dfaflags_t dfaflags = (dfaflags_t)(DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE | DFA_CONTROL_MINIMIZE | DFA_CONTROL_DIFF_ENCODE);
 dfaflags_t warnflags = DEFAULT_WARNINGS;
+dfaflags_t werrflags = 0;
 
 const char *progname = __FILE__;
 char *profile_ns = NULL;
@@ -99,7 +100,7 @@ int read_implies_exec = 1;
 int read_implies_exec = 0;
 #endif
 
-void pwarnf(const char *fmt, ...)
+void pwarnf(bool werr, const char *fmt, ...)
 {
         va_list arg;
         char *newfmt;
@@ -107,7 +108,8 @@ void pwarnf(const char *fmt, ...)
         if (conf_quiet || names_only || option == OPTION_REMOVE)
                 return;
 
-        if (asprintf(&newfmt, _("Warning from %s (%s%sline %d): %s"),
+        if (asprintf(&newfmt, _("%s from %s (%s%sline %d): %s"),
+		     werr ? _("Warning converted to Error") : _("Warning"),
 		     profilename ? profilename : "stdin",
 		     current_filename ? current_filename : "",
 		     current_filename ? " " : "",
@@ -120,13 +122,22 @@ void pwarnf(const char *fmt, ...)
         va_end(arg);
 
         free(newfmt);
+
+	if (werr) {
+		fflush(stderr);
+		exit(1);
+	}
 }
 
 /* do we want to warn once/profile or just once per compile?? */
 void common_warn_once(const char *name, const char *msg, const char **warned_name)
 {
 	if ((warnflags & WARN_RULE_NOT_ENFORCED) && *warned_name != name) {
-		cerr << "Warning from profile " << name << " (";
+		if (werrflags & WARN_RULE_NOT_ENFORCED)
+			cerr << "Warning converted to Error";
+		else
+			cerr << "Warning";
+		cerr << " from profile " << name << " (";
 		if (current_filename)
 			cerr << current_filename;
 		else
@@ -134,4 +145,7 @@ void common_warn_once(const char *name, const char *msg, const char **warned_nam
 		cerr << "): " << msg << "\n";
 		*warned_name = name;
 	}
+
+	if (werrflags & WARN_RULE_NOT_ENFORCED)
+		exit(1);
 }
