@@ -401,7 +401,7 @@ profile:  opt_profile_flag profile_base
 			PDEBUG("Matched: %s { ... }\n", $2->name);
 
 		if ($2->name[0] == '/')
-			pwarn(_("The use of file paths as profile names is deprecated. See man apparmor.d for more information\n"));
+			pwarn_onflag(WARN_DEPRECATED, _("The use of file paths as profile names is deprecated. See man apparmor.d for more information\n"));
 
 		if ($2->name[0] != '/' && !($1 || $2->ns))
 			yyerror(_("Profile names must begin with a '/', namespace or keyword 'profile' or 'hat'."));

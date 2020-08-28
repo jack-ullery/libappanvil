@@ -55,6 +55,7 @@ extern int parser_token;
 #define WARN_RULE_NOT_ENFORCED	1
 #define WARN_RULE_DOWNGRADED	2
 #define WARN_ABI		4
+#define WARN_DEPRECATED		8
 
 extern dfaflags_t warnflags;
 
