@@ -251,6 +251,7 @@ optflag_table_t warnflag_table[] = {
 	{ 0, "rule-downgraded", "warn if a rule is downgraded to a lesser but still enforcing rule", WARN_RULE_DOWNGRADED },
 	{ 0, "abi", "warn if there are abi issues in the profile", WARN_ABI },
 	{ 0, "deprecated", "warn if something in the profile is deprecated", WARN_DEPRECATED },
+	{ 0, "dev", "turn on warnings that are useful for profile development", WARN_DEV },
 	{ 0, NULL, NULL, 0 },
 };
 
