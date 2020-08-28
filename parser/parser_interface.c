@@ -471,7 +471,7 @@ void sd_serialize_profile(std::ostringstream &buf, Profile *profile,
 		}
 		sd_write_arrayend(buf);
 	} else if (profile->net.allow && (warnflags & WARN_RULE_NOT_ENFORCED))
-		pwarn(_("profile %s network rules not enforced\n"), profile->name);
+		pwarn(WARN_RULE_NOT_ENFORCED, _("profile %s network rules not enforced\n"), profile->name);
 
 	if (profile->policy.dfa) {
 		sd_write_struct(buf, "policydb");
