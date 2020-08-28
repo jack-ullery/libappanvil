@@ -54,6 +54,7 @@ extern int parser_token;
 
 #define WARN_RULE_NOT_ENFORCED	1
 #define WARN_RULE_DOWNGRADED	2
+#define WARN_ABI		4
 
 extern dfaflags_t warnflags;
 
@@ -330,6 +331,8 @@ extern FILE *ofile;
 extern int read_implies_exec;
 extern void pwarn(const char *fmt, ...) __attribute__((__format__(__printf__, 1, 2)));
 extern void common_warn_once(const char *name, const char *msg, const char **warned_name);
+
+#define pwarn_onflag(F, args...) do { if (warnflags & (F)) pwarn(args); } while (0)
 
 /* from parser_main (cannot be used in tst builds) */
 extern int force_complain;
