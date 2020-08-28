@@ -46,10 +46,10 @@ profile php-fpm /usr/sbin/php-fpm* flags=(attach_disconnected) {
   deny / rw,
 
   # allow sending signals to our subprocesses
-  signal (send) peer=/usr/sbin/php-fpm*//*,
+  signal (send) peer=php-fpm//*,
 
   # allow switching processes to those subprofiles
-  change_profile /usr/sbin/php-fpm*//*,
+  change_profile -> php-fpm//*,
 
   # load all files from this directory
   # store your configurations per pool in this dir
