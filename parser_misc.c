@@ -522,7 +522,7 @@ static int warned_uppercase = 0;
 void warn_uppercase(void)
 {
 	if (!warned_uppercase) {
-		pwarn(_("Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
+		pwarn_onflag(WARN_DEPRECATED, _("Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 			"See the apparmor.d(5) manpage for details.\n"));
 		warned_uppercase = 1;
 	}

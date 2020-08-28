@@ -250,6 +250,7 @@ optflag_table_t warnflag_table[] = {
 	{ 0, "rule-not-enforced", "warn if a rule is not enforced", WARN_RULE_NOT_ENFORCED },
 	{ 0, "rule-downgraded", "warn if a rule is downgraded to a lesser but still enforcing rule", WARN_RULE_DOWNGRADED },
 	{ 0, "abi", "warn if there are abi issues in the profile", WARN_ABI },
+	{ 0, "deprecated", "warn if something in the profile is deprecated", WARN_DEPRECATED },
 	{ 0, NULL, NULL, 0 },
 };
 
@@ -1427,7 +1428,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (create_cache_dir)
-			pwarn(_("The --create-cache-dir option is deprecated. Please use --write-cache.\n"));
+			pwarn_onflag(WARN_DEPRECATED, _("The --create-cache-dir option is deprecated. Please use --write-cache.\n"));
 		retval = aa_policy_cache_new(&policy_cache, kernel_features,
 					     AT_FDCWD, cacheloc[0], max_caches);
 		if (retval) {
