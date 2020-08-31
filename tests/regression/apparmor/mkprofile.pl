@@ -101,6 +101,10 @@ sub gen_default_rules() {
 
   # give every profile access to /dev/urandom (propolice, etc.)
   gen_file("/dev/urandom:r");
+
+  # give every profile access to FIPS hmac files in /lib and /usr/lib
+  gen_file("/{usr/,}lib{,32,64}/.lib*.so*.hmac:r");
+  gen_file("/{usr/,}lib/{,**/}.lib*.so*.hmac:r");
 }
 
 sub gen_elf_binary($) {
