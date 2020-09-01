@@ -490,9 +490,11 @@ int mnt_rule::expand_variables(void)
 	error = expand_entry_variables(&mnt_point);
 	if (error)
 		return error;
+	filter_slashes(mnt_point);
 	error = expand_entry_variables(&device);
 	if (error)
 		return error;
+	filter_slashes(device);
 	error = expand_entry_variables(&trans);
 	if (error)
 		return error;
