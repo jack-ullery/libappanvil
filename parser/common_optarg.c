@@ -112,10 +112,28 @@ void print_flag_table(optflag_table_t *table)
 			longest = strlen(table[i].option);
 	}
 
+	printf("%-*s \t%s\n", longest, "     show", "show flags that have been set and exit");
 	for (i = 0; table[i].option; i++) {
 		printf("%5s%-*s \t%s\n", (table[i].control & 1) ? "[no-]" : "",
 		       longest, table[i].option, table[i].desc);
 	}
+}
+
+void print_flags(const char *prefix, optflag_table_t *table, dfaflags_t flags)
+{
+	int i, count = 0;
+
+	printf("%s=", prefix);
+	for (i = 0; table[i].option; i++) {
+		if ((table[i].flags & flags) == table[i].flags) {
+			if (count)
+				printf(", ");
+			printf("%s", table[i].option);
+			count++;
+		}
+	}
+	if (count)
+		printf("\n");
 }
 
 int handle_flag_table(optflag_table_t *table, const char *optarg,

@@ -536,6 +536,8 @@ static int process_arg(int c, char *optarg)
 		skip_read_cache = 1;
 		if (!optarg) {
 			dump_vars = 1;
+		} else if (strcmp(optarg, "show") == 0) {
+			print_flags("dump", dumpflag_table, dfaflags);
 		} else if (strcmp(optarg, "variables") == 0) {
 			dump_vars = 1;
 		} else if (strcmp(optarg, "expanded-variables") == 0) {
@@ -548,7 +550,9 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'O':
-		if (!handle_flag_table(optflag_table, optarg,
+		if (strcmp(optarg, "show") == 0) {
+			print_flags("Optimize", optflag_table, dfaflags);
+		} else if (!handle_flag_table(optflag_table, optarg,
 				       &dfaflags)) {
 			PERROR("%s: Invalid --Optimize option %s\n",
 			       progname, optarg);
@@ -687,7 +691,9 @@ static int process_arg(int c, char *optarg)
 		skip_mode_force = 1;
 		break;
 	case ARG_WARN:
-		if (!handle_flag_table(warnflag_table, optarg,
+		if (strcmp(optarg, "show") == 0) {
+			print_flags("warn", warnflag_table, warnflags);
+		} else if (!handle_flag_table(warnflag_table, optarg,
 				       &warnflags)) {
 			PERROR("%s: Invalid --warn option %s\n",
 			       progname, optarg);
