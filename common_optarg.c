@@ -169,10 +169,10 @@ void flagtable_help(const char *name, const char *header, const char *command,
 		    optflag_table_t *table)
 {
 	display_version();
-	printf("\n%s: --%s [Option]\n\n"
+	printf("\n%s: %s[Option]\n\n"
 	       "%s"
 	       "Options:\n"
 	       "--------\n"
-	       ,name, command, header);
+	       ,command, name, header);
 	print_flag_table(table);
 }

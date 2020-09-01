@@ -462,15 +462,15 @@ static int process_arg(int c, char *optarg)
 		} else if (strcmp(optarg, "Dump") == 0 ||
 			   strcmp(optarg, "dump") == 0 ||
 			   strcmp(optarg, "D") == 0) {
-			flagtable_help("dump", DUMP_HEADER, progname,
+			flagtable_help("--dump=", DUMP_HEADER, progname,
 				       dumpflag_table);
 		} else if (strcmp(optarg, "Optimize") == 0 ||
 			   strcmp(optarg, "optimize") == 0 ||
 			   strcmp(optarg, "O") == 0) {
-			flagtable_help("-O", "", progname, optflag_table);
+			flagtable_help("-O ", "", progname, optflag_table);
 		} else if (strcmp(optarg, "warn") == 0 ||
 			   strcmp(optarg, "Werror") == 0) {
-			flagtable_help("warn", "", progname, warnflag_table);
+			flagtable_help("--warn=", "", progname, warnflag_table);
 		} else {
 			PERROR("%s: Invalid --help option %s\n",
 			       progname, optarg);
