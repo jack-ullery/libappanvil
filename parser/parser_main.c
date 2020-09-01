@@ -267,16 +267,6 @@ optflag_table_t warnflag_table[] = {
 	{ 0, NULL, NULL, 0 },
 };
 
-void display_warn(const char *command)
-{
-	display_version();
-	printf("\n%s: --warn [Option]\n\n"
-	       "Options:\n"
-	       "--------\n"
-	       ,command);
-	print_flag_table(warnflag_table);
-}
-
 /* Parse comma separated cachelocations. Commas can be escaped by \, */
 static int parse_cacheloc(const char *arg, const char **cacheloc, int max_size)
 {
@@ -436,6 +426,9 @@ bool early_arg(int c) {
 /* process a single argment from getopt_long
  * Returns: 1 if an action arg, else 0
  */
+#define DUMP_HEADER "     variables      \tDump variables\n" \
+	            "     expanded-variables\t Dump variables after expansion\n"
+
 static int process_arg(int c, char *optarg)
 {
 	struct aa_features *tmp_features = NULL;
@@ -469,14 +462,15 @@ static int process_arg(int c, char *optarg)
 		} else if (strcmp(optarg, "Dump") == 0 ||
 			   strcmp(optarg, "dump") == 0 ||
 			   strcmp(optarg, "D") == 0) {
-			display_dump(progname);
+			flagtable_help("dump", DUMP_HEADER, progname,
+				       dumpflag_table);
 		} else if (strcmp(optarg, "Optimize") == 0 ||
 			   strcmp(optarg, "optimize") == 0 ||
 			   strcmp(optarg, "O") == 0) {
-			display_optimize(progname);
+			flagtable_help("-O", "", progname, optflag_table);
 		} else if (strcmp(optarg, "warn") == 0 ||
 			   strcmp(optarg, "Werror") == 0) {
-			display_warn(progname);
+			flagtable_help("warn", "", progname, warnflag_table);
 		} else {
 			PERROR("%s: Invalid --help option %s\n",
 			       progname, optarg);
