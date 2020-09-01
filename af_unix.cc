@@ -157,9 +157,11 @@ int unix_rule::expand_variables(void)
 	error = expand_entry_variables(&addr);
 	if (error)
 		return error;
+	filter_slashes(addr);
 	error = expand_entry_variables(&peer_addr);
 	if (error)
 		return error;
+	filter_slashes(peer_addr);
 
 	return 0;
 }
