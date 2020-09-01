@@ -301,6 +301,10 @@ multiple times.
 
   apparmor_parser --warn=rules-not-enforced ...
 
+A specific warning can be disabled by prepending I<no>- to the flag
+
+  apparmor_parser --warn=no-rules-not-enforced ...
+
 Use --help=warn to see a full list of which warn flags are supported.
 
 =item --Werror[=n]
