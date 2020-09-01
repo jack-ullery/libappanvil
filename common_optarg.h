@@ -37,6 +37,7 @@ typedef struct {
 extern optflag_table_t dumpflag_table[];
 extern optflag_table_t optflag_table[];
 
+void print_flags(const char *prefix, optflag_table_t *table, dfaflags_t flags);
 int handle_flag_table(optflag_table_t *table, const char *optarg,
 		      dfaflags_t *flags);
 void flagtable_help(const char *name, const char *header, const char *command,
