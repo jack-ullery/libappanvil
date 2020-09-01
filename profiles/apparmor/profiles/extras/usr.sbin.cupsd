@@ -9,6 +9,7 @@ include <tunables/global>
   include <abstractions/dbus>
   include <abstractions/nameservice>
   include <abstractions/perl>
+  include <abstractions/hosts_access>
 
   capability chown,
   capability dac_override,
@@ -44,8 +45,6 @@ include <tunables/global>
   /etc/cups/printcap rw,
   /etc/cups/ssl rw,
   /etc/cups/yes/* rw,
-  /etc/hosts.allow r,
-  /etc/hosts.deny r,
   @{PROC}/meminfo r,
   @{PROC}/sys/dev/parport/** r,
   /sys/class/usb r,

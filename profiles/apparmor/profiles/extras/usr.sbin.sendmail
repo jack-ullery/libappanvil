@@ -22,14 +22,13 @@ include <tunables/global>
   include <abstractions/nameservice>
   include <abstractions/user-tmp>
   include <abstractions/postfix-common>
+  include <abstractions/hosts_access>
 
   /usr/bin/procmail           Px,
 
   /etc/aliases.db             rw,
   /etc/aliases                rw,
   /etc/fstab                  r,
-  /etc/hosts.allow            r,
-  /etc/hosts.deny             r,
   /etc/ldap.conf              r,
   /etc/mail/*                 r,
   /etc/mail/statistics        rw,

@@ -21,13 +21,12 @@ include <tunables/global>
   include <abstractions/mysql>
   include <abstractions/nameservice>
   include <abstractions/user-tmp>
+  include <abstractions/hosts_access>
 
   capability dac_override,
   capability setgid,
   capability setuid,
 
-  /etc/hosts.allow r,
-  /etc/hosts.deny r,
   /etc/my.cnf r,
   /etc/my.cnf.d/ r,
   /etc/my.cnf.d/*.cnf r,

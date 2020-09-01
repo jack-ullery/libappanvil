@@ -15,13 +15,12 @@ include <tunables/global>
 profile portmap /{usr/,}sbin/portmap {
   include <abstractions/base>
   include <abstractions/nameservice>
+  include <abstractions/hosts_access>
 
   capability net_bind_service,
   capability setuid,
   capability setgid,
 
   /etc/bindresvport.blacklist r,
-  /etc/hosts.allow	r,
-  /etc/hosts.deny	r,
   /{usr/,}sbin/portmap         rmix,
 }

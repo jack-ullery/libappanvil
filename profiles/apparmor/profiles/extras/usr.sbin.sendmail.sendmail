@@ -15,13 +15,12 @@ include <tunables/global>
 /usr/sbin/sendmail.sendmail {
   include <abstractions/base>
   include <abstractions/nameservice>
+  include <abstractions/hosts_access>
 
   @{PROC}/loadavg             r,
   /etc/aliases                rw,
   /etc/aliases.db             rw,
   /etc/fstab                  r,
-  /etc/hosts.allow            r,
-  /etc/hosts.deny             r,
   /etc/ldap.conf              r,
   /etc/mail/statistics        rw,
   /etc/mail/*                 r,

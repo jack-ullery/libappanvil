@@ -48,14 +48,13 @@ profile dovecot-dovecot-lda /usr/lib/dovecot/dovecot-lda flags=(attach_disconnec
     include <abstractions/nameservice>
     include <abstractions/user-tmp>
     include <abstractions/postfix-common>
+    include <abstractions/hosts_access>
 
     capability sys_ptrace,
 
     /etc/aliases rw,     # newaliases is a symlink to sendmail, so it's
     /etc/aliases.db rw,  # actually the same binary
     /etc/fstab r,
-    /etc/hosts.allow r,
-    /etc/hosts.deny r,
     /etc/mail/* r,
     /etc/mail/statistics rw,
     /etc/mtab r,

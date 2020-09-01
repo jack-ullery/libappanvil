@@ -24,6 +24,7 @@ profile syslog-ng /{usr/,}{bin,sbin}/syslog-ng {
   include <abstractions/mysql>
   include <abstractions/openssl>
   include <abstractions/python>
+  include <abstractions/hosts_access>
 
   capability chown,
   capability dac_override,
@@ -47,8 +48,6 @@ profile syslog-ng /{usr/,}{bin,sbin}/syslog-ng {
   /etc/syslog-ng/conf.d/ r,
   /etc/syslog-ng/conf.d/* r,
   @{PROC}/kmsg r,
-  /etc/hosts.deny r,
-  /etc/hosts.allow r,
   /{usr/,}{bin,sbin}/syslog-ng mr,
   @{sys}/devices/system/cpu/online r,
   /usr/share/syslog-ng/** r,

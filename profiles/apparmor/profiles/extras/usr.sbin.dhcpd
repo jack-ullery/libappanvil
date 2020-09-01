@@ -15,6 +15,7 @@ include <tunables/global>
 /usr/sbin/dhcpd {
   include <abstractions/base>
   include <abstractions/nameservice>
+  include <abstractions/hosts_access>
 
   capability dac_override,
   capability net_bind_service,
@@ -29,8 +30,6 @@ include <tunables/global>
   /db/dhcpd.leases*     lrw,
   /etc/dhcpd.conf	r,
   /etc/named.d/*	r,
-  /etc/hosts.allow	r,
-  /etc/hosts.deny	r,
   @{PROC}/net/dev	r,
   /usr/sbin/dhcpd	rmix,
   /var/lib/dhcp/{db/,}dhcpd{6,}.leases*	rwl,

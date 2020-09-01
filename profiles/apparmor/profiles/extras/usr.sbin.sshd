@@ -25,6 +25,7 @@ include <tunables/global>
   include <abstractions/libpam-systemd>
   include <abstractions/nameservice>
   include <abstractions/wutmp>
+  include <abstractions/hosts_access>
 
   capability sys_chroot,
   capability sys_resource,
@@ -54,8 +55,6 @@ include <tunables/global>
   /dev/urandom r,
   /etc/default/locale r,
   /etc/environment r,
-  /etc/hosts.allow r,
-  /etc/hosts.deny r,
   /etc/modules.conf r,
   /etc/security/** r,
   /etc/ssh/** r,

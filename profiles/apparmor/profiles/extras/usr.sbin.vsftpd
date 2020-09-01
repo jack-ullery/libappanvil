@@ -17,13 +17,12 @@ include <tunables/global>
   include <abstractions/base>
   include <abstractions/nameservice>
   include <abstractions/authentication>
+  include <abstractions/hosts_access>
 
   /dev/urandom               r,
   /etc/environment           r,
   /etc/fstab                 r,
   /etc/ftpusers              r,
-  /etc/hosts.allow           r,
-  /etc/hosts.deny            r,
   /etc/mtab                  r,
   /etc/shells                r,
   /etc/vsftpd.*              r,

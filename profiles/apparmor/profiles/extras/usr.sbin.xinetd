@@ -15,13 +15,12 @@ include <tunables/global>
 /usr/sbin/xinetd {
   include <abstractions/base>
   include <abstractions/nameservice>
+  include <abstractions/hosts_access>
 
   capability net_bind_service,
   capability setgid,
   capability setuid,
 
-  /etc/hosts.allow                 r,
-  /etc/hosts.deny                  r,
   /etc/xinetd.conf                 r,
   /etc/xinetd.d                    r,
   /etc/xinetd.d/*                  r,
