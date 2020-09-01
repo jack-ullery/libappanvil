@@ -178,6 +178,7 @@ int dbus_rule::expand_variables(void)
 	error = expand_entry_variables(&path);
 	if (error)
 		return error;
+	filter_slashes(path);
 	error = expand_entry_variables(&interface);
 	if (error)
 		return error;
