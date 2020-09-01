@@ -413,14 +413,24 @@ static long process_jobs_arg(const char *arg, const char *val) {
 	return n;
 }
 
+#define	EARLY_ARG   1
+#define	LATE_ARG    2
+#define	TWOPASS_ARG (EARLY_ARG | LATE_ARG)
 
-bool early_arg(int c) {
+int arg_pass(int c) {
 	switch(c) {
 	case EARLY_ARG_CONFIG_FILE:
-		return true;
+		return EARLY_ARG;
+		break;
+	case ARG_WARN:
+		return TWOPASS_ARG;
+		break;
+	case ARG_WERROR:
+		return TWOPASS_ARG;
+		break;
 	}
 
-	return false;
+	return LATE_ARG;
 }
 
 /* process a single argment from getopt_long
@@ -753,7 +763,7 @@ static void process_early_args(int argc, char *argv[])
 
 	while ((c = getopt_long(argc, argv, short_options, long_options, &o)) != -1)
 	{
-		if (early_arg(c))
+		if (arg_pass(c) & EARLY_ARG)
 			process_arg(c, optarg);
 	}
 
@@ -770,7 +780,7 @@ static int process_args(int argc, char *argv[])
 	opterr = 1;
 	while ((c = getopt_long(argc, argv, short_options, long_options, &o)) != -1)
 	{
-		if (!early_arg(c))
+		if (arg_pass(c) & LATE_ARG)
 			count += process_arg(c, optarg);
 	}
 
