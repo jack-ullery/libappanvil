@@ -468,9 +468,10 @@ static int process_arg(int c, char *optarg)
 			   strcmp(optarg, "optimize") == 0 ||
 			   strcmp(optarg, "O") == 0) {
 			flagtable_help("-O ", "", progname, optflag_table);
-		} else if (strcmp(optarg, "warn") == 0 ||
-			   strcmp(optarg, "Werror") == 0) {
+		} else if (strcmp(optarg, "warn") == 0) {
 			flagtable_help("--warn=", "", progname, warnflag_table);
+		} else if (strcmp(optarg, "Werror") == 0) {
+			flagtable_help("--Werror=", "", progname, warnflag_table);
 		} else {
 			PERROR("%s: Invalid --help option %s\n",
 			       progname, optarg);
@@ -703,6 +704,8 @@ static int process_arg(int c, char *optarg)
 	case ARG_WERROR:
 		if (!optarg) {
 			werrflags = -1;
+		} else if (strcmp(optarg, "show") == 0) {
+			print_flags("Werror", warnflag_table, werrflags);
 		} else if (optarg && !handle_flag_table(warnflag_table, optarg,
 					      &werrflags)) {
 			PERROR("%s: Invalid --Werror option %s\n",
