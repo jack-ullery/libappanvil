@@ -147,24 +147,14 @@ int handle_flag_table(optflag_table_t *table, const char *optarg,
 	return 0;
 }
 
-void display_dump(const char *command)
+void flagtable_help(const char *name, const char *header, const char *command,
+		    optflag_table_t *table)
 {
 	display_version();
-	printf("\n%s: --dump [Option]\n\n"
+	printf("\n%s: --%s [Option]\n\n"
+	       "%s"
 	       "Options:\n"
 	       "--------\n"
-	       "     variables      \tDump variables\n"
-	       "     expanded-variables\t Dump variables after expansion\n"
-	       ,command);
-	print_flag_table(dumpflag_table);
-}
-
-void display_optimize(const char *command)
-{
-	display_version();
-	printf("\n%s: -O [Option]\n\n"
-	       "Options:\n"
-	       "--------\n"
-	       ,command);
-	print_flag_table(optflag_table);
+	       ,name, command, header);
+	print_flag_table(table);
 }

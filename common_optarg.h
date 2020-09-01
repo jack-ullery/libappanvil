@@ -37,11 +37,10 @@ typedef struct {
 extern optflag_table_t dumpflag_table[];
 extern optflag_table_t optflag_table[];
 
-void print_flag_table(optflag_table_t *table);
 int handle_flag_table(optflag_table_t *table, const char *optarg,
 		      dfaflags_t *flags);
-void display_dump(const char *command);
-void display_optimize(const char *command);
+void flagtable_help(const char *name, const char *header, const char *command,
+		    optflag_table_t *table);
 
 #endif /* __AA_COMMON_OPTARG_H */
 
