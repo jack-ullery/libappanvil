@@ -112,10 +112,28 @@ void print_flag_table(optflag_table_t *table)
 			longest = strlen(table[i].option);
 	}
 
+	printf("%-*s \t%s\n", longest, "     show", "show flags that have been set and exit");
 	for (i = 0; table[i].option; i++) {
 		printf("%5s%-*s \t%s\n", (table[i].control & 1) ? "[no-]" : "",
 		       longest, table[i].option, table[i].desc);
 	}
+}
+
+void print_flags(const char *prefix, optflag_table_t *table, dfaflags_t flags)
+{
+	int i, count = 0;
+
+	printf("%s=", prefix);
+	for (i = 0; table[i].option; i++) {
+		if ((table[i].flags & flags) == table[i].flags) {
+			if (count)
+				printf(", ");
+			printf("%s", table[i].option);
+			count++;
+		}
+	}
+	if (count)
+		printf("\n");
 }
 
 int handle_flag_table(optflag_table_t *table, const char *optarg,
@@ -147,24 +165,14 @@ int handle_flag_table(optflag_table_t *table, const char *optarg,
 	return 0;
 }
 
-void display_dump(const char *command)
+void flagtable_help(const char *name, const char *header, const char *command,
+		    optflag_table_t *table)
 {
 	display_version();
-	printf("\n%s: --dump [Option]\n\n"
+	printf("\n%s: %s[Option]\n\n"
+	       "%s"
 	       "Options:\n"
 	       "--------\n"
-	       "     variables      \tDump variables\n"
-	       "     expanded-variables\t Dump variables after expansion\n"
-	       ,command);
-	print_flag_table(dumpflag_table);
-}
-
-void display_optimize(const char *command)
-{
-	display_version();
-	printf("\n%s: -O [Option]\n\n"
-	       "Options:\n"
-	       "--------\n"
-	       ,command);
-	print_flag_table(optflag_table);
+	       ,command, name, header);
+	print_flag_table(table);
 }

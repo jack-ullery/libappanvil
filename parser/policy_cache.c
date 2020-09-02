@@ -46,15 +46,13 @@ bool valid_cached_file_version(const char *cachename)
 	}
 	size_t res = fread(buffer, 1, HEADER_STRING_SIZE + VERSION_STRING_SIZE, f);
 	if (res < HEADER_STRING_SIZE + VERSION_STRING_SIZE) {
-		if (debug_cache)
-			pwarn("%s: cache file '%s' invalid size\n", progname, cachename);
+		pwarn(WARN_DEBUG_CACHE, "%s: cache file '%s' invalid size\n", progname, cachename);
 		return false;
 	}
 
 	/* 12 byte header that is always the same and then 4 byte version # */
 	if (memcmp(buffer, header_string, HEADER_STRING_SIZE) != 0) {
-		if (debug_cache)
-			pwarn("%s: cache file '%s' has wrong header\n", progname, cachename);
+		pwarn(WARN_DEBUG_CACHE, "%s: cache file '%s' has wrong header\n", progname, cachename);
 		return false;
 	}
 
@@ -63,8 +61,7 @@ bool valid_cached_file_version(const char *cachename)
 						      parser_abi_version,
 						      kernel_abi_version));
 	if (memcmp(buffer + HEADER_STRING_SIZE, &version, VERSION_STRING_SIZE) != 0) {
-		if (debug_cache)
-			pwarn("%s: cache file '%s' has wrong version\n", progname, cachename);
+		pwarn(WARN_DEBUG_CACHE, "%s: cache file '%s' has wrong version\n", progname, cachename);
 		return false;
 	}
 
@@ -89,8 +86,7 @@ void update_mru_tstamp(FILE *file, const char *name)
 	if (tstamp_is_null(cache_tstamp))
 		return;
 	if (tstamp_cmp(stat_file.st_mtim, cache_tstamp) > 0) {
-		if (debug_cache)
-			pwarn("%s: file '%s' is newer than cache file\n", progname, name);
+		pwarn(WARN_DEBUG_CACHE, "%s: file '%s' is newer than cache file\n", progname, name);
 		mru_skip_cache = 1;
 	}
 }
@@ -124,8 +120,7 @@ void valid_read_cache(const char *cachename)
 		} else {
 			if (!cond_clear_cache)
 				write_cache = 0;
-			if (debug_cache)
-				pwarn("%s: Invalid or missing cache file '%s' (%s)\n", progname, cachename, strerror(errno));
+			pwarn(WARN_DEBUG_CACHE, "%s: Invalid or missing cache file '%s' (%s)\n", progname, cachename, strerror(errno));
 		}
 	}
 }
@@ -184,7 +179,7 @@ void install_cache(const char *cachetmpname, const char *cachename)
 		}
 
 		if (rename(cachetmpname, cachename) < 0) {
-			pwarn("Warning failed to write cache: %s\n", cachename);
+			pwarn(WARN_CACHE, "Warning failed to write cache: %s\n", cachename);
 			unlink(cachetmpname);
 		}
 		else if (show_cache) {

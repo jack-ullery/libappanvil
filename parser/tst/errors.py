@@ -67,6 +67,7 @@ class AAErrorTests(testlib.AATestTemplate):
         )
 
     def test_deprecation1(self):
+        self.cmd_prefix.extend(['--warn=deprecated'])
         self._run_test(
             'errors/deprecation1.sd',
             "Warning from errors/deprecation1.sd (errors/deprecation1.sd line 6): The use of file paths as profile names is deprecated. See man apparmor.d for more information",
@@ -74,6 +75,7 @@ class AAErrorTests(testlib.AATestTemplate):
         )
 
     def test_deprecation2(self):
+        self.cmd_prefix.extend(['--warn=deprecated'])
         self._run_test(
             'errors/deprecation2.sd',
             "Warning from errors/deprecation2.sd (errors/deprecation2.sd line 6): The use of file paths as profile names is deprecated. See man apparmor.d for more information",

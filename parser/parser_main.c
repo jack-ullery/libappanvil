@@ -80,7 +80,6 @@ int skip_mode_force = 0;
 int abort_on_error = 0;			/* stop processing profiles if error */
 int skip_bad_cache_rebuild = 0;
 int mru_skip_cache = 1;
-int debug_cache = 0;
 
 /* for jobs_max and jobs
  * LONG_MAX : no limit
@@ -129,6 +128,7 @@ static const char *config_file = "/etc/apparmor/parser.conf";
 #define ARG_PRINT_CONFIG_FILE		140
 #define ARG_OVERRIDE_POLICY_ABI		141
 #define EARLY_ARG_CONFIG_FILE		142
+#define ARG_WERROR			143
 
 /* Make sure to update BOTH the short and long_options */
 static const char *short_options = "ad::f:h::rRVvI:b:BCD:NSm:M:qQn:XKTWkL:O:po:j:";
@@ -173,6 +173,7 @@ struct option long_options[] = {
 	{"abort-on-error",	0, 0, ARG_ABORT_ON_ERROR},	/* no short option */
 	{"skip-bad-cache-rebuild",	0, 0, ARG_SKIP_BAD_CACHE_REBUILD},/* no short option */
 	{"warn",		1, 0, ARG_WARN},	/* no short option */
+	{"Werror",		2, 0, ARG_WERROR},
 	{"debug-cache",		0, 0, ARG_DEBUG_CACHE},	/* no short option */
 	{"max-jobs",		1, 0, ARG_MAX_JOBS},	/* no short option */
 	{"print-cache-dir",	0, 0, ARG_PRINT_CACHE_DIR},	/* no short option */
@@ -243,24 +244,28 @@ static void display_usage(const char *command)
 	       "--config-file n		Specify the parser config file location, processed early before other options.\n"
 	       "--print-config		Print config file location\n"
 	       "--warn n		Enable warnings (see --help=warn)\n"
+	       "--Werror [n]		Convert warnings to errors. If n is specified turn warn n into an error\n"
 	       ,command);
 }
 
 optflag_table_t warnflag_table[] = {
-	{ 0, "rule-not-enforced", "warn if a rule is not enforced", WARN_RULE_NOT_ENFORCED },
-	{ 0, "rule-downgraded", "warn if a rule is downgraded to a lesser but still enforcing rule", WARN_RULE_DOWNGRADED },
+	{ 1, "rule-not-enforced", "warn if a rule is not enforced", WARN_RULE_NOT_ENFORCED },
+	{ 1, "rule-downgraded", "warn if a rule is downgraded to a lesser but still enforcing rule", WARN_RULE_DOWNGRADED },
+	{ 1, "abi", "warn if there are abi issues in the profile", WARN_ABI },
+	{ 1, "deprecated", "warn if something in the profile is deprecated", WARN_DEPRECATED },
+	{ 1, "config", "enable configuration warnings", WARN_CONFIG },
+	{ 1, "cache", "enable regular cache warnings", WARN_CACHE },
+	{ 1, "debug-cache", "enable warnings for debug cache file checks", WARN_DEBUG_CACHE },
+	{ 1, "jobs", "enable job control warnings", WARN_JOBS },
+	{ 1, "dangerous", "warn on dangerous policy", WARN_DANGEROUS },
+	{ 1, "unexpected", "warn when an unexpected condition is found", WARN_UNEXPECTED },
+	{ 1, "format", "warn on unnecessary or confusing formating", WARN_FORMAT },
+	{ 1, "missing", "warn when missing qualifier and a default is used", WARN_MISSING },
+	{ 1, "override", "warn when overriding", WARN_OVERRIDE },
+	{ 1, "dev", "turn on warnings that are useful for profile development", WARN_DEV },
+	{ 1, "all", "turn on all warnings", WARN_ALL},
 	{ 0, NULL, NULL, 0 },
 };
-
-void display_warn(const char *command)
-{
-	display_version();
-	printf("\n%s: --warn [Option]\n\n"
-	       "Options:\n"
-	       "--------\n"
-	       ,command);
-	print_flag_table(warnflag_table);
-}
 
 /* Parse comma separated cachelocations. Commas can be escaped by \, */
 static int parse_cacheloc(const char *arg, const char **cacheloc, int max_size)
@@ -408,19 +413,32 @@ static long process_jobs_arg(const char *arg, const char *val) {
 	return n;
 }
 
+#define	EARLY_ARG   1
+#define	LATE_ARG    2
+#define	TWOPASS_ARG (EARLY_ARG | LATE_ARG)
 
-bool early_arg(int c) {
+int arg_pass(int c) {
 	switch(c) {
 	case EARLY_ARG_CONFIG_FILE:
-		return true;
+		return EARLY_ARG;
+		break;
+	case ARG_WARN:
+		return TWOPASS_ARG;
+		break;
+	case ARG_WERROR:
+		return TWOPASS_ARG;
+		break;
 	}
 
-	return false;
+	return LATE_ARG;
 }
 
 /* process a single argment from getopt_long
  * Returns: 1 if an action arg, else 0
  */
+#define DUMP_HEADER "     variables      \tDump variables\n" \
+	            "     expanded-variables\t Dump variables after expansion\n"
+
 static int process_arg(int c, char *optarg)
 {
 	struct aa_features *tmp_features = NULL;
@@ -454,13 +472,16 @@ static int process_arg(int c, char *optarg)
 		} else if (strcmp(optarg, "Dump") == 0 ||
 			   strcmp(optarg, "dump") == 0 ||
 			   strcmp(optarg, "D") == 0) {
-			display_dump(progname);
+			flagtable_help("--dump=", DUMP_HEADER, progname,
+				       dumpflag_table);
 		} else if (strcmp(optarg, "Optimize") == 0 ||
 			   strcmp(optarg, "optimize") == 0 ||
 			   strcmp(optarg, "O") == 0) {
-			display_optimize(progname);
+			flagtable_help("-O ", "", progname, optflag_table);
 		} else if (strcmp(optarg, "warn") == 0) {
-			display_warn(progname);
+			flagtable_help("--warn=", "", progname, warnflag_table);
+		} else if (strcmp(optarg, "Werror") == 0) {
+			flagtable_help("--Werror=", "", progname, warnflag_table);
 		} else {
 			PERROR("%s: Invalid --help option %s\n",
 			       progname, optarg);
@@ -526,6 +547,8 @@ static int process_arg(int c, char *optarg)
 		skip_read_cache = 1;
 		if (!optarg) {
 			dump_vars = 1;
+		} else if (strcmp(optarg, "show") == 0) {
+			print_flags("dump", dumpflag_table, dfaflags);
 		} else if (strcmp(optarg, "variables") == 0) {
 			dump_vars = 1;
 		} else if (strcmp(optarg, "expanded-variables") == 0) {
@@ -538,7 +561,9 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'O':
-		if (!handle_flag_table(optflag_table, optarg,
+		if (strcmp(optarg, "show") == 0) {
+			print_flags("Optimize", optflag_table, dfaflags);
+		} else if (!handle_flag_table(optflag_table, optarg,
 				       &dfaflags)) {
 			PERROR("%s: Invalid --Optimize option %s\n",
 			       progname, optarg);
@@ -677,15 +702,29 @@ static int process_arg(int c, char *optarg)
 		skip_mode_force = 1;
 		break;
 	case ARG_WARN:
-		if (!handle_flag_table(warnflag_table, optarg,
+		if (strcmp(optarg, "show") == 0) {
+			print_flags("warn", warnflag_table, warnflags);
+		} else if (!handle_flag_table(warnflag_table, optarg,
 				       &warnflags)) {
 			PERROR("%s: Invalid --warn option %s\n",
 			       progname, optarg);
 			exit(1);
 		}
 		break;
+	case ARG_WERROR:
+		if (!optarg) {
+			werrflags = -1;
+		} else if (strcmp(optarg, "show") == 0) {
+			print_flags("Werror", warnflag_table, werrflags);
+		} else if (optarg && !handle_flag_table(warnflag_table, optarg,
+					      &werrflags)) {
+			PERROR("%s: Invalid --Werror option %s\n",
+			       progname, optarg);
+			exit(1);
+		}
+		break;
 	case ARG_DEBUG_CACHE:
-		debug_cache = 1;
+		warnflags |= WARN_DEBUG_CACHE;
 		break;
 	case 'j':
 		jobs = process_jobs_arg("-j", optarg);
@@ -724,7 +763,7 @@ static void process_early_args(int argc, char *argv[])
 
 	while ((c = getopt_long(argc, argv, short_options, long_options, &o)) != -1)
 	{
-		if (early_arg(c))
+		if (arg_pass(c) & EARLY_ARG)
 			process_arg(c, optarg);
 	}
 
@@ -741,7 +780,7 @@ static int process_args(int argc, char *argv[])
 	opterr = 1;
 	while ((c = getopt_long(argc, argv, short_options, long_options, &o)) != -1)
 	{
-		if (!early_arg(c))
+		if (arg_pass(c) & LATE_ARG)
 			count += process_arg(c, optarg);
 	}
 
@@ -763,7 +802,7 @@ static int process_config_file(const char *name)
 
 	f = fopen(name, "r");
 	if (!f) {
-		pwarn("config file '%s' not found\n", name);
+		pwarn(WARN_CONFIG, "config file '%s' not found\n", name);
 		return 0;
 	}
 
@@ -998,7 +1037,7 @@ int process_profile(int option, aa_kernel_interface *kernel_interface,
 		}
 	} else {
 		if (write_cache)
-			pwarn("%s: cannot use or update cache, disable, or force-complain via stdin\n", progname);
+			pwarn(WARN_CACHE, "%s: cannot use or update cache, disable, or force-complain via stdin\n", progname);
 		skip_cache = write_cache = 0;
 	}
 
@@ -1031,7 +1070,7 @@ int process_profile(int option, aa_kernel_interface *kernel_interface,
 								basename,
 								O_RDONLY);
 				if (fd != -1)
-					pwarn(_("Could not get cachename for '%s'\n"), basename);
+					pwarn(WARN_CACHE, _("Could not get cachename for '%s'\n"), basename);
 			} else {
 				valid_read_cache(cachename);
 			}
@@ -1104,12 +1143,12 @@ int process_profile(int option, aa_kernel_interface *kernel_interface,
 	if (pc && write_cache && !force_complain) {
 		writecachename = cache_filename(pc, 0, basename);
 		if (!writecachename) {
-			pwarn("Cache write disabled: Cannot create cache file name '%s': %m\n", basename);
+			pwarn(WARN_CACHE, "Cache write disabled: Cannot create cache file name '%s': %m\n", basename);
 			write_cache = 0;
 		}
 		cachetmp = setup_cache_tmp(&cachetmpname, writecachename);
 		if (cachetmp == -1) {
-			pwarn("Cache write disabled: Cannot create setup tmp cache file '%s': %m\n", writecachename);
+			pwarn(WARN_CACHE, "Cache write disabled: Cannot create setup tmp cache file '%s': %m\n", writecachename);
 			write_cache = 0;
 		}
 	}
@@ -1118,7 +1157,7 @@ int process_profile(int option, aa_kernel_interface *kernel_interface,
 	if (retval == 0 && write_cache) {
 		if (cachetmp == -1) {
 			unlink(cachetmpname);
-			pwarn("Warning failed to create cache: %s\n",
+			pwarn(WARN_CACHE, "Warning failed to create cache: %s\n",
 			       basename);
 		} else {
 			install_cache(cachetmpname, writecachename);
@@ -1256,7 +1295,7 @@ static void setup_parallel_compile(void)
 	jobs_max = compute_jobs(maxn, jobs_max);
 
 	if (jobs > jobs_max) {
-		pwarn("%s: Warning capping number of jobs to %ld * # of cpus == '%ld'",
+		pwarn(WARN_JOBS, "%s: Warning capping number of jobs to %ld * # of cpus == '%ld'",
 		      progname, jobs_max, jobs);
 		jobs = jobs_max;
 	} else if (jobs < jobs_max)
@@ -1426,7 +1465,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (create_cache_dir)
-			pwarn(_("The --create-cache-dir option is deprecated. Please use --write-cache.\n"));
+			pwarn(WARN_DEPRECATED, _("The --create-cache-dir option is deprecated. Please use --write-cache.\n"));
 		retval = aa_policy_cache_new(&policy_cache, kernel_features,
 					     AT_FDCWD, cacheloc[0], max_caches);
 		if (retval) {
@@ -1451,9 +1490,9 @@ int main(int argc, char *argv[])
 			for (i = 1; i < cacheloc_n; i++) {
 				if (aa_policy_cache_add_ro_dir(policy_cache, AT_FDCWD,
 							       cacheloc[i])) {
-					pwarn("Cache: failed to add read only location '%s', does not contain valid cache directory for the specified feature set\n", cacheloc[i]);
+					pwarn(WARN_CACHE, "Cache: failed to add read only location '%s', does not contain valid cache directory for the specified feature set\n", cacheloc[i]);
 				} else if (show_cache)
-					pwarn("Cache: added readonly location '%s'\n", cacheloc[i]);
+					pwarn(WARN_CACHE, "Cache: added readonly location '%s'\n", cacheloc[i]);
 			}
 		}
 	}

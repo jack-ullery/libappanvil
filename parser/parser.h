@@ -52,10 +52,34 @@ class rule_t;
 extern int parser_token;
 
 
-#define WARN_RULE_NOT_ENFORCED	1
-#define WARN_RULE_DOWNGRADED	2
+#define WARN_RULE_NOT_ENFORCED	0x1
+#define WARN_RULE_DOWNGRADED	0x2
+#define WARN_ABI		0x4
+#define WARN_DEPRECATED		0x8
+#define WARN_CONFIG		0x10
+#define WARN_CACHE		0x20
+#define WARN_DEBUG_CACHE	0x40
+#define WARN_JOBS		0x80
+#define WARN_DANGEROUS		0x100
+#define WARN_UNEXPECTED		0x200
+#define WARN_FORMAT		0x400
+#define WARN_MISSING		0x800
+#define WARN_OVERRIDE		0x1000
+
+#define WARN_DEV (WARN_RULE_NOT_ENFORCED | WARN_RULE_DOWNGRADED | WARN_ABI | \
+		  WARN_DEPRECATED | WARN_DANGEROUS | WARN_UNEXPECTED | \
+		  WARN_FORMAT | WARN_MISSING | WARN_OVERRIDE | WARN_DEBUG_CACHE)
+
+#define DEFAULT_WARNINGS (WARN_CONFIG | WARN_CACHE | WARN_JOBS | \
+			  WARN_UNEXPECTED | WARN_OVERRIDE)
+
+#define WARN_ALL (WARN_RULE_NOT_ENFORCED | WARN_RULE_DOWNGRADED | WARN_ABI | \
+		  WARN_DEPRECATED | WARN_CONFIG | WARN_CACHE | \
+		  WARN_DEBUG_CACHE | WARN_JOBS | WARN_DANGEROUS | \
+		  WARN_UNEXPECTED | WARN_FORMAT | WARN_MISSING | WARN_OVERRIDE)
 
 extern dfaflags_t warnflags;
+extern dfaflags_t werrflags;
 
 
 typedef enum pattern_t pattern_t;
@@ -328,8 +352,10 @@ extern char *profile_ns;
 extern char *current_filename;
 extern FILE *ofile;
 extern int read_implies_exec;
-extern void pwarn(const char *fmt, ...) __attribute__((__format__(__printf__, 1, 2)));
+extern void pwarnf(bool werr, const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
 extern void common_warn_once(const char *name, const char *msg, const char **warned_name);
+
+#define pwarn(F, args...) do { if (warnflags & (F)) pwarnf((werrflags & (F)), ## args); } while (0)
 
 /* from parser_main (cannot be used in tst builds) */
 extern int force_complain;
