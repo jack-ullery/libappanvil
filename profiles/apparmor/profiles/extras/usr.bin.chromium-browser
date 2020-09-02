@@ -82,7 +82,6 @@ profile chromium_browser /usr/lib/@{chromium}/@{chromium} flags=(attach_disconne
 
   @{PROC}/self/exe ixr,
   @{PROC}/[0-9]*/fd/ r,
-  @{PROC}/filesystems r,
   @{PROC}/vmstat r,
   @{PROC}/ r,
   @{PROC}/[0-9]*/task/[0-9]*/stat r,
@@ -93,7 +92,6 @@ profile chromium_browser /usr/lib/@{chromium}/@{chromium} flags=(attach_disconne
   @{PROC}/[0-9]*/smaps r,
   @{PROC}/[0-9]*/stat r,
   @{PROC}/[0-9]*/statm r,
-  owner @{PROC}/[0-9]*/status r,
   owner @{PROC}/[0-9]*/task/[0-9]*/status r,
   deny @{PROC}/[0-9]*/oom_{,score_}adj w,
   @{PROC}/sys/kernel/yama/ptrace_scope r,
@@ -199,10 +197,10 @@ profile chromium_browser /usr/lib/@{chromium}/@{chromium} flags=(attach_disconne
 
   # Allow transitions to ourself and our sandbox
   /usr/lib/@{chromium}/@{chromium} ix,
-  /usr/lib/@{chromium}/chrome-sandbox cx -> chromium_browser_sandbox,
+  /usr/lib/@{chromium}/chrome-sandbox cx -> sandbox,
 
   # Allow communicating with sandbox
-  unix (receive, send) peer=(label=/usr/lib/@{chromium}/@{chromium}//chromium_browser_sandbox),
+  unix (receive, send) peer=(label=@{profile_name}//sandbox),
 
   /{usr/,}bin/ps Uxr,
   /usr/lib/@{chromium}/xdg-settings Cxr -> xdgsettings,
@@ -230,7 +228,7 @@ profile chromium_browser /usr/lib/@{chromium}/@{chromium} flags=(attach_disconne
     /etc/ld.so.cache r,
     /etc/xdg/** r,
     /usr/bin/xdg-settings r,
-    /usr/lib/@{chromium}/xdg-settings r,
+    /{usr/,}lib{,32,64}/@{chromium}/xdg-settings r,
     /usr/share/applications/*.desktop r,
     /usr/share/applications/*.list r,
 
@@ -274,10 +272,10 @@ profile chromium_browser /usr/lib/@{chromium}/@{chromium} flags=(attach_disconne
     /usr/bin/python3.[0-9] mr,
   }
 
-  profile chromium_browser_sandbox {
+  profile sandbox {
     # Be fanatical since it is setuid root and don't use an abstraction
-    /{usr/,}lib/libgcc_s.so* mr,
-    /{usr/,}lib/@{multiarch}/libgcc_s.so* mr,
+    /{usr/,}lib{,32,64}/libgcc_s.so* mr,
+    /{usr/,}lib{,32,64}/@{multiarch}/libgcc_s.so* mr,
     /{usr/,}lib{,32,64}/libm-*.so* mr,
     /{usr/,}lib/@{multiarch}/libm-*.so* mr,
     /{usr/,}lib{,32,64}/libpthread-*.so* mr,
@@ -287,12 +285,12 @@ profile chromium_browser /usr/lib/@{chromium}/@{chromium} flags=(attach_disconne
     /{usr/,}lib{,32,64}/libld-*.so* mr,
     /{usr/,}lib/@{multiarch}/libld-*.so* mr,
     /{usr/,}lib{,32,64}/ld-*.so* mr,
-    /{usr/,}lib/@{multiarch}/ld-*.so* mr,
-    /{usr/,}lib/tls/*/{cmov,nosegneg}/libm-*.so* mr,
-    /{usr/,}lib/tls/*/{cmov,nosegneg}/libpthread-*.so* mr,
+    /{usr/,}lib{,32,64}/@{multiarch}/ld-*.so* mr,
+    /{usr/,}lib{,32,64}/tls/*/{cmov,nosegneg}/libm-*.so* mr,
+    /{usr/,}lib{,32,64}/tls/*/{cmov,nosegneg}/libpthread-*.so* mr,
     /{usr/,}lib/tls/*/{cmov,nosegneg}/libc-*.so* mr,
-    /usr/lib/libstdc++.so* mr,
-    /usr/lib/@{multiarch}/libstdc++.so* mr,
+    /usr/lib{,32,64}/libstdc++.so* mr,
+    /usr/lib{,32,64}/@{multiarch}/libstdc++.so* mr,
     /etc/ld.so.cache r,
 
     # Required for dropping into PID namespace. Keep in mind that until the
@@ -314,9 +312,9 @@ profile chromium_browser /usr/lib/@{chromium}/@{chromium} flags=(attach_disconne
     signal (receive) peer=unconfined,
     signal peer=@{profile_name},
     signal (receive, send) set=("exists"),
-    signal (receive) peer=/usr/lib/@{chromium}/@{chromium},
+    signal (receive) peer=chromium_browser,
 
-    unix (receive, send) peer=(label=/usr/lib/@{chromium}/@{chromium}),
+    unix (receive, send) peer=(label=chromium_browser),
     unix (create),
     unix peer=(label=@{profile_name}),
     unix (getattr, getopt, setopt, shutdown) addr=none,

@@ -10,9 +10,6 @@
 # ------------------------------------------------------------------
 # Author: Jamie Strandboge <jamie@canonical.com>
 
-# This file is updated currently not managed by the package but in the future
-# will be overwritten on upgrades.
-#
 # For site-specific adjustments, please see:
 # /etc/apparmor.d/local/chromium-browser
 
