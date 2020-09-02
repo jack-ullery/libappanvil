@@ -344,7 +344,7 @@ void clear_cap_flag(capability_flags flags)
 	int i;
 
 	for (i = 0; cap_table[i].name; i++) {
-		PDEBUG("Checking %s %s\n", name, cap_table[i].name);
+		PDEBUG("Clearing capability flag for capability \"%s\"\n",  cap_table[i].name);
 		cap_table[i].flags = (capability_flags) (cap_table[i].flags & ~flags);
 	}
 }
