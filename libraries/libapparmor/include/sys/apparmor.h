@@ -151,6 +151,7 @@ extern int aa_features_new_from_kernel(aa_features **features);
 extern aa_features *aa_features_ref(aa_features *features);
 extern void aa_features_unref(aa_features *features);
 
+extern int aa_features_write_to_fd(aa_features *features, int fd);
 extern int aa_features_write_to_file(aa_features *features,
 				     int dirfd, const char *path);
 extern bool aa_features_is_equal(aa_features *features1,

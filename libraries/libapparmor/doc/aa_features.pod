@@ -34,6 +34,8 @@ aa_features_ref - increments the ref count of an aa_features object
 
 aa_features_unref - decrements the ref count and frees the aa_features object when 0
 
+aa_features_write_to_fd - write a string representation of an aa_features object to a file descriptor
+
 aa_features_write_to_file - write a string representation of an aa_features object to a file
 
 aa_features_is_equal - equality test for two aa_features objects
@@ -61,6 +63,8 @@ B<int aa_features_new_from_kernel(aa_features **features);>
 B<aa_features *aa_features_ref(aa_features *features);>
 
 B<void aa_features_unref(aa_features *features);>
+
+B<int aa_features_write_to_fd(aa_features *features, int fd);>
 
 B<int aa_features_write_to_file(aa_features *features, int dirfd, const char *path);>
 
@@ -106,6 +110,9 @@ aa_features_ref() increments the reference count on the I<features> object.
 
 aa_features_unref() decrements the reference count on the I<features> object
 and releases all corresponding resources when the reference count reaches zero.
+
+The aa_features_write_to_fd() function writes a string representation of the
+I<features> object to the file descriptor specified by the I<fd>.
 
 The aa_features_write_to_file() function writes a string representation of the
 I<features> object to the file specified by the I<dirfd> and I<path>
@@ -176,6 +183,6 @@ L<https://gitlab.com/apparmor/apparmor/-/issues>.
 
 =head1 SEE ALSO
 
-openat(2) and L<https://wiki.apparmor.net>.
+openat(2), aa-features-abi(1) and L<https://wiki.apparmor.net>.
 
 =cut

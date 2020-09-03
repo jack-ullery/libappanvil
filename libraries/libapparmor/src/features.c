@@ -595,26 +595,17 @@ void aa_features_unref(aa_features *features)
 }
 
 /**
- * aa_features_write_to_file - write a string representation of an aa_features object to a file
+ * aa_features_write_to_fd - write a string representation of an aa_features object to an @fd
  * @features: the features
- * @dirfd: directory file descriptor or AT_FDCWD (see openat(2))
- * @path: the path to write to
+ * @fd: the file descriptor to write to
  *
  * Returns: 0 on success, -1 on error with errno set
  */
-int aa_features_write_to_file(aa_features *features,
-			      int dirfd, const char *path)
+int aa_features_write_to_fd(aa_features *features, int fd)
 {
-	autoclose int fd = -1;
 	size_t size;
 	ssize_t retval;
 	char *string;
-
-	fd = openat(dirfd, path,
-		    O_WRONLY | O_CREAT | O_TRUNC | O_SYNC | O_CLOEXEC,
-		    S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-	if (fd == -1)
-		return -1;
 
 	string = features->string;
 	size = strlen(string);
@@ -628,6 +619,28 @@ int aa_features_write_to_file(aa_features *features,
 	} while (size);
 
 	return 0;
+}
+
+/**
+ * aa_features_write_to_file - write a string representation of an aa_features object to a file
+ * @features: the features
+ * @dirfd: directory file descriptor or AT_FDCWD (see openat(2))
+ * @path: the path to write to
+ *
+ * Returns: 0 on success, -1 on error with errno set
+ */
+int aa_features_write_to_file(aa_features *features,
+			      int dirfd, const char *path)
+{
+	autoclose int fd = -1;
+
+	fd = openat(dirfd, path,
+		    O_WRONLY | O_CREAT | O_TRUNC | O_SYNC | O_CLOEXEC,
+		    S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	if (fd == -1)
+		return -1;
+
+	return aa_features_write_to_fd(features, fd);
 }
 
 /**
