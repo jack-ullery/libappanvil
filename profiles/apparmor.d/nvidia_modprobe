@@ -24,6 +24,7 @@ profile nvidia_modprobe {
 
   # System files
 
+  /dev/nvidia-modeset w,
   /dev/nvidia-uvm w,
   /dev/nvidia-uvm-tools w,
   @{sys}/bus/pci/devices/ r,
