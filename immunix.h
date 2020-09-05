@@ -145,18 +145,31 @@ enum pattern_t {
 #define HAS_CHANGE_PROFILE(mode)	((mode) & AA_CHANGE_PROFILE)
 
 #include <stdio.h>
+#include <errno.h>
+
+#ifdef DEBUG
+#define PDEBUG(fmt, args...)				\
+do {							\
+	int pdebug_error = errno;			\
+	fprintf(stderr, "parser: " fmt, ## args);	\
+	errno = pdebug_error;				\
+} while (0)
+#else
+#define PDEBUG(fmt, args...)	/* Do nothing */
+#endif
+
 static inline int is_merged_x_consistent(int a, int b)
 {
 	if ((a & AA_USER_EXEC) && (b & AA_USER_EXEC) &&
 	    ((a & AA_USER_EXEC_TYPE) != (b & AA_USER_EXEC_TYPE)))
 	{
-		//fprintf(stderr, "failed user merge 0x%x 0x%x\n", a, b);
+		PDEBUG("failed user merge 0x%x 0x%x\n", a, b);
 		return 0;
 	}
 	if ((a & AA_OTHER_EXEC) && (b & AA_OTHER_EXEC) &&
 	    ((a & AA_OTHER_EXEC_TYPE) != (b & AA_OTHER_EXEC_TYPE)))
 	{
-		//fprintf(stderr, "failed other merge 0x%x 0x%x\n", a, b);
+		PDEBUG("failed other merge 0x%x 0x%x\n", a, b);
 		return 0;
 	}
 	return 1;
