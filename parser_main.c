@@ -986,6 +986,7 @@ int process_binary(int option, aa_kernel_interface *kernel_interface,
 
 void reset_parser(const char *filename)
 {
+	PDEBUG("Resetting parser for profile %s\n", filename);
 	memset(&mru_policy_tstamp, 0, sizeof(mru_policy_tstamp));
 	memset(&cache_tstamp, 0, sizeof(cache_tstamp));
 	mru_skip_cache = 1;
