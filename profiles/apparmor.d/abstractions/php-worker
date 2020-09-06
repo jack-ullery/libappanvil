@@ -9,7 +9,7 @@
   # common php files and support files that php needs
   include <abstractions/php>
 
-  signal (receive) peer=/usr/sbin/php-fpm*,
+  signal (receive) peer=php-fpm,
 
   # This is some php opcaching file
   /tmp/.ZendSem.* rwk,
