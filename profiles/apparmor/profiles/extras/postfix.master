@@ -35,7 +35,7 @@ profile postfix-master /usr/lib/postfix/{bin/,sbin/,}master {
 
   /{var/spool/postfix/,}private/*                 wl,
   /{var/spool/postfix/,}private/tlsmgr            rwl,
-  /{var/spool/postfix/,}public/{cleanup,flush,pickup,qmgr,showq,tlsmgr} rwl,
+  /{var/spool/postfix/,}public/{cleanup,flush,pickup,postlog,qmgr,showq,tlsmgr} rwl,
 
   /usr/lib/postfix/{bin/,sbin/,}anvil               Px,
   /usr/lib/postfix/{bin/,sbin/,}bounce              Px,
