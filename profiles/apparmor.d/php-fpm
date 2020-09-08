@@ -56,5 +56,5 @@ profile php-fpm /usr/sbin/php-fpm* flags=(attach_disconnected) {
   include if exists <php-fpm.d>
 
   # Site-specific additions and overrides. See local/README for details.
-  include if exists <local/usr.sbin.php-fpm>
+  include if exists <local/php-fpm>
 }
