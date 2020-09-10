@@ -44,7 +44,9 @@ static int connection_based_messaging(int sock, struct sockaddr_un *peer_addr,
 	if (peer_addr) {
 		rc = connect(sock, (struct sockaddr *)peer_addr, peer_addr_len);
 		if (rc < 0) {
-			perror("FAIL CLIENT - connect");
+                        if (peer_addr_len > 0 && peer_addr->sun_path[0] == 0)
+                                peer_addr->sun_path[0] = '@';
+			fprintf(stderr, "FAIL CLIENT - connect '%s'(%d): %m", peer_addr->sun_path, peer_addr_len);
 			exit(1);
 		}
 	}

@@ -29,6 +29,9 @@
 #include "profile.h"
 #include "af_unix.h"
 
+/* See unix(7) for autobind address definiation */
+#define autobind_address_pattern "\\x00[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]";
+
 int parse_unix_mode(const char *str_mode, int *mode, int fail)
 {
 	return parse_X_mode("unix", AA_VALID_NET_PERMS, str_mode, mode, fail);
@@ -54,7 +57,9 @@ void unix_rule::move_conditionals(struct cond_entry *conds)
 		}
 		if (strcmp(ent->name, "addr") == 0) {
 			move_conditional_value("unix socket", &addr, ent);
-			if (addr[0] != '@' && strcmp(addr, "none") != 0)
+			if (addr[0] != '@' &&
+			    !(strcmp(addr, "none") == 0 ||
+			      strcmp(addr, "auto") == 0))
 				yyerror("unix rule: invalid value for addr='%s'\n", addr);
 		}
 
@@ -82,7 +87,9 @@ void unix_rule::move_peer_conditionals(struct cond_entry *conds)
 		}
 		if (strcmp(ent->name, "addr") == 0) {
 			move_conditional_value("unix", &peer_addr, ent);
-			if (peer_addr[0] != '@' && strcmp(peer_addr, "none") != 0)
+			if ((peer_addr[0] != '@') &&
+			    !(strcmp(peer_addr, "none") == 0 ||
+			      strcmp(peer_addr, "auto") == 0))
 				yyerror("unix rule: invalid value for addr='%s'\n", peer_addr);
 		}
 	}
@@ -222,6 +229,12 @@ bool unix_rule::write_addr(std::ostringstream &buffer, const char *addr)
 		if (strcmp(addr, "none") == 0) {
 			/* anonymous */
 			buffer << "\\x01";
+		} else if (strcmp(addr, "auto") == 0) {
+			/* autobind - special autobind rule written already
+			 * just generate pattern that matches autobind
+			 * generated addresses.
+			 */
+			buffer << autobind_address_pattern;
 		} else {
 			/* skip leading @ */
 			ptype = convert_aaregex_to_pcre(addr + 1, 0, glob_null, buf, &pos);
@@ -321,6 +334,33 @@ int unix_rule::gen_policy_re(Profile &prof)
 						 dfaflags))
 			goto fail;
 		mask &= ~AA_NET_CREATE;
+	}
+
+	/* write special pattern for autobind? Will not grant bind
+	 * on any specific address
+	 */
+	if ((mask & AA_NET_BIND) && (!addr || (strcmp(addr, "auto") == 0))) {
+		std::ostringstream tmp;
+
+		tmp << buffer.str();
+		/* todo: change to out of band separator */
+		/* skip addr, its 0 length */
+		tmp << "\\x00";
+		/* local label option */
+		if (!write_label(tmp, label))
+			goto fail;
+		/* seperator */
+		tmp << "\\x00";
+
+		buf = tmp.str();
+		if (!prof.policy.rules->add_rule(buf.c_str(), deny,
+						 map_perms(AA_NET_BIND),
+						 map_perms(audit & AA_NET_BIND),
+						 dfaflags))
+			goto fail;
+		/* clear if auto, else generic need to generate addr below */
+		if (addr)
+			mask &= ~AA_NET_BIND;
 	}
 
 	if (mask) {

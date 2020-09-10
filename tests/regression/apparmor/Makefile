@@ -242,6 +242,7 @@ TESTS=aa_exec \
       unix_socket_pathname \
       unix_socket_abstract \
       unix_socket_unnamed \
+      unix_socket_autobind \
       unlink\
       xattrs\
       xattrs_profile\

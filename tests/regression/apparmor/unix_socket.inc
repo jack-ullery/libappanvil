@@ -18,7 +18,7 @@ message=4a0c83d87aaa7afa2baab5df3ee4df630f0046d5bfb7a3080c550b721f401b3b\
 
 do_test()
 {
-	local addr_type="$1" # abstract or unnamed
+	local addr_type="$1" # abstract, auto or unnamed
 	local test_prog="$2" # server or client
 	local l_u_access="$3" # optional local unbound perms
 	local l_b_access="$4" # local bound perms
