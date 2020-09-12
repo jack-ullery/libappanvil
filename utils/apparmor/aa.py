@@ -516,6 +516,12 @@ def get_profile(prof_name):
     orig_filename = inactive_profile[prof_name][prof_name]['filename']  # needed for CMD_VIEW_PROFILE
     inactive_profile[prof_name][prof_name]['filename'] = ''
 
+    # ensure active_profiles has the /etc/apparmor.d/ filename initialized
+    # TODO: ideally serialize_profile() shouldn't always use active_profiles
+    prof_filename = get_new_profile_filename(prof_name)
+    if not active_profiles.files.get(prof_filename):
+        active_profiles.init_file(prof_filename)
+
     uname = 'Inactive local profile for %s' % prof_name
     profile_hash = {
         uname: {
