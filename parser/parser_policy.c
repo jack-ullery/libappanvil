@@ -204,9 +204,8 @@ static int profile_add_hat_rules(Profile *prof)
 {
 	struct cod_entry *entry;
 
-	/* TODO: ??? fix logic for when to add to hat/base vs. local */
-	/* don't add hat rules for local_profiles or base profiles */
-	if (prof->local || prof->hat_table.empty())
+	/* don't add hat rules if not hat or profile doesn't have hats */
+	if (!prof->flags.hat || !prof->hat_table.empty())
 		return 0;
 
 	/* add entry to hat */
