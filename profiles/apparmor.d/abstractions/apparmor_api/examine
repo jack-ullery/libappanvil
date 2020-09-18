@@ -11,4 +11,4 @@
 
 abi <abi/3.0>,
 
-@{PROC}/@{pids}/attr/{current,prev,exec} r,
+@{PROC}/@{pids}/attr/{apparmor/,}{current,prev,exec} r,
