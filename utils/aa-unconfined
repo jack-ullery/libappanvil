@@ -99,6 +99,20 @@ def get_pids_netstat(netstat='netstat'):
     return pids
 
 
+def read_proc_current(filename):
+    attr = None
+
+    if os.path.exists(filename):
+        with apparmor.common.open_file_read(filename) as current:
+            for line in current:
+                line = line.strip()
+                if line.endswith(' (complain)', 1) or line.endswith(' (enforce)', 1) or line.endswith(' (kill)', 1):  # enforce at least one char as profile name
+                    # intentionally not checking for '(unconfined)', because   $binary confined by $profile (unconfined)   would look very confusing
+                    attr = line
+
+    return attr
+
+
 pids = set()
 if paranoid:
     pids = get_all_pids()
@@ -112,13 +126,10 @@ for pid in sorted(map(int, pids)):
         prog = os.readlink("/proc/%s/exe" % pid)
     except OSError:
         continue
-    attr = None
-    if os.path.exists("/proc/%s/attr/current" % pid):
-        with apparmor.common.open_file_read("/proc/%s/attr/current" % pid) as current:
-            for line in current:
-                line = line.strip()
-                if line.endswith(' (complain)', 1) or line.endswith(' (enforce)', 1):  # enforce at least one char as profile name
-                    attr = line
+
+    attr = read_proc_current("/proc/%s/attr/apparmor/current" % pid)
+    if not attr:
+        attr = read_proc_current("/proc/%s/attr/current" % pid)
 
     pname = None
     cmdline = None
