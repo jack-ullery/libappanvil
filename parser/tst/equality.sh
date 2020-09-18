@@ -545,7 +545,23 @@ verify_binary_equality "set rlimit memlock <= 2GB" \
                        "/t { set rlimit memlock <= 2GB, }" \
                        "/t { set rlimit memlock <= $((2 * 1024)) MB, }" \
                        "/t { set rlimit memlock <= $((2 * 1024 * 1024)) KB, }" \
-                       "/t { set rlimit memlock <= $((2 * 1024 * 1024 * 1024)) , }" \
+                       "/t { set rlimit memlock <= $((2 * 1024 * 1024 * 1024)) , }"
+
+# Unfortunately we can not just compare an empty profile and hat to a
+# ie. "/t { ^test { /f r, }}"
+# to the second profile with the equivalent rule inserted manually
+# because policy write permission "w" actually expands to mutiple permissions
+# under the hood, and the parser is not adding those permissions
+# to the rules it auto generates
+# So we insert the rule with "append" permissions, and rely on the parser
+# merging permissions of rules.
+# If the parser isn't adding the rules "append" is not equivalent to
+# the "write" permission in the second profile and the test will fail.
+# If the parser is adding the change_hat proc attr rules then the
+# rules should merge and be equivalent.
+verify_binary_equality "change_hat rules automatically inserted"\
+		       "/t { owner /proc/[0-9]*/attr/{apparmor/,}current a, ^test { owner /proc/[0-9]*/attr/{apparmor/,}current a, /f r, }}" \
+		       "/t { owner /proc/[0-9]*/attr/{apparmor/,}current w, ^test { owner /proc/[0-9]*/attr/{apparmor/,}current w, /f r, }}"
 
 if [ $fails -ne 0 ] || [ $errors -ne 0 ]
 then
