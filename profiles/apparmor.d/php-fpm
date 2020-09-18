@@ -30,7 +30,7 @@ profile php-fpm /usr/sbin/php-fpm* flags=(attach_disconnected) {
   capability dac_override,
 
   # we need write access here to move it into a different apparmor sub profile
-  @{PROC}/@{pid}/attr/current rw,
+  @{PROC}/@{pid}/attr/{apparmor/,}current rw,
 
   # the main log file
   /var/log/php*-fpm.log rw,

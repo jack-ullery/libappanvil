@@ -35,7 +35,7 @@ profile dovecot-imap /usr/lib/dovecot/imap {
   /etc/dovecot/conf.d/** r,
 
   owner /tmp/dovecot.imap.* rw,
-  @{PROC}/@{pid}/attr/current rw,
+  @{PROC}/@{pid}/attr/{apparmor/,}current rw,
   /usr/bin/doveconf rix,
   /usr/lib/dovecot/imap mrix,
   /usr/share/dovecot/** r,
