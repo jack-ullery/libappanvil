@@ -106,7 +106,8 @@ def read_proc_current(filename):
         with apparmor.common.open_file_read(filename) as current:
             for line in current:
                 line = line.strip()
-                if line.endswith(' (complain)', 1) or line.endswith(' (enforce)', 1):  # enforce at least one char as profile name
+                if line.endswith(' (complain)', 1) or line.endswith(' (enforce)', 1) or line.endswith(' (kill)', 1):  # enforce at least one char as profile name
+                    # intentionally not checking for '(unconfined)', because   $binary confined by $profile (unconfined)   would look very confusing
                     attr = line
 
     return attr
