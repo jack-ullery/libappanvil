@@ -205,7 +205,7 @@ static int profile_add_hat_rules(Profile *prof)
 	struct cod_entry *entry;
 
 	/* don't add hat rules if not hat or profile doesn't have hats */
-	if (!prof->flags.hat || !prof->hat_table.empty())
+	if (!prof->flags.hat && prof->hat_table.empty())
 		return 0;
 
 	/* add entry to hat */
