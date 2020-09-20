@@ -151,9 +151,6 @@ log_to_skip = [
 
 # tests that do not produce the expected profile (checked with assertNotEqual)
 log_to_profile_known_failures = [
-    'testcase_dmesg_changeprofile_01',  # change_profile not yet supported in logparser
-    'testcase_changeprofile_01',        # change_profile not yet supported in logparser
-
     'testcase_mount_01',  # mount rules not yet supported in logparser
 
     'testcase_pivotroot_01',  # pivot_rot not yet supported in logparser
@@ -178,12 +175,10 @@ log_to_profile_skip = [
 # tests that cause an empty log
 log_to_profile_known_empty_log = [
     'change_onexec_lp1648143',  # change_onexec not supported in logparser.py yet (and the log is about "no new privs" error)
-    'testcase_changeprofile_01',  # change_profile not supported in logparser.py yet
     'testcase_mount_01',  # mount rules not supported in logparser
     'testcase_pivotroot_01',  # pivotroot not yet supported in logparser
     'ptrace_garbage_lp1689667_1',  # no denied= in log
     'ptrace_no_denied_mask',  # no denied= in log
-    'testcase_dmesg_changeprofile_01',  # change_profile not yet supported in logparser
     'unconfined-change_hat',  # unconfined trying to change_hat, which isn't allowed
 ]
 
