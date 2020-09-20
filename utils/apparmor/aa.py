@@ -1152,7 +1152,7 @@ def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
                         newincludes = match_includes(the_profile, ruletype, rule_obj)
                         q = aaui.PromptQuestion()
                         if newincludes:
-                            options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
+                            options += list(map(lambda inc: 'include <%s>' % inc, sorted(set(newincludes))))
 
                         if ruletype == 'file' and rule_obj.path:
                             options += propose_file_rules(the_profile, rule_obj)
