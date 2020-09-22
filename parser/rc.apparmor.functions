@@ -43,6 +43,9 @@ if [ -d /etc/apparmor.d ] ; then
 else
 	aa_log_warning_msg "Unable to find profiles directory, installation problem?"
 fi
+
+# Eg. snapd policy might need this on some systems if loading policy
+#     during early boot if not using the snapd unit file
 ADDITIONAL_PROFILE_DIR=
 if [ -n "$ADDITIONAL_PROFILE_DIR" ] && [ -d "$ADDITIONAL_PROFILE_DIR" ]; then
 	PROFILE_DIRS="$PROFILE_DIRS $ADDITIONAL_PROFILE_DIR"
