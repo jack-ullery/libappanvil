@@ -43,8 +43,8 @@ if [ -d /etc/apparmor.d ] ; then
 else
 	aa_log_warning_msg "Unable to find profiles directory, installation problem?"
 fi
-ADDITIONAL_PROFILE_DIR=/var/lib/snapd/apparmor/profiles
-if [ -d "$ADDITIONAL_PROFILE_DIR" ]; then
+ADDITIONAL_PROFILE_DIR=
+if [ -n "$ADDITIONAL_PROFILE_DIR" ] && [ -d "$ADDITIONAL_PROFILE_DIR" ]; then
 	PROFILE_DIRS="$PROFILE_DIRS $ADDITIONAL_PROFILE_DIR"
 fi
 AA_STATUS=/usr/sbin/aa-status
