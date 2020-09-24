@@ -181,18 +181,23 @@ def split_flags(flags):
     # sort and remove duplicates
     return sorted(set(flags_list))
 
-def add_or_remove_flag(flags, flag_to_change, set_flag):
-    '''add (if set_flag == True) or remove the given flag_to_change to flags'''
+def add_or_remove_flag(flags, flags_to_change, set_flag):
+    '''add (if set_flag == True) or remove the given flags_to_change to flags'''
 
     if type_is_str(flags) or flags is None:
         flags = split_flags(flags)
 
+    if type_is_str(flags_to_change) or flags_to_change is None:
+        flags_to_change = split_flags(flags_to_change)
+
     if set_flag:
-        if flag_to_change not in flags:
-            flags.append(flag_to_change)
+        for flag_to_change in flags_to_change:
+            if flag_to_change not in flags:
+                flags.append(flag_to_change)
     else:
-        if flag_to_change in flags:
-            flags.remove(flag_to_change)
+        for flag_to_change in flags_to_change:
+            if flag_to_change in flags:
+                flags.remove(flag_to_change)
 
     return sorted(flags)
 
