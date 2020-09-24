@@ -33,7 +33,7 @@ from copy import deepcopy
 from apparmor.aare import AARE
 
 from apparmor.common import (AppArmorException, AppArmorBug, is_skippable_file, open_file_read, valid_path, hasher,
-                             split_name, open_file_write, DebugLogger)
+                             split_name, type_is_str, open_file_write, DebugLogger)
 
 import apparmor.ui as aaui
 
@@ -292,6 +292,7 @@ def set_complain(filename, program):
     # a force-complain symlink is more packaging-friendly, but breaks caching
     # create_symlink('force-complain', filename)
     delete_symlink('disable', filename)
+    change_profile_flags(filename, program, ['enforce', 'kill', 'unconfined', 'prompt'], False)  # remove conflicting mode flags
     change_profile_flags(filename, program, 'complain', True)
 
 def set_enforce(filename, program):
@@ -299,7 +300,7 @@ def set_enforce(filename, program):
     aaui.UI_Info(_('Setting %s to enforce mode.') % (filename if program is None else program))
     delete_symlink('force-complain', filename)
     delete_symlink('disable', filename)
-    change_profile_flags(filename, program, 'complain', False)
+    change_profile_flags(filename, program, ['complain', 'kill', 'unconfined', 'prompt'], False)  # remove conflicting and complain mode flags
 
 def delete_symlink(subdir, filename):
     path = filename
@@ -617,7 +618,7 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
 
     found = False
 
-    if not flag or flag.strip() == '':
+    if not flag or (type_is_str(flag) and flag.strip() == ''):
         raise AppArmorBug('New flag for %s is empty' % prof_filename)
 
     with open_file_read(prof_filename) as f_in:
