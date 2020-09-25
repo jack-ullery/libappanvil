@@ -1612,6 +1612,11 @@ def collapse_log(hashlog, ignore_null_profiles=True):
                     if not hat_exists or not is_known_rule(aa[profile][hat], 'capability', cap_event):
                         log_dict[aamode][profile][hat]['capability'].add(cap_event)
 
+                for cp in hashlog[aamode][full_profile]['change_profile'].keys():
+                    cp_event = ChangeProfileRule(None, ChangeProfileRule.ALL, cp, log_event=True)
+                    if not hat_exists or not is_known_rule(aa[profile][hat], 'change_profile', cp_event):
+                        log_dict[aamode][profile][hat]['change_profile'].add(cp_event)
+
                 dbus = hashlog[aamode][full_profile]['dbus']
                 for access in                               dbus:
                     for bus in                              dbus[access]:

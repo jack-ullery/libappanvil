@@ -49,6 +49,7 @@ class ReadLog:
             'final_name':   profile,  # might be changed for null-* profiles based on exec decisions
             'capability':   {},  # flat, no hasher needed
             'change_hat':   {},  # flat, no hasher needed
+            'change_profile': {},  # flat, no hasher needed  (at least in logparser which doesn't support EXEC MODE and EXEC COND)
             'dbus':         hasher(),
             'exec':         hasher(),
             'network':      hasher(),
@@ -228,6 +229,10 @@ class ReadLog:
                 return None
 
             self.hashlog[aamode][full_profile]['change_hat'][e['name2']] = True
+            return None
+
+        elif e['operation'] == 'change_profile':
+            self.hashlog[aamode][full_profile]['change_profile'][e['name2']] = True
             return None
 
         elif e['operation'] == 'ptrace':
