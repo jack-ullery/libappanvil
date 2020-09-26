@@ -263,6 +263,24 @@ verify_binary_equality "dbus minimization found in dbus abstractions" \
                    peer=(name=org.freedesktop.DBus),
 	      dbus send bus=session, }"
 
+# verify slash filtering for dbus paths.
+verify_binary_equality "dbus slash filtering for paths" \
+	"/t { dbus (send, receive) path=/com/foo, dbus (send, receive) path=/com/bar, }" \
+	"/t { dbus (send, receive) path=/com///foo, dbus (send, receive) path=///com/bar, }" \
+	"/t { dbus (send, receive) path=/com//{foo,bar}, }" \
+	"/t { dbus (send, receive) path={//com/foo,/com//bar}, }" \
+	"@{FOO}=/foo
+	    /t { dbus (send, receive) path=/com/@{FOO}, dbus (send, receive) path=/com/bar, }" \
+	"@{FOO}=/foo /bar
+	    /t { dbus (send, receive) path=/com/@{FOO}, }" \
+	"@{FOO}=/bar //foo
+	    /t { dbus (send, receive) path=/com/@{FOO}, }" \
+	"@{FOO}=//{bar,foo}
+	    /t { dbus (send, receive) path=/com/@{FOO}, }" \
+	"@{FOO}=/foo
+	 @{BAR}=bar
+	    /t { dbus (send, receive) path=/com/@{FOO}, dbus (send, receive) path=/com//@{BAR}, }"
+
 # Rules compatible with audit, deny, and audit deny
 # note: change_profile does not support audit/allow/deny atm
 for rule in "capability" "capability mac_admin" \
