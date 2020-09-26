@@ -563,6 +563,20 @@ verify_binary_equality "change_hat rules automatically inserted"\
 		       "/t { owner /proc/[0-9]*/attr/{apparmor/,}current a, ^test { owner /proc/[0-9]*/attr/{apparmor/,}current a, /f r, }}" \
 		       "/t { owner /proc/[0-9]*/attr/{apparmor/,}current w, ^test { owner /proc/[0-9]*/attr/{apparmor/,}current w, /f r, }}"
 
+# verify slash filtering for unix socket address paths.
+# see https://bugs.launchpad.net/apparmor/+bug/1856738
+verify_binary_equality "unix rules addr conditional" \
+                       "/t { unix bind addr=@/a/bar, }" \
+                       "/t { unix bind addr=@/a//bar, }" \
+                       "/t { unix bind addr=@//a/bar, }" \
+                       "/t { unix bind addr=@/a///bar, }" \
+                       "@{HOME}=/a/
+                           /t { unix bind addr=@@{HOME}/bar, }" \
+                       "@{HOME}=/a/
+                           /t { unix bind addr=@//@{HOME}bar, }" \
+                       "@{HOME}=/a/
+                           /t { unix bind addr=@/@{HOME}/bar, }"
+
 if [ $fails -ne 0 ] || [ $errors -ne 0 ]
 then
 	printf "ERRORS: %d\nFAILS: %d\n" $errors $fails 2>&1
