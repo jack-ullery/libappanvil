@@ -595,6 +595,17 @@ verify_binary_equality "unix rules addr conditional" \
                        "@{HOME}=/a/
                            /t { unix bind addr=@/@{HOME}/bar, }"
 
+# verify slash filtering for mount rules
+verify_binary_equality "mount rules slash filtering" \
+                       "/t { mount /dev/foo -> /mnt/bar, }" \
+                       "/t { mount ///dev/foo -> /mnt/bar, }" \
+                       "/t { mount /dev/foo -> /mnt//bar, }" \
+                       "/t { mount /dev///foo -> ////mnt/bar, }" \
+                       "@{MNT}=/mnt/
+                           /t { mount /dev///foo -> @{MNT}/bar, }" \
+                       "@{FOO}=/foo
+                           /t { mount /dev//@{FOO} -> /mnt/bar, }"
+
 if [ $fails -ne 0 ] || [ $errors -ne 0 ]
 then
 	printf "ERRORS: %d\nFAILS: %d\n" $errors $fails 2>&1
