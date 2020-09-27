@@ -59,6 +59,7 @@ profile dovecot /usr/{bin,sbin}/dovecot flags=(attach_disconnected) {
   /usr/lib/dovecot/managesieve-login Pxmr,
   /usr/lib/dovecot/pop3 mrPx,
   /usr/lib/dovecot/pop3-login Pxmr,
+  /usr/lib/dovecot/script-login Px,
   /usr/lib/dovecot/ssl-build-param rix,
   /usr/lib/dovecot/ssl-params mrPx,
   /usr/lib/dovecot/stats Px,
