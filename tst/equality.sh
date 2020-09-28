@@ -595,6 +595,18 @@ verify_binary_equality "unix rules addr conditional" \
                        "@{HOME}=/a/
                            /t { unix bind addr=@/@{HOME}/bar, }"
 
+verify_binary_equality "unix rules peer addr conditional" \
+                       "/t { unix peer=(addr=@/a/bar), }" \
+                       "/t { unix peer=(addr=@/a//bar), }" \
+                       "/t { unix peer=(addr=@//a/bar), }" \
+                       "/t { unix peer=(addr=@/a///bar), }" \
+                       "@{HOME}=/a/
+                           /t { unix peer=(addr=@@{HOME}/bar), }" \
+                       "@{HOME}=/a/
+                           /t { unix peer=(addr=@//@{HOME}bar), }" \
+                       "@{HOME}=/a/
+                           /t { unix peer=(addr=@/@{HOME}/bar), }"
+
 # verify slash filtering for mount rules
 verify_binary_equality "mount rules slash filtering" \
                        "/t { mount /dev/foo -> /mnt/bar, }" \
