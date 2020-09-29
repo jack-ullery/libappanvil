@@ -330,6 +330,7 @@ extern int net_af_max_override;
 extern int kernel_load;
 extern int kernel_supports_setload;
 extern int features_supports_network;
+extern int features_supports_networkv8;
 extern int kernel_supports_policydb;
 extern int kernel_supports_diff_encode;
 extern int features_supports_mount;

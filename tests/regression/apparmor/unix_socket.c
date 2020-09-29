@@ -29,6 +29,7 @@
 
 #define MSG_BUF_MAX 		1024
 #define PATH_FOR_UNNAMED	"none"
+#define PATH_FOR_AUTOBIND	"auto"
 
 static int connection_based_messaging(int sock, int sock_is_peer_sock,
 				      char *msg_buf, size_t msg_buf_len)
@@ -99,7 +100,7 @@ int main (int argc, char *argv[])
 	size_t sun_path_len;
 	pid_t pid;
 	int sock, peer_sock, type, rc;
-	int unnamed = 0;
+	int unnamed = 0, autobind = 0;
 
 	if (argc != 5) {
 		fprintf(stderr,
@@ -124,6 +125,9 @@ int main (int argc, char *argv[])
 		addr.sun_path[0] = '\0';
 	} else if (!strcmp(sun_path, PATH_FOR_UNNAMED)) {
 		unnamed = 1;
+	} else if (!strcmp(sun_path, PATH_FOR_AUTOBIND)) {
+		sun_path_len = 0;
+		autobind = 1;
 	} else {
 		/* include the nul terminator for pathname addr types */
 		sun_path_len++;
@@ -194,6 +198,21 @@ int main (int argc, char *argv[])
 				perror("FAIL - listen");
 				exit(1);
 			}
+		}
+
+		if (autobind) {
+			unsigned int len = sizeof(addr);
+			rc = getsockname(sock, (struct sockaddr *) &addr, &len);
+			if (rc < 0) {
+				perror("FAIL - getsockname");
+				exit(1);
+			}
+			if (len > sizeof(addr)) {
+				perror("FAIL - getsockname: address too long");
+				exit(1);
+			}
+			addr.sun_path[0] = '@';
+			sun_path = addr.sun_path;
 		}
 	}
 

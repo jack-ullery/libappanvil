@@ -195,7 +195,8 @@ bool aare_rules::append_rule(const char *rule, bool oob, bool with_perm,
  *          else NULL on failure, @min_match_len set to the shortest string
  *          that can match the dfa for determining xmatch priority.
  */
-void *aare_rules::create_dfa(size_t *size, int *min_match_len, dfaflags_t flags)
+void *aare_rules::create_dfa(size_t *size, int *min_match_len, dfaflags_t flags,
+			     bool filedfa)
 {
 	char *buffer = NULL;
 
@@ -249,7 +250,7 @@ void *aare_rules::create_dfa(size_t *size, int *min_match_len, dfaflags_t flags)
 
 	stringstream stream;
 	try {
-		DFA dfa(root, flags);
+		DFA dfa(root, flags, filedfa);
 		if (flags & DFA_DUMP_UNIQ_PERMS)
 			dfa.dump_uniq_perms("dfa");
 

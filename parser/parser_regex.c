@@ -557,7 +557,7 @@ static int process_profile_name_xmatch(Profile *prof)
 			}
 		}
 build:
-		prof->xmatch = rules->create_dfa(&prof->xmatch_size, &prof->xmatch_len, dfaflags);
+		prof->xmatch = rules->create_dfa(&prof->xmatch_size, &prof->xmatch_len, dfaflags, true);
 		delete rules;
 		if (!prof->xmatch)
 			return FALSE;
@@ -755,7 +755,7 @@ int process_profile_regex(Profile *prof)
 	if (prof->dfa.rules->rule_count > 0) {
 		int xmatch_len = 0;
 		prof->dfa.dfa = prof->dfa.rules->create_dfa(&prof->dfa.size,
-							    &xmatch_len, dfaflags);
+							    &xmatch_len, dfaflags, true);
 		delete prof->dfa.rules;
 		prof->dfa.rules = NULL;
 		if (!prof->dfa.dfa)
@@ -840,6 +840,80 @@ int post_process_policydb_ents(Profile *prof)
 	return TRUE;
 }
 
+
+static bool gen_net_rule(Profile *prof, u16 family, unsigned int type_mask,
+			 bool audit, bool deny) {
+	std::ostringstream buffer;
+	std::string buf;
+
+	buffer << "\\x" << std::setfill('0') << std::setw(2) << std::hex << AA_CLASS_NETV8;
+	buffer << "\\x" << std::setfill('0') << std::setw(2) << std::hex << ((family & 0xff00) >> 8);
+	buffer << "\\x" << std::setfill('0') << std::setw(2) << std::hex << (family & 0xff);
+	if (type_mask > 0xffff) {
+		buffer << "..";
+	} else {
+		buffer << "\\x" << std::setfill('0') << std::setw(2) << std::hex << ((type_mask & 0xff00) >> 8);
+		buffer << "\\x" << std::setfill('0') << std::setw(2) << std::hex << (type_mask & 0xff);
+	}
+	buf = buffer.str();
+	if (!prof->policy.rules->add_rule(buf.c_str(), deny, map_perms(AA_VALID_NET_PERMS),
+					  audit ? map_perms(AA_VALID_NET_PERMS) : 0,
+					  dfaflags))
+		return false;
+
+	return true;
+}
+
+static bool gen_af_rules(Profile *prof, u16 family, unsigned int type_mask,
+			  unsigned int audit_mask, bool deny)
+{
+	if (type_mask > 0xffff && audit_mask > 0xffff) {
+		/* instead of generating multiple rules wild card type */
+		return gen_net_rule(prof, family, type_mask, audit_mask, deny);
+	} else {
+		int t;
+		/* generate rules for types that are set */
+		for (t = 0; t < 16; t++) {
+			if (type_mask & (1 << t)) {
+				if (!gen_net_rule(prof, family, t,
+						  audit_mask & (1 << t),
+						  deny))
+					return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+bool post_process_policydb_net(Profile *prof)
+{
+	u16 af;
+
+	/* no network rules defined so we don't have generate them */
+	if (!prof->net.allow)
+		return true;
+
+	/* generate rules if the af has something set */
+	for (af = AF_UNSPEC; af < get_af_max(); af++) {
+		if (prof->net.allow[af] ||
+		    prof->net.deny[af] ||
+		    prof->net.audit[af] ||
+		    prof->net.quiet[af]) {
+			if (!gen_af_rules(prof, af, prof->net.allow[af],
+					  prof->net.audit[af],
+					  false))
+				return false;
+			if (!gen_af_rules(prof, af, prof->net.deny[af],
+					  prof->net.quiet[af],
+					  true))
+				return false;
+		}
+	}
+
+	return true;
+}
+
 #define MAKE_STR(X) #X
 #define CLASS_STR(X) "\\d" MAKE_STR(X)
 #define MAKE_SUB_STR(X) "\\000" MAKE_STR(X)
@@ -851,6 +925,7 @@ static const char *mediates_dbus =  CLASS_STR(AA_CLASS_DBUS);
 static const char *mediates_signal =  CLASS_STR(AA_CLASS_SIGNAL);
 static const char *mediates_ptrace =  CLASS_STR(AA_CLASS_PTRACE);
 static const char *mediates_extended_net = CLASS_STR(AA_CLASS_NET);
+static const char *mediates_netv8 = CLASS_STR(AA_CLASS_NETV8);
 static const char *mediates_net_unix = CLASS_SUB_STR(AA_CLASS_NET, AF_UNIX);
 
 int process_profile_policydb(Profile *prof)
@@ -862,6 +937,9 @@ int process_profile_policydb(Profile *prof)
 		goto out;
 
 	if (!post_process_policydb_ents(prof))
+		goto out;
+	/* TODO: move to network class */
+	if (features_supports_networkv8 && !post_process_policydb_net(prof))
 		goto out;
 
 	/* insert entries to show indicate what compiler/policy expects
@@ -884,6 +962,9 @@ int process_profile_policydb(Profile *prof)
 	if (features_supports_ptrace &&
 	    !prof->policy.rules->add_rule(mediates_ptrace, 0, AA_MAY_READ, 0, dfaflags))
 		goto out;
+	if (features_supports_networkv8 &&
+	    !prof->policy.rules->add_rule(mediates_netv8, 0, AA_MAY_READ, 0, dfaflags))
+		goto out;
 	if (features_supports_unix &&
 	    (!prof->policy.rules->add_rule(mediates_extended_net, 0, AA_MAY_READ, 0, dfaflags) ||
 	     !prof->policy.rules->add_rule(mediates_net_unix, 0, AA_MAY_READ, 0, dfaflags)))
@@ -892,7 +973,7 @@ int process_profile_policydb(Profile *prof)
 	if (prof->policy.rules->rule_count > 0) {
 		int xmatch_len = 0;
 		prof->policy.dfa = prof->policy.rules->create_dfa(&prof->policy.size,
-														  &xmatch_len, dfaflags);
+								  &xmatch_len, dfaflags, false);
 		delete prof->policy.rules;
 
 		prof->policy.rules = NULL;

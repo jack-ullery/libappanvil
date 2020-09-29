@@ -91,6 +91,15 @@ struct aa_network_entry {
 	struct aa_network_entry *next;
 };
 
+static inline uint32_t map_perms(uint32_t mask)
+{
+	return (mask & 0x7f) |
+		((mask & (AA_NET_GETATTR | AA_NET_SETATTR)) << (AA_OTHER_SHIFT - 8)) |
+		((mask & (AA_NET_ACCEPT | AA_NET_BIND | AA_NET_LISTEN)) >> 4) | /* 2 + (AA_OTHER_SHIFT - 20) */
+		((mask & (AA_NET_SETOPT | AA_NET_GETOPT)) >> 5); /* 5 + (AA_OTHER_SHIFT - 24) */
+};
+
+
 int parse_net_mode(const char *str_mode, int *mode, int fail);
 extern struct aa_network_entry *new_network_ent(unsigned int family,
 						unsigned int type,
