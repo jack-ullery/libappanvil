@@ -402,6 +402,7 @@ extern int post_process_entry(struct cod_entry *entry);
 extern int process_policydb(Profile *prof);
 
 extern int process_policy_ents(Profile *prof);
+extern void filter_slashes(char *path);
 
 /* parser_variable.c */
 int expand_entry_variables(char **name);

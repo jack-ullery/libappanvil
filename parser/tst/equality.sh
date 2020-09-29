@@ -263,6 +263,24 @@ verify_binary_equality "dbus minimization found in dbus abstractions" \
                    peer=(name=org.freedesktop.DBus),
 	      dbus send bus=session, }"
 
+# verify slash filtering for dbus paths.
+verify_binary_equality "dbus slash filtering for paths" \
+	"/t { dbus (send, receive) path=/com/foo, dbus (send, receive) path=/com/bar, }" \
+	"/t { dbus (send, receive) path=/com///foo, dbus (send, receive) path=///com/bar, }" \
+	"/t { dbus (send, receive) path=/com//{foo,bar}, }" \
+	"/t { dbus (send, receive) path={//com/foo,/com//bar}, }" \
+	"@{FOO}=/foo
+	    /t { dbus (send, receive) path=/com/@{FOO}, dbus (send, receive) path=/com/bar, }" \
+	"@{FOO}=/foo /bar
+	    /t { dbus (send, receive) path=/com/@{FOO}, }" \
+	"@{FOO}=/bar //foo
+	    /t { dbus (send, receive) path=/com/@{FOO}, }" \
+	"@{FOO}=//{bar,foo}
+	    /t { dbus (send, receive) path=/com/@{FOO}, }" \
+	"@{FOO}=/foo
+	 @{BAR}=bar
+	    /t { dbus (send, receive) path=/com/@{FOO}, dbus (send, receive) path=/com//@{BAR}, }"
+
 # Rules compatible with audit, deny, and audit deny
 # note: change_profile does not support audit/allow/deny atm
 for rule in "capability" "capability mac_admin" \
@@ -562,6 +580,43 @@ verify_binary_equality "set rlimit memlock <= 2GB" \
 verify_binary_equality "change_hat rules automatically inserted"\
 		       "/t { owner /proc/[0-9]*/attr/{apparmor/,}current a, ^test { owner /proc/[0-9]*/attr/{apparmor/,}current a, /f r, }}" \
 		       "/t { owner /proc/[0-9]*/attr/{apparmor/,}current w, ^test { owner /proc/[0-9]*/attr/{apparmor/,}current w, /f r, }}"
+
+# verify slash filtering for unix socket address paths.
+# see https://bugs.launchpad.net/apparmor/+bug/1856738
+verify_binary_equality "unix rules addr conditional" \
+                       "/t { unix bind addr=@/a/bar, }" \
+                       "/t { unix bind addr=@/a//bar, }" \
+                       "/t { unix bind addr=@//a/bar, }" \
+                       "/t { unix bind addr=@/a///bar, }" \
+                       "@{HOME}=/a/
+                           /t { unix bind addr=@@{HOME}/bar, }" \
+                       "@{HOME}=/a/
+                           /t { unix bind addr=@//@{HOME}bar, }" \
+                       "@{HOME}=/a/
+                           /t { unix bind addr=@/@{HOME}/bar, }"
+
+verify_binary_equality "unix rules peer addr conditional" \
+                       "/t { unix peer=(addr=@/a/bar), }" \
+                       "/t { unix peer=(addr=@/a//bar), }" \
+                       "/t { unix peer=(addr=@//a/bar), }" \
+                       "/t { unix peer=(addr=@/a///bar), }" \
+                       "@{HOME}=/a/
+                           /t { unix peer=(addr=@@{HOME}/bar), }" \
+                       "@{HOME}=/a/
+                           /t { unix peer=(addr=@//@{HOME}bar), }" \
+                       "@{HOME}=/a/
+                           /t { unix peer=(addr=@/@{HOME}/bar), }"
+
+# verify slash filtering for mount rules
+verify_binary_equality "mount rules slash filtering" \
+                       "/t { mount /dev/foo -> /mnt/bar, }" \
+                       "/t { mount ///dev/foo -> /mnt/bar, }" \
+                       "/t { mount /dev/foo -> /mnt//bar, }" \
+                       "/t { mount /dev///foo -> ////mnt/bar, }" \
+                       "@{MNT}=/mnt/
+                           /t { mount /dev///foo -> @{MNT}/bar, }" \
+                       "@{FOO}=/foo
+                           /t { mount /dev//@{FOO} -> /mnt/bar, }"
 
 if [ $fails -ne 0 ] || [ $errors -ne 0 ]
 then

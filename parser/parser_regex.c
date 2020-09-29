@@ -47,7 +47,7 @@ enum error_type {
  * that's a distinct namespace in linux) and trailing slashes.
  * NOTE: modifies in place the contents of the path argument */
 
-static void filter_slashes(char *path)
+void filter_slashes(char *path)
 {
 	char *sptr, *dptr;
 	BOOL seen_slash = 0;
