@@ -148,11 +148,18 @@ test_sysctl_proc()
 # check if the kernel supports CONFIG_SYSCTL_SYSCALL
 # generally we want to encourage kernels to disable it, but if it's
 # enabled we want to test against it
-settest syscall_sysctl
-if ! res="$(${test} ro 2>&1)" && [ "$res" = "FAIL: sysctl read failed - Function not implemented" ] ; then
-    echo "	WARNING: syscall sysctl not implemented, skipping tests ..."
+# In addition test that sysctl exists in the kernel headers, if it does't
+# then we can't even built the syscall_sysctl test
+if  echo "#include <sys/sysctl.h>" | cpp -dM >/dev/null 2>/dev/null ; then
+    settest syscall_sysctl
+
+    if ! res="$(${test} ro 2>&1)" && [ "$res" = "FAIL: sysctl read failed - Function not implemented" ] ; then
+	echo "	WARNING: syscall sysctl not implemented, skipping tests ..."
+    else
+	test_syscall_sysctl
+    fi
 else
-    test_syscall_sysctl
+    echo "	WARNING: syscall sysctl not supported by kernel headers, skipping tests ..."
 fi
 
 # now test /proc/sys/ paths

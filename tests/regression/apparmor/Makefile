@@ -67,6 +67,8 @@ system aa-exec by adding USE_SYSTEM=1 to your make command.${nl}\
   LDLIBS += -Wl,-Bstatic -lapparmor -Wl,-Bdynamic -lpthread
 endif # USE_SYSTEM
 
+USE_SYSCTL:=$(shell echo "#include <sys/sysctl.h>" | cpp -dM >/dev/null 2>/dev/null && echo true)
+
 CFLAGS += -g -O0 $(EXTRA_WARNINGS)
 
 SRC=access.c \
@@ -130,7 +132,6 @@ SRC=access.c \
     syscall_sethostname.c \
     syscall_setdomainname.c \
     syscall_setscheduler.c \
-    syscall_sysctl.c \
     sysctl_proc.c \
     tcp.c \
     transition.c \
@@ -145,6 +146,12 @@ SRC=access.c \
 #only do the ioperm/iopl tests for x86 derived architectures
 ifneq (,$(findstring $(shell uname -i),i386 i486 i586 i686 x86 x86_64))
 SRC+=syscall_ioperm.c syscall_iopl.c
+endif
+
+#only do sysctl syscall test if defines installed and OR supported by the
+# kernel
+ifeq ($(USE_SYSCTL),true)
+SRC+=syscall_sysctl.c
 endif
 
 #only do dbus if proper libs are installl
