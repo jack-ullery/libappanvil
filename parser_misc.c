@@ -52,6 +52,13 @@
 #endif
 #define NPDEBUG(fmt, args...)	/* Do nothing */
 
+#ifndef HAVE_REALLOCARRAY
+void *reallocarray(void *ptr, size_t nmemb, size_t size)
+{
+	return realloc(ptr, nmemb * size);
+}
+#endif
+
 int is_blacklisted(const char *name, const char *path)
 {
 	int retval = _aa_is_blacklisted(name);
