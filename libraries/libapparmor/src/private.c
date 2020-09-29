@@ -49,7 +49,7 @@
  * Allow libapparmor to build on older glibcs and other libcs that do
  * not support reallocarray.
  */
-#ifndef HAVE_REALLOCARRY
+#ifndef HAVE_REALLOCARRAY
 void *reallocarray(void *ptr, size_t nmemb, size_t size)
 {
 	return realloc(ptr, nmemb * size);
