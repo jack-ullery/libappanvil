@@ -32,8 +32,19 @@ INSTALL_CONFDIR=${DESTDIR}${CONFDIR}
 LOCALEDIR=/usr/share/locale
 MANPAGES=apparmor.d.5 apparmor.7 apparmor_parser.8 aa-teardown.8 apparmor_xattrs.7
 
+# Test for bison version
+# parse.error added in version 3.0
+# default behavior changed in version 3.6
+# parse.error=verbose supported from 3.0 so just test on that
+# TODO move to autoconf
+BISON_MAJOR:=$(shell bison --version |  awk '/^bison/ { print ($$NF) }'  | awk -F. '{print $$1 }')
+USE_PARSE_ERROR:=$(shell test ${BISON_MAJOR} -ge 3 && echo true)
+
 YACC	:= bison
 YFLAGS	:= -d
+ifeq ($(USE_PARSE_ERROR),true)
+YFLAGS+=--define=parse.error=verbose
+endif
 LEX	:= flex
 LEXFLAGS = -B -v
 ifndef DEBUG
