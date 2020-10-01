@@ -67,7 +67,8 @@ system aa-exec by adding USE_SYSTEM=1 to your make command.${nl}\
   LDLIBS += -Wl,-Bstatic -lapparmor -Wl,-Bdynamic -lpthread
 endif # USE_SYSTEM
 
-USE_SYSCTL:=$(shell echo "#include <sys/sysctl.h>" | cpp -dM >/dev/null 2>/dev/null && echo true)
++SYSCTL_INCLUDE="\#include <sys/sysctl.h>"
++USE_SYSCTL:=$(shell echo $(SYSCTL_INCLUDE) | cpp -dM >/dev/null 2>/dev/null && echo true)
 
 CFLAGS += -g -O0 $(EXTRA_WARNINGS)
 

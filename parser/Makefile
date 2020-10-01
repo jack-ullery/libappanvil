@@ -51,6 +51,11 @@ ifndef DEBUG
 LEXFLAGS += --noyy_top_state
 endif
 
+CPPFLAGS += -D_GNU_SOURCE
+
+STDLIB_INCLUDE:="\#include <stdlib.h>"
+HAVE_REALLOCARRAY:=$(shell echo $(STDLIB_INCLUDE) | cpp ${CPPFLAGS} | grep -q reallocarray && echo true)
+
 WARNINGS = -Wall
 CXX_WARNINGS = ${WARNINGS} ${EXTRA_WARNINGS}
 CPP_WARNINGS =
@@ -65,8 +70,13 @@ CFLAGS = -g -pg -fprofile-arcs -ftest-coverage
 endif
 endif #CFLAGS
 
-EXTRA_CXXFLAGS = ${CFLAGS} ${CPPFLAGS} ${CXX_WARNINGS} -std=gnu++0x -D_GNU_SOURCE
+EXTRA_CXXFLAGS = ${CFLAGS} ${CPPFLAGS} ${CXX_WARNINGS} -std=gnu++0x
 EXTRA_CFLAGS = ${EXTRA_CXXFLAGS} ${CPP_WARNINGS}
+
+ifeq ($(HAVE_REALLOCARRAY),true)
+EXTRA_CXXCFLAGS+=-DHAVE_REALLOCARRAY=1
+EXTRA_CFLAGS+=-DHAVE_REALLOCARRAY=1
+endif
 
 ifdef DEBUG
 LEXLIB	:= -lfl
