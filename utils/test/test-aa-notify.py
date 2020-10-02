@@ -189,6 +189,7 @@ optional arguments:
         result = 'Got output "%s", expected "%s"\n' % (output, expected_output_has)
         self.assertIn(expected_output_has, output, result + output)
 
+    @unittest.skipUnless(os.path.isfile('/var/log/wtmp'), 'Requires wtmp on system')
     def test_entries_since_login(self):
         '''Test showing log entries since last login'''
 
