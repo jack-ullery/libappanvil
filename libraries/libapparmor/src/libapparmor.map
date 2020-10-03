@@ -117,6 +117,7 @@ APPARMOR_2.13.1 {
 
 APPARMOR_3.0 {
   global:
+	aa_features_new_from_file;
 	aa_features_write_to_fd;
 	aa_features_value;
   local:
@@ -126,6 +127,7 @@ APPARMOR_3.0 {
 PRIVATE {
 	global:
 		_aa_is_blacklisted;
+		_aa_asprintf;
 		_aa_autofree;
 		_aa_autoclose;
 		_aa_autofclose;
