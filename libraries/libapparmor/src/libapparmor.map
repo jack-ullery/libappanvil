@@ -117,6 +117,7 @@ APPARMOR_2.13.1 {
 
 APPARMOR_3.0 {
   global:
+	aa_features_new_from_file;
 	aa_features_write_to_fd;
 	aa_features_value;
   local:
