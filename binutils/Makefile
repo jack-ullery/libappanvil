@@ -156,12 +156,12 @@ install-arch: arch
 	install -m 755 -d ${SBINDIR}
 	ln -sf aa-status ${SBINDIR}/apparmor_status
 	install -m 755 ${SBINTOOLS} ${SBINDIR}
-	ln -sf aa-status.8 ${DESTDIR}/${MANDIR}/man8/apparmor_status.8
 
 .PHONY: install-indep
 install-indep: indep
 	$(MAKE) -C po install NAME=${NAME} DESTDIR=${DESTDIR}
 	$(MAKE) install_manpages DESTDIR=${DESTDIR}
+	ln -sf aa-status.8 ${DESTDIR}/${MANDIR}/man8/apparmor_status.8
 
 ifndef VERBOSE
 .SILENT: clean
