@@ -127,6 +127,7 @@ APPARMOR_3.0 {
 PRIVATE {
 	global:
 		_aa_is_blacklisted;
+		_aa_asprintf;
 		_aa_autofree;
 		_aa_autoclose;
 		_aa_autofclose;
