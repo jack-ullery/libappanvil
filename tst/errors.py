@@ -26,7 +26,7 @@ class AAErrorTests(testlib.AATestTemplate):
         self.maxDiff = None
         self.cmd_prefix = [config.parser, '--config-file=./parser.conf', '-S', '-I', 'errors']
 
-    def _run_test(self, profile, message=None, is_error=True):
+    def _run_test(self, profile, message='', is_error=True):
         cmd = self.cmd_prefix + [profile]
 
         (rc, out, outerr) = self._run_cmd(cmd, stdout=subprocess.DEVNULL)
@@ -43,8 +43,7 @@ class AAErrorTests(testlib.AATestTemplate):
             if ign in outerr:
                 outerr = outerr.replace(ign, '')
 
-        if message:
-            self.assertEqual(message, outerr, report)
+        self.assertEqual(message, outerr, report)
 
     def test_okay(self):
         self._run_test('errors/okay.sd', is_error=False)
