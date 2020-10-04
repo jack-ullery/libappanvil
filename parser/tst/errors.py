@@ -26,7 +26,7 @@ class AAErrorTests(testlib.AATestTemplate):
         self.maxDiff = None
         self.cmd_prefix = [config.parser, '--config-file=./parser.conf', '-S', '-I', 'errors']
 
-    def _run_test(self, profile, message=None, is_error=True):
+    def _run_test(self, profile, message='', is_error=True):
         cmd = self.cmd_prefix + [profile]
 
         (rc, out, outerr) = self._run_cmd(cmd, stdout=subprocess.DEVNULL)
@@ -36,8 +36,14 @@ class AAErrorTests(testlib.AATestTemplate):
         else:
             self.assertEqual(rc, 0, report)
 
-        if message:
-            self.assertIn(message, outerr, report)
+        ignore_messages = [
+            'Cache read/write disabled: interface file missing. (Kernel needs AppArmor 2.4 compatibility patch.)\n',
+        ]
+        for ign in ignore_messages:
+            if ign in outerr:
+                outerr = outerr.replace(ign, '')
+
+        self.assertEqual(message, outerr, report)
 
     def test_okay(self):
         self._run_test('errors/okay.sd', is_error=False)
@@ -45,32 +51,32 @@ class AAErrorTests(testlib.AATestTemplate):
     def test_single(self):
         self._run_test(
             'errors/single.sd',
-            "AppArmor parser error for errors/single.sd in profile errors/single.sd at line 3: Could not open 'failure'",
+            "AppArmor parser error for errors/single.sd in profile errors/single.sd at line 3: Could not open 'failure'\n",
         )
 
     def test_double(self):
         self._run_test(
             'errors/double.sd',
-            "AppArmor parser error for errors/double.sd in profile errors/includes/busted at line 66: Could not open 'does-not-exist'",
+            "AppArmor parser error for errors/double.sd in profile errors/includes/busted at line 66: Could not open 'does-not-exist'\n",
         )
 
     def test_modefail(self):
         self._run_test(
             'errors/modefail.sd',
-            "AppArmor parser error for errors/modefail.sd in profile errors/modefail.sd at line 6: syntax error, unexpected TOK_ID, expecting TOK_MODE",
+            "AppArmor parser error for errors/modefail.sd in profile errors/modefail.sd at line 6: syntax error, unexpected TOK_ID, expecting TOK_MODE\n",
         )
 
     def test_multi_include(self):
         self._run_test(
             'errors/multi_include.sd',
-            "AppArmor parser error for errors/multi_include.sd in profile errors/multi_include.sd at line 12: Could not open 'failure'",
+            "AppArmor parser error for errors/multi_include.sd in profile errors/multi_include.sd at line 12: Could not open 'failure'\n",
         )
 
     def test_deprecation1(self):
         self.cmd_prefix.extend(['--warn=deprecated'])
         self._run_test(
             'errors/deprecation1.sd',
-            "Warning from errors/deprecation1.sd (errors/deprecation1.sd line 6): The use of file paths as profile names is deprecated. See man apparmor.d for more information",
+            "Warning from errors/deprecation1.sd (errors/deprecation1.sd line 6): The use of file paths as profile names is deprecated. See man apparmor.d for more information\n",
             is_error=False
         )
 
@@ -78,7 +84,7 @@ class AAErrorTests(testlib.AATestTemplate):
         self.cmd_prefix.extend(['--warn=deprecated'])
         self._run_test(
             'errors/deprecation2.sd',
-            "Warning from errors/deprecation2.sd (errors/deprecation2.sd line 6): The use of file paths as profile names is deprecated. See man apparmor.d for more information",
+            "Warning from errors/deprecation2.sd (errors/deprecation2.sd line 6): The use of file paths as profile names is deprecated. See man apparmor.d for more information\n",
             is_error=False
         )
 
