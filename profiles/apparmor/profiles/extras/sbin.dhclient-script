@@ -12,13 +12,20 @@ profile dhclient-script /{usr/,}sbin/dhclient-script {
   include <abstractions/bash>
   include <abstractions/consoles>
 
+  /{usr/,}bin/dash rix,
   /{usr/,}bin/bash rix,
   /{usr/,}bin/grep rix,
   /{usr/,}bin/sleep rix,
   /{usr/,}bin/touch rix,
+  /{usr/,}bin/run-parts rix,
+  /{usr/,}bin/logger rix,
   /dev/.sysconfig/network/** r,
   /etc/netconfig.d/* mrix,
   /etc/sysconfig/network/** r,
+  /etc/dhcp/{**,} r,
   /{usr/,}sbin/dhclient-script r,
   /{usr/,}sbin/ip rix,
+  /{usr/,}sbin/resolvconf rPux,
+
+  include if exists <local/sbin.dhclient-script>
 }
