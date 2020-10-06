@@ -17,6 +17,7 @@ include <tunables/global>
   include <abstractions/base>
   include <abstractions/consoles>
   include <abstractions/nameservice>
+  include <abstractions/openssl>
 
   capability setgid,
   capability setuid,
@@ -27,4 +28,5 @@ include <tunables/global>
   /var/lib/clamav/** rw,
   owner /run/clamav/freshclam.pid w,
 
+  include if exists <local/usr.bin.freshclam>
 }
