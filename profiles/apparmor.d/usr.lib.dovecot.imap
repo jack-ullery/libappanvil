@@ -21,7 +21,6 @@ profile dovecot-imap /usr/lib/dovecot/imap {
   include <abstractions/dovecot-common>
 
   capability setuid,
-  deny capability block_suspend,
 
   network unix stream,
 
