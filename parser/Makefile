@@ -54,7 +54,7 @@ endif
 CPPFLAGS += -D_GNU_SOURCE
 
 STDLIB_INCLUDE:="\#include <stdlib.h>"
-HAVE_REALLOCARRAY:=$(shell echo $(STDLIB_INCLUDE) | cpp ${CPPFLAGS} | grep -q reallocarray && echo true)
+HAVE_REALLOCARRAY:=$(shell echo $(STDLIB_INCLUDE) | ${CPP} ${CPPFLAGS} | grep -q reallocarray && echo true)
 
 WARNINGS = -Wall
 CXX_WARNINGS = ${WARNINGS} ${EXTRA_WARNINGS}
