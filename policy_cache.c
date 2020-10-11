@@ -179,7 +179,7 @@ void install_cache(const char *cachetmpname, const char *cachename)
 		}
 
 		if (rename(cachetmpname, cachename) < 0) {
-			pwarn(WARN_CACHE, "Warning failed to write cache: %s\n", cachename);
+			pwarn(WARN_CACHE, "Failed to write cache: %s\n", cachename);
 			unlink(cachetmpname);
 		}
 		else if (show_cache) {

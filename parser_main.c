@@ -1299,7 +1299,7 @@ static void setup_parallel_compile(void)
 	jobs_max = compute_jobs(maxn, jobs_max);
 
 	if (jobs > jobs_max) {
-		pwarn(WARN_JOBS, "%s: Warning capping number of jobs to %ld * # of cpus == '%ld'",
+		pwarn(WARN_JOBS, "%s: Capping number of jobs to %ld * # of cpus == '%ld'",
 		      progname, jobs_max, jobs);
 		jobs = jobs_max;
 	} else if (jobs < jobs_max)
