@@ -3,7 +3,8 @@ subdomain=${PWD}/../../../parser/apparmor_parser
 #subdomain=/sbin/apparmor_parser
 
 # 2. additional arguments to the apparmor parser
-parser_args="--config-file=${PWD}/../../../parser.conf -q -K"
+parser_config="--config-file=${PWD}/../../../parser/parser.conf"
+parser_args="${parser_config} -q -K"
 
 # 3. directory to be used for temp files
 # Need to be able to access this directory by the root and nobody users.
