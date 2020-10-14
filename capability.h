@@ -29,6 +29,10 @@
 #define CAP_BPF 39
 #endif
 
+#ifndef CAP_CHECKPOINT_RESTORE
+#define CAP_CHECKPOINT_RESTORE 40
+#endif
+
 typedef enum capability_flags {
 	CAPFLAGS_CLEAR = 0,
 	CAPFLAG_BASE_FEATURE = 1,
