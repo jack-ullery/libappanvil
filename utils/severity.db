@@ -30,6 +30,7 @@
        CAP_SETUID 9
        CAP_FOWNER 9
        CAP_BPF 9
+       CAP_CHECKPOINT_RESTORE 9
 # Denial of service, bypass audit controls, information leak
        CAP_SYS_TIME 8
        CAP_NET_ADMIN 8
