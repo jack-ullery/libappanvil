@@ -256,7 +256,7 @@ def follow_apparmor_events(logfile, wait=0):
                     continue
                 yield event
 
-            if debug_logger.debug_level <= 10 and int(time.time()) - start_time > 100:
+            if debug_logger.debugging and debug_logger.debug_level <= 10 and int(time.time()) - start_time > 100:
                 debug_logger.debug('Debug mode detected: aborting notification emitter after 100 seconds.')
                 sys.exit(0)
 
@@ -407,7 +407,8 @@ def main():
         debug_logger.activateStderr()
         debug_logger.debug('Logging level: {}'.format(debug_logger.debug_level))
         debug_logger.debug('Running as uid: {0[0]}, euid: {0[1]}, suid: {0[2]}'.format(os.getresuid()))
-
+        if args.poll:
+            debug_logger.debug('Running with --debug and --poll. Will exit in 100s')
     # Sanity checks
     user_ids = os.getresuid()
     groups_ids = os.getresgid()
