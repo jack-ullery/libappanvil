@@ -13,7 +13,6 @@
 #
 # ----------------------------------------------------------------------
 import argparse
-import os
 
 import apparmor.aa as apparmor
 import apparmor.ui as aaui
@@ -36,20 +35,15 @@ args = parser.parse_args()
 if args.json:
     aaui.set_json_mode()
 
-profiledir = args.dir
 logmark = args.mark or ''
 
-apparmor.init_aa()
+apparmor.init_aa(profiledir=args.dir)
+
 apparmor.set_logfile(args.file)
 
 aa_mountpoint = apparmor.check_for_apparmor()
 if not aa_mountpoint:
     raise apparmor.AppArmorException(_('It seems AppArmor was not started. Please enable AppArmor and try again.'))
-
-if profiledir:
-    apparmor.profile_dir = apparmor.get_full_path(profiledir)
-    if not os.path.isdir(apparmor.profile_dir):
-        raise apparmor.AppArmorException("%s is not a directory."%profiledir)
 
 apparmor.loadincludes()
 

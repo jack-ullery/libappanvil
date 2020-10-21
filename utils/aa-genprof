@@ -72,19 +72,13 @@ if args.json:
     aaui.set_json_mode()
 
 profiling = args.program
-profiledir = args.dir
 
-apparmor.init_aa()
+apparmor.init_aa(profiledir=args.dir)
 apparmor.set_logfile(args.file)
 
 aa_mountpoint = apparmor.check_for_apparmor()
 if not aa_mountpoint:
     raise apparmor.AppArmorException(_('It seems AppArmor was not started. Please enable AppArmor and try again.'))
-
-if profiledir:
-    apparmor.profile_dir = apparmor.get_full_path(profiledir)
-    if not os.path.isdir(apparmor.profile_dir):
-        raise apparmor.AppArmorException(_("%s is not a directory.") %profiledir)
 
 program = None
 #if os.path.exists(apparmor.which(profiling.strip())):

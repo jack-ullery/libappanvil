@@ -25,10 +25,9 @@ _ = init_translation()
 
 class aa_tools:
     def __init__(self, tool_name, args):
-        apparmor.init_aa()
+        apparmor.init_aa(profiledir=args.dir)
 
         self.name = tool_name
-        self.profiledir = args.dir
         self.profiling = args.program
         self.check_profile_dir()
         self.silent = None
@@ -43,11 +42,6 @@ class aa_tools:
             self.silent = args.silent
 
     def check_profile_dir(self):
-        if self.profiledir:
-            apparmor.profile_dir = apparmor.get_full_path(self.profiledir)
-            if not os.path.isdir(apparmor.profile_dir):
-                raise apparmor.AppArmorException("%s is not a directory." % self.profiledir)
-
         if not user_perm(apparmor.profile_dir):
             raise apparmor.AppArmorException("Cannot write to profile directory: %s" % (apparmor.profile_dir))
 

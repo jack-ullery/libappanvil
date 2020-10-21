@@ -2511,7 +2511,7 @@ def logger_path():
 
 ######Initialisations######
 
-def init_aa(confdir="/etc/apparmor"):
+def init_aa(confdir="/etc/apparmor", profiledir=None):
     global CONFDIR
     global conf
     global cfg
@@ -2534,7 +2534,10 @@ def init_aa(confdir="/etc/apparmor"):
     if cfg['settings'].get('default_owner_prompt', False):
         cfg['settings']['default_owner_prompt'] = ''
 
-    profile_dir = conf.find_first_dir(cfg['settings'].get('profiledir')) or '/etc/apparmor.d'
+    if profiledir:
+        profile_dir = profiledir
+    else:
+        profile_dir = conf.find_first_dir(cfg['settings'].get('profiledir')) or '/etc/apparmor.d'
     profile_dir = os.path.abspath(profile_dir)
     if not os.path.isdir(profile_dir):
         raise AppArmorException('Can\'t find AppArmor profiles in %s' % (profile_dir))
