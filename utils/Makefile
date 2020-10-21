@@ -87,12 +87,17 @@ check_severity_db: /usr/include/linux/capability.h severity.db
 	test "$$RC" -eq 0
 
 # check_pod_files is defined in common/Make.rules
-.PHONY: check
-.SILENT: check
-check: check_severity_db check_pod_files
+.PHONY: check_lint
+.SILENT: check_lint
+check_lint:
 	for i in ${PYTOOLS} apparmor test/*.py; do \
 		echo Checking $$i; \
 		$(PYFLAKES) $$i || exit 1; \
 	done
+
+# check_pod_files is defined in common/Make.rules
+.PHONY: check
+.SILENT: check
+check: check_severity_db check_pod_files check_lint
 	$(MAKE) -C test check
 	$(MAKE) -C vim check
