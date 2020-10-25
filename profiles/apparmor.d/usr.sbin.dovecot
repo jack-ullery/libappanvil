@@ -67,6 +67,7 @@ profile dovecot /usr/{bin,sbin}/dovecot flags=(attach_disconnected) {
   /usr/lib/dovecot/ssl-params mrPx,
   /usr/lib/dovecot/stats Px,
   /usr/{bin,sbin}/dovecot mrix,
+  /usr/share/dovecot/dh.pem r,
   /usr/share/dovecot/protocols.d/   r,
   /usr/share/dovecot/protocols.d/** r,
   /var/lib/dovecot/ w,
