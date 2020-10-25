@@ -17,6 +17,7 @@
 
   # .ICEauthority files required for X authentication, per user
   owner @{HOME}/.ICEauthority r,
+  owner @{run}/user/*/ICEauthority r,
 
   # .Xauthority files required for X connections, per user
   owner @{HOME}/.Xauthority r,
