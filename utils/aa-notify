@@ -395,6 +395,7 @@ def main():
     parser.add_argument('-u', '--user', type=str, help=_('user to drop privileges to when not using sudo'))
     parser.add_argument('-w', '--wait', type=int, metavar=('NUM'), help=_('wait NUM seconds before displaying notifications (with -p)'))
     parser.add_argument('--debug', action='store_true', help=_('debug mode'))
+    parser.add_argument('--configdir', type=str, help=argparse.SUPPRESS)
 
     # If a TTY then assume running in test mode and fix output width
     if not sys.stdout.isatty():
@@ -421,11 +422,12 @@ def main():
     # conf = None
     logfile = None
 
-    confdir = os.getenv('__AA_CONFDIR')
-    if confdir:
-        aa.init_aa(confdir)
-    else:
-        aa.init_aa()
+    if args.configdir:  # prefer --configdir if given
+        confdir = args.configdir
+    else:  # fallback to env variable (or None if not set)
+        confdir = os.getenv('__AA_CONFDIR')
+
+    aa.init_aa(confdir=confdir)
 
     # Initialize aa.logfile
     aa.set_logfile(args.file)
