@@ -1,7 +1,8 @@
 # ------------------------------------------------------------------
 #
+#    Copyright (C) 2020 SUSE LLC
 #    Copyright (C) 2009-2010 Canonical Ltd.
-#    Copyright (C) 2011-2020 Christian Boltz
+#    Copyright (C) 2011-2013 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -9,39 +10,27 @@
 #
 # ------------------------------------------------------------------
 # vim: ft=apparmor
+# for https://wiki.dovecot.org/Replication
 
-abi <abi/3.0>,
-
-include <tunables/global>
 include <tunables/dovecot>
+include <tunables/global>
 
-profile dovecot-imap /usr/lib/dovecot/imap {
+profile dovecot-replicator /usr/lib/dovecot/replicator {
   include <abstractions/base>
-  include <abstractions/nameservice>
   include <abstractions/dovecot-common>
-
-  capability setuid,
+  include <abstractions/nameservice>
 
   network unix stream,
 
-  @{DOVECOT_MAILSTORE}/ rw,
-  @{DOVECOT_MAILSTORE}/** rwkl,
-
-  @{HOME} r, # ???
-
-  /etc/dovecot/dovecot.conf r,
   /etc/dovecot/conf.d/ r,
   /etc/dovecot/conf.d/** r,
-
-  owner /tmp/dovecot.imap.* rw,
-  @{PROC}/@{pid}/attr/{apparmor/,}current rw,
-  /usr/bin/doveconf rix,
-  /usr/lib/dovecot/imap mrix,
+  /etc/dovecot/dovecot.conf r,
+  /usr/lib/dovecot/replicator mr,
   /usr/share/dovecot/** r,
-  @{run}/dovecot/login/imap rw,
-  @{run}/dovecot/auth-master rw,
-  @{run}/dovecot/mounts r,
-
+  /{,var/}run/dovecot/auth-master rw,
+  @{DOVECOT_MAILSTORE}/ rw,
+  @{DOVECOT_MAILSTORE}/** rwlk,
+  /var/lib/dovecot/replicator.db rw,
   # Site-specific additions and overrides. See local/README for details.
-  include if exists <local/usr.lib.dovecot.imap>
+  include if exists <local/usr.lib.dovecot.replicator>
 }
