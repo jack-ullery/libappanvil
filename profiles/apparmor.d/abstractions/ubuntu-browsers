@@ -38,3 +38,4 @@
   /usr/lib/icecat-*/icecat Cx -> sanitized_helper,
   /usr/bin/opera Cx -> sanitized_helper,
   /opt/google/chrome{,-beta,-unstable}/google-chrome{,-beta,-unstable} Cx -> sanitized_helper,
+  /opt/brave.com/brave{,-beta,-dev,-nightly}/brave-browser{,-beta,-dev,-nightly} Cx -> sanitized_helper,

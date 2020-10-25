@@ -74,6 +74,12 @@ profile sanitized_helper {
   /opt/google/chrome{,-beta,-unstable}/chrome Pixr,
   /opt/google/chrome{,-beta,-unstable}/{,**/}lib*.so{,.*} m,
 
+  # The same is needed for Brave
+  /opt/brave.com/brave{,-beta,-dev,-nightly}/chrome-sandbox PUxr,
+  /opt/brave.com/brave{,-beta,-dev,-nightly}/brave-browser{,-beta,-dev,-nightly} Pixr,
+  /opt/brave.com/brave{,-beta,-dev,-nightly}/brave Pixr,
+  /opt/brave.com/brave{,-beta,-dev,-nightly}/{,**/}lib*.so{,.*} m,
+
   # Full access
   / r,
   /** rwkl,
