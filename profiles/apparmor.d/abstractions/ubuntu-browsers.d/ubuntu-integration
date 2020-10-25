@@ -28,10 +28,7 @@
   /usr/lib/mozilla/kmozillahelper Cxr -> sanitized_helper,
 
   # Exo-aware applications
-  /usr/bin/exo-open ixr,
-  /usr/lib/@{multiarch}/xfce4/exo-1/exo-helper-1 ixr,
-  /etc/xdg/xdg-xubuntu/xfce4/helpers.rc r,
-  /etc/xdg/xfce4/helpers.rc r,
+  include <abstractions/exo-open>
 
   # unity webapps integration. Could go in its own abstraction
   owner /run/user/*/dconf/user rw,
