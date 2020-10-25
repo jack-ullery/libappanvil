@@ -32,7 +32,7 @@ B<aa-features-abi> [OPTIONS] <SOURCE> [OUTPUT OPTIONS]
 
 B<aa-features-abi> is used to extract a features abi and output to
 either stdout or a specified file. A SOURCE_OPTION must be specified.
-If an output option is not specified the features abi is writen to
+If an output option is not specified the features abi is written to
 stdout.
 
 =head1 OPTIONS

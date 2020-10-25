@@ -20,7 +20,7 @@ void print_help(const char *command)
 {
 	printf(_("%s: [options]\n"
 		 "  options:\n"
-		 "  -x | --exclusive    Shared interfaces must be availabe\n"
+		 "  -x | --exclusive    Shared interfaces must be available\n"
 		 "  -q | --quiet        Don't print out any messages\n"
 		 "  -h | --help         Print help\n"),
 	       command);

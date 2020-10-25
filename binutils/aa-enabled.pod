@@ -83,7 +83,7 @@ if B<aa-enabled> doesn't have enough privileges to read the apparmor control fil
 
 =item B<10>
 
-AppArmor is enabled but does not have access to shared LSM interaces.
+AppArmor is enabled but does not have access to shared LSM interfaces.
 
 =item B<64>
 
