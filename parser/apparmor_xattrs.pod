@@ -27,7 +27,7 @@
 
 =head1 NAME
 
-AppArmor profile xattr(7) matching
+apparmor_xattrs - AppArmor profile xattr(7) matching
 
 =head1 DESCRIPTION
 

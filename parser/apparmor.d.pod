@@ -1273,7 +1273,7 @@ I<auto> keyword. Eg.
 To indicate that the rule only applies to auto binding of unix domain
 sockets. It is important to note this only applies to the I<bind>
 permission as once the socket is bound to an address it is
-indistiguishable from a socket that have an addr bound with a
+indistinguishable from a socket that have an addr bound with a
 specified name. When the I<auto> keyword is used with other permissions
 or as part of a peer addr it will be replaced with a pattern that
 can match an autobound socket. Eg. For some kernels
@@ -1752,7 +1752,7 @@ If the policy abi is specified as B<kernel> then the running kernel's
 abi will be used. This should never be used in shipped policy as it
 can cause system breakage when a new kernel is installed.
 
-=head3 ABI compatability with AppArmor 2.x
+=head3 ABI compatibility with AppArmor 2.x
 
 AppArmor 3 remains compatible with AppArmor 2.x by detecting when a
 profile does not have a feature ABI specified. In this case the policy

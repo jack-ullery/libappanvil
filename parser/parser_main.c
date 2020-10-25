@@ -259,7 +259,7 @@ optflag_table_t warnflag_table[] = {
 	{ 1, "jobs", "enable job control warnings", WARN_JOBS },
 	{ 1, "dangerous", "warn on dangerous policy", WARN_DANGEROUS },
 	{ 1, "unexpected", "warn when an unexpected condition is found", WARN_UNEXPECTED },
-	{ 1, "format", "warn on unnecessary or confusing formating", WARN_FORMAT },
+	{ 1, "format", "warn on unnecessary or confusing formatting", WARN_FORMAT },
 	{ 1, "missing", "warn when missing qualifier and a default is used", WARN_MISSING },
 	{ 1, "override", "warn when overriding", WARN_OVERRIDE },
 	{ 1, "dev", "turn on warnings that are useful for profile development", WARN_DEV },
