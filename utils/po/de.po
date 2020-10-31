@@ -1079,11 +1079,11 @@ msgstr "(C)hild sauber ausführen"
 
 #: ../apparmor/ui.py:239
 msgid "(N)amed"
-msgstr "(B)enannt"
+msgstr "Be(n)annt"
 
 #: ../apparmor/ui.py:240
 msgid "(N)amed Clean Exec"
-msgstr "(B)enannte sauber ausführen"
+msgstr "Be(n)annte sauber ausführen"
 
 #: ../apparmor/ui.py:241
 msgid "(U)nconfined"
@@ -1111,11 +1111,11 @@ msgstr "(C)hild vererbt saubere Ausführung"
 
 #: ../apparmor/ui.py:247
 msgid "(N)amed Inherit"
-msgstr "(B)enannte Vererbung"
+msgstr "Be(n)annte Vererbung"
 
 #: ../apparmor/ui.py:248
 msgid "(N)amed Inherit Clean Exec"
-msgstr "(B)enannte Vererbung sauber ausführen"
+msgstr "Be(n)annte Vererbung sauber ausführen"
 
 #: ../apparmor/ui.py:249
 msgid "(X) ix On"
