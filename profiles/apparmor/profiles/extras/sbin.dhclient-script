@@ -25,7 +25,7 @@ profile dhclient-script /{usr/,}sbin/dhclient-script {
   /etc/dhcp/{**,} r,
   /{usr/,}sbin/dhclient-script r,
   /{usr/,}sbin/ip rix,
-  /{usr/,}sbin/resolvconf rPux,
+  /{usr/,}sbin/resolvconf rPUx,
 
   include if exists <local/sbin.dhclient-script>
 }
