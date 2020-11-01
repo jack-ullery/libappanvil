@@ -1004,7 +1004,7 @@ msgstr ""
 
 #: ../apparmor/ui.py:223
 msgid "(A)llow"
-msgstr "(T)illåt"
+msgstr "Ti(l)låt"
 
 #: ../apparmor/ui.py:224
 msgid "(M)ore"

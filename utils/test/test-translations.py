@@ -61,7 +61,7 @@ class TestHotkeyConflicts(AATest):
             keys = dict()
             for key in params:
                 text = t.gettext(CMDS[key])
-                hotkey = get_translated_hotkey(text)
+                hotkey = get_translated_hotkey(text).lower()
 
                 if keys.get(hotkey):
                     raise Exception("Hotkey conflict: '%s' and '%s' in language %s" % (keys[hotkey], text, language))
