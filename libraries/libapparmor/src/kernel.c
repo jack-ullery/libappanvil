@@ -227,9 +227,10 @@ static inline pid_t aa_gettid(void)
  * present.
  */
 static pthread_once_t proc_attr_base_ctl = PTHREAD_ONCE_INIT;
-static char *proc_attr_base = "/proc/%d/attr/%s";
-static char *proc_attr_base_stacking = "/proc/%d/attr/apparmor/%s";
-static char *proc_attr_base_unavailable = "/proc/%d/attr/apparmor/unavailable/%s";
+static const char *proc_attr_base_old = "/proc/%d/attr/%s";
+static const char *proc_attr_base_stacking = "/proc/%d/attr/apparmor/%s";
+static const char *proc_attr_base_unavailable = "/proc/%d/attr/apparmor/unavailable/%s";
+static const char *proc_attr_base;
 
 static void proc_attr_base_init_once(void)
 {
@@ -247,8 +248,9 @@ static void proc_attr_base_init_once(void)
 		 * in use by another LSM
 		 */
 		proc_attr_base = proc_attr_base_unavailable;
+	} else {
+		proc_attr_base = proc_attr_base_old;
 	}
-	/* else default to pre-assigned value */
 }
 
 static char *procattr_path(pid_t pid, const char *attr)
@@ -260,6 +262,38 @@ static char *procattr_path(pid_t pid, const char *attr)
 	if (asprintf(&path, proc_attr_base, pid, attr) > 0)
 		return path;
 	return NULL;
+}
+
+static int procattr_open(pid_t tid, const char *attr, int flags)
+{
+	char *tmp;
+	int fd;
+
+	tmp = procattr_path(tid, attr);
+	if (!tmp) {
+		return -1;
+	}
+	fd = open(tmp, flags);
+	free(tmp);
+	/* Test is we can fallback to a different interface this is ugly.
+	 * If only the old interface is available:
+	 *    proc_attr_base == proc_attr_base_old - no fallback
+	 * else if is_enabled()
+	 *    apparmor is available on the old interface
+	 *    we do NOT use is_private_enabled() as
+	 *    1. the new private interface would have been tried first above
+	 *    2. that can be true even when another LSM is using the
+	 *       old interface where is_enabled() is only successful if
+	 *       the old interface is available to apparmor.
+	 */
+	if (fd == -1 && errno == EACCES && proc_attr_base != proc_attr_base_old && is_enabled()) {
+		if (asprintf(&tmp, proc_attr_base_old, tid, attr) < 0)
+			return -1;
+		fd = open(tmp, flags);
+		free(tmp);
+	}
+
+	return fd;
 }
 
 /**
@@ -371,12 +405,7 @@ int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len,
 		goto out;
 	}
 
-	tmp = procattr_path(tid, attr);
-	if (!tmp)
-		goto out;
-
-	fd = open(tmp, O_RDONLY);
-	free(tmp);
+	fd = procattr_open(tid, attr, O_RDONLY);
 	if (fd == -1) {
 		goto out;
 	}
@@ -487,18 +516,13 @@ static int setprocattr(pid_t tid, const char *attr, const char *buf, int len)
 {
 	int rc = -1;
 	int fd, ret;
-	char *ctl = NULL;
 
 	if (!buf) {
 		errno = EINVAL;
 		goto out;
 	}
 
-	ctl = procattr_path(tid, attr);
-	if (!ctl)
-		goto out;
-
-	fd = open(ctl, O_WRONLY);
+	fd = procattr_open(tid, attr, O_WRONLY);
 	if (fd == -1) {
 		goto out;
 	}
@@ -519,9 +543,6 @@ static int setprocattr(pid_t tid, const char *attr, const char *buf, int len)
 	(void)close(fd);
 
 out:
-	if (ctl) {
-		free(ctl);
-	}
 	return rc;
 }
 
