@@ -123,6 +123,10 @@ include <tunables/global>
   deny /usr/share/mozilla/extensions/**/ w,
   deny /usr/share/mozilla/ w,
 
+  # needed by widevine
+  ptrace (trace) peer=@{profile_name},
+  @{HOME}/.mozilla/firefox/*/gmp-widevinecdm/*/lib*so m,
+
   # Site-specific additions and overrides. See local/README for details.
   # Local path is disabled, we only enable them for profiles we promote
   # out of extras.
