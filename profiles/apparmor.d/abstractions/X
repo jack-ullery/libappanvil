@@ -52,6 +52,8 @@
 
   # Xcompose
   owner @{HOME}/.XCompose         r,
+  /var/cache/libx11/compose/*     r,
+  deny /var/cache/libx11/compose/* wlk,
 
   # mouse themes
   /etc/X11/cursors/               r,
