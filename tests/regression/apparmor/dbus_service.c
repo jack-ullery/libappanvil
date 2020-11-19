@@ -68,7 +68,7 @@ static int handle_messages(void)
 	DBusMessage *message;
 
 	if (!dbus_connection_read_write(connection, 250)) {
-		fprintf(stderr, "FAIL: Connecion is closed\n");
+		fprintf(stderr, "FAIL: Connection is closed\n");
 		return -1;
 	}
 

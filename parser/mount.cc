@@ -457,7 +457,7 @@ ostream &mnt_rule::dump(ostream &os)
 	else if (allow & AA_MAY_PIVOTROOT)
 		os << "pivotroot";
 	else
-		os << "error: unknonwn mount perm";
+		os << "error: unknown mount perm";
 
 	os << " (0x" << hex << flags << " - 0x" << inv_flags << ") ";
 	if (dev_type) {

@@ -46,7 +46,7 @@ def handle_exception(*exc_info):
 
         print(''.join(traceback.format_exception(*exc_info)), file=sys.stderr)
         print('', file=sys.stderr)
-        print('An unexpected error occoured!', file=sys.stderr)
+        print('An unexpected error occurred!', file=sys.stderr)
         print('', file=sys.stderr)
         print('For details, see %s' % path, file=sys.stderr)
         print('Please consider reporting a bug at https://gitlab.com/apparmor/apparmor/-/issues', file=sys.stderr)

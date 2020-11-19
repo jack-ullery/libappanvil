@@ -493,7 +493,7 @@ def main():
     found_config_keys = config[''].keys()
     unknown_keys = [item for item in found_config_keys if item not in allowed_config_keys]
     for item in unknown_keys:
-        print(_('Warning! Configration item "{}" is unknown!').format(item))
+        print(_('Warning! Configuration item "{}" is unknown!').format(item))
 
     # Warn if use_group is defined and current group does not match defined
     if 'use_group' in config['']:
