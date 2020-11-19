@@ -20,7 +20,7 @@
 #            Mark mail as junk mail
 #            Print mail message with lpr local
 #            Print mail message with cups remote
-#            View pdf attachements
+#            View pdf attachments
 #            Decrypt using gpg
 #
 #    Send Mail: 
