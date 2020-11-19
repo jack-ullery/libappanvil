@@ -37,7 +37,7 @@ static struct supported_cond supported_conds[] = {
 	{ "type", true, false, false, local_cond },
 	{ "protocol", false, false, false, local_cond },
 	{ "label", true, false, false, peer_cond },
-	{ NULL, false, false, false, local_cond },	/* eol sentinal */
+	{ NULL, false, false, false, local_cond },	/* eol sentinel */
 };
 
 bool af_rule::cond_check(struct supported_cond *conds, struct cond_entry *ent,

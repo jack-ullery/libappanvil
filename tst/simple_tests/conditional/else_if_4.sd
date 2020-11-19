@@ -1,4 +1,4 @@
-#=DESCRIPTION conditional else in invlaid locations
+#=DESCRIPTION conditional else in invalid locations
 #=EXRESULT FAIL
 
 $BAR = false

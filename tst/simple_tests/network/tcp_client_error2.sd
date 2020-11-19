@@ -1,5 +1,5 @@
 #
-#=DESCRIPTION netdomain tcp connect w/multiple from statments
+#=DESCRIPTION netdomain tcp connect w/multiple from statements
 #=EXRESULT FAIL
 /tmp/tcp/tcp_client {
   tcp_connect from 10.0.0.17/16:50-100 from 127.0.0.1 via eth1,
