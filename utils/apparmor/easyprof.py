@@ -214,7 +214,7 @@ def valid_profile_name(s):
         return True
 
     # profile name does not specify path
-    # alpha-numeric and Debian version, plus '_'
+    # alphanumeric and Debian version, plus '_'
     if re.search(r'^[a-zA-Z0-9][a-zA-Z0-9_\+\-\.:~]+$', s):
         return True
     return False

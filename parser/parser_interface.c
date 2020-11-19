@@ -359,7 +359,7 @@ void sd_serialize_xtable(std::ostringstream &buf, char **table)
 		int len = strlen(table[i]) + 1;
 
 		/* if its a namespace make sure the second : is overwritten
-		 * with 0, so that the namespace and name are \0 seperated
+		 * with 0, so that the namespace and name are \0 separated
 		 */
 		if (*table[i] == ':') {
 			char *tmp = table[i] + 1;

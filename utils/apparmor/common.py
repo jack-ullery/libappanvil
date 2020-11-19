@@ -251,7 +251,7 @@ def convert_regexp(regexp):
     new_reg = new_reg.replace('**', multi_glob)
     #print(new_reg)
 
-    # Match atleast one character if * or ** after /
+    # Match at least one character if * or ** after /
     # ?< is the negative lookback operator
     new_reg = new_reg.replace('*', '(((?<=/)[^/\000]+)|((?<!/)[^/\000]*))')
     new_reg = new_reg.replace(multi_glob, '(((?<=/)[^\000]+)|((?<!/)[^\000]*))')

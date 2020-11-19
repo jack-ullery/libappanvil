@@ -50,7 +50,7 @@
 #define MAX_PERM_LEN 10
 
 
-/* Set up permission subset test as a seperate binary to reduce the time
+/* Set up permission subset test as a separate binary to reduce the time
  * as the shell based versions takes for ever
  */
 

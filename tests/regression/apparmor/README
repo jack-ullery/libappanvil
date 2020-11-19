@@ -112,8 +112,8 @@ argument or the end of the argument list will be included within this hat.
 
 Support for multiple profiles within a single load (for example for
 test that want to domain tansition to another profile) is supported by
-the "image' argument to genprofile. This keyword preceeded by a '--'
-seperator terminates the previous profile and creates a new profile for
+the "image' argument to genprofile. This keyword preceded by a '--'
+separator terminates the previous profile and creates a new profile for
 the specified executable image.
 
 Together, 'image' and 'hat:' allow complex profiles including subhats and
@@ -184,7 +184,7 @@ requiring signal passing)
 	<check it's output, it is expected to FAIL>
 	runchecktest "EXEC no x" fail $file
 
-	<Thats it. Exit status $rc is automatically returned by epilogue.inc>
+	<That's it. Exit status $rc is automatically returned by epilogue.inc>
 
 Supporting files
 ================

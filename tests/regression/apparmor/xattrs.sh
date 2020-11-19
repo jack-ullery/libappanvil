@@ -14,8 +14,8 @@
 # security: get r, set w + CAP_SYS_ADMIN
 # system: (acl's etc.) fs and kernel dependent (CAP_SYS_ADMIN)
 # trusted: CAP_SYS_ADMIN
-# user: for subdomain the relevent file must be in the profile, with r perm 
-#       to get xattr, w perm to set or remove xattr. The appriate cap must be 
+# user: for subdomain the relevant file must be in the profile, with r perm
+#       to get xattr, w perm to set or remove xattr. The appropriate cap must be
 #       present in the profile as well
 #=END
 
@@ -58,7 +58,7 @@ mkdir $dir
 
 add_attrs()
 {
-    #set the xattr for thos that passed above again so we can test removing it
+    #set the xattr for those that passed above again so we can test removing it
     setfattr -h -n security.sdtest -v hello "$1"
     setfattr -h -n trusted.sdtest -v hello "$1"
     if [ "$1" != $link ] ; then

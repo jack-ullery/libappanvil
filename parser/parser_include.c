@@ -23,7 +23,7 @@
 
    We support 2 types of includes
 
-#include <name> which searches for the first occurance of name in the
+#include <name> which searches for the first occurrence of name in the
    apparmor directory path.
 
 #include "name" which will search for a relative or absolute pathed
@@ -60,7 +60,7 @@
 static char *path[MAX_PATH] = { NULL };
 static int npath = 0;
 
-/* default base directory is /etc/apparmor.d, it can be overriden
+/* default base directory is /etc/apparmor.d, it can be overridden
    with the -b option. */
 
 const char *basedir;

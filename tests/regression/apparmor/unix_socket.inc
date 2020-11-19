@@ -33,7 +33,7 @@ do_test()
 	local bad_p_addr="${13}" # optional
 
 	local desc="AF_UNIX $addr_type socket ($type);"
-	local l_access # combind local perms: local bound and local unbound
+	local l_access # combined local perms: local bound and local unbound
 	local c_access # combined perms: local bound, local unbound, and peer
 	local access # used as an iterator
 	local u_rule # rule for pre-bind accesses

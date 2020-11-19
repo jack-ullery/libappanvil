@@ -9,7 +9,7 @@
 #=NAME clone
 #=DESCRIPTION
 # Verifies that clone is allowed under AppArmor, but that CLONE_NEWNS is
-# restriced.
+# restricted.
 #=END
 
 pwd=`dirname $0`

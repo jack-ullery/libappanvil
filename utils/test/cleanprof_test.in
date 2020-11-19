@@ -15,7 +15,7 @@
   @{asdf}       =   foo           ""
 
 /usr/bin/a/simple/cleanprof/test/profile {
-	# Just for the heck of it, this comment wont see the day of light
+	# Just for the heck of it, this comment won't see the day of light
 	#include <abstractions/base>
 
 #include  if  exists <foo>

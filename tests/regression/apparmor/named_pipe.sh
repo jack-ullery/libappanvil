@@ -10,7 +10,7 @@
 #=DESCRIPTION 
 # This test verifies that subdomain file access checks function correctly 
 # for named piped (nodes in the filesystem created with mknod).  The test 
-# creates a parent/child process relationship which attempt to rendevous via 
+# creates a parent/child process relationship which attempt to rendezvous via
 # the named pipe.   The tests are attempted for unconfined and confined 
 # processes and also for subhats.
 #=END

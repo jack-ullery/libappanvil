@@ -13,7 +13,7 @@
 # unconfined processes can call these syscalls but confined processes cannot.
 #=END
 
-# I made this a seperate test script because of the need to make a
+# I made this a separate test script because of the need to make a
 # swapfile before the tests run.
 
 pwd=`dirname $0`

@@ -412,7 +412,7 @@ register_hooks(unused_ apr_pool_t *p)
 
 module AP_MODULE_DECLARE_DATA apparmor_module = {
     STANDARD20_MODULE_STUFF,
-    aa_create_dir_config,        /* dir config creater */
+    aa_create_dir_config,        /* dir config creator */
     NULL,                        /* dir merger --- default is to override */
     /* immunix_merge_dir_config, */        /* dir merger --- default is to override */
     aa_create_srv_config,        /* server config */

@@ -61,7 +61,7 @@ echo -n "${testexec}//${subtest3}" >/sys/kernel/security/apparmor/.remove
 # Should put us into a null-profile
 
 # NOTE: As of AppArmor 2.1 (opensuse 10.3) this test now passes as
-# the change_hat failes but it no longer entires the null profile
+# the change_hat fails but it no longer enters the null profile
 genprofile $file:$okperm hat:$subtest $subfile:$okperm hat:$subtest2 $subfile:$okperm
 
 runchecktest "CHANGEHAT (access parent file 3)" pass $subtest3 $file

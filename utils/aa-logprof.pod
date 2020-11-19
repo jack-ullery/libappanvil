@@ -67,7 +67,7 @@ those processes are set to run under their proper profiles.
 =head2 Responding to AppArmor Events
 
 B<aa-logprof> will generate a list of suggested profile changes that
-the user can choose from, or they can create their own, to modifiy the
+the user can choose from, or they can create their own, to modify the
 permission set of the profile so that the generated access violation
 will not re-occur.
 

@@ -125,7 +125,7 @@ layer. Binary policy cache files will be located in the directory
 returned by this function.
 
 The aa_policy_cache_dir_levels() function provides access to the number
-of directories that are being overlayed to create the policy cache.
+of directories that are being overlaid to create the policy cache.
 
 
 =head1 RETURN VALUE

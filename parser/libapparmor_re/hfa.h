@@ -189,7 +189,7 @@ struct DiffDag {
  * accept: the accept permissions for the state
  * trans: set of transitions from this state
  * otherwise: the default state for transitions not in @trans
- * parition: Is a temporary work variable used during dfa minimization.
+ * partition: Is a temporary work variable used during dfa minimization.
  *           it can be replaced with a map, but that is slower and uses more
  *           memory.
  * proto: Is a temporary work variable used during dfa creation.  It can

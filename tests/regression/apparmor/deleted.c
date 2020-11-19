@@ -21,7 +21,7 @@
 
 /* A test to validate that we are properly handling the kernel appending
  * (deleted) in d_path lookup.
- * To acheive this the file is opened (the read/write of the file is just to
+ * To achieve this the file is opened (the read/write of the file is just to
  * make sure everything is working as expected), deleted without closing the
  * file reference, and doing a changehat.
  * The file is then used inside of the changehat.  This forces the file

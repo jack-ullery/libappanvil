@@ -29,8 +29,8 @@
 #   include <abstractions/ubuntu-browsers>
 #   include <abstractions/ubuntu-email>
 #
-#   # Add if accesibility access is considered as required
-#   # (for message boxe in case exo-open fails)
+#   # Add if accessibility access is considered as required
+#   # (for message box in case exo-open fails)
 #   include <abstractions/dbus-accessibility>
 #
 #   # Add if audio support for message box is

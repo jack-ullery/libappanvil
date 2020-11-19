@@ -5,7 +5,7 @@ APPARMOR_PARSER="${APPARMOR_PARSER:-../apparmor_parser}"
 
 # Format of -D dfa-states
 # dfa-states output is split into 2 parts:
-#   the accept state infomation
+#   the accept state information
 #       {state} (allow deny audit XXX)  ignore XXX for now
 #    followed by the transition table information
 #       {Y} -> {Z}: 0xXX Char   #0xXX is the hex dump of Char
@@ -43,7 +43,7 @@ APPARMOR_PARSER="${APPARMOR_PARSER:-../apparmor_parser}"
 # These tests currently only look at the accept state permissions
 #
 # To view any of these DFAs as graphs replace --D dfa-states with -D dfa-graph
-# strip of the test stuff around the parser command and use the the dot
+# strip of the test stuff around the parser command and use the dot
 # command to convert
 # Eg.
 # echo "/t { /a r, /b w, /c a, /d l, /e k, /f m, deny /** w, }" | ./apparmor_parser -QT -O minimize -D dfa-graph --quiet 2>min.graph
@@ -100,7 +100,7 @@ fi
 echo "ok"
 
 # same test as above except with deny 'w' perm added to /**, this does not
-# elimnates the states with 'w' and 'a' because the quiet information is
+# eliminates the states with 'w' and 'a' because the quiet information is
 # being carried
 #
 # {1} <== (allow/deny/audit/quiet)
@@ -119,7 +119,7 @@ fi
 echo "ok"
 
 # same test as above except with audit deny 'w' perm added to /**, with the
-# parameter this elimnates the states with 'w' and 'a' because
+# parameter this eliminates the states with 'w' and 'a' because
 # the quiet information is NOT being carried
 #
 # {1} <== (allow/deny/audit/quiet)
@@ -139,7 +139,7 @@ echo "ok"
 
 # The x transition test profile is setup so that there are 3 conflicting x
 # permissions, two are on paths that won't collide during dfa creation.  The
-# 3rd is a generic permission that should be overriden during dfa creation.
+# 3rd is a generic permission that should be overridden during dfa creation.
 #
 # This should result in a dfa that specifies transitions on 'a' and 'b' to
 # unique states that store the alternate accept information.  However
@@ -190,7 +190,7 @@ fi
 echo "ok"
 
 # now try audit + denying x and make sure perms are cleared
-# notice that the deny info is being carried, by an artifical trap state
+# notice that the deny info is being carried, by an artificial trap state
 # {1} <== (allow/deny/audit/quiet)
 # {3} (0x 0/fe17f85/0/0)
 

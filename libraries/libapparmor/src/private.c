@@ -63,7 +63,7 @@ struct ignored_suffix_t {
 };
 
 static struct ignored_suffix_t ignored_suffixes[] = {
-	/* Debian packging files, which are in flux during install
+	/* Debian packaging files, which are in flux during install
            should be silently ignored. */
 	{ ".dpkg-new", 9, 1 },
 	{ ".dpkg-old", 9, 1 },
@@ -147,7 +147,7 @@ int _aa_is_blacklisted(const char *name)
 	return 0;
 }
 
-/* automaticly free allocated variables tagged with autofree on fn exit */
+/* automatically free allocated variables tagged with autofree on fn exit */
 void _aa_autofree(void *p)
 {
 	void **_p = (void**)p;

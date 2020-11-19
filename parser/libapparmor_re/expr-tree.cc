@@ -23,7 +23,7 @@
  * it can be factored so that the set of important nodes is smaller.
  * Having a reduced set of important nodes generally results in a dfa that
  * is closer to minimum (fewer redundant states are created).  It also
- * results in fewer important nodes in a the state set during subset
+ * results in fewer important nodes in the state set during subset
  * construction resulting in less memory used to create a dfa.
  *
  * Generally it is worth doing expression tree simplification before dfa
@@ -150,7 +150,7 @@ void Node::dump_syntax_tree(ostream &os)
 }
 
 /*
- * Normalize the regex parse tree for factoring and cancelations. Normalization
+ * Normalize the regex parse tree for factoring and cancellations. Normalization
  * reorganizes internal (alt and cat) nodes into a fixed "normalized" form that
  * simplifies factoring code, in that it produces a canonicalized form for
  * the direction being normalized so that the factoring code does not have
@@ -172,10 +172,10 @@ void Node::dump_syntax_tree(ostream &os)
  *       dir to !dir.   Until no dir direction node meets the criterial.
  *       Then recurse to the children (which will have a different node type)
  *       to make sure they are normalized.
- *       Normalization of a child node is guarenteed to not affect the
+ *       Normalization of a child node is guaranteed to not affect the
  *       normalization of the parent.
  *
- *       For cat nodes the depth first traverse order is guarenteed to be
+ *       For cat nodes the depth first traverse order is guaranteed to be
  *       maintained.  This is not necessary for altnodes.
  *
  * Eg. For left normalization

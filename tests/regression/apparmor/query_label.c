@@ -87,7 +87,7 @@
 #define AA_MAY_LINK		0x40000
 #endif
 
-#ifndef AA_LINK_SUBSET		/* overlayed perm in pair */
+#ifndef AA_LINK_SUBSET		/* overlaid perm in pair */
 #define AA_LINK_SUBSET		AA_MAY_LOCK
 #endif
 

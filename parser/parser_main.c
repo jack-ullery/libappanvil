@@ -433,7 +433,7 @@ int arg_pass(int c) {
 	return LATE_ARG;
 }
 
-/* process a single argment from getopt_long
+/* process a single argument from getopt_long
  * Returns: 1 if an action arg, else 0
  */
 #define DUMP_HEADER "     variables      \tDump variables\n" \
@@ -1258,7 +1258,7 @@ do {									\
  * from work_spawn and work_sync. We could throw a C++ exception, is it
  * worth doing it to avoid the exit here.
  *
- * atm not all resources maybe cleanedup at exit
+ * atm not all resources may be cleaned up at exit
  */
 int last_error = 0;
 void handle_work_result(int retval)
@@ -1288,7 +1288,7 @@ static long compute_jobs(long n, long j)
 
 static void setup_parallel_compile(void)
 {
-	/* jobs and paralell_max set by default, config or args */
+	/* jobs and parallel_max set by default, config or args */
 	long n = sysconf(_SC_NPROCESSORS_ONLN);
 	long maxn = sysconf(_SC_NPROCESSORS_CONF);
 	if (n == -1)

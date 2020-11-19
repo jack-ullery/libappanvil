@@ -253,7 +253,7 @@ def reopen_logfile_if_needed(logfile, logdata, log_inode, log_size):
 
     while retry:
         try:
-            # Reopen file if inode has chaneged, e.g. rename by logrotate
+            # Reopen file if inode has changed, e.g. rename by logrotate
             if os.stat(logfile).st_ino != log_inode:
                 debug_logger.debug('Logfile was renamed, reload to read the new file.')
                 logdata = open(logfile, 'r')
@@ -572,7 +572,7 @@ def main():
             n.show()
 
             # When notification is sent, raise privileged back to root if the
-            # original effective user id was zero (to be ableo to read AppArmor logs)
+            # original effective user id was zero (to be able to read AppArmor logs)
             raise_privileges()
 
     elif args.since_last:

@@ -206,7 +206,7 @@
  * AppArmor mount rule encoding
  *
  * TODO:
- *   add semantic checking of options against specified filesytem types
+ *   add semantic checking of options against specified filesystem types
  *   to catch mount options that can't be covered.
  *
  *

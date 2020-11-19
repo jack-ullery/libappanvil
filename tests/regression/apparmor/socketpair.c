@@ -111,7 +111,7 @@ static int reexec(int pair[2], int argc, char **argv)
 		return 0;
 
 	/**
-	 * Save off the first <CHANGE_ONEXEC> arg and then shift all preceeding
+	 * Save off the first <CHANGE_ONEXEC> arg and then shift all preceding
 	 * args by one to effectively pop off the first <CHANGE_ONEXEC>
 	 */
 	new_profile = argv[3];
