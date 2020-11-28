@@ -66,6 +66,7 @@ parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))
 parser.add_argument('-f', '--file', type=str, help=_('path to logfile'))
 parser.add_argument('program', type=str, help=_('name of program to profile'))
 parser.add_argument('-j', '--json', action="store_true", help=_('Input and Output in JSON'))
+parser.add_argument('--configdir', type=str, help=argparse.SUPPRESS)
 args = parser.parse_args()
 
 if args.json:
@@ -73,7 +74,7 @@ if args.json:
 
 profiling = args.program
 
-apparmor.init_aa(profiledir=args.dir)
+apparmor.init_aa(confdir=args.configdir, profiledir=args.dir)
 apparmor.set_logfile(args.file)
 
 aa_mountpoint = apparmor.check_for_apparmor()

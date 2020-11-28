@@ -2511,7 +2511,7 @@ def logger_path():
 
 ######Initialisations######
 
-def init_aa(confdir="/etc/apparmor", profiledir=None):
+def init_aa(confdir=None, profiledir=None):
     global CONFDIR
     global conf
     global cfg
@@ -2521,6 +2521,9 @@ def init_aa(confdir="/etc/apparmor", profiledir=None):
 
     if CONFDIR:
         return  # config already initialized (and possibly changed afterwards), so don't overwrite the config variables
+
+    if not confdir:
+        confdir = "/etc/apparmor"
 
     CONFDIR = confdir
     conf = apparmor.config.Config('ini', CONFDIR)

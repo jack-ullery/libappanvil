@@ -33,6 +33,7 @@ _ = init_translation()
 
 parser = argparse.ArgumentParser(description=_("Lists unconfined processes having tcp or udp ports"))
 parser.add_argument("--paranoid", action="store_true", help=_("scan all processes from /proc"))
+parser.add_argument('--configdir', type=str, help=argparse.SUPPRESS)
 bin_group = parser.add_mutually_exclusive_group()
 bin_group.add_argument("--with-ss", action='store_true', help=_("use ss(8) to find listening processes (default)"))
 bin_group.add_argument("--with-netstat", action='store_true', help=_("use netstat(8) to find listening processes"))
@@ -40,7 +41,8 @@ args = parser.parse_args()
 
 paranoid = args.paranoid
 
-aa.init_aa()
+aa.init_aa(confdir=args.configdir)
+
 aa_mountpoint = aa.check_for_apparmor()
 if not aa_mountpoint:
     raise aa.AppArmorException(_("It seems AppArmor was not started. Please enable AppArmor and try again."))

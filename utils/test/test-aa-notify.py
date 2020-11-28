@@ -23,7 +23,7 @@ import apparmor.aa as aa
 # The location of the aa-notify utility can be overridden by setting
 # the APPARMOR_NOTIFY environment variable; this is useful for running
 # these tests in an installed environment
-aanotify_bin = "../aa-notify"
+aanotify_bin = ["../aa-notify"]
 
 # http://www.chiark.greenend.org.uk/ucgi/~cjwatson/blosxom/2009-07-02-python-sigpipe.html
 # This is needed so that the subprocesses that produce endless output
@@ -138,7 +138,7 @@ Feb  4 13:40:38 XPS-13-9370 kernel: [128552.880347] audit: type=1400 audit({epoc
         expected_return_code = 0
         expected_output_has = 'usage: aa-notify'
 
-        return_code, output = cmd([aanotify_bin])
+        return_code, output = cmd(aanotify_bin)
         result = 'Got return code %d, expected %d\n' % (return_code, expected_return_code)
         self.assertEqual(expected_return_code, return_code, result + output)
         result = 'Got output "%s", expected "%s"\n' % (output, expected_output_has)
@@ -171,7 +171,7 @@ optional arguments:
   --debug               debug mode
 '''
 
-        return_code, output = cmd([aanotify_bin, '--help'])
+        return_code, output = cmd(aanotify_bin + ['--help'])
         result = 'Got return code %d, expected %d\n' % (return_code, expected_return_code)
         self.assertEqual(expected_return_code, return_code, result + output)
         result = 'Got output "%s", expected "%s"\n' % (output, expected_output_is)
@@ -183,7 +183,7 @@ optional arguments:
         expected_return_code = 0
         expected_output_has = 'AppArmor denials: 20 (since'
 
-        return_code, output = cmd([aanotify_bin, '-f', self.test_logfile, '-s', '100'])
+        return_code, output = cmd(aanotify_bin + ['-f', self.test_logfile, '-s', '100'])
         result = 'Got return code %d, expected %d\n' % (return_code, expected_return_code)
         self.assertEqual(expected_return_code, return_code, result + output)
         result = 'Got output "%s", expected "%s"\n' % (output, expected_output_has)
@@ -196,7 +196,7 @@ optional arguments:
         expected_return_code = 0
         expected_output_has = 'AppArmor denials: 10 (since'
 
-        return_code, output = cmd([aanotify_bin, '-f', self.test_logfile, '-l'])
+        return_code, output = cmd(aanotify_bin + ['-f', self.test_logfile, '-l'])
         if "ERROR: Could not find last login" in output:
             self.skipTest('Could not find last login')
         result = 'Got return code %d, expected %d\n' % (return_code, expected_return_code)
@@ -272,7 +272,7 @@ Logfile: {logfile}
 
 AppArmor denials: 10 (since'''.format(logfile=self.test_logfile)
 
-        return_code, output = cmd([aanotify_bin, '-f', self.test_logfile, '-l', '-v'])
+        return_code, output = cmd(aanotify_bin + ['-f', self.test_logfile, '-l', '-v'])
         if "ERROR: Could not find last login" in output:
             self.skipTest('Could not find last login')
         result = 'Got return code %d, expected %d\n' % (return_code, expected_return_code)
@@ -286,4 +286,8 @@ setup_all_loops(__name__)
 if __name__ == '__main__':
     if 'APPARMOR_NOTIFY' in os.environ:
         aanotify_bin = os.environ['APPARMOR_NOTIFY']
+
+    if '__AA_CONFDIR' in os.environ:
+        aanotify_bin = aanotify_bin + ['--configdir', os.getenv('__AA_CONFDIR')]
+
     unittest.main(verbosity=1)
