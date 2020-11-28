@@ -23,7 +23,7 @@ tests: error_output caching minimize equality parser_sanity
 GEN_TRANS_DIRS=simple_tests/generated_x/ simple_tests/generated_perms_leading/ simple_tests/generated_perms_safe/ simple_tests/generated_dbus
 
 gen_xtrans: $(GEN_TRANS_DIRS)
-	./gen-xtrans.pl
+	./gen-xtrans.py
 
 $(GEN_TRANS_DIRS):
 	mkdir $@
