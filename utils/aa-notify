@@ -232,6 +232,27 @@ def follow_apparmor_events(logfile, wait=0):
                 format(int(time.time()) - start_time)
             )
 
+            (logdata, log_inode, log_size) = reopen_logfile_if_needed(logfile, logdata, log_inode, log_size)
+
+            for event in parse_logdata(logdata):
+                # @TODO Alternatively use os.times()
+                if int(time.time()) - start_time < wait:
+                    debug_logger.debug('Omitted an event seen during wait time')
+                    continue
+                yield event
+
+            if debug_logger.debugging and debug_logger.debug_level <= 10 and int(time.time()) - start_time > 100:
+                debug_logger.debug('Debug mode detected: aborting notification emitter after 100 seconds.')
+                sys.exit(0)
+
+            time.sleep(1)
+
+
+def reopen_logfile_if_needed(logfile, logdata, log_inode, log_size):
+    retry = True
+
+    while retry:
+        try:
             # Reopen file if inode has chaneged, e.g. rename by logrotate
             if os.stat(logfile).st_ino != log_inode:
                 debug_logger.debug('Logfile was renamed, reload to read the new file.')
@@ -249,18 +270,14 @@ def follow_apparmor_events(logfile, wait=0):
             if os.stat(logfile).st_size > log_size:
                 log_size = os.stat(logfile).st_size
 
-            for event in parse_logdata(logdata):
-                # @TODO Alternatively use os.times()
-                if int(time.time()) - start_time < wait:
-                    debug_logger.debug('Omitted an event seen during wait time')
-                    continue
-                yield event
-
-            if debug_logger.debugging and debug_logger.debug_level <= 10 and int(time.time()) - start_time > 100:
-                debug_logger.debug('Debug mode detected: aborting notification emitter after 100 seconds.')
-                sys.exit(0)
-
+            retry = False
+        except FileNotFoundError:
+            # @TODO: switch to epoll/inotify/
+            debug_logger.debug('Logfile not found, retrying.')
             time.sleep(1)
+            # @TODO: send notification if reopening the log fails too many times
+
+    return (logdata, log_inode, log_size)
 
 
 def get_apparmor_events(logfile, since=0):
