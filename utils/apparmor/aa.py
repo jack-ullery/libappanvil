@@ -454,7 +454,11 @@ def create_new_profile(localfile, is_stub=False):
     local_profile = hasher()
     local_profile[localfile] = ProfileStorage('NEW', localfile, 'create_new_profile()')
     local_profile[localfile]['flags'] = 'complain'
-    local_profile[localfile]['inc_ie'].add(IncludeRule('abstractions/base', False, True))
+
+    if os.path.join(profile_dir, 'abstractions/base') in include:
+        local_profile[localfile]['inc_ie'].add(IncludeRule('abstractions/base', False, True))
+    else:
+        aaui.UI_Important(_("WARNING: Can't find %s, therefore not adding it to the new profile.") % 'abstractions/base')
 
     if os.path.exists(localfile) and os.path.isfile(localfile):
         interpreter_path, abstraction = get_interpreter_and_abstraction(localfile)
@@ -464,7 +468,10 @@ def create_new_profile(localfile, is_stub=False):
             local_profile[localfile]['file'].add(FileRule(interpreter_path, None, 'ix', FileRule.ALL, owner=False))
 
             if abstraction:
-                local_profile[localfile]['inc_ie'].add(IncludeRule(abstraction, False, True))
+                if os.path.join(profile_dir, abstraction) in include:
+                    local_profile[localfile]['inc_ie'].add(IncludeRule(abstraction, False, True))
+                else:
+                    aaui.UI_Important(_("WARNING: Can't find %s, therefore not adding it to the new profile.") % abstraction)
 
             handle_binfmt(local_profile[localfile], interpreter_path)
         else:
