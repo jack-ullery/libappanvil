@@ -177,6 +177,7 @@ class aa_tools:
 
     def cmd_autodep(self):
         apparmor.read_profiles()
+        apparmor.loadincludes()
 
         for (program, profile) in self.get_next_to_profile():
             if not program:
