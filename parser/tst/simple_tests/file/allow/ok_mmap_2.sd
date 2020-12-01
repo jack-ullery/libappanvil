@@ -1,5 +1,5 @@
 #
-#=DESCRIPTION m and [upi]x do not conflict, seperate rules
+#=DESCRIPTION m and [upi]x do not conflict, separate rules
 #=EXRESULT PASS
 # vim:syntax=apparmor
 #

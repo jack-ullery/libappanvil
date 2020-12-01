@@ -41,7 +41,7 @@
 
   include <abstractions/base>
 
-  # for openin with `exo-open`
+  # for opening with `exo-open`
   include <abstractions/exo-open>
 
   # for opening with `gio open <uri>`

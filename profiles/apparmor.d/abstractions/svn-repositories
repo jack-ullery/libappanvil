@@ -14,7 +14,7 @@
   # it is intended to be included in profiles for svnserve/apache2 and maybe
   # some repository viewers like trac/viewvc
 
-  # no hooks exec by default; please define whatever you need explicitely.
+  # no hooks exec by default; please define whatever you need explicitly.
 
   /srv/svn/**/conf/* r,
   /srv/svn/**/format r,

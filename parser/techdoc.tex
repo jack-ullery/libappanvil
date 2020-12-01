@@ -240,7 +240,7 @@ and may grant confined processes specific mount operations.
 
 The security model of the various versions of NFS is that files are
 looked up by name as usual, but after that lookup, each file is only
-identified by a file handle in successive acesses.  The file handle at a
+identified by a file handle in successive accesses.  The file handle at a
 minimum includes some sort of filesystem identifier and the file's inode
 number.  In Linux, the file handles used by most filesystems also
 include the inode number of the parent directory; this may change in the
@@ -816,7 +816,7 @@ one (this option may be used even if no profile by that name exists):
 
 \subsection{Anatomy of a Profile}
 
-AppArmor profiles use a simple declaritive language, fully described in
+AppArmor profiles use a simple declarative language, fully described in
 the apparmor.d(5) manual page. By convention, profiles are stored in
 /etc/{\H}apparmor.d/. The AppArmor parser supports a simple cpp-style
 include mechanism to allow sharing pieces of policy.  A simple profile

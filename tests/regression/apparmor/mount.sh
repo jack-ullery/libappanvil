@@ -12,7 +12,7 @@
 # processes.
 #=END
 
-# I made this a seperate test script because of the need to make a
+# I made this a separate test script because of the need to make a
 # loopfile before the tests run.
 
 pwd=`dirname $0`

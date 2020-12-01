@@ -42,7 +42,7 @@ extern char **environ;
 
 		(void)execve(argv[1], &argv[1], environ);
 
-		/* exec failed, kill outselves to flag parent */
+		/* exec failed, kill ourselves to flag parent */
 
 		(void)kill(getpid(), SIGKILL);
 	}

@@ -106,7 +106,7 @@ include <tunables/global>
   # profile: 
   # /home/*/public_html/**             mixr,
   # (note that if you are using mod_change_hat, you have a choice of
-  # providing neccesary access in this file OR in URI-specific hats, or
+  # providing necessary access in this file OR in URI-specific hats, or
   # hats in the <VHost>, <Location>, or <Directory> directives. Please
   # see the user's guide or mod_apparmor(5) for more information.
 
@@ -154,7 +154,7 @@ include <tunables/global>
     # profile: 
     # /home/*/public_html/**             mixr,
     # (note that if you are using mod_change_hat, you have a choice of
-    # providing neccesary access in this file OR in URI-specific hats, or
+    # providing necessary access in this file OR in URI-specific hats, or
     # hats in the <VHost>, <Location>, or <Directory> directives. Please
     # see the user's guide or mod_apparmor(5) for more information.
 

@@ -8,7 +8,7 @@
 
 #=NAME at_secure
 #=DESCRIPTION
-# Verifies the AT_SECURE flag in the auxillary vector after an exec transition
+# Verifies the AT_SECURE flag in the auxiliary vector after an exec transition
 #=END
 
 pwd=`dirname $0`

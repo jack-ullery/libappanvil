@@ -8,7 +8,7 @@ chfa.{h,cc} - code to build a highly compressed runtime readonly version
               of an hfa.
 aare_rules.{h,cc} - code to that binds parse -> expr-tree -> hfa generation
                     -> chfa generation into a basic interface for converting
-		    rules to a runtime ready statemachine.
+		    rules to a runtime ready state machine.
 
 Regular Expression Scanner Generator
 ====================================
@@ -19,12 +19,12 @@ Notes in the scanner File Format
 The file format used is based on the GNU flex table file format
 (--tables-file option; see Table File Format in the flex info pages and
 the flex sources for documentation). The magic number used in the header
-is set to 0x1B5E783D insted of 0xF13C57B1 though, which is meant to
+is set to 0x1B5E783D instead of 0xF13C57B1 though, which is meant to
 indicate that the file format logically is not the same: the YY_ID_CHK
 (check) and YY_ID_DEF (default) tables are used differently.
 
 Flex uses state compression to store only the differences between states
-for states that are similar. The amount of compresion influences the parse
+for states that are similar. The amount of compression influences the parse
 speed.
 
 The following two states could be stored as in the tables outlined

@@ -66,8 +66,8 @@ under src/jni_src.
   cp dist/libJNIChangeHat.so /usr/lib
 
   [Note: you must ensure that the target directory is passed to tomcat via the
-   java.library.path propert. This can be accomplished by setting the JAVA_OPTS
-   enviroment variable, export JAVA_OPTS=-Djava.library.path, or set via the 
+   java.library.path property. This can be accomplished by setting the JAVA_OPTS
+   environment variable, export JAVA_OPTS=-Djava.library.path, or set via the
    env variable LD_LIBRARY_PATH to include this directory so that tomcat can 
    find this library at startup]
 
@@ -108,13 +108,13 @@ under src/jni_src.
 Once the installation steps above have been started you are ready to begin 
 creating a profile for your application. The profile creation tool genprof will
 guide you through generating a profile and its support for change_hat will 
-prompt you create discrete hats as requested byt the changeHatValve during 
+prompt you create discrete hats as requested by the changeHatValve during
 tomcat execution.
 
   1. Create a basic profile for the tomcat server.
 
      - Run the command "genprof PATH_TO_CATALINA.SH"
-     - In a seperate window start tomcat and then stop tomcat
+     - In a separate window start tomcat and then stop tomcat
      - In the genprof window press "S" to scan for events
      - Answer the questions about the initial profile for tomcat
 
@@ -124,7 +124,7 @@ tomcat execution.
      - Stop the tomcat server
      - Deploy your WAR file or equivalent files under the container. 
      - execute "genprof PATH_TO_CATALINA.SH"
-     - In a seperate window start tomcat and then exercise your web application
+     - In a separate window start tomcat and then exercise your web application
      - In the genprof window press "S" to scan for events
        During the prompting you will be asked questions similar to:
   
@@ -180,7 +180,7 @@ all subsequent resource requests will be mediated in this hew hat (or security
 context).        
 If you choose to use the default hat: genprof will mediate all resource 
 requests in the default hat for the duration of processing this request.
-When the request processng is complete the valve will change_hat back to the 
+When the request processing is complete the valve will change_hat back to the
 parent context.
 
 

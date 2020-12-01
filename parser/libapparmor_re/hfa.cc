@@ -651,13 +651,13 @@ void DFA::minimize(dfaflags_t flags)
 	list<Partition *> partitions;
 
 	/* Set up the initial partitions
-	 * minimium of - 1 non accepting, and 1 accepting
+	 * minimum of - 1 non accepting, and 1 accepting
 	 * if trans hashing is used the accepting and non-accepting partitions
 	 * can be further split based on the number and type of transitions
 	 * a state makes.
 	 * If permission hashing is enabled the accepting partitions can
 	 * be further divided by permissions.  This can result in not
-	 * obtaining a truely minimized dfa but comes close, and can speedup
+	 * obtaining a truly minimized dfa but comes close, and can speedup
 	 * minimization.
 	 */
 	int accept_count = 0;
@@ -753,7 +753,7 @@ void DFA::minimize(dfaflags_t flags)
 
 	/* Remap the dfa so it uses the representative states
 	 * Use the first state of a partition as the representative state
-	 * At this point all states with in a partion have transitions
+	 * At this point all states with in a partition have transitions
 	 * to states within the same partitions, however this can slow
 	 * down compressed dfa compression as there are more states,
 	 */
@@ -813,7 +813,7 @@ void DFA::minimize(dfaflags_t flags)
 	}
 
 	/* Now that the states have been remapped, remove all states
-	 * that are not the representive states for their partition, they
+	 * that are not the representative states for their partition, they
 	 * will have a label == -1
 	 */
 	for (Partition::iterator i = states.begin(); i != states.end();) {
@@ -875,7 +875,7 @@ static int diff_partition(State *state, Partition &part, int max_range, int uppe
 
 /**
  * diff_encode - compress dfa by differentially encoding state transitions
- * @dfa_flags: flags controling dfa creation
+ * @dfa_flags: flags controlling dfa creation
  *
  * This function reduces the number of transitions that need to be stored
  * by encoding transitions as the difference between the state and a
@@ -889,7 +889,7 @@ static int diff_partition(State *state, Partition &part, int max_range, int uppe
  *   - The number of state transitions needed to match an input of length
  *     m will be 2m
  *
- * To guarentee this the ordering and distance calculation is done in the
+ * To guarantee this the ordering and distance calculation is done in the
  * following manner.
  * - A DAG of the DFA is created starting with the start state(s).
  * - A state can only be relative (have a differential encoding) to

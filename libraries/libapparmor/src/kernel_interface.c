@@ -90,7 +90,7 @@ static int write_buffer(int fd, const char *buffer, int size)
 
 /**
  * write_policy_buffer - load compiled policy into the kernel
- * @fd: kernel iterface to write to
+ * @fd: kernel interface to write to
  * @atomic: whether to load all policy in buffer atomically (true)
  * @buffer: buffer of policy to load
  * @size: the size of the data in the buffer
@@ -205,7 +205,7 @@ static int write_policy_file_to_iface(aa_kernel_interface *kernel_interface,
  * @apparmorfs: path to the apparmor directory of the mounted securityfs (can
  *              be NULL and the path will be auto discovered)
  *
- * Returns: 0 on success, -1 on error with errnot set and *@kernel_interface
+ * Returns: 0 on success, -1 on error with errno set and *@kernel_interface
  *          pointing to NULL
  */
 int aa_kernel_interface_new(aa_kernel_interface **kernel_interface,

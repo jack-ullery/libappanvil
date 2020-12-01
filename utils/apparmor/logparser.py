@@ -334,7 +334,7 @@ class ReadLog:
     }
 
     def op_type(self, event):
-        """Returns the operation type if known, unkown otherwise"""
+        """Returns the operation type if known, unknown otherwise"""
 
         if ( event['operation'].startswith('file_') or event['operation'].startswith('inode_') or event['operation'] in self.OP_TYPE_FILE_OR_NET ):
             # file or network event?

@@ -847,13 +847,13 @@ int main(void)
 	MY_TEST(retval == 0, "get boolean variable 2");
 
 	retval = get_boolean_var("non_existant");
-	MY_TEST(retval < 0, "get nonexistant boolean variable");
+	MY_TEST(retval < 0, "get nonexistent boolean variable");
 
 	retval = get_boolean_var("stereopuff");
 	MY_TEST(retval < 0, "get boolean variable that's declared a set var");
 
 	retptr = get_set_var("daves_not_here_man");
-	MY_TEST(retptr == NULL, "get non-existent set variable");
+	MY_TEST(retptr == NULL, "get nonexistent set variable");
 
 	retptr = get_set_var("abuse");
 	MY_TEST(retptr == NULL, "get set variable that's declared a boolean");

@@ -1101,9 +1101,9 @@ int aa_query_link_path_len(const char *label, size_t label_len,
 	query[pos] = 0;
 	query[++pos] = AA_CLASS_FILE;
 	memcpy(query + pos + 1, link, link_len);
-	/* The kernel does the query in two parts we could similate this
+	/* The kernel does the query in two parts; we could simulate this
 	 * doing the following, however as long as policy is compiled
-	 * correctly this isn't requied, and it requires and extra round
+	 * correctly this isn't required, and it requires an extra round
 	 * trip to the kernel and adds a race on policy replacement between
 	 * the two queries.
 	 *

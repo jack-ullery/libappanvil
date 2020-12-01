@@ -568,7 +568,7 @@ verify_binary_equality "set rlimit memlock <= 2GB" \
 # Unfortunately we can not just compare an empty profile and hat to a
 # ie. "/t { ^test { /f r, }}"
 # to the second profile with the equivalent rule inserted manually
-# because policy write permission "w" actually expands to mutiple permissions
+# because policy write permission "w" actually expands to multiple permissions
 # under the hood, and the parser is not adding those permissions
 # to the rules it auto generates
 # So we insert the rule with "append" permissions, and rely on the parser

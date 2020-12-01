@@ -32,7 +32,7 @@ profile postfix-local /usr/lib/postfix/{bin/,sbin/,}local {
 
   /dev/tty                                              rw,
   /etc/{postfix/,}aliases.db                            rk,
-  # mailman on SuSE is configed to have its own alias file
+  # mailman on SuSE is configured to have its own alias file
   /var/lib/mailman/data/aliases.db                      rk,
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/*      rw,
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/       rw,

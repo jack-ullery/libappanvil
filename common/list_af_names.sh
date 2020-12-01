@@ -6,7 +6,7 @@
 # the source tree
 # =====================
 
-# It doesn't make sence for AppArmor to mediate PF_UNIX, filter it out. Search
+# It doesn't make sense for AppArmor to mediate PF_UNIX, filter it out. Search
 # for "PF_" constants since that is what is required in bits/socket.h, but
 # rewrite as "AF_".
 

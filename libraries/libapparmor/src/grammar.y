@@ -373,7 +373,7 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	| TOK_KEY_CAPABILITY TOK_EQUALS TOK_DIGITS
 	{ /* need to reverse map number to string, need to figure out
 	   * how to get auto generation of reverse mapping table into
-	   * autotools Makefile.  For now just drop assumming capname is
+	   * autotools Makefile.  For now just drop assuming capname is
 	   * present which it should be with current kernels */
 	}
 	| TOK_KEY_CAPNAME TOK_EQUALS TOK_QUOTED_STRING
@@ -381,7 +381,7 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	  ret_record->name = $3;
 	}
 	| TOK_KEY_OFFSET TOK_EQUALS TOK_DIGITS
-	{ /* offset is used for reporting where an error occured unpacking
+	{ /* offset is used for reporting where an error occurred unpacking
 	   * loaded policy.  We can just drop this currently
 	   */
 	}

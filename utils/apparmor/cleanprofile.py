@@ -55,13 +55,13 @@ class CleanProf(object):
             for inc in includes:
                 if not self.profile.include.get(inc, {}).get(inc, False):
                     apparmor.load_include(inc)
-                if self.other.aa[program].get(hat):  # carefully avoid to accidently initialize self.other.aa[program][hat]
+                if self.other.aa[program].get(hat):  # carefully avoid to accidentally initialize self.other.aa[program][hat]
                     deleted += apparmor.delete_all_duplicates(self.other.aa[program][hat], inc, apparmor.ruletypes)
 
             #Clean duplicate rules in other profile
             for ruletype in apparmor.ruletypes:
                 if not self.same_file:
-                    if self.other.aa[program].get(hat):  # carefully avoid to accidently initialize self.other.aa[program][hat]
+                    if self.other.aa[program].get(hat):  # carefully avoid to accidentally initialize self.other.aa[program][hat]
                         deleted += self.other.aa[program][hat][ruletype].delete_duplicates(self.profile.aa[program][hat][ruletype])
                 else:
                     deleted += self.other.aa[program][hat][ruletype].delete_duplicates(None)

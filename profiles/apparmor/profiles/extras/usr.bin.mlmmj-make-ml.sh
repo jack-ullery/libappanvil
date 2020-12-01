@@ -31,7 +31,7 @@ include <tunables/global>
   /{usr/,}bin/mkdir mixr,
   /{usr/,}bin/touch mixr,
   /usr/bin/which mixr,
-  # if mkdir cant read the current work directory it jumps into /
+  # if mkdir can't read the current working directory it jumps into /
   # allow reading that dir.
   / r,
 

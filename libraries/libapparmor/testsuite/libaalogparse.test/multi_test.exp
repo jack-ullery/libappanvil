@@ -1,5 +1,5 @@
-# Runs all tests with the extention "multi" for several times.
-# Each testprogram <programname>.multi has an own subdirectory
+# Runs all tests with the extension "multi" for several times.
+# Each test program <programname>.multi has its own subdirectory
 # <programmname> in which several testcases are defined for this program
 # Each testcase has 3 files:
 #

@@ -11,17 +11,17 @@
 #
 # This file should be included by each test case
 # It does a lot of hidden 'magic',  Downside is that
-# this magic makes debugging fauling tests more difficult.
+# this magic makes debugging failing tests more difficult.
 # Running the test with the '-r' option can help.
 #
-# Userchangeable variables (tmpdir etc) should be specified in
+# User changeable variables (tmpdir etc) should be specified in
 # uservars.inc
 # 
 # Cleanup is automatically performed by epilogue.inc
 #
 # For this file, functions are first, entry point code is at end, see "MAIN"
 
-#use $() to retreive the failure message or "true" if success
+#use $() to retrieve the failure message or "true" if success
 
 # kernel_features_istrue() - test whether boolean files are true
 # $@: path(s) to test if true

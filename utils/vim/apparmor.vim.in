@@ -109,7 +109,7 @@ syn match sdError /^.*$/ contains=sdComment "highlight all non-valid lines as er
 
 " TODO: the sdGlob pattern is not anchored with ^ and $, so it matches all lines matching ^@{...}.*
 " This allows incorrect lines also and should be checked better.
-" This also (accidently ;-) includes variable definitions (@{FOO}=/bar)
+" This also (accidentally ;-) includes variable definitions (@{FOO}=/bar)
 " TODO: make a separate pattern for variable definitions, then mark sdGlob as contained
 syn match sdGlob /\v\?|\*|\{.*,.*\}|[[^\]]\+\]|\@\{[a-zA-Z][a-zA-Z0-9_]*\}/
 
@@ -121,7 +121,7 @@ syn cluster sdEntry contains=sdEntryWriteExec,sdEntryR,sdEntryW,sdEntryIX,sdEntr
 
 
 " TODO: support audit and deny keywords for all rules (not only for files)
-" TODO: higlight audit and deny keywords everywhere
+" TODO: highlight audit and deny keywords everywhere
 
 " Capability line
 

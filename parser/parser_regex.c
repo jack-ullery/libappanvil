@@ -534,7 +534,7 @@ static int process_profile_name_xmatch(Profile *prof)
 				int len;
 				tbuf.clear();
 				/* prepend \x00 to every value. This is
-				 * done to separate the existance of the
+				 * done to separate the existence of the
 				 * xattr from a null value match.
 				 *
 				 * if an xattr exists, a single \x00 will

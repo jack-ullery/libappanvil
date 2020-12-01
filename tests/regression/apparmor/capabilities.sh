@@ -13,7 +13,7 @@
 # capability processing for confined processes) and no others allows successful
 # access.  For every syscall in the test, we iterate over each capability 
 # individually (plus no capabilities) in order to verify that only the expected
-# capability grants access to the priviledged operation. The same is repeated 
+# capability grants access to the privileged operation. The same is repeated
 # for capabilities within hats.
 #=END
 

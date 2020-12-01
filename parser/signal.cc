@@ -112,7 +112,7 @@ static const char *const sig_names[MAXMAPPED_SIG + 1] = {
 	"lost",
 	"unused",
 
-	"exists",	/* always last existance test mapped to MAXMAPPED_SIG */
+	"exists",	/* always last existence test mapped to MAXMAPPED_SIG */
 };
 
 

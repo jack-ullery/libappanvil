@@ -119,7 +119,7 @@ genprofile $test2:rix signal:receive:peer=unconfined -- image=$test2 $file:$file
 local_runchecktest "enforce ix case3" fail $test1 $test2 $file
 
 # case 4: parent profile grants access
-#	  missing child profile (irrelvant)
+#	  missing child profile (irrelevant)
 #	  expected behaviour: child should be able to access resource
 
 genprofile $test2:rix $file:$fileperm signal:receive:peer=unconfined
@@ -139,7 +139,7 @@ genprofile $test2:ux signal:receive:peer=unconfined
 local_runchecktest "enforce ux case1" pass "unconfined" $test2 $file
 
 # confined parent, exec child with conflicting exec qualifiers
-# that overlap in such away that px is prefered (ix is glob, px is exact
+# that overlap in such away that px is preferred (ix is glob, px is exact
 # match).  Other overlap tests should be in the parser.
 # case 1: 
 #	  expected behaviour: exec of child passes

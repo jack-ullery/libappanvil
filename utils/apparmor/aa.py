@@ -70,7 +70,7 @@ from apparmor.rule import quote_if_needed
 from apparmor.translations import init_translation
 _ = init_translation()
 
-# Setup logging incase of debugging is enabled
+# Setup logging in case debugging is enabled
 debug_logger = DebugLogger('aa')
 
 # The database for severity
@@ -568,7 +568,7 @@ def autodep(bin_name, pname=''):
         #    bin_full = bin_name
         #if not bin_full.startswith('/'):
             #return None
-        # Return if exectuable path not found
+        # Return if executable path not found
         if not bin_full:
             return None
     else:
@@ -881,7 +881,7 @@ def ask_exec(hashlog):
 
                         q.headers += [_('Profile'), combine_name(profile, hat)]
 
-                        # to_name should not exist here since, transitioning is already handeled
+                        # to_name should not exist here since, transitioning is already handled
                         q.headers += [_('Execute'), exec_target]
                         q.headers += [_('Severity'), severity]
 
@@ -1087,7 +1087,7 @@ def ask_the_questions(log_dict):
 
                 if not aa[profile].get(hat, {}).get('file'):
                     if aamode != 'merge':
-                        # Ignore log events for a non-existing profile or child profile. Such events can occour
+                        # Ignore log events for a non-existing profile or child profile. Such events can occur
                         # after deleting a profile or hat manually, or when processing a foreign log.
                         # (Checking for 'file' is a simplified way to check if it's a ProfileStorage.)
                         debug_logger.debug("Ignoring events for non-existing profile %s" % combine_name(profile, hat))
@@ -1583,14 +1583,14 @@ def collapse_log(hashlog, ignore_null_profiles=True):
 
             if '//null-' in hashlog[aamode][full_profile]['final_name'] and ignore_null_profiles:
                 # ignore null-* profiles (probably nested childs)
-                # otherwise we'd accidently create a null-* hat in the profile which is worse
+                # otherwise we'd accidentally create a null-* hat in the profile which is worse
                 # XXX drop this once we support nested childs
                 continue
 
             profile, hat = split_name(hashlog[aamode][full_profile]['final_name'])  # XXX limited to two levels to avoid an Exception on nested child profiles or nested null-*
             # TODO: support nested child profiles
 
-            # used to avoid to accidently initialize aa[profile][hat] or calling is_known_rule() on events for a non-existing profile
+            # used to avoid to accidentally initialize aa[profile][hat] or calling is_known_rule() on events for a non-existing profile
             hat_exists = False
             if aa.get(profile) and aa[profile].get(hat):
                 hat_exists = True
@@ -2112,7 +2112,7 @@ def parse_profile_data(data, file, do_include):
 
     if lastline:
         # lastline gets merged into line (and reset to None) when reading the next line.
-        # If it isn't empty, this means there's something unparseable at the end of the profile
+        # If it isn't empty, this means there's something unparsable at the end of the profile
         raise AppArmorException(_('Syntax Error: Unknown line found in file %(file)s line %(lineno)s:\n    %(line)s') % { 'file': file, 'lineno': lineno + 1, 'line': lastline })
 
     # Below is not required I'd say
