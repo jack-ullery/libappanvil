@@ -189,6 +189,8 @@ syn match sdInclude /\s*include\s<\S*>/  " TODO: doesn't check until $
 syn match sdInclude /\s*#include\sif\sexists\s<\S*>/ " TODO: doesn't check until $
 syn match sdInclude /\s*include\sif\sexists\s<\S*>/  " TODO: doesn't check until $
 
+syn match sdInclude /\s*abi\s<\S*>\s*,/ contains=sdComment  " TODO: doesn't check until $
+
 " basic profile block...
 " \s+ does not work in end=, therefore using \s\s*
 syn region Normal start=/\v^(profile\s+)?\S+\s+@@flags@@=\{/ matchgroup=sdProfileEnd end=/^}\s*$/ contains=sdProfileName,Hat,@sdEntry,sdComment,sdError,sdInclude
