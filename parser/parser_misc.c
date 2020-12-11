@@ -326,7 +326,8 @@ bool add_cap_feature_mask(struct aa_features *features, capability_flags flags)
 
 	value = aa_features_value(features, "caps/mask", &valuelen);
 	if (!value)
-		return false;
+		/* nothing to add, just use existing set */
+		return true;
 
 	n = 0;
 	for (capstr = strn_token(value, len);
