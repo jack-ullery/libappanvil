@@ -14,7 +14,7 @@ MOSTLYCLEANFILES=libapparmor_wrap.c LibAppArmor.py
 
 all-local: libapparmor_wrap.c setup.py
 	if test ! -f libapparmor_wrap.c; then cp $(srcdir)/libapparmor_wrap.c . ; fi
-	CC="$(CC)" CFLAGS="$(PYTHON_CPPFLAGS) $(EXTRA_WARNINGS)" LDSHARED="$(CC) -shared" LDFLAGS="$(PYTHON_LDFLAGS)" $(PYTHON) setup.py build
+	CC="$(CC)" CFLAGS="$(PYTHON_CPPFLAGS) $(EXTRA_WARNINGS)" LDSHARED="$(CC) -shared" LDFLAGS="$(PYTHON_LDFLAGS) $(LDFLAGS)" $(PYTHON) setup.py build
 
 install-exec-local:
 	$(PYTHON) setup.py install --root="/$(DESTDIR)" --prefix="$(prefix)"
