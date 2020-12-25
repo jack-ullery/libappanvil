@@ -8,6 +8,9 @@ include if exists <tunables/nothing>
 @{xy} = x y
 @{asdf} = "" foo
 
+$foo = false
+$bar = true
+
 # A simple test comment which will persist
 
 
