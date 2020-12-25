@@ -235,6 +235,11 @@ class TestAdd_alias(AATest):
             self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/foo', None))  # target None insteadd of str
         self.assertEqual(list(self.pl.files.keys()), [])
 
+    def testAdd_alias_error_3(self):
+        with self.assertRaises(AppArmorBug):
+            self.pl.add_alias('/etc/apparmor.d/bin.foo', 'alias /foo -> /bar,')  # str insteadd of AliasRule
+        self.assertEqual(list(self.pl.files.keys()), [])
+
     def test_dedup_alias_1(self):
         self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/foo', '/bar'))
         self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/foo', '/another_target'))
