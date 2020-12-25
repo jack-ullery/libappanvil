@@ -16,6 +16,7 @@ from apparmor.aare import AARE
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.rule.alias import AliasRule, AliasRuleset
 from apparmor.rule.abi import AbiRule, AbiRuleset
+from apparmor.rule.boolean import BooleanRule, BooleanRuleset
 from apparmor.rule.include import IncludeRule, IncludeRuleset
 from apparmor.rule.variable import VariableRule, VariableRuleset
 
@@ -50,6 +51,7 @@ class ProfileList:
             'alias': AliasRuleset(),
             'inc_ie': IncludeRuleset(),
             'variable': VariableRuleset(),
+            'boolean': BooleanRuleset(),
             'profiles': [],
         }
 
@@ -120,6 +122,15 @@ class ProfileList:
 
         self.files[filename]['variable'].add(var_rule)
 
+    def add_boolean(self, filename, bool_rule):
+        ''' Store the given boolean variable rule for the given profile filename preamble '''
+        if type(bool_rule) is not BooleanRule:
+            raise AppArmorBug('Wrong type given to ProfileList: %s' % bool_rule)
+
+        self.init_file(filename)
+
+        self.files[filename]['boolean'].add(bool_rule)
+
     def delete_preamble_duplicates(self, filename):
         ''' Delete duplicates in the preamble of the given profile file '''
 
@@ -143,6 +154,7 @@ class ProfileList:
         data += self.files[filename]['alias'].get_raw(depth)
         data += self.files[filename]['inc_ie'].get_raw(depth)
         data += self.files[filename]['variable'].get_raw(depth)
+        data += self.files[filename]['boolean'].get_raw(depth)
         return data
 
     def get_clean(self, filename, depth=0):
@@ -155,6 +167,7 @@ class ProfileList:
         data += self.files[filename]['alias'].get_clean_unsorted(depth)
         data += self.files[filename]['inc_ie'].get_clean_unsorted(depth)
         data += self.files[filename]['variable'].get_clean_unsorted(depth)
+        data += self.files[filename]['boolean'].get_clean_unsorted(depth)
         return data
 
     def filename_from_profile_name(self, name):

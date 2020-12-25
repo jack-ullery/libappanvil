@@ -20,6 +20,7 @@ from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.profile_list import ProfileList
 from apparmor.rule.abi import AbiRule
 from apparmor.rule.alias import AliasRule
+from apparmor.rule.boolean import BooleanRule
 from apparmor.rule.include import IncludeRule
 from apparmor.rule.variable import VariableRule
 
@@ -280,6 +281,28 @@ class TestAdd_variable(AATest):
     def test_dedup_error_1(self):
         with self.assertRaises(AppArmorBug):
             self.pl.delete_preamble_duplicates('/file/not/found')
+        self.assertEqual(list(self.pl.files.keys()), [])
+
+class TestAdd_boolean(AATest):
+    def AASetup(self):
+        self.pl = ProfileList()
+
+    def testAdd_variable_1(self):
+        self.pl.add_boolean('/etc/apparmor.d/bin.foo', BooleanRule('$foo', 'true'))
+        self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['$foo = true', ''])
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['$foo = true', ''])
+
+    def testAdd_variable_2(self):
+        self.pl.add_boolean('/etc/apparmor.d/bin.foo', BooleanRule('$foo', 'true'))
+        self.pl.add_boolean('/etc/apparmor.d/bin.foo', BooleanRule('$bar', 'false'))
+        self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
+        self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['$foo = true', '$bar = false', ''])
+        self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['$foo = true', '$bar = false', ''])
+
+    def testAdd_variable_error_1(self):
+        with self.assertRaises(AppArmorBug):
+            self.pl.add_boolean('/etc/apparmor.d/bin.foo', '$foo')  # str insteadd of IncludeRule
         self.assertEqual(list(self.pl.files.keys()), [])
 
 class TestGet(AATest):
