@@ -127,6 +127,7 @@ class MinitoolsTest(AATest):
     def test_autodep(self):
         pass
 
+    @unittest.skipIf(apparmor.check_for_apparmor() is None, "Securityfs not mounted or doesn't have the apparmor directory.")
     def test_unconfined(self):
         output = subprocess.check_output('%s ./../aa-unconfined --configdir ./'%python_interpreter, shell=True)
 
