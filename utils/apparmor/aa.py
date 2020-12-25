@@ -33,7 +33,7 @@ from copy import deepcopy
 from apparmor.aare import AARE
 
 from apparmor.common import (AppArmorException, AppArmorBug, is_skippable_file, open_file_read, valid_path, hasher,
-                             split_name, type_is_str, open_file_write, DebugLogger)
+                             combine_profname, split_name, type_is_str, open_file_write, DebugLogger)
 
 import apparmor.ui as aaui
 
@@ -1770,7 +1770,7 @@ def parse_profile_start(line, file, lineno, profile, hat):
         if not matches['profile_keyword']:
             raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: missing "profile" keyword.') % {
                     'profile': profile, 'file': file, 'line': lineno + 1 })
-        if profile != hat:
+        if hat is not None:
             # nesting limit reached - a child profile can't contain another child profile
             raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: a child profile inside another child profile is not allowed.') % {
                     'profile': profile, 'file': file, 'line': lineno + 1 })
@@ -1820,9 +1820,10 @@ def parse_profile_start_to_storage(line, file, lineno, profile, hat):
     return (profile, hat, prof_storage)
 
 def parse_profile_data(data, file, do_include, in_preamble):
-    profile_data = hasher()
+    profile_data = {}
     profile = None
     hat = None
+    profname = None
     in_contained_hat = None
     parsed_profiles = []
     initial_comment = ''
@@ -1832,9 +1833,10 @@ def parse_profile_data(data, file, do_include, in_preamble):
 
     if do_include:
         profile = file
-        hat = file
-        profile_data[profile][hat] = ProfileStorage(profile, hat, 'parse_profile_data() do_include')
-        profile_data[profile][hat]['filename'] = file
+        hat = None
+        profname = combine_profname([profile, hat])
+        profile_data[profname] = ProfileStorage(profile, hat, 'parse_profile_data() do_include')
+        profile_data[profname]['filename'] = file
 
     for lineno, line in enumerate(data):
         line = line.strip()
@@ -1851,7 +1853,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
             if in_preamble:
                 active_profiles.add_rule(file, rule_name, rule_obj)
             else:
-                profile_data[profile][hat][rule_name].add(rule_obj)
+                profile_data[profname][rule_name].add(rule_obj)
 
             if rule_name == 'inc_ie':
                 for incname in rule_obj.get_full_paths(profile_dir):
@@ -1870,15 +1872,19 @@ def parse_profile_data(data, file, do_include, in_preamble):
 
             (profile, hat, prof_storage) = parse_profile_start_to_storage(line, file, lineno, profile, hat)
 
-            if profile_data[profile].get(hat, False):
+            if profile == hat:
+                hat = None
+            profname = combine_profname([profile, hat])
+
+            if profile_data.get(profname, False):
                 raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
                     { 'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat) })
 
-            profile_data[profile][hat] = prof_storage
+            profile_data[profname] = prof_storage
 
             # Save the initial comment
             if initial_comment:
-                profile_data[profile][hat]['initial_comment'] = initial_comment
+                profile_data[profname]['initial_comment'] = initial_comment
 
             initial_comment = ''
 
@@ -1888,11 +1894,13 @@ def parse_profile_data(data, file, do_include, in_preamble):
                 raise AppArmorException(_('Syntax Error: Unexpected End of Profile reached in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             if in_contained_hat:
-                hat = profile
+                hat = None
                 in_contained_hat = False
+                profname = combine_profname([profile, hat])
             else:
                 parsed_profiles.append(profile)
                 profile = None
+                profname = None
                 in_preamble = True
 
             initial_comment = ''
@@ -1927,9 +1935,9 @@ def parse_profile_data(data, file, do_include, in_preamble):
             mount_rule.audit = audit
             mount_rule.deny = (allow == 'deny')
 
-            mount_rules = profile_data[profile][hat][allow].get('mount', list())
+            mount_rules = profile_data[profname][allow].get('mount', list())
             mount_rules.append(mount_rule)
-            profile_data[profile][hat][allow]['mount'] = mount_rules
+            profile_data[profname][allow]['mount'] = mount_rules
 
         elif RE_PROFILE_PIVOT_ROOT.search(line):
             matches = RE_PROFILE_PIVOT_ROOT.search(line).groups()
@@ -1949,9 +1957,9 @@ def parse_profile_data(data, file, do_include, in_preamble):
             pivot_root_rule.audit = audit
             pivot_root_rule.deny = (allow == 'deny')
 
-            pivot_root_rules = profile_data[profile][hat][allow].get('pivot_root', list())
+            pivot_root_rules = profile_data[profname][allow].get('pivot_root', list())
             pivot_root_rules.append(pivot_root_rule)
-            profile_data[profile][hat][allow]['pivot_root'] = pivot_root_rules
+            profile_data[profname][allow]['pivot_root'] = pivot_root_rules
 
         elif RE_PROFILE_UNIX.search(line):
             matches = RE_PROFILE_UNIX.search(line).groups()
@@ -1971,9 +1979,9 @@ def parse_profile_data(data, file, do_include, in_preamble):
             unix_rule.audit = audit
             unix_rule.deny = (allow == 'deny')
 
-            unix_rules = profile_data[profile][hat][allow].get('unix', list())
+            unix_rules = profile_data[profname][allow].get('unix', list())
             unix_rules.append(unix_rule)
-            profile_data[profile][hat][allow]['unix'] = unix_rules
+            profile_data[profname][allow]['unix'] = unix_rules
 
         elif RE_PROFILE_CHANGE_HAT.search(line):
             matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
@@ -1993,23 +2001,24 @@ def parse_profile_data(data, file, do_include, in_preamble):
             in_contained_hat = True
             hat = matches.group('hat')
             hat = strip_quotes(hat)
+            profname = combine_profname([profile, hat])
 
-            if profile_data[profile].get(hat, False) and not do_include:
+            if profile_data.get(profname, False) and not do_include:
                 raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
                     { 'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat) })
 
             # if hat is already known, the check above will error out (if not do_include)
             # nevertheless, just to be sure, don't overwrite existing profile_data.
-            if not profile_data[profile].get(hat, False):
-                profile_data[profile][hat] = ProfileStorage(profile, hat, 'parse_profile_data() hat_def')
-                profile_data[profile][hat]['filename'] = file
+            if not profile_data.get(profname, False):
+                profile_data[profname] = ProfileStorage(profile, hat, 'parse_profile_data() hat_def')
+                profile_data[profname]['filename'] = file
 
             flags = matches.group('flags')
 
-            profile_data[profile][hat]['flags'] = flags
+            profile_data[profname]['flags'] = flags
 
             if initial_comment:
-                profile_data[profile][hat]['initial_comment'] = initial_comment
+                profile_data[profname]['initial_comment'] = initial_comment
             initial_comment = ''
 
         elif line[0] == '#':
@@ -2023,7 +2032,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
             if line.startswith('# LOGPROF-SUGGEST:'): # TODO: allow any number of spaces/tabs after '#'
                 parts = line.split()
                 if len(parts) > 2:
-                    profile_data[profile][hat]['logprof_suggest'] = parts[2]
+                    profile_data[profname]['logprof_suggest'] = parts[2]
 
                 # keep line as part of initial_comment (if we ever support writing abstractions, we should update serialize_profile())
                 initial_comment = initial_comment + line + '\n'
@@ -2049,14 +2058,15 @@ def parse_profile_data(data, file, do_include, in_preamble):
             for parsed_prof in sorted(parsed_profiles):
                 if re.search(hatglob, parsed_prof):
                     for hat in cfg['required_hats'][hatglob].split():
-                        if not profile_data[parsed_prof].get(hat, False):
-                            profile_data[parsed_prof][hat] = ProfileStorage(parsed_prof, hat, 'parse_profile_data() required_hats')
+                        profname = combine_profname([parsed_prof, hat])
+                        if not profile_data.get(profname, False):
+                            profile_data[profname] = ProfileStorage(parsed_prof, hat, 'parse_profile_data() required_hats')
 
     # End of file reached but we're stuck in a profile
     if profile and not do_include:
         raise AppArmorException(_("Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside profile %(profile)s") % { 'file': file, 'profile': profile })
 
-    return profile_data
+    return merged_to_split(profile_data)
 
 def match_line_against_rule_classes(line, profile, file, lineno, in_preamble):
     ''' handle all lines handled by *Rule classes '''
