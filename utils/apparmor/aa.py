@@ -1812,6 +1812,27 @@ def parse_profile_start(line, file, lineno, profile, hat):
 
     return (profile, hat, attachment, xattrs, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
 
+def parse_profile_start_to_storage(line, file, lineno, profile, hat):
+    ''' parse a profile start line (using parse_profile_startline()) and convert it to a ProfileStorage '''
+
+    (profile, hat, attachment, xattrs, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
+
+    prof_storage = ProfileStorage(profile, hat, 'parse_profile_data() profile_start')
+
+    if attachment:
+        prof_storage['attachment'] = attachment
+    if pps_set_profile:
+        prof_storage['profile'] = True
+    if pps_set_hat_external:
+        prof_storage['external'] = True
+
+    prof_storage['name'] = profile
+    prof_storage['filename'] = file
+    prof_storage['xattrs'] = xattrs
+    prof_storage['flags'] = flags
+
+    return (profile, hat, in_contained_hat, prof_storage)
+
 def parse_profile_data(data, file, do_include):
     profile_data = hasher()
     profile = None
@@ -1837,27 +1858,13 @@ def parse_profile_data(data, file, do_include):
             lastline = None
         # Starting line of a profile
         if RE_PROFILE_START.search(line):
-            (profile, hat, attachment, xattrs, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
+            (profile, hat, in_contained_hat, prof_storage) = parse_profile_start_to_storage(line, file, lineno, profile, hat)
 
             if profile_data[profile].get(hat, False):
                 raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
                     { 'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat) })
 
-            profile_data[profile][hat] = ProfileStorage(profile, hat, 'parse_profile_data() profile_start')
-
-            if attachment:
-                profile_data[profile][hat]['attachment'] = attachment
-            if pps_set_profile:
-                profile_data[profile][hat]['profile'] = True
-            if pps_set_hat_external:
-                profile_data[profile][hat]['external'] = True
-
-            # save profile name and filename
-            profile_data[profile][hat]['name'] = profile
-            profile_data[profile][hat]['filename'] = file
-
-            profile_data[profile][hat]['xattrs'] = xattrs
-            profile_data[profile][hat]['flags'] = flags
+            profile_data[profname] = prof_storage
 
             # Save the initial comment
             if initial_comment:
