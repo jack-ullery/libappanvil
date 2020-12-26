@@ -62,7 +62,6 @@ from apparmor.rule.file             import FileRule
 from apparmor.rule.include          import IncludeRule
 from apparmor.rule.network          import NetworkRule
 from apparmor.rule.ptrace           import PtraceRule
-from apparmor.rule.rlimit           import RlimitRule
 from apparmor.rule.signal           import SignalRule
 from apparmor.rule.variable         import VariableRule
 from apparmor.rule import quote_if_needed
@@ -1849,8 +1848,13 @@ def parse_profile_data(data, file, do_include):
         if lastline:
             line = '%s %s' % (lastline, line)
             lastline = None
-        # Starting line of a profile
-        if RE_PROFILE_START.search(line):
+
+        # is line handled by a *Rule class?
+        (rule_name, rule_obj) = match_line_against_rule_classes(line, profile, file, lineno)
+        if rule_name:
+            profile_data[profile][hat][rule_name].add(rule_obj)
+
+        elif RE_PROFILE_START.search(line):  # Starting line of a profile
             # in_contained_hat is needed to know if we are already in a profile or not. (Simply checking if we are in a hat doesn't work,
             # because something like "profile foo//bar" will set profile and hat at once, and later (wrongfully) expect another "}".
             # The logic is simple and resembles a "poor man's stack" (with limited/hardcoded height).
@@ -1887,30 +1891,12 @@ def parse_profile_data(data, file, do_include):
 
             initial_comment = ''
 
-        elif CapabilityRule.match(line):
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected capability entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['capability'].add(CapabilityRule.parse(line))
-
-        elif ChangeProfileRule.match(line):
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected change profile entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['change_profile'].add(ChangeProfileRule.parse(line))
-
         elif AliasRule.match(line):
             if profile and not do_include:
                 raise AppArmorException(_('Syntax Error: Unexpected alias definition found inside profile in file: %(file)s line: %(line)s') % {
                         'file': file, 'line': lineno + 1 })
             else:
                 active_profiles.add_alias(file, AliasRule.parse(line))
-
-        elif RlimitRule.match(line):
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected rlimit entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['rlimit'].add(RlimitRule.parse(line))
 
         elif BooleanRule.match(line):
             if profile and not do_include:
@@ -1954,18 +1940,6 @@ def parse_profile_data(data, file, do_include):
             for incname in rule_obj.get_full_paths(profile_dir):
                 load_include(incname)
 
-        elif NetworkRule.match(line):
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected network entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['network'].add(NetworkRule.parse(line))
-
-        elif DbusRule.match(line):
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected dbus entry found in file: %(file)s line: %(line)s') % {'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['dbus'].add(DbusRule.parse(line))
-
         elif RE_PROFILE_MOUNT.search(line):
             matches = RE_PROFILE_MOUNT.search(line).groups()
 
@@ -1987,18 +1961,6 @@ def parse_profile_data(data, file, do_include):
             mount_rules = profile_data[profile][hat][allow].get('mount', list())
             mount_rules.append(mount_rule)
             profile_data[profile][hat][allow]['mount'] = mount_rules
-
-        elif SignalRule.match(line):
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected signal entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['signal'].add(SignalRule.parse(line))
-
-        elif PtraceRule.match(line):
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected ptrace entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['ptrace'].add(PtraceRule.parse(line))
 
         elif RE_PROFILE_PIVOT_ROOT.search(line):
             matches = RE_PROFILE_PIVOT_ROOT.search(line).groups()
@@ -2133,6 +2095,33 @@ def parse_profile_data(data, file, do_include):
         raise AppArmorException(_("Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside profile %(profile)s") % { 'file': file, 'profile': profile })
 
     return profile_data
+
+def match_line_against_rule_classes(line, profile, file, lineno):
+    ''' handle all lines handled by *Rule classes '''
+
+    for rule_name in [
+          # 'abi',
+          # 'inc_ie',
+            'capability',
+            'change_profile',
+            'dbus',
+          # 'file',
+            'network',
+            'ptrace',
+            'rlimit',
+            'signal',
+        ]:
+        rule_class = ruletypes[rule_name]['rule']
+
+        if rule_class.match(line):
+            # if not ruletypes[rule_name]['allowed_in_preamble'] and not profile:
+            if not profile:
+                raise AppArmorException(_('Syntax Error: Unexpected %(rule)s entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1, 'rule': rule_name })
+
+            rule_obj = rule_class.parse(line)
+            return(rule_name, rule_obj)
+
+    return(None, None)
 
 def parse_mount_rule(line):
     # XXX Do real parsing here
