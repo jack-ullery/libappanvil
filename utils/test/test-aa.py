@@ -506,66 +506,34 @@ class AaTest_is_skippable_dir(AATest):
         self.assertEqual(is_skippable_dir(params), expected)
 
 class AaTest_parse_profile_start(AATest):
-    def _parse(self, line, profile, hat):
-        return parse_profile_start(line, 'somefile', 1, profile, hat)
-        # (profile, hat, attachment, xattrs, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
+    tests = [
+        # profile start line                                    profile hat          profile                    hat                attachment   xattrs                      flags       in_contained_hat, pps_set_profile, pps_set_hat_external
+        (('/foo {',                                             None,   None),      ('/foo',                    '/foo',                 None,   None,                       None,       False,  False,  False)),
+        (('/foo (complain) {',                                  None,   None),      ('/foo',                    '/foo',                 None,   None,                       'complain', False,  False,  False)),
+        (('profile foo /foo {',                                 None,   None),      ('foo',                     'foo',                  '/foo', None,                       None,       False,  False,  False)),            # named profile
+        (('profile /foo {',                                     '/bar', '/bar'),    ('/bar',                    '/foo',                 None,   None,                       None,       True,   True,   False)),            # child profile
+        (('/foo//bar {',                                        None,   None),      ('/foo',                    'bar',                  None,   None,                       None,       False,  False,  True )),            # external hat
+        (('profile "/foo" (complain) {',                        None,   None),      ('/foo',                    '/foo',                 None,   None,                       'complain', False,  False,  False)),
+        (('profile "/foo" xattrs=(user.bar=bar) {',             None,   None),      ('/foo',                    '/foo',                 None,   'user.bar=bar',             None,       False,  False,  False)),
+        (('profile "/foo" xattrs=(user.bar=bar user.foo=*) {',  None,   None),      ('/foo',                    '/foo',                 None,   'user.bar=bar user.foo=*',  None,       False,  False,  False)),
+        (('/usr/bin/xattrs-test xattrs=(myvalue="foo.bar") {',  None,   None),      ('/usr/bin/xattrs-test',    '/usr/bin/xattrs-test', None,   'myvalue="foo.bar"',        None,       False,  False,  False)),
+    ]
 
-    def test_parse_profile_start_01(self):
-        result = self._parse('/foo {', None, None)
-        expected = ('/foo', '/foo', None, None, None, False, False, False)
-        self.assertEqual(result, expected)
+    def _run_test(self, params, expected):
+        parsed = parse_profile_start(params[0], 'somefile', 1, params[1], params[2])
 
-    def test_parse_profile_start_02(self):
-        result = self._parse('/foo (complain) {', None, None)
-        expected = ('/foo', '/foo', None, None, 'complain', False, False, False)
-        self.assertEqual(result, expected)
+        self.assertEqual(parsed, expected)
 
-    def test_parse_profile_start_03(self):
-        result = self._parse('profile foo /foo {', None, None) # named profile
-        expected = ('foo', 'foo', '/foo', None, None, False, False, False)
-        self.assertEqual(result, expected)
+class AaTest_parse_profile_start_errors(AATest):
+    tests = [
+        (('/foo///bar///baz {',                                 None,   None),      AppArmorException),     # XXX deeply nested external hat
+        (('/foo {',                                             '/bar', '/bar'),    AppArmorException),     # child profile without profile keyword
+        (('xy',                                                 '/bar', '/bar'),    AppArmorBug),           # not a profile start
+    ]
 
-    def test_parse_profile_start_04(self):
-        result = self._parse('profile /foo {', '/bar', '/bar') # child profile
-        expected = ('/bar', '/foo', None, None, None, True, True, False)
-        self.assertEqual(result, expected)
-
-    def test_parse_profile_start_05(self):
-        result = self._parse('/foo//bar {', None, None) # external hat
-        expected = ('/foo', 'bar', None, None, None, False, False, True)
-        self.assertEqual(result, expected)
-
-    def test_parse_profile_start_06(self):
-        result = self._parse('profile "/foo" (complain) {', None, None)
-        expected = ('/foo', '/foo', None, None, 'complain', False, False, False)
-        self.assertEqual(result, expected)
-
-    def test_parse_profile_start_07(self):
-        result = self._parse('profile "/foo" xattrs=(user.bar=bar) {', None, None)
-        expected = ('/foo', '/foo', None, 'user.bar=bar', None, False, False, False)
-        self.assertEqual(result, expected)
-
-    def test_parse_profile_start_08(self):
-        result = self._parse('profile "/foo" xattrs=(user.bar=bar user.foo=*) {', None, None)
-        expected = ('/foo', '/foo', None, 'user.bar=bar user.foo=*', None, False, False, False)
-        self.assertEqual(result, expected)
-
-    def test_parse_profile_start_09(self):
-        result = self._parse('/usr/bin/xattrs-test xattrs=(myvalue="foo.bar") {', None, None)
-        expected = ('/usr/bin/xattrs-test', '/usr/bin/xattrs-test', None, 'myvalue="foo.bar"', None, False, False, False)
-        self.assertEqual(result, expected)
-
-    def test_parse_profile_start_unsupported_01(self):
-        with self.assertRaises(AppArmorException):
-            self._parse('/foo///bar///baz {', None, None)  # XXX deeply nested external hat
-
-    def test_parse_profile_start_invalid_01(self):
-        with self.assertRaises(AppArmorException):
-            self._parse('/foo {', '/bar', '/bar') # child profile without profile keyword
-
-    def test_parse_profile_start_invalid_02(self):
-        with self.assertRaises(AppArmorBug):
-            self._parse('xy', '/bar', '/bar') # not a profile start
+    def _run_test(self, params, expected):
+        with self.assertRaises(expected):
+            parse_profile_start(params[0], 'somefile', 1, params[1], params[2])
 
 class AaTest_parse_profile_data(AATest):
     def test_parse_empty_profile_01(self):
