@@ -44,13 +44,13 @@ class MinitoolsTest(AATest):
 
     def test_audit(self):
         # Set test profile to audit mode and check if it was correctly set
-        str(subprocess.check_output('%s ./../aa-audit --no-reload -d %s %s' % (python_interpreter, self.profile_dir, self.test_path), shell=True))
+        str(subprocess.check_output('%s ./../aa-audit --no-reload -d %s %s --configdir ./' % (python_interpreter, self.profile_dir, self.test_path), shell=True))
 
         self.assertEqual(apparmor.get_profile_flags(self.local_profilename, self.test_path), 'audit',
                 'Audit flag could not be set in profile %s' % self.local_profilename)
 
         # Remove audit mode from test profile and check if it was correctly removed
-        subprocess.check_output('%s ./../aa-audit --no-reload -d %s -r %s' % (python_interpreter, self.profile_dir, self.test_path), shell=True)
+        subprocess.check_output('%s ./../aa-audit --no-reload -d %s -r %s --configdir ./' % (python_interpreter, self.profile_dir, self.test_path), shell=True)
 
         self.assertEqual(apparmor.get_profile_flags(self.local_profilename, self.test_path), None,
                 'Audit flag could not be removed in profile %s' % self.local_profilename)
@@ -58,7 +58,7 @@ class MinitoolsTest(AATest):
 
     def test_complain(self):
         # Set test profile to complain mode and check if it was correctly set
-        subprocess.check_output('%s ./../aa-complain --no-reload -d %s %s' % (python_interpreter, self.profile_dir, self.test_path), shell=True)
+        subprocess.check_output('%s ./../aa-complain --no-reload -d %s %s --configdir ./' % (python_interpreter, self.profile_dir, self.test_path), shell=True)
 
         # "manually" create a force-complain symlink (will be deleted by aa-enforce later)
         force_complain_dir = '%s/force-complain' % self.profile_dir
@@ -72,7 +72,7 @@ class MinitoolsTest(AATest):
                 'Complain flag could not be set in profile %s'%self.local_profilename)
 
         # Set test profile to enforce mode and check if it was correctly set
-        subprocess.check_output('%s ./../aa-enforce --no-reload -d %s %s'%(python_interpreter, self.profile_dir, self.test_path), shell=True)
+        subprocess.check_output('%s ./../aa-enforce --no-reload -d %s %s --configdir ./'%(python_interpreter, self.profile_dir, self.test_path), shell=True)
 
         self.assertEqual(os.path.islink('%s/%s' % (force_complain_dir, os.path.basename(self.local_profilename))), False,
                 'Failed to remove symlink for %s from force-complain'%self.local_profilename)
@@ -82,8 +82,8 @@ class MinitoolsTest(AATest):
                 'Complain flag could not be removed in profile %s'%self.local_profilename)
 
         # Set audit flag and then complain flag in a profile
-        subprocess.check_output('%s ./../aa-audit --no-reload -d %s %s'%(python_interpreter, self.profile_dir, self.test_path), shell=True)
-        subprocess.check_output('%s ./../aa-complain --no-reload -d %s %s'%(python_interpreter, self.profile_dir, self.test_path), shell=True)
+        subprocess.check_output('%s ./../aa-audit --no-reload -d %s %s --configdir ./'%(python_interpreter, self.profile_dir, self.test_path), shell=True)
+        subprocess.check_output('%s ./../aa-complain --no-reload -d %s %s --configdir ./'%(python_interpreter, self.profile_dir, self.test_path), shell=True)
         # "manually" create a force-complain symlink (will be deleted by aa-enforce later)
         os.symlink(self.local_profilename, '%s/%s'% (force_complain_dir, os.path.basename(self.local_profilename)))
 
@@ -93,7 +93,7 @@ class MinitoolsTest(AATest):
                 'Complain flag could not be set in profile %s'%self.local_profilename)
 
         #Remove complain flag first i.e. set to enforce mode
-        subprocess.check_output('%s ./../aa-enforce --no-reload -d %s %s'%(python_interpreter, self.profile_dir, self.test_path), shell=True)
+        subprocess.check_output('%s ./../aa-enforce --no-reload -d %s %s --configdir ./'%(python_interpreter, self.profile_dir, self.test_path), shell=True)
 
         self.assertEqual(os.path.islink('%s/%s' % (force_complain_dir, os.path.basename(self.local_profilename))), False,
                 'Failed to remove symlink for %s from force-complain'%self.local_profilename)
@@ -103,11 +103,11 @@ class MinitoolsTest(AATest):
                 'Complain flag could not be removed in profile %s'%self.local_profilename)
 
         #Remove audit flag
-        subprocess.check_output('%s ./../aa-audit --no-reload -d %s -r %s'%(python_interpreter, self.profile_dir, self.test_path), shell=True)
+        subprocess.check_output('%s ./../aa-audit --no-reload -d %s -r %s --configdir ./'%(python_interpreter, self.profile_dir, self.test_path), shell=True)
 
     def test_enforce(self):
         # Set test profile to enforce mode and check if it was correctly set
-        subprocess.check_output('%s ./../aa-enforce --no-reload -d %s %s'%(python_interpreter, self.profile_dir, self.test_path), shell=True)
+        subprocess.check_output('%s ./../aa-enforce --no-reload -d %s %s --configdir ./'%(python_interpreter, self.profile_dir, self.test_path), shell=True)
 
         self.assertEqual(os.path.islink('%s/force-complain/%s' % (self.profile_dir, os.path.basename(self.local_profilename))), False,
                 'Failed to remove symlink for %s from force-complain'%self.local_profilename)
@@ -119,7 +119,7 @@ class MinitoolsTest(AATest):
 
     def test_disable(self):
         # Disable the test profile and check if it was correctly disabled
-        subprocess.check_output('%s ./../aa-disable --no-reload -d %s %s'%(python_interpreter, self.profile_dir, self.test_path), shell=True)
+        subprocess.check_output('%s ./../aa-disable --no-reload -d %s %s --configdir ./'%(python_interpreter, self.profile_dir, self.test_path), shell=True)
 
         self.assertEqual(os.path.islink('%s/disable/%s' % (self.profile_dir, os.path.basename(self.local_profilename))), True,
                 'Failed to create a symlink for %s in disable' % self.local_profilename)
@@ -127,10 +127,11 @@ class MinitoolsTest(AATest):
     def test_autodep(self):
         pass
 
+    @unittest.skipIf(apparmor.check_for_apparmor() is None, "Securityfs not mounted or doesn't have the apparmor directory.")
     def test_unconfined(self):
-        output = subprocess.check_output('%s ./../aa-unconfined'%python_interpreter, shell=True)
+        output = subprocess.check_output('%s ./../aa-unconfined --configdir ./'%python_interpreter, shell=True)
 
-        output_force = subprocess.check_output('%s ./../aa-unconfined --paranoid'%python_interpreter, shell=True)
+        output_force = subprocess.check_output('%s ./../aa-unconfined --paranoid --configdir ./'%python_interpreter, shell=True)
 
         self.assertIsNot(output, '', 'Failed to run aa-unconfined')
 
@@ -145,7 +146,7 @@ class MinitoolsTest(AATest):
         #Our silly test program whose profile we wish to clean
         cleanprof_test = '/usr/bin/a/simple/cleanprof/test/profile'
 
-        subprocess.check_output('%s ./../aa-cleanprof  --no-reload -d %s -s %s' % (python_interpreter, self.profile_dir, cleanprof_test), shell=True)
+        subprocess.check_output('%s ./../aa-cleanprof  --no-reload -d %s -s %s --configdir ./' % (python_interpreter, self.profile_dir, cleanprof_test), shell=True)
 
         #Strip off the first line (#modified line)
         subprocess.check_output('sed -i 1d %s/%s' % (self.profile_dir, input_file), shell=True)
