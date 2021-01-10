@@ -38,7 +38,7 @@ from apparmor.common import (AppArmorException, AppArmorBug, is_skippable_file, 
 import apparmor.ui as aaui
 
 from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
-                            RE_PROFILE_BOOLEAN, RE_PROFILE_CONDITIONAL,
+                            RE_PROFILE_CONDITIONAL,
                             RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
                             RE_PROFILE_CHANGE_HAT,
                             RE_PROFILE_HAT_DEF, RE_PROFILE_MOUNT,
@@ -54,6 +54,7 @@ import apparmor.rules as aarules
 
 from apparmor.rule.abi              import AbiRule
 from apparmor.rule.alias            import AliasRule
+from apparmor.rule.boolean          import BooleanRule
 from apparmor.rule.capability       import CapabilityRule
 from apparmor.rule.change_profile   import ChangeProfileRule
 from apparmor.rule.dbus             import DbusRule
@@ -1903,17 +1904,12 @@ def parse_profile_data(data, file, do_include):
 
             profile_data[profile][hat]['rlimit'].add(RlimitRule.parse(line))
 
-        elif RE_PROFILE_BOOLEAN.search(line):
-            matches = RE_PROFILE_BOOLEAN.search(line).groups()
-
+        elif BooleanRule.match(line):
             if profile and not do_include:
                 raise AppArmorException(_('Syntax Error: Unexpected boolean definition found inside profile in file: %(file)s line: %(line)s') % {
                         'file': file, 'line': lineno + 1 })
-
-            bool_var = matches[0]
-            value = matches[1]
-
-            profile_data[profile][hat]['lvar'][bool_var] = value
+            else:
+                active_profiles.add_boolean(file, BooleanRule.parse(line))
 
         elif VariableRule.match(line):
             if profile and not do_include:

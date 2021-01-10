@@ -14,6 +14,10 @@
 
   @{asdf}       =   foo           ""
 
+$foo = false
+
+   $bar    =    true
+
 /usr/bin/a/simple/cleanprof/test/profile {
 	# Just for the heck of it, this comment won't see the day of light
 	#include <abstractions/base>
