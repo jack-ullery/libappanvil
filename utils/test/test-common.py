@@ -28,7 +28,7 @@ class TestIs_str_type(AATest):
 
 class AaTest_split_name(AATest):
     tests = [
-        # log event path       and perms    expected proposals
+        # full profile name                 expected parts
         ('foo',                             ('foo',             'foo')),
         ('foo//bar',                        ('foo',             'bar')),
         ('foo//bar//baz',                   ('foo',             'bar')),  # XXX nested child profiles get cut off
