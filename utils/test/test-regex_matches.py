@@ -594,14 +594,15 @@ class Test_re_match_include_parse_abi(AATest):
     def _run_test(self, params, expected):
         self.assertEqual(re_match_include_parse(params, 'abi'), expected)
 
-class Test_re_match_include_parse_empty_filename(AATest):
+class Test_re_match_include_parse_errors(AATest):
     tests = [
-        (('include <>',             'include'),                 AppArmorException),
+        (('include <>',             'include'),                 AppArmorException),  # various rules with empty filename
         (('include ""',             'include'),                 AppArmorException),
         (('include   ',             'include'),                 AppArmorException),
         (('abi <>,',                'abi'),                     AppArmorException),
         (('abi "",',                'abi'),                     AppArmorException),
         (('abi   ,',                'abi'),                     AppArmorException),
+        (('abi <foo>,',             'invalid'),                 AppArmorBug),  # invalid rule name
      ]
 
     def _run_test(self, params, expected):
