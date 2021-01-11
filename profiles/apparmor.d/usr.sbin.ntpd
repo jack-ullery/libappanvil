@@ -17,6 +17,7 @@ profile ntpd /usr/{bin,sbin}/{,open}ntpd flags=(attach_disconnected) {
   include <abstractions/base>
   include <abstractions/nameservice>
   include <abstractions/openssl>
+  include <abstractions/ssl_certs>
   include <abstractions/xad>
 
   capability dac_override,
