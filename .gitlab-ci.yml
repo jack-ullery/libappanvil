@@ -1,7 +1,7 @@
 ---
 image: ubuntu:latest
 before_script:
-  - export DEBIAN_FRONTEND=noninteractive && apt-get update -qq && apt-get install --no-install-recommends -y build-essential apache2-dev autoconf automake bison dejagnu flex libpam-dev libtool perl liblocale-gettext-perl pkg-config python-all-dev python3-all-dev pyflakes3 ruby-dev swig lsb-release python3-notify2 python3-psutil zlib1g-dev
+  - export DEBIAN_FRONTEND=noninteractive && apt-get update -qq && apt-get install --no-install-recommends -y build-essential apache2-dev autoconf automake bison dejagnu flex libpam-dev libtool perl liblocale-gettext-perl pkg-config python-all-dev python3-all-dev pyflakes3 ruby-dev swig lsb-release python3-coverage python3-notify2 python3-psutil zlib1g-dev
   - lsb_release -a
   - uname -a
 
@@ -42,6 +42,7 @@ test-all:
       - make -C parser check
       - make -C binutils check
       - make -C utils check
+      - make -C utils/test coverage-regression
       - make -C changehat/mod_apparmor check
       - make -C profiles check-parser
       - make -C profiles check-abstractions.d
