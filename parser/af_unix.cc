@@ -322,8 +322,9 @@ int unix_rule::gen_policy_re(Profile &prof)
 				rule_t::warn_once(prof.name, "downgrading extended network unix socket rule to generic network rule\n");
 			/* TODO: add ability to abort instead of downgrade */
 			return RULE_OK;
+		} else {
+			warn_once(prof.name);
 		}
-		warn_once(prof.name);
 		return RULE_NOT_SUPPORTED;
 	}
 
