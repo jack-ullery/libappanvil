@@ -194,14 +194,18 @@ void unix_rule::downgrade_rule(Profile &prof) {
 		yyerror(_("Memory allocation error."));
 	if (sock_type_n != -1)
 		mask = 1 << sock_type_n;
-	if (deny) {
-		prof.net.deny[AF_UNIX] |= mask;
-		if (!audit)
-			prof.net.quiet[AF_UNIX] |= mask;
-	} else {
+	if (!deny) {
 		prof.net.allow[AF_UNIX] |= mask;
 		if (audit)
 			prof.net.audit[AF_UNIX] |= mask;
+	} else {
+		/* deny rules have to be dropped because the downgrade makes
+		 * the rule less specific meaning it will make the profile more
+		 * restrictive and may end up denying accesses that might be
+		 * allowed by the profile.
+		 */
+		if (warnflags & WARN_RULE_NOT_ENFORCED)
+			rule_t::warn_once(prof.name, "deny unix socket rule not enforced, can't be downgraded to generic network rule\n");
 	}
 }
 
