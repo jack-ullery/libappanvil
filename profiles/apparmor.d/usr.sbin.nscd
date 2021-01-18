@@ -23,6 +23,7 @@ profile nscd /usr/{bin,sbin}/nscd {
   capability setgid,
   capability setuid,
 
+  /etc/machine-id r,
   /etc/netgroup r,
   /etc/nscd.conf r,
   /usr/{bin,sbin}/nscd rmix,
