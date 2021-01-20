@@ -239,18 +239,21 @@ static void proc_attr_base_init_once(void)
 	/* if we fail we just fall back to the default value */
 	if (asprintf(&tmp, "/proc/%d/attr/apparmor/current", aa_gettid())) {
 		autoclose int fd = open(tmp, O_RDONLY);
-		if (fd != -1)
+		if (fd != -1) {
 			proc_attr_base = proc_attr_base_stacking;
-	} else if (!is_enabled() && is_private_enabled()) {
-		/* new stacking interfaces aren't available and apparmor
-		 * is disabled, but available. do not use the
-		 * /proc/<pid>/attr/ * interfaces as they could be
-		 * in use by another LSM
-		 */
-		proc_attr_base = proc_attr_base_unavailable;
-	} else {
-		proc_attr_base = proc_attr_base_old;
+			return;
+		}
 	}
+	if (!is_enabled() && is_private_enabled()) {
+		/* new stacking interfaces aren't available and apparmor
+		* is disabled, but available. do not use the
+		* /proc/<pid>/attr/ * interfaces as they could be
+		* in use by another LSM
+		*/
+		proc_attr_base = proc_attr_base_unavailable;
+		return;
+	}
+	proc_attr_base = proc_attr_base_old;
 }
 
 static char *procattr_path(pid_t pid, const char *attr)
