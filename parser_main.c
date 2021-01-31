@@ -87,7 +87,10 @@ int mru_skip_cache = 1;
  * n  : use that number of processes/threads to compile policy
  */
 #define JOBS_AUTO LONG_MIN
-long jobs_max = -8;			/* 8 * cpus */
+#define DEFAULT_JOBS_MAX -8
+#define DEFAULT_ESTIMATED_JOB_SIZE (50 * 1024 * 1024)
+long estimated_job_size = DEFAULT_ESTIMATED_JOB_SIZE;
+long jobs_max = -DEFAULT_JOBS_MAX;	/* 8 * cpus */
 long jobs = JOBS_AUTO;			/* default: number of processor cores */
 long njobs = 0;
 long jobs_scale = 0;			/* number of chance to resample online
@@ -129,6 +132,7 @@ static const char *config_file = "/etc/apparmor/parser.conf";
 #define ARG_OVERRIDE_POLICY_ABI		141
 #define EARLY_ARG_CONFIG_FILE		142
 #define ARG_WERROR			143
+#define ARG_ESTIMATED_COMPILE_SIZE	144
 
 /* Make sure to update BOTH the short and long_options */
 static const char *short_options = "ad::f:h::rRVvI:b:BCD:NSm:M:qQn:XKTWkL:O:po:j:";
@@ -183,6 +187,7 @@ struct option long_options[] = {
 	{"print-config-file",	0, 0, ARG_PRINT_CONFIG_FILE},	/* no short option */
 	{"override-policy-abi",	1, 0, ARG_OVERRIDE_POLICY_ABI},	/* no short option */
 	{"config-file",		1, 0, EARLY_ARG_CONFIG_FILE},	/* early option, no short option */
+	{"estimated-compile-size", 1, 0, ARG_ESTIMATED_COMPILE_SIZE}, /* no short option, not in help */
 
 	{NULL, 0, 0, 0},
 };
@@ -411,6 +416,19 @@ static long process_jobs_arg(const char *arg, const char *val) {
 	}
 
 	return n;
+}
+
+static long str_to_size(const char *s)
+{
+	if (*s == '\0')
+		return 1;
+	else if (strcmp(s, "KB") == 0)
+		return 1024;
+	else if (strcmp(s, "MB") == 0)
+		return 1024*1024;
+	else if (strcmp(s, "GB") == 0)
+		return 1024*1024*1024;
+	return -1;
 }
 
 #define	EARLY_ARG   1
@@ -747,6 +765,21 @@ static int process_arg(int c, char *optarg)
 		break;
 	case ARG_PRINT_CONFIG_FILE:
 		printf("%s\n", config_file);
+		break;
+	case ARG_ESTIMATED_COMPILE_SIZE:
+		/* used to auto tune parser on low resource systems */
+		{
+			char *end;
+			long mult;
+			long long tmp = strtoll(optarg, &end, 0);
+			if (end == optarg ||
+			    (errno == ERANGE && (tmp == LLONG_MIN || tmp == LLONG_MAX)) ||
+			    (mult = str_to_size(end)) == -1) {
+				PERROR("%s: --estimated-compile-size invalid size '%s'", progname, optarg);
+				exit(1);
+			}
+			estimated_job_size = tmp * mult;
+		}
 		break;
 	default:
 		/* 'unrecognized option' error message gets printed by getopt_long() */
@@ -1286,19 +1319,11 @@ static long compute_jobs(long n, long j)
 	return j;
 }
 
-static void setup_parallel_compile(void)
+static void setup_parallel_compile(long ncpus, long maxcpus)
 {
 	/* jobs and parallel_max set by default, config or args */
-	long n = sysconf(_SC_NPROCESSORS_ONLN);
-	long maxn = sysconf(_SC_NPROCESSORS_CONF);
-	if (n == -1)
-		/* unable to determine number of processors, default to 1 */
-		n = 1;
-	if (maxn == -1)
-		/* unable to determine number of processors, default to 1 */
-		maxn = 1;
-	jobs = compute_jobs(n, jobs);
-	jobs_max = compute_jobs(maxn, jobs_max);
+	jobs = compute_jobs(ncpus, jobs);
+	jobs_max = compute_jobs(maxcpus, jobs_max);
 
 	if (jobs > jobs_max) {
 		pwarn(WARN_JOBS, "%s: Capping number of jobs to %ld * # of cpus == '%ld'",
@@ -1306,11 +1331,104 @@ static void setup_parallel_compile(void)
 		jobs = jobs_max;
 	} else if (jobs < jobs_max)
 		/* the bigger the difference the more sample chances given */
-		jobs_scale = jobs_max + 1 - n;
+		jobs_scale = jobs_max + 1 - ncpus;
 
 	njobs = 0;
 	if (debug_jobs)
 		fprintf(stderr, "jobs: %ld\n", jobs);
+}
+
+
+/*
+ * Tune parameters to adjust the parser to adapt to low memory, low power
+ * systems.
+ * with a profile compile taking up to 10s of MB, launching a lot of
+ * parallel compiles is a bad idea on lauch 16 parallel compiles with
+ * only 50 MB free.
+ *
+ */
+#define PREFIX_TOTAL	"MemTotal:"
+#define PREFIX_FREE	"MemFree:"
+#define PREFIX_CACHE	"Cached:"
+
+static bool get_memstat(long long &mem_total, long long &mem_free,
+			long long &mem_cache)
+{
+	char *line, buf[256];
+	autofclose FILE *f = NULL;
+
+	mem_total = mem_free = mem_cache = -1;
+
+	/* parse /proc/meminfo to get a rough idea of available mem,
+	   look into libstatgrab as alternative */
+	f = fopen("/proc/meminfo", "r");
+	if (f == NULL) {
+		PDEBUG("Failed to open /proc/meminfo");
+		return false;
+	}
+
+	while ((line = fgets(buf, sizeof(buf), f)) != NULL) {
+		long long value;
+		if (sscanf(buf, "%*s %lld kB", &value) != 1)
+			continue;
+
+		if (strncmp(buf, PREFIX_FREE, strlen(PREFIX_FREE)) == 0)
+			mem_free = value * 1024;
+		else if (strncmp(buf, PREFIX_TOTAL, strlen(PREFIX_TOTAL)) == 0)
+			mem_total = value * 1024;
+		else if (strncmp(buf, PREFIX_CACHE, strlen(PREFIX_CACHE)) == 0)
+			mem_cache = value * 1024;
+	}
+
+	if (mem_free == -1 || mem_total == -1 || mem_cache == -1) {
+		PDEBUG("Failed to parse mem value");
+		return false;
+	}
+	mem_free += mem_cache;
+
+	return true;
+}
+
+static void auto_tune_parameters(void)
+{
+	long long mem_total, mem_free, mem_cache;
+	long ncpus = sysconf(_SC_NPROCESSORS_ONLN);
+	long maxcpus = sysconf(_SC_NPROCESSORS_CONF);
+	if (ncpus == -1) {
+		PDEBUG("Unable to determine number of processors, default to 1");
+		ncpus = 1;
+	}
+	if (maxcpus == -1) {
+		PDEBUG("Unable to determine number of processors, default to 1");
+		maxcpus = 1;
+	}
+	/* only override if config or param hasn't overridden */
+	if (get_memstat(mem_total, mem_free, mem_cache) == true &&
+	    jobs == JOBS_AUTO) {
+		long estimated_jobs = (long) (mem_free / estimated_job_size);
+
+		if (mem_free < 2) {
+			/* -j0 - no workers */
+			jobs = jobs_max = 0;
+			PDEBUG("Auto tune: --jobs=0");
+		} else if (estimated_jobs < ncpus) {
+			/* --jobs=estimate_jobs */
+			jobs = estimated_jobs;
+			PDEBUG("Auto tune: --jobs=%d", estimate_jobs);
+		} else {
+			long long n = estimated_jobs / ncpus;
+
+			if (n < -DEFAULT_JOBS_MAX) {
+				/* --jobs=cpus*n */
+				jobs = -n;
+				PDEBUG("Auto tune: --jobs=%d", jobs);
+			}
+		}
+	} else {
+		PDEBUG("Unable to get meminfo, using defaults");
+	}
+
+	setup_parallel_compile(ncpus, maxcpus);
 }
 
 struct dir_cb_data {
@@ -1416,7 +1534,7 @@ int main(int argc, char *argv[])
 	process_config_file(config_file);
 	optind = process_args(argc, argv);
 
-	setup_parallel_compile();
+	auto_tune_parameters();
 
 	setlocale(LC_MESSAGES, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
