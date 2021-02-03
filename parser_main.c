@@ -748,6 +748,8 @@ static int process_arg(int c, char *optarg)
 		jobs = process_jobs_arg("-j", optarg);
 		if (jobs == 0)
 			jobs_max = 0;
+		else if (jobs != JOBS_AUTO && jobs < LONG_MAX)
+			jobs_max = jobs;
 		break;
 	case ARG_MAX_JOBS:
 		jobs_max = process_jobs_arg("max-jobs", optarg);
@@ -1329,7 +1331,7 @@ static void setup_parallel_compile(long ncpus, long maxcpus)
 		pwarn(WARN_JOBS, "%s: Capping number of jobs to %ld * # of cpus == '%ld'",
 		      progname, jobs_max, jobs);
 		jobs = jobs_max;
-	} else if (jobs < jobs_max)
+	} else if (jobs_scale && jobs < jobs_max)
 		/* the bigger the difference the more sample chances given */
 		jobs_scale = jobs_max + 1 - ncpus;
 
