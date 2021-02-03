@@ -352,12 +352,15 @@ Eg.
   -jx4    OR --jobs=x4                  sets the jobs to # of cpus * 4
   -jx1   is equivalent to   -jauto
 
-The default value is the number of cpus in the system.
+The default value is the number of cpus in the system. Note that if jobs
+is a positive integer number the --jobs-max parameter is automatically
+set to the same value.
 
 =item --max-jobs n
 
-Set a hard cap on the value that can be specified by the --jobs flag.
-It takes the same set of options available to the --jobs option, and
+When --jobs is set to a scaling value (ie. auto or xN) the specify a
+hard cap on the value that can be specified by the --jobs flag.  It
+takes the same set of options available to the --jobs option, and
 defaults to 8*cpus
 
 =item -O n, --optimize=n
