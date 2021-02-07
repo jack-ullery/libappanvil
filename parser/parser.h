@@ -373,7 +373,6 @@ extern int skip_mode_force;
 extern int abort_on_error;
 extern int skip_bad_cache_rebuild;
 extern int mru_skip_cache;
-extern int debug_cache;
 
 /* provided by parser_lex.l (cannot be used in tst builds) */
 extern FILE *yyin;

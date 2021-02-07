@@ -36,7 +36,6 @@ extern int cond_clear_cache;		/* only applies if write is set */
 extern int force_clear_cache;		/* force clearing regargless of state */
 extern int create_cache_dir;		/* create the cache dir if missing? */
 extern int mru_skip_cache;
-extern int debug_cache;
 
 void set_cache_tstamp(struct timespec t);
 void update_mru_tstamp(FILE *file, const char *path);
