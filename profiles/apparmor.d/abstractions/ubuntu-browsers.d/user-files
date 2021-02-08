@@ -14,6 +14,7 @@
   audit deny @{HOME}/.gnome2_private/{,**} mrwkl,
   audit deny @{HOME}/.kde{,4}/{,share/,share/apps/} w,
   audit deny @{HOME}/.kde{,4}/share/apps/kwallet/{,**} mrwkl,
+  audit deny @{HOME}/.local/share/kwalletd/{,**} mrwkl,
 
   # Comment this out if using gpg plugin/addons
   audit deny @{HOME}/.gnupg/{,**} mrwkl,
