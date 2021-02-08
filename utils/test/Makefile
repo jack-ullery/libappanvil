@@ -20,6 +20,10 @@ COMMONDIR=../../common/
 
 include $(COMMONDIR)/Make.rules
 
+# files that don't have 100% test coverage
+INCOMPLETE_COVERAGE=libraries/libapparmor|utils/apparmor/aa.py|utils/apparmor/common.py|utils/apparmor/config.py|utils/apparmor/easyprof.py|utils/apparmor/fail.py|utils/apparmor/logparser.py|utils/apparmor/profile_storage.py|utils/apparmor/rule/abi.py|utils/apparmor/rule/include.py|utils/apparmor/rules.py|utils/apparmor/severity.py|utils/apparmor/ui.py|minitools_test.py
+
+
 ifdef USE_SYSTEM
     LD_LIBRARY_PATH=
     PYTHONPATH=
@@ -76,7 +80,7 @@ ifndef VERBOSE
 endif
 
 clean:
-	rm -rf __pycache__/ .coverage htmlcov
+	rm -rf __pycache__/ .coverage htmlcov coverage-report.txt
 
 check: __libapparmor __parser
 	export PYTHONPATH=$(PYTHONPATH) LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) LC_ALL=C __AA_CONFDIR=$(CONFDIR) __AA_BASEDIR=$(BASEDIR) __AA_PARSER=$(PARSER) ; $(foreach test, $(wildcard test-*.py), echo ; echo === $(test) === ; $(call pyalldo, $(test)))
@@ -89,6 +93,14 @@ coverage: .coverage
 
 coverage-report: .coverage
 	$(PYTHON) -m coverage report --omit="$(COVERAGE_OMIT)"
+
+coverage-regression: .coverage
+	$(PYTHON) -m coverage report --omit="$(COVERAGE_OMIT)" > coverage-report.txt
+	cat coverage-report.txt
+	@echo 'Checking for coverage changes...'
+	@if grep -vE ' 100%$$|TOTAL|$(INCOMPLETE_COVERAGE)' coverage-report.txt  |grep '%$$' ; then echo "ERROR: Coverage regression - the files listed above are expected to have 100% test coverage"; exit 1; fi
+	@if grep -E '($(INCOMPLETE_COVERAGE)).*100%$$' coverage-report.txt ; then echo 'ERROR: Coverage improvement - the files listed above now have 100% coverage. Please adjust INCOMPLETE_COVERAGE in the Makefile!'; exit 2; fi
+	@echo '    ... unchanged'
 
 coverage-html: .coverage
 	$(PYTHON) -m coverage html --omit="$(COVERAGE_OMIT)" $(HTML_COVR_ARGS)
