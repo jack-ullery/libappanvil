@@ -474,7 +474,7 @@ int _aa_dirat_for_each(int dirfd, const char *name, void *data,
 		return -1;
 	}
 
-	num_dirs = readdirfd(cb_dirfd, &namelist, NULL);
+	num_dirs = readdirfd(cb_dirfd, &namelist, alphasort);
 	if (num_dirs == -1) {
 		PDEBUG("scandirat of directory '%s' failed: %m\n", name);
 		return -1;
