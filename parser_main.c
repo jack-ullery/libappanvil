@@ -1324,6 +1324,8 @@ static long compute_jobs(long n, long j)
 static void setup_parallel_compile(long ncpus, long maxcpus)
 {
 	/* jobs and parallel_max set by default, config or args */
+	if (jobs < 0 || jobs == JOBS_AUTO)
+		jobs_scale = 1;
 	jobs = compute_jobs(ncpus, jobs);
 	jobs_max = compute_jobs(maxcpus, jobs_max);
 
