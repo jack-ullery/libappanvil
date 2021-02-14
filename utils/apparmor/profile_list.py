@@ -145,7 +145,7 @@ class ProfileList:
 
         deleted = 0
 
-        for r_type in ['abi', 'alias', 'inc_ie', 'variable']:  # TODO: don't hardcode
+        for r_type in preamble_ruletypes:
             deleted += self.files[filename][r_type].delete_duplicates(None)  # None means not to check includes -- TODO check if this makes sense for all preamble rule types
 
         return deleted
