@@ -24,6 +24,14 @@ from apparmor.rule.variable import VariableRule, VariableRuleset
 from apparmor.translations import init_translation
 _ = init_translation()
 
+preamble_ruletypes = {
+    'abi':      {'rule': AbiRule,       'ruleset': AbiRuleset       },
+    'alias':    {'rule': AliasRule,     'ruleset': AliasRuleset     },
+    'inc_ie':   {'rule': IncludeRule,   'ruleset': IncludeRuleset   },
+    'variable': {'rule': VariableRule,  'ruleset': VariableRuleset  },
+    'boolean':  {'rule': BooleanRule,   'ruleset': BooleanRuleset   },
+}
+
 
 class ProfileList:
     ''' Stores the preamble section and the list of profile(s) (both name and
@@ -47,13 +55,11 @@ class ProfileList:
             return  # don't re-initialize / overwrite existing data
 
         self.files[filename] = {
-            'abi': AbiRuleset(),
-            'alias': AliasRuleset(),
-            'inc_ie': IncludeRuleset(),
-            'variable': VariableRuleset(),
-            'boolean': BooleanRuleset(),
             'profiles': [],
         }
+
+        for rule in preamble_ruletypes:
+            self.files[filename][rule] = preamble_ruletypes[rule]['ruleset']()
 
     def add_profile(self, filename, profile_name, attachment):
         ''' Add the given profile and attachment to the list '''
