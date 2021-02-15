@@ -97,11 +97,11 @@ bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
 	 */
 	exact_match = 1;
 	for (depth_first_traversal i(tree); i && exact_match; i++) {
-		if (dynamic_cast<StarNode *>(*i) ||
-		    dynamic_cast<PlusNode *>(*i) ||
-		    dynamic_cast<AnyCharNode *>(*i) ||
-		    dynamic_cast<CharSetNode *>(*i) ||
-		    dynamic_cast<NotCharSetNode *>(*i))
+		if ((*i)->is_type(NODE_TYPE_STAR) ||
+		    (*i)->is_type(NODE_TYPE_PLUS) ||
+		    (*i)->is_type(NODE_TYPE_ANYCHAR) ||
+		    (*i)->is_type(NODE_TYPE_CHARSET) ||
+		    (*i)->is_type(NODE_TYPE_NOTCHARSET))
 			exact_match = 0;
 	}
 
