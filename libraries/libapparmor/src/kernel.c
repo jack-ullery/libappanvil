@@ -237,13 +237,14 @@ static void proc_attr_base_init_once(void)
 	autofree char *tmp;
 
 	/* if we fail we just fall back to the default value */
-	if (asprintf(&tmp, "/proc/%d/attr/apparmor/current", aa_gettid()) > 0) {
-		autoclose int fd = open(tmp, O_RDONLY);
-		if (fd != -1) {
+	if (asprintf(&tmp, "/proc/%d/attr/apparmor/", aa_gettid()) > 0) {
+		struct stat sb;
+		if (stat(tmp, &sb) == 0) {
 			proc_attr_base = proc_attr_base_stacking;
 			return;
 		}
 	}
+	/* check for new interface failed, see if we can fallback */
 	if (!is_enabled() && is_private_enabled()) {
 		/* new stacking interfaces aren't available and apparmor
 		* is disabled, but available. do not use the
