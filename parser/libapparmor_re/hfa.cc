@@ -1352,17 +1352,18 @@ int accept_perms(NodeSet *state, perms_t &perms, bool filedfa)
 		return error;
 
 	for (NodeSet::iterator i = state->begin(); i != state->end(); i++) {
-		MatchFlag *match;
-		if (!(match = dynamic_cast<MatchFlag *>(*i)))
+		if (!(*i)->is_type(NODE_TYPE_MATCHFLAG))
 			continue;
-		if (dynamic_cast<ExactMatchFlag *>(match)) {
+
+		MatchFlag *match = static_cast<MatchFlag *>(*i);
+		if (match->is_type(NODE_TYPE_EXACTMATCHFLAG)) {
 			/* exact match only ever happens with x */
 			if (filedfa && !is_merged_x_consistent(exact_match_allow,
 						    match->flag))
 				error = 1;;
 			exact_match_allow |= match->flag;
 			exact_audit |= match->audit;
-		} else if (dynamic_cast<DenyMatchFlag *>(match)) {
+		} else if (match->is_type(NODE_TYPE_DENYMATCHFLAG)) {
 			perms.deny |= match->flag;
 			perms.quiet |= match->audit;
 		} else {
