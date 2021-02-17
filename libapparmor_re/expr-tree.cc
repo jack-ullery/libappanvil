@@ -210,7 +210,7 @@ int TwoChildNode::normalize_eps(int dir)
 		// Test for E | (E | E) and E . (E . E) which will
 		// result in an infinite loop
 		Node *c = child[!dir];
-		if (dynamic_cast<TwoChildNode *>(c) &&
+		if (c->is_type(NODE_TYPE_TWOCHILD) &&
 		    &epsnode == c->child[dir] &&
 		    &epsnode == c->child[!dir]) {
 			c->release();
@@ -229,7 +229,7 @@ void CatNode::normalize(int dir)
 	for (;;) {
 		if (normalize_eps(dir)) {
 			continue;
-		} else if (dynamic_cast<CatNode *>(child[dir])) {
+		} else if (child[dir]->is_type(NODE_TYPE_CAT)) {
 			// (ab)c -> a(bc)
 			rotate_node(this, dir);
 		} else {
@@ -248,11 +248,11 @@ void AltNode::normalize(int dir)
 	for (;;) {
 		if (normalize_eps(dir)) {
 			continue;
-		} else if (dynamic_cast<AltNode *>(child[dir])) {
+		} else if (child[dir]->is_type(NODE_TYPE_ALT)) {
 			// (a | b) | c -> a | (b | c)
 			rotate_node(this, dir);
-		} else if (dynamic_cast<CharSetNode *>(child[dir]) &&
-			   dynamic_cast<CharNode *>(child[!dir])) {
+		} else if (child[dir]->is_type(NODE_TYPE_CHARSET) &&
+			   child[!dir]->is_type(NODE_TYPE_CHAR)) {
 			// [a] | b  ->  b | [a]
 			Node *c = child[dir];
 			child[dir] = child[!dir];
@@ -344,7 +344,7 @@ static Node *alt_to_charsets(Node *t, int dir)
 
 static Node *basic_alt_factor(Node *t, int dir)
 {
-	if (!dynamic_cast<AltNode *>(t))
+	if (!t->is_type(NODE_TYPE_ALT))
 		return t;
 
 	if (t->child[dir]->eq(t->child[!dir])) {
@@ -355,8 +355,8 @@ static Node *basic_alt_factor(Node *t, int dir)
 		return tmp;
 	}
 	// (ab) | (ac) -> a(b|c)
-	if (dynamic_cast<CatNode *>(t->child[dir]) &&
-	    dynamic_cast<CatNode *>(t->child[!dir]) &&
+	if (t->child[dir]->is_type(NODE_TYPE_CAT) &&
+	    t->child[!dir]->is_type(NODE_TYPE_CAT) &&
 	    t->child[dir]->child[dir]->eq(t->child[!dir]->child[dir])) {
 		// (ab) | (ac) -> a(b|c)
 		Node *left = t->child[dir];
@@ -369,7 +369,7 @@ static Node *basic_alt_factor(Node *t, int dir)
 		return left;
 	}
 	// a | (ab) -> a (E | b) -> a (b | E)
-	if (dynamic_cast<CatNode *>(t->child[!dir]) &&
+	if (t->child[!dir]->is_type(NODE_TYPE_CAT) &&
 	    t->child[dir]->eq(t->child[!dir]->child[dir])) {
 		Node *c = t->child[!dir];
 		t->child[dir]->release();
@@ -379,7 +379,7 @@ static Node *basic_alt_factor(Node *t, int dir)
 		return c;
 	}
 	// ab | (a) -> a (b | E)
-	if (dynamic_cast<CatNode *>(t->child[dir]) &&
+	if (t->child[dir]->is_type(NODE_TYPE_CAT) &&
 	    t->child[dir]->child[dir]->eq(t->child[!dir])) {
 		Node *c = t->child[dir];
 		t->child[!dir]->release();
@@ -394,7 +394,7 @@ static Node *basic_alt_factor(Node *t, int dir)
 
 static Node *basic_simplify(Node *t, int dir)
 {
-	if (dynamic_cast<CatNode *>(t) && &epsnode == t->child[!dir]) {
+	if (t->is_type(NODE_TYPE_CAT) && &epsnode == t->child[!dir]) {
 		// aE -> a
 		Node *tmp = t->child[dir];
 		t->child[dir] = NULL;
@@ -419,7 +419,7 @@ static Node *basic_simplify(Node *t, int dir)
  */
 Node *simplify_tree_base(Node *t, int dir, bool &mod)
 {
-	if (dynamic_cast<ImportantNode *>(t))
+	if (t->is_type(NODE_TYPE_IMPORTANT))
 		return t;
 
 	for (int i = 0; i < 2; i++) {
@@ -442,15 +442,15 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 		}
 
 		/* all tests after this must meet 2 alt node condition */
-		if (!dynamic_cast<AltNode *>(t) ||
-		    !dynamic_cast<AltNode *>(t->child[!dir]))
+		if (!t->is_type(NODE_TYPE_ALT) ||
+		    !t->child[!dir]->is_type(NODE_TYPE_ALT))
 			break;
 
 		// a | (a | b) -> (a | b)
 		// a | (b | (c | a)) -> (b | (c | a))
 		Node *p = t;
 		Node *i = t->child[!dir];
-		for (; dynamic_cast<AltNode *>(i); p = i, i = i->child[!dir]) {
+		for (; i->is_type(NODE_TYPE_ALT); p = i, i = i->child[!dir]) {
 			if (t->child[dir]->eq(i->child[dir])) {
 				Node *tmp = t->child[!dir];
 				t->child[!dir] = NULL;
@@ -475,19 +475,19 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 		int count = 0;
 		Node *subject = t->child[dir];
 		Node *a = subject;
-		if (dynamic_cast<CatNode *>(subject))
+		if (subject->is_type(NODE_TYPE_CAT))
 			a = subject->child[dir];
 
 		for (pp = p = t, i = t->child[!dir];
-		     dynamic_cast<AltNode *>(i);) {
-			if ((dynamic_cast<CatNode *>(i->child[dir]) &&
+		     i->is_type(NODE_TYPE_ALT);) {
+			if ((i->child[dir]->is_type(NODE_TYPE_CAT) &&
 			     a->eq(i->child[dir]->child[dir])) ||
 			    (a->eq(i->child[dir]))) {
 				// extract matching alt node
 				p->child[!dir] = i->child[!dir];
 				i->child[!dir] = subject;
 				subject = basic_simplify(i, dir);
-				if (dynamic_cast<CatNode *>(subject))
+				if (subject->is_type(NODE_TYPE_CAT))
 					a = subject->child[dir];
 				else
 					a = subject;
@@ -502,7 +502,7 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 		}
 
 		// last altnode in chain check other dir as well
-		if ((dynamic_cast<CatNode *>(i) &&
+		if ((i->is_type(NODE_TYPE_CAT) &&
 		     a->eq(i->child[dir])) || (a->eq(i))) {
 			count++;
 			if (t == p) {
@@ -528,7 +528,7 @@ int debug_tree(Node *t)
 {
 	int nodes = 1;
 
-	if (!dynamic_cast<ImportantNode *>(t)) {
+	if (!t->is_type(NODE_TYPE_IMPORTANT)) {
 		if (t->child[0])
 			nodes += debug_tree(t->child[0]);
 		if (t->child[1])
@@ -539,30 +539,30 @@ int debug_tree(Node *t)
 
 static void count_tree_nodes(Node *t, struct node_counts *counts)
 {
-	if (dynamic_cast<AltNode *>(t)) {
+	if (t->is_type(NODE_TYPE_ALT)) {
 		counts->alt++;
 		count_tree_nodes(t->child[0], counts);
 		count_tree_nodes(t->child[1], counts);
-	} else if (dynamic_cast<CatNode *>(t)) {
+	} else if (t->is_type(NODE_TYPE_CAT)) {
 		counts->cat++;
 		count_tree_nodes(t->child[0], counts);
 		count_tree_nodes(t->child[1], counts);
-	} else if (dynamic_cast<PlusNode *>(t)) {
+	} else if (t->is_type(NODE_TYPE_PLUS)) {
 		counts->plus++;
 		count_tree_nodes(t->child[0], counts);
-	} else if (dynamic_cast<StarNode *>(t)) {
+	} else if (t->is_type(NODE_TYPE_STAR)) {
 		counts->star++;
 		count_tree_nodes(t->child[0], counts);
-	} else if (dynamic_cast<OptionalNode *>(t)) {
+	} else if (t->is_type(NODE_TYPE_OPTIONAL)) {
 		counts->optional++;
 		count_tree_nodes(t->child[0], counts);
-	} else if (dynamic_cast<CharNode *>(t)) {
+	} else if (t->is_type(NODE_TYPE_CHAR)) {
 		counts->charnode++;
-	} else if (dynamic_cast<AnyCharNode *>(t)) {
+	} else if (t->is_type(NODE_TYPE_ANYCHAR)) {
 		counts->any++;
-	} else if (dynamic_cast<CharSetNode *>(t)) {
+	} else if (t->is_type(NODE_TYPE_CHARSET)) {
 		counts->charset++;
-	} else if (dynamic_cast<NotCharSetNode *>(t)) {
+	} else if (t->is_type(NODE_TYPE_NOTCHARSET)) {
 		counts->notcharset++;
 	}
 }
@@ -635,7 +635,8 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
 void flip_tree(Node *node)
 {
 	for (depth_first_traversal i(node); i; i++) {
-		if (CatNode *cat = dynamic_cast<CatNode *>(*i)) {
+		if ((*i)->is_type(NODE_TYPE_CAT)) {
+			CatNode *cat = static_cast<CatNode *>(*i);
 			swap(cat->child[0], cat->child[1]);
 		}
 	}
