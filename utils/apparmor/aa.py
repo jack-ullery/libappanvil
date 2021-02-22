@@ -2480,11 +2480,14 @@ def get_subdirectories(current_dir):
         return os.walk(current_dir).__next__()[1]
 
 def loadincludes():
-    incdirs = get_subdirectories(profile_dir)
-    for idir in incdirs:
-        if is_skippable_dir(idir):
-            continue
-        for dirpath, dirname, files in os.walk(os.path.join(profile_dir, idir)):
+    loadincludes_dir('tunables')
+    loadincludes_dir('abstractions')
+
+def loadincludes_dir(subdir):
+    idir = os.path.join(profile_dir, subdir)
+
+    if os.path.isdir(idir):  # if directory doesn't exist, silently skip loading it
+        for dirpath, dirname, files in os.walk(idir):
             if is_skippable_dir(dirpath):
                 continue
             for fi in files:
