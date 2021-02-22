@@ -1727,7 +1727,7 @@ def read_profile(file, active_profile):
         debug_logger.debug("read_profile: can't read %s - skipping" % file)
         return None
 
-    profile_data = parse_profile_data(data, file, 0)
+    profile_data = parse_profile_data(data, file, 0, True)
 
     if profile_data and active_profile:
         attach_profile_data(aa, profile_data)
@@ -1825,7 +1825,7 @@ def parse_profile_start_to_storage(line, file, lineno, profile, hat):
 
     return (profile, hat, prof_storage)
 
-def parse_profile_data(data, file, do_include):
+def parse_profile_data(data, file, do_include, in_preamble):
     profile_data = hasher()
     profile = None
     hat = None
@@ -1863,6 +1863,8 @@ def parse_profile_data(data, file, do_include):
             else:
                 in_contained_hat = False
 
+            in_preamble = False
+
             (profile, hat, prof_storage) = parse_profile_start_to_storage(line, file, lineno, profile, hat)
 
             if profile_data[profile].get(hat, False):
@@ -1888,6 +1890,7 @@ def parse_profile_data(data, file, do_include):
             else:
                 parsed_profiles.append(profile)
                 profile = None
+                in_preamble = True
 
             initial_comment = ''
 
@@ -1938,7 +1941,7 @@ def parse_profile_data(data, file, do_include):
                 active_profiles.add_inc_ie(file, rule_obj)
 
             for incname in rule_obj.get_full_paths(profile_dir):
-                load_include(incname)
+                load_include(incname, in_preamble)
 
         elif RE_PROFILE_MOUNT.search(line):
             matches = RE_PROFILE_MOUNT.search(line).groups()
@@ -2429,7 +2432,7 @@ def include_dir_filelist(include_name):
 
     return files
 
-def load_include(incname):
+def load_include(incname, in_preamble=False):
     load_includeslist = [incname]
     while load_includeslist:
         incfile = load_includeslist.pop(0)
@@ -2440,7 +2443,7 @@ def load_include(incname):
             pass  # already read, do nothing
         elif os.path.isfile(incfile):
             data = get_include_data(incfile)
-            incdata = parse_profile_data(data, incfile, True)
+            incdata = parse_profile_data(data, incfile, True, in_preamble)
             attach_profile_data(include, incdata)
         #If the include is a directory means include all subfiles
         elif os.path.isdir(incfile):
@@ -2464,10 +2467,10 @@ def get_subdirectories(current_dir):
         return os.walk(current_dir).__next__()[1]
 
 def loadincludes():
-    loadincludes_dir('tunables')
-    loadincludes_dir('abstractions')
+    loadincludes_dir('tunables', True)
+    loadincludes_dir('abstractions', False)
 
-def loadincludes_dir(subdir):
+def loadincludes_dir(subdir, in_preamble):
     idir = os.path.join(profile_dir, subdir)
 
     if os.path.isdir(idir):  # if directory doesn't exist, silently skip loading it
@@ -2477,7 +2480,7 @@ def loadincludes_dir(subdir):
                     continue
                 else:
                     fi = os.path.join(dirpath, fi)
-                    load_include(fi)
+                    load_include(fi, in_preamble)
 
 def glob_common(path):
     globs = []

@@ -430,12 +430,12 @@ class TestParseParserTests(AATest):
         apparmor.active_profiles.init_file(params['file'])
 
         if expected:
-            apparmor.parse_profile_data(data, params['file'], 0)
+            apparmor.parse_profile_data(data, params['file'], 0, True)
             apparmor.active_profiles.get_all_merged_variables(params['file'], apparmor.include_list_recursive(apparmor.active_profiles.files[params['file']]))
 
         else:
             with self.assertRaises(AppArmorException):
-                apparmor.parse_profile_data(data, params['file'], 0)
+                apparmor.parse_profile_data(data, params['file'], 0, True)
                 apparmor.active_profiles.get_all_merged_variables(params['file'], apparmor.include_list_recursive(apparmor.active_profiles.files[params['file']]))
 
 def parse_test_profiles(file_with_path):
