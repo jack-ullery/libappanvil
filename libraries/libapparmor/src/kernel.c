@@ -237,7 +237,7 @@ static void proc_attr_base_init_once(void)
 	autofree char *tmp;
 
 	/* if we fail we just fall back to the default value */
-	if (asprintf(&tmp, "/proc/%d/attr/apparmor/current", aa_gettid())) {
+	if (asprintf(&tmp, "/proc/%d/attr/apparmor/current", aa_gettid()) > 0) {
 		autoclose int fd = open(tmp, O_RDONLY);
 		if (fd != -1) {
 			proc_attr_base = proc_attr_base_stacking;
