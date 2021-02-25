@@ -47,6 +47,132 @@
 #define UNCONFINED		"unconfined"
 #define UNCONFINED_SIZE		strlen(UNCONFINED)
 
+/*
+ * AppArmor kernel interfaces. Potentially used by this code to
+ * implement the various library functions.
+ *
+ *
+ * /sys/module/apparmor/parameters/ *
+ *
+ * Available on on kernels, some options may not be available and policy
+ * may block access.
+ *     audit                - normal,quiet_denied,quiet,noquiet,all
+ *     debug (bool)         - turn on debug messages if enabled during compile
+ *     hash_policy (bool)   - provide a hash of loaded policy
+ *     logsyscall (bool)    - ignored
+ *     paranoid_load (bool) - whether full policy checks are done. Should only
+ *                            be disabled for embedded device kernels
+ *     audit_header (bool)  - include "apparmor=<mode> in messages"
+ *     enabled (bool)       - whether apparmor is enabled. This can be
+ *                            different than whether apparmor is available.
+ *                            See virtualization and LSM stacking.
+ *     lock_policy (bool)   - one way trigger. Once set policy can not be
+ *                            loaded, replace, removed.
+ *      mode                - global policy namespace control of whether
+ *                            apparmor is in "enforce", "complain"
+ *      path_max            - maximum path size. Can always be read but
+ *                            can only be set on some kernels.
+ *
+ * securityfs/apparmor - usually mounted at /sys/kernel/security/apparmor/ *
+ *     .access    - transactional interface used to query kernel
+ *     .ns_level  - RO policy namespace level of current task
+ *     .ns_name   - RO current policy namespace of current task
+ *     .ns_stacked - RO boolean if stacking is in use with the namespace
+ *     .null - special device file used to redirect closed fds to
+ *     profiles   - RO virtualized text list of visible loaded profiles
+ *     .remove    - WO names of profiles to remove
+ *     .replace   - WO binary policy to replace (will load if not present)
+ *     .load      - WO binary policy to load (will fail if already present)
+ *     revision   - RO unique incrementing revision number for policy
+ *     .stacked   - RO boolean if label is currently stacked
+ *     features/  - RO feature set supported by kernel
+ *     policy/    - RO policy loaded into kernel
+ *
+ *
+ * /proc/<tid>/attr/apparmor/ *
+ * New proc attr interface compatible with LSM stacking. Available even
+ * when LSM stacking is not in use.
+ *     current    - see /proc/<tid>/attr/current
+ *     exec       - see /proc/<tid>/attr/exec
+ *     prev       - see /proc/<tid>/attr/prev
+ *
+ * /proc/<tid>/attr/ * Old proc attr interface shared between LSMs goes
+ * to first registered LSM that wants the proc interface, but can be
+ * virtualized by setting the display LSM. So if LSM stacking is in
+ * use this interface may belong to another LSM. Use
+ *    /proc/<tid>/attr/apparmor/ *
+ * first if possible, and do NOT use if
+ *    /sys/module/apparmor/parameters/enabled=N.
+ * Note: older version of the library only used this interface and did not
+ *       check if it was available. Which could lead to weird failures if
+ *       another LSM had clamed it. This version of the library tries to
+ *       fix this problem, but unfortunately it is impossible to completely
+ *       address, because access to interfaces required to determine
+ *       whether apparmor owns the interface may be restricted, either
+ *       by existing apparmor policy that has not been updated to use the
+ *       new interface or by another LSM.
+ *     current    - current confinement
+ *     display    - LSM stacking. Which LSM currently owns the interface.
+ *     exec       - label to switch to at exec
+ *     fscreate   - unused by apparmor
+ *     keycreate  - unused by apparmor
+ *     prev       - when in HAT set to parent label
+ *     sockcreate - unused by apparmor
+ *
+ *
+ * Below /proc/ interface combinations are documented on how the library
+ * currently behaves and how it used to behave. This serves to document
+ * known failure points as we can not entirely fix this mess.
+ * Note: userspace applications using the interface directly have all
+ *       the issues/failures of AppArmor 2.x unless they have specifically
+ *       been updated to deal with this mess.
+ *
+ *
+ * AppArmor 2.x Lib
+ *
+ * LSM   AA            sys      sys    proc/   proc/   user
+ * Stk | Blt |  LSM  | enabl | avail |  aa/  |   *   | space |
+ * ----+-----+-------+-------+-------+-------+-------+-------+--------+
+ *  N  |  N  |   -   |   -   |   -   |   -   |   N   | AA2.x |   -    |
+ *  N  |  N  | other |   -   |   -   |   -   |   N   | AA2.x |  FAIL  |
+ *  N  |  N  | other |denied |   -   |   -   |   N   | AA2.x |  FAIL  |
+ *  N  |  Y  |   -   |   N   |   -   |   -   |   N   | AA2.x |   -    |
+ *  N  |  Y  | other |   -   |   -   |   -   |   N   | AA2.x |  FAIL  |
+ *  N  |  Y  |  AA   |   -   |   -   |   -   |   Y   | AA2.x |  PASS  |
+ *  Y  |  N  |   -   |   -   |   -   |   -   |   N   | AA2.x |   -    |
+ *  Y  |  N  | other |   -   |   -   |   -   |   N   | AA2.x |  FAIL  |
+ *  Y  |  Y  |   -   |   N   |   -   |   -   |   N   | AA2.x |   -    |
+ *  Y  |  Y  | other |   -   |   -   |   -   |   N   | AA2.x |  FAIL  |
+ *  Y  |  Y  |  AA   |   -   |   -   |   -   |   Y   | AA2.x |  PASS  |
+ *  Y  |  Y  | major |   -   |   -   |   -   |   Y   | AA2.x |  PASS  |
+ *  Y  |  Y  | minor |   -   |   -   |   -   |   N   | AA2.x |  FAIL  |
+ *
+ *
+ * AppArmor 3.x Lib - adds stacking support.
+ *
+ * Will FAIL in a few cases because it can not determine if apparmor
+ * is enabled and has control of the old interface. Not failing in these
+ * cases where AppArmor is available will result in regressions where
+ * the library will not work correctly with old kernels. In these
+ * cases its better that apparmor userspace is not used.
+ *
+ * AppArmor 3.x will avoid the failure cases if any of enabled, avail
+ * or the new proc interfaces are available to the task. AppArmor 3.x
+ * will also automatically add permissions to access the new proc
+ * interfaces so change_hat and change_profile won't experience these
+ * failures, it will only happen for confined applications hitting the
+ * interfaces and not using change_hat or change_profile.
+ *
+ * LSM   AA            sys      sys    proc/   proc/
+ * Stk | Blt |  LSM  | enabl | avail |  aa/  |   *   |
+ * ----+-----+-------+-------+-------+-------+-------+-----------------
+ * Y/N |  N  | other | denied|   NA  |   NA  |   Y   | old interface avail
+ * Y/N |  Y  | other | denied|   NA  |   NA  |   Y   | old interface avail
+ *  Y  |  Y  | minor | denied|   NA  |   NA  |   Y   | old interface avail
+ *  Y  |  Y  | minor | denied|   NA  | denied|   Y   | old interface avail
+ * Y/N |  Y  | minor | denied| denied| denied|   Y   | old interface avail
+ */
+
 /**
  * aa_find_mountpoint - find where the apparmor interface filesystem is mounted
  * @mnt: returns buffer with the mountpoint string
@@ -93,7 +219,16 @@ int aa_find_mountpoint(char **mnt)
 	return rc;
 }
 
-// done as a macro so we can paste the param
+/**
+ * pararm_check_base - return boolean value for PARAM
+ * PARAM: parameter to check
+ *
+ * Returns: 1 == Y
+ *          0 == N
+ *         <0 == error
+ *
+ * done as a macro so we can paste the param
+ */
 
 #define param_check_base(PARAM)						\
 ({									\
@@ -236,42 +371,91 @@ static inline pid_t aa_gettid(void)
  */
 static pthread_once_t proc_attr_base_ctl = PTHREAD_ONCE_INIT;
 static const char *proc_attr_base_old = "/proc/%d/attr/%s";
+static const char *proc_attr_new_dir = "/proc/%d/attr/apparmor/";
 static const char *proc_attr_base_stacking = "/proc/%d/attr/apparmor/%s";
 static const char *proc_attr_base_unavailable = "/proc/%d/attr/apparmor/unavailable/%s";
-static const char *proc_attr_base;
+static const char *proc_attr_base = NULL;
+static int proc_stacking_present = -1;	/* unknown */
 
 static void proc_attr_base_init_once(void)
 {
 	autofree char *tmp;
 
 	/* if we fail we just fall back to the default value */
-	if (asprintf(&tmp, "/proc/%d/attr/apparmor/", aa_gettid()) > 0) {
+	if (asprintf(&tmp, proc_attr_new_dir, aa_gettid()) > 0) {
 		struct stat sb;
 		if (stat(tmp, &sb) == 0) {
 			proc_attr_base = proc_attr_base_stacking;
+			proc_stacking_present = 1;
 			return;
-		}
-	}
-	/* check for new interface failed, see if we can fallback */
-	if (!is_enabled() && is_private_enabled()) {
-		/* new stacking interfaces aren't available and apparmor
-		* is disabled, but available. do not use the
-		* /proc/<pid>/attr/ * interfaces as they could be
-		* in use by another LSM
-		*/
-		proc_attr_base = proc_attr_base_unavailable;
+		} else if (errno == ENOENT) {
+			/* no stacking - try falling back */
+			proc_stacking_present = 0;
+		} else if (errno == EACCES) {
+			/* the dir exists, but access is denied */
+			proc_stacking_present = 1;
+			proc_attr_base = proc_attr_base_stacking;
+		} /* else
+			   denied by policy, or other error try falling back */
+	} else {
+		/* failed allocation - proc_attr_base stays NULL */
 		return;
 	}
-	proc_attr_base = proc_attr_base_old;
+	/* check for new interface failed, see if we can fallback */
+	if (param_check_enabled() == 0) {
+		/* definate NO (not just an error) on enabled. Do not fall
+		 * back to old shared proc interface
+		 *
+		 * First try an alternate check for private proc interface
+		 */
+		int enabled = param_check_private_enabled();
+		if (enabled == 1) {
+			/* the private interface exists and we can't
+			 * fallback so just keep trying on the new
+			 * interface.
+			 */
+			proc_attr_base = proc_attr_base_stacking;
+		} else if (enabled == 0) {
+			/* definite NO - no interface available */
+			proc_attr_base = proc_attr_base_unavailable;
+		} else {
+			/* error can't determine, proc_attr_base stays NULL */
+		}
+	} else if (param_check_enabled() == 1) {
+		/* apparmor is enabled, we can use the old interface */
+		proc_attr_base = proc_attr_base_old;
+	} else if (errno != EACCES) {
+		/* this shouldn't happen unless apparmor is not builtin
+		 * or proc isn't mounted
+		 */
+		proc_attr_base = proc_attr_base_unavailable;
+	} /* else
+		   denied by policy - proc_attr_base stays NULL */
+
+	return;
 }
 
 static char *procattr_path(pid_t pid, const char *attr)
 {
 	char *path = NULL;
+	const char *tmp;
 
+	/* TODO: rework this with futex or userspace RCU so we can update
+	 * the base value instead of continually using the same base
+	 * after we have hit an error
+	 */
 	/* ignore failure, we just fallback to the default value */
 	(void) pthread_once(&proc_attr_base_ctl, proc_attr_base_init_once);
-	if (asprintf(&path, proc_attr_base, pid, attr) > 0)
+
+	if (proc_attr_base)
+		tmp = proc_attr_base;
+	else if (proc_stacking_present)
+		/* couldn't determine during init */
+		tmp = proc_attr_base_stacking;
+	else
+		/* couldn't determine during init and no stacking */
+		tmp = proc_attr_base_old;
+	if (asprintf(&path, tmp, pid, attr) > 0)
 		return path;
 	return NULL;
 }
@@ -287,8 +471,8 @@ static int procattr_open(pid_t tid, const char *attr, int flags)
 	}
 	fd = open(tmp, flags);
 	free(tmp);
-	/* Test is we can fallback to a different interface this is ugly.
-	 * If only the old interface is available:
+	/* Test is we can fallback to the old interface (this is ugly).
+	 * If we haven't tried the old interface already
 	 *    proc_attr_base == proc_attr_base_old - no fallback
 	 * else if is_enabled()
 	 *    apparmor is available on the old interface
@@ -298,7 +482,7 @@ static int procattr_open(pid_t tid, const char *attr, int flags)
 	 *       old interface where is_enabled() is only successful if
 	 *       the old interface is available to apparmor.
 	 */
-	if (fd == -1 && errno == EACCES && proc_attr_base != proc_attr_base_old && is_enabled()) {
+	if (fd == -1 && tmp != proc_attr_base_old && param_check_enabled() != 0) {
 		if (asprintf(&tmp, proc_attr_base_old, tid, attr) < 0)
 			return -1;
 		fd = open(tmp, flags);
