@@ -1788,7 +1788,6 @@ def parse_profile_start(line, file, lineno, profile, hat):
                     'profile': profile, 'file': file, 'line': lineno + 1 })
 
         hat = matches['profile']
-        in_contained_hat = True
         pps_set_profile = True
         pps_set_hat_external = False
 
@@ -1803,14 +1802,34 @@ def parse_profile_start(line, file, lineno, profile, hat):
             hat = profile
             pps_set_hat_external = False
 
-        in_contained_hat = False
         pps_set_profile = False
 
     attachment = matches['attachment']
     flags = matches['flags']
     xattrs = matches['xattrs']
 
-    return (profile, hat, attachment, xattrs, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
+    return (profile, hat, attachment, xattrs, flags, pps_set_profile, pps_set_hat_external)
+
+def parse_profile_start_to_storage(line, file, lineno, profile, hat):
+    ''' parse a profile start line (using parse_profile_startline()) and convert it to a ProfileStorage '''
+
+    (profile, hat, attachment, xattrs, flags, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
+
+    prof_storage = ProfileStorage(profile, hat, 'parse_profile_data() profile_start')
+
+    if attachment:
+        prof_storage['attachment'] = attachment
+    if pps_set_profile:
+        prof_storage['profile'] = True
+    if pps_set_hat_external:
+        prof_storage['external'] = True
+
+    prof_storage['name'] = profile
+    prof_storage['filename'] = file
+    prof_storage['xattrs'] = xattrs
+    prof_storage['flags'] = flags
+
+    return (profile, hat, prof_storage)
 
 def parse_profile_data(data, file, do_include):
     profile_data = hasher()
@@ -1837,27 +1856,21 @@ def parse_profile_data(data, file, do_include):
             lastline = None
         # Starting line of a profile
         if RE_PROFILE_START.search(line):
-            (profile, hat, attachment, xattrs, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
+            # in_contained_hat is needed to know if we are already in a profile or not. (Simply checking if we are in a hat doesn't work,
+            # because something like "profile foo//bar" will set profile and hat at once, and later (wrongfully) expect another "}".
+            # The logic is simple and resembles a "poor man's stack" (with limited/hardcoded height).
+            if profile:
+                in_contained_hat = True
+            else:
+                in_contained_hat = False
+
+            (profile, hat, prof_storage) = parse_profile_start_to_storage(line, file, lineno, profile, hat)
 
             if profile_data[profile].get(hat, False):
                 raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
                     { 'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat) })
 
-            profile_data[profile][hat] = ProfileStorage(profile, hat, 'parse_profile_data() profile_start')
-
-            if attachment:
-                profile_data[profile][hat]['attachment'] = attachment
-            if pps_set_profile:
-                profile_data[profile][hat]['profile'] = True
-            if pps_set_hat_external:
-                profile_data[profile][hat]['external'] = True
-
-            # save profile name and filename
-            profile_data[profile][hat]['name'] = profile
-            profile_data[profile][hat]['filename'] = file
-
-            profile_data[profile][hat]['xattrs'] = xattrs
-            profile_data[profile][hat]['flags'] = flags
+            profile_data[profile][hat] = prof_storage
 
             # Save the initial comment
             if initial_comment:

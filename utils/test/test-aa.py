@@ -20,7 +20,7 @@ import sys
 import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
      get_profile_flags, change_profile_flags, set_options_audit_mode, set_options_owner_mode, is_skippable_file, is_skippable_dir,
-     parse_profile_start, parse_profile_data, write_header,
+     parse_profile_start, parse_profile_start_to_storage, parse_profile_data, write_header,
      get_file_perms, propose_file_rules)
 from apparmor.aare import AARE
 from apparmor.common import AppArmorException, AppArmorBug
@@ -507,22 +507,35 @@ class AaTest_is_skippable_dir(AATest):
 
 class AaTest_parse_profile_start(AATest):
     tests = [
-        # profile start line                                    profile hat          profile                    hat                attachment   xattrs                      flags       in_contained_hat, pps_set_profile, pps_set_hat_external
-        (('/foo {',                                             None,   None),      ('/foo',                    '/foo',                 None,   None,                       None,       False,  False,  False)),
-        (('/foo (complain) {',                                  None,   None),      ('/foo',                    '/foo',                 None,   None,                       'complain', False,  False,  False)),
-        (('profile foo /foo {',                                 None,   None),      ('foo',                     'foo',                  '/foo', None,                       None,       False,  False,  False)),            # named profile
-        (('profile /foo {',                                     '/bar', '/bar'),    ('/bar',                    '/foo',                 None,   None,                       None,       True,   True,   False)),            # child profile
-        (('/foo//bar {',                                        None,   None),      ('/foo',                    'bar',                  None,   None,                       None,       False,  False,  True )),            # external hat
-        (('profile "/foo" (complain) {',                        None,   None),      ('/foo',                    '/foo',                 None,   None,                       'complain', False,  False,  False)),
-        (('profile "/foo" xattrs=(user.bar=bar) {',             None,   None),      ('/foo',                    '/foo',                 None,   'user.bar=bar',             None,       False,  False,  False)),
-        (('profile "/foo" xattrs=(user.bar=bar user.foo=*) {',  None,   None),      ('/foo',                    '/foo',                 None,   'user.bar=bar user.foo=*',  None,       False,  False,  False)),
-        (('/usr/bin/xattrs-test xattrs=(myvalue="foo.bar") {',  None,   None),      ('/usr/bin/xattrs-test',    '/usr/bin/xattrs-test', None,   'myvalue="foo.bar"',        None,       False,  False,  False)),
+        # profile start line                                    profile hat          profile                    hat                attachment   xattrs                      flags       pps_set_profile, pps_set_hat_external
+        (('/foo {',                                             None,   None),      ('/foo',                    '/foo',                 None,   None,                       None,       False,           False)),
+        (('/foo (complain) {',                                  None,   None),      ('/foo',                    '/foo',                 None,   None,                       'complain', False,           False)),
+        (('profile foo /foo {',                                 None,   None),      ('foo',                     'foo',                  '/foo', None,                       None,       False,           False)),            # named profile
+        (('profile /foo {',                                     '/bar', '/bar'),    ('/bar',                    '/foo',                 None,   None,                       None,       True,            False)),            # child profile
+        (('/foo//bar {',                                        None,   None),      ('/foo',                    'bar',                  None,   None,                       None,       False,           True )),            # external hat
+        (('profile "/foo" (complain) {',                        None,   None),      ('/foo',                    '/foo',                 None,   None,                       'complain', False,           False)),
+        (('profile "/foo" xattrs=(user.bar=bar) {',             None,   None),      ('/foo',                    '/foo',                 None,   'user.bar=bar',             None,       False,           False)),
+        (('profile "/foo" xattrs=(user.bar=bar user.foo=*) {',  None,   None),      ('/foo',                    '/foo',                 None,   'user.bar=bar user.foo=*',  None,       False,           False)),
+        (('/usr/bin/xattrs-test xattrs=(myvalue="foo.bar") {',  None,   None),      ('/usr/bin/xattrs-test',    '/usr/bin/xattrs-test', None,   'myvalue="foo.bar"',        None,       False,           False)),
     ]
 
     def _run_test(self, params, expected):
         parsed = parse_profile_start(params[0], 'somefile', 1, params[1], params[2])
 
         self.assertEqual(parsed, expected)
+
+        (profile, hat, prof_storage) = parse_profile_start_to_storage(params[0], 'somefile', 1, params[1], params[2])
+
+        self.assertEqual(profile,                       expected[0])
+        self.assertEqual(hat,                           expected[1])
+        if expected[2] is None:
+            self.assertEqual(prof_storage['attachment'],    '')
+        else:
+            self.assertEqual(prof_storage['attachment'],    expected[2])
+        self.assertEqual(prof_storage['xattrs'],        expected[3])
+        self.assertEqual(prof_storage['flags'],         expected[4])
+        self.assertEqual(prof_storage['profile'],       expected[5])
+        self.assertEqual(prof_storage['external'],      expected[6])
 
 class AaTest_parse_profile_start_errors(AATest):
     tests = [
@@ -534,6 +547,9 @@ class AaTest_parse_profile_start_errors(AATest):
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
             parse_profile_start(params[0], 'somefile', 1, params[1], params[2])
+
+        with self.assertRaises(expected):
+            parse_profile_start_to_storage(params[0], 'somefile', 1, params[1], params[2])
 
 class AaTest_parse_profile_data(AATest):
     def test_parse_empty_profile_01(self):
