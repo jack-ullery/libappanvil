@@ -241,9 +241,6 @@ B<DBUS ACCESS LIST> = Comma separated list of I<DBUS ACCESS>
 B<DBUS ACCESS> = ( 'send' | 'receive' | 'bind' | 'eavesdrop' | 'r' | 'read' | 'w' | 'write' | 'rw' )
   Some accesses are incompatible with some rules; see below.
 
-B<AARE> = B<?*[]{}^>
-  See below for meanings.
-
 B<UNIX RULE> = [ I<QUALIFIERS> ] 'unix' [ I<UNIX ACCESS EXPR> ] [ I<UNIX RULE CONDS> ] [ I<UNIX LOCAL EXPR> ] [ I<UNIX PEER EXPR> ]
 
 B<UNIX ACCESS EXPR> = ( I<UNIX ACCESS> | I<UNIX ACCESS LIST> )
@@ -299,6 +296,9 @@ B<FILEGLOB> = ( I<QUOTED FILEGLOB> | I<UNQUOTED FILEGLOB> )
 B<QUOTED FILEGLOB> = '"' I<UNQUOTED FILEGLOB> '"'
 
 B<UNQUOTED FILEGLOB> = (must start with '/' (after variable expansion), B<AARE> have special meanings; see below. May include I<VARIABLE>. Rules with embedded spaces or tabs must be quoted. Rules must end with '/' to apply to directories.)
+
+B<AARE> = B<?*[]{}^>
+  See section "Globbing (AARE)" below for meanings.
 
 B<ACCESS> = ( 'r' | 'w' | 'a' | 'l' | 'k' | 'm' | I<EXEC TRANSITION> )+  (not all combinations are allowed; see below.)
 
@@ -1513,9 +1513,10 @@ F</etc/apparmor.d/tunables/alias>, which is included by
 F</etc/apparmor.d/tunables/global>. F</etc/apparmor.d/tunables/global> is
 typically included at the beginning of an AppArmor profile.
 
-=head2 Globbing
+=head2 Globbing (AARE)
 
-File resources may be specified with a globbing syntax similar to that
+File resources and other parameters accepting an AARE
+may be specified with a globbing syntax similar to that
 used by popular shells, such as csh(1), bash(1), zsh(1).
 
 =over 4
@@ -1547,6 +1548,12 @@ will substitute for any single character not matching a, b or c
 =item B<{ab,cd}>
 
 will expand to one rule to match ab, one rule to match cd
+
+Can also include variables.
+
+=item B<@{variable}>
+
+will expand to all values assigned to the given variable.
 
 =back
 
