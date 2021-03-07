@@ -90,6 +90,13 @@ class ProfileList:
         else:
             self.files[filename]['profiles'].append(attachment)
 
+    def add_rule(self, filename, ruletype, rule):
+        ''' Store the given rule for the given profile filename preamble '''
+
+        self.init_file(filename)
+
+        self.files[filename][ruletype].add(rule)
+
     def add_abi(self, filename, abi_rule):
         ''' Store the given abi rule for the given profile filename preamble '''
 

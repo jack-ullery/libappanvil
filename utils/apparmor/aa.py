@@ -46,15 +46,13 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
                             strip_quotes, parse_profile_start_line, re_match_include )
 
-from apparmor.profile_list import ProfileList
+from apparmor.profile_list import ProfileList, preamble_ruletypes
 
 from apparmor.profile_storage import ProfileStorage, add_or_remove_flag, ruletypes
 
 import apparmor.rules as aarules
 
 from apparmor.rule.abi              import AbiRule
-from apparmor.rule.alias            import AliasRule
-from apparmor.rule.boolean          import BooleanRule
 from apparmor.rule.capability       import CapabilityRule
 from apparmor.rule.change_profile   import ChangeProfileRule
 from apparmor.rule.dbus             import DbusRule
@@ -63,7 +61,6 @@ from apparmor.rule.include          import IncludeRule
 from apparmor.rule.network          import NetworkRule
 from apparmor.rule.ptrace           import PtraceRule
 from apparmor.rule.signal           import SignalRule
-from apparmor.rule.variable         import VariableRule
 from apparmor.rule import quote_if_needed
 
 # setup module translations
@@ -1850,9 +1847,12 @@ def parse_profile_data(data, file, do_include, in_preamble):
             lastline = None
 
         # is line handled by a *Rule class?
-        (rule_name, rule_obj) = match_line_against_rule_classes(line, profile, file, lineno)
+        (rule_name, rule_obj) = match_line_against_rule_classes(line, profile, file, lineno, in_preamble)
         if rule_name:
-            profile_data[profile][hat][rule_name].add(rule_obj)
+            if in_preamble:
+                active_profiles.add_rule(file, rule_name, rule_obj)
+            else:
+                profile_data[profile][hat][rule_name].add(rule_obj)
 
         elif RE_PROFILE_START.search(line):  # Starting line of a profile
             # in_contained_hat is needed to know if we are already in a profile or not. (Simply checking if we are in a hat doesn't work,
@@ -1894,27 +1894,6 @@ def parse_profile_data(data, file, do_include, in_preamble):
 
             initial_comment = ''
 
-        elif AliasRule.match(line):
-            if profile and not do_include:
-                raise AppArmorException(_('Syntax Error: Unexpected alias definition found inside profile in file: %(file)s line: %(line)s') % {
-                        'file': file, 'line': lineno + 1 })
-            else:
-                active_profiles.add_alias(file, AliasRule.parse(line))
-
-        elif BooleanRule.match(line):
-            if profile and not do_include:
-                raise AppArmorException(_('Syntax Error: Unexpected boolean definition found inside profile in file: %(file)s line: %(line)s') % {
-                        'file': file, 'line': lineno + 1 })
-            else:
-                active_profiles.add_boolean(file, BooleanRule.parse(line))
-
-        elif VariableRule.match(line):
-            if profile and not do_include:
-                raise AppArmorException(_('Syntax Error: Unexpected variable definition found inside profile in file: %(file)s line: %(line)s') % {
-                        'file': file, 'line': lineno + 1 })
-            else:
-                active_profiles.add_variable(file, VariableRule.parse(line))
-
         elif RE_PROFILE_CONDITIONAL.search(line):
             # Conditional Boolean
             pass
@@ -1926,12 +1905,6 @@ def parse_profile_data(data, file, do_include, in_preamble):
         elif RE_PROFILE_CONDITIONAL_BOOLEAN.search(line):
             # Conditional Boolean defined
             pass
-
-        elif AbiRule.match(line):
-            if profile:
-                profile_data[profile][hat]['abi'].add(AbiRule.parse(line))
-            else:
-                active_profiles.add_abi(file, AbiRule.parse(line))
 
         elif IncludeRule.match(line):
             rule_obj = IncludeRule.parse(line)
@@ -2062,13 +2035,6 @@ def parse_profile_data(data, file, do_include, in_preamble):
                 # keep line as part of initial_comment (if we ever support writing abstractions, we should update serialize_profile())
                 initial_comment = initial_comment + line + '\n'
 
-        elif FileRule.match(line):
-            # leading permissions could look like a keyword, therefore handle file rules after everything else
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected path entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['file'].add(FileRule.parse(line))
-
         elif not RE_RULE_HAS_COMMA.search(line):
             # Bah, line continues on to the next line
             if RE_HAS_COMMENT_SPLIT.search(line):
@@ -2099,26 +2065,35 @@ def parse_profile_data(data, file, do_include, in_preamble):
 
     return profile_data
 
-def match_line_against_rule_classes(line, profile, file, lineno):
+def match_line_against_rule_classes(line, profile, file, lineno, in_preamble):
     ''' handle all lines handled by *Rule classes '''
 
     for rule_name in [
-          # 'abi',
+            'abi',
+            'alias',
+            'boolean',
+            'variable',
           # 'inc_ie',
             'capability',
             'change_profile',
             'dbus',
-          # 'file',
+            'file',  # file rules need to be parsed after variable rules
             'network',
             'ptrace',
             'rlimit',
             'signal',
         ]:
-        rule_class = ruletypes[rule_name]['rule']
+
+        if rule_name in ruletypes:
+            rule_class = ruletypes[rule_name]['rule']
+        else:
+            rule_class = preamble_ruletypes[rule_name]['rule']
 
         if rule_class.match(line):
-            # if not ruletypes[rule_name]['allowed_in_preamble'] and not profile:
-            if not profile:
+            if not in_preamble and rule_name not in ruletypes:
+                raise AppArmorException(_('Syntax Error: Unexpected %(rule)s definition found inside profile in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1, 'rule': rule_name })
+
+            if in_preamble and rule_name not in preamble_ruletypes:
                 raise AppArmorException(_('Syntax Error: Unexpected %(rule)s entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1, 'rule': rule_name })
 
             rule_obj = rule_class.parse(line)
