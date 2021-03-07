@@ -2,6 +2,7 @@
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
 #    Copyright (C) 2018 Canonical, Ltd.
+#    Copyright (C) 2021 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -41,6 +42,7 @@ profile postfix-showq /usr/lib/postfix/{bin/,sbin/,}showq {
   /{var/spool/postfix/,}incoming/[0-9A-F]/[0-9A-F]/                r,
   /{var/spool/postfix/,}incoming/[0-9A-F]/                         r,
   /{var/spool/postfix/,}maildrop/                                  r,
+  /{var/spool/postfix/,}maildrop/[0-9A-F]*[0-9A-F]                 r,
   /{var/spool/postfix/,}maildrop/[0-9A-F]/                         r,
   /{var/spool/postfix/,}pid/unix.showq                             rwk,
   owner /{var/spool/postfix,}/defer/[0-9A-F]/[0-9A-F]* r,
