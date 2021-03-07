@@ -867,7 +867,7 @@ def ask_exec(hashlog):
 
                         prof_filename = get_profile_filename_from_profile_name(profile)
                         if prof_filename and active_profiles.files.get(prof_filename):
-                            sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename])))
+                            sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename], True)))
                         else:
                             sev_db.set_variables( {} )
 
@@ -1071,7 +1071,7 @@ def ask_the_questions(log_dict):
         for profile in sorted(log_dict[aamode].keys()):
             prof_filename = get_profile_filename_from_profile_name(profile)
             if prof_filename and active_profiles.files.get(prof_filename):
-                sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename])))
+                sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename], True)))
             else:
                 sev_db.set_variables( {} )
 
@@ -1831,6 +1831,8 @@ def parse_profile_data(data, file, do_include, in_preamble):
     initial_comment = ''
     lastline = None
 
+    active_profiles.init_file(file)
+
     if do_include:
         profile = file
         hat = file
@@ -1853,6 +1855,10 @@ def parse_profile_data(data, file, do_include, in_preamble):
                 active_profiles.add_rule(file, rule_name, rule_obj)
             else:
                 profile_data[profile][hat][rule_name].add(rule_obj)
+
+            if rule_name == 'inc_ie':
+                for incname in rule_obj.get_full_paths(profile_dir):
+                    load_include(incname, in_preamble)
 
         elif RE_PROFILE_START.search(line):  # Starting line of a profile
             # in_contained_hat is needed to know if we are already in a profile or not. (Simply checking if we are in a hat doesn't work,
@@ -1905,16 +1911,6 @@ def parse_profile_data(data, file, do_include, in_preamble):
         elif RE_PROFILE_CONDITIONAL_BOOLEAN.search(line):
             # Conditional Boolean defined
             pass
-
-        elif IncludeRule.match(line):
-            rule_obj = IncludeRule.parse(line)
-            if profile:
-                profile_data[profile][hat]['inc_ie'].add(rule_obj)
-            else:
-                active_profiles.add_inc_ie(file, rule_obj)
-
-            for incname in rule_obj.get_full_paths(profile_dir):
-                load_include(incname, in_preamble)
 
         elif RE_PROFILE_MOUNT.search(line):
             matches = RE_PROFILE_MOUNT.search(line).groups()
@@ -2073,7 +2069,7 @@ def match_line_against_rule_classes(line, profile, file, lineno, in_preamble):
             'alias',
             'boolean',
             'variable',
-          # 'inc_ie',
+            'inc_ie',
             'capability',
             'change_profile',
             'dbus',
@@ -2263,7 +2259,7 @@ def write_profile(profile, is_attachment=False):
 
     original_aa[profile] = deepcopy(aa[profile])
 
-def include_list_recursive(profile):
+def include_list_recursive(profile, in_preamble=False):
     ''' get a list of all includes in a profile and its included files '''
 
     includelist = profile['inc_ie'].get_all_full_paths(profile_dir)
@@ -2276,7 +2272,12 @@ def include_list_recursive(profile):
             continue
         full_list.append(incname)
 
-        for childinc in include[incname][incname]['inc_ie'].rules:
+        if in_preamble:
+            look_at = active_profiles.files[incname]
+        else:
+            look_at = include[incname][incname]
+
+        for childinc in look_at['inc_ie'].rules:
             for childinc_file in childinc.get_full_paths(profile_dir):
                 if childinc_file not in full_list:
                     includelist += [childinc_file]

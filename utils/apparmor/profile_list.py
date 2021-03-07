@@ -233,9 +233,6 @@ class ProfileList:
             inc_add[filename] = mainfile_variables['+=']  # variable additions from main file
 
         for incname in all_incfiles:
-            if not self.files.get(incname):
-                continue  # tunables/* only end up in self.files if they contain variable or alias definitions
-
             inc_vars = self.files[incname]['variable'].get_merged_variables()
 
             for var in inc_vars['=']:
