@@ -311,7 +311,7 @@ class VariableLogprofHeaderTest(AATest):
     ]
 
     def _run_test(self, params, expected):
-        obj = VariableRule._parse(params)
+        obj = VariableRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 # --- tests for VariableRuleset --- #

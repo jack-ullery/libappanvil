@@ -394,7 +394,7 @@ class ChangeProfileLogprofHeaderTest(AATest):
     ]
 
     def _run_test(self, params, expected):
-        obj = ChangeProfileRule._parse(params)
+        obj = ChangeProfileRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 # --- tests for ChangeProfileRuleset --- #

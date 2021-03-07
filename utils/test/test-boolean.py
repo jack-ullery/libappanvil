@@ -241,7 +241,7 @@ class BooleanLogprofHeaderTest(AATest):
     ]
 
     def _run_test(self, params, expected):
-        obj = BooleanRule._parse(params)
+        obj = BooleanRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 # --- tests for BooleanRuleset --- #

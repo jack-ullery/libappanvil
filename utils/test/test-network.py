@@ -374,7 +374,7 @@ class NetworkLogprofHeaderTest(AATest):
     ]
 
     def _run_test(self, params, expected):
-        obj = NetworkRule._parse(params)
+        obj = NetworkRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 class NetworkRuleReprTest(AATest):
