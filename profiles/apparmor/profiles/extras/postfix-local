@@ -2,6 +2,7 @@
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
 #    Copyright (C) 2018 Canonical, Ltd.
+#    Copyright (C) 2021 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -31,9 +32,9 @@ profile postfix-local /usr/lib/postfix/{bin/,sbin/,}local {
   /{usr/,}bin/date                                      mixr,
 
   /dev/tty                                              rw,
-  /etc/{postfix/,}aliases.db                            rk,
+  /etc/aliases.{lm,}db                                  rk,
   # mailman on SuSE is configured to have its own alias file
-  /var/lib/mailman/data/aliases.db                      rk,
+  /var/lib/mailman/data/aliases.{lm,}db                 rk,
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/*      rw,
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/       rw,
   /{var/spool/postfix/,}active/[0-9A-F]/                rw,
@@ -41,9 +42,6 @@ profile postfix-local /usr/lib/postfix/{bin/,sbin/,}local {
   /{var/spool/postfix/,}pid/unix.local                  rwk,
   /{var/spool/postfix/,}private/{bounce,defer,flush,lmtp,local,rewrite}         rw,
   /{var/spool/postfix/,}public/{cleanup,flush}          rw,
-  /etc/postfix/virtual.db                               r,
-  /etc/postfix/lists.db                                 r,
-
   # deliver mail
   /var/mail/*                                          wk,
 }

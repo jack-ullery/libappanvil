@@ -2,6 +2,7 @@
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
 #    Copyright (C) 2018 Canonical, Ltd.
+#    Copyright (C) 2021 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -25,6 +26,7 @@ profile postfix-flush /usr/lib/postfix/{bin/,sbin/,}flush {
   /{var/spool/postfix/,}deferred/[0-9A-F]/[0-9A-F]*  rwl,
   /{var/spool/postfix/,}deferred/[0-9A-F]/           rwl,
   /{var/spool/postfix/,}flush/                       rwl,
+  /{var/spool/postfix/,}flush/*                      w,  # filename is based on hostname
   /{var/spool/postfix/,}flush/[0-9A-F]/[0-9A-F]/*    rwl,
   /{var/spool/postfix/,}flush/[0-9A-F]/[0-9A-F]/     rwl,
   /{var/spool/postfix/,}flush/[0-9A-F]/              rwl,
@@ -33,7 +35,7 @@ profile postfix-flush /usr/lib/postfix/{bin/,sbin/,}flush {
   /{var/spool/postfix/,}incoming/[0-9A-F]/[0-9A-F]/  rwl,
   /{var/spool/postfix/,}incoming/[0-9A-F]/           rwl,
   /{var/spool/postfix/,}public/qmgr                  w,
-  /{var/spool/postfix/,}pid/unix.flush               rw,
+  /{var/spool/postfix/,}pid/unix.flush               rwk,
   /etc/mtab                                          r,
 
   @{HOME}/.forward                            r,
