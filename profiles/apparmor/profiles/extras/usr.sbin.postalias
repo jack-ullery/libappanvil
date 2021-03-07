@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
+#    Copyright (C) 2021 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -19,11 +20,11 @@ include <tunables/global>
   include <abstractions/consoles>
   include <abstractions/postfix-common>
   /etc/aliases                         r,
-  /etc/aliases.db                      rwlk,
+  /etc/aliases.{lm,}db                 rwlk,
   /etc/postfix                         r,
   /etc/postfix/main.cf                 r,
   /etc/postfix/aliases                 r,
-  /etc/postfix/aliases.db              rwl,
+  /etc/postfix/aliases.{lm,}db         rwl,
   /etc/postfix/__db.aliases.db         lrw,
   /etc/__db.aliases.db                 rwl,
   /usr/sbin/postalias                  rmix,
@@ -31,7 +32,7 @@ include <tunables/global>
   # On SuSE, mailman is configured to use its own alias db
   /var/lib/mailman/data/aliases        r,
   /var/lib/mailman/data/__db.aliases.db rwl,
-  /var/lib/mailman/data/aliases.db     rwl,
+  /var/lib/mailman/data/aliases.{lm,}db rwl,
   /var/spool/postfix                   r,
   /var/spool/postfix/pid               r,
 }
