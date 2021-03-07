@@ -19,7 +19,7 @@ import sys
 
 import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
-     get_profile_flags, change_profile_flags, set_options_audit_mode, set_options_owner_mode, is_skippable_file, is_skippable_dir,
+     get_profile_flags, change_profile_flags, set_options_audit_mode, set_options_owner_mode, is_skippable_file,
      parse_profile_start, parse_profile_start_to_storage, parse_profile_data, write_header,
      get_file_perms, propose_file_rules)
 from apparmor.aare import AARE
@@ -472,38 +472,6 @@ class AaTest_is_skippable_file(AATest):
     def test_skippable_16(self):
         self.assertTrue(is_skippable_file('README'))
 
-
-class AaTest_is_skippable_dir(AATest):
-    tests = [
-        ('disable',                     True),
-        ('cache',                       True),
-        ('lxc',                         True),
-        ('force-complain',              True),
-        ('/etc/apparmor.d/cache',       True),
-        ('/etc/apparmor.d/cache.d',     True),
-        ('/etc/apparmor.d/cache.d/',    True),
-        ('/etc/apparmor.d/lxc/',        True),
-        ('/etc/apparmor.d/.git/',       True),
-
-        ('dont_disable',                False),
-        ('/etc/apparmor.d/cache_foo',   False),
-        ('abstractions',                False),
-        ('apache2.d',                   False),
-        ('/etc/apparmor.d/apache2.d',   False),
-        ('local',                       False),
-        ('/etc/apparmor.d/local/',      False),
-        ('tunables',                    False),
-        ('/etc/apparmor.d/tunables',    False),
-        ('/etc/apparmor.d/tunables/multiarch.d',            False),
-        ('/etc/apparmor.d/tunables/xdg-user-dirs.d',        False),
-        ('/etc/apparmor.d/tunables/home.d',                 False),
-        ('/etc/apparmor.d/abstractions',                    False),
-        ('/etc/apparmor.d/abstractions/ubuntu-browsers.d',  False),
-        ('/etc/apparmor.d/abstractions/apparmor_api',       False),
-    ]
-
-    def _run_test(self, params, expected):
-        self.assertEqual(is_skippable_dir(params), expected)
 
 class AaTest_parse_profile_start(AATest):
     tests = [

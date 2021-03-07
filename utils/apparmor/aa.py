@@ -1672,11 +1672,6 @@ def collapse_log(hashlog, ignore_null_profiles=True):
 
     return log_dict
 
-def is_skippable_dir(path):
-    if re.search('^(.*/)?(disable|cache|cache\.d|force-complain|lxc|abi|\.git)/?$', path):
-        return True
-    return False
-
 def read_profiles(ui_msg=False):
     # we'll read all profiles from disk, so reset the storage first (autodep() might have created/stored
     # a profile already, which would cause a 'Conflicting profile' error in attach_profile_data())
@@ -2480,13 +2475,14 @@ def get_subdirectories(current_dir):
         return os.walk(current_dir).__next__()[1]
 
 def loadincludes():
-    incdirs = get_subdirectories(profile_dir)
-    for idir in incdirs:
-        if is_skippable_dir(idir):
-            continue
-        for dirpath, dirname, files in os.walk(os.path.join(profile_dir, idir)):
-            if is_skippable_dir(dirpath):
-                continue
+    loadincludes_dir('tunables')
+    loadincludes_dir('abstractions')
+
+def loadincludes_dir(subdir):
+    idir = os.path.join(profile_dir, subdir)
+
+    if os.path.isdir(idir):  # if directory doesn't exist, silently skip loading it
+        for dirpath, dirname, files in os.walk(idir):
             for fi in files:
                 if is_skippable_file(fi):
                     continue
