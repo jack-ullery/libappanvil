@@ -824,13 +824,13 @@ class FileLogprofHeaderTest(AATest):
    ]
 
     def _run_test(self, params, expected):
-        obj = FileRule._parse(params[0])
+        obj = FileRule.parse(params[0])
         if params[1] or params[2]:
             obj.original_perms = {'allow': { 'all': params[1], 'owner': params[2]}}
         self.assertEqual(obj.logprof_header(), expected)
 
     def test_empty_original_perms(self):
-        obj = FileRule._parse('/foo rw,')
+        obj = FileRule.parse('/foo rw,')
         obj.original_perms = {'allow': { 'all': set(), 'owner': set()}}
         self.assertEqual(obj.logprof_header(), [_('Path'), '/foo', _('New Mode'), _('rw')])
 

@@ -779,7 +779,7 @@ class DbusLogprofHeaderTest(AATest):
    ]
 
     def _run_test(self, params, expected):
-        obj = DbusRule._parse(params)
+        obj = DbusRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 ## --- tests for DbusRuleset --- #

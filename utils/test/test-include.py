@@ -336,7 +336,7 @@ class IncludeLogprofHeaderTest(AATest):
 #   ]
 
     def _run_test(self, params, expected):
-        obj = IncludeRule._parse(params)
+        obj = IncludeRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 class IncludeFullPathsTest(AATest):
@@ -375,7 +375,7 @@ class IncludeFullPathsTest(AATest):
         for path in expected:
             exp2.append(path.replace('@@', self.profile_dir))
 
-        obj = IncludeRule._parse(params)
+        obj = IncludeRule.parse(params)
         self.assertEqual(obj.get_full_paths(self.profile_dir), exp2)
 
 ## --- tests for IncludeRuleset --- #

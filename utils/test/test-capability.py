@@ -451,7 +451,7 @@ class CapabilityLogprofHeaderTest(AATest):
     ]
 
     def _run_test(self, params, expected):
-        obj = CapabilityRule._parse(params)
+        obj = CapabilityRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 # --- tests for CapabilityRuleset --- #

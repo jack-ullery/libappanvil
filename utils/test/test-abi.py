@@ -280,7 +280,7 @@ class AbiLogprofHeaderTest(AATest):
 #   ]
 
     def _run_test(self, params, expected):
-        obj = AbiRule._parse(params)
+        obj = AbiRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 ## --- tests for AbiRuleset --- #

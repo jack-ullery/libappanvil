@@ -530,7 +530,7 @@ class SignalLogprofHeaderTest(AATest):
     ]
 
     def _run_test(self, params, expected):
-        obj = SignalRule._parse(params)
+        obj = SignalRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 ## --- tests for SignalRuleset --- #

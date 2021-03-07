@@ -359,7 +359,7 @@ class RlimitLogprofHeaderTest(AATest):
     ]
 
     def _run_test(self, params, expected):
-        obj = RlimitRule._parse(params)
+        obj = RlimitRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 # --- tests for RlimitRuleset --- #

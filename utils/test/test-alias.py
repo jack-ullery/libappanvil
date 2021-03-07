@@ -233,7 +233,7 @@ class AliasLogprofHeaderTest(AATest):
     ]
 
     def _run_test(self, params, expected):
-        obj = AliasRule._parse(params)
+        obj = AliasRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 # --- tests for AliasRuleset --- #

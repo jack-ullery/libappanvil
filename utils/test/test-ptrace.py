@@ -473,7 +473,7 @@ class PtraceLogprofHeaderTest(AATest):
     ]
 
     def _run_test(self, params, expected):
-        obj = PtraceRule._parse(params)
+        obj = PtraceRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 ## --- tests for PtraceRuleset --- #
