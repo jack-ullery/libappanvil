@@ -1658,9 +1658,12 @@ def collapse_log(hashlog, ignore_null_profiles=True):
 
     return log_dict
 
-def read_profiles(ui_msg=False):
+def read_profiles(ui_msg=False, skip_profiles=[]):
     # we'll read all profiles from disk, so reset the storage first (autodep() might have created/stored
     # a profile already, which would cause a 'Conflicting profile' error in attach_profile_data())
+    #
+    # The skip_profiles parameter should only be specified by tests.
+
     global aa, original_aa
     aa = hasher()
     original_aa = hasher()
@@ -1678,10 +1681,15 @@ def read_profiles(ui_msg=False):
         if os.path.isfile(full_file):
             if is_skippable_file(file):
                 continue
+            elif file in skip_profiles:
+                aaui.UI_Info("skipping profile %s" % full_file)
+                continue
             else:
                 read_profile(full_file, True)
 
-def read_inactive_profiles():
+def read_inactive_profiles(skip_profiles=[]):
+    # The skip_profiles parameter should only be specified by tests.
+
     if hasattr(read_inactive_profiles, 'already_read'):
         # each autodep() run calls read_inactive_profiles, but that's a) superfluous and b) triggers a conflict because the inactive profiles are already loaded
         # therefore don't do anything if the inactive profiles were already loaded
@@ -1700,6 +1708,9 @@ def read_inactive_profiles():
         full_file = os.path.join(extra_profile_dir, file)
         if os.path.isfile(full_file):
             if is_skippable_file(file):
+                continue
+            elif file in skip_profiles:
+                aaui.UI_Info("skipping profile %s" % full_file)
                 continue
             else:
                 read_profile(full_file, False)
