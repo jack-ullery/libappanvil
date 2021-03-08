@@ -12,6 +12,7 @@
 
   abi <abi/3.0>,
 
+  include <abstractions/crypto>
 
   # (Note that the ldd profile has inlined this file; if you make
   # modifications here, please consider including them in the ldd
