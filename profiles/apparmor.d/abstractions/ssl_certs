@@ -41,5 +41,9 @@
   /etc/certbot/archive/*/chain*.pem r,
   /etc/certbot/archive/*/fullchain*.pem r,
 
+  # crypto policies used by various libraries
+  /etc/crypto-policies/*/*.txt r,
+  /usr/share/crypto-policies/*/*.txt r,
+
   # Include additions to the abstraction
   include if exists <abstractions/ssl_certs.d>
