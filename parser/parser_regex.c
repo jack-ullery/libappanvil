@@ -642,6 +642,7 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 		int pos;
 		vec[0] = tbuf.c_str();
 		if (entry->link_name) {
+			filter_slashes(entry->link_name);
 			ptype = convert_aaregex_to_pcre(entry->link_name, 0, glob_default, lbuf, &pos);
 			if (ptype == ePatternInvalid)
 				return FALSE;
