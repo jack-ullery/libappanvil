@@ -90,6 +90,13 @@ class ProfileList:
         else:
             self.files[filename]['profiles'].append(attachment)
 
+    def add_rule(self, filename, ruletype, rule):
+        ''' Store the given rule for the given profile filename preamble '''
+
+        self.init_file(filename)
+
+        self.files[filename][ruletype].add(rule)
+
     def add_abi(self, filename, abi_rule):
         ''' Store the given abi rule for the given profile filename preamble '''
 
@@ -226,9 +233,6 @@ class ProfileList:
             inc_add[filename] = mainfile_variables['+=']  # variable additions from main file
 
         for incname in all_incfiles:
-            if not self.files.get(incname):
-                continue  # tunables/* only end up in self.files if they contain variable or alias definitions
-
             inc_vars = self.files[incname]['variable'].get_merged_variables()
 
             for var in inc_vars['=']:

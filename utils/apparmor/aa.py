@@ -46,15 +46,13 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
                             strip_quotes, parse_profile_start_line, re_match_include )
 
-from apparmor.profile_list import ProfileList
+from apparmor.profile_list import ProfileList, preamble_ruletypes
 
 from apparmor.profile_storage import ProfileStorage, add_or_remove_flag, ruletypes
 
 import apparmor.rules as aarules
 
 from apparmor.rule.abi              import AbiRule
-from apparmor.rule.alias            import AliasRule
-from apparmor.rule.boolean          import BooleanRule
 from apparmor.rule.capability       import CapabilityRule
 from apparmor.rule.change_profile   import ChangeProfileRule
 from apparmor.rule.dbus             import DbusRule
@@ -62,9 +60,7 @@ from apparmor.rule.file             import FileRule
 from apparmor.rule.include          import IncludeRule
 from apparmor.rule.network          import NetworkRule
 from apparmor.rule.ptrace           import PtraceRule
-from apparmor.rule.rlimit           import RlimitRule
 from apparmor.rule.signal           import SignalRule
-from apparmor.rule.variable         import VariableRule
 from apparmor.rule import quote_if_needed
 
 # setup module translations
@@ -871,7 +867,7 @@ def ask_exec(hashlog):
 
                         prof_filename = get_profile_filename_from_profile_name(profile)
                         if prof_filename and active_profiles.files.get(prof_filename):
-                            sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename])))
+                            sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename], True)))
                         else:
                             sev_db.set_variables( {} )
 
@@ -1075,7 +1071,7 @@ def ask_the_questions(log_dict):
         for profile in sorted(log_dict[aamode].keys()):
             prof_filename = get_profile_filename_from_profile_name(profile)
             if prof_filename and active_profiles.files.get(prof_filename):
-                sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename])))
+                sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename], True)))
             else:
                 sev_db.set_variables( {} )
 
@@ -1728,7 +1724,7 @@ def read_profile(file, active_profile):
         debug_logger.debug("read_profile: can't read %s - skipping" % file)
         return None
 
-    profile_data = parse_profile_data(data, file, 0)
+    profile_data = parse_profile_data(data, file, 0, True)
 
     if profile_data and active_profile:
         attach_profile_data(aa, profile_data)
@@ -1826,7 +1822,7 @@ def parse_profile_start_to_storage(line, file, lineno, profile, hat):
 
     return (profile, hat, prof_storage)
 
-def parse_profile_data(data, file, do_include):
+def parse_profile_data(data, file, do_include, in_preamble):
     profile_data = hasher()
     profile = None
     hat = None
@@ -1834,6 +1830,8 @@ def parse_profile_data(data, file, do_include):
     parsed_profiles = []
     initial_comment = ''
     lastline = None
+
+    active_profiles.init_file(file)
 
     if do_include:
         profile = file
@@ -1849,8 +1847,20 @@ def parse_profile_data(data, file, do_include):
         if lastline:
             line = '%s %s' % (lastline, line)
             lastline = None
-        # Starting line of a profile
-        if RE_PROFILE_START.search(line):
+
+        # is line handled by a *Rule class?
+        (rule_name, rule_obj) = match_line_against_rule_classes(line, profile, file, lineno, in_preamble)
+        if rule_name:
+            if in_preamble:
+                active_profiles.add_rule(file, rule_name, rule_obj)
+            else:
+                profile_data[profile][hat][rule_name].add(rule_obj)
+
+            if rule_name == 'inc_ie':
+                for incname in rule_obj.get_full_paths(profile_dir):
+                    load_include(incname, in_preamble)
+
+        elif RE_PROFILE_START.search(line):  # Starting line of a profile
             # in_contained_hat is needed to know if we are already in a profile or not. (Simply checking if we are in a hat doesn't work,
             # because something like "profile foo//bar" will set profile and hat at once, and later (wrongfully) expect another "}".
             # The logic is simple and resembles a "poor man's stack" (with limited/hardcoded height).
@@ -1858,6 +1868,8 @@ def parse_profile_data(data, file, do_include):
                 in_contained_hat = True
             else:
                 in_contained_hat = False
+
+            in_preamble = False
 
             (profile, hat, prof_storage) = parse_profile_start_to_storage(line, file, lineno, profile, hat)
 
@@ -1884,47 +1896,9 @@ def parse_profile_data(data, file, do_include):
             else:
                 parsed_profiles.append(profile)
                 profile = None
+                in_preamble = True
 
             initial_comment = ''
-
-        elif CapabilityRule.match(line):
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected capability entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['capability'].add(CapabilityRule.parse(line))
-
-        elif ChangeProfileRule.match(line):
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected change profile entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['change_profile'].add(ChangeProfileRule.parse(line))
-
-        elif AliasRule.match(line):
-            if profile and not do_include:
-                raise AppArmorException(_('Syntax Error: Unexpected alias definition found inside profile in file: %(file)s line: %(line)s') % {
-                        'file': file, 'line': lineno + 1 })
-            else:
-                active_profiles.add_alias(file, AliasRule.parse(line))
-
-        elif RlimitRule.match(line):
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected rlimit entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['rlimit'].add(RlimitRule.parse(line))
-
-        elif BooleanRule.match(line):
-            if profile and not do_include:
-                raise AppArmorException(_('Syntax Error: Unexpected boolean definition found inside profile in file: %(file)s line: %(line)s') % {
-                        'file': file, 'line': lineno + 1 })
-            else:
-                active_profiles.add_boolean(file, BooleanRule.parse(line))
-
-        elif VariableRule.match(line):
-            if profile and not do_include:
-                raise AppArmorException(_('Syntax Error: Unexpected variable definition found inside profile in file: %(file)s line: %(line)s') % {
-                        'file': file, 'line': lineno + 1 })
-            else:
-                active_profiles.add_variable(file, VariableRule.parse(line))
 
         elif RE_PROFILE_CONDITIONAL.search(line):
             # Conditional Boolean
@@ -1937,34 +1911,6 @@ def parse_profile_data(data, file, do_include):
         elif RE_PROFILE_CONDITIONAL_BOOLEAN.search(line):
             # Conditional Boolean defined
             pass
-
-        elif AbiRule.match(line):
-            if profile:
-                profile_data[profile][hat]['abi'].add(AbiRule.parse(line))
-            else:
-                active_profiles.add_abi(file, AbiRule.parse(line))
-
-        elif IncludeRule.match(line):
-            rule_obj = IncludeRule.parse(line)
-            if profile:
-                profile_data[profile][hat]['inc_ie'].add(rule_obj)
-            else:
-                active_profiles.add_inc_ie(file, rule_obj)
-
-            for incname in rule_obj.get_full_paths(profile_dir):
-                load_include(incname)
-
-        elif NetworkRule.match(line):
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected network entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['network'].add(NetworkRule.parse(line))
-
-        elif DbusRule.match(line):
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected dbus entry found in file: %(file)s line: %(line)s') % {'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['dbus'].add(DbusRule.parse(line))
 
         elif RE_PROFILE_MOUNT.search(line):
             matches = RE_PROFILE_MOUNT.search(line).groups()
@@ -1987,18 +1933,6 @@ def parse_profile_data(data, file, do_include):
             mount_rules = profile_data[profile][hat][allow].get('mount', list())
             mount_rules.append(mount_rule)
             profile_data[profile][hat][allow]['mount'] = mount_rules
-
-        elif SignalRule.match(line):
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected signal entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['signal'].add(SignalRule.parse(line))
-
-        elif PtraceRule.match(line):
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected ptrace entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['ptrace'].add(PtraceRule.parse(line))
 
         elif RE_PROFILE_PIVOT_ROOT.search(line):
             matches = RE_PROFILE_PIVOT_ROOT.search(line).groups()
@@ -2097,13 +2031,6 @@ def parse_profile_data(data, file, do_include):
                 # keep line as part of initial_comment (if we ever support writing abstractions, we should update serialize_profile())
                 initial_comment = initial_comment + line + '\n'
 
-        elif FileRule.match(line):
-            # leading permissions could look like a keyword, therefore handle file rules after everything else
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected path entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            profile_data[profile][hat]['file'].add(FileRule.parse(line))
-
         elif not RE_RULE_HAS_COMMA.search(line):
             # Bah, line continues on to the next line
             if RE_HAS_COMMENT_SPLIT.search(line):
@@ -2133,6 +2060,42 @@ def parse_profile_data(data, file, do_include):
         raise AppArmorException(_("Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside profile %(profile)s") % { 'file': file, 'profile': profile })
 
     return profile_data
+
+def match_line_against_rule_classes(line, profile, file, lineno, in_preamble):
+    ''' handle all lines handled by *Rule classes '''
+
+    for rule_name in [
+            'abi',
+            'alias',
+            'boolean',
+            'variable',
+            'inc_ie',
+            'capability',
+            'change_profile',
+            'dbus',
+            'file',  # file rules need to be parsed after variable rules
+            'network',
+            'ptrace',
+            'rlimit',
+            'signal',
+        ]:
+
+        if rule_name in ruletypes:
+            rule_class = ruletypes[rule_name]['rule']
+        else:
+            rule_class = preamble_ruletypes[rule_name]['rule']
+
+        if rule_class.match(line):
+            if not in_preamble and rule_name not in ruletypes:
+                raise AppArmorException(_('Syntax Error: Unexpected %(rule)s definition found inside profile in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1, 'rule': rule_name })
+
+            if in_preamble and rule_name not in preamble_ruletypes:
+                raise AppArmorException(_('Syntax Error: Unexpected %(rule)s entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1, 'rule': rule_name })
+
+            rule_obj = rule_class.parse(line)
+            return(rule_name, rule_obj)
+
+    return(None, None)
 
 def parse_mount_rule(line):
     # XXX Do real parsing here
@@ -2296,7 +2259,7 @@ def write_profile(profile, is_attachment=False):
 
     original_aa[profile] = deepcopy(aa[profile])
 
-def include_list_recursive(profile):
+def include_list_recursive(profile, in_preamble=False):
     ''' get a list of all includes in a profile and its included files '''
 
     includelist = profile['inc_ie'].get_all_full_paths(profile_dir)
@@ -2309,7 +2272,12 @@ def include_list_recursive(profile):
             continue
         full_list.append(incname)
 
-        for childinc in include[incname][incname]['inc_ie'].rules:
+        if in_preamble:
+            look_at = active_profiles.files[incname]
+        else:
+            look_at = include[incname][incname]
+
+        for childinc in look_at['inc_ie'].rules:
             for childinc_file in childinc.get_full_paths(profile_dir):
                 if childinc_file not in full_list:
                     includelist += [childinc_file]
@@ -2440,7 +2408,7 @@ def include_dir_filelist(include_name):
 
     return files
 
-def load_include(incname):
+def load_include(incname, in_preamble=False):
     load_includeslist = [incname]
     while load_includeslist:
         incfile = load_includeslist.pop(0)
@@ -2451,7 +2419,7 @@ def load_include(incname):
             pass  # already read, do nothing
         elif os.path.isfile(incfile):
             data = get_include_data(incfile)
-            incdata = parse_profile_data(data, incfile, True)
+            incdata = parse_profile_data(data, incfile, True, in_preamble)
             attach_profile_data(include, incdata)
         #If the include is a directory means include all subfiles
         elif os.path.isdir(incfile):
@@ -2475,10 +2443,10 @@ def get_subdirectories(current_dir):
         return os.walk(current_dir).__next__()[1]
 
 def loadincludes():
-    loadincludes_dir('tunables')
-    loadincludes_dir('abstractions')
+    loadincludes_dir('tunables', True)
+    loadincludes_dir('abstractions', False)
 
-def loadincludes_dir(subdir):
+def loadincludes_dir(subdir, in_preamble):
     idir = os.path.join(profile_dir, subdir)
 
     if os.path.isdir(idir):  # if directory doesn't exist, silently skip loading it
@@ -2488,7 +2456,7 @@ def loadincludes_dir(subdir):
                     continue
                 else:
                     fi = os.path.join(dirpath, fi)
-                    load_include(fi)
+                    load_include(fi, in_preamble)
 
 def glob_common(path):
     globs = []

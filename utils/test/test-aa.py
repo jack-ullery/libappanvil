@@ -521,7 +521,7 @@ class AaTest_parse_profile_start_errors(AATest):
 
 class AaTest_parse_profile_data(AATest):
     def test_parse_empty_profile_01(self):
-        prof = parse_profile_data('/foo {\n}\n'.split(), 'somefile', False)
+        prof = parse_profile_data('/foo {\n}\n'.split(), 'somefile', False, False)
 
         self.assertEqual(list(prof.keys()), ['/foo'])
         self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
@@ -532,20 +532,20 @@ class AaTest_parse_profile_data(AATest):
     def test_parse_duplicate_profile(self):
         with self.assertRaises(AppArmorException):
             # file contains two profiles with the same name
-            parse_profile_data('profile /foo {\n}\nprofile /foo {\n}\n'.split(), 'somefile', False)
+            parse_profile_data('profile /foo {\n}\nprofile /foo {\n}\n'.split(), 'somefile', False, False)
 
     def test_parse_duplicate_child_profile(self):
         with self.assertRaises(AppArmorException):
             # file contains two child profiles with the same name
-            parse_profile_data('profile /foo {\nprofile /bar {\n}\nprofile /bar {\n}\n}\n'.split(), 'somefile', False)
+            parse_profile_data('profile /foo {\nprofile /bar {\n}\nprofile /bar {\n}\n}\n'.split(), 'somefile', False, False)
 
     def test_parse_duplicate_hat(self):
         with self.assertRaises(AppArmorException):
             # file contains two hats with the same name
-            parse_profile_data('profile /foo {\n^baz {\n}\n^baz {\n}\n}\n'.split(), 'somefile', False)
+            parse_profile_data('profile /foo {\n^baz {\n}\n^baz {\n}\n}\n'.split(), 'somefile', False, False)
 
     def test_parse_xattrs_01(self):
-        prof = parse_profile_data('/foo xattrs=(user.bar=bar) {\n}\n'.split(), 'somefile', False)
+        prof = parse_profile_data('/foo xattrs=(user.bar=bar) {\n}\n'.split(), 'somefile', False, False)
 
         self.assertEqual(list(prof.keys()), ['/foo'])
         self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
@@ -555,7 +555,7 @@ class AaTest_parse_profile_data(AATest):
         self.assertEqual(prof['/foo']['/foo']['xattrs'], 'user.bar=bar')
 
     def test_parse_xattrs_02(self):
-        prof = parse_profile_data('/foo xattrs=(user.bar=bar user.foo=*) {\n}\n'.split(), 'somefile', False)
+        prof = parse_profile_data('/foo xattrs=(user.bar=bar user.foo=*) {\n}\n'.split(), 'somefile', False, False)
 
         self.assertEqual(list(prof.keys()), ['/foo'])
         self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
@@ -566,7 +566,7 @@ class AaTest_parse_profile_data(AATest):
 
     def test_parse_xattrs_03(self):
         d = '/foo xattrs=(user.bar=bar) flags=(complain) {\n}\n'
-        prof = parse_profile_data(d.split(), 'somefile', False)
+        prof = parse_profile_data(d.split(), 'somefile', False, False)
 
         self.assertEqual(list(prof.keys()), ['/foo'])
         self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
@@ -579,7 +579,7 @@ class AaTest_parse_profile_data(AATest):
         with self.assertRaises(AppArmorException):
             # flags before xattrs
             d = '/foo flags=(complain) xattrs=(user.bar=bar) {\n}\n'
-            parse_profile_data(d.split(), 'somefile', False)
+            parse_profile_data(d.split(), 'somefile', False, False)
 
 class AaTest_write_header(AATest):
     tests = [

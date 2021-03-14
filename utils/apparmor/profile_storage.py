@@ -16,16 +16,16 @@
 
 from apparmor.common import AppArmorBug, type_is_str
 
-from apparmor.rule.abi              import AbiRuleset
-from apparmor.rule.capability       import CapabilityRuleset
-from apparmor.rule.change_profile   import ChangeProfileRuleset
-from apparmor.rule.dbus             import DbusRuleset
-from apparmor.rule.file             import FileRuleset
-from apparmor.rule.include          import IncludeRuleset
-from apparmor.rule.network          import NetworkRuleset
-from apparmor.rule.ptrace           import PtraceRuleset
-from apparmor.rule.rlimit           import RlimitRuleset
-from apparmor.rule.signal           import SignalRuleset
+from apparmor.rule.abi              import AbiRule,             AbiRuleset
+from apparmor.rule.capability       import CapabilityRule,      CapabilityRuleset
+from apparmor.rule.change_profile   import ChangeProfileRule,   ChangeProfileRuleset
+from apparmor.rule.dbus             import DbusRule,            DbusRuleset
+from apparmor.rule.file             import FileRule,            FileRuleset
+from apparmor.rule.include          import IncludeRule,         IncludeRuleset
+from apparmor.rule.network          import NetworkRule,         NetworkRuleset
+from apparmor.rule.ptrace           import PtraceRule,          PtraceRuleset
+from apparmor.rule.rlimit           import RlimitRule,          RlimitRuleset
+from apparmor.rule.signal           import SignalRule,          SignalRuleset
 
 from apparmor.rule import quote_if_needed
 
@@ -34,16 +34,16 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 ruletypes = {
-    'abi':              {'ruleset': AbiRuleset},
-    'inc_ie':           {'ruleset': IncludeRuleset},
-    'capability':       {'ruleset': CapabilityRuleset},
-    'change_profile':   {'ruleset': ChangeProfileRuleset},
-    'dbus':             {'ruleset': DbusRuleset},
-    'file':             {'ruleset': FileRuleset},
-    'network':          {'ruleset': NetworkRuleset},
-    'ptrace':           {'ruleset': PtraceRuleset},
-    'rlimit':           {'ruleset': RlimitRuleset},
-    'signal':           {'ruleset': SignalRuleset},
+    'abi':              {'rule': AbiRule,           'ruleset': AbiRuleset,              },
+    'inc_ie':           {'rule': IncludeRule,       'ruleset': IncludeRuleset,          },
+    'capability':       {'rule': CapabilityRule,    'ruleset': CapabilityRuleset,       },
+    'change_profile':   {'rule': ChangeProfileRule, 'ruleset': ChangeProfileRuleset,    },
+    'dbus':             {'rule': DbusRule,          'ruleset': DbusRuleset,             },
+    'file':             {'rule': FileRule,          'ruleset': FileRuleset,             },
+    'network':          {'rule': NetworkRule,       'ruleset': NetworkRuleset,          },
+    'ptrace':           {'rule': PtraceRule,        'ruleset': PtraceRuleset,           },
+    'rlimit':           {'rule': RlimitRule,        'ruleset': RlimitRuleset,           },
+    'signal':           {'rule': SignalRule,        'ruleset': SignalRuleset,           },
 }
 
 class ProfileStorage:
