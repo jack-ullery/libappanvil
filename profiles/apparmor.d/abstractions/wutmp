@@ -14,7 +14,8 @@
   # some services update wtmp, utmp, and lastlog with per-user
   # connection information
   /var/log/lastlog  rwk,
-  /var/log/wtmp     wk,
+  /var/log/wtmp     rwk,
+  /var/log/btmp     rwk,
   @{run}/utmp       rwk,
 
   # Include additions to the abstraction
