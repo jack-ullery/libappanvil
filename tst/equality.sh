@@ -618,6 +618,20 @@ verify_binary_equality "mount rules slash filtering" \
                        "@{FOO}=/foo
                            /t { mount /dev//@{FOO} -> /mnt/bar, }"
 
+# verify slash filtering for link rules
+verify_binary_equality "link rules slash filtering" \
+                       "/t { link /dev/foo -> /mnt/bar, }" \
+                       "/t { link ///dev/foo -> /mnt/bar, }" \
+                       "/t { link /dev/foo -> /mnt//bar, }" \
+                       "/t { link /dev///foo -> ////mnt/bar, }" \
+                       "@{BAR}=/mnt/
+                           /t { link /dev///foo -> @{BAR}/bar, }" \
+                       "@{FOO}=/dev/
+                           /t { link @{FOO}//foo -> /mnt/bar, }" \
+                       "@{FOO}=/dev/
+                        @{BAR}=/mnt/
+                           /t { link @{FOO}/foo -> @{BAR}/bar, }" \
+
 if [ $fails -ne 0 ] || [ $errors -ne 0 ]
 then
 	printf "ERRORS: %d\nFAILS: %d\n" $errors $fails 2>&1
