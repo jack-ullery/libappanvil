@@ -98,6 +98,62 @@ cannot call the following system calls:
 	iopl(2) ptrace(2) reboot(2) setdomainname(2)
 	sethostname(2) swapoff(2) swapon(2) sysctl(2)
 
+=head2 Complain mode
+
+Instead of denying access to resources the profile does not have a rule for
+AppArmor can "allow" the access and log a message for the operation
+that triggers it. This is called I<complain mode>. It is important to
+note that rules that are present in the profile are still applied, so
+allow rules will still quiet or force audit messages, and deny rules
+will still result in denials and quieting of denial messages (see
+I<Turn off deny audit quieting> if this is a problem).
+
+Complain mode can be used to develop profiles incrementally as an
+application is exercised. The logged accesses can be added to the
+profile and then can the application further excercised to discover further
+additions that are needed. Because AppArmor allows the accesses the
+application will behave as it would if AppArmor was not confining it.
+
+B<Warning> complain mode does not provide any security, only
+auditing, while it is enabled. It should not be used in a hostile
+environment or bad behaviors may be logged and added to the profile
+as if they are resource accesses that should be used by the
+application.
+
+B<Note> complain mode can be very noisy with new or empty profiles,
+but with developed profiles might not log anything if the profile
+covers the application behavior well. See I<Audit Rate Limiting> if
+complain mode is generating too many log messages.
+
+To set a profile and any children or hat profiles the profile may contain
+into complain mode use
+
+	aa-complain /etc/apparmor.d/<the-application>
+
+To manually set a specific profile in complain mode, add the
+C<complain> flag, and then manually reload the profile:
+
+	profile foo flags=(complain) { ... }
+
+Note that the C<complain> flag must also be added manually to any
+hats or children profiles of the profile or they will continue to
+use the previous mode.
+
+To enable complain mode globally, run:
+
+	echo -n complain > /sys/module/apparmor/parameters/mode
+
+or to set it on boot add:
+
+	apparmor.mode=complain
+
+as a kernel boot paramenter.
+
+B<Warning> Setting complain mode gloabally disables all apparmor
+security protections. It can be useful during debugging or profile
+development, but setting it selectively on a per profile basis is
+safer.
+
 =head1 ERRORS
 
 When a confined process tries to access a file it does not have permission
@@ -158,6 +214,12 @@ To enable debug mode, run:
 
 	echo 1 > /sys/module/apparmor/parameters/debug
 
+or to set it on boot add:
+
+	apparmor.debug=1
+
+as a kernel boot paramenter.
+
 =head2 Turn off deny audit quieting
 
 By default, operations that trigger C<deny> rules are not logged.
@@ -166,6 +228,12 @@ This is called I<deny audit quieting>.
 To turn off deny audit quieting, run:
 
 	echo -n noquiet >/sys/module/apparmor/parameters/audit
+
+or to set it on boot add:
+
+	apparmor.audit=noquiet
+
+as a kernel boot paramenter.
 
 =head2 Force audit mode
 
@@ -182,6 +250,14 @@ To set a specific profile in force audit mode, add the C<audit> flag:
 To enable force audit mode globally, run:
 
 	echo -n all > /sys/module/apparmor/parameters/audit
+
+or to set it on boot add:
+
+	apparmor.audit=all
+
+as a kernel boot paramenter.
+
+B<Audit Rate Limiting>
 
 If auditd is not running, to avoid losing too many of the extra log
 messages, you will likely have to turn off rate limiting by doing:
