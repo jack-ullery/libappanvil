@@ -14,5 +14,8 @@
   owner @{run}/user/*/wayland-[0-9]* rw,
   owner @{run}/user/*/{mesa,mutter,sdl,wayland-cursor,weston,xwayland}-shared-* rw,
 
+  #For compositors based on wlroots
+  owner /dev/shm/wlroots-* rw,
+
   # Include additions to the abstraction
   include if exists <abstractions/wayland.d>
