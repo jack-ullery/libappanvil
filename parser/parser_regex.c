@@ -523,7 +523,7 @@ static int process_profile_name_xmatch(Profile *prof)
 		}
 		if (prof->xattrs.list) {
 			if (!(features_supports_domain_xattr && kernel_supports_oob)) {
-				warn_once_xattr(name);
+				warn_once_xattr(prof->name);
 				free_cond_entry_list(prof->xattrs);
 				goto build;
 			}
