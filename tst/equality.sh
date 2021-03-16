@@ -630,7 +630,18 @@ verify_binary_equality "link rules slash filtering" \
                            /t { link @{FOO}//foo -> /mnt/bar, }" \
                        "@{FOO}=/dev/
                         @{BAR}=/mnt/
-                           /t { link @{FOO}/foo -> @{BAR}/bar, }" \
+                           /t { link @{FOO}/foo -> @{BAR}/bar, }"
+
+verify_binary_equality "attachment slash filtering" \
+                       "/t /bin/foo { }" \
+                       "/t /bin//foo { }" \
+                       "@{BAR}=/bin/
+			   /t @{BAR}/foo { }" \
+                       "@{FOO}=/foo
+			   /t /bin/@{FOO} { }" \
+                       "@{BAR}=/bin/
+                        @{FOO}=/foo
+			   /t @{BAR}/@{FOO} { }"
 
 if [ $fails -ne 0 ] || [ $errors -ne 0 ]
 then

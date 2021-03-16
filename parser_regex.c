@@ -468,20 +468,26 @@ static int process_profile_name_xmatch(Profile *prof)
 {
 	std::string tbuf;
 	pattern_t ptype;
-	const char *name;
+	char *name;
 
 	struct cond_entry *entry;
 	const char *xattr_value;
 
-	/* don't filter_slashes for profile names */
-	if (prof->attachment)
+	if (prof->attachment) {
 		name = prof->attachment;
-	else
-		name = local_name(prof->name);
+	} else {
+		/* don't filter_slashes for profile names, do on attachment */
+		name = strdup(local_name(prof->name));
+		if (!name)
+			return FALSE;
+	}
+	filter_slashes(name);
 	ptype = convert_aaregex_to_pcre(name, 0, glob_default, tbuf,
 					&prof->xmatch_len);
 	if (ptype == ePatternBasic)
 		prof->xmatch_len = strlen(name);
+	if (!prof->attachment)
+		free(name);
 
 	if (ptype == ePatternInvalid) {
 		PERROR(_("%s: Invalid profile name '%s' - bad regular expression\n"), progname, name);
@@ -505,6 +511,7 @@ static int process_profile_name_xmatch(Profile *prof)
 			list_for_each(prof->altnames, alt) {
 				int len;
 				tbuf.clear();
+				filter_slashes(alt->name);
 				ptype = convert_aaregex_to_pcre(alt->name, 0,
 								glob_default,
 								tbuf, &len);
