@@ -15,5 +15,6 @@ abi <abi/3.0>,
 
 include <abstractions/apparmor_api/find_mountpoint>
 @{sys}/module/apparmor/parameters/enabled r,
+@{sys}/module/apparmor/parameters/available r,
 
 # TODO: add alternate apparmorfs interface for enabled
