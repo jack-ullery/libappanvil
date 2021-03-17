@@ -100,18 +100,18 @@ int aa_find_mountpoint(char **mnt)
 	int rc, fd;							\
 	fd = open("/sys/module/apparmor/parameters/" PARAM, O_RDONLY);	\
 	if (fd == -1) {							\
-		rc = errno;						\
+		rc = -errno;						\
 	} else {							\
 		char buffer[2];						\
 		int size = read(fd, &buffer, 2);			\
-		rc = errno;						\
+		rc = -errno;						\
 		close(fd);						\
-		errno = rc;						\
+		errno = -rc;						\
 		if (size > 0) {						\
 			if (buffer[0] == 'Y')				\
-				rc = 0;					\
+				rc = 1;					\
 			else						\
-				rc = ECANCELED;				\
+				rc = 0;					\
 		}							\
 	}								\
 	(rc);								\
@@ -130,14 +130,17 @@ static void param_check_enabled_init_once(void)
 
 static int param_check_enabled()
 {
-	if (pthread_once(&param_enabled_ctl, param_check_enabled_init_once) == 0)
+	if (pthread_once(&param_enabled_ctl, param_check_enabled_init_once) == 0 && param_enabled >= 0)
 		return param_enabled;
+	/* fallback if not initialized OR we recorded an error when
+	 * initializing.
+	 */
 	return param_check_base("enabled");
 }
 
 static int is_enabled(void)
 {
-	return !param_check_enabled();
+	return param_check_enabled() == 1;
 }
 
 static void param_check_private_enabled_init_once(void)
@@ -147,14 +150,17 @@ static void param_check_private_enabled_init_once(void)
 
 static int param_check_private_enabled()
 {
-	if (pthread_once(&param_private_enabled_ctl, param_check_private_enabled_init_once) == 0)
+	if (pthread_once(&param_private_enabled_ctl, param_check_private_enabled_init_once) == 0 && param_private_enabled >= 0)
 		return param_private_enabled;
+	/* fallback if not initialized OR we recorded an error when
+	 * initializing.
+	 */
 	return param_check_base("available");
 }
 
 static int is_private_enabled(void)
 {
-	return !param_check_private_enabled();
+	return param_check_private_enabled() == 1;
 }
 
 /**
@@ -174,15 +180,17 @@ int aa_is_enabled(void)
 	bool private = false;
 
 	rc = param_check_enabled();
-	if (rc) {
-		if (rc == ENOENT)
-			errno = ENOSYS;
-		else
-			errno = rc;
+	if (rc < 1) {
+		if (!is_private_enabled()) {
+			if (rc == 0)
+				errno = ECANCELED;
+			else if (rc == -ENOENT)
+				errno = ENOSYS;
+			else
+				errno = -rc;
 
-		if (!is_private_enabled())
 			return 0;
-
+		}
 		/* actually available but only on private interfaces */
 		private = true;
 	}
