@@ -142,14 +142,14 @@ static int is_enabled(void)
 
 static void param_check_private_enabled_init_once(void)
 {
-	param_enabled = param_check_base("private_enabled");
+	param_private_enabled = param_check_base("available");
 }
 
 static int param_check_private_enabled()
 {
 	if (pthread_once(&param_private_enabled_ctl, param_check_private_enabled_init_once) == 0)
 		return param_private_enabled;
-	return param_check_base("private_enabled");
+	return param_check_base("available");
 }
 
 static int is_private_enabled(void)
