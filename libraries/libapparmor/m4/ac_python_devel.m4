@@ -13,7 +13,7 @@ AC_DEFUN([AC_PYTHON_DEVEL],[
            PYTHON_VERSION=""
         fi
 
-        AC_PATH_PROG([PYTHON_CONFIG],[`basename [$PYTHON]-config`])
+        AC_PATH_TOOL([PYTHON_CONFIG],[`basename [$PYTHON]-config`])
         if test -z "$PYTHON_CONFIG"; then
            AC_MSG_ERROR([Cannot find python$PYTHON_VERSION-config in your system path])
         fi
