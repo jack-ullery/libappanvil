@@ -58,7 +58,7 @@ if test "$with_perl" = "yes"; then
    AC_PATH_PROG(PERL, perl)
    test -z "$PERL" && AC_MSG_ERROR([perl is required when enabling perl bindings])
    perl_includedir="`$PERL -e 'use Config; print $Config{archlib}'`/CORE"
-   AC_CHECK_FILE($perl_includedir/perl.h, enable_perl=yes, enable_perl=no)
+   AS_IF([test -e "$perl_includedir/perl.h"], enable_perl=yes, enable_perl=no)
 fi
 
 
