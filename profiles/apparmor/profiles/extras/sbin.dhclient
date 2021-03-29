@@ -48,6 +48,11 @@ profile dhclient /{usr/,}sbin/dhclient {
   @{PROC}/interrupts          r,
   @{PROC}/@{pid}/net/dev      r,
   @{PROC}/rtc                 r,
+
+  # dhcliet wants to update its threads with functional names
+  # see lp1918410
+  owner @{PROC}/@{pid}/task/[0-9]*/comm rw,
+
   # following rule shouldn't work, self is a symlink
   @{PROC}/self/status         r,
   /{usr/,}sbin/arp            mrix,
