@@ -2094,6 +2094,15 @@ def match_line_against_rule_classes(line, profile, file, lineno, in_preamble):
 
     return(None, None)
 
+def merged_to_split(profile_data):
+    ''' (temporary) helper function to convert a list of profile['foo//bar'] profiles into compat['foo']['bar']'''
+    compat = hasher()
+    for prof in profile_data:
+        profile, hat = split_name(prof)  # XXX limited to two levels to avoid an Exception on nested child profiles or nested null-*
+        compat[profile][hat] = profile_data[prof]
+
+    return compat
+
 def parse_mount_rule(line):
     # XXX Do real parsing here
     return aarules.Raw_Mount_Rule(line)

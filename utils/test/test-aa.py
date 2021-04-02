@@ -21,7 +21,7 @@ import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
      get_profile_flags, change_profile_flags, set_options_audit_mode, set_options_owner_mode, is_skippable_file,
      parse_profile_start, parse_profile_start_to_storage, parse_profile_data,
-     get_file_perms, propose_file_rules)
+     get_file_perms, propose_file_rules, merged_to_split)
 from apparmor.aare import AARE
 from apparmor.common import AppArmorException, AppArmorBug
 from apparmor.rule.file import FileRule
@@ -741,6 +741,23 @@ class AaTest_nonexistent_includes(AATest):
         with self.assertRaises(expected):
             apparmor.aa.load_include(params)
 
+class AaTest_merged_to_split(AATest):
+    tests = [
+        ("foo",                             ("foo", "foo")),
+        ("foo//bar",                        ("foo", "bar")),
+        ("foo//bar//baz",                   ("foo", "bar")),  # XXX known limitation
+    ]
+
+    def _run_test(self, params, expected):
+        merged = {}
+        merged[params] = True  # simplified, but enough for this test
+        result = merged_to_split(merged)
+
+        profile, hat = expected
+
+        self.assertEqual(list(result.keys()), [profile])
+        self.assertEqual(list(result[profile].keys()), [hat])
+        self.assertTrue(result[profile][hat])
 
 setup_aa(apparmor.aa)
 setup_all_loops(__name__)
