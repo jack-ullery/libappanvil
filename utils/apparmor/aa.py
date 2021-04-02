@@ -1122,7 +1122,7 @@ def ask_the_questions(log_dict):
                         aa[profile][hat]['profile'] = False
 
                 # check for and ask about conflicting exec modes
-                ask_conflict_mode(profile, hat, aa[profile][hat], log_dict[aamode][profile][hat])
+                ask_conflict_mode(aa[profile][hat], log_dict[aamode][profile][hat])
 
                 prof_changed, end_profiling = ask_rule_questions(log_dict[aamode][profile][hat], combine_name(profile, hat), aa[profile][hat], ruletypes)
                 if prof_changed:
@@ -1380,7 +1380,7 @@ def delete_all_duplicates(profile, incname, r_types):
 
     return deleted
 
-def ask_conflict_mode(profile, hat, old_profile, merge_profile):
+def ask_conflict_mode(old_profile, merge_profile):
     '''ask user about conflicting exec rules'''
     for oldrule in old_profile['file'].rules:
         conflictingrules = merge_profile['file'].get_exec_conflict_rules(oldrule)
