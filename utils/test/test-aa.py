@@ -524,10 +524,9 @@ class AaTest_parse_profile_data(AATest):
         prof = parse_profile_data('/foo {\n}\n'.split(), 'somefile', False, False)
 
         self.assertEqual(list(prof.keys()), ['/foo'])
-        self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
-        self.assertEqual(prof['/foo']['/foo']['name'], '/foo')
-        self.assertEqual(prof['/foo']['/foo']['filename'], 'somefile')
-        self.assertEqual(prof['/foo']['/foo']['flags'], None)
+        self.assertEqual(prof['/foo']['name'], '/foo')
+        self.assertEqual(prof['/foo']['filename'], 'somefile')
+        self.assertEqual(prof['/foo']['flags'], None)
 
     def test_parse_duplicate_profile(self):
         with self.assertRaises(AppArmorException):
@@ -548,32 +547,29 @@ class AaTest_parse_profile_data(AATest):
         prof = parse_profile_data('/foo xattrs=(user.bar=bar) {\n}\n'.split(), 'somefile', False, False)
 
         self.assertEqual(list(prof.keys()), ['/foo'])
-        self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
-        self.assertEqual(prof['/foo']['/foo']['name'], '/foo')
-        self.assertEqual(prof['/foo']['/foo']['filename'], 'somefile')
-        self.assertEqual(prof['/foo']['/foo']['flags'], None)
-        self.assertEqual(prof['/foo']['/foo']['xattrs'], 'user.bar=bar')
+        self.assertEqual(prof['/foo']['name'], '/foo')
+        self.assertEqual(prof['/foo']['filename'], 'somefile')
+        self.assertEqual(prof['/foo']['flags'], None)
+        self.assertEqual(prof['/foo']['xattrs'], 'user.bar=bar')
 
     def test_parse_xattrs_02(self):
         prof = parse_profile_data('/foo xattrs=(user.bar=bar user.foo=*) {\n}\n'.split(), 'somefile', False, False)
 
         self.assertEqual(list(prof.keys()), ['/foo'])
-        self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
-        self.assertEqual(prof['/foo']['/foo']['name'], '/foo')
-        self.assertEqual(prof['/foo']['/foo']['filename'], 'somefile')
-        self.assertEqual(prof['/foo']['/foo']['flags'], None)
-        self.assertEqual(prof['/foo']['/foo']['xattrs'], 'user.bar=bar user.foo=*')
+        self.assertEqual(prof['/foo']['name'], '/foo')
+        self.assertEqual(prof['/foo']['filename'], 'somefile')
+        self.assertEqual(prof['/foo']['flags'], None)
+        self.assertEqual(prof['/foo']['xattrs'], 'user.bar=bar user.foo=*')
 
     def test_parse_xattrs_03(self):
         d = '/foo xattrs=(user.bar=bar) flags=(complain) {\n}\n'
         prof = parse_profile_data(d.split(), 'somefile', False, False)
 
         self.assertEqual(list(prof.keys()), ['/foo'])
-        self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
-        self.assertEqual(prof['/foo']['/foo']['name'], '/foo')
-        self.assertEqual(prof['/foo']['/foo']['filename'], 'somefile')
-        self.assertEqual(prof['/foo']['/foo']['flags'], 'complain')
-        self.assertEqual(prof['/foo']['/foo']['xattrs'], 'user.bar=bar')
+        self.assertEqual(prof['/foo']['name'], '/foo')
+        self.assertEqual(prof['/foo']['filename'], 'somefile')
+        self.assertEqual(prof['/foo']['flags'], 'complain')
+        self.assertEqual(prof['/foo']['xattrs'], 'user.bar=bar')
 
     def test_parse_xattrs_04(self):
         with self.assertRaises(AppArmorException):

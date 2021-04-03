@@ -579,8 +579,8 @@ def autodep(bin_name, pname=''):
     file = get_profile_filename_from_profile_name(pname, True)
     profile_data[pname][pname]['filename'] = file  # change filename from extra_profile_dir to /etc/apparmor.d/
 
-    attach_profile_data(aa, profile_data)
-    attach_profile_data(original_aa, profile_data)
+    attach_profile_data(aa, split_to_merged(profile_data))
+    attach_profile_data(original_aa, split_to_merged(profile_data))
 
     attachment = profile_data[pname][pname]['attachment']
     if not attachment and pname.startswith('/'):
@@ -1729,9 +1729,12 @@ def read_profile(file, active_profile):
         attach_profile_data(aa, profile_data)
         attach_profile_data(original_aa, profile_data)
 
-        for profile in profile_data:  # TODO: also honor hats
-            attachment = profile_data[profile][profile]['attachment']
-            filename = profile_data[profile][profile]['filename']
+        for profile in profile_data:
+            if '//' in profile:
+                continue  # TODO: handle hats/child profiles independent of main profiles
+
+            attachment = profile_data[profile]['attachment']
+            filename = profile_data[profile]['filename']
 
             if not attachment and profile.startswith('/'):
                 active_profiles.add_profile(filename, profile, profile)  # use profile as name and attachment
@@ -1741,9 +1744,12 @@ def read_profile(file, active_profile):
     elif profile_data:
         attach_profile_data(extras, profile_data)
 
-        for profile in profile_data:  # TODO: also honor hats
-            attachment = profile_data[profile][profile]['attachment']
-            filename = profile_data[profile][profile]['filename']
+        for profile in profile_data:
+            if '//' in profile:
+                continue  # TODO: handle hats/child profiles independent of main profiles
+
+            attachment = profile_data[profile]['attachment']
+            filename = profile_data[profile]['filename']
 
             if not attachment and profile.startswith('/'):
                 extra_profiles.add_profile(filename, profile, profile)  # use profile as name and attachment
@@ -1751,6 +1757,7 @@ def read_profile(file, active_profile):
                 extra_profiles.add_profile(filename, profile, attachment)
 
 def attach_profile_data(profiles, profile_data):
+    profile_data = merged_to_split(profile_data)
     # Make deep copy of data to avoid changes to
     # arising due to mutables
     for p in profile_data.keys():
@@ -2066,7 +2073,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
     if profile and not do_include:
         raise AppArmorException(_("Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside profile %(profile)s") % { 'file': file, 'profile': profile })
 
-    return merged_to_split(profile_data)
+    return profile_data
 
 def match_line_against_rule_classes(line, profile, file, lineno, in_preamble):
     ''' handle all lines handled by *Rule classes '''
