@@ -2113,6 +2113,22 @@ def merged_to_split(profile_data):
 
     return compat
 
+def split_to_merged(profile_data):
+    ''' (temporary) helper function to convert a traditional compat['foo']['bar'] to a profile['foo//bar'] list '''
+
+    merged = {}
+
+    for profile in profile_data:
+        for hat in profile_data[profile]:
+            if profile == hat:
+                merged_name = profile
+            else:
+                merged_name = combine_profname([profile, hat])
+
+            merged[merged_name] = profile_data[profile][hat]
+
+    return merged
+
 def parse_mount_rule(line):
     # XXX Do real parsing here
     return aarules.Raw_Mount_Rule(line)
