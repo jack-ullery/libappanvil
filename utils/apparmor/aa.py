@@ -1067,26 +1067,23 @@ def ask_the_questions(log_dict):
         else:
             raise AppArmorBug(_('Invalid mode found: %s') % aamode)
 
-        for profile in sorted(log_dict[aamode].keys()):
+        for full_profile in sorted(log_dict[aamode].keys()):
+            profile, hat = split_name(full_profile)  # XXX limited to two levels to avoid an Exception on nested child profiles or nested null-*
+
+            # TODO: honor full profile name as soon as child profiles are listed in active_profiles
             prof_filename = get_profile_filename_from_profile_name(profile)
             if prof_filename and active_profiles.files.get(prof_filename):
                 sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename], True)))
             else:
                 sev_db.set_variables( {} )
 
-            # Sorted list of hats with the profile name coming first
-            hats = list(filter(lambda key: key != profile, sorted(log_dict[aamode][profile].keys())))
-            if log_dict[aamode][profile].get(profile, False):
-                hats = [profile] + hats
-
-            for hat in hats:
-
+            if True:
                 if not aa[profile].get(hat, {}).get('file'):
                     if aamode != 'merge':
                         # Ignore log events for a non-existing profile or child profile. Such events can occur
                         # after deleting a profile or hat manually, or when processing a foreign log.
                         # (Checking for 'file' is a simplified way to check if it's a ProfileStorage.)
-                        debug_logger.debug("Ignoring events for non-existing profile %s" % combine_name(profile, hat))
+                        debug_logger.debug("Ignoring events for non-existing profile %s" % full_profile)
                         continue
 
                     ans = ''
@@ -1094,7 +1091,7 @@ def ask_the_questions(log_dict):
                         q = aaui.PromptQuestion()
                         q.headers += [_('Profile'), profile]
 
-                        if log_dict[aamode][profile][hat]['profile']:
+                        if log_dict[aamode][full_profile]['profile']:
                             q.headers += [_('Requested Subprofile'), hat]
                             q.functions.append('CMD_ADDSUBPROFILE')
                         else:
@@ -1113,7 +1110,7 @@ def ask_the_questions(log_dict):
                     if ans == 'CMD_DENY':
                         continue  # don't ask about individual rules if the user doesn't want the additional subprofile/hat
 
-                    if log_dict[aamode][profile][hat]['profile']:
+                    if log_dict[aamode][full_profile]['profile']:
                         aa[profile][hat] = ProfileStorage(profile, hat, 'mergeprof ask_the_questions() - missing subprofile')
                         aa[profile][hat]['profile'] = True
                     else:
@@ -1121,9 +1118,9 @@ def ask_the_questions(log_dict):
                         aa[profile][hat]['profile'] = False
 
                 # check for and ask about conflicting exec modes
-                ask_conflict_mode(aa[profile][hat], log_dict[aamode][profile][hat])
+                ask_conflict_mode(aa[profile][hat], log_dict[aamode][full_profile])
 
-                prof_changed, end_profiling = ask_rule_questions(log_dict[aamode][profile][hat], combine_name(profile, hat), aa[profile][hat], ruletypes)
+                prof_changed, end_profiling = ask_rule_questions(log_dict[aamode][full_profile], combine_name(profile, hat), aa[profile][hat], ruletypes)
                 if prof_changed:
                     changed[profile] = True
                 if end_profiling:
@@ -1133,7 +1130,7 @@ def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
     ''' ask questions about rules to add to a single profile/hat
 
         parameter       typical value
-        prof_events     log_dict[aamode][profile][hat]
+        prof_events     log_dict[aamode][full_profile]
         profile_name    profile name (possible profile//hat)
         the_profile     aa[profile][hat] -- will be modified
         r_types         ruletypes
@@ -1501,9 +1498,6 @@ def do_logprof_pass(logmark=''):
     ask_addhat(hashlog)
 
     log_dict = collapse_log(hashlog)
-
-    for aamode in log_dict:
-        log_dict[aamode] = merged_to_split(log_dict[aamode])
 
     ask_the_questions(log_dict)
 
