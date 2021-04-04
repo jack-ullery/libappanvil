@@ -1502,6 +1502,9 @@ def do_logprof_pass(logmark=''):
 
     log_dict = collapse_log(hashlog)
 
+    for aamode in log_dict:
+        log_dict[aamode] = merged_to_split(log_dict[aamode])
+
     ask_the_questions(log_dict)
 
     save_profiles()
@@ -1667,10 +1670,7 @@ def collapse_log(hashlog, ignore_null_profiles=True):
                             if not hat_exists or not is_known_rule(aa[profile][hat], 'signal', signal_event):
                                 log_dict[aamode][full_profile]['signal'].add(signal_event)
 
-    compat = {}
-    for aamode in log_dict:
-        compat[aamode] = merged_to_split(log_dict[aamode])
-    return compat
+    return log_dict
 
 def read_profiles(ui_msg=False):
     # we'll read all profiles from disk, so reset the storage first (autodep() might have created/stored
