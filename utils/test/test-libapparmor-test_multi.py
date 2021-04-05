@@ -231,11 +231,13 @@ def logfile_to_profile(logfile):
 
     apparmor.aa.active_profiles = ProfileList()
 
+    dummy_prof = apparmor.aa.ProfileStorage('TEST DUMMY for active_profiles', profile_dummy_file, 'logprof_to_profile()')
+
     # optional for now, might be needed one day
     # if profile.startswith('/'):
-    #     apparmor.aa.active_profiles.add_profile(profile_dummy_file, profile, profile)
+    #     apparmor.aa.active_profiles.add_profile(profile_dummy_file, profile, profile, dummy_prof)
     # else:
-    apparmor.aa.active_profiles.add_profile(profile_dummy_file, profile, '')
+    apparmor.aa.active_profiles.add_profile(profile_dummy_file, profile, '', dummy_prof)
 
     log_reader = ReadLog(logfile, apparmor.aa.active_profiles, '')
     hashlog = log_reader.read_log('')
