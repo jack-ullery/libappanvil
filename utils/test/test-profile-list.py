@@ -400,6 +400,22 @@ class AaTest_get_all_merged_variables(AATest):
         with self.assertRaises(AppArmorBug):
             apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'file.not.found'), list())
 
+class TestGet_profile_and_childs(AATest):
+    def AASetup(self):
+        self.pl = ProfileList()
+        self.dummy_profile = ProfileStorage('TEST DUMMY', 'AATest_no_file', 'TEST')
+
+    def testGet_profile_and_childs1(self):
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'bafoo',     '/bin/bafoo',       self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo',       '/bin/foo',         self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foobar',    '/bin/foobar',      self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo//bar',  '/bin/foo//bar',    self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo//xy',   '/bin/foo//xy',     self.dummy_profile)
+
+        expected = ['foo', 'foo//bar', 'foo//xy']
+
+        self.assertEqual(list(self.pl.get_profile_and_childs('foo')), expected)
+
 
 setup_aa(apparmor.aa)
 setup_all_loops(__name__)

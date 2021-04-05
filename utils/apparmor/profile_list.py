@@ -165,6 +165,14 @@ class ProfileList:
 
         return deleted
 
+    def get_profile_and_childs(self, profile_name):
+        found = {}
+        for prof in self.profiles:
+            if prof == profile_name or prof.startswith('%s//' % profile_name):
+                found[prof] = self.profiles[prof]
+
+        return found
+
     def get_raw(self, filename, depth=0):
         ''' Get the preamble for the given profile filename (in original formatting) '''
         if not self.files.get(filename):
