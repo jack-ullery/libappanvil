@@ -98,7 +98,6 @@ transitions = hasher()
 
 aa = hasher()  # Profiles originally in sd, replace by aa
 original_aa = hasher()
-extras = hasher()  # Inactive profiles from extras
 ### end our
 
 changed = dict()
@@ -510,21 +509,26 @@ def confirm_and_abort():
 def get_profile(prof_name):
     '''search for inactive/extra profile, and ask if it should be used'''
 
-    if not extras.get(prof_name, False):
+    if not extra_profiles.profiles.get(prof_name, False):
         return None  # no inactive profile found
 
     # TODO: search based on the attachment, not (only?) based on the profile name
     #       (Note: in theory, multiple inactive profiles (with different profile names) could exist for a binary.)
-    inactive_profile = {prof_name: extras[prof_name]}
-    inactive_profile[prof_name][prof_name]['flags'] = 'complain'
-    orig_filename = inactive_profile[prof_name][prof_name]['filename']  # needed for CMD_VIEW_PROFILE
-    inactive_profile[prof_name][prof_name]['filename'] = ''
+    inactive_profile = deepcopy(extra_profiles.get_profile_and_childs(prof_name))
+
+    orig_filename = inactive_profile[prof_name]['filename']  # needed for CMD_VIEW_PROFILE
+
+    for prof in inactive_profile:
+        inactive_profile[prof]['flags'] = 'complain'  # TODO: preserve other flags, if any
+        inactive_profile[prof]['filename'] = ''
 
     # ensure active_profiles has the /etc/apparmor.d/ filename initialized
     # TODO: ideally serialize_profile() shouldn't always use active_profiles
     prof_filename = get_new_profile_filename(prof_name)
     if not active_profiles.files.get(prof_filename):
         active_profiles.init_file(prof_filename)
+
+    inactive_profile = merged_to_split(inactive_profile)
 
     uname = 'Inactive local profile for %s' % prof_name
     profile_hash = {
@@ -1741,19 +1745,14 @@ def read_profile(file, active_profile):
                 active_profiles.add_profile(filename, profile, attachment)
 
     elif profile_data:
-        attach_profile_data(extras, profile_data)
-
         for profile in profile_data:
-            if '//' in profile:
-                continue  # TODO: handle hats/child profiles independent of main profiles
-
             attachment = profile_data[profile]['attachment']
             filename = profile_data[profile]['filename']
 
             if not attachment and profile.startswith('/'):
-                extra_profiles.add_profile(filename, profile, profile)  # use profile as name and attachment
+                extra_profiles.add_profile(filename, profile, profile, profile_data[profile])  # use profile as name and attachment
             else:
-                extra_profiles.add_profile(filename, profile, attachment)
+                extra_profiles.add_profile(filename, profile, attachment, profile_data[profile])
 
 def attach_profile_data(profiles, profile_data):
     profile_data = merged_to_split(profile_data)
