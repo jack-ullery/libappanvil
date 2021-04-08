@@ -1731,27 +1731,25 @@ def read_profile(file, active_profile):
         attach_profile_data(original_aa, profile_data)
 
         for profile in profile_data:  # TODO: also honor hats
-            name = profile_data[profile][profile]['name']
             attachment = profile_data[profile][profile]['attachment']
             filename = profile_data[profile][profile]['filename']
 
-            if not attachment and name.startswith('/'):
-                active_profiles.add_profile(filename, name, name)  # use name as name and attachment
+            if not attachment and profile.startswith('/'):
+                active_profiles.add_profile(filename, profile, profile)  # use profile as name and attachment
             else:
-                active_profiles.add_profile(filename, name, attachment)
+                active_profiles.add_profile(filename, profile, attachment)
 
     elif profile_data:
         attach_profile_data(extras, profile_data)
 
         for profile in profile_data:  # TODO: also honor hats
-            name = profile_data[profile][profile]['name']
             attachment = profile_data[profile][profile]['attachment']
             filename = profile_data[profile][profile]['filename']
 
-            if not attachment and name.startswith('/'):
-                extra_profiles.add_profile(filename, name, name)  # use name as name and attachment
+            if not attachment and profile.startswith('/'):
+                extra_profiles.add_profile(filename, profile, profile)  # use profile as name and attachment
             else:
-                extra_profiles.add_profile(filename, name, attachment)
+                extra_profiles.add_profile(filename, profile, attachment)
 
 def attach_profile_data(profiles, profile_data):
     # Make deep copy of data to avoid changes to
