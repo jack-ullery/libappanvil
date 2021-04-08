@@ -111,9 +111,10 @@ class AATest_get_reqs(AATest):
 
 class AaTest_create_new_profile(AATest):
     tests = [
-        # file content              expected interpreter    expected abstraction (besides 'base')
-        ('#!/bin/bash\ntrue',      (u'/bin/bash',           'abstractions/bash')),
-        ('foo bar',                (None,                   None)),
+        # file content              filename            expected interpreter    expected abstraction (besides 'base')   expected profiles
+        (('#!/bin/bash\ntrue',      'script'),          (u'/bin/bash',          'abstractions/bash',                    ['script'])),
+        (('foo bar',                'fake_binary'),     (None,                  None,                                   ['fake_binary'])),
+        (('hats expected',          'apache2'),         (None,                  None,                                   ['apache2', 'apache2//DEFAULT_URI', 'apache2//HANDLING_UNTRUSTED_INPUT'])),
     ]
     def _run_test(self, params, expected):
         apparmor.aa.cfg['settings']['ldd'] = './fake_ldd'
@@ -135,15 +136,21 @@ class AaTest_create_new_profile(AATest):
         apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/base'))
         apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/bash'))
 
-        exp_interpreter_path, exp_abstraction = expected
+        exp_interpreter_path, exp_abstraction, exp_profiles = expected
+
         # damn symlinks!
         if exp_interpreter_path:
             exp_interpreter_path = os.path.realpath(exp_interpreter_path)
 
-        program = self.writeTmpfile('script', params)
+        file_content, filename = params
+        program = self.writeTmpfile(filename, file_content)
         profile = create_new_profile(program)
 
-        self.assertEqual(list(profile.keys()), [program])
+        expected_profiles = []
+        for prof in exp_profiles:
+            expected_profiles.append('%s/%s' % (self.tmpdir, prof))  # actual profile names start with tmpdir, prepend it to the expected profile names
+
+        self.assertEqual(list(profile.keys()), expected_profiles)
 
         if exp_interpreter_path:
             self.assertEqual(set(profile[program]['file'].get_clean()), {'%s ix,' % exp_interpreter_path, '%s r,' % program, '',
