@@ -575,17 +575,17 @@ def autodep(bin_name, pname=''):
 
     pname = bin_full
     read_inactive_profiles()
-    profile_data = merged_to_split(get_profile(pname))
+    profile_data = get_profile(pname)
     # Create a new profile if no existing profile
     if not profile_data:
-        profile_data = merged_to_split(create_new_profile(pname))
+        profile_data = create_new_profile(pname)
     file = get_profile_filename_from_profile_name(pname, True)
-    profile_data[pname][pname]['filename'] = file  # change filename from extra_profile_dir to /etc/apparmor.d/
+    profile_data[pname]['filename'] = file  # change filename from extra_profile_dir to /etc/apparmor.d/
 
-    attach_profile_data(aa, split_to_merged(profile_data))
-    attach_profile_data(original_aa, split_to_merged(profile_data))
+    attach_profile_data(aa, profile_data)
+    attach_profile_data(original_aa, profile_data)
 
-    attachment = profile_data[pname][pname]['attachment']
+    attachment = profile_data[pname]['attachment']
     if not attachment and pname.startswith('/'):
         active_profiles.add_profile(file, pname, pname)  # use name as name and attachment
     else:
