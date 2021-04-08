@@ -143,16 +143,18 @@ class AaTest_create_new_profile(AATest):
         program = self.writeTmpfile('script', params)
         profile = create_new_profile(program)
 
+        self.assertEqual(list(profile.keys()), [program])
+
         if exp_interpreter_path:
-            self.assertEqual(set(profile[program][program]['file'].get_clean()), {'%s ix,' % exp_interpreter_path, '%s r,' % program, '',
+            self.assertEqual(set(profile[program]['file'].get_clean()), {'%s ix,' % exp_interpreter_path, '%s r,' % program, '',
                     '/AATest/lib64/libtinfo.so.* mr,', '/AATest/lib64/libc.so.* mr,', '/AATest/lib64/libdl.so.* mr,', '/AATest/lib64/libreadline.so.* mr,', '/AATest/lib64/ld-linux-x86-64.so.* mr,' })
         else:
-            self.assertEqual(set(profile[program][program]['file'].get_clean()), {'%s mr,' % program, ''})
+            self.assertEqual(set(profile[program]['file'].get_clean()), {'%s mr,' % program, ''})
 
         if exp_abstraction:
-            self.assertEqual(profile[program][program]['inc_ie'].get_clean(), ['include <abstractions/base>', 'include <%s>' % exp_abstraction, ''])
+            self.assertEqual(profile[program]['inc_ie'].get_clean(), ['include <abstractions/base>', 'include <%s>' % exp_abstraction, ''])
         else:
-            self.assertEqual(profile[program][program]['inc_ie'].get_clean(), ['include <abstractions/base>', ''])
+            self.assertEqual(profile[program]['inc_ie'].get_clean(), ['include <abstractions/base>', ''])
 
 class AaTest_get_interpreter_and_abstraction(AATest):
     tests = [

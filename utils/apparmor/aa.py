@@ -446,7 +446,7 @@ def get_interpreter_and_abstraction(exec_target):
     return interpreter_path, abstraction
 
 def create_new_profile(localfile, is_stub=False):
-    local_profile = hasher()
+    local_profile = {}
     local_profile[localfile] = ProfileStorage('NEW', localfile, 'create_new_profile()')
     local_profile[localfile]['flags'] = 'complain'
 
@@ -477,16 +477,17 @@ def create_new_profile(localfile, is_stub=False):
     for hatglob in cfg['required_hats'].keys():
         if re.search(hatglob, localfile):
             for hat in sorted(cfg['required_hats'][hatglob].split()):
-                if not local_profile.get(hat, False):
-                    local_profile[hat] = ProfileStorage('NEW', hat, 'create_new_profile() required_hats')
-                local_profile[hat]['flags'] = 'complain'
+                full_hat = combine_profname([localfile, hat])
+                if not local_profile.get(full_hat, False):
+                    local_profile[full_hat] = ProfileStorage('NEW', hat, 'create_new_profile() required_hats')
+                local_profile[full_hat]['flags'] = 'complain'
 
     if not is_stub:
         created.append(localfile)
         changed[localfile] = True
 
     debug_logger.debug("Profile for %s:\n\t%s" % (localfile, local_profile.__str__()))
-    return {localfile: local_profile}
+    return local_profile
 
 def delete_profile(local_prof):
     """Deletes the specified file from the disk and remove it from our list"""
@@ -579,7 +580,7 @@ def autodep(bin_name, pname=''):
     profile_data = get_profile(pname)
     # Create a new profile if no existing profile
     if not profile_data:
-        profile_data = create_new_profile(pname)
+        profile_data = merged_to_split(create_new_profile(pname))
     file = get_profile_filename_from_profile_name(pname, True)
     profile_data[pname][pname]['filename'] = file  # change filename from extra_profile_dir to /etc/apparmor.d/
 
@@ -1025,7 +1026,7 @@ def ask_exec(hashlog):
                                 ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
                             if ynans == 'y':
                                 if not aa[profile].get(exec_target, False):
-                                    stub_profile = create_new_profile(exec_target, True)
+                                    stub_profile = merged_to_split(create_new_profile(exec_target, True))
                                     aa[profile][exec_target] = stub_profile[exec_target][exec_target]
 
                                 aa[profile][exec_target]['profile'] = True
