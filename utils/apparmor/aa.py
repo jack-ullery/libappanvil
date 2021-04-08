@@ -529,12 +529,10 @@ def get_profile(prof_name):
     if not active_profiles.files.get(prof_filename):
         active_profiles.init_file(prof_filename)
 
-    inactive_profile = merged_to_split(inactive_profile)
-
     uname = 'Inactive local profile for %s' % prof_name
     profile_hash = {
         uname: {
-            'profile': serialize_profile(inactive_profile[prof_name], prof_name, {}),
+            'profile': serialize_profile(merged_to_split(inactive_profile)[prof_name], prof_name, {}),
             'profile_data': inactive_profile,
         }
     }
@@ -577,7 +575,7 @@ def autodep(bin_name, pname=''):
 
     pname = bin_full
     read_inactive_profiles()
-    profile_data = get_profile(pname)
+    profile_data = merged_to_split(get_profile(pname))
     # Create a new profile if no existing profile
     if not profile_data:
         profile_data = merged_to_split(create_new_profile(pname))
