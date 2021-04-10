@@ -1727,7 +1727,10 @@ def read_profile(file, active_profile):
 
     profile_data = parse_profile_data(data, file, 0, True)
 
-    if profile_data and active_profile:
+    if not profile_data:
+        return
+
+    if active_profile:
         attach_profile_data(aa, profile_data)
         attach_profile_data(original_aa, profile_data)
 
@@ -1743,7 +1746,7 @@ def read_profile(file, active_profile):
             else:
                 active_profiles.add_profile(filename, profile, attachment)
 
-    elif profile_data:
+    else:
         for profile in profile_data:
             attachment = profile_data[profile]['attachment']
             filename = profile_data[profile]['filename']
