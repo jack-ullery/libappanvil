@@ -587,9 +587,9 @@ def autodep(bin_name, pname=''):
 
     attachment = profile_data[pname]['attachment']
     if not attachment and pname.startswith('/'):
-        active_profiles.add_profile(file, pname, pname)  # use name as name and attachment
-    else:
-        active_profiles.add_profile(file, pname, attachment)
+        attachment = pname  # use name as name and attachment
+
+    active_profiles.add_profile(file, pname, attachment)
 
     if os.path.isfile(profile_dir + '/abi/3.0'):
         active_profiles.add_abi(file, AbiRule('abi/3.0', False, True))
@@ -1742,9 +1742,9 @@ def read_profile(file, active_profile):
             filename = profile_data[profile]['filename']
 
             if not attachment and profile.startswith('/'):
-                active_profiles.add_profile(filename, profile, profile)  # use profile as name and attachment
-            else:
-                active_profiles.add_profile(filename, profile, attachment)
+                attachment = profile  # use profile as name and attachment
+
+            active_profiles.add_profile(filename, profile, attachment)
 
     else:
         for profile in profile_data:
@@ -1752,9 +1752,9 @@ def read_profile(file, active_profile):
             filename = profile_data[profile]['filename']
 
             if not attachment and profile.startswith('/'):
-                extra_profiles.add_profile(filename, profile, profile, profile_data[profile])  # use profile as name and attachment
-            else:
-                extra_profiles.add_profile(filename, profile, attachment, profile_data[profile])
+                attachment = profile  # use profile as name and attachment
+
+            extra_profiles.add_profile(filename, profile, attachment, profile_data[profile])
 
 def attach_profile_data(profiles, profile_data):
     profile_data = merged_to_split(profile_data)
