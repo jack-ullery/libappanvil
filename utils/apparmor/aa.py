@@ -2121,7 +2121,7 @@ def write_header(prof_data, depth, name, embedded_hat, write_flags):
     if prof_data['header_comment']:
         comment = ' %s' % prof_data['header_comment']
 
-    if (not embedded_hat and re.search('^[^/]', unquoted_name)) or (embedded_hat and re.search('^[^^]', unquoted_name)) or prof_data['attachment'] or prof_data['profile_keyword']:
+    if (not embedded_hat and not unquoted_name.startswith('/')) or (embedded_hat and not unquoted_name.startswith('^')) or prof_data['attachment'] or prof_data['profile_keyword']:
         name = 'profile %s%s' % (name, attachment)
 
     xattrs = ''
