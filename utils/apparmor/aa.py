@@ -2166,13 +2166,21 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
 
     if not inhat:
         # Embedded hats
-        for hat in list(filter(lambda x: x != name, sorted(profile_data.keys()))):
+        all_childs = []
+        for child in sorted(profile_data.keys()):
+            if child.startswith('%s//' % name):
+                all_childs.append(child)
+
+        for hat in all_childs:
+            profile, only_hat = split_name(hat)
+
             if not profile_data[hat]['external']:
                 data.append('')
-                if profile_data[hat]['profile']:
-                    data += profile_data[hat].get_header(depth + 1, hat, True, write_flags)
-                else:
-                    data += profile_data[hat].get_header(depth + 1, '^' + hat, True, write_flags)
+
+                if not profile_data[hat]['profile']:
+                    only_hat = '^%s' % only_hat
+
+                data += profile_data[hat].get_header(depth + 1, only_hat, True, write_flags)
 
                 data += profile_data[hat].get_rules_clean(depth + 2)
 
@@ -2181,7 +2189,7 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
         data.append('%s}' % pre)
 
         # External hats
-        for hat in list(filter(lambda x: x != name, sorted(profile_data.keys()))):
+        for hat in all_childs:
             if name == nhat and profile_data[hat].get('external', False):
                 data.append('')
                 data += list(map(lambda x: '  %s' % x, write_piece(profile_data, depth - 1, name, nhat, write_flags)))
@@ -2221,14 +2229,14 @@ def serialize_profile(profile_data, name, options):
                 comment = original_aa[prof][prof]['initial_comment']
                 comment.replace('\\n', '\n')
                 data += [comment + '\n']
-            data += write_piece(original_aa[prof], 0, prof, prof, include_flags)
+            data += write_piece(split_to_merged(original_aa), 0, prof, prof, include_flags)
         else:
             if profile_data[name].get('initial_comment', False):
                 comment = profile_data[name]['initial_comment']
                 comment.replace('\\n', '\n')
                 data += [comment + '\n']
 
-            data += write_piece(merged_to_split(profile_data)[name], 0, name, name, include_flags)
+            data += write_piece(profile_data, 0, name, name, include_flags)
 
     string += '\n'.join(data)
 
