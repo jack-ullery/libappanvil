@@ -130,6 +130,35 @@ class ProfileStorage:
         else:
             raise AppArmorBug('attempt to read unknown key %s' % key)
 
+    def get_header(self, depth, name, embedded_hat, write_flags):
+        pre = ' ' * int(depth * 2)
+        data = []
+        unquoted_name = name
+        name = quote_if_needed(name)
+
+        attachment = ''
+        if self.data['attachment']:
+            attachment = ' %s' % quote_if_needed(self.data['attachment'])
+
+        comment = ''
+        if self.data['header_comment']:
+            comment = ' %s' % self.data['header_comment']
+
+        if (not embedded_hat and not unquoted_name.startswith('/')) or (embedded_hat and not unquoted_name.startswith('^')) or self.data['attachment'] or self.data['profile_keyword']:
+            name = 'profile %s%s' % (name, attachment)
+
+        xattrs = ''
+        if self.data['xattrs']:
+            xattrs = ' xattrs=(%s)' % self.data['xattrs']
+
+        flags = ''
+        if write_flags and self.data['flags']:
+            flags = ' flags=(%s)' % self.data['flags']
+
+        data.append('%s%s%s%s {%s' % (pre, name, xattrs, flags, comment))
+
+        return data
+
     def get_rules_clean(self, depth):
         '''return all clean rules of a profile (with default formatting, and leading whitespace as specified in the depth parameter)
 

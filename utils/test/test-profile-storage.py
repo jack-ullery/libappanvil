@@ -35,6 +35,92 @@ class TestUnknownKey(AATest):
         with self.assertRaises(AppArmorBug):
             self.storage['foo'] = 'bar'
 
+class AaTest_get_header(AATest):
+    tests = [
+        # name       embedded_hat    write_flags    depth   flags           attachment  prof.keyw.  comment    expected
+        (['/foo',    False,          True,          1,      'complain',     '',         False,      ''      ],  '  /foo flags=(complain) {'),
+        (['/foo',    True,           True,          1,      'complain',     '',         False,      ''      ],  '  profile /foo flags=(complain) {'),
+        (['/foo sp', False,          False,         2,      'complain',     '',         False,      ''      ],  '    "/foo sp" {'),
+        (['/foo'    ,False,          False,         2,      'complain',     '',         False,      ''      ],  '    /foo {'),
+        (['/foo',    True,           False,         2,      'complain',     '',         False,      ''      ],  '    profile /foo {'),
+        (['/foo',    False,          True,          0,      None,           '',         False,      ''      ],  '/foo {'),
+        (['/foo',    True,           True,          0,      None,           '',         False,      ''      ],  'profile /foo {'),
+        (['/foo',    False,          False,         0,      None,           '',         False,      ''      ],  '/foo {'),
+        (['/foo',    True,           False,         0,      None,           '',         False,      ''      ],  'profile /foo {'),
+        (['bar',     False,          True,          1,      'complain',     '',         False,      ''      ],  '  profile bar flags=(complain) {'),
+        (['bar',     False,          True,          1,      'complain',     '/foo',     False,      ''      ],  '  profile bar /foo flags=(complain) {'),
+        (['bar',     True,           True,          1,      'complain',     '/foo',     False,      ''      ],  '  profile bar /foo flags=(complain) {'),
+        (['bar baz', False,          True,          1,      None,           '/foo',     False,      ''      ],  '  profile "bar baz" /foo {'),
+        (['bar',     True,           True,          1,      None,           '/foo',     False,      ''      ],  '  profile bar /foo {'),
+        (['bar baz', False,          True,          1,      'complain',     '/foo sp',  False,      ''      ],  '  profile "bar baz" "/foo sp" flags=(complain) {'),
+        (['^foo',    False,          True,          1,      'complain',     '',         False,      ''      ],  '  profile ^foo flags=(complain) {'),
+        (['^foo',    True,           True,          1,      'complain',     '',         False,      ''      ],  '  ^foo flags=(complain) {'),
+        (['^foo',    True,           True,          1.5,    'complain',     '',         False,      ''      ],  '   ^foo flags=(complain) {'),
+        (['^foo',    True,           True,          1.3,    'complain',     '',         False,      ''      ],  '  ^foo flags=(complain) {'),
+        (['/foo',    False,          True,          1,      'complain',     '',         True,       ''      ],  '  profile /foo flags=(complain) {'),
+        (['/foo',    True,           True,          1,      'complain',     '',         True,       ''      ],  '  profile /foo flags=(complain) {'),
+        (['/foo',    False,          True,          1,      'complain',     '',         False,      '# x'   ],  '  /foo flags=(complain) { # x'),
+        (['/foo',    True,           True,          1,      None,           '',         False,      '# x'   ],  '  profile /foo { # x'),
+        (['/foo',    False,          True,          1,      None,           '',         True,       '# x'   ],  '  profile /foo { # x'),
+        (['/foo',    True,           True,          1,      'complain',     '',         True,       '# x'   ],  '  profile /foo flags=(complain) { # x'),
+     ]
+
+    def _run_test(self, params, expected):
+        name = params[0]
+        embedded_hat = params[1]
+        write_flags = params[2]
+        depth = params[3]
+
+        prof_storage = ProfileStorage(name, '', 'test')
+        prof_storage['flags'] = params[4]
+        prof_storage['attachment'] = params[5]
+        prof_storage['profile_keyword'] = params[6]
+        prof_storage['header_comment'] = params[7]
+        prof_storage['xattrs'] = ''
+
+        result = prof_storage.get_header(depth, name, embedded_hat, write_flags)
+        self.assertEqual(result, [expected])
+
+class AaTest_get_header_01(AATest):
+    tests = [
+        (
+            {'name': '/foo', 'write_flags': True, 'depth': 1, 'flags': 'complain'},
+            '  /foo flags=(complain) {',
+        ),
+        (
+            {'name': '/foo', 'write_flags': True, 'depth': 1, 'flags': 'complain', 'profile_keyword': True},
+            '  profile /foo flags=(complain) {',
+        ),
+        (
+            {'name': '/foo', 'write_flags': True, 'flags': 'complain'},
+            '/foo flags=(complain) {',
+        ),
+        (
+            {'name': '/foo', 'xattrs': 'user.foo=bar', 'write_flags': True, 'flags': 'complain'},
+            '/foo xattrs=(user.foo=bar) flags=(complain) {',
+        ),
+        (
+            {'name': '/foo', 'xattrs': 'user.foo=bar', 'embedded_hat': True},
+            'profile /foo xattrs=(user.foo=bar) {',
+        ),
+     ]
+
+    def _run_test(self, params, expected):
+        name = params['name']
+        embedded_hat = params.get('embedded_hat', False)
+        write_flags = params.get('write_flags', False)
+        depth = params.get('depth', 0)
+
+
+        prof_storage = ProfileStorage(name, '', 'test')
+
+        for param in ['flags', 'attachment', 'profile_keyword', 'header_comment', 'xattrs']:
+            if params.get(param) is not None:
+                prof_storage[param] = params[param]
+
+        result = prof_storage.get_header(depth, name, embedded_hat, write_flags)
+        self.assertEqual(result, [expected])
+
 class AaTest_add_or_remove_flag(AATest):
     tests = [
         #  existing flag(s)     flag to change  add or remove?      expected flags

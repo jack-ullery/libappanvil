@@ -20,7 +20,7 @@ import sys
 import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
      get_profile_flags, change_profile_flags, set_options_audit_mode, set_options_owner_mode, is_skippable_file,
-     parse_profile_start, parse_profile_start_to_storage, parse_profile_data, write_header,
+     parse_profile_start, parse_profile_start_to_storage, parse_profile_data,
      get_file_perms, propose_file_rules)
 from apparmor.aare import AARE
 from apparmor.common import AppArmorException, AppArmorBug
@@ -580,85 +580,6 @@ class AaTest_parse_profile_data(AATest):
             # flags before xattrs
             d = '/foo flags=(complain) xattrs=(user.bar=bar) {\n}\n'
             parse_profile_data(d.split(), 'somefile', False, False)
-
-class AaTest_write_header(AATest):
-    tests = [
-        # name       embedded_hat    write_flags    depth   flags           attachment  prof.keyw.  comment    expected
-        (['/foo',    False,          True,          1,      'complain',     None,       None,       None    ],  '  /foo flags=(complain) {'),
-        (['/foo',    True,           True,          1,      'complain',     None,       None,       None    ],  '  profile /foo flags=(complain) {'),
-        (['/foo sp', False,          False,         2,      'complain',     None,       None,       None    ],  '    "/foo sp" {'),
-        (['/foo'    ,False,          False,         2,      'complain',     None,       None,       None    ],  '    /foo {'),
-        (['/foo',    True,           False,         2,      'complain',     None,       None,       None    ],  '    profile /foo {'),
-        (['/foo',    False,          True,          0,      None,           None,       None,       None    ],  '/foo {'),
-        (['/foo',    True,           True,          0,      None,           None,       None,       None    ],  'profile /foo {'),
-        (['/foo',    False,          False,         0,      None,           None,       None,       None    ],  '/foo {'),
-        (['/foo',    True,           False,         0,      None,           None,       None,       None    ],  'profile /foo {'),
-        (['bar',     False,          True,          1,      'complain',     None,       None,       None    ],  '  profile bar flags=(complain) {'),
-        (['bar',     False,          True,          1,      'complain',     '/foo',     None,       None    ],  '  profile bar /foo flags=(complain) {'),
-        (['bar',     True,           True,          1,      'complain',     '/foo',     None,       None    ],  '  profile bar /foo flags=(complain) {'),
-        (['bar baz', False,          True,          1,      None,           '/foo',     None,       None    ],  '  profile "bar baz" /foo {'),
-        (['bar',     True,           True,          1,      None,           '/foo',     None,       None    ],  '  profile bar /foo {'),
-        (['bar baz', False,          True,          1,      'complain',     '/foo sp',  None,       None    ],  '  profile "bar baz" "/foo sp" flags=(complain) {'),
-        (['^foo',    False,          True,          1,      'complain',     None,       None,       None    ],  '  profile ^foo flags=(complain) {'),
-        (['^foo',    True,           True,          1,      'complain',     None,       None,       None    ],  '  ^foo flags=(complain) {'),
-        (['^foo',    True,           True,          1.5,    'complain',     None,       None,       None    ],  '   ^foo flags=(complain) {'),
-        (['^foo',    True,           True,          1.3,    'complain',     None,       None,       None    ],  '  ^foo flags=(complain) {'),
-        (['/foo',    False,          True,          1,      'complain',     None,       'profile',  None    ],  '  profile /foo flags=(complain) {'),
-        (['/foo',    True,           True,          1,      'complain',     None,       'profile',  None    ],  '  profile /foo flags=(complain) {'),
-        (['/foo',    False,          True,          1,      'complain',     None,       None,       '# x'   ],  '  /foo flags=(complain) { # x'),
-        (['/foo',    True,           True,          1,      None,           None,       None,       '# x'   ],  '  profile /foo { # x'),
-        (['/foo',    False,          True,          1,      None,           None,       'profile',  '# x'   ],  '  profile /foo { # x'),
-        (['/foo',    True,           True,          1,      'complain',     None,       'profile',  '# x'   ],  '  profile /foo flags=(complain) { # x'),
-     ]
-
-    def _run_test(self, params, expected):
-        name = params[0]
-        embedded_hat = params[1]
-        write_flags = params[2]
-        depth = params[3]
-        prof_data = { 'flags': params[4], 'attachment': params[5], 'profile_keyword': params[6], 'header_comment': params[7], 'xattrs': '' }
-
-        result = write_header(prof_data, depth, name, embedded_hat, write_flags)
-        self.assertEqual(result, [expected])
-
-class AaTest_write_header_01(AATest):
-    tests = [
-        (
-            {'name': '/foo', 'write_flags': True, 'depth': 1, 'flags': 'complain'},
-            '  /foo flags=(complain) {',
-        ),
-        (
-            {'name': '/foo', 'write_flags': True, 'depth': 1, 'flags': 'complain', 'profile_keyword': 'profile'},
-            '  profile /foo flags=(complain) {',
-        ),
-        (
-            {'name': '/foo', 'write_flags': True, 'flags': 'complain'},
-            '/foo flags=(complain) {',
-        ),
-        (
-            {'name': '/foo', 'xattrs': 'user.foo=bar', 'write_flags': True, 'flags': 'complain'},
-            '/foo xattrs=(user.foo=bar) flags=(complain) {',
-        ),
-        (
-            {'name': '/foo', 'xattrs': 'user.foo=bar', 'embedded_hat': True},
-            'profile /foo xattrs=(user.foo=bar) {',
-        ),
-     ]
-
-    def _run_test(self, params, expected):
-        name = params['name']
-        embedded_hat = params.get('embedded_hat', False)
-        write_flags = params.get('write_flags', False)
-        depth = params.get('depth', 0)
-        prof_data = {
-            'xattrs': params.get('xattrs', None),
-            'flags': params.get('flags', None),
-            'attachment': params.get('attachment', None),
-            'profile_keyword': params.get('profile_keyword', None),
-            'header_comment': params.get('header_comment', None),
-        }
-        result = write_header(prof_data, depth, name, embedded_hat, write_flags)
-        self.assertEqual(result, [expected])
 
 class AaTest_get_file_perms_1(AATest):
     tests = [

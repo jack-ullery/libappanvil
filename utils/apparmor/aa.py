@@ -61,7 +61,6 @@ from apparmor.rule.include          import IncludeRule
 from apparmor.rule.network          import NetworkRule
 from apparmor.rule.ptrace           import PtraceRule
 from apparmor.rule.signal           import SignalRule
-from apparmor.rule import quote_if_needed
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -654,7 +653,7 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
                         prof_storage['header_comment'] = matches['comment'] or ''
                         prof_storage['xattrs'] = matches['xattrs']
 
-                        line = write_header(prof_storage, len(space)/2, profile, False, True)
+                        line = prof_storage.get_header(len(space)/2, profile, False, True)
                         line = '%s\n' % line[0]
                 elif RE_PROFILE_HAT_DEF.search(line):
                     matches = RE_PROFILE_HAT_DEF.search(line)
@@ -2107,35 +2106,6 @@ def parse_unix_rule(line):
     # XXX Do real parsing here
     return aarules.Raw_Unix_Rule(line)
 
-def write_header(prof_data, depth, name, embedded_hat, write_flags):
-    pre = ' ' * int(depth * 2)
-    data = []
-    unquoted_name = name
-    name = quote_if_needed(name)
-
-    attachment = ''
-    if prof_data['attachment']:
-        attachment = ' %s' % quote_if_needed(prof_data['attachment'])
-
-    comment = ''
-    if prof_data['header_comment']:
-        comment = ' %s' % prof_data['header_comment']
-
-    if (not embedded_hat and not unquoted_name.startswith('/')) or (embedded_hat and not unquoted_name.startswith('^')) or prof_data['attachment'] or prof_data['profile_keyword']:
-        name = 'profile %s%s' % (name, attachment)
-
-    xattrs = ''
-    if prof_data['xattrs']:
-        xattrs = ' xattrs=(%s)' % prof_data['xattrs']
-
-    flags = ''
-    if write_flags and prof_data['flags']:
-        flags = ' flags=(%s)' % prof_data['flags']
-
-    data.append('%s%s%s%s {%s' % (pre, name, xattrs, flags, comment))
-
-    return data
-
 def write_piece(profile_data, depth, name, nhat, write_flags):
     pre = '  ' * depth
     data = []
@@ -2147,7 +2117,7 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
         wname = name + '//' + nhat
         name = nhat
         inhat = True
-    data += write_header(profile_data[name], depth, wname, False, write_flags)
+    data += profile_data[name].get_header(depth, wname, False, write_flags)
     data += profile_data[name].get_rules_clean(depth + 1)
 
     pre2 = '  ' * (depth + 1)
@@ -2158,9 +2128,9 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
             if not profile_data[hat]['external']:
                 data.append('')
                 if profile_data[hat]['profile']:
-                    data += write_header(profile_data[hat], depth + 1, hat, True, write_flags)
+                    data += profile_data[hat].get_header(depth + 1, hat, True, write_flags)
                 else:
-                    data += write_header(profile_data[hat], depth + 1, '^' + hat, True, write_flags)
+                    data += profile_data[hat].get_header(depth + 1, '^' + hat, True, write_flags)
 
                 data += profile_data[hat].get_rules_clean(depth + 2)
 
