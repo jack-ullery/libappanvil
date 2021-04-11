@@ -275,8 +275,7 @@ def logfile_to_profile(logfile):
         if log_is_empty == True:
             raise Exception('got empty log for logfile not in log_to_profile_known_empty_log: %s %s' % (logfile, hashlog))
 
-    compat_log_dict_aamode = apparmor.aa.merged_to_split(log_dict[aamode])
-    new_profile = apparmor.aa.serialize_profile(compat_log_dict_aamode[profile], profile, {})
+    new_profile = apparmor.aa.serialize_profile(log_dict[aamode], profile, {})
 
     return profile, new_profile
 

@@ -532,7 +532,7 @@ def get_profile(prof_name):
     uname = 'Inactive local profile for %s' % prof_name
     profile_hash = {
         uname: {
-            'profile': serialize_profile(merged_to_split(inactive_profile)[prof_name], prof_name, {}),
+            'profile': serialize_profile(inactive_profile, prof_name, {}),
             'profile_data': inactive_profile,
         }
     }
@@ -1552,13 +1552,13 @@ def save_profiles(is_mergeprof=False):
                     oldprofile = get_profile_filename_from_attachment(which, True)
 
                 serialize_options = {'METADATA': True}
-                newprofile = serialize_profile(aa[which], which, serialize_options)
+                newprofile = serialize_profile(split_to_merged(aa), which, serialize_options)
 
                 aaui.UI_Changes(oldprofile, newprofile, comments=True)
 
             elif ans == 'CMD_VIEW_CHANGES_CLEAN':
-                oldprofile = serialize_profile(original_aa[which], which, {})
-                newprofile = serialize_profile(aa[which], which, {})
+                oldprofile = serialize_profile(split_to_merged(original_aa), which, {})
+                newprofile = serialize_profile(split_to_merged(aa), which, {})
 
                 aaui.UI_Changes(oldprofile, newprofile)
 
@@ -2227,7 +2227,8 @@ def serialize_profile(profile_data, name, options):
                 comment = profile_data[name]['initial_comment']
                 comment.replace('\\n', '\n')
                 data += [comment + '\n']
-            data += write_piece(profile_data, 0, name, name, include_flags)
+
+            data += write_piece(merged_to_split(profile_data)[name], 0, name, name, include_flags)
 
     string += '\n'.join(data)
 
@@ -2256,7 +2257,7 @@ def write_profile(profile, is_attachment=False):
 
     serialize_options = {'METADATA': True, 'is_attachment': is_attachment}
 
-    profile_string = serialize_profile(aa[profile], profile, serialize_options)
+    profile_string = serialize_profile(split_to_merged(aa), profile, serialize_options)
     newprof.write(profile_string)
     newprof.close()
 
