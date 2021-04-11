@@ -121,6 +121,23 @@ class AaTest_get_header_01(AATest):
         result = prof_storage.get_header(depth, name, embedded_hat, write_flags)
         self.assertEqual(result, [expected])
 
+
+class TestSetInvalid(AATest):
+    tests = [
+        (('profile_keyword',    None),      AppArmorBug),  # expects bool
+        (('profile_keyword',    'foo'),     AppArmorBug),
+        (('attachment',         False),     AppArmorBug),  # expects string
+        (('attachment',         None),      AppArmorBug),
+        (('filename',           True),      AppArmorBug),  # expects string or None
+        (('allow',              None),      AppArmorBug),  # doesn't allow overwriting at all
+    ]
+
+    def _run_test(self, params, expected):
+        self.storage = ProfileStorage('/test/foo', 'hat', 'TEST')
+        with self.assertRaises(expected):
+            self.storage[params[0]] = params[1]
+
+
 class AaTest_add_or_remove_flag(AATest):
     tests = [
         #  existing flag(s)     flag to change  add or remove?      expected flags
