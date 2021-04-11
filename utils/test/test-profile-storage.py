@@ -35,6 +35,21 @@ class TestUnknownKey(AATest):
         with self.assertRaises(AppArmorBug):
             self.storage['foo'] = 'bar'
 
+class TestSetInvalid(AATest):
+    tests = [
+        (('profile_keyword',    None),      AppArmorBug),  # expects bool
+        (('profile_keyword',    'foo'),     AppArmorBug),
+        (('attachment',         False),     AppArmorBug),  # expects string
+        (('attachment',         None),      AppArmorBug),
+        (('filename',           True),      AppArmorBug),  # expects string or None
+        (('allow',              None),      AppArmorBug),  # doesn't allow overwriting at all
+    ]
+
+    def _run_test(self, params, expected):
+        self.storage = ProfileStorage('/test/foo', 'hat', 'TEST')
+        with self.assertRaises(expected):
+            self.storage[params[0]] = params[1]
+
 class AaTest_add_or_remove_flag(AATest):
     tests = [
         #  existing flag(s)     flag to change  add or remove?      expected flags
