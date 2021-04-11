@@ -647,14 +647,14 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
                         if program is not None and program != profile:
                             aaui.UI_Info(_('Warning: profile %s represents multiple programs') % profile)
 
-                        header_data = {
-                            'attachment': matches['attachment'] or '',
-                            'flags': newflags,
-                            'profile_keyword': matches['profile_keyword'],
-                            'header_comment': matches['comment'] or '',
-                            'xattrs': matches['xattrs'],
-                        }
-                        line = write_header(header_data, len(space)/2, profile, False, True)
+                        prof_storage = ProfileStorage(profile, profile, 'change_profile_flags()')
+                        prof_storage['attachment'] = matches['attachment'] or ''
+                        prof_storage['flags'] = newflags
+                        prof_storage['profile_keyword'] = matches['profile_keyword']
+                        prof_storage['header_comment'] = matches['comment'] or ''
+                        prof_storage['xattrs'] = matches['xattrs']
+
+                        line = write_header(prof_storage, len(space)/2, profile, False, True)
                         line = '%s\n' % line[0]
                 elif RE_PROFILE_HAT_DEF.search(line):
                     matches = RE_PROFILE_HAT_DEF.search(line)
