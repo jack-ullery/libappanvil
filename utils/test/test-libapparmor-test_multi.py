@@ -256,6 +256,7 @@ def logfile_to_profile(logfile):
         # (in "normal" usage outside of this test, log_dict will not be handed over to serialize_profile())
 
         log_dict[aamode][profile] = apparmor.aa.ProfileStorage('TEST DUMMY for empty parent profile', profile_dummy_file, 'logfile_to_profile()')
+        log_dict[aamode][parsed_event['profile']]['profile'] = False  # for historical reasons, generate hats, not child profiles
 
     log_is_empty = True
 

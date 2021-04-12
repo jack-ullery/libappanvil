@@ -52,6 +52,11 @@ $bar = true
     /etc/fstab r,
 
   }
+
+  profile test_child /foobar {
+    /etc/child rw,
+
+  }
 }
 /usr/bin/other/cleanprof/test/profile {
   allow /home/*/** rw,
