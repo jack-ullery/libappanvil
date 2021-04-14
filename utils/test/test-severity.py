@@ -23,7 +23,7 @@ from apparmor.common import AppArmorException
 class SeverityBaseTest(AATest):
 
     def AASetup(self):
-        self.sev_db = severity.Severity('severity.db', 'unknown')
+        self.sev_db = severity.Severity('../severity.db', 'unknown')
 
     def _capability_severity_test(self, cap, expected_rank):
         rank = self.sev_db.rank_capability(cap)

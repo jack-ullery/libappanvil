@@ -434,7 +434,7 @@ class CapabiliySeverityTest(AATest):
         ('foo',                         'unknown'),
     ]
     def _run_test(self, params, expected):
-        sev_db = severity.Severity('severity.db', 'unknown')
+        sev_db = severity.Severity('../severity.db', 'unknown')
         obj = CapabilityRule(params)
         rank = obj.severity(sev_db)
         self.assertEqual(rank, expected)

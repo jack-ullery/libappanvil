@@ -798,7 +798,7 @@ class FileSeverityTest(AATest):
     ]
 
     def _run_test(self, params, expected):
-        sev_db = severity.Severity('severity.db', 'unknown')
+        sev_db = severity.Severity('../severity.db', 'unknown')
         obj = FileRule.parse(params)
         rank = obj.severity(sev_db)
         self.assertEqual(rank, expected)

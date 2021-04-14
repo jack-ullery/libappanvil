@@ -58,7 +58,7 @@ class TestBaserule(AATest):
             parse_modifiers(matches)
 
     def test_default_severity(self):
-        sev_db = severity.Severity('severity.db', 'unknown')
+        sev_db = severity.Severity('../severity.db', 'unknown')
         obj = BaseRule()
         rank = obj.severity(sev_db)
         self.assertEqual(rank, sev_db.NOT_IMPLEMENTED)
