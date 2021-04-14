@@ -21,7 +21,7 @@ import os
 import shutil
 
 from apparmor.rule.include import IncludeRule, IncludeRuleset
-#from apparmor.rule import BaseRule
+from apparmor.rule import BaseRule
 from apparmor.common import AppArmorException, AppArmorBug
 #from apparmor.logparser import ReadLog
 from apparmor.translations import init_translation
@@ -277,7 +277,7 @@ class IncludeCoveredTest_02(IncludeCoveredTest):
 #       ('include if exists "foo"'          , [ False   , False         , False     , False     ]),
     ]
 
-#class IncludeCoveredTest_Invalid(AATest):
+class IncludeCoveredTest_Invalid(AATest):
 #   def test_borked_obj_is_covered_1(self):
 #       obj = IncludeRule.parse('include <foo>')
 
@@ -287,53 +287,27 @@ class IncludeCoveredTest_02(IncludeCoveredTest):
 #       with self.assertRaises(AppArmorBug):
 #           obj.is_covered(testobj)
 
-#   def test_borked_obj_is_covered_2(self):
-#       obj = IncludeRule.parse('include send set=quit peer=/foo,')
+    def test_invalid_is_covered(self):
+        obj = IncludeRule.parse('include <abstractions/base>')
 
-#       testobj = IncludeRule('send', 'quit', '/foo')
-#       testobj.include = ''
+        testobj = BaseRule()  # different type
 
-#       with self.assertRaises(AppArmorBug):
-#           obj.is_covered(testobj)
+        with self.assertRaises(AppArmorBug):
+            obj.is_covered(testobj)
 
-#   def test_borked_obj_is_covered_3(self):
-#       obj = IncludeRule.parse('include send set=quit peer=/foo,')
+    def test_invalid_is_equal(self):
+        obj = IncludeRule.parse('include <abstractions/base>')
 
-#       testobj = IncludeRule('send', 'quit', '/foo')
-#       testobj.peer = ''
+        testobj = BaseRule()  # different type
 
-#       with self.assertRaises(AppArmorBug):
-#           obj.is_covered(testobj)
-
-#   def test_invalid_is_covered(self):
-#       obj = IncludeRule.parse('include send,')
-
-#       testobj = BaseRule()  # different type
-
-#       with self.assertRaises(AppArmorBug):
-#           obj.is_covered(testobj)
-
-#   def test_invalid_is_equal(self):
-#       obj = IncludeRule.parse('include send,')
-
-#       testobj = BaseRule()  # different type
-
-#       with self.assertRaises(AppArmorBug):
-#           obj.is_equal(testobj)
+        with self.assertRaises(AppArmorBug):
+            obj.is_equal(testobj)
 
 class IncludeLogprofHeaderTest(AATest):
-#   tests = [
-#       ('include,',                     [                               _('Access mode'), _('ALL'),         _('Include'), _('ALL'),      _('Peer'), _('ALL'),    ]),
-#       ('include send,',                [                               _('Access mode'), 'send',           _('Include'), _('ALL'),      _('Peer'), _('ALL'),    ]),
-#       ('include send set=quit,',       [                               _('Access mode'), 'send',           _('Include'), 'quit',        _('Peer'), _('ALL'),    ]),
-#       ('deny include,',                [_('Qualifier'), 'deny',        _('Access mode'), _('ALL'),         _('Include'), _('ALL'),      _('Peer'), _('ALL'),    ]),
-#       ('allow include send,',          [_('Qualifier'), 'allow',       _('Access mode'), 'send',           _('Include'), _('ALL'),      _('Peer'), _('ALL'),    ]),
-#       ('audit include send set=quit,', [_('Qualifier'), 'audit',       _('Access mode'), 'send',           _('Include'), 'quit',        _('Peer'), _('ALL'),    ]),
-#       ('audit deny include send,',     [_('Qualifier'), 'audit deny',  _('Access mode'), 'send',           _('Include'), _('ALL'),      _('Peer'), _('ALL'),    ]),
-#       ('include set=(int, quit),',     [                               _('Access mode'), _('ALL'),         _('Include'), 'int quit',    _('Peer'), _('ALL'),    ]),
-#       ('include set=( quit, int),',    [                               _('Access mode'), _('ALL'),         _('Include'), 'int quit',    _('Peer'), _('ALL'),    ]),
-#       ('include (send, receive) set=( quit, int) peer=/foo,',    [     _('Access mode'), 'receive send',   _('Include'), 'int quit',    _('Peer'), '/foo',      ]),
-#   ]
+    tests = [
+        ('include <abstractions/base>',  [_('Include'), 'include <abstractions/base>'           ]),
+        ('include "/what/ever"',         [_('Include'), 'include "/what/ever"',                 ]),
+    ]
 
     def _run_test(self, params, expected):
         obj = IncludeRule.parse(params)

@@ -266,18 +266,10 @@ class AbiCoveredTest_02(AbiCoveredTest):
 #           obj.is_equal(testobj)
 
 class AbiLogprofHeaderTest(AATest):
-#   tests = [
-#       ('abi,',                     [                               _('Access mode'), _('ALL'),         _('Abi'), _('ALL'),      _('Peer'), _('ALL'),    ]),
-#       ('abi send,',                [                               _('Access mode'), 'send',           _('Abi'), _('ALL'),      _('Peer'), _('ALL'),    ]),
-#       ('abi send set=quit,',       [                               _('Access mode'), 'send',           _('Abi'), 'quit',        _('Peer'), _('ALL'),    ]),
-#       ('deny abi,',                [_('Qualifier'), 'deny',        _('Access mode'), _('ALL'),         _('Abi'), _('ALL'),      _('Peer'), _('ALL'),    ]),
-#       ('allow abi send,',          [_('Qualifier'), 'allow',       _('Access mode'), 'send',           _('Abi'), _('ALL'),      _('Peer'), _('ALL'),    ]),
-#       ('audit abi send set=quit,', [_('Qualifier'), 'audit',       _('Access mode'), 'send',           _('Abi'), 'quit',        _('Peer'), _('ALL'),    ]),
-#       ('audit deny abi send,',     [_('Qualifier'), 'audit deny',  _('Access mode'), 'send',           _('Abi'), _('ALL'),      _('Peer'), _('ALL'),    ]),
-#       ('abi set=(int, quit),',     [                               _('Access mode'), _('ALL'),         _('Abi'), 'int quit',    _('Peer'), _('ALL'),    ]),
-#       ('abi set=( quit, int),',    [                               _('Access mode'), _('ALL'),         _('Abi'), 'int quit',    _('Peer'), _('ALL'),    ]),
-#       ('abi (send, receive) set=( quit, int) peer=/foo,',    [     _('Access mode'), 'receive send',   _('Abi'), 'int quit',    _('Peer'), '/foo',      ]),
-#   ]
+    tests = [
+        ('abi <abi/3.0>,',              [_('Abi'), 'abi <abi/3.0>,',        ]),
+        ('abi "/foo/bar",',             [_('Abi'), 'abi "/foo/bar",',       ]),
+    ]
 
     def _run_test(self, params, expected):
         obj = AbiRule.parse(params)
