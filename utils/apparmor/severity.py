@@ -51,7 +51,7 @@ class Severity(object):
                         else:
                             ptr = self.severity['REGEXPS']
                             pieces = path.split('/')
-                            for index, piece in enumerate(pieces):
+                            for index, piece in enumerate(pieces):  # pragma: no branch
                                 if '*' in piece:
                                     path = '/'.join(pieces[index:])
                                     regexp = convert_regexp(path)
@@ -114,7 +114,7 @@ class Severity(object):
                     # Match rest of the path
                     if re.search("^" + chunk, path):
                         # Find max rank
-                        if "AA_RANK" in tree[chunk].keys():
+                        if "AA_RANK" in tree[chunk].keys():  # pragma: no branch
                             for m in mode:
                                 if sev is None or tree[chunk]["AA_RANK"].get(m, -1) > sev:
                                     sev = tree[chunk]["AA_RANK"].get(m, None)
