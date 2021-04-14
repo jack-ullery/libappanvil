@@ -48,6 +48,9 @@ class SeverityTest(SeverityBaseTest):
         (['/etc/**',            'r'     ],  'unknown'),
         (['/usr/foo@bar',       'r'     ],  'unknown'),  ## filename containing @
         (['/home/foo@bar',      'rw'    ],  6),  ## filename containing @
+        (['/etc/apache2/ssl.key/bar',       'r'   ],  7),  # /etc/apache2/** (3) vs. /etc/apache2/**ssl** (7)
+        (['/etc/apache2/foo/ssl/bar',       'r'   ],  7),  # additional path level triggers otherwise untested branch
+        (['/proc/sys/kernel/hotplug',       'rwx' ], 10),  # non-glob filename, severity depends on mode
     ]
 
     def _run_test(self, params, expected):
@@ -81,6 +84,7 @@ class SeverityVarsTest(SeverityBaseTest):
         (['/overco@{multiarch}mmit_memory',             'r'],    'unknown'),
         (['@{PROC}/sys/@{TFTP_DIR}/overcommit_memory',  'r'],    6),
         (['@{somepaths}/somefile',                      'r'],    7),
+        (['@{strangevar}/somefile',                     'r'],    6),
     ]
 
     def _run_test(self, params, expected):
@@ -91,6 +95,7 @@ class SeverityVarsTest(SeverityBaseTest):
             '@{TFTP_DIR}':  {'/var/tftp /srv/tftpboot'},
             '@{PROC}':      {'/proc/'},
             '@{somepaths}': {'/home/foo/downloads', '@{HOMEDIRS}/foo/.ssh/'},
+            '@{strangevar}': ['/srv/', '/proc/'],  # Note: using [] instead of {} is intentional to keep order of checking (and therefore code coverage) constant
         }
         self.sev_db.set_variables(vars)
         self._simple_severity_w_perm(params[0], params[1], expected)
