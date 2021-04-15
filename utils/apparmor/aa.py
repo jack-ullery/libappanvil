@@ -1855,7 +1855,11 @@ def parse_profile_data(data, file, do_include, in_preamble):
 
             if rule_name == 'inc_ie':
                 for incname in rule_obj.get_full_paths(profile_dir):
-                    load_include(incname, in_preamble)
+                    if incname == file:
+                        # warn about endless loop, and don't call load_include() (again) for this file
+                        aaui.UI_Important(_('WARNING: endless loop detected: file %s includes itsself' % incname))
+                    else:
+                        load_include(incname, in_preamble)
 
         elif RE_PROFILE_START.search(line):  # Starting line of a profile
             # in_contained_hat is needed to know if we are already in a profile or not. (Simply checking if we are in a hat doesn't work,
