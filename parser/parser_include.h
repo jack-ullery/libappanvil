@@ -27,7 +27,7 @@ extern void init_base_dir(void);
 extern void set_base_dir(char *dir);
 extern void parse_default_paths(void);
 extern int do_include_preprocessing(char *profilename);
-FILE *search_path(char *filename, char **fullpath);
+FILE *search_path(char *filename, char **fullpath, bool *skip);
 
 extern void push_include_stack(char *filename);
 extern void pop_include_stack(void);

@@ -220,6 +220,7 @@ void add_local_entry(Profile *prof);
 	struct cond_entry_list cond_entry_list;
 	int boolean;
 	struct prefixes prefix;
+	IncludeCache_t *includecache;
 }
 
 %type <id> 	TOK_ID
@@ -334,9 +335,17 @@ opt_id: { /* nothing */ $$ = NULL; }
 opt_id_or_var: { /* nothing */ $$ = NULL; }
 	| id_or_var { $$ = $1; }
 
-profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE
+profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN
 	{
-		Profile *prof = $6;
+		/* mid rule action
+		 * save current cache, restore at end of block
+		 */
+		$<includecache>$ = g_includecache;
+		g_includecache = new IncludeCache_t();
+	}
+    rules TOK_CLOSE
+	{
+		Profile *prof = $7;
 		bool self_stack = false;
 
 		if (!prof) {
@@ -387,6 +396,10 @@ profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE
 		post_process_file_entries(prof);
 		post_process_rule_entries(prof);
 		prof->flags.debug(cerr);
+
+		/* restore previous blocks include cache */
+		delete g_includecache;
+		g_includecache = $<includecache>6;
 		$$ = prof;
 
 	};
@@ -1775,12 +1788,17 @@ static int abi_features_base(struct aa_features **features, char *filename, bool
 	autofclose FILE *f = NULL;
 	struct stat my_stat;
 	char *fullpath = NULL;
+	bool cached;
 
 	if (search) {
 		if (strcmp(filename, "kernel") == 0)
 			return aa_features_new_from_kernel(features);
-		f = search_path(filename, &fullpath);
-		PDEBUG("abi lookup '%s' -> '%s' f %p\n", filename, fullpath, f);
+		f = search_path(filename, &fullpath, &cached);
+		PDEBUG("abi lookup '%s' -> '%s' f %p cached %d\n", filename, fullpath, f, cached);
+		if (!f && cached) {
+			*features = NULL;
+			return 0;
+		}
 	} else {
 		f = fopen(filename, "r");
 		PDEBUG("abi relpath '%s' f %p\n", filename, f);
@@ -1809,10 +1827,15 @@ static void abi_features(char *filename, bool search)
 			yyerror(_("failed to find features abi '%s': %m"), filename);
 	}
 	if (policy_features) {
-		if (!aa_features_is_equal(tmp_features, policy_features)) {
-			pwarn(WARN_ABI, _("%s: %s features abi '%s' differs from policy declared feature abi, using the features abi declared in policy\n"), progname, current_filename, filename);
+		if (tmp_features) {
+			if (!aa_features_is_equal(tmp_features, policy_features)) {
+				pwarn(WARN_ABI, _("%s: %s features abi '%s' differs from policy declared feature abi, using the features abi declared in policy\n"), progname, current_filename, filename);
+			}
+			aa_features_unref(tmp_features);
 		}
-		aa_features_unref(tmp_features);
+	} else if (!tmp_features) {
+		/* skipped reinclude, but features not set */
+		yyerror(_("failed features abi not set but include cache skipped\n"));
 	} else {
 		/* first features abi declaration */
 		policy_features = tmp_features;
