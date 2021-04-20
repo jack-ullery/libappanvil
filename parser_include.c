@@ -151,7 +151,7 @@ void parse_default_paths(void)
 	add_search_dir(basedir);
 }
 
-FILE *search_path(char *filename, char **fullpath)
+FILE *search_path(char *filename, char **fullpath, bool *skip)
 {
 	FILE *newf = NULL;
 	char *buf = NULL;
@@ -161,15 +161,27 @@ FILE *search_path(char *filename, char **fullpath)
 			perror("asprintf");
 			exit(1);
 		}
+
+		if (g_includecache->find(buf)) {
+			/* hit do not want to re-include */
+			*skip = true;
+			return NULL;
+		}
+
 		newf = fopen(buf, "r");
-		if (newf && fullpath)
-			*fullpath = buf;
-		else
-			free(buf);
-		buf = NULL;
-		if (newf)
+		if (newf) {
+			/* ignore failing to insert into cache */
+			(void) g_includecache->insert(buf);
+			if (fullpath)
+				*fullpath = buf;
+			else
+				free(buf);
 			break;
+		}
+		free(buf);
+		buf = NULL;
 	}
+	*skip = false;
 	return newf;
 }
 

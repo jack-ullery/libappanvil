@@ -50,6 +50,7 @@
 #include "common_optarg.h"
 #include "policy_cache.h"
 #include "libapparmor_re/apparmor_re.h"
+#include "file_cache.h"
 
 #define OLD_MODULE_NAME "subdomain"
 #define PROC_MODULES "/proc/modules"
@@ -1035,6 +1036,8 @@ void reset_parser(const char *filename)
 	aa_features_unref(policy_features);
 	policy_features = NULL;
 	clear_cap_flag(CAPFLAG_POLICY_FEATURE);
+	delete g_includecache;
+	g_includecache = new IncludeCache_t();
 }
 
 int test_for_dir_mode(const char *basename, const char *linkdir)
