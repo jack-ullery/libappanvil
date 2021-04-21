@@ -1418,14 +1418,14 @@ static void auto_tune_parameters(void)
 		} else if (estimated_jobs < ncpus) {
 			/* --jobs=estimate_jobs */
 			jobs = estimated_jobs;
-			PDEBUG("Auto tune: --jobs=%d", estimate_jobs);
+			PDEBUG("Auto tune: --jobs=%ld", estimated_jobs);
 		} else {
 			long long n = estimated_jobs / ncpus;
 
 			if (n < -DEFAULT_JOBS_MAX) {
 				/* --jobs=cpus*n */
 				jobs = -n;
-				PDEBUG("Auto tune: --jobs=%d", jobs);
+				PDEBUG("Auto tune: --jobs=%ld", jobs);
 			}
 		}
 	} else {
