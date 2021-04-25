@@ -29,7 +29,7 @@ $(GEN_TRANS_DIRS):
 	mkdir $@
 
 gen_dbus: $(GEN_TRANS_DIRS)
-	./gen-dbus.pl
+	./gen-dbus.py
 
 error_output: $(PARSER)
 	LANG=C ./errors.py -p "$(PARSER)" $(PYTEST_ARG)
