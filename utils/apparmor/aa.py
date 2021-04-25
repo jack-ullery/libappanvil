@@ -247,12 +247,12 @@ def get_new_profile_filename(profile):
     '''Compose filename for a new profile'''
     if profile.startswith('/'):
         # Remove leading /
-        profile = profile[1:]
+        filename = profile[1:]
     else:
-        profile = "profile_" + profile
-    profile = profile.replace('/', '.')
-    full_profilename = os.path.join(profile_dir, profile)
-    return full_profilename
+        filename = "profile_" + profile
+    filename = filename.replace('/', '.')
+    filename = os.path.join(profile_dir, filename)
+    return filename
 
 def name_to_prof_filename(prof_filename):
     """Returns the profile"""
