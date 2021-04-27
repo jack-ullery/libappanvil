@@ -18,6 +18,7 @@ import shutil
 
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.profile_list import ProfileList
+from apparmor.profile_storage import ProfileStorage
 from apparmor.rule.abi import AbiRule
 from apparmor.rule.alias import AliasRule
 from apparmor.rule.boolean import BooleanRule
@@ -27,6 +28,7 @@ from apparmor.rule.variable import VariableRule
 class TestAdd_profile(AATest):
     def AASetup(self):
         self.pl = ProfileList()
+        self.dummy_profile = ProfileStorage('TEST DUMMY', 'AATest_no_file', 'TEST')
 
     def testEmpty(self):
         self.assertEqual(self.pl.profile_names, {})
@@ -34,21 +36,21 @@ class TestAdd_profile(AATest):
         self.assertEqual('%s' % self.pl, "\n".join(['', '<ProfileList>', '', '</ProfileList>', '']))
 
     def testAdd_profile_1(self):
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo', self.dummy_profile)
         self.assertEqual(self.pl.profile_names, {'foo': '/etc/apparmor.d/bin.foo'})
         self.assertEqual(self.pl.attachments, {'/bin/foo': '/etc/apparmor.d/bin.foo'})
         self.assertEqual(self.pl.profiles_in_file('/etc/apparmor.d/bin.foo'), ['foo'])
         self.assertEqual('%s' % self.pl, '\n<ProfileList>\n/etc/apparmor.d/bin.foo\n</ProfileList>\n')
 
     def testAdd_profile_2(self):
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', None, '/bin/foo')
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', None, '/bin/foo', self.dummy_profile)
         self.assertEqual(self.pl.profile_names, {})
         self.assertEqual(self.pl.attachments, {'/bin/foo': '/etc/apparmor.d/bin.foo'})
         self.assertEqual(self.pl.profiles_in_file('/etc/apparmor.d/bin.foo'), ['/bin/foo'])
         self.assertEqual('%s' % self.pl, '\n<ProfileList>\n/etc/apparmor.d/bin.foo\n</ProfileList>\n')
 
     def testAdd_profile_3(self):
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', None)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', None, self.dummy_profile)
         self.assertEqual(self.pl.profile_names, {'foo': '/etc/apparmor.d/bin.foo'})
         self.assertEqual(self.pl.attachments, {})
         self.assertEqual(self.pl.profiles_in_file('/etc/apparmor.d/bin.foo'), ['foo'])
@@ -56,41 +58,45 @@ class TestAdd_profile(AATest):
 
     def testAdd_profileError_1(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_profile('', 'foo', '/bin/foo')  # no filename
+            self.pl.add_profile('', 'foo', '/bin/foo', self.dummy_profile)  # no filename
 
     def testAdd_profileError_2(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_profile('/etc/apparmor.d/bin.foo', None, None)  # neither attachment or profile name
+            self.pl.add_profile('/etc/apparmor.d/bin.foo', None, None, self.dummy_profile)  # neither attachment or profile name
 
     def testAdd_profileError_list_nonexisting_file(self):
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', None)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', None, self.dummy_profile)
         with self.assertRaises(AppArmorBug):
             self.pl.profiles_in_file('/etc/apparmor.d/not.found')  # different filename
 
     def testAdd_profileError_twice_1(self):
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo', self.dummy_profile)
         with self.assertRaises(AppArmorException):
-            self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
+            self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo', self.dummy_profile)
 
     def testAdd_profileError_twice_2(self):
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo', self.dummy_profile)
         with self.assertRaises(AppArmorException):
-            self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', None)
+            self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', None, self.dummy_profile)
 
     def testAdd_profileError_twice_3(self):
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', None, '/bin/foo')
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', None, '/bin/foo', self.dummy_profile)
         with self.assertRaises(AppArmorException):
-            self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
+            self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo', self.dummy_profile)
 
     def testAdd_profileError_twice_4(self):
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', None, '/bin/foo')
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', None, '/bin/foo', self.dummy_profile)
         with self.assertRaises(AppArmorException):
-            self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
+            self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo', self.dummy_profile)
 
     def testAdd_profileError_twice_5(self):
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', None)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', None, self.dummy_profile)
         with self.assertRaises(AppArmorException):
-            self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
+            self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo', self.dummy_profile)
+
+    def testAdd_profileError_wrong_prof_type(self):
+        with self.assertRaises(AppArmorBug):
+            self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo', 'wrong_type')
 
 class TestFilename_from_profile_name(AATest):
     tests = [
@@ -103,8 +109,9 @@ class TestFilename_from_profile_name(AATest):
 
     def AASetup(self):
         self.pl = ProfileList()
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
-        self.pl.add_profile('/etc/apparmor.d/usr.bin.wine', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}')
+        self.dummy_profile = ProfileStorage('TEST DUMMY', 'AATest_no_file', 'TEST')
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo', self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/usr.bin.wine', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}', self.dummy_profile)
 
     def _run_test(self, params, expected):
         self.assertEqual(self.pl.filename_from_profile_name(params), expected)
@@ -122,10 +129,11 @@ class TestFilename_from_attachment(AATest):
 
     def AASetup(self):
         self.pl = ProfileList()
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo')
-        self.pl.add_profile('/etc/apparmor.d/bin.baz', 'baz', '/bin/ba*')
-        self.pl.add_profile('/etc/apparmor.d/bin.foobar', 'foobar', '/bin/foo{bar,baz}')
-        self.pl.add_profile('/etc/apparmor.d/usr.bin.wine', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}')
+        self.dummy_profile = ProfileStorage('TEST DUMMY', 'AATest_no_file', 'TEST')
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo', self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/bin.baz', 'baz', '/bin/ba*', self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/bin.foobar', 'foobar', '/bin/foo{bar,baz}', self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/usr.bin.wine', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}', self.dummy_profile)
 
     def _run_test(self, params, expected):
         self.assertEqual(self.pl.filename_from_attachment(params), expected)
@@ -391,6 +399,22 @@ class AaTest_get_all_merged_variables(AATest):
     def test_vars_from_nonexisting_profile(self):
         with self.assertRaises(AppArmorBug):
             apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'file.not.found'), list())
+
+class TestGet_profile_and_childs(AATest):
+    def AASetup(self):
+        self.pl = ProfileList()
+        self.dummy_profile = ProfileStorage('TEST DUMMY', 'AATest_no_file', 'TEST')
+
+    def testGet_profile_and_childs1(self):
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'bafoo',     '/bin/bafoo',       self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo',       '/bin/foo',         self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foobar',    '/bin/foobar',      self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo//bar',  '/bin/foo//bar',    self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo//xy',   '/bin/foo//xy',     self.dummy_profile)
+
+        expected = ['foo', 'foo//bar', 'foo//xy']
+
+        self.assertEqual(list(self.pl.get_profile_and_childs('foo')), expected)
 
 
 setup_aa(apparmor.aa)

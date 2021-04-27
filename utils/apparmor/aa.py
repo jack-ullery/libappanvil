@@ -33,7 +33,7 @@ from copy import deepcopy
 from apparmor.aare import AARE
 
 from apparmor.common import (AppArmorException, AppArmorBug, is_skippable_file, open_file_read, valid_path, hasher,
-                             split_name, type_is_str, open_file_write, DebugLogger)
+                             combine_profname, split_name, type_is_str, open_file_write, DebugLogger)
 
 import apparmor.ui as aaui
 
@@ -98,7 +98,6 @@ transitions = hasher()
 
 aa = hasher()  # Profiles originally in sd, replace by aa
 original_aa = hasher()
-extras = hasher()  # Inactive profiles from extras
 ### end our
 
 changed = dict()
@@ -447,7 +446,7 @@ def get_interpreter_and_abstraction(exec_target):
     return interpreter_path, abstraction
 
 def create_new_profile(localfile, is_stub=False):
-    local_profile = hasher()
+    local_profile = {}
     local_profile[localfile] = ProfileStorage('NEW', localfile, 'create_new_profile()')
     local_profile[localfile]['flags'] = 'complain'
 
@@ -478,16 +477,17 @@ def create_new_profile(localfile, is_stub=False):
     for hatglob in cfg['required_hats'].keys():
         if re.search(hatglob, localfile):
             for hat in sorted(cfg['required_hats'][hatglob].split()):
-                if not local_profile.get(hat, False):
-                    local_profile[hat] = ProfileStorage('NEW', hat, 'create_new_profile() required_hats')
-                local_profile[hat]['flags'] = 'complain'
+                full_hat = combine_profname([localfile, hat])
+                if not local_profile.get(full_hat, False):
+                    local_profile[full_hat] = ProfileStorage('NEW', hat, 'create_new_profile() required_hats')
+                local_profile[full_hat]['flags'] = 'complain'
 
     if not is_stub:
         created.append(localfile)
         changed[localfile] = True
 
     debug_logger.debug("Profile for %s:\n\t%s" % (localfile, local_profile.__str__()))
-    return {localfile: local_profile}
+    return local_profile
 
 def delete_profile(local_prof):
     """Deletes the specified file from the disk and remove it from our list"""
@@ -510,15 +510,18 @@ def confirm_and_abort():
 def get_profile(prof_name):
     '''search for inactive/extra profile, and ask if it should be used'''
 
-    if not extras.get(prof_name, False):
+    if not extra_profiles.profiles.get(prof_name, False):
         return None  # no inactive profile found
 
     # TODO: search based on the attachment, not (only?) based on the profile name
     #       (Note: in theory, multiple inactive profiles (with different profile names) could exist for a binary.)
-    inactive_profile = {prof_name: extras[prof_name]}
-    inactive_profile[prof_name][prof_name]['flags'] = 'complain'
-    orig_filename = inactive_profile[prof_name][prof_name]['filename']  # needed for CMD_VIEW_PROFILE
-    inactive_profile[prof_name][prof_name]['filename'] = ''
+    inactive_profile = deepcopy(extra_profiles.get_profile_and_childs(prof_name))
+
+    orig_filename = inactive_profile[prof_name]['filename']  # needed for CMD_VIEW_PROFILE
+
+    for prof in inactive_profile:
+        inactive_profile[prof]['flags'] = 'complain'  # TODO: preserve other flags, if any
+        inactive_profile[prof]['filename'] = ''
 
     # ensure active_profiles has the /etc/apparmor.d/ filename initialized
     # TODO: ideally serialize_profile() shouldn't always use active_profiles
@@ -529,7 +532,7 @@ def get_profile(prof_name):
     uname = 'Inactive local profile for %s' % prof_name
     profile_hash = {
         uname: {
-            'profile': serialize_profile(inactive_profile[prof_name], prof_name, {}),
+            'profile': serialize_profile(inactive_profile, prof_name, {}),
             'profile_data': inactive_profile,
         }
     }
@@ -577,16 +580,16 @@ def autodep(bin_name, pname=''):
     if not profile_data:
         profile_data = create_new_profile(pname)
     file = get_profile_filename_from_profile_name(pname, True)
-    profile_data[pname][pname]['filename'] = file  # change filename from extra_profile_dir to /etc/apparmor.d/
+    profile_data[pname]['filename'] = file  # change filename from extra_profile_dir to /etc/apparmor.d/
 
     attach_profile_data(aa, profile_data)
     attach_profile_data(original_aa, profile_data)
 
-    attachment = profile_data[pname][pname]['attachment']
+    attachment = profile_data[pname]['attachment']
     if not attachment and pname.startswith('/'):
-        active_profiles.add_profile(file, pname, pname)  # use name as name and attachment
-    else:
-        active_profiles.add_profile(file, pname, attachment)
+        attachment = pname  # use name as name and attachment
+
+    active_profiles.add_profile(file, pname, attachment)
 
     if os.path.isfile(profile_dir + '/abi/3.0'):
         active_profiles.add_abi(file, AbiRule('abi/3.0', False, True))
@@ -1021,7 +1024,7 @@ def ask_exec(hashlog):
                                 ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
                             if ynans == 'y':
                                 if not aa[profile].get(exec_target, False):
-                                    stub_profile = create_new_profile(exec_target, True)
+                                    stub_profile = merged_to_split(create_new_profile(exec_target, True))
                                     aa[profile][exec_target] = stub_profile[exec_target][exec_target]
 
                                 aa[profile][exec_target]['profile'] = True
@@ -1067,26 +1070,23 @@ def ask_the_questions(log_dict):
         else:
             raise AppArmorBug(_('Invalid mode found: %s') % aamode)
 
-        for profile in sorted(log_dict[aamode].keys()):
+        for full_profile in sorted(log_dict[aamode].keys()):
+            profile, hat = split_name(full_profile)  # XXX limited to two levels to avoid an Exception on nested child profiles or nested null-*
+
+            # TODO: honor full profile name as soon as child profiles are listed in active_profiles
             prof_filename = get_profile_filename_from_profile_name(profile)
             if prof_filename and active_profiles.files.get(prof_filename):
                 sev_db.set_variables(active_profiles.get_all_merged_variables(prof_filename, include_list_recursive(active_profiles.files[prof_filename], True)))
             else:
                 sev_db.set_variables( {} )
 
-            # Sorted list of hats with the profile name coming first
-            hats = list(filter(lambda key: key != profile, sorted(log_dict[aamode][profile].keys())))
-            if log_dict[aamode][profile].get(profile, False):
-                hats = [profile] + hats
-
-            for hat in hats:
-
+            if True:
                 if not aa[profile].get(hat, {}).get('file'):
                     if aamode != 'merge':
                         # Ignore log events for a non-existing profile or child profile. Such events can occur
                         # after deleting a profile or hat manually, or when processing a foreign log.
                         # (Checking for 'file' is a simplified way to check if it's a ProfileStorage.)
-                        debug_logger.debug("Ignoring events for non-existing profile %s" % combine_name(profile, hat))
+                        debug_logger.debug("Ignoring events for non-existing profile %s" % full_profile)
                         continue
 
                     ans = ''
@@ -1094,7 +1094,7 @@ def ask_the_questions(log_dict):
                         q = aaui.PromptQuestion()
                         q.headers += [_('Profile'), profile]
 
-                        if log_dict[aamode][profile][hat]['profile']:
+                        if log_dict[aamode][full_profile]['profile']:
                             q.headers += [_('Requested Subprofile'), hat]
                             q.functions.append('CMD_ADDSUBPROFILE')
                         else:
@@ -1113,7 +1113,7 @@ def ask_the_questions(log_dict):
                     if ans == 'CMD_DENY':
                         continue  # don't ask about individual rules if the user doesn't want the additional subprofile/hat
 
-                    if log_dict[aamode][profile][hat]['profile']:
+                    if log_dict[aamode][full_profile]['profile']:
                         aa[profile][hat] = ProfileStorage(profile, hat, 'mergeprof ask_the_questions() - missing subprofile')
                         aa[profile][hat]['profile'] = True
                     else:
@@ -1121,9 +1121,9 @@ def ask_the_questions(log_dict):
                         aa[profile][hat]['profile'] = False
 
                 # check for and ask about conflicting exec modes
-                ask_conflict_mode(aa[profile][hat], log_dict[aamode][profile][hat])
+                ask_conflict_mode(aa[profile][hat], log_dict[aamode][full_profile])
 
-                prof_changed, end_profiling = ask_rule_questions(log_dict[aamode][profile][hat], combine_name(profile, hat), aa[profile][hat], ruletypes)
+                prof_changed, end_profiling = ask_rule_questions(log_dict[aamode][full_profile], combine_name(profile, hat), aa[profile][hat], ruletypes)
                 if prof_changed:
                     changed[profile] = True
                 if end_profiling:
@@ -1133,7 +1133,7 @@ def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
     ''' ask questions about rules to add to a single profile/hat
 
         parameter       typical value
-        prof_events     log_dict[aamode][profile][hat]
+        prof_events     log_dict[aamode][full_profile]
         profile_name    profile name (possible profile//hat)
         the_profile     aa[profile][hat] -- will be modified
         r_types         ruletypes
@@ -1552,13 +1552,13 @@ def save_profiles(is_mergeprof=False):
                     oldprofile = get_profile_filename_from_attachment(which, True)
 
                 serialize_options = {'METADATA': True}
-                newprofile = serialize_profile(aa[which], which, serialize_options)
+                newprofile = serialize_profile(split_to_merged(aa), which, serialize_options)
 
                 aaui.UI_Changes(oldprofile, newprofile, comments=True)
 
             elif ans == 'CMD_VIEW_CHANGES_CLEAN':
-                oldprofile = serialize_profile(original_aa[which], which, {})
-                newprofile = serialize_profile(aa[which], which, {})
+                oldprofile = serialize_profile(split_to_merged(original_aa), which, {})
+                newprofile = serialize_profile(split_to_merged(aa), which, {})
 
                 aaui.UI_Changes(oldprofile, newprofile)
 
@@ -1570,9 +1570,11 @@ def save_profiles(is_mergeprof=False):
             reload_base(profile_name)
 
 def collapse_log(hashlog, ignore_null_profiles=True):
-    log_dict = hasher()
+    log_dict = {}
 
     for aamode in hashlog.keys():
+        log_dict[aamode] = {}
+
         for full_profile in hashlog[aamode].keys():
             if hashlog[aamode][full_profile]['final_name'] == '':
                 continue  # user chose "deny" or "unconfined" for this target, therefore ignore log events
@@ -1592,9 +1594,9 @@ def collapse_log(hashlog, ignore_null_profiles=True):
                 hat_exists = True
 
             if True:
-                if not log_dict[aamode][profile].get(hat):
+                if not log_dict[aamode].get(full_profile):
                     # with execs in ix mode, we already have ProfileStorage initialized and should keep the content it already has
-                    log_dict[aamode][profile][hat] = ProfileStorage(profile, hat, 'collapse_log()')
+                    log_dict[aamode][full_profile] = ProfileStorage(profile, hat, 'collapse_log()')
 
                 for path in hashlog[aamode][full_profile]['path'].keys():
                     for owner in hashlog[aamode][full_profile]['path'][path]:
@@ -1607,18 +1609,18 @@ def collapse_log(hashlog, ignore_null_profiles=True):
                         file_event = FileRule(path, mode, None, FileRule.ALL, owner=owner, log_event=True)
 
                         if not hat_exists or not is_known_rule(aa[profile][hat], 'file', file_event):
-                            log_dict[aamode][profile][hat]['file'].add(file_event)
+                            log_dict[aamode][full_profile]['file'].add(file_event)
                             # TODO: check for existing rules with this path, and merge them into one rule
 
                 for cap in hashlog[aamode][full_profile]['capability'].keys():
                     cap_event = CapabilityRule(cap, log_event=True)
                     if not hat_exists or not is_known_rule(aa[profile][hat], 'capability', cap_event):
-                        log_dict[aamode][profile][hat]['capability'].add(cap_event)
+                        log_dict[aamode][full_profile]['capability'].add(cap_event)
 
                 for cp in hashlog[aamode][full_profile]['change_profile'].keys():
                     cp_event = ChangeProfileRule(None, ChangeProfileRule.ALL, cp, log_event=True)
                     if not hat_exists or not is_known_rule(aa[profile][hat], 'change_profile', cp_event):
-                        log_dict[aamode][profile][hat]['change_profile'].add(cp_event)
+                        log_dict[aamode][full_profile]['change_profile'].add(cp_event)
 
                 dbus = hashlog[aamode][full_profile]['dbus']
                 for access in                               dbus:
@@ -1641,21 +1643,21 @@ def collapse_log(hashlog, ignore_null_profiles=True):
                                                 raise AppArmorBug('unexpected dbus access: %s')
 
                                             if not hat_exists or not is_known_rule(aa[profile][hat], 'dbus', dbus_event):
-                                                log_dict[aamode][profile][hat]['dbus'].add(dbus_event)
+                                                log_dict[aamode][full_profile]['dbus'].add(dbus_event)
 
                 nd = hashlog[aamode][full_profile]['network']
                 for family in nd.keys():
                     for sock_type in nd[family].keys():
                         net_event = NetworkRule(family, sock_type, log_event=True)
                         if not hat_exists or not is_known_rule(aa[profile][hat], 'network', net_event):
-                            log_dict[aamode][profile][hat]['network'].add(net_event)
+                            log_dict[aamode][full_profile]['network'].add(net_event)
 
                 ptrace = hashlog[aamode][full_profile]['ptrace']
                 for peer in ptrace.keys():
                     for access in ptrace[peer].keys():
                         ptrace_event = PtraceRule(access, peer, log_event=True)
                         if not hat_exists or not is_known_rule(aa[profile][hat], 'ptrace', ptrace_event):
-                            log_dict[aamode][profile][hat]['ptrace'].add(ptrace_event)
+                            log_dict[aamode][full_profile]['ptrace'].add(ptrace_event)
 
                 sig = hashlog[aamode][full_profile]['signal']
                 for peer in sig.keys():
@@ -1663,7 +1665,7 @@ def collapse_log(hashlog, ignore_null_profiles=True):
                         for signal in sig[peer][access].keys():
                             signal_event = SignalRule(access, signal, peer, log_event=True)
                             if not hat_exists or not is_known_rule(aa[profile][hat], 'signal', signal_event):
-                                log_dict[aamode][profile][hat]['signal'].add(signal_event)
+                                log_dict[aamode][full_profile]['signal'].add(signal_event)
 
     return log_dict
 
@@ -1725,32 +1727,37 @@ def read_profile(file, active_profile):
 
     profile_data = parse_profile_data(data, file, 0, True)
 
-    if profile_data and active_profile:
+    if not profile_data:
+        return
+
+    if active_profile:
         attach_profile_data(aa, profile_data)
         attach_profile_data(original_aa, profile_data)
 
-        for profile in profile_data:  # TODO: also honor hats
-            attachment = profile_data[profile][profile]['attachment']
-            filename = profile_data[profile][profile]['filename']
+        for profile in profile_data:
+            if '//' in profile:
+                continue  # TODO: handle hats/child profiles independent of main profiles
+
+            attachment = profile_data[profile]['attachment']
+            filename = profile_data[profile]['filename']
 
             if not attachment and profile.startswith('/'):
-                active_profiles.add_profile(filename, profile, profile)  # use profile as name and attachment
-            else:
-                active_profiles.add_profile(filename, profile, attachment)
+                attachment = profile  # use profile as name and attachment
 
-    elif profile_data:
-        attach_profile_data(extras, profile_data)
+            active_profiles.add_profile(filename, profile, attachment)
 
-        for profile in profile_data:  # TODO: also honor hats
-            attachment = profile_data[profile][profile]['attachment']
-            filename = profile_data[profile][profile]['filename']
+    else:
+        for profile in profile_data:
+            attachment = profile_data[profile]['attachment']
+            filename = profile_data[profile]['filename']
 
             if not attachment and profile.startswith('/'):
-                extra_profiles.add_profile(filename, profile, profile)  # use profile as name and attachment
-            else:
-                extra_profiles.add_profile(filename, profile, attachment)
+                attachment = profile  # use profile as name and attachment
+
+            extra_profiles.add_profile(filename, profile, attachment, profile_data[profile])
 
 def attach_profile_data(profiles, profile_data):
+    profile_data = merged_to_split(profile_data)
     # Make deep copy of data to avoid changes to
     # arising due to mutables
     for p in profile_data.keys():
@@ -1770,7 +1777,7 @@ def parse_profile_start(line, file, lineno, profile, hat):
         if not matches['profile_keyword']:
             raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: missing "profile" keyword.') % {
                     'profile': profile, 'file': file, 'line': lineno + 1 })
-        if profile != hat:
+        if hat is not None:
             # nesting limit reached - a child profile can't contain another child profile
             raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: a child profile inside another child profile is not allowed.') % {
                     'profile': profile, 'file': file, 'line': lineno + 1 })
@@ -1820,9 +1827,10 @@ def parse_profile_start_to_storage(line, file, lineno, profile, hat):
     return (profile, hat, prof_storage)
 
 def parse_profile_data(data, file, do_include, in_preamble):
-    profile_data = hasher()
+    profile_data = {}
     profile = None
     hat = None
+    profname = None
     in_contained_hat = None
     parsed_profiles = []
     initial_comment = ''
@@ -1832,9 +1840,10 @@ def parse_profile_data(data, file, do_include, in_preamble):
 
     if do_include:
         profile = file
-        hat = file
-        profile_data[profile][hat] = ProfileStorage(profile, hat, 'parse_profile_data() do_include')
-        profile_data[profile][hat]['filename'] = file
+        hat = None
+        profname = combine_profname([profile, hat])
+        profile_data[profname] = ProfileStorage(profile, hat, 'parse_profile_data() do_include')
+        profile_data[profname]['filename'] = file
 
     for lineno, line in enumerate(data):
         line = line.strip()
@@ -1851,7 +1860,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
             if in_preamble:
                 active_profiles.add_rule(file, rule_name, rule_obj)
             else:
-                profile_data[profile][hat][rule_name].add(rule_obj)
+                profile_data[profname][rule_name].add(rule_obj)
 
             if rule_name == 'inc_ie':
                 for incname in rule_obj.get_full_paths(profile_dir):
@@ -1874,15 +1883,19 @@ def parse_profile_data(data, file, do_include, in_preamble):
 
             (profile, hat, prof_storage) = parse_profile_start_to_storage(line, file, lineno, profile, hat)
 
-            if profile_data[profile].get(hat, False):
+            if profile == hat:
+                hat = None
+            profname = combine_profname([profile, hat])
+
+            if profile_data.get(profname, False):
                 raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
                     { 'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat) })
 
-            profile_data[profile][hat] = prof_storage
+            profile_data[profname] = prof_storage
 
             # Save the initial comment
             if initial_comment:
-                profile_data[profile][hat]['initial_comment'] = initial_comment
+                profile_data[profname]['initial_comment'] = initial_comment
 
             initial_comment = ''
 
@@ -1892,11 +1905,13 @@ def parse_profile_data(data, file, do_include, in_preamble):
                 raise AppArmorException(_('Syntax Error: Unexpected End of Profile reached in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             if in_contained_hat:
-                hat = profile
+                hat = None
                 in_contained_hat = False
+                profname = combine_profname([profile, hat])
             else:
                 parsed_profiles.append(profile)
                 profile = None
+                profname = None
                 in_preamble = True
 
             initial_comment = ''
@@ -1931,9 +1946,9 @@ def parse_profile_data(data, file, do_include, in_preamble):
             mount_rule.audit = audit
             mount_rule.deny = (allow == 'deny')
 
-            mount_rules = profile_data[profile][hat][allow].get('mount', list())
+            mount_rules = profile_data[profname][allow].get('mount', list())
             mount_rules.append(mount_rule)
-            profile_data[profile][hat][allow]['mount'] = mount_rules
+            profile_data[profname][allow]['mount'] = mount_rules
 
         elif RE_PROFILE_PIVOT_ROOT.search(line):
             matches = RE_PROFILE_PIVOT_ROOT.search(line).groups()
@@ -1953,9 +1968,9 @@ def parse_profile_data(data, file, do_include, in_preamble):
             pivot_root_rule.audit = audit
             pivot_root_rule.deny = (allow == 'deny')
 
-            pivot_root_rules = profile_data[profile][hat][allow].get('pivot_root', list())
+            pivot_root_rules = profile_data[profname][allow].get('pivot_root', list())
             pivot_root_rules.append(pivot_root_rule)
-            profile_data[profile][hat][allow]['pivot_root'] = pivot_root_rules
+            profile_data[profname][allow]['pivot_root'] = pivot_root_rules
 
         elif RE_PROFILE_UNIX.search(line):
             matches = RE_PROFILE_UNIX.search(line).groups()
@@ -1975,9 +1990,9 @@ def parse_profile_data(data, file, do_include, in_preamble):
             unix_rule.audit = audit
             unix_rule.deny = (allow == 'deny')
 
-            unix_rules = profile_data[profile][hat][allow].get('unix', list())
+            unix_rules = profile_data[profname][allow].get('unix', list())
             unix_rules.append(unix_rule)
-            profile_data[profile][hat][allow]['unix'] = unix_rules
+            profile_data[profname][allow]['unix'] = unix_rules
 
         elif RE_PROFILE_CHANGE_HAT.search(line):
             matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
@@ -1997,23 +2012,24 @@ def parse_profile_data(data, file, do_include, in_preamble):
             in_contained_hat = True
             hat = matches.group('hat')
             hat = strip_quotes(hat)
+            profname = combine_profname([profile, hat])
 
-            if profile_data[profile].get(hat, False) and not do_include:
+            if profile_data.get(profname, False) and not do_include:
                 raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
                     { 'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat) })
 
             # if hat is already known, the check above will error out (if not do_include)
             # nevertheless, just to be sure, don't overwrite existing profile_data.
-            if not profile_data[profile].get(hat, False):
-                profile_data[profile][hat] = ProfileStorage(profile, hat, 'parse_profile_data() hat_def')
-                profile_data[profile][hat]['filename'] = file
+            if not profile_data.get(profname, False):
+                profile_data[profname] = ProfileStorage(profile, hat, 'parse_profile_data() hat_def')
+                profile_data[profname]['filename'] = file
 
             flags = matches.group('flags')
 
-            profile_data[profile][hat]['flags'] = flags
+            profile_data[profname]['flags'] = flags
 
             if initial_comment:
-                profile_data[profile][hat]['initial_comment'] = initial_comment
+                profile_data[profname]['initial_comment'] = initial_comment
             initial_comment = ''
 
         elif line[0] == '#':
@@ -2027,7 +2043,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
             if line.startswith('# LOGPROF-SUGGEST:'): # TODO: allow any number of spaces/tabs after '#'
                 parts = line.split()
                 if len(parts) > 2:
-                    profile_data[profile][hat]['logprof_suggest'] = parts[2]
+                    profile_data[profname]['logprof_suggest'] = parts[2]
 
                 # keep line as part of initial_comment (if we ever support writing abstractions, we should update serialize_profile())
                 initial_comment = initial_comment + line + '\n'
@@ -2053,8 +2069,9 @@ def parse_profile_data(data, file, do_include, in_preamble):
             for parsed_prof in sorted(parsed_profiles):
                 if re.search(hatglob, parsed_prof):
                     for hat in cfg['required_hats'][hatglob].split():
-                        if not profile_data[parsed_prof].get(hat, False):
-                            profile_data[parsed_prof][hat] = ProfileStorage(parsed_prof, hat, 'parse_profile_data() required_hats')
+                        profname = combine_profname([parsed_prof, hat])
+                        if not profile_data.get(profname, False):
+                            profile_data[profname] = ProfileStorage(parsed_prof, hat, 'parse_profile_data() required_hats')
 
     # End of file reached but we're stuck in a profile
     if profile and not do_include:
@@ -2098,6 +2115,31 @@ def match_line_against_rule_classes(line, profile, file, lineno, in_preamble):
 
     return(None, None)
 
+def merged_to_split(profile_data):
+    ''' (temporary) helper function to convert a list of profile['foo//bar'] profiles into compat['foo']['bar']'''
+    compat = hasher()
+    for prof in profile_data:
+        profile, hat = split_name(prof)  # XXX limited to two levels to avoid an Exception on nested child profiles or nested null-*
+        compat[profile][hat] = profile_data[prof]
+
+    return compat
+
+def split_to_merged(profile_data):
+    ''' (temporary) helper function to convert a traditional compat['foo']['bar'] to a profile['foo//bar'] list '''
+
+    merged = {}
+
+    for profile in profile_data:
+        for hat in profile_data[profile]:
+            if profile == hat:
+                merged_name = profile
+            else:
+                merged_name = combine_profname([profile, hat])
+
+            merged[merged_name] = profile_data[profile][hat]
+
+    return merged
+
 def parse_mount_rule(line):
     # XXX Do real parsing here
     return aarules.Raw_Mount_Rule(line)
@@ -2128,13 +2170,21 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
 
     if not inhat:
         # Embedded hats
-        for hat in list(filter(lambda x: x != name, sorted(profile_data.keys()))):
+        all_childs = []
+        for child in sorted(profile_data.keys()):
+            if child.startswith('%s//' % name):
+                all_childs.append(child)
+
+        for hat in all_childs:
+            profile, only_hat = split_name(hat)
+
             if not profile_data[hat]['external']:
                 data.append('')
-                if profile_data[hat]['profile']:
-                    data += profile_data[hat].get_header(depth + 1, hat, True, write_flags)
-                else:
-                    data += profile_data[hat].get_header(depth + 1, '^' + hat, True, write_flags)
+
+                if not profile_data[hat]['profile']:
+                    only_hat = '^%s' % only_hat
+
+                data += profile_data[hat].get_header(depth + 1, only_hat, True, write_flags)
 
                 data += profile_data[hat].get_rules_clean(depth + 2)
 
@@ -2143,7 +2193,7 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
         data.append('%s}' % pre)
 
         # External hats
-        for hat in list(filter(lambda x: x != name, sorted(profile_data.keys()))):
+        for hat in all_childs:
             if name == nhat and profile_data[hat].get('external', False):
                 data.append('')
                 data += list(map(lambda x: '  %s' % x, write_piece(profile_data, depth - 1, name, nhat, write_flags)))
@@ -2183,12 +2233,13 @@ def serialize_profile(profile_data, name, options):
                 comment = original_aa[prof][prof]['initial_comment']
                 comment.replace('\\n', '\n')
                 data += [comment + '\n']
-            data += write_piece(original_aa[prof], 0, prof, prof, include_flags)
+            data += write_piece(split_to_merged(original_aa), 0, prof, prof, include_flags)
         else:
             if profile_data[name].get('initial_comment', False):
                 comment = profile_data[name]['initial_comment']
                 comment.replace('\\n', '\n')
                 data += [comment + '\n']
+
             data += write_piece(profile_data, 0, name, name, include_flags)
 
     string += '\n'.join(data)
@@ -2218,7 +2269,7 @@ def write_profile(profile, is_attachment=False):
 
     serialize_options = {'METADATA': True, 'is_attachment': is_attachment}
 
-    profile_string = serialize_profile(aa[profile], profile, serialize_options)
+    profile_string = serialize_profile(split_to_merged(aa), profile, serialize_options)
     newprof.write(profile_string)
     newprof.close()
 

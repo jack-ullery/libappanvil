@@ -112,7 +112,7 @@ class Merge(object):
 
     def ask_merge_questions(self):
         other = self.base
-        log_dict = {'merge': other.aa}
+        log_dict = {'merge': apparmor.aa.split_to_merged(other.aa)}
 
         apparmor.aa.loadincludes()
 

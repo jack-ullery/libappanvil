@@ -14,6 +14,7 @@
 
 from apparmor.aare import AARE
 from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.profile_storage import ProfileStorage
 from apparmor.rule.alias import AliasRule, AliasRuleset
 from apparmor.rule.abi import AbiRule, AbiRuleset
 from apparmor.rule.boolean import BooleanRule, BooleanRuleset
@@ -46,6 +47,7 @@ class ProfileList:
         self.attachments = {}       # attachment -> filename
         self.attachments_AARE = {}  # AARE(attachment) -> filename
         self.files = {}             # filename -> content - see init_file()
+        self.profiles = {}          # profile_name -> ProfileStorage
 
     def __repr__(self):
         return('\n<ProfileList>\n%s\n</ProfileList>\n' % '\n'.join(self.files))
@@ -61,7 +63,7 @@ class ProfileList:
         for rule in preamble_ruletypes:
             self.files[filename][rule] = preamble_ruletypes[rule]['ruleset']()
 
-    def add_profile(self, filename, profile_name, attachment):
+    def add_profile(self, filename, profile_name, attachment, prof_storage=None):
         ''' Add the given profile and attachment to the list '''
 
         if not filename:
@@ -69,6 +71,9 @@ class ProfileList:
 
         if not profile_name and not attachment:
             raise AppArmorBug('Neither profile name or attachment given')
+
+        if type(prof_storage) is not ProfileStorage and prof_storage is not None:
+            raise AppArmorBug('Invalid profile type: %s' % type(prof_storage))
 
         if profile_name in self.profile_names:
             raise AppArmorException(_('Profile %(profile_name)s exists in %(filename)s and %(filename2)s' % {'profile_name': profile_name, 'filename': filename, 'filename2': self.profile_names[profile_name]}))
@@ -87,8 +92,11 @@ class ProfileList:
 
         if profile_name:
             self.files[filename]['profiles'].append(profile_name)
+            self.profiles[profile_name] = prof_storage
         else:
             self.files[filename]['profiles'].append(attachment)
+            self.profiles[attachment] = prof_storage
+
 
     def add_rule(self, filename, ruletype, rule):
         ''' Store the given rule for the given profile filename preamble '''
@@ -156,6 +164,14 @@ class ProfileList:
             deleted += self.files[filename][r_type].delete_duplicates(None)  # None means not to check includes -- TODO check if this makes sense for all preamble rule types
 
         return deleted
+
+    def get_profile_and_childs(self, profile_name):
+        found = {}
+        for prof in self.profiles:
+            if prof == profile_name or prof.startswith('%s//' % profile_name):
+                found[prof] = self.profiles[prof]
+
+        return found
 
     def get_raw(self, filename, depth=0):
         ''' Get the preamble for the given profile filename (in original formatting) '''

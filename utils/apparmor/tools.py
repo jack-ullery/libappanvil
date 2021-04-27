@@ -219,8 +219,8 @@ class aa_tools:
                         apparmor.write_profile_ui_feedback(program, True)
                         self.reload_profile(filename)
                     elif ans == 'CMD_VIEW_CHANGES':
-                        #oldprofile = apparmor.serialize_profile(apparmor.original_aa[program], program, {})
-                        newprofile = apparmor.serialize_profile(apparmor.aa[program], program, {'is_attachment': True})
+                        #oldprofile = apparmor.serialize_profile(apparmor.split_to_merged(apparmor.original_aa), program, {})
+                        newprofile = apparmor.serialize_profile(apparmor.split_to_merged(apparmor.aa), program, {'is_attachment': True})
                         aaui.UI_Changes(filename, newprofile, comments=True)
             else:
                 apparmor.write_profile_ui_feedback(program, True)

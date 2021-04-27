@@ -21,7 +21,7 @@ import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
      get_profile_flags, change_profile_flags, set_options_audit_mode, set_options_owner_mode, is_skippable_file,
      parse_profile_start, parse_profile_start_to_storage, parse_profile_data,
-     get_file_perms, propose_file_rules)
+     get_file_perms, propose_file_rules, merged_to_split, split_to_merged)
 from apparmor.aare import AARE
 from apparmor.common import AppArmorException, AppArmorBug
 from apparmor.rule.file import FileRule
@@ -111,9 +111,10 @@ class AATest_get_reqs(AATest):
 
 class AaTest_create_new_profile(AATest):
     tests = [
-        # file content              expected interpreter    expected abstraction (besides 'base')
-        ('#!/bin/bash\ntrue',      (u'/bin/bash',           'abstractions/bash')),
-        ('foo bar',                (None,                   None)),
+        # file content              filename            expected interpreter    expected abstraction (besides 'base')   expected profiles
+        (('#!/bin/bash\ntrue',      'script'),          (u'/bin/bash',          'abstractions/bash',                    ['script'])),
+        (('foo bar',                'fake_binary'),     (None,                  None,                                   ['fake_binary'])),
+        (('hats expected',          'apache2'),         (None,                  None,                                   ['apache2', 'apache2//DEFAULT_URI', 'apache2//HANDLING_UNTRUSTED_INPUT'])),
     ]
     def _run_test(self, params, expected):
         apparmor.aa.cfg['settings']['ldd'] = './fake_ldd'
@@ -135,24 +136,32 @@ class AaTest_create_new_profile(AATest):
         apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/base'))
         apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/bash'))
 
-        exp_interpreter_path, exp_abstraction = expected
+        exp_interpreter_path, exp_abstraction, exp_profiles = expected
+
         # damn symlinks!
         if exp_interpreter_path:
             exp_interpreter_path = os.path.realpath(exp_interpreter_path)
 
-        program = self.writeTmpfile('script', params)
+        file_content, filename = params
+        program = self.writeTmpfile(filename, file_content)
         profile = create_new_profile(program)
 
+        expected_profiles = []
+        for prof in exp_profiles:
+            expected_profiles.append('%s/%s' % (self.tmpdir, prof))  # actual profile names start with tmpdir, prepend it to the expected profile names
+
+        self.assertEqual(list(profile.keys()), expected_profiles)
+
         if exp_interpreter_path:
-            self.assertEqual(set(profile[program][program]['file'].get_clean()), {'%s ix,' % exp_interpreter_path, '%s r,' % program, '',
+            self.assertEqual(set(profile[program]['file'].get_clean()), {'%s ix,' % exp_interpreter_path, '%s r,' % program, '',
                     '/AATest/lib64/libtinfo.so.* mr,', '/AATest/lib64/libc.so.* mr,', '/AATest/lib64/libdl.so.* mr,', '/AATest/lib64/libreadline.so.* mr,', '/AATest/lib64/ld-linux-x86-64.so.* mr,' })
         else:
-            self.assertEqual(set(profile[program][program]['file'].get_clean()), {'%s mr,' % program, ''})
+            self.assertEqual(set(profile[program]['file'].get_clean()), {'%s mr,' % program, ''})
 
         if exp_abstraction:
-            self.assertEqual(profile[program][program]['inc_ie'].get_clean(), ['include <abstractions/base>', 'include <%s>' % exp_abstraction, ''])
+            self.assertEqual(profile[program]['inc_ie'].get_clean(), ['include <abstractions/base>', 'include <%s>' % exp_abstraction, ''])
         else:
-            self.assertEqual(profile[program][program]['inc_ie'].get_clean(), ['include <abstractions/base>', ''])
+            self.assertEqual(profile[program]['inc_ie'].get_clean(), ['include <abstractions/base>', ''])
 
 class AaTest_get_interpreter_and_abstraction(AATest):
     tests = [
@@ -479,7 +488,7 @@ class AaTest_parse_profile_start(AATest):
         (('/foo {',                                             None,   None),      ('/foo',                    '/foo',                 None,   None,                       None,       False,           False)),
         (('/foo (complain) {',                                  None,   None),      ('/foo',                    '/foo',                 None,   None,                       'complain', False,           False)),
         (('profile foo /foo {',                                 None,   None),      ('foo',                     'foo',                  '/foo', None,                       None,       False,           False)),            # named profile
-        (('profile /foo {',                                     '/bar', '/bar'),    ('/bar',                    '/foo',                 None,   None,                       None,       True,            False)),            # child profile
+        (('profile /foo {',                                     '/bar', None),      ('/bar',                    '/foo',                 None,   None,                       None,       True,            False)),            # child profile
         (('/foo//bar {',                                        None,   None),      ('/foo',                    'bar',                  None,   None,                       None,       False,           True )),            # external hat
         (('profile "/foo" (complain) {',                        None,   None),      ('/foo',                    '/foo',                 None,   None,                       'complain', False,           False)),
         (('profile "/foo" xattrs=(user.bar=bar) {',             None,   None),      ('/foo',                    '/foo',                 None,   'user.bar=bar',             None,       False,           False)),
@@ -524,10 +533,9 @@ class AaTest_parse_profile_data(AATest):
         prof = parse_profile_data('/foo {\n}\n'.split(), 'somefile', False, False)
 
         self.assertEqual(list(prof.keys()), ['/foo'])
-        self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
-        self.assertEqual(prof['/foo']['/foo']['name'], '/foo')
-        self.assertEqual(prof['/foo']['/foo']['filename'], 'somefile')
-        self.assertEqual(prof['/foo']['/foo']['flags'], None)
+        self.assertEqual(prof['/foo']['name'], '/foo')
+        self.assertEqual(prof['/foo']['filename'], 'somefile')
+        self.assertEqual(prof['/foo']['flags'], None)
 
     def test_parse_duplicate_profile(self):
         with self.assertRaises(AppArmorException):
@@ -548,32 +556,29 @@ class AaTest_parse_profile_data(AATest):
         prof = parse_profile_data('/foo xattrs=(user.bar=bar) {\n}\n'.split(), 'somefile', False, False)
 
         self.assertEqual(list(prof.keys()), ['/foo'])
-        self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
-        self.assertEqual(prof['/foo']['/foo']['name'], '/foo')
-        self.assertEqual(prof['/foo']['/foo']['filename'], 'somefile')
-        self.assertEqual(prof['/foo']['/foo']['flags'], None)
-        self.assertEqual(prof['/foo']['/foo']['xattrs'], 'user.bar=bar')
+        self.assertEqual(prof['/foo']['name'], '/foo')
+        self.assertEqual(prof['/foo']['filename'], 'somefile')
+        self.assertEqual(prof['/foo']['flags'], None)
+        self.assertEqual(prof['/foo']['xattrs'], 'user.bar=bar')
 
     def test_parse_xattrs_02(self):
         prof = parse_profile_data('/foo xattrs=(user.bar=bar user.foo=*) {\n}\n'.split(), 'somefile', False, False)
 
         self.assertEqual(list(prof.keys()), ['/foo'])
-        self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
-        self.assertEqual(prof['/foo']['/foo']['name'], '/foo')
-        self.assertEqual(prof['/foo']['/foo']['filename'], 'somefile')
-        self.assertEqual(prof['/foo']['/foo']['flags'], None)
-        self.assertEqual(prof['/foo']['/foo']['xattrs'], 'user.bar=bar user.foo=*')
+        self.assertEqual(prof['/foo']['name'], '/foo')
+        self.assertEqual(prof['/foo']['filename'], 'somefile')
+        self.assertEqual(prof['/foo']['flags'], None)
+        self.assertEqual(prof['/foo']['xattrs'], 'user.bar=bar user.foo=*')
 
     def test_parse_xattrs_03(self):
         d = '/foo xattrs=(user.bar=bar) flags=(complain) {\n}\n'
         prof = parse_profile_data(d.split(), 'somefile', False, False)
 
         self.assertEqual(list(prof.keys()), ['/foo'])
-        self.assertEqual(list(prof['/foo'].keys()), ['/foo'])
-        self.assertEqual(prof['/foo']['/foo']['name'], '/foo')
-        self.assertEqual(prof['/foo']['/foo']['filename'], 'somefile')
-        self.assertEqual(prof['/foo']['/foo']['flags'], 'complain')
-        self.assertEqual(prof['/foo']['/foo']['xattrs'], 'user.bar=bar')
+        self.assertEqual(prof['/foo']['name'], '/foo')
+        self.assertEqual(prof['/foo']['filename'], 'somefile')
+        self.assertEqual(prof['/foo']['flags'], 'complain')
+        self.assertEqual(prof['/foo']['xattrs'], 'user.bar=bar')
 
     def test_parse_xattrs_04(self):
         with self.assertRaises(AppArmorException):
@@ -741,6 +746,41 @@ class AaTest_nonexistent_includes(AATest):
         with self.assertRaises(expected):
             apparmor.aa.load_include(params)
 
+class AaTest_merged_to_split(AATest):
+    tests = [
+        ("foo",                             ("foo", "foo")),
+        ("foo//bar",                        ("foo", "bar")),
+        ("foo//bar//baz",                   ("foo", "bar")),  # XXX known limitation
+    ]
+
+    def _run_test(self, params, expected):
+        merged = {}
+        merged[params] = True  # simplified, but enough for this test
+        result = merged_to_split(merged)
+
+        profile, hat = expected
+
+        self.assertEqual(list(result.keys()), [profile])
+        self.assertEqual(list(result[profile].keys()), [hat])
+        self.assertTrue(result[profile][hat])
+
+class AaTest_split_to_merged(AATest):
+    tests = [
+        (("foo", "foo"),                    "foo"),
+        (("foo", "bar"),                    "foo//bar"),
+    ]
+
+    def _run_test(self, params, expected):
+        old = {}
+        profile = params[0]
+        hat = params[1]
+
+        old[profile] = {}
+        old[profile][hat] = True  # simplified, but enough for this test
+        result = split_to_merged(old)
+
+        self.assertEqual(list(result.keys()), [expected])
+        self.assertTrue(result[expected])
 
 setup_aa(apparmor.aa)
 setup_all_loops(__name__)

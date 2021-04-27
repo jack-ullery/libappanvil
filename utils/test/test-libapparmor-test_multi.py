@@ -231,11 +231,13 @@ def logfile_to_profile(logfile):
 
     apparmor.aa.active_profiles = ProfileList()
 
+    dummy_prof = apparmor.aa.ProfileStorage('TEST DUMMY for active_profiles', profile_dummy_file, 'logprof_to_profile()')
+
     # optional for now, might be needed one day
     # if profile.startswith('/'):
-    #     apparmor.aa.active_profiles.add_profile(profile_dummy_file, profile, profile)
+    #     apparmor.aa.active_profiles.add_profile(profile_dummy_file, profile, profile, dummy_prof)
     # else:
-    apparmor.aa.active_profiles.add_profile(profile_dummy_file, profile, '')
+    apparmor.aa.active_profiles.add_profile(profile_dummy_file, profile, '', dummy_prof)
 
     log_reader = ReadLog(logfile, apparmor.aa.active_profiles, '')
     hashlog = log_reader.read_log('')
@@ -245,15 +247,15 @@ def logfile_to_profile(logfile):
 
     log_dict = apparmor.aa.collapse_log(hashlog, ignore_null_profiles=False)
 
-    if profile != hat:
+    if list(log_dict[aamode].keys()) != [parsed_event['profile']]:
+        raise Exception('log_dict[%s] contains unexpected keys. Logfile: %s, keys %s' % (aamode, logfile, log_dict.keys()))
+
+    if '//' in parsed_event['profile']:
         # log event for a child profile means log_dict only contains the child profile
         # initialize parent profile in log_dict as ProfileStorage to ensure writing the profile doesn't fail
         # (in "normal" usage outside of this test, log_dict will not be handed over to serialize_profile())
 
-        if log_dict[aamode][profile][profile] != {}:
-            raise Exception('event for child profile, but parent profile was initialized nevertheless. Logfile: %s' % logfile)
-
-        log_dict[aamode][profile][profile] = apparmor.aa.ProfileStorage('TEST DUMMY for empty parent profile', profile_dummy_file, 'logfile_to_profile()')
+        log_dict[aamode][profile] = apparmor.aa.ProfileStorage('TEST DUMMY for empty parent profile', profile_dummy_file, 'logfile_to_profile()')
 
     log_is_empty = True
 
@@ -273,7 +275,7 @@ def logfile_to_profile(logfile):
         if log_is_empty == True:
             raise Exception('got empty log for logfile not in log_to_profile_known_empty_log: %s %s' % (logfile, hashlog))
 
-    new_profile = apparmor.aa.serialize_profile(log_dict[aamode][profile], profile, {})
+    new_profile = apparmor.aa.serialize_profile(log_dict[aamode], profile, {})
 
     return profile, new_profile
 
