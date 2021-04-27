@@ -4,6 +4,8 @@ binutils/aa-enabled
 binutils/aa-enabled.1
 binutils/aa-exec
 binutils/aa-exec.1
+binutils/aa-features-abi
+binutils/aa-features-abi.1
 binutils/aa-status
 binutils/aa-status.8
 binutils/cJSON.o
@@ -201,8 +203,10 @@ utils/*.tmp
 utils/po/*.mo
 utils/apparmor/*.pyc
 utils/apparmor/rule/*.pyc
+utils/htmlcov/
 utils/test/common_test.pyc
 utils/test/.coverage
+utils/test/coverage-report.txt
 utils/test/htmlcov/
 utils/vim/apparmor.vim
 utils/vim/apparmor.vim.5
