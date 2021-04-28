@@ -20,6 +20,7 @@
 #include <stdarg.h>
 
 #include "parser.h"
+#include "file_cache.h"
 
 /* Policy versioning is determined by a combination of 3 values:
  * policy_version:     version of txt policy
@@ -94,6 +95,8 @@ char *profilename = NULL;
 char *current_filename = NULL;
 
 FILE *ofile = NULL;
+
+IncludeCache_t *g_includecache;
 
 #ifdef FORCE_READ_IMPLIES_EXEC
 int read_implies_exec = 1;

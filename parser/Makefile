@@ -102,7 +102,7 @@ SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
        af_rule.cc af_unix.cc policy_cache.c default_features.c
 HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h \
        rule.h common_optarg.h signal.h ptrace.h network.h af_rule.h af_unix.h \
-       policy_cache.h
+       policy_cache.h file_cache.h
 TOOLS = apparmor_parser
 
 OBJECTS = $(patsubst %.cc, %.o, $(SRCS:.c=.o))
@@ -215,10 +215,10 @@ apparmor_parser: $(OBJECTS) $(AAREOBJECTS) $(LIBAPPARMOR_A)
 	$(CXX) $(LDFLAGS) $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(LIBS) \
 	      ${LEXLIB}  $(AAREOBJECTS) $(AARE_LDFLAGS) $(AALIB)
 
-parser_yacc.c parser_yacc.h: parser_yacc.y parser.h profile.h
+parser_yacc.c parser_yacc.h: parser_yacc.y parser.h profile.h file_cache.h
 	$(YACC) $(YFLAGS) -o parser_yacc.c parser_yacc.y
 
-parser_lex.c: parser_lex.l parser_yacc.h parser.h profile.h mount.h dbus.h policy_cache.h
+parser_lex.c: parser_lex.l parser_yacc.h parser.h profile.h mount.h dbus.h policy_cache.h file_cache.h
 	$(LEX) ${LEXFLAGS} -o$@ $<
 
 parser_lex.o: parser_lex.c parser.h parser_yacc.h
@@ -230,13 +230,13 @@ parser_misc.o: parser_misc.c parser.h parser_yacc.h profile.h cap_names.h $(APPA
 parser_yacc.o: parser_yacc.c parser_yacc.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_main.o: parser_main.c parser.h parser_version.h policy_cache.h libapparmor_re/apparmor_re.h $(APPARMOR_H)
+parser_main.o: parser_main.c parser.h parser_version.h policy_cache.h file_cache.h libapparmor_re/apparmor_re.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_interface.o: parser_interface.c parser.h profile.h libapparmor_re/apparmor_re.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_include.o: parser_include.c parser.h parser_include.h
+parser_include.o: parser_include.c parser.h parser_include.h file_cache.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_merge.o: parser_merge.c parser.h profile.h
@@ -257,7 +257,7 @@ parser_policy.o: parser_policy.c parser.h parser_yacc.h profile.h
 parser_alias.o: parser_alias.c parser.h profile.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_common.o: parser_common.c parser.h
+parser_common.o: parser_common.c parser.h file_cache.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 mount.o: mount.cc mount.h parser.h immunix.h rule.h
