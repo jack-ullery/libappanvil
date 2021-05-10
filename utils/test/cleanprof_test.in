@@ -47,6 +47,10 @@ $foo = false
     dbus send bus=session,
     dbus send bus=session peer=(label=foo),
 
+    profile test_child /foobar {
+            /etc/child rw,
+            }
+
     set rlimit nofile <= 256,
     set rlimit nofile <= 64,
 

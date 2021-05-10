@@ -1783,7 +1783,6 @@ def parse_profile_start(line, file, lineno, profile, hat):
                     'profile': profile, 'file': file, 'line': lineno + 1 })
 
         hat = matches['profile']
-        pps_set_profile = True
         pps_set_hat_external = False
 
     else:  # stand-alone profile
@@ -1797,25 +1796,22 @@ def parse_profile_start(line, file, lineno, profile, hat):
             hat = profile
             pps_set_hat_external = False
 
-        pps_set_profile = False
-
     attachment = matches['attachment']
     flags = matches['flags']
     xattrs = matches['xattrs']
 
-    return (profile, hat, attachment, xattrs, flags, pps_set_profile, pps_set_hat_external)
+    return (profile, hat, attachment, xattrs, flags, pps_set_hat_external)
 
 def parse_profile_start_to_storage(line, file, lineno, profile, hat):
     ''' parse a profile start line (using parse_profile_startline()) and convert it to a ProfileStorage '''
 
-    (profile, hat, attachment, xattrs, flags, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
+    (profile, hat, attachment, xattrs, flags, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
 
     prof_storage = ProfileStorage(profile, hat, 'parse_profile_data() profile_start')
 
+    prof_storage['profile'] = True
     if attachment:
         prof_storage['attachment'] = attachment
-    if pps_set_profile:
-        prof_storage['profile'] = True
     if pps_set_hat_external:
         prof_storage['external'] = True
 
@@ -2023,6 +2019,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
             if not profile_data.get(profname, False):
                 profile_data[profname] = ProfileStorage(profile, hat, 'parse_profile_data() hat_def')
                 profile_data[profname]['filename'] = file
+                profile_data[profname]['profile'] = False
 
             flags = matches.group('flags')
 
