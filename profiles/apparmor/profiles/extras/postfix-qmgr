@@ -25,6 +25,7 @@ profile postfix-qmgr /usr/lib/postfix/{bin/,sbin/,}qmgr {
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/                 rwl,
   /{var/spool/postfix/,}active/[0-9A-F]/                          rwl,
   /{var/spool/postfix/,}active/[0-9A-F]*                          rwlk,
+  /{var/spool/postfix/,}bounce/[0-9A-F]*                          w,
   /{var/spool/postfix/,}defer/                                    r,
   /{var/spool/postfix/,}defer/[0-9A-F]/[0-9A-F]/*                 rwl,
   /{var/spool/postfix/,}defer/[0-9A-F]/[0-9A-F]/                  rwl,
