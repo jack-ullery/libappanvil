@@ -168,7 +168,10 @@ class AaTest_parse_profile_start(AATest):
 class AaTest_parse_profile_start_errors(AATest):
     tests = [
         (('/foo///bar///baz {',                                 None,   None),      AppArmorException),     # XXX deeply nested external hat
+        (('profile asdf {',                                     '/foo', '/bar'),    AppArmorException),     # nested child profile
+        (('/foo {',                                             '/bar', None),      AppArmorException),     # child profile without profile keyword
         (('/foo {',                                             '/bar', '/bar'),    AppArmorException),     # child profile without profile keyword
+        (('xy',                                                 '/bar', None),      AppArmorBug),           # not a profile start
         (('xy',                                                 '/bar', '/bar'),    AppArmorBug),           # not a profile start
     ]
 
