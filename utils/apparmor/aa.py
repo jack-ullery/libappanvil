@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014-2019 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2021 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -480,6 +480,7 @@ def create_new_profile(localfile, is_stub=False):
                 full_hat = combine_profname([localfile, hat])
                 if not local_profile.get(full_hat, False):
                     local_profile[full_hat] = ProfileStorage('NEW', hat, 'create_new_profile() required_hats')
+                    local_profile[full_hat]['is_hat'] = True
                 local_profile[full_hat]['flags'] = 'complain'
 
     if not is_stub:
@@ -1027,8 +1028,6 @@ def ask_exec(hashlog):
                                     stub_profile = merged_to_split(create_new_profile(exec_target, True))
                                     aa[profile][exec_target] = stub_profile[exec_target][exec_target]
 
-                                aa[profile][exec_target]['profile'] = True
-
                                 if profile != exec_target:
                                     aa[profile][exec_target]['flags'] = aa[profile][profile]['flags']
 
@@ -1094,12 +1093,12 @@ def ask_the_questions(log_dict):
                         q = aaui.PromptQuestion()
                         q.headers += [_('Profile'), profile]
 
-                        if log_dict[aamode][full_profile]['profile']:
-                            q.headers += [_('Requested Subprofile'), hat]
-                            q.functions.append('CMD_ADDSUBPROFILE')
-                        else:
+                        if log_dict[aamode][full_profile]['is_hat']:
                             q.headers += [_('Requested Hat'), hat]
                             q.functions.append('CMD_ADDHAT')
+                        else:
+                            q.headers += [_('Requested Subprofile'), hat]
+                            q.functions.append('CMD_ADDSUBPROFILE')
 
                         q.functions += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
 
@@ -1113,12 +1112,12 @@ def ask_the_questions(log_dict):
                     if ans == 'CMD_DENY':
                         continue  # don't ask about individual rules if the user doesn't want the additional subprofile/hat
 
-                    if log_dict[aamode][full_profile]['profile']:
-                        aa[profile][hat] = ProfileStorage(profile, hat, 'mergeprof ask_the_questions() - missing subprofile')
-                        aa[profile][hat]['profile'] = True
-                    else:
+                    if log_dict[aamode][full_profile]['is_hat']:
                         aa[profile][hat] = ProfileStorage(profile, hat, 'mergeprof ask_the_questions() - missing hat')
-                        aa[profile][hat]['profile'] = False
+                        aa[profile][hat]['is_hat'] = True
+                    else:
+                        aa[profile][hat] = ProfileStorage(profile, hat, 'mergeprof ask_the_questions() - missing subprofile')
+                        aa[profile][hat]['is_hat'] = False
 
                 # check for and ask about conflicting exec modes
                 ask_conflict_mode(aa[profile][hat], log_dict[aamode][full_profile])
@@ -1770,58 +1769,6 @@ def attach_profile_data(profiles, profile_data):
         profiles[p] = deepcopy(profile_data[p])
 
 
-def parse_profile_start(line, file, lineno, profile, hat):
-    matches = parse_profile_start_line(line, file)
-
-    if profile:  # we are inside a profile, so we expect a child profile
-        if not matches['profile_keyword']:
-            raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: missing "profile" keyword.') % {
-                    'profile': profile, 'file': file, 'line': lineno + 1 })
-        if hat is not None:
-            # nesting limit reached - a child profile can't contain another child profile
-            raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: a child profile inside another child profile is not allowed.') % {
-                    'profile': profile, 'file': file, 'line': lineno + 1 })
-
-        hat = matches['profile']
-        pps_set_hat_external = False
-
-    else:  # stand-alone profile
-        profile = matches['profile']
-        if len(profile.split('//')) > 2:
-            raise AppArmorException("Nested child profiles ('%(profile)s', found in %(file)s) are not supported by the AppArmor tools yet." % {'profile': profile, 'file': file})
-        elif len(profile.split('//')) == 2:
-            profile, hat = profile.split('//')
-            pps_set_hat_external = True
-        else:
-            hat = profile
-            pps_set_hat_external = False
-
-    attachment = matches['attachment']
-    flags = matches['flags']
-    xattrs = matches['xattrs']
-
-    return (profile, hat, attachment, xattrs, flags, pps_set_hat_external)
-
-def parse_profile_start_to_storage(line, file, lineno, profile, hat):
-    ''' parse a profile start line (using parse_profile_startline()) and convert it to a ProfileStorage '''
-
-    (profile, hat, attachment, xattrs, flags, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
-
-    prof_storage = ProfileStorage(profile, hat, 'parse_profile_data() profile_start')
-
-    prof_storage['profile'] = True
-    if attachment:
-        prof_storage['attachment'] = attachment
-    if pps_set_hat_external:
-        prof_storage['external'] = True
-
-    prof_storage['name'] = profile
-    prof_storage['filename'] = file
-    prof_storage['xattrs'] = xattrs
-    prof_storage['flags'] = flags
-
-    return (profile, hat, prof_storage)
-
 def parse_profile_data(data, file, do_include, in_preamble):
     profile_data = {}
     profile = None
@@ -1877,7 +1824,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
 
             in_preamble = False
 
-            (profile, hat, prof_storage) = parse_profile_start_to_storage(line, file, lineno, profile, hat)
+            (profile, hat, prof_storage) = ProfileStorage.parse(line, file, lineno, profile, hat)
 
             if profile == hat:
                 hat = None
@@ -2019,7 +1966,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
             if not profile_data.get(profname, False):
                 profile_data[profname] = ProfileStorage(profile, hat, 'parse_profile_data() hat_def')
                 profile_data[profname]['filename'] = file
-                profile_data[profname]['profile'] = False
+                profile_data[profname]['is_hat'] = True
 
             flags = matches.group('flags')
 
@@ -2069,6 +2016,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
                         profname = combine_profname([parsed_prof, hat])
                         if not profile_data.get(profname, False):
                             profile_data[profname] = ProfileStorage(parsed_prof, hat, 'parse_profile_data() required_hats')
+                            profile_data[profname]['is_hat'] = True
 
     # End of file reached but we're stuck in a profile
     if profile and not do_include:
@@ -2178,7 +2126,7 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
             if not profile_data[hat]['external']:
                 data.append('')
 
-                if not profile_data[hat]['profile']:
+                if profile_data[hat]['is_hat']:
                     only_hat = '^%s' % only_hat
 
                 data += profile_data[hat].get_header(depth + 1, only_hat, True, write_flags)
