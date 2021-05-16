@@ -511,7 +511,7 @@ class AaTest_parse_profile_start(AATest):
             self.assertEqual(prof_storage['attachment'],    expected[2])
         self.assertEqual(prof_storage['xattrs'],        expected[3])
         self.assertEqual(prof_storage['flags'],         expected[4])
-        self.assertEqual(prof_storage['profile'],       True)
+        self.assertEqual(prof_storage['is_hat'],        False)
         self.assertEqual(prof_storage['external'],      expected[5])
 
 class AaTest_parse_profile_start_errors(AATest):

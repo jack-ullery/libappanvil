@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2015-2018 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2015-2021 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -256,7 +256,7 @@ def logfile_to_profile(logfile):
         # (in "normal" usage outside of this test, log_dict will not be handed over to serialize_profile())
 
         log_dict[aamode][profile] = apparmor.aa.ProfileStorage('TEST DUMMY for empty parent profile', profile_dummy_file, 'logfile_to_profile()')
-        log_dict[aamode][parsed_event['profile']]['profile'] = False  # for historical reasons, generate hats, not child profiles
+        log_dict[aamode][parsed_event['profile']]['is_hat'] = True  # for historical reasons, generate hats, not child profiles
 
     log_is_empty = True
 
