@@ -152,10 +152,6 @@ class AaTest_parse_profile_start(AATest):
     ]
 
     def _run_test(self, params, expected):
-        parsed = ProfileStorage.parse_profile_start(params[0], 'somefile', 1, params[1], params[2])
-
-        self.assertEqual(parsed, expected)
-
         (profile, hat, prof_storage) = ProfileStorage.parse(params[0], 'somefile', 1, params[1], params[2])
 
         self.assertEqual(profile,                       expected[0])
@@ -177,9 +173,6 @@ class AaTest_parse_profile_start_errors(AATest):
     ]
 
     def _run_test(self, params, expected):
-        with self.assertRaises(expected):
-            ProfileStorage.parse_profile_start(params[0], 'somefile', 1, params[1], params[2])
-
         with self.assertRaises(expected):
             ProfileStorage.parse(params[0], 'somefile', 1, params[1], params[2])
 

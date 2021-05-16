@@ -201,7 +201,9 @@ class ProfileStorage:
         return data
 
     @classmethod
-    def parse_profile_start(cls, line, file, lineno, profile, hat):
+    def parse(cls, line, file, lineno, profile, hat):
+        ''' parse a profile start line (using parse_profile_startline()) and convert it to a ProfileStorage '''
+
         matches = parse_profile_start_line(line, file)
 
         if profile:  # we are inside a profile, so we expect a child profile
@@ -227,30 +229,14 @@ class ProfileStorage:
                 hat = profile
                 pps_set_hat_external = False
 
-        attachment = matches['attachment']
-        flags = matches['flags']
-        xattrs = matches['xattrs']
-
-        return (profile, hat, attachment, xattrs, flags, pps_set_hat_external)
-
-    @classmethod
-    def parse(cls, line, file, lineno, profile, hat):
-        ''' parse a profile start line (using parse_profile_startline()) and convert it to a ProfileStorage '''
-
-        (profile, hat, attachment, xattrs, flags, pps_set_hat_external) = cls.parse_profile_start(line, file, lineno, profile, hat)
-
         prof_storage = ProfileStorage(profile, hat, 'ProfileStorage.parse()')
-
-        if attachment:
-            prof_storage['attachment'] = attachment
-
-        if pps_set_hat_external:
-            prof_storage['external'] = True
 
         prof_storage['name'] = profile
         prof_storage['filename'] = file
-        prof_storage['xattrs'] = xattrs
-        prof_storage['flags'] = flags
+        prof_storage['external'] = pps_set_hat_external
+        prof_storage['attachment'] = matches['attachment'] or ''
+        prof_storage['flags'] = matches['flags']
+        prof_storage['xattrs'] = matches['xattrs']
 
         return (profile, hat, prof_storage)
 
