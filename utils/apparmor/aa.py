@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2014-2019 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2014-2021 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -1769,58 +1769,6 @@ def attach_profile_data(profiles, profile_data):
         profiles[p] = deepcopy(profile_data[p])
 
 
-def parse_profile_start(line, file, lineno, profile, hat):
-    matches = parse_profile_start_line(line, file)
-
-    if profile:  # we are inside a profile, so we expect a child profile
-        if not matches['profile_keyword']:
-            raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: missing "profile" keyword.') % {
-                    'profile': profile, 'file': file, 'line': lineno + 1 })
-        if hat is not None:
-            # nesting limit reached - a child profile can't contain another child profile
-            raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: a child profile inside another child profile is not allowed.') % {
-                    'profile': profile, 'file': file, 'line': lineno + 1 })
-
-        hat = matches['profile']
-        pps_set_hat_external = False
-
-    else:  # stand-alone profile
-        profile = matches['profile']
-        if len(profile.split('//')) > 2:
-            raise AppArmorException("Nested child profiles ('%(profile)s', found in %(file)s) are not supported by the AppArmor tools yet." % {'profile': profile, 'file': file})
-        elif len(profile.split('//')) == 2:
-            profile, hat = profile.split('//')
-            pps_set_hat_external = True
-        else:
-            hat = profile
-            pps_set_hat_external = False
-
-    attachment = matches['attachment']
-    flags = matches['flags']
-    xattrs = matches['xattrs']
-
-    return (profile, hat, attachment, xattrs, flags, pps_set_hat_external)
-
-def parse_profile_start_to_storage(line, file, lineno, profile, hat):
-    ''' parse a profile start line (using parse_profile_startline()) and convert it to a ProfileStorage '''
-
-    (profile, hat, attachment, xattrs, flags, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
-
-    prof_storage = ProfileStorage(profile, hat, 'parse_profile_data() profile_start')
-
-    if attachment:
-        prof_storage['attachment'] = attachment
-
-    if pps_set_hat_external:
-        prof_storage['external'] = True
-
-    prof_storage['name'] = profile
-    prof_storage['filename'] = file
-    prof_storage['xattrs'] = xattrs
-    prof_storage['flags'] = flags
-
-    return (profile, hat, prof_storage)
-
 def parse_profile_data(data, file, do_include, in_preamble):
     profile_data = {}
     profile = None
@@ -1876,7 +1824,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
 
             in_preamble = False
 
-            (profile, hat, prof_storage) = parse_profile_start_to_storage(line, file, lineno, profile, hat)
+            (profile, hat, prof_storage) = ProfileStorage.parse(line, file, lineno, profile, hat)
 
             if profile == hat:
                 hat = None

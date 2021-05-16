@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2014-2015 Christian Boltz
+#    Copyright (C) 2014-2021 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -20,7 +20,7 @@ import sys
 import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
      get_profile_flags, change_profile_flags, set_options_audit_mode, set_options_owner_mode, is_skippable_file,
-     parse_profile_start, parse_profile_start_to_storage, parse_profile_data,
+     parse_profile_data,
      get_file_perms, propose_file_rules, merged_to_split, split_to_merged)
 from apparmor.aare import AARE
 from apparmor.common import AppArmorException, AppArmorBug
@@ -480,53 +480,6 @@ class AaTest_is_skippable_file(AATest):
         self.assertTrue(is_skippable_file('/etc/apparmor.d/'))  # directory without filename
     def test_skippable_16(self):
         self.assertTrue(is_skippable_file('README'))
-
-
-class AaTest_parse_profile_start(AATest):
-    tests = [
-        # profile start line                                    profile hat          profile                    hat                attachment   xattrs                      flags       pps_set_hat_external
-        (('/foo {',                                             None,   None),      ('/foo',                    '/foo',                 None,   None,                       None,       False)),
-        (('/foo (complain) {',                                  None,   None),      ('/foo',                    '/foo',                 None,   None,                       'complain', False)),
-        (('profile foo /foo {',                                 None,   None),      ('foo',                     'foo',                  '/foo', None,                       None,       False)),            # named profile
-        (('profile /foo {',                                     '/bar', None),      ('/bar',                    '/foo',                 None,   None,                       None,       False)),            # child profile
-        (('/foo//bar {',                                        None,   None),      ('/foo',                    'bar',                  None,   None,                       None,       True )),            # external hat
-        (('profile "/foo" (complain) {',                        None,   None),      ('/foo',                    '/foo',                 None,   None,                       'complain', False)),
-        (('profile "/foo" xattrs=(user.bar=bar) {',             None,   None),      ('/foo',                    '/foo',                 None,   'user.bar=bar',             None,       False)),
-        (('profile "/foo" xattrs=(user.bar=bar user.foo=*) {',  None,   None),      ('/foo',                    '/foo',                 None,   'user.bar=bar user.foo=*',  None,       False)),
-        (('/usr/bin/xattrs-test xattrs=(myvalue="foo.bar") {',  None,   None),      ('/usr/bin/xattrs-test',    '/usr/bin/xattrs-test', None,   'myvalue="foo.bar"',        None,       False)),
-    ]
-
-    def _run_test(self, params, expected):
-        parsed = parse_profile_start(params[0], 'somefile', 1, params[1], params[2])
-
-        self.assertEqual(parsed, expected)
-
-        (profile, hat, prof_storage) = parse_profile_start_to_storage(params[0], 'somefile', 1, params[1], params[2])
-
-        self.assertEqual(profile,                       expected[0])
-        self.assertEqual(hat,                           expected[1])
-        if expected[2] is None:
-            self.assertEqual(prof_storage['attachment'],    '')
-        else:
-            self.assertEqual(prof_storage['attachment'],    expected[2])
-        self.assertEqual(prof_storage['xattrs'],        expected[3])
-        self.assertEqual(prof_storage['flags'],         expected[4])
-        self.assertEqual(prof_storage['is_hat'],        False)
-        self.assertEqual(prof_storage['external'],      expected[5])
-
-class AaTest_parse_profile_start_errors(AATest):
-    tests = [
-        (('/foo///bar///baz {',                                 None,   None),      AppArmorException),     # XXX deeply nested external hat
-        (('/foo {',                                             '/bar', '/bar'),    AppArmorException),     # child profile without profile keyword
-        (('xy',                                                 '/bar', '/bar'),    AppArmorBug),           # not a profile start
-    ]
-
-    def _run_test(self, params, expected):
-        with self.assertRaises(expected):
-            parse_profile_start(params[0], 'somefile', 1, params[1], params[2])
-
-        with self.assertRaises(expected):
-            parse_profile_start_to_storage(params[0], 'somefile', 1, params[1], params[2])
 
 class AaTest_parse_profile_data(AATest):
     def test_parse_empty_profile_01(self):
