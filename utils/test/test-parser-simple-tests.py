@@ -141,7 +141,6 @@ exception_not_raised = [
     'profile/flags/flags_bad44.sd',
     'profile/flags/flags_bad45.sd',
     'profile/flags/flags_bad46.sd',
-    'profile/simple_bad_no_close_brace4.sd',
     'profile/profile_ns_bad8.sd',  # 'profile :ns/t' without terminating ':'
     'ptrace/bad_05.sd',  # actually contains a capability rule with invalid (ptrace-related) keyword
     'ptrace/bad_06.sd',  # actually contains a capability rule with invalid (ptrace-related) keyword
@@ -305,9 +304,6 @@ unknown_line = [
 syntax_failure = [
     # missing profile keywords
     'profile/re_named_ok2.sd',
-
-    # Syntax Error: Unexpected hat definition found (external hat)
-    'change_hat/new_style4.sd',
 
     # Syntax Errors caused by boolean conditions (parse_profile_data() gets confused by the closing '}')
     'conditional/defined_1.sd',

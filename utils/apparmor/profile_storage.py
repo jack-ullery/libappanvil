@@ -234,9 +234,12 @@ class ProfileStorage:
         prof_storage['name'] = profile
         prof_storage['filename'] = file
         prof_storage['external'] = pps_set_hat_external
-        prof_storage['attachment'] = matches['attachment'] or ''
         prof_storage['flags'] = matches['flags']
-        prof_storage['xattrs'] = matches['xattrs']
+        prof_storage['is_hat'] = matches['is_hat']
+
+        if not matches['is_hat']:
+            prof_storage['attachment'] = matches['attachment'] or ''
+            prof_storage['xattrs'] = matches['xattrs']
 
         return (profile, hat, prof_storage)
 

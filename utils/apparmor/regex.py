@@ -112,19 +112,26 @@ RE_PROFILE_FILE_ENTRY = re.compile(
 
 
 def parse_profile_start_line(line, filename):
+    common_sections = [ 'leadingspace', 'flags', 'comment']
+
+    sections = [ 'plainprofile', 'namedprofile', 'attachment', 'xattrs'] + common_sections
     matches = RE_PROFILE_START.search(line)
+
+    if not matches:
+        sections = ['hat_keyword', 'hat'] + common_sections
+        matches = RE_PROFILE_HAT_DEF.search(line)
 
     if not matches:
         raise AppArmorBug('The given line from file %(filename)s is not the start of a profile: %(line)s' % { 'filename': filename, 'line': line } )
 
     result = {}
 
-    for section in [ 'leadingspace', 'plainprofile', 'namedprofile', 'attachment', 'xattrs', 'flags', 'comment']:
+    for section in sections:
         if matches.group(section):
             result[section] = matches.group(section)
 
             # sections with optional quotes
-            if section in ['plainprofile', 'namedprofile', 'attachment']:
+            if section in ['plainprofile', 'namedprofile', 'attachment', 'hat']:
                 result[section] = strip_quotes(result[section])
         else:
             result[section] = None
@@ -132,7 +139,12 @@ def parse_profile_start_line(line, filename):
     if result['flags'] and result['flags'].strip() == '':
         raise AppArmorException(_('Invalid syntax in %(filename)s: Empty set of flags in line %(line)s.' % { 'filename': filename, 'line': line } ))
 
-    if result['plainprofile']:
+    result['is_hat'] = False
+    if result.get('hat'):
+        result['is_hat'] = True
+        result['profile'] = result['hat']
+        result['profile_keyword'] = True
+    elif result['plainprofile']:
         result['profile'] = result['plainprofile']
         result['profile_keyword'] = False
     else:
