@@ -624,6 +624,7 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
     # TODO: change child profile flags even if program is specified
 
     found = False
+    depth = -1
 
     if not flag or (type_is_str(flag) and flag.strip() == ''):
         raise AppArmorBug('New flag for %s is empty' % prof_filename)
@@ -634,8 +635,8 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
         with open_file_write(temp_file.name) as f_out:
             for line in f_in:
                 if RE_PROFILE_START.search(line):
+                    depth += 1
                     matches = parse_profile_start_line(line, prof_filename)
-                    space = matches['leadingspace'] or ''
                     profile = matches['profile']
                     old_flags = matches['flags']
                     newflags = ', '.join(add_or_remove_flag(old_flags, flag, set_flag))
@@ -657,11 +658,11 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
                         prof_storage['header_comment'] = matches['comment'] or ''
                         prof_storage['xattrs'] = matches['xattrs']
 
-                        line = prof_storage.get_header(len(space)/2, profile, False, True)
+                        line = prof_storage.get_header(depth, profile, False, True)
                         line = '%s\n' % line[0]
                 elif RE_PROFILE_HAT_DEF.search(line):
+                    depth += 1
                     matches = RE_PROFILE_HAT_DEF.search(line)
-                    space = matches.group('leadingspace') or ''
                     hat_keyword = matches.group('hat_keyword')
                     hat = matches.group('hat')
                     old_flags = matches['flags']
@@ -670,10 +671,14 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
                     if comment:
                         comment = ' %s' % comment
 
+                    space = depth * 2 * ' '
                     if newflags:
                         line = '%s%s%s flags=(%s) {%s\n' % (space, hat_keyword, hat, newflags, comment)
                     else:
                         line = '%s%s%s {%s\n' % (space, hat_keyword, hat, comment)
+                elif RE_PROFILE_END.search(line):
+                    depth -= 1
+
                 f_out.write(line)
     os.rename(temp_file.name, prof_filename)
 

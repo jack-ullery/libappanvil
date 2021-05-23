@@ -257,7 +257,7 @@ class AaTest_change_profile_flags(AaTestWithTempdir):
         dummy_profile_content = '  #include <abstractions/base>\n  capability chown,\n  /bar r,'
         prof_template = '%s%s%s {%s\n%s\n%s\n}\n'
         old_prof = prof_template % (whitespace, profile, old_flags,      comment, more_rules,          dummy_profile_content)
-        new_prof = prof_template % (whitespace, profile, expected_flags, comment, expected_more_rules, dummy_profile_content)
+        new_prof = prof_template % ('',         profile, expected_flags, comment, expected_more_rules, dummy_profile_content)
 
         self.file = write_file(self.tmpdir, 'profile', old_prof)
         change_profile_flags(self.file, profile_name, flags_to_change, set_flag)
@@ -333,7 +333,7 @@ class AaTest_change_profile_flags(AaTestWithTempdir):
     def test_change_profile_flags_with_hat_03(self):
         self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
             more_rules='\n^foobar (attach_disconnected) { # comment\n}\n',
-            expected_more_rules='\n^foobar flags=(attach_disconnected, audit) { # comment\n}\n'
+            expected_more_rules='\n  ^foobar flags=(attach_disconnected, audit) { # comment\n}\n'
         )
 
     def test_change_profile_flags_with_hat_04(self):
