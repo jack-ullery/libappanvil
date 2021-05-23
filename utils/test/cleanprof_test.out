@@ -46,6 +46,13 @@ $bar = true
   change_profile,
 
 
+  hat bar {
+    capability sys_admin,
+
+    /etc/passwd r,
+
+  }
+
   ^foo {
     capability dac_override,
 

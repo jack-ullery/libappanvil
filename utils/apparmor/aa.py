@@ -2096,9 +2096,6 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
             if not profile_data[hat]['external']:
                 data.append('')
 
-                if profile_data[hat]['is_hat']:
-                    only_hat = '^%s' % only_hat
-
                 data += profile_data[hat].get_header(depth + 1, only_hat, True, write_flags)
 
                 data += profile_data[hat].get_rules_clean(depth + 2)

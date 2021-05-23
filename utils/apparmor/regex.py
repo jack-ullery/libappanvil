@@ -143,6 +143,10 @@ def parse_profile_start_line(line, filename):
     if result.get('hat'):
         result['is_hat'] = True
         result['profile'] = result['hat']
+        if result['hat_keyword'] == '^':
+            result['hat_keyword'] = False
+        else:
+            result['hat_keyword'] = True
         result['profile_keyword'] = True
     elif result['plainprofile']:
         result['profile'] = result['plainprofile']
