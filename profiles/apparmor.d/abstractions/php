@@ -13,26 +13,26 @@
   abi <abi/3.0>,
 
   # shared snippets for config files
-  /etc/php{,5,7}/**/ r,
-  /etc/php{,5,7}/**.ini r,
+  /etc/php{,5,7,8}/**/ r,
+  /etc/php{,5,7,8}/**.ini r,
 
   # Xlibs
   /usr/X11R6/lib{,32,64}/lib*.so* mr,
   # php extensions
-  /usr/lib{64,}/php{,5,7}/*/*.so mr,
+  /usr/lib{64,}/php{,5,7,8}/*/*.so mr,
 
   # ICU (unicode support) data tables
   /usr/share/icu/*/*.dat r,
 
   # php session mmap socket
-  /var/lib/php{,5,7}/session_mm_* rwlk,
+  /var/lib/php{,5,7,8}/session_mm_* rwlk,
   # file based session handler
-  /var/lib/php{,5,7}/sess_* rwlk,
-  /var/lib/php{,5,7}/sessions/* rwlk,
+  /var/lib/php{,5,7,8}/sess_* rwlk,
+  /var/lib/php{,5,7,8}/sessions/* rwlk,
 
   # php libraries
-  /usr/share/php{,5,7}/ r,
-  /usr/share/php{,5,7}/** mr,
+  /usr/share/php{,5,7,8}/ r,
+  /usr/share/php{,5,7,8}/** mr,
 
   # MySQL extension
   /usr/share/mysql/** r,
