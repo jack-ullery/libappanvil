@@ -652,7 +652,7 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
 
                         prof_storage['flags'] = newflags
 
-                        line = prof_storage.get_header(depth, profile, False, True)
+                        line = prof_storage.get_header(depth, profile, False)
                         line = '%s\n' % line[0]
                 elif RE_PROFILE_HAT_DEF.search(line):
                     depth += 1
@@ -661,7 +661,7 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
                     newflags = ', '.join(add_or_remove_flag(old_flags, flag, set_flag))
                     prof_storage['flags'] = newflags
 
-                    line = prof_storage.get_header(depth, profile, False, True)
+                    line = prof_storage.get_header(depth, profile, False)
                     line = '%s\n' % line[0]
                 elif RE_PROFILE_END.search(line):
                     depth -= 1
@@ -2070,7 +2070,7 @@ def write_piece(profile_data, depth, name, nhat):
         wname = name + '//' + nhat
         name = nhat
         inhat = True
-    data += profile_data[name].get_header(depth, wname, False, True)
+    data += profile_data[name].get_header(depth, wname, False)
     data += profile_data[name].get_rules_clean(depth + 1)
 
     pre2 = '  ' * (depth + 1)
@@ -2088,7 +2088,7 @@ def write_piece(profile_data, depth, name, nhat):
             if not profile_data[hat]['external']:
                 data.append('')
 
-                data += profile_data[hat].get_header(depth + 1, only_hat, True, True)
+                data += profile_data[hat].get_header(depth + 1, only_hat, True)
 
                 data += profile_data[hat].get_rules_clean(depth + 2)
 

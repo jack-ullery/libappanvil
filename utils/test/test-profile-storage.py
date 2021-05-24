@@ -37,16 +37,13 @@ class TestUnknownKey(AATest):
 
 class AaTest_get_header(AATest):
     tests = [
-        # name       embedded_hat    write_flags    depth   flags           attachment  prof.keyw.  comment    expected
+        # name       embedded_hat    UNUSED         depth   flags           attachment  prof.keyw.  comment    expected
         (['/foo',    False,          True,          1,      'complain',     '',         False,      ''      ],  '  /foo flags=(complain) {'),
         (['/foo',    True,           True,          1,      'complain',     '',         False,      ''      ],  '  profile /foo flags=(complain) {'),
-        (['/foo sp', False,          False,         2,      'complain',     '',         False,      ''      ],  '    "/foo sp" {'),
-        (['/foo'    ,False,          False,         2,      'complain',     '',         False,      ''      ],  '    /foo {'),
-        (['/foo',    True,           False,         2,      'complain',     '',         False,      ''      ],  '    profile /foo {'),
+        (['/foo sp', False,          True,          2,      'complain',     '',         False,      ''      ],  '    "/foo sp" flags=(complain) {'),
+        (['/foo',    True,           True,          2,      'complain',     '',         False,      ''      ],  '    profile /foo flags=(complain) {'),
         (['/foo',    False,          True,          0,      None,           '',         False,      ''      ],  '/foo {'),
         (['/foo',    True,           True,          0,      None,           '',         False,      ''      ],  'profile /foo {'),
-        (['/foo',    False,          False,         0,      None,           '',         False,      ''      ],  '/foo {'),
-        (['/foo',    True,           False,         0,      None,           '',         False,      ''      ],  'profile /foo {'),
         (['bar',     False,          True,          1,      'complain',     '',         False,      ''      ],  '  profile bar flags=(complain) {'),
         (['bar',     False,          True,          1,      'complain',     '/foo',     False,      ''      ],  '  profile bar /foo flags=(complain) {'),
         (['bar',     True,           True,          1,      'complain',     '/foo',     False,      ''      ],  '  profile bar /foo flags=(complain) {'),
@@ -68,7 +65,7 @@ class AaTest_get_header(AATest):
     def _run_test(self, params, expected):
         name = params[0]
         embedded_hat = params[1]
-        write_flags = params[2]
+        # write_flags = params[2]
         depth = params[3]
 
         prof_storage = ProfileStorage(name, '', 'test')
@@ -78,7 +75,7 @@ class AaTest_get_header(AATest):
         prof_storage['header_comment'] = params[7]
         prof_storage['xattrs'] = ''
 
-        result = prof_storage.get_header(depth, name, embedded_hat, write_flags)
+        result = prof_storage.get_header(depth, name, embedded_hat)
         self.assertEqual(result, [expected])
 
 class AaTest_get_header_01(AATest):
@@ -108,7 +105,7 @@ class AaTest_get_header_01(AATest):
     def _run_test(self, params, expected):
         name = params['name']
         embedded_hat = params.get('embedded_hat', False)
-        write_flags = params.get('write_flags', False)
+        # write_flags = params.get('write_flags', False)
         depth = params.get('depth', 0)
 
 
@@ -118,7 +115,7 @@ class AaTest_get_header_01(AATest):
             if params.get(param) is not None:
                 prof_storage[param] = params[param]
 
-        result = prof_storage.get_header(depth, name, embedded_hat, write_flags)
+        result = prof_storage.get_header(depth, name, embedded_hat)
         self.assertEqual(result, [expected])
 
 

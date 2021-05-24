@@ -133,7 +133,7 @@ class ProfileStorage:
         else:
             raise AppArmorBug('attempt to read unknown key %s' % key)
 
-    def get_header(self, depth, name, embedded_hat, write_flags):
+    def get_header(self, depth, name, embedded_hat):
         pre = ' ' * int(depth * 2)
         data = []
         unquoted_name = name
@@ -160,7 +160,7 @@ class ProfileStorage:
             xattrs = ' xattrs=(%s)' % self.data['xattrs']
 
         flags = ''
-        if write_flags and self.data['flags']:
+        if self.data['flags']:
             flags = ' flags=(%s)' % self.data['flags']
 
         data.append('%s%s%s%s {%s' % (pre, name, xattrs, flags, comment))
