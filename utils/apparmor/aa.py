@@ -44,7 +44,7 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END,
                             RE_PROFILE_HAT_DEF, RE_PROFILE_MOUNT,
                             RE_PROFILE_PIVOT_ROOT,
                             RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
-                            strip_quotes, parse_profile_start_line, re_match_include )
+                            parse_profile_start_line, re_match_include )
 
 from apparmor.profile_list import ProfileList, preamble_ruletypes
 
@@ -1813,7 +1813,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
                     else:
                         load_include(incname, in_preamble)
 
-        elif RE_PROFILE_START.search(line):  # Starting line of a profile
+        elif RE_PROFILE_START.search(line) or RE_PROFILE_HAT_DEF.search(line):  # Starting line of a profile/hat
             # in_contained_hat is needed to know if we are already in a profile or not. (Simply checking if we are in a hat doesn't work,
             # because something like "profile foo//bar" will set profile and hat at once, and later (wrongfully) expect another "}".
             # The logic is simple and resembles a "poor man's stack" (with limited/hardcoded height).
@@ -1945,36 +1945,6 @@ def parse_profile_data(data, file, do_include, in_preamble):
 
             aaui.UI_Important(_('Ignoring no longer supported change hat declaration "^%(hat)s," found in file: %(file)s line: %(line)s') % {
                     'hat': matches[0], 'file': file, 'line': lineno + 1 })
-
-        elif RE_PROFILE_HAT_DEF.search(line):
-            # An embedded hat syntax definition starts
-            matches = RE_PROFILE_HAT_DEF.search(line)
-            if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected hat definition found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
-
-            in_contained_hat = True
-            hat = matches.group('hat')
-            hat = strip_quotes(hat)
-            profname = combine_profname([profile, hat])
-
-            if profile_data.get(profname, False) and not do_include:
-                raise AppArmorException('Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
-                    { 'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat) })
-
-            # if hat is already known, the check above will error out (if not do_include)
-            # nevertheless, just to be sure, don't overwrite existing profile_data.
-            if not profile_data.get(profname, False):
-                profile_data[profname] = ProfileStorage(profile, hat, 'parse_profile_data() hat_def')
-                profile_data[profname]['filename'] = file
-                profile_data[profname]['is_hat'] = True
-
-            flags = matches.group('flags')
-
-            profile_data[profname]['flags'] = flags
-
-            if initial_comment:
-                profile_data[profname]['initial_comment'] = initial_comment
-            initial_comment = ''
 
         elif line[0] == '#':
             # Handle initial comments
@@ -2125,9 +2095,6 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
 
             if not profile_data[hat]['external']:
                 data.append('')
-
-                if profile_data[hat]['is_hat']:
-                    only_hat = '^%s' % only_hat
 
                 data += profile_data[hat].get_header(depth + 1, only_hat, True, write_flags)
 

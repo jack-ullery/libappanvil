@@ -68,6 +68,11 @@ $foo = false
 
 	mount options=(rw,suid) /c -> /3,
 
+    hat bar {
+        /etc/passwd r,
+        capability sys_admin,
+        }
+
 	pivot_root oldroot=/mnt/root/old/,
 
 	deny    owner       link       /some/thing    ->     /foo/bar    ,

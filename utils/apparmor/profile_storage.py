@@ -74,6 +74,7 @@ class ProfileStorage:
         data['initial_comment']  = ''
         data['profile_keyword']  = False  # currently only set by change_profile_flags()
         data['is_hat']           = False  # profile or hat?
+        data['hat_keyword']      = False  # True for 'hat foo', False for '^foo'
 
         data['allow'] = dict()
         data['deny'] = dict()
@@ -146,7 +147,12 @@ class ProfileStorage:
         if self.data['header_comment']:
             comment = ' %s' % self.data['header_comment']
 
-        if (not embedded_hat and not unquoted_name.startswith('/')) or (embedded_hat and not unquoted_name.startswith('^')) or self.data['attachment'] or self.data['profile_keyword']:
+        if self.data['is_hat']:
+            if self.data['hat_keyword']:
+                name = 'hat %s' % name
+            else:
+                name = '^%s' % name
+        elif (not embedded_hat and not unquoted_name.startswith('/')) or (embedded_hat and not unquoted_name.startswith('^')) or self.data['attachment'] or self.data['profile_keyword']:
             name = 'profile %s%s' % (name, attachment)
 
         xattrs = ''
@@ -234,9 +240,14 @@ class ProfileStorage:
         prof_storage['name'] = profile
         prof_storage['filename'] = file
         prof_storage['external'] = pps_set_hat_external
-        prof_storage['attachment'] = matches['attachment'] or ''
         prof_storage['flags'] = matches['flags']
-        prof_storage['xattrs'] = matches['xattrs']
+        prof_storage['is_hat'] = matches['is_hat']
+
+        if matches['is_hat']:
+            prof_storage['hat_keyword'] = matches['hat_keyword']
+        else:
+            prof_storage['attachment'] = matches['attachment'] or ''
+            prof_storage['xattrs'] = matches['xattrs']
 
         return (profile, hat, prof_storage)
 
