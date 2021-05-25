@@ -652,7 +652,7 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
 
                         prof_storage['flags'] = newflags
 
-                        line = prof_storage.get_header(depth, profile, False, True)
+                        line = prof_storage.get_header(depth, profile, False)
                         line = '%s\n' % line[0]
                 elif RE_PROFILE_HAT_DEF.search(line):
                     depth += 1
@@ -661,7 +661,7 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
                     newflags = ', '.join(add_or_remove_flag(old_flags, flag, set_flag))
                     prof_storage['flags'] = newflags
 
-                    line = prof_storage.get_header(depth, profile, False, True)
+                    line = prof_storage.get_header(depth, profile, False)
                     line = '%s\n' % line[0]
                 elif RE_PROFILE_END.search(line):
                     depth -= 1
@@ -2059,7 +2059,7 @@ def parse_unix_rule(line):
     # XXX Do real parsing here
     return aarules.Raw_Unix_Rule(line)
 
-def write_piece(profile_data, depth, name, nhat, write_flags):
+def write_piece(profile_data, depth, name, nhat):
     pre = '  ' * depth
     data = []
     wname = None
@@ -2070,7 +2070,7 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
         wname = name + '//' + nhat
         name = nhat
         inhat = True
-    data += profile_data[name].get_header(depth, wname, False, write_flags)
+    data += profile_data[name].get_header(depth, wname, False)
     data += profile_data[name].get_rules_clean(depth + 1)
 
     pre2 = '  ' * (depth + 1)
@@ -2088,7 +2088,7 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
             if not profile_data[hat]['external']:
                 data.append('')
 
-                data += profile_data[hat].get_header(depth + 1, only_hat, True, write_flags)
+                data += profile_data[hat].get_header(depth + 1, only_hat, True)
 
                 data += profile_data[hat].get_rules_clean(depth + 2)
 
@@ -2100,7 +2100,7 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
         for hat in all_childs:
             if name == nhat and profile_data[hat].get('external', False):
                 data.append('')
-                data += list(map(lambda x: '  %s' % x, write_piece(profile_data, depth - 1, name, nhat, write_flags)))
+                data += list(map(lambda x: '  %s' % x, write_piece(profile_data, depth - 1, name, nhat)))
                 data.append('  }')
 
     return data
@@ -2113,7 +2113,6 @@ def serialize_profile(profile_data, name, options):
         raise AppArmorBug('serialize_profile(): options is not a dict: %s' % options)
 
     include_metadata = options.get('METADATA', False)
-    include_flags = options.get('FLAGS', True)
 
     if include_metadata:
         string = '# Last Modified: %s\n' % time.asctime()
@@ -2137,14 +2136,14 @@ def serialize_profile(profile_data, name, options):
                 comment = original_aa[prof][prof]['initial_comment']
                 comment.replace('\\n', '\n')
                 data += [comment + '\n']
-            data += write_piece(split_to_merged(original_aa), 0, prof, prof, include_flags)
+            data += write_piece(split_to_merged(original_aa), 0, prof, prof)
         else:
             if profile_data[name].get('initial_comment', False):
                 comment = profile_data[name]['initial_comment']
                 comment.replace('\\n', '\n')
                 data += [comment + '\n']
 
-            data += write_piece(profile_data, 0, name, name, include_flags)
+            data += write_piece(profile_data, 0, name, name)
 
     string += '\n'.join(data)
 
