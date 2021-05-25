@@ -70,9 +70,9 @@ class ProfileStorage:
         data['xattrs']           = ''
         data['flags']            = ''
         data['external']         = False
-        data['header_comment']   = ''  # currently only set by change_profile_flags()
+        data['header_comment']   = ''  # comment in the profile/hat start line
         data['initial_comment']  = ''
-        data['profile_keyword']  = False  # currently only set by change_profile_flags()
+        data['profile_keyword']  = False
         data['is_hat']           = False  # profile or hat?
         data['hat_keyword']      = False  # True for 'hat foo', False for '^foo'
 
@@ -241,11 +241,13 @@ class ProfileStorage:
         prof_storage['filename'] = file
         prof_storage['external'] = pps_set_hat_external
         prof_storage['flags'] = matches['flags']
+        prof_storage['header_comment'] = matches['comment'] or ''
         prof_storage['is_hat'] = matches['is_hat']
 
         if matches['is_hat']:
             prof_storage['hat_keyword'] = matches['hat_keyword']
         else:
+            prof_storage['profile_keyword'] = matches['profile_keyword']
             prof_storage['attachment'] = matches['attachment'] or ''
             prof_storage['xattrs'] = matches['xattrs']
 

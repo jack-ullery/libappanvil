@@ -633,49 +633,36 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
         temp_file = tempfile.NamedTemporaryFile('w', prefix=prof_filename, suffix='~', delete=False, dir=profile_dir)
         shutil.copymode(prof_filename, temp_file.name)
         with open_file_write(temp_file.name) as f_out:
-            for line in f_in:
+            for lineno, line in enumerate(f_in):
                 if RE_PROFILE_START.search(line):
                     depth += 1
-                    matches = parse_profile_start_line(line, prof_filename)
-                    profile = matches['profile']
-                    old_flags = matches['flags']
+                    (profile, hat, prof_storage) = ProfileStorage.parse(line, prof_filename, lineno, '', '')
+                    old_flags = prof_storage['flags']
                     newflags = ', '.join(add_or_remove_flag(old_flags, flag, set_flag))
 
-                    if (matches['attachment'] is not None):
-                        profile_glob = AARE(matches['attachment'], True)
+                    if (prof_storage['attachment']):
+                        profile_glob = AARE(prof_storage['attachment'], True)
                     else:
-                        profile_glob = AARE(matches['profile'], False)  # named profiles can come without an attachment path specified ("profile foo {...}")
+                        profile_glob = AARE(prof_storage['name'], False)  # named profiles can come without an attachment path specified ("profile foo {...}")
 
-                    if (program is not None and profile_glob.match(program)) or program is None or program == matches['profile']:
+                    if (program is not None and profile_glob.match(program)) or program is None or program == prof_storage['name']:
                         found = True
                         if program is not None and program != profile:
                             aaui.UI_Info(_('Warning: profile %s represents multiple programs') % profile)
 
-                        prof_storage = ProfileStorage(profile, profile, 'change_profile_flags()')
-                        prof_storage['attachment'] = matches['attachment'] or ''
                         prof_storage['flags'] = newflags
-                        prof_storage['profile_keyword'] = matches['profile_keyword']
-                        prof_storage['header_comment'] = matches['comment'] or ''
-                        prof_storage['xattrs'] = matches['xattrs']
 
                         line = prof_storage.get_header(depth, profile, False, True)
                         line = '%s\n' % line[0]
                 elif RE_PROFILE_HAT_DEF.search(line):
                     depth += 1
-                    matches = RE_PROFILE_HAT_DEF.search(line)
-                    hat_keyword = matches.group('hat_keyword')
-                    hat = matches.group('hat')
-                    old_flags = matches['flags']
+                    (profile, hat, prof_storage) = ProfileStorage.parse(line, prof_filename, lineno, '', '')
+                    old_flags = prof_storage['flags']
                     newflags = ', '.join(add_or_remove_flag(old_flags, flag, set_flag))
-                    comment = matches.group('comment') or ''
-                    if comment:
-                        comment = ' %s' % comment
+                    prof_storage['flags'] = newflags
 
-                    space = depth * 2 * ' '
-                    if newflags:
-                        line = '%s%s%s flags=(%s) {%s\n' % (space, hat_keyword, hat, newflags, comment)
-                    else:
-                        line = '%s%s%s {%s\n' % (space, hat_keyword, hat, comment)
+                    line = prof_storage.get_header(depth, profile, False, True)
+                    line = '%s\n' % line[0]
                 elif RE_PROFILE_END.search(line):
                     depth -= 1
 
