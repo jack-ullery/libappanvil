@@ -202,6 +202,7 @@ void include_filename(char *filename, int search, bool if_exists)
 		yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
         } else if (S_ISDIR(my_stat.st_mode)) {
 		struct cb_struct data = { fullpath, filename };
+		update_mru_tstamp(include_file, fullpath);
 		fclose(include_file);
 		include_file = NULL;
 		if (dirat_for_each(AT_FDCWD, fullpath, &data, include_dir_cb)) {
