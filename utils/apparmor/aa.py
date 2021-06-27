@@ -93,8 +93,8 @@ extra_profiles = ProfileList()
 # format: user_globs['/foo*'] = AARE('/foo*')
 user_globs = {}
 
-## Variables used under logprof
-transitions = hasher()
+# let ask_addhat() remember answers for already-seen change_hat events
+transitions = {}
 
 aa = hasher()  # Profiles originally in sd, replace by aa
 original_aa = hasher()
@@ -752,8 +752,7 @@ def ask_addhat(hashlog):
                     if re.search(hatglob, profile):
                         default_hat = cfg['defaulthat'][hatglob]
 
-                context = profile
-                context = context + ' -> ^%s' % hat
+                context = profile + ' -> ^%s' % hat
                 ans = transitions.get(context, 'XXXINVALIDXXX')
 
                 while ans not in ['CMD_ADDHAT', 'CMD_USEDEFAULT', 'CMD_DENY']:
@@ -1472,7 +1471,6 @@ def set_logfile(filename):
 
 def do_logprof_pass(logmark=''):
     # set up variables for this pass
-#    transitions = hasher()
     global active_profiles
     global sev_db
 #    aa = hasher()
