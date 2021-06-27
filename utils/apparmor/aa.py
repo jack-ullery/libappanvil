@@ -804,22 +804,22 @@ def ask_exec(hashlog):
     '''ask the user about exec events (requests to execute another program) and which exec mode to use'''
 
     for aamode in hashlog:
-        for profile in hashlog[aamode]:
-            if '//' in hashlog[aamode][profile]['final_name'] and hashlog[aamode][profile]['exec'].keys():
+        for full_profile in hashlog[aamode]:
+            if '//' in hashlog[aamode][full_profile]['final_name'] and hashlog[aamode][full_profile]['exec'].keys():
                 # TODO: is this really needed? Or would removing Cx from the options be good enough?
-                aaui.UI_Important('WARNING: Ignoring exec event in %s, nested profiles are not supported yet.' % hashlog[aamode][profile]['final_name'])
+                aaui.UI_Important('WARNING: Ignoring exec event in %s, nested profiles are not supported yet.' % hashlog[aamode][full_profile]['final_name'])
                 continue
 
-            hat = profile  # XXX temporary solution to avoid breaking the existing code
+            profile, hat = split_name(full_profile)  # XXX temporary solution to avoid breaking the existing code
 
-            for exec_target in hashlog[aamode][profile]['exec']:
-                for target_profile in hashlog[aamode][profile]['exec'][exec_target]:
+            for exec_target in hashlog[aamode][full_profile]['exec']:
+                for target_profile in hashlog[aamode][full_profile]['exec'][exec_target]:
                     to_name = ''
 
                     if os.path.isdir(exec_target):
                         raise AppArmorBug('exec permissions requested for directory %s. This should not happen - please open a bugreport!' % exec_target)
 
-                    if not aa[profile][hat]:
+                    if not aa[profile].get(hat):
                         continue  # ignore log entries for non-existing profiles
 
                     exec_event = FileRule(exec_target, None, FileRule.ANY_EXEC, FileRule.ALL, owner=False, log_event=True)
