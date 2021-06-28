@@ -13,6 +13,8 @@
 # in the name.
 #=END
 
+LANG=C
+
 pwd=`dirname $0`
 pwd=`cd $pwd ; /bin/pwd`
 
