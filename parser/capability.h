@@ -37,6 +37,10 @@
 #define CAP_MAC_OVERRIDE     32
 #endif
 
+#ifndef CAP_AUDIT_READ
+#define CAP_AUDIT_READ 37
+#endif
+
 #ifndef CAP_PERFMON
 #define CAP_PERFMON 38
 #endif
