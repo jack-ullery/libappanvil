@@ -19,7 +19,23 @@
 #ifndef __AA_CAPABILITY_H
 #define __AA_CAPABILITY_H
 
+#include <linux/capability.h>
+
 #define NO_BACKMAP_CAP 0xff
+
+
+#ifndef CAP_AUDIT_WRITE
+#define CAP_AUDIT_WRITE 29
+#endif
+#ifndef CAP_AUDIT_CONTROL
+#define CAP_AUDIT_CONTROL 30
+#endif
+#ifndef CAP_SETFCAP
+#define CAP_SETFCAP	     31
+#endif
+#ifndef CAP_MAC_OVERRIDE
+#define CAP_MAC_OVERRIDE     32
+#endif
 
 #ifndef CAP_PERFMON
 #define CAP_PERFMON 38

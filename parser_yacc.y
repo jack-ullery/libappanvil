@@ -44,20 +44,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include <linux/capability.h>
-
-#ifndef CAP_AUDIT_WRITE
-#define CAP_AUDIT_WRITE 29
-#endif
-#ifndef CAP_AUDIT_CONTROL
-#define CAP_AUDIT_CONTROL 30
-#endif
-#ifndef CAP_SETFCAP
-#define CAP_SETFCAP	     31
-#endif
-#ifndef CAP_MAC_OVERRIDE
-#define CAP_MAC_OVERRIDE     32
-#endif
 
 #define CIDR_32 htonl(0xffffffff)
 #define CIDR_24 htonl(0xffffff00)
