@@ -91,7 +91,7 @@ int mru_skip_cache = 1;
 #define DEFAULT_JOBS_MAX -8
 #define DEFAULT_ESTIMATED_JOB_SIZE (50 * 1024 * 1024)
 long estimated_job_size = DEFAULT_ESTIMATED_JOB_SIZE;
-long jobs_max = -DEFAULT_JOBS_MAX;	/* 8 * cpus */
+long jobs_max = DEFAULT_JOBS_MAX;	/* 8 * cpus */
 long jobs = JOBS_AUTO;			/* default: number of processor cores */
 long njobs = 0;
 long jobs_scale = 0;			/* number of chance to resample online
