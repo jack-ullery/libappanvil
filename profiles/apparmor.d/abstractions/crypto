@@ -14,6 +14,7 @@
   abi <abi/3.0>,
 
   @{etc_ro}/gcrypt/random.conf r,
+  @{PROC}/sys/crypto/fips_enabled r,
 
   # libgcrypt reads some flags from /proc
   @{PROC}/sys/crypto/* r,
