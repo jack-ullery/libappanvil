@@ -96,6 +96,7 @@ coverage-report: .coverage
 
 coverage-regression: .coverage
 	$(PYTHON) -m coverage report --omit="$(COVERAGE_OMIT)" > coverage-report.txt
+	$(PYTHON) -m coverage html --omit="$(COVERAGE_OMIT)" $(HTML_COVR_ARGS)
 	cat coverage-report.txt
 	@echo 'Checking for coverage changes...'
 	@if grep -vE ' 100%$$|TOTAL|$(INCOMPLETE_COVERAGE)' coverage-report.txt  |grep '%$$' ; then echo "ERROR: Coverage regression - the files listed above are expected to have 100% test coverage"; exit 1; fi
