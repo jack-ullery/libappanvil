@@ -18,4 +18,8 @@
   # libgcrypt reads some flags from /proc
   @{PROC}/sys/crypto/* r,
 
+  # crypto policies used by various libraries
+  /etc/crypto-policies/*/*.txt r,
+  /usr/share/crypto-policies/*/*.txt r,
+
   include if exists <abstractions/crypto.d>
