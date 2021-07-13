@@ -12,6 +12,7 @@
 
   abi <abi/3.0>,
 
+  include <abstractions/crypto>
 
   # (Note that the ldd profile has inlined this file; if you make
   # modifications here, please consider including them in the ldd
@@ -103,9 +104,6 @@
 
   # glibc's *printf protections read the maps file
   @{PROC}/@{pid}/{maps,auxv,status} r,
-
-  # libgcrypt reads some flags from /proc
-  @{PROC}/sys/crypto/*           r,
 
   # some applications will display license information
   /usr/share/common-licenses/**  r,
