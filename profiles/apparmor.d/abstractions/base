@@ -105,9 +105,6 @@
   # glibc's *printf protections read the maps file
   @{PROC}/@{pid}/{maps,auxv,status} r,
 
-  # libgcrypt reads some flags from /proc
-  @{PROC}/sys/crypto/*           r,
-
   # some applications will display license information
   /usr/share/common-licenses/**  r,
 

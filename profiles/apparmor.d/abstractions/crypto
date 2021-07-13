@@ -15,4 +15,7 @@
 
   @{etc_ro}/gcrypt/random.conf r,
 
+  # libgcrypt reads some flags from /proc
+  @{PROC}/sys/crypto/* r,
+
   include if exists <abstractions/crypto.d>
