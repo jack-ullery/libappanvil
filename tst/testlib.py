@@ -180,7 +180,7 @@ def read_features_dir(path):
     if not os.path.exists(path) or not os.path.isdir(path):
         return result
 
-    for name in os.listdir(path):
+    for name in sorted(os.listdir(path)):
         entry = os.path.join(path, name)
         result += '%s {' % name
         if os.path.isfile(entry):
