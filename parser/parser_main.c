@@ -85,13 +85,13 @@ int mru_skip_cache = 1;
 /* for jobs_max and jobs
  * LONG_MAX : no limit
  * LONG_MIN  : auto  = detect system processing cores
- * n  : use that number of processes/threads to compile policy
+ * -n  : multiply by the number of CPUs to compile policy
  */
 #define JOBS_AUTO LONG_MIN
 #define DEFAULT_JOBS_MAX -8
 #define DEFAULT_ESTIMATED_JOB_SIZE (50 * 1024 * 1024)
 long estimated_job_size = DEFAULT_ESTIMATED_JOB_SIZE;
-long jobs_max = -DEFAULT_JOBS_MAX;	/* 8 * cpus */
+long jobs_max = DEFAULT_JOBS_MAX;	/* 8 * cpus */
 long jobs = JOBS_AUTO;			/* default: number of processor cores */
 long njobs = 0;
 long jobs_scale = 0;			/* number of chance to resample online
