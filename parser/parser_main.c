@@ -85,7 +85,7 @@ int mru_skip_cache = 1;
 /* for jobs_max and jobs
  * LONG_MAX : no limit
  * LONG_MIN  : auto  = detect system processing cores
- * n  : use that number of processes/threads to compile policy
+ * -n  : multiply by the number of CPUs to compile policy
  */
 #define JOBS_AUTO LONG_MIN
 #define DEFAULT_JOBS_MAX -8
