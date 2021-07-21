@@ -70,6 +70,10 @@ AppArmor extensions to the system are not available.
 
 AppArmor is available on the system but has been disabled at boot.
 
+=item B<EBUSY>
+
+AppArmor is available but only via private interfaces.
+
 =item B<ENOENT>
 
 AppArmor is available (and maybe even enforcing policy) but the interface is
