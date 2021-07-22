@@ -54,7 +54,7 @@
  *
  * /sys/module/apparmor/parameters/ *
  *
- * Available on on kernels, some options may not be available and policy
+ * Available on all kernels, some options may not be available and policy
  * may block access.
  *     audit                - normal,quiet_denied,quiet,noquiet,all
  *     debug (bool)         - turn on debug messages if enabled during compile
@@ -105,7 +105,7 @@
  *    /sys/module/apparmor/parameters/enabled=N.
  * Note: older version of the library only used this interface and did not
  *       check if it was available. Which could lead to weird failures if
- *       another LSM had clamed it. This version of the library tries to
+ *       another LSM has claimed it. This version of the library tries to
  *       fix this problem, but unfortunately it is impossible to completely
  *       address, because access to interfaces required to determine
  *       whether apparmor owns the interface may be restricted, either
