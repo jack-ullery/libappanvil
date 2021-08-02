@@ -45,6 +45,11 @@ pivot_root_cleanup() {
 }
 do_onexit="pivot_root_cleanup"
 
+# loopback module must be loaded for mount -o loop to work
+if [ ! -b /dev/loop0 ] ; then
+	modprobe loop
+fi
+
 # systemd mounts / and everything under it MS_SHARED. This breaks
 # pivot_root entirely, so attempt to detect it, and remount /
 # MS_PRIVATE temporarily.
