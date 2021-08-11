@@ -267,9 +267,9 @@ profile chromium_browser /usr/lib/@{chromium}/@{chromium} flags=(attach_disconne
     /usr/share/distro-info/** r,
     /var/lib/dpkg/** r,
 
-    /usr/local/lib/python3.[0-9]/dist-packages/ r,
+    /usr/local/lib/python3.{1,}[0-9]/dist-packages/ r,
     /usr/bin/ r,
-    /usr/bin/python3.[0-9] mr,
+    /usr/bin/python3.{1,}[0-9] mr,
   }
 
   profile sandbox {
