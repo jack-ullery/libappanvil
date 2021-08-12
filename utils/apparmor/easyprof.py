@@ -22,6 +22,8 @@ import subprocess
 import sys
 import tempfile
 
+from apparmor.aa import which
+
 #
 # TODO: move this out to the common library
 #
@@ -294,13 +296,9 @@ class AppArmorEasyProfile:
         if os.path.isfile(self.conffile):
             self._get_defaults()
 
-        self.parser_path = '/sbin/apparmor_parser'
+        self.parser_path = which('apparmor_parser')
         if opt.parser_path:
             self.parser_path = opt.parser_path
-        elif not os.path.exists(self.parser_path):
-            rc, self.parser_path = cmd(['which', 'apparmor_parser'])
-            if rc != 0:
-                self.parser_path = None
 
         self.parser_base = "/etc/apparmor.d"
         if opt.parser_base:
