@@ -56,7 +56,13 @@ create_cache_files()
 	do
 		cachefile="${cachedir}/${policy}"
 
-		echo "profile $policy { /f r, }" | ${subdomain} "${parser_config}" -qS > "$cachefile"
+		args="-qS"
+		if [ -n "${parser_config}" ]
+		then
+			args="${args} ${parser_config}"
+		fi
+		echo "profile $policy { /f r, }" | ${subdomain} "${args}" > "$cachefile"
+
 	done
 }
 
