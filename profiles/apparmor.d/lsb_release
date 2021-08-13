@@ -18,7 +18,7 @@ profile lsb_release {
   /dev/tty rw,
 
   /usr/bin/lsb_release r,
-  /usr/bin/python3.[0-9] mr,
+  /usr/bin/python3.{1,}[0-9] mr,
 
   /etc/debian_version r,
   /etc/default/apport r,
