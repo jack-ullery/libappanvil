@@ -122,15 +122,15 @@ class TestSetInvalid(AATest):
 class AaTest_parse_profile_start(AATest):
     tests = [
         # profile start line                                    profile hat          profile                    hat                attachment   xattrs                      flags       pps_set_hat_external
-        (('/foo {',                                             None,   None),      ('/foo',                    '/foo',                 None,   '',                         None,       False)),
-        (('/foo (complain) {',                                  None,   None),      ('/foo',                    '/foo',                 None,   '',                         'complain', False)),
+        (('/foo {',                                             None,   None),      ('/foo',                    '/foo',                 '',     '',                         None,       False)),
+        (('/foo (complain) {',                                  None,   None),      ('/foo',                    '/foo',                 '',     '',                         'complain', False)),
         (('profile foo /foo {',                                 None,   None),      ('foo',                     'foo',                  '/foo', '',                         None,       False)),            # named profile
-        (('profile /foo {',                                     '/bar', None),      ('/bar',                    '/foo',                 None,   '',                         None,       False)),            # child profile
-        (('/foo//bar {',                                        None,   None),      ('/foo',                    'bar',                  None,   '',                         None,       True )),            # external hat
-        (('profile "/foo" (complain) {',                        None,   None),      ('/foo',                    '/foo',                 None,   '',                         'complain', False)),
-        (('profile "/foo" xattrs=(user.bar=bar) {',             None,   None),      ('/foo',                    '/foo',                 None,   'user.bar=bar',             None,       False)),
-        (('profile "/foo" xattrs=(user.bar=bar user.foo=*) {',  None,   None),      ('/foo',                    '/foo',                 None,   'user.bar=bar user.foo=*',  None,       False)),
-        (('/usr/bin/xattrs-test xattrs=(myvalue="foo.bar") {',  None,   None),      ('/usr/bin/xattrs-test',    '/usr/bin/xattrs-test', None,   'myvalue="foo.bar"',        None,       False)),
+        (('profile /foo {',                                     '/bar', None),      ('/bar',                    '/foo',                 '',     '',                         None,       False)),            # child profile
+        (('/foo//bar {',                                        None,   None),      ('/foo',                    'bar',                  '',     '',                         None,       True )),            # external hat
+        (('profile "/foo" (complain) {',                        None,   None),      ('/foo',                    '/foo',                 '',     '',                         'complain', False)),
+        (('profile "/foo" xattrs=(user.bar=bar) {',             None,   None),      ('/foo',                    '/foo',                 '',     'user.bar=bar',             None,       False)),
+        (('profile "/foo" xattrs=(user.bar=bar user.foo=*) {',  None,   None),      ('/foo',                    '/foo',                 '',     'user.bar=bar user.foo=*',  None,       False)),
+        (('/usr/bin/xattrs-test xattrs=(myvalue="foo.bar") {',  None,   None),      ('/usr/bin/xattrs-test',    '/usr/bin/xattrs-test', '',     'myvalue="foo.bar"',        None,       False)),
     ]
 
     def _run_test(self, params, expected):
@@ -138,10 +138,7 @@ class AaTest_parse_profile_start(AATest):
 
         self.assertEqual(profile,                       expected[0])
         self.assertEqual(hat,                           expected[1])
-        if expected[2] is None:
-            self.assertEqual(prof_storage['attachment'],    '')
-        else:
-            self.assertEqual(prof_storage['attachment'],    expected[2])
+        self.assertEqual(prof_storage['attachment'],    expected[2])
         self.assertEqual(prof_storage['xattrs'],        expected[3])
         self.assertEqual(prof_storage['flags'],         expected[4])
         self.assertEqual(prof_storage['is_hat'],        False)
