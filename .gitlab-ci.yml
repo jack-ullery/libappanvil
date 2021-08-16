@@ -49,6 +49,7 @@ test-all:
   artifacts:
     paths:
       - utils/test/htmlcov/
+    when: always
 
 # Disabled due to aa-logprof dependency on /sbin/apparmor_parser existing
 #      - make -C profiles check-profiles
