@@ -842,7 +842,7 @@ and other operations that are typically reserved for the root user.
 
 AppArmor supports simple coarse grained network mediation.  The network
 rule restrict all socket(2) based operations.  The mediation done is
-a course grained check on whether a socket of a given type and family
+a coarse-grained check on whether a socket of a given type and family
 can be created, read, or written.  There is no mediation based of port
 number or protocol beyond tcp, udp, and raw.  Network netlink(7) rules may
 only specify type 'dgram' and 'raw'.
