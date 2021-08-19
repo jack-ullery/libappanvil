@@ -89,13 +89,14 @@ class SeverityVarsTest(SeverityBaseTest):
 
     def _run_test(self, params, expected):
         vars = {
-            '@{HOME}':      {'@{HOMEDIRS}/*/', '/root/'},
-            '@{HOMEDIRS}':  {'/home/', '/storage/'},
-            '@{multiarch}': {'*-linux-gnu*'},
-            '@{TFTP_DIR}':  {'/var/tftp /srv/tftpboot'},
-            '@{PROC}':      {'/proc/'},
-            '@{somepaths}': {'/home/foo/downloads', '@{HOMEDIRS}/foo/.ssh/'},
-            '@{strangevar}': ['/srv/', '/proc/'],  # Note: using [] instead of {} is intentional to keep order of checking (and therefore code coverage) constant
+                            # Note: using [] instead of {} is intentional to keep order of checking (and therefore code coverage) constant
+            '@{HOME}':      ['@{HOMEDIRS}/*/', '/root/'],
+            '@{HOMEDIRS}':  ['/home/', '/storage/'],
+            '@{multiarch}': ['*-linux-gnu*'],
+            '@{TFTP_DIR}':  ['/var/tftp /srv/tftpboot'],
+            '@{PROC}':      ['/proc/'],
+            '@{somepaths}': ['/home/foo/downloads', '@{HOMEDIRS}/foo/.ssh/'],
+            '@{strangevar}': ['/srv/', '/proc/'],
         }
         self.sev_db.set_variables(vars)
         self._simple_severity_w_perm(params[0], params[1], expected)
