@@ -4,7 +4,7 @@
   abi <abi/3.0>,
 
   # System devices
-  @{sys}/class/video4linux r,
+  @{sys}/class/video4linux/ r,
   @{sys}/class/video4linux/** r,
 
   owner /dev/shm/libv4l-* rw,
