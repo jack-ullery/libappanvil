@@ -107,7 +107,7 @@ class ProfileStorage:
                 raise AppArmorBug('Attempt to change type of "%s" from %s to %s, value %s' % (key, type(self.data[key]), type(value), value))
 
         # allow writing str or None to some keys
-        elif key in ('xattrs', 'flags', 'filename'):
+        elif key in ('flags', 'filename'):
             if type_is_str(value) or value is None:
                 self.data[key] = value
             else:
@@ -249,7 +249,7 @@ class ProfileStorage:
         else:
             prof_storage['profile_keyword'] = matches['profile_keyword']
             prof_storage['attachment'] = matches['attachment'] or ''
-            prof_storage['xattrs'] = matches['xattrs']
+            prof_storage['xattrs'] = matches['xattrs'] or ''
 
         return (profile, hat, prof_storage)
 
