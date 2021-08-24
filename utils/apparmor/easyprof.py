@@ -23,21 +23,8 @@ import sys
 import tempfile
 
 from apparmor.aa import which
+from apparmor.common import AppArmorException
 
-#
-# TODO: move this out to the common library
-#
-#from apparmor import AppArmorException
-class AppArmorException(Exception):
-    '''This class represents AppArmor exceptions'''
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
-#
-# End common
-#
 
 DEBUGGING = False
 
