@@ -17,7 +17,7 @@ import sys
 
 import apparmor.aa as apparmor
 import apparmor.ui as aaui
-from apparmor.common import AppArmorException, cmd, user_perm
+from apparmor.common import AppArmorException, cmd, is_skippable_file, user_perm
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -111,7 +111,7 @@ class aa_tools:
 
             output_name = profile if program is None else program
 
-            if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
+            if not os.path.isfile(profile) or is_skippable_file(profile):
                 aaui.UI_Info(_('Profile for %s not found, skipping') % output_name)
                 continue
 
@@ -127,7 +127,7 @@ class aa_tools:
 
             output_name = profile if program is None else program
 
-            if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
+            if not os.path.isfile(profile) or is_skippable_file(profile):
                 aaui.UI_Info(_('Profile for %s not found, skipping') % output_name)
                 continue
 
@@ -142,7 +142,7 @@ class aa_tools:
 
             output_name = profile if program is None else program
 
-            if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
+            if not os.path.isfile(profile) or is_skippable_file(profile):
                 aaui.UI_Info(_('Profile for %s not found, skipping') % output_name)
                 continue
 
@@ -157,7 +157,7 @@ class aa_tools:
 
             output_name = profile if program is None else program
 
-            if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
+            if not os.path.isfile(profile) or is_skippable_file(profile):
                 aaui.UI_Info(_('Profile for %s not found, skipping') % output_name)
                 continue
 
