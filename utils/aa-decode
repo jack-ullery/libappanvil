@@ -37,7 +37,7 @@ EOM
 }
 
 decode() {
-    if echo "$1" | egrep -q "^[0-9A-Fa-f]+$" ; then
+    if echo "$1" | grep -E -q "^[0-9A-Fa-f]+$" ; then
       python3 -c "import binascii; print(bytes.decode(binascii.unhexlify('$1'), errors='strict'));"
     else
       echo ""
@@ -53,7 +53,7 @@ fi
 # if have an argument, then use it, otherwise process stdin
 if [ -n "$1" ]; then
     e="$1"
-    if ! echo "$e" | egrep -q "^[0-9A-Fa-f]+$" ; then
+    if ! echo "$e" | grep -E -q "^[0-9A-Fa-f]+$" ; then
         echo "String should only contain hex characters (0-9, a-f, A-F)"
         exit 1
     fi
