@@ -9,6 +9,7 @@
 # ------------------------------------------------------------------
 
 from apparmor.common import AppArmorException, debug, error, msg, cmd
+from apparmor.aa import which
 import apparmor.easyprof
 import optparse
 import os
@@ -31,8 +32,7 @@ def check_requirements(binary):
 
     for e in exes:
         debug("Searching for '%s'" % e)
-        rc, report = cmd(['which', e])
-        if rc != 0:
+        if which(e) is None:
             error("Could not find '%s'" % e, do_exit=False)
             return False
 
@@ -306,8 +306,7 @@ class SandboxXephyr(SandboxXserver):
     def start(self):
         for e in ['Xephyr', 'matchbox-window-manager']:
             debug("Searching for '%s'" % e)
-            rc, report = cmd(['which', e])
-            if rc != 0:
+            if which(e) is None:
                 raise AppArmorException("Could not find '%s'" % e)
 
         '''Run any setup code'''
@@ -567,8 +566,7 @@ EndSection
 
     def start(self):
         debug("Searching for '%s'" % 'xpra')
-        rc, report = cmd(['which', 'xpra'])
-        if rc != 0:
+        if which('xpra') is None:
             raise AppArmorException("Could not find '%s'" % 'xpra')
 
         if self.driver == "xdummy":
