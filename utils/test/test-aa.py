@@ -19,11 +19,11 @@ import sys
 
 import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
-     get_profile_flags, change_profile_flags, set_options_audit_mode, set_options_owner_mode, is_skippable_file,
+     get_profile_flags, change_profile_flags, set_options_audit_mode, set_options_owner_mode,
      parse_profile_data,
      get_file_perms, propose_file_rules, merged_to_split, split_to_merged)
 from apparmor.aare import AARE
-from apparmor.common import AppArmorException, AppArmorBug
+from apparmor.common import AppArmorException, AppArmorBug, is_skippable_file
 from apparmor.rule.file import FileRule
 from apparmor.rule.include import IncludeRule
 

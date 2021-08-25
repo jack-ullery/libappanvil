@@ -19,6 +19,7 @@ import tempfile
 import unittest
 
 import apparmor.easyprof as easyprof
+from apparmor.common import AppArmorException
 
 topdir = None
 debugging = False
@@ -219,7 +220,7 @@ TEMPLATES_DIR="%s/templates"
         open(self.conffile, 'w').write(contents)
         try:
             easyprof.AppArmorEasyProfile(self.binary, self.options)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -236,7 +237,7 @@ TEMPLATES_DIR="%s/templates"
         open(self.conffile, 'w').write(contents)
         try:
             easyprof.AppArmorEasyProfile(self.binary, self.options)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -253,7 +254,7 @@ TEMPLATES_DIR="%s/templates"
         open(self.conffile, 'w').write(contents)
         try:
             easyprof.AppArmorEasyProfile(self.binary, self.options)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -343,7 +344,7 @@ POLICYGROUPS_DIR="%s/templates"
         open(self.conffile, 'w').write(contents)
         try:
             easyprof.AppArmorEasyProfile(self.binary, self.options)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -360,7 +361,7 @@ POLICYGROUPS_DIR="%s/templates"
         open(self.conffile, 'w').write(contents)
         try:
             easyprof.AppArmorEasyProfile(self.binary, self.options)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -377,7 +378,7 @@ POLICYGROUPS_DIR="%s/templates"
         open(self.conffile, 'w').write(contents)
         try:
             easyprof.AppArmorEasyProfile(self.binary, self.options)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -486,7 +487,7 @@ POLICYGROUPS_DIR="%s/templates"
         '''Test binary (relative)'''
         try:
             easyprof.AppArmorEasyProfile('./foo', self.options)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -501,7 +502,7 @@ POLICYGROUPS_DIR="%s/templates"
 
         try:
             easyprof.AppArmorEasyProfile(symlink, self.options)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -863,7 +864,7 @@ POLICYGROUPS_DIR="%s/templates"
         '''Test genpolicy (nonexistent template)'''
         try:
             self._gen_policy(template=os.path.join(self.tmpdir, "/nonexistent"))
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -926,7 +927,7 @@ POLICYGROUPS_DIR="%s/templates"
         for s in bad:
             try:
                 self._gen_policy(extra_args=['--abstractions=%s' % s])
-            except easyprof.AppArmorException:
+            except AppArmorException:
                 continue
             except Exception:
                 raise
@@ -985,7 +986,7 @@ POLICYGROUPS_DIR="%s/templates"
                 if base:
                     args.append('--base=%s' % base)
                 self._gen_policy(extra_args=args)
-            except easyprof.AppArmorException:
+            except AppArmorException:
                 continue
             except Exception:
                 raise
@@ -1014,7 +1015,7 @@ POLICYGROUPS_DIR="%s/templates"
                 if include:
                     args.append('--Include=%s' % include)
                 self._gen_policy(extra_args=args)
-            except easyprof.AppArmorException:
+            except AppArmorException:
                 continue
             except Exception:
                 raise
@@ -1030,7 +1031,7 @@ POLICYGROUPS_DIR="%s/templates"
         for s in bad:
             try:
                 self._gen_policy(extra_args=['--profile-name=%s' % s])
-            except easyprof.AppArmorException:
+            except AppArmorException:
                 continue
             except Exception:
                 raise
@@ -1046,7 +1047,7 @@ POLICYGROUPS_DIR="%s/templates"
         for s in bad:
             try:
                 self._gen_policy(extra_args=['--policy-groups=%s' % s])
-            except easyprof.AppArmorException:
+            except AppArmorException:
                 continue
             except Exception:
                 raise
@@ -1087,7 +1088,7 @@ POLICYGROUPS_DIR="%s/templates"
         '''Test genpolicy (nonexistent policygroup)'''
         try:
             self._gen_policy(extra_args=['--policy-groups=nonexistent'])
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -1196,7 +1197,7 @@ POLICYGROUPS_DIR="%s/templates"
         s = "bar"
         try:
             self._gen_policy(extra_args=['--read-path=%s' % s])
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -1305,7 +1306,7 @@ POLICYGROUPS_DIR="%s/templates"
         s = "bar"
         try:
             self._gen_policy(extra_args=['--write-path=%s' % s])
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -1352,7 +1353,7 @@ POLICYGROUPS_DIR="%s/templates"
         for s in bad:
             try:
                 self._gen_policy(extra_args=['--template-var=%s' % s])
-            except easyprof.AppArmorException:
+            except AppArmorException:
                 continue
             except Exception:
                 raise
@@ -1375,7 +1376,7 @@ POLICYGROUPS_DIR="%s/templates"
         open(template, 'w').write(bad_pol)
         try:
             self._gen_policy(template=template)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -1385,7 +1386,7 @@ POLICYGROUPS_DIR="%s/templates"
         '''Test genpolicy (no binary with no profile name)'''
         try:
             easyprof.gen_policy_params(None, self.options)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -1453,7 +1454,7 @@ POLICYGROUPS_DIR="%s/templates"
         m.add_template("/etc/shadow")
         try:
             self._gen_manifest_policy(m)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -1465,7 +1466,7 @@ POLICYGROUPS_DIR="%s/templates"
         m.add_template("../../../../../../../../etc/shadow")
         try:
             self._gen_manifest_policy(m)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -1477,7 +1478,7 @@ POLICYGROUPS_DIR="%s/templates"
         m.add_template("nonexistent")
         try:
             self._gen_manifest_policy(m)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -1555,7 +1556,7 @@ POLICYGROUPS_DIR="%s/templates"
         m.add_policygroups(groups)
         try:
             self._gen_manifest_policy(m)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         except Exception:
             raise
@@ -1616,7 +1617,7 @@ POLICYGROUPS_DIR="%s/templates"
             j = json.dumps(security, indent=2)
             try:
                 easyprof.parse_manifest(j, self.options)
-            except easyprof.AppArmorException:
+            except AppArmorException:
                 continue
             raise Exception ("'%s' should be invalid" % k)
 
@@ -1744,7 +1745,7 @@ POLICYGROUPS_DIR="%s/templates"
         (binary, self.options) = easyprof.parse_manifest(m, self.options)[0]
         try:
             easyprof.AppArmorEasyProfile(binary, self.options)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         raise Exception ("Should have failed on missing version")
 
@@ -1776,7 +1777,7 @@ POLICYGROUPS_DIR="%s/templates"
         (binary, self.options) = easyprof.parse_manifest(m, self.options)[0]
         try:
             easyprof.AppArmorEasyProfile(binary, self.options)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         raise Exception ("Should have failed on missing vendor")
 
@@ -1852,7 +1853,7 @@ POLICYGROUPS_DIR="%s/templates"
         (self.options, self.args) = easyprof.parse_args(args)
         try:
             (binary, options) = easyprof.parse_manifest(m, self.options)[0]
-        except easyprof.AppArmorException:
+        except AppArmorException:
             if invalid:
                 return
             raise
@@ -2138,7 +2139,7 @@ POLICYGROUPS_DIR="%s/templates"
             params = easyprof.gen_policy_params(binary, options)
             try:
                 easyprof.verify_manifest(params)
-            except easyprof.AppArmorException:
+            except AppArmorException:
                 return
 
             raise Exception ("Should have failed with invalid variable declaration")
@@ -2167,7 +2168,7 @@ POLICYGROUPS_DIR="%s/templates"
         (binary, self.options) = easyprof.parse_manifest(m, self.options)[0]
         try:
             easyprof.AppArmorEasyProfile(binary, self.options)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
 
         raise Exception ("Should have failed with non-existent directory")
@@ -2257,7 +2258,7 @@ POLICYGROUPS_DIR="%s/templates"
         (self.options, self.args) = easyprof.parse_args(self.full_args + [self.binary])
         try:
             easyprof.AppArmorEasyProfile(self.binary, self.options)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
 
         raise Exception ("Should have failed with non-existent directory")
@@ -2279,7 +2280,7 @@ POLICYGROUPS_DIR="%s/templates"
             (self.options, self.args) = easyprof.parse_args(self.full_args + [self.binary])
             try:
                 easyprof.AppArmorEasyProfile(self.binary, self.options)
-            except easyprof.AppArmorException:
+            except AppArmorException:
                 continue
 
             raise Exception ("Should have failed with bad version")
@@ -2300,7 +2301,7 @@ POLICYGROUPS_DIR="%s/templates"
             (self.options, self.args) = easyprof.parse_args(self.full_args + [self.binary])
             try:
                 easyprof.AppArmorEasyProfile(self.binary, self.options)
-            except easyprof.AppArmorException:
+            except AppArmorException:
                 continue
 
             raise Exception ("Should have failed with bad vendor")
@@ -2479,7 +2480,7 @@ POLICYGROUPS_DIR="%s/templates"
         params = easyprof.gen_policy_params(binary, options)
         try:
             easyp.output_policy(params, dir=out_dir)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         raise Exception ("Should have failed with 'is not a directory'")
 
@@ -2516,7 +2517,7 @@ POLICYGROUPS_DIR="%s/templates"
         del params['binary']
         try:
             easyp.output_policy(params, dir=out_dir)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         raise Exception ("Should have failed with 'Must specify binary and/or profile name'")
 
@@ -2554,7 +2555,7 @@ POLICYGROUPS_DIR="%s/templates"
         params = easyprof.gen_policy_params(binary, options)
         try:
             easyp.output_policy(params, dir=out_dir)
-        except easyprof.AppArmorException:
+        except AppArmorException:
             return
         raise Exception ("Should have failed with 'already exists'")
 

@@ -21,7 +21,7 @@ import sys
 
 import apparmor.aa as aa
 import apparmor.ui as ui
-import apparmor.common
+from  apparmor.common import AppArmorException, open_file_read
 
 # setup exception handling
 from apparmor.fail import enable_aa_exception_handler
@@ -45,7 +45,7 @@ aa.init_aa(confdir=args.configdir)
 
 aa_mountpoint = aa.check_for_apparmor()
 if not aa_mountpoint:
-    raise aa.AppArmorException(_("It seems AppArmor was not started. Please enable AppArmor and try again."))
+    raise AppArmorException(_("It seems AppArmor was not started. Please enable AppArmor and try again."))
 
 
 def get_all_pids():
@@ -105,7 +105,7 @@ def read_proc_current(filename):
     attr = None
 
     if os.path.exists(filename):
-        with apparmor.common.open_file_read(filename) as current:
+        with open_file_read(filename) as current:
             for line in current:
                 line = line.strip()
                 if line.endswith(' (complain)', 1) or line.endswith(' (enforce)', 1) or line.endswith(' (kill)', 1):  # enforce at least one char as profile name
@@ -135,7 +135,7 @@ for pid in sorted(map(int, pids)):
 
     pname = None
     cmdline = None
-    with apparmor.common.open_file_read("/proc/%s/cmdline" % pid) as cmd:
+    with open_file_read("/proc/%s/cmdline" % pid) as cmd:
         cmdline = cmd.readlines()[0]
         pname = cmdline.split("\0")[0]
     if '/' in pname and pname != prog:

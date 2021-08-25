@@ -14,7 +14,7 @@ from common_test import AATest, setup_all_loops, setup_aa
 import apparmor.aa as apparmor
 
 import os
-from apparmor.common import open_file_read, AppArmorException
+from apparmor.common import open_file_read, AppArmorException, is_skippable_file
 
 # This testcase will parse all parser/tst/simple_tests with parse_profile_data(),
 # except the files listed in one of the arrays below.
@@ -528,7 +528,7 @@ def find_and_setup_test_profiles(profile_dir):
 
         for file in files:
             file_with_path = os.path.join(root, file)
-            if not apparmor.is_skippable_file(file) and relpath != '.':
+            if not is_skippable_file(file) and relpath != '.':
                 skipped += parse_test_profiles(file_with_path)
 
     if skipped:

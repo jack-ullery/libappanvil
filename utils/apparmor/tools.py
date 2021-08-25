@@ -17,7 +17,7 @@ import sys
 
 import apparmor.aa as apparmor
 import apparmor.ui as aaui
-from apparmor.common import user_perm, cmd
+from apparmor.common import AppArmorException, cmd, is_skippable_file, user_perm
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -43,7 +43,7 @@ class aa_tools:
 
     def check_profile_dir(self):
         if not user_perm(apparmor.profile_dir):
-            raise apparmor.AppArmorException("Cannot write to profile directory: %s" % (apparmor.profile_dir))
+            raise AppArmorException("Cannot write to profile directory: %s" % (apparmor.profile_dir))
 
     def get_next_to_profile(self):
         '''Iterator function to walk the list of arguments passed'''
@@ -111,7 +111,7 @@ class aa_tools:
 
             output_name = profile if program is None else program
 
-            if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
+            if not os.path.isfile(profile) or is_skippable_file(profile):
                 aaui.UI_Info(_('Profile for %s not found, skipping') % output_name)
                 continue
 
@@ -127,7 +127,7 @@ class aa_tools:
 
             output_name = profile if program is None else program
 
-            if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
+            if not os.path.isfile(profile) or is_skippable_file(profile):
                 aaui.UI_Info(_('Profile for %s not found, skipping') % output_name)
                 continue
 
@@ -142,7 +142,7 @@ class aa_tools:
 
             output_name = profile if program is None else program
 
-            if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
+            if not os.path.isfile(profile) or is_skippable_file(profile):
                 aaui.UI_Info(_('Profile for %s not found, skipping') % output_name)
                 continue
 
@@ -157,7 +157,7 @@ class aa_tools:
 
             output_name = profile if program is None else program
 
-            if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
+            if not os.path.isfile(profile) or is_skippable_file(profile):
                 aaui.UI_Info(_('Profile for %s not found, skipping') % output_name)
                 continue
 
@@ -226,7 +226,7 @@ class aa_tools:
                 apparmor.write_profile_ui_feedback(program, True)
                 self.reload_profile(filename)
         else:
-            raise apparmor.AppArmorException(_('The profile for %s does not exists. Nothing to clean.') % program)
+            raise AppArmorException(_('The profile for %s does not exists. Nothing to clean.') % program)
 
     def enable_profile(self, filename):
         apparmor.delete_symlink('disable', filename)
@@ -242,7 +242,7 @@ class aa_tools:
         cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '--base', apparmor.profile_dir, '-R', profile])
 
         if cmd_info[0] != 0:
-            raise apparmor.AppArmorException(cmd_info[1])
+            raise AppArmorException(cmd_info[1])
 
     def reload_profile(self, profile):
         if not self.do_reload:
@@ -251,4 +251,4 @@ class aa_tools:
         cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '--base', apparmor.profile_dir, '-r', profile])
 
         if cmd_info[0] != 0:
-            raise apparmor.AppArmorException(cmd_info[1])
+            raise AppArmorException(cmd_info[1])
