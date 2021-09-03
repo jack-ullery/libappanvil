@@ -36,6 +36,7 @@
 profile sanitized_helper {
   include <abstractions/base>
   include <abstractions/X>
+  include if exists <local/ubuntu-helpers>
 
   # Allow all networking
   network inet,
