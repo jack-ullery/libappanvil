@@ -1,0 +1,1 @@
+audit.log:type=AVC msg=audit(1630913351.586:4): apparmor="STATUS" info="AppArmor Filesystem Enabled" pid=1 comm="swapper/0"

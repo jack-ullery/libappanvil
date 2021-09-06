@@ -324,7 +324,7 @@ def parse_logdata(logsource):
             event = LibAppArmor.parse_record(entry)
             # Only show actual events of contained programs and ignore among
             # others AppArmor profile reloads
-            if event.operation[0:8] != 'profile_':
+            if event.operation and event.operation[0:8] != 'profile_':
                 yield event
 
 
