@@ -1,0 +1,1 @@
+2021-09-11T20:57:41.91645 kern.notice: [  469.180605] audit: type=1400 audit(1631392703.952:3): apparmor="ALLOWED" operation="mkdir" profile="/usr/sbin/sshd" name="/run/user/1000/kakoune/" pid=2545 comm="sshd" requested_mask="c" denied_mask="c" fsuid=1000 ouid=1000

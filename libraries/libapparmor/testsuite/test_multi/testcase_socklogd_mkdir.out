@@ -1,0 +1,15 @@
+START
+File: testcase_socklogd_mkdir.in
+Event type: AA_RECORD_ALLOWED
+Audit ID: 1631392703.952:3
+Operation: mkdir
+Mask: c
+Denied Mask: c
+fsuid: 1000
+ouid: 1000
+Profile: /usr/sbin/sshd
+Name: /run/user/1000/kakoune/
+Command: sshd
+PID: 2545
+Epoch: 1631392703
+Audit subid: 3

@@ -38,7 +38,7 @@
 #if (YYDEBUG != 0)
 #define debug_unused_ /* nothing */
 #else
-#define no_debug_unused_ unused_
+#define debug_unused_ unused_
 #endif
 
 aa_log_record *ret_record;
@@ -46,7 +46,7 @@ aa_log_record *ret_record;
 /* Since we're a library, on any errors we don't want to print out any
  * error messages. We should probably add a debug interface that does
  * emit messages when asked for. */
-void aalogparse_error(unused_ void *scanner, no_debug_unused_ char const *s)
+void aalogparse_error(unused_ void *scanner, debug_unused_ char const *s)
 {
 #if (YYDEBUG != 0)
 	printf("ERROR: %s\n", s);
@@ -186,6 +186,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_FLAGS
 %token TOK_KEY_SRCNAME
 
+%token TOK_SOCKLOGD_KERNEL
 %token TOK_SYSLOG_KERNEL
 %token TOK_SYSLOG_USER
 
@@ -232,24 +233,28 @@ dmesg_type: TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id key_list
 	{ ret_record->version = AA_RECORD_SYNTAX_V2; free($1); }
 	;
 
+syslog_id: TOK_ID TOK_SYSLOG_KERNEL { free($1); }
+	| TOK_SOCKLOGD_KERNEL { }
+	;
+
 syslog_type:
-	  syslog_date TOK_ID TOK_SYSLOG_KERNEL audit_id key_list
-	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); }
-	| syslog_date TOK_ID TOK_SYSLOG_KERNEL key_type audit_id key_list
-	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); }
-	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP audit_id key_list
-	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); free($4); }
-	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP key_type audit_id key_list
-	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); free($4); }
+	  syslog_date syslog_id audit_id key_list
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	| syslog_date syslog_id key_type audit_id key_list
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	| syslog_date syslog_id TOK_DMESG_STAMP audit_id key_list
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($3); }
+	| syslog_date syslog_id TOK_DMESG_STAMP key_type audit_id key_list
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($3); }
 	/* needs update: hard newline in handling mutiline log messages */
-	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id audit_user_msg_partial_tail
-	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); }
-	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id audit_user_msg_tail
-	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); }
-	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id key_list
-	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); free($4); }
-	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_AUDIT TOK_COLON key_type audit_id key_list
-	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); }
+	| syslog_date syslog_id TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id audit_user_msg_partial_tail
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($3); }
+	| syslog_date syslog_id TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id audit_user_msg_tail
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($3); }
+	| syslog_date syslog_id TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id key_list
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($3); }
+	| syslog_date syslog_id TOK_AUDIT TOK_COLON key_type audit_id key_list
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
 	| syslog_date TOK_ID TOK_SYSLOG_USER key_list
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); }
 	;
