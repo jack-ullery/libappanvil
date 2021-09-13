@@ -172,6 +172,7 @@ audit			"audit"
 ip_addr			[a-f[:digit:].:]{3,}
 
 /* syslog tokens */
+socklogd_kernel		kern.notice{colon}
 syslog_kernel		kernel{colon}
 syslog_user		[[:alnum:]_-]+\[[[:digit:]]+\]{colon}
 syslog_yyyymmdd		{digit}{4}{minus}{digit}{2}{minus}{digit}{2}
@@ -351,6 +352,7 @@ yy_flex_debug = 0;
 {key_flags}		{ BEGIN(safe_string); return(TOK_KEY_FLAGS); }
 {key_srcname}		{ BEGIN(safe_string); return(TOK_KEY_SRCNAME); }
 
+{socklogd_kernel}	{ BEGIN(dmesg_timestamp); return(TOK_SOCKLOGD_KERNEL); }
 {syslog_kernel}		{ BEGIN(dmesg_timestamp); return(TOK_SYSLOG_KERNEL); }
 {syslog_user}		{ return(TOK_SYSLOG_USER); }
 {syslog_month}		{ yylval->t_str = strdup(yytext); return(TOK_DATE_MONTH); }
@@ -365,6 +367,7 @@ yy_flex_debug = 0;
 
 <hostname>{
 	{ws}+		{ /* eat whitespace */ }
+	{socklogd_kernel} { BEGIN(dmesg_timestamp); return(TOK_SOCKLOGD_KERNEL); }
 	{syslog_hostname} { yylval->t_str = strdup(yytext); BEGIN(INITIAL); return(TOK_ID); }
 }
 
