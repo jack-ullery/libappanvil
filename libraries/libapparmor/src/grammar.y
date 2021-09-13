@@ -38,7 +38,7 @@
 #if (YYDEBUG != 0)
 #define debug_unused_ /* nothing */
 #else
-#define no_debug_unused_ unused_
+#define debug_unused_ unused_
 #endif
 
 aa_log_record *ret_record;
@@ -46,7 +46,7 @@ aa_log_record *ret_record;
 /* Since we're a library, on any errors we don't want to print out any
  * error messages. We should probably add a debug interface that does
  * emit messages when asked for. */
-void aalogparse_error(unused_ void *scanner, no_debug_unused_ char const *s)
+void aalogparse_error(unused_ void *scanner, debug_unused_ char const *s)
 {
 #if (YYDEBUG != 0)
 	printf("ERROR: %s\n", s);
