@@ -107,6 +107,11 @@ profile dnsmasq /usr/{bin,sbin}/dnsmasq flags=(attach_disconnected) {
   @{run}/NetworkManager/dnsmasq.pid w,
   @{run}/NetworkManager/NetworkManager.pid w,
 
+  # dnsname plugin in podman
+  @{run}/containers/cni/dnsname/*/dnsmasq.conf r,
+  @{run}/containers/cni/dnsname/*/addnhosts r,
+  @{run}/containers/cni/dnsname/*/pidfile rw,
+
   profile libvirt_leaseshelper {
     include <abstractions/base>
 
