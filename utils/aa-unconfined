@@ -129,8 +129,10 @@ for pid in sorted(map(int, pids)):
     except OSError:
         continue
 
-    attr = read_proc_current("/proc/%s/attr/apparmor/current" % pid)
-    if not attr:
+    if os.path.exists("/proc/%s/attr/apparmor/current" % pid):
+        attr = read_proc_current("/proc/%s/attr/apparmor/current" % pid)
+    else:
+        # fallback to shared attr/current if attr/apparmor/current doesn't exist
         attr = read_proc_current("/proc/%s/attr/current" % pid)
 
     pname = None
