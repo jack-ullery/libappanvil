@@ -124,7 +124,7 @@ static char **parse_args(int argc, char **argv)
 		{"stdout", no_argument, 0, ARG_STDOUT},
 	};
 
-	while ((opt = getopt_long(argc, argv, "+dvhxl:w:", long_opts, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "+dvhxf:l:w:", long_opts, NULL)) != -1) {
 		switch (opt) {
 		case 'd':
 			opt_debug = true;
