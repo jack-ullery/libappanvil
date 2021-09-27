@@ -181,7 +181,7 @@ int main(int argc, char **argv)
 			error("failed to extract features abi from the kernel");
 	}
 	if (opt_file) {
-		int in = open(opt_file, O_RDONLY);
+		in = open(opt_file, O_RDONLY);
 		if (in == -1)
 			error("failed to open file '%s'", opt_file);
 		rc = aa_features_new_from_file(&features, in);
