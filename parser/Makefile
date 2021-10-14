@@ -307,10 +307,18 @@ parser_version.h: Makefile
 # as well as the filtering that occurs for network protocols that
 # apparmor should not mediate.
 
-af_names.h: ../common/list_af_names.sh
-	../common/list_af_names.sh | LC_ALL=C sed -n -e 's/[ \t]\?AF_MAX[ \t]\+[0-9]\+,//g'  -e 's/[ \t]\+\?AF_\([A-Z0-9_]\+\)[ \t]\+\([0-9]\+\),/#ifndef AF_\1\n#  define AF_\1 \2\n#endif\nAA_GEN_NET_ENT("\L\1", \UAF_\1)\n/pg' > $@
-	../common/list_af_names.sh | LC_ALL=C sed -n -e 's/AF_MAX[ \t]\+\([0-9]\+\),\?.*/\n#define AA_AF_MAX \1\n/p' >> $@
-	# cat $@
+generated_af_names.h: ../common/list_af_names.sh
+	../common/list_af_names.sh > $@
+
+af_names.h: generated_af_names.h base_af_names.h
+	cat base_af_names.h | diff -u - generated_af_names.h | grep -v '^.AF_MAX' | grep '^\+[^+]' ; \
+	if [ $$? -eq 1 ] ; then \
+		cat base_af_names.h | LC_ALL=C sed -n -e 's/[ \t]\?AF_MAX[ \t]\+[0-9]\+,//g'  -e 's/[ \t]\+\?AF_\([A-Z0-9_]\+\)[ \t]\+\([0-9]\+\),/#ifndef AF_\1\n#  define AF_\1 \2\n#endif\nAA_GEN_NET_ENT("\L\1", \UAF_\1)\n/pg' > $@ ; \
+		cat base_af_names.h | LC_ALL=C sed -n -e 's/AF_MAX[ \t]\+\([0-9]\+\),\?.*/\n#define AA_AF_MAX \1\n/p' >> $@ ; \
+	else \
+		echo "Error: new AF names detected; please update base_af_names.h with values from generated_af_names.h" ; \
+		exit 1 ; \
+	fi
 
 generated_cap_names.h: /usr/include/linux/capability.h
 	../common/list_capabilities.sh | LC_ALL=C sed -n -e "s/[ \\t]\\?CAP_\\([A-Z0-9_]\\+\\)/\{\"\\L\\1\", \\UCAP_\\1, NO_BACKMAP_CAP, CAPFLAG_BASE_FEATURE\},\\n/pg" > $@
@@ -434,7 +442,7 @@ clean: pod_clean
 	rm -f $(YACC_C_FILES)
 	rm -f parser_version.h
 	rm -f $(NAME)*.tar.gz $(NAME)*.tgz
-	rm -f af_names.h
+	rm -f af_names.h generated_af_names.h
 	rm -f cap_names.h generated_cap_names.h
 	rm -rf techdoc.aux techdoc.out techdoc.log techdoc.pdf techdoc.toc techdoc.txt techdoc/
 	$(MAKE) -s -C $(AAREDIR) clean
