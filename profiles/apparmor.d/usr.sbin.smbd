@@ -24,6 +24,8 @@ profile smbd /usr/{bin,sbin}/smbd {
   capability sys_resource,
   capability sys_tty_config,
 
+  signal send set=term peer=samba-bgqd,
+
   /etc/mtab r,
   /etc/netgroup r,
   /etc/printcap r,
@@ -35,6 +37,7 @@ profile smbd /usr/{bin,sbin}/smbd {
   /usr/lib*/samba/charset/*.so mr,
   /usr/lib*/samba/gensec/*.so mr,
   /usr/lib*/samba/pdb/*.so mr,
+  /usr/lib*/samba/samba-bgqd Px -> samba-bgqd,
   /usr/lib*/samba/{lowcase,upcase,valid}.dat r,
   /usr/lib/@{multiarch}/samba/*.so{,.[0-9]*} mr,
   /usr/lib/@{multiarch}/samba/**/ r,
