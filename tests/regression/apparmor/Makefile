@@ -317,6 +317,12 @@ unix_socket_client: unix_socket_client.c unix_socket_common.o
 unix_socket: unix_socket.c unix_socket_common.o unix_socket_client
 	${CC} ${CFLAGS} ${LDFLAGS} $(filter-out unix_socket_client, $^) -o $@ ${LDLIBS}
 
+unix_fd_common.o: unix_fd_common.c unix_fd_common.h
+	${CC} ${CFLAGS} ${LDFLAGS} $< -c ${LDLIBS}
+
+unix_fd_client: unix_fd_client.c unix_fd_common.o
+	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LDLIBS}
+
 build-dep:
 	@if [ `whoami` = "root" ] ;\
 	then \
@@ -377,6 +383,6 @@ alltests: all
 	fi
 
 clean:
-	rm -f $(EXEC) dbus_common.o unix_socket_common.o uservars.inc
+	rm -f $(EXEC) dbus_common.o unix_socket_common.o uservars.inc unix_fd_common.o
 
 regex.sh: open exec
