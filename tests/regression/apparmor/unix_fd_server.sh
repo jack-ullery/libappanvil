@@ -49,7 +49,7 @@ rm -f ${socket}
 
 # PASS - unconfined -> unconfined
 
-runchecktest "fd passing; unconfined -> unconfined" pass $file $socket $fd_client
+runchecktest "fd passing; unconfined -> unconfined" pass $file $fd_client $socket
 
 sleep 1
 rm -f ${socket}
@@ -58,7 +58,7 @@ rm -f ${socket}
 
 genprofile $file:$okperm $af_unix $socket:rw $fd_client:ux
 
-runchecktest "fd passing; confined -> unconfined" pass $file $socket $fd_client
+runchecktest "fd passing; confined -> unconfined" pass $file $fd_client $socket
 
 sleep 1
 rm -f ${socket}
@@ -67,7 +67,7 @@ rm -f ${socket}
 
 genprofile $file:$badperm $af_unix $socket:rw $fd_client:ux
 
-runchecktest "fd passing; confined (bad perm) -> unconfined" fail $file $socket $fd_client
+runchecktest "fd passing; confined (bad perm) -> unconfined" fail $file $fd_client $socket
 
 sleep 1
 rm -f ${socket}
@@ -76,7 +76,7 @@ rm -f ${socket}
 
 genprofile $af_unix $socket:rw $fd_client:ux
 
-runchecktest "fd passing; confined (no perm) -> unconfined" fail $file $socket $fd_client
+runchecktest "fd passing; confined (no perm) -> unconfined" fail $file $fd_client $socket
 
 sleep 1
 rm -f ${socket}
@@ -84,7 +84,7 @@ rm -f ${socket}
 # PASS (due to delegation) - unconfined -> confined
 
 genprofile image=$fd_client $file:$okperm $af_unix $socket:rw
-runchecktest "fd passing; unconfined -> confined" pass $file $socket $fd_client
+runchecktest "fd passing; unconfined -> confined" pass $file $fd_client $socket
 
 sleep 1
 rm -f ${socket}
@@ -92,23 +92,23 @@ rm -f ${socket}
 # PASS (due to delegation) - unconfined -> confined (no perm)
 
 genprofile image=$fd_client $af_unix $socket:rw
-runchecktest "fd passing; unconfined -> confined (no perm)" pass $file $socket $fd_client
+runchecktest "fd passing; unconfined -> confined (no perm)" pass $file $fd_client $socket
 
 sleep 1
 rm -f ${socket}
 
 # PASS - confined -> confined
-
+echo "PASS-----------------------------------------"
 genprofile $file:$okperm $af_unix $socket:rw $fd_client:px -- image=$fd_client $file:$okperm $af_unix $socket:rw
-runchecktest "fd passing; confined -> confined" pass $file $socket $fd_client
+runchecktest "fd passing; confined -> confined" pass $file $fd_client $socket
 
 sleep 1
 rm -f ${socket}
-
+exit
 # FAIL - confined (bad perm) -> confined
 
 genprofile $file:$badperm $af_unix $socket:rw $fd_client:px -- image=$fd_client $file:$okperm $af_unix $socket:rw
-runchecktest "fd passing; confined (bad perm) -> confined" fail $file $socket $fd_client
+runchecktest "fd passing; confined (bad perm) -> confined" fail $file $fd_client $socket
 
 sleep 1
 rm -f ${socket}
@@ -116,7 +116,7 @@ rm -f ${socket}
 # FAIL - confined (no perm) -> confined
 
 genprofile $af_unix $socket:rw $fd_client:px -- image=$fd_client $file:$okperm $af_unix $socket:rw
-runchecktest "fd passing; confined (no perm) -> confined" fail $file $socket $fd_client
+runchecktest "fd passing; confined (no perm) -> confined" fail $file $fd_client $socket
 
 sleep 1
 rm -f ${socket}
@@ -124,7 +124,7 @@ rm -f ${socket}
 # FAIL - confined -> confined (bad perm)
 
 genprofile $file:$okperm $af_unix $socket:rw $fd_client:px -- image=$fd_client $file:$badperm $af_unix $socket:rw
-runchecktest "fd passing; confined -> confined (bad perm)" fail $file $socket $fd_client
+runchecktest "fd passing; confined -> confined (bad perm)" fail $file $fd_client $socket
 
 sleep 1
 rm -f ${socket}
@@ -132,7 +132,7 @@ rm -f ${socket}
 # FAIL - confined -> confined (no perm)
 
 genprofile $file:$okperm $af_unix $socket:rw $fd_client:px -- image=$fd_client $af_unix $socket:rw
-runchecktest "fd passing; confined -> confined (no perm)" fail $file $socket $fd_client
+runchecktest "fd passing; confined -> confined (no perm)" fail $file $fd_client $socket
 
 sleep 1
 rm -f ${socket}
@@ -141,7 +141,7 @@ if [ "$(kernel_features policy/network/af_unix)" == "true" -a "$(parser_supports
     # FAIL - confined client, no access to the socket file
 
     genprofile $file:$okperm $af_unix $socket:rw $fd_client:px -- image=$fd_client $file:$okperm $af_unix 
-    runchecktest "fd passing; confined client w/o socket access" fail $file $socket $fd_client
+    runchecktest "fd passing; confined client w/o socket access" fail $file $fd_client $socket
 
     sleep 1
     rm -f ${socket}

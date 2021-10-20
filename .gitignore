@@ -220,6 +220,7 @@ tests/regression/apparmor/*.o
 tests/regression/apparmor/aa_policy_cache
 tests/regression/apparmor/access
 tests/regression/apparmor/at_secure
+tests/regression/apparmor/attach_disconnected
 tests/regression/apparmor/changehat
 tests/regression/apparmor/changehat_fail
 tests/regression/apparmor/changehat_fork

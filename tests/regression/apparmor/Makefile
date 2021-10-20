@@ -74,6 +74,7 @@ CFLAGS += -g -O0 $(EXTRA_WARNINGS)
 
 SRC=access.c \
     at_secure.c \
+    attach_disconnected.c \
     introspect.c \
     changeprofile.c \
     changehat.c \
@@ -200,6 +201,7 @@ EXEC=$(SRC:%.c=%)
 
 TESTS=aa_exec \
       access \
+      attach_disconnected \
       at_secure \
       introspect \
       capabilities \
@@ -321,6 +323,9 @@ unix_fd_common.o: unix_fd_common.c unix_fd_common.h
 	${CC} ${CFLAGS} ${LDFLAGS} $< -c ${LDLIBS}
 
 unix_fd_client: unix_fd_client.c unix_fd_common.o
+	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LDLIBS}
+
+attach_disconnected: attach_disconnected.c unix_fd_common.o
 	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LDLIBS}
 
 build-dep:
