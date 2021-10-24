@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 # ----------------------------------------------------------------------
 #    Copyright (C) 2018–2019 Otto Kekäläinen <otto@kekalainen.net>
+#    Copyright (C) 2021 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -36,8 +37,9 @@ def get_last_login_timestamp(username, filename='/var/log/wtmp'):
             wtmp_file.seek(offset)
             offset += 384  # Increment for next entry
 
-            type = struct.unpack("<L", wtmp_file.read(4))[0]
+            type = struct.unpack("<H", wtmp_file.read(2))[0]
             debug_logger.debug('WTMP entry type: {}'.format(type))
+            wtmp_file.read(2)  # skip padding
 
             # Only parse USER lines
             if type == 7:
