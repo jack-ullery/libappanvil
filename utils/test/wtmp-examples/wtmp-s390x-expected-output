@@ -1,0 +1,13 @@
+linux1@opensuse03:~>  last
+linux1   pts/0        77.21.253.246    Thu Jul 15 13:06   still logged in
+root     pts/0        77.21.253.246    Thu Jul 15 13:06 - 13:06  (00:00)
+linux1   pts/0        77.21.253.246    Thu Jul 15 13:01 - 13:05  (00:04)
+linux1   pts/0        94.134.117.140   Thu Jul 15 08:15 - 08:16  (00:01)
+linux1   pts/0        10.6.22.160      Tue Jul 13 07:42 - 07:42  (00:00)
+reboot   system boot  5.3.18-24.67-def Tue Jul 13 07:41   still running
+linux1   pts/0        10.6.22.160      Tue Jul 13 07:41 - 07:41  (00:00)
+linux1   pts/0        10.6.22.160      Tue Jul 13 07:37 - 07:41  (00:03)
+reboot   system boot  5.3.18-24.64-def Tue Jul 13 07:30 - 07:41  (00:11)
+
+wtmp beginnt Tue Jul 13 07:30:36 2021
+linux1@opensuse03:~>

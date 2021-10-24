@@ -1,0 +1,5 @@
+guillaum pts/3        192.168.0.2      Mon Jan 25 08:19 - 09:36  (01:17)
+
+Example and expected output taken from https://bugzilla.opensuse.org/show_bug.cgi?id=1181155
+
+On openSUSE, aarch64 is little endian.

@@ -18,6 +18,11 @@ class TestGet_last_login_timestamp(AATest):
     tests = [
         (['wtmp-x86_64',        'root'      ], 1635070346),  # Sun Oct 24 12:12:26 CEST 2021
         (['wtmp-x86_64',        'whoever'   ], 0),
+        (['wtmp-s390x',         'root'      ], 1626368763),  # Thu Jul 15 19:06:03 CEST 2021
+        (['wtmp-s390x',         'linux1'    ], 1626368772),  # Thu Jul 15 19:06:12 CEST 2021
+        (['wtmp-s390x',         'whoever'   ], 0),
+        (['wtmp-aarch64',       'guillaume' ], 1611562789),  # Mon Jan 25 09:19:49 CET 2021
+        (['wtmp-aarch64',       'whoever'   ], 0),
     ]
 
     def _run_test(self, params, expected):

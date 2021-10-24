@@ -22,6 +22,16 @@ from apparmor.common import AppArmorBug, DebugLogger
 debug_logger = DebugLogger('apparmor.notify')
 
 
+def sane_timestamp(timestamp):
+    ''' Check if the given timestamp is in a date range that makes sense for a wtmp file '''
+
+    if timestamp < 946681200:  # 2000-01-01
+        return False
+    elif timestamp > 2524604400:  # 2050-01-01
+        return False
+
+    return True
+
 def get_last_login_timestamp(username, filename='/var/log/wtmp'):
     '''Directly read wtmp and get last login for user as epoch timestamp'''
     timestamp = 0
@@ -33,11 +43,37 @@ def get_last_login_timestamp(username, filename='/var/log/wtmp'):
         offset = 0
         wtmp_filesize = os.path.getsize(filename)
         debug_logger.debug('WTMP filesize: {}'.format(wtmp_filesize))
+
+        if wtmp_filesize < 356:
+            return 0  # (nearly) empty wtmp file, no entries
+
+        # detect architecture based on utmp format differences
+        wtmp_file.seek(340)  # first possible timestamp position
+        timestamp_x86_64    = struct.unpack("<L", wtmp_file.read(4))[0]
+        timestamp_aarch64   = struct.unpack("<L", wtmp_file.read(4))[0]
+        timestamp_s390x     = struct.unpack(">L", wtmp_file.read(4))[0]
+        debug_logger.debug('WTMP timestamps: x86_64 %s, aarch64 %s, s390x %s' % (timestamp_x86_64, timestamp_aarch64, timestamp_s390x))
+
+        if sane_timestamp(timestamp_x86_64):
+            endianness = '<'  # little endian
+            extra_offset_before = 0
+            extra_offset_after = 0
+        elif sane_timestamp(timestamp_aarch64):
+            endianness = '<'  # little endian
+            extra_offset_before = 4
+            extra_offset_after = 12
+        elif sane_timestamp(timestamp_s390x):
+            endianness = '>'  # big endian
+            extra_offset_before = 8
+            extra_offset_after = 8
+        else:
+            raise AppArmorBug('Your /var/log/wtmp is broken or has an unknown format. Please open a bugreport with /var/log/wtmp and the output of "last" attached!')
+
         while offset < wtmp_filesize:
             wtmp_file.seek(offset)
-            offset += 384  # Increment for next entry
+            offset += 384 + extra_offset_before + extra_offset_after  # Increment for next entry
 
-            type = struct.unpack("<H", wtmp_file.read(2))[0]
+            type = struct.unpack('%sH' % endianness, wtmp_file.read(2))[0]
             debug_logger.debug('WTMP entry type: {}'.format(type))
             wtmp_file.read(2)  # skip padding
 
@@ -52,7 +88,11 @@ def get_last_login_timestamp(username, filename='/var/log/wtmp'):
                 term = struct.unpack("<H", wtmp_file.read(2))[0]
                 exit = struct.unpack("<H", wtmp_file.read(2))[0]
                 session = struct.unpack("<L", wtmp_file.read(4))[0]
-                timestamp = struct.unpack("<L", wtmp_file.read(4))[0]
+                if extra_offset_before:
+                    wtmp_file.read(extra_offset_before)
+                timestamp = struct.unpack('%sL' % endianness, wtmp_file.read(4))[0]
+                if extra_offset_after:
+                    wtmp_file.read(extra_offset_after)
                 usec = struct.unpack("<L", wtmp_file.read(4))[0]
                 entry = (pid, line, id, user, host, term, exit, session, timestamp, usec)
                 debug_logger.debug('WTMP entry: {}'.format(entry))
