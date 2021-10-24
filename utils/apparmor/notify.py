@@ -21,10 +21,9 @@ from apparmor.common import AppArmorBug, DebugLogger
 debug_logger = DebugLogger('apparmor.notify')
 
 
-def get_last_login_timestamp(username):
+def get_last_login_timestamp(username, filename='/var/log/wtmp'):
     '''Directly read wtmp and get last login for user as epoch timestamp'''
     timestamp = 0
-    filename = '/var/log/wtmp'
     last_login = 0
 
     debug_logger.debug('Username: {}'.format(username))
