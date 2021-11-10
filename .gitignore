@@ -160,6 +160,7 @@ libraries/libapparmor/swig/perl/libapparmor_wrap.c
 libraries/libapparmor/swig/perl/libapparmor_wrap.o
 libraries/libapparmor/swig/perl/pm_to_blib
 libraries/libapparmor/swig/python/LibAppArmor.py
+libraries/libapparmor/swig/python/LibAppArmor.egg-info/
 libraries/libapparmor/swig/python/build/
 libraries/libapparmor/swig/python/libapparmor_wrap.c
 libraries/libapparmor/swig/python/Makefile
@@ -204,6 +205,8 @@ utils/*.tmp
 utils/po/*.mo
 utils/apparmor/*.pyc
 utils/apparmor/rule/*.pyc
+utils/apparmor.egg-info/
+utils/build/
 utils/htmlcov/
 utils/test/common_test.pyc
 utils/test/.coverage

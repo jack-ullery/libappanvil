@@ -21,7 +21,7 @@ install-exec-local:
 
 clean-local:
 	if test -x "$(PYTHON)"; then $(PYTHON) setup.py clean; fi
-	rm -rf build
+	rm -rf build LibAppArmor.egg-info
 	if test $(top_srcdir) != $(top_builddir) ; then rm -f libapparmor_wrap.c ; fi
 
 endif

@@ -72,6 +72,7 @@ clean: pod_clean
 	rm -rf staging/ build/
 	rm -f apparmor/*.pyc apparmor/rule/*.pyc
 	rm -rf apparmor/__pycache__/ apparmor/rule/__pycache__/
+	rm -rf apparmor.egg-info/
 
 # ${CAPABILITIES} is defined in common/Make.rules
 .PHONY: check_severity_db
