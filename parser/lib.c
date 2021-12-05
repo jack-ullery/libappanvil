@@ -183,7 +183,7 @@ int strn_escseq(const char **pos, const char *chrs, size_t n)
 	if (strchr(chrs, c))
 		return c;
 
-	/* unsupported escap sequence, backup to return that char */
+	/* unsupported escape sequence, backup to return that char */
 	pos--;
 	return -1;
 }
