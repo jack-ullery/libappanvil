@@ -96,7 +96,7 @@ user_globs = {}
 # let ask_addhat() remember answers for already-seen change_hat events
 transitions = {}
 
-aa = hasher()  # Profiles originally in sd, replace by aa
+aa = {}  # Profiles originally in sd, replace by aa
 original_aa = hasher()
 ### end our
 
@@ -113,7 +113,7 @@ def reset_aa():
 
     global aa, include, active_profiles, original_aa
 
-    aa = hasher()
+    aa = {}
     include = dict()
     active_profiles = ProfileList()
     original_aa = hasher()
@@ -1665,7 +1665,7 @@ def read_profiles(ui_msg=False, skip_profiles=[]):
     # The skip_profiles parameter should only be specified by tests.
 
     global aa, original_aa
-    aa = hasher()
+    aa = {}
     original_aa = hasher()
 
     if ui_msg:
