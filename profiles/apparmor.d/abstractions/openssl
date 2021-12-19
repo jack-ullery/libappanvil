@@ -11,6 +11,8 @@
   abi <abi/3.0>,
 
   /etc/ssl/openssl.cnf r,
+  /etc/ssl/{engdef,engines}.d/ r,
+  /etc/ssl/{engdef,engines}.d/*.cnf r,
   /usr/share/ssl/openssl.cnf r,
 
   # Include additions to the abstraction
