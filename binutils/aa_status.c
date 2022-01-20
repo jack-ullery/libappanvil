@@ -135,7 +135,16 @@ static int get_profiles(struct profile **profiles, size_t *n) {
 	while (getline(&line, &len, fp) != -1) {
 		struct profile *_profiles;
 		autofree char *status = NULL;
-		autofree char *name = strdup(aa_splitcon(line, &status));
+		autofree char *name = NULL;
+		char *tmpname = aa_splitcon(line, &status);
+
+		if (!tmpname) {
+			dfprintf(stderr, "Error: failed profile name split of '%s'.\n", line);
+			ret = AA_EXIT_INTERNAL_ERROR;
+			// skip this entry and keep processing
+			continue;
+		}
+		name = strdup(tmpname);
 
 		if (status)
 			status = strdup(status);
