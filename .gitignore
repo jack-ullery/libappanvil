@@ -177,7 +177,7 @@ libraries/libapparmor/swig/ruby/LibAppArmor_wrap.c
 libraries/libapparmor/swig/ruby/LibAppArmor_wrap.o
 libraries/libapparmor/swig/ruby/Makefile
 libraries/libapparmor/swig/ruby/Makefile.in
-libraries/libapparmor/swig/ruby/Makefile.new
+libraries/libapparmor/swig/ruby/Makefile.bak
 libraries/libapparmor/swig/ruby/Makefile.ruby
 libraries/libapparmor/swig/ruby/mkmf.log
 libraries/libapparmor/testsuite/.deps

@@ -2,16 +2,8 @@
 
 require 'mkmf'
 
-# hack 1: ruby black magic to write a Makefile.new instead of a Makefile
-alias open_orig open
-def open(path, mode=nil, perm=nil)
-  path = 'Makefile.new' if path == 'Makefile'
-  if block_given?
-    open_orig(path, mode, perm) { |io| yield(io) }
-  else
-    open_orig(path, mode, perm)
-  end
-end
+# hack 1: Before extconf.rb gets called, Makefile gets backed up, and
+#         restored afterwards (see Makefile.am)
 
 if ENV['PREFIX']
   prefix = CONFIG['prefix']
@@ -27,7 +19,7 @@ if find_library('apparmor', 'parse_record', '../../src/.libs') and
 
   # hack 2: strip all rpath references
   open('Makefile.ruby', 'w') do |out|
-    IO.foreach('Makefile.new') do |line|
+    IO.foreach('Makefile') do |line|
       out.puts line.gsub(/-Wl,-R'[^']*'/, '')
     end
   end
