@@ -181,10 +181,10 @@ __parse_profiles_dir() {
 			if [ ! -f "$profile" ] ; then
 				continue
 			fi
-			echo "$profile"
+			printf "%s\0" "$profile"
 		done | \
 		# Use xargs to parallelize calls to the parser over all CPUs
-		xargs -n1 -d"\n" --max-procs="$(getconf _NPROCESSORS_ONLN)" \
+		xargs -n1 -0r -P "$(getconf _NPROCESSORS_ONLN)" \
 			"$PARSER" $PARSER_OPTS "$parser_cmd" --
 		if [ $? -ne 0 ]; then
 			status=1
