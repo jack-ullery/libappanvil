@@ -40,8 +40,9 @@ int main (int argc, char * argv[]) {
         struct cmsghdr *ctrl_mesg;
 	struct pollfd pfd;
 
-	if (argc < 4 || argc > 5 || (argc == 5 && (strcmp(argv[4], "delete_file") != 0))) {
-		fprintf(stderr, "Usage: %s <file>\n", argv[0]);
+	/* The server forwards the client's arguments */
+	if (argc < 4) {
+		fprintf(stderr, "Usage: %s <file> <client> <unix_socket> [client args ...]\n", argv[0]);
 		return(1);
 	}
 
@@ -57,7 +58,7 @@ int main (int argc, char * argv[]) {
 		return(1);
 	}
 
-	if (argc == 5) {
+	if (argc == 5 && strcmp(argv[4], "delete_file") == 0) {
 		if (unlink(argv[1]) == -1){
 		    fprintf(stderr, "FAIL: unlink before passing fd - %s\n",
 			    strerror(errno));
@@ -73,7 +74,7 @@ int main (int argc, char * argv[]) {
 	}
 
 	local.sun_family = AF_UNIX;
-	strcpy(local.sun_path, argv[2]);
+	strcpy(local.sun_path, argv[3]);
 	unlink(local.sun_path);
 	len = strlen(local.sun_path) + sizeof(local.sun_family);
 	
@@ -92,7 +93,7 @@ int main (int argc, char * argv[]) {
 	/* exec the client */	
 	int pid = fork();
 	if (!pid) {
-		execlp(argv[3], argv[3], argv[2], NULL);
+		execvp(argv[2], &(argv[2]));
 		exit(0);
 	}
 
@@ -108,8 +109,8 @@ int main (int argc, char * argv[]) {
 			exit(1);
 		}
 
-       	vect.iov_base = argv[2];
-       	vect.iov_len = strlen(argv[2]) + 1;
+       	vect.iov_base = argv[3];
+       	vect.iov_len = strlen(argv[3]) + 1;
 
        	mesg.msg_name = NULL;
        	mesg.msg_namelen = 0;

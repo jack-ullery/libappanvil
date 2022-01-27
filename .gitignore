@@ -216,9 +216,11 @@ utils/vim/apparmor.vim
 utils/vim/apparmor.vim.5
 utils/vim/apparmor.vim.5.html
 utils/vim/pod2htmd.tmp
+tests/regression/apparmor/*.o
 tests/regression/apparmor/aa_policy_cache
 tests/regression/apparmor/access
 tests/regression/apparmor/at_secure
+tests/regression/apparmor/attach_disconnected
 tests/regression/apparmor/changehat
 tests/regression/apparmor/changehat_fail
 tests/regression/apparmor/changehat_fork
@@ -233,7 +235,6 @@ tests/regression/apparmor/chgrp
 tests/regression/apparmor/chmod
 tests/regression/apparmor/chown
 tests/regression/apparmor/clone
-tests/regression/apparmor/dbus_common.o
 tests/regression/apparmor/dbus_eavesdrop
 tests/regression/apparmor/dbus_message
 tests/regression/apparmor/dbus_service
@@ -292,7 +293,6 @@ tests/regression/apparmor/unix_fd_client
 tests/regression/apparmor/unix_fd_server
 tests/regression/apparmor/unix_socket
 tests/regression/apparmor/unix_socket_client
-tests/regression/apparmor/unix_socket_common.o
 tests/regression/apparmor/unlink
 tests/regression/apparmor/uservars.inc
 tests/regression/apparmor/xattrs
