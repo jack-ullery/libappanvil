@@ -214,6 +214,16 @@ else
     echo "	required feature dbus missing, skipping dbus queries ..."
 fi
 
+CURRENT_VERSION=$(uname -r | cut -d'.' -f-2)
+if (( $(echo $CURRENT_VERSION 4.4 | awk '{if ($1 < $2) print 1;}') )); then
+    # The AppArmor query interface did not originally support queries for file
+    # rules. That support was added on version 4.4 but there is no feature file
+    # to examine in apparmorfs to determine if the current kernel supports queries
+    # for file rules.
+    echo "      WARNING: kernel does not support file queries, skipping tests ..."
+    exit
+fi
+
 genqueryprofile "file,"
 expect allow
 perms file exec,write,read,append,create,delete,setattr,getattr,chmod,chown,link,linksubset,lock,exec_mmap
