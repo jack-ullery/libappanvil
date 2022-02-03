@@ -73,6 +73,7 @@ profile sanitized_helper {
   /opt/google/chrome{,-beta,-unstable}/chrome-sandbox PUxr,
   /opt/google/chrome{,-beta,-unstable}/google-chrome Pixr,
   /opt/google/chrome{,-beta,-unstable}/chrome Pixr,
+  /opt/google/chrome{,-beta,-unstable}/chrome_crashpad_handler Pixr,
   /opt/google/chrome{,-beta,-unstable}/{,**/}lib*.so{,.*} m,
 
   # The same is needed for Brave
