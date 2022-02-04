@@ -6,14 +6,14 @@
 
 IMMUNIX_1.0 {
   global:
-        change_hat;
+        change_hat; __old_change_hat;
   local:
         *;
 };
 
 APPARMOR_1.0 {
   global:
-        change_hat;
+        change_hat; __change_hat;
         parse_record;
         free_record;
   local:
@@ -24,7 +24,7 @@ APPARMOR_1.1 {
   global:
         aa_is_enabled;
         aa_find_mountpoint;
-        aa_change_hat;
+        aa_change_hat; __old_change_hat;
         aa_change_hatv;
         aa_change_hat_vargs;
         aa_change_profile;
@@ -37,7 +37,7 @@ APPARMOR_1.1 {
         free_record;
         aa_getprocattr_raw;
         aa_getprocattr;
-        aa_query_label;
+        aa_query_label; __aa_query_label;
 
 	# no more symbols here, please
 
@@ -47,7 +47,7 @@ APPARMOR_1.1 {
 
 APPARMOR_2.9 {
   global:
-	aa_query_label;
+	aa_query_label; query_label;
   local:
 	*;
 } APPARMOR_1.1;

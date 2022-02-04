@@ -43,6 +43,7 @@
 		__asm__ (".symver " #real "," #name "@" #version)
 #define default_symbol_version(real, name, version) \
 		__asm__ (".symver " #real "," #name "@@" #version)
+#define DLLEXPORT __attribute__((visibility("default"),externally_visible))
 
 #define UNCONFINED		"unconfined"
 #define UNCONFINED_SIZE		strlen(UNCONFINED)
@@ -824,7 +825,7 @@ int aa_change_onexec(const char *profile)
 }
 
 /* create an alias for the old change_hat@IMMUNIX_1.0 symbol */
-extern typeof((__change_hat)) __old_change_hat __attribute__((alias ("__change_hat")));
+DLLEXPORT extern typeof((__change_hat)) __old_change_hat __attribute__((alias ("__change_hat")));
 symbol_version(__old_change_hat, change_hat, IMMUNIX_1.0);
 default_symbol_version(__change_hat, change_hat, APPARMOR_1.0);
 
@@ -1222,7 +1223,7 @@ int query_label(uint32_t mask, char *query, size_t size, int *allowed,
 
 /* export multiple aa_query_label symbols to compensate for downstream
  * releases with differing symbol versions. */
-extern typeof((query_label)) __aa_query_label __attribute__((alias ("query_label")));
+DLLEXPORT extern typeof((query_label)) __aa_query_label __attribute__((alias ("query_label")));
 symbol_version(__aa_query_label, aa_query_label, APPARMOR_1.1);
 default_symbol_version(query_label, aa_query_label, APPARMOR_2.9);
 
