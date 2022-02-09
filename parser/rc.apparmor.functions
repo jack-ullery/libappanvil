@@ -162,10 +162,6 @@ __parse_profiles_dir() {
 		return 1
 	fi
 
-	# Note: the parser automatically skips files that match skip_profile()
-	# when we pass it a directory, but not when we pass it an individual
-	# profile. So we need to use skip_profile only in the latter case,
-	# as long as the parser is in sync' with skip_profile().
 	"$PARSER" $PARSER_OPTS "$parser_cmd" -- "$profile_dir"
 	if [ $? -ne 0 ]; then
 		status=1
