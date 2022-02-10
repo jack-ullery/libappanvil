@@ -116,37 +116,6 @@ is_container_with_internal_policy() {
 	return 0
 }
 
-# This set of patterns to skip needs to be kept in sync with
-# AppArmor.pm::isSkippableFile()
-# returns 0 if profile should NOT be skipped
-# returns 1 on verbose skip
-# returns 2 on silent skip
-skip_profile() {
-	local profile="$1"
-	if [ "${profile%.rpmnew}"   != "$profile" ] || \
-	   [ "${profile%.rpmsave}"  != "$profile" ] || \
-	   [ "${profile%.orig}"     != "$profile" ] || \
-	   [ "${profile%.rej}"      != "$profile" ] || \
-	   [ "${profile%\~}"        != "$profile" ] ; then
-		return 1
-	fi
-	# Silently ignore the dpkg, pacman, and xbps files
-	if [ "${profile%.dpkg-new}"     != "$profile" ] || \
-	   [ "${profile%.dpkg-old}"     != "$profile" ] || \
-	   [ "${profile%.dpkg-dist}"    != "$profile" ] || \
-	   [ "${profile%.dpkg-bak}"     != "$profile" ] || \
-	   [ "${profile%.dpkg-remove}"  != "$profile" ] || \
-	   [ "${profile%.pacsave}"      != "$profile" ] || \
-	   [ "${profile%.pacnew}"       != "$profile" ] ; then
-		return 2
-	fi
-	if echo "$profile" | grep -E -q '^.+\.new-[0-9\.]+_[0-9]+$'; then
-		return 2
-	fi
-
-	return 0
-}
-
 __parse_profiles_dir() {
 	local parser_cmd="$1"
 	local profile_dir="$2"
