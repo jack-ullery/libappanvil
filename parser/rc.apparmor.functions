@@ -215,14 +215,10 @@ profiles_names_list() {
 			continue
 		fi
 
-		for profile in "$profile_dir"/*; do
-			if skip_profile "$profile" && [ -f "$profile" ] ; then
-				LIST_ADD=$("$PARSER" -N "$profile" )
-				if [ $? -eq 0 ]; then
-					echo "$LIST_ADD"
-				fi
-			fi
-		done
+		LIST_ADD=$("$PARSER" -N "$profile_dir" )
+		if [ $? -eq 0 ]; then
+			echo "$LIST_ADD"
+		fi
 	done
 }
 
