@@ -191,17 +191,6 @@ profiles_names_list() {
 	done
 }
 
-failstop_system() {
-	level=$(runlevel | cut -d" " -f2)
-	if [ "$level" -ne "1" ] ; then
-		aa_log_failure_msg "- could not start AppArmor.  Changing to runlevel 1"
-		telinit 1;
-		return 255;
-	fi
-	aa_log_failure_msg "- could not start AppArmor."
-	return 255
-}
-
 is_apparmor_loaded() {
 	if ! is_securityfs_mounted ; then
 		mount_securityfs
