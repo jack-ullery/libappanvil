@@ -78,7 +78,14 @@ fi
 # parent. We *do* need to remove the child profile and not rely
 # on removing the parent profile when the profile has had its
 # child profile names changed.
-profiles_names_list | awk '
+
+LOADED_PROFILES=$("$PARSER" -N $PROFILE_DIRS) || {
+	ret=$?
+	echo 'apparmor_parser exited with failure, aborting.' >&2
+	exit $ret
+}
+
+echo "$LOADED_PROFILES" | awk '
 BEGIN {
   while (getline < "'${PROFILES}'" ) {
     str = sub(/ \((enforce|complain)\)$/, "", $0);

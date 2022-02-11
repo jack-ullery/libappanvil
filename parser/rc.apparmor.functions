@@ -171,26 +171,6 @@ parse_profiles() {
 	return "$STATUS"
 }
 
-profiles_names_list() {
-	# run the parser on all of the apparmor profiles
-	if [ ! -f "$PARSER" ]; then
-		aa_log_failure_msg "- AppArmor parser not found"
-		exit 1
-	fi
-
-	for profile_dir in $PROFILE_DIRS; do
-		if [ ! -d "$profile_dir" ]; then
-			aa_log_warning_msg "- Profile directory not found: $profile_dir"
-			continue
-		fi
-
-		LIST_ADD=$("$PARSER" -N "$profile_dir" )
-		if [ $? -eq 0 ]; then
-			echo "$LIST_ADD"
-		fi
-	done
-}
-
 is_apparmor_loaded() {
 	if ! is_securityfs_mounted ; then
 		mount_securityfs
