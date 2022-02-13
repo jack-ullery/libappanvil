@@ -66,6 +66,9 @@ test-utils:
   needs: ["build-all"]
   script:
     - apt-get install --no-install-recommends -y libc6-dev libjs-jquery libjs-jquery-throttle-debounce libjs-jquery-isonscreen libjs-jquery-tablesorter pyflakes3 python3-coverage python3-notify2 python3-psutil
+    # See apparmor/apparmor#221
+    - make -C parser/tst gen_dbus
+    - make -C parser/tst gen_xtrans
     - make -C utils check
     - make -C utils/test coverage-regression
   artifacts:
