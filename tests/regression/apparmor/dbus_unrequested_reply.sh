@@ -63,7 +63,7 @@ ur_gendbusprofile()
 {
 	gendbusprofile "$confined_log w,
   dbus bind bus=$bus name=$dest,
-  $@"
+  $*"
 }
 
 start_bus
