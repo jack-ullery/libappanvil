@@ -134,4 +134,4 @@ include:
   - template: Secret-Detection.gitlab-ci.yml
 
 variables:
-  SAST_EXCLUDED_ANALYZERS: "flawfinder,spotbugs"
+  SAST_EXCLUDED_ANALYZERS: "eslint,flawfinder,spotbugs"
