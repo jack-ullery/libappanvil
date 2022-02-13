@@ -1,4 +1,3 @@
-#! /usr/bin/python3
 # ----------------------------------------------------------------------
 #    Copyright (C) 2018–2019 Otto Kekäläinen <otto@kekalainen.net>
 #    Copyright (C) 2021 Christian Boltz
