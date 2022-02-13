@@ -132,8 +132,7 @@ __parse_profiles_dir() {
 	fi
 
 	# shellcheck disable=SC2086
-	"$PARSER" $PARSER_OPTS "$parser_cmd" -- "$profile_dir"
-	if [ $? -ne 0 ]; then
+	if ! "$PARSER" $PARSER_OPTS "$parser_cmd" -- "$profile_dir"; then
 		status=1
 		aa_log_failure_msg "At least one profile failed to load"
 	fi
