@@ -58,8 +58,16 @@ genprofile_ns_and_verify() {
 
 	[ -d /sys/kernel/security/apparmor/policy/namespaces/${ns} ]
 	local dir_created=$?
-	[ -d /sys/kernel/security/apparmor/policy/namespaces/${ns}/profiles/${prof}* ]
-	local prof_created=$?
+	local prof_created=1
+	for d in /sys/kernel/security/apparmor/policy/namespaces/${ns}/profiles/${prof}*; do
+		if [ -d "$d" ]; then
+			prof_created=0
+		fi
+		# Either $d exists and we've set prof_created to 0. Or it does
+		# not, because its value is the unexpanded pattern above.
+		# Either way, this is all we needed to know.
+		break
+	done
 	removeprofile
 	if [ $dir_created -ne 0 ]; then
 		echo "Error: ${testname} failed. Test '${desc}' did not create the expected namespace directory in apparmorfs: policy/namespaces/${ns}"
