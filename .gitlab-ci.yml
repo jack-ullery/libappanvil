@@ -135,3 +135,4 @@ include:
 
 variables:
   SAST_EXCLUDED_ANALYZERS: "eslint,flawfinder,semgrep,spotbugs"
+  SAST_BANDIT_EXCLUDED_PATHS: "*/tst/*, */test/*"
