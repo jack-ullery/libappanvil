@@ -217,7 +217,7 @@ apparmor_start() {
 	fi
 
 	# if there is anything in the profiles file don't load
-	if ! read -r line < "$SFS_MOUNTPOINT/profiles"; then
+	if ! read -r _line < "$SFS_MOUNTPOINT/profiles"; then
 		parse_profiles load
 	else
 		aa_log_skipped_msg ": already loaded with profiles."
