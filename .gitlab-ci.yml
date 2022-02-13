@@ -24,50 +24,50 @@ build-all:
     expire_in: 30 days
     untracked: true
     paths:
-        - libraries/libapparmor/
-        - parser/
-        - binutils/
-        - utils/
-        - changehat/mod_apparmor/
-        - changehat/pam_apparmor/
-        - profiles/
+      - libraries/libapparmor/
+      - parser/
+      - binutils/
+      - utils/
+      - changehat/mod_apparmor/
+      - changehat/pam_apparmor/
+      - profiles/
   script:
-      - *install-c-build-deps
-      - cd libraries/libapparmor && ./autogen.sh && ./configure --with-perl --with-python --prefix=/usr && make && cd ../.. || { cat config.log ; exit 1 ; }
-      - make -C parser
-      - make -C binutils
-      - make -C utils
-      - make -C changehat/mod_apparmor
-      - make -C changehat/pam_apparmor
-      - make -C profiles
+    - *install-c-build-deps
+    - cd libraries/libapparmor && ./autogen.sh && ./configure --with-perl --with-python --prefix=/usr && make && cd ../.. || { cat config.log ; exit 1 ; }
+    - make -C parser
+    - make -C binutils
+    - make -C utils
+    - make -C changehat/mod_apparmor
+    - make -C changehat/pam_apparmor
+    - make -C profiles
 
 test-libapparmor:
   stage: test
   needs: ["build-all"]
   script:
-      - *install-c-build-deps
-      - make -C libraries/libapparmor check
+    - *install-c-build-deps
+    - make -C libraries/libapparmor check
 
 test-parser:
   stage: test
   needs: ["build-all"]
   script:
-      - *install-c-build-deps
-      - make -C parser check
+    - *install-c-build-deps
+    - make -C parser check
 
 test-binutils:
   stage: test
   needs: ["build-all"]
   script:
-      - make -C binutils check
+    - make -C binutils check
 
 test-utils:
   stage: test
   needs: ["build-all"]
   script:
-      - apt-get install --no-install-recommends -y libc6-dev libjs-jquery libjs-jquery-throttle-debounce libjs-jquery-isonscreen libjs-jquery-tablesorter pyflakes3 python3-coverage python3-notify2 python3-psutil
-      - make -C utils check
-      - make -C utils/test coverage-regression
+    - apt-get install --no-install-recommends -y libc6-dev libjs-jquery libjs-jquery-throttle-debounce libjs-jquery-isonscreen libjs-jquery-tablesorter pyflakes3 python3-coverage python3-notify2 python3-psutil
+    - make -C utils check
+    - make -C utils/test coverage-regression
   artifacts:
     paths:
       - utils/test/htmlcov/
@@ -77,14 +77,14 @@ test-mod-apparmor:
   stage: test
   needs: ["build-all"]
   script:
-      - make -C changehat/mod_apparmor check
+    - make -C changehat/mod_apparmor check
 
 test-profiles:
   stage: test
   needs: ["build-all"]
   script:
-      - make -C profiles check-parser
-      - make -C profiles check-abstractions.d
+    - make -C profiles check-parser
+    - make -C profiles check-abstractions.d
 
 shellcheck:
   stage: test
@@ -101,7 +101,7 @@ shellcheck:
       junit: shellcheck.xml
 
 # Disabled due to aa-logprof dependency on /sbin/apparmor_parser existing
-#      - make -C profiles check-profiles
+#   - make -C profiles check-profiles
 
 # test-pam_apparmor:
 #  - stage: test
