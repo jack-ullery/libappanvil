@@ -63,7 +63,7 @@ fi
 # We have to do this check because error checking awk's getline() below is
 # tricky and, as is, results in an infinite loop when apparmorfs returns an
 # error from open().
-if ! IFS= read line < "$PROFILES" ; then
+if ! IFS= read _line < "$PROFILES" ; then
 	echo "ERROR: Unable to read apparmorfs profiles file" 1>&2
 	exit 1
 elif [ ! -w "$REMOVE" ] ; then
