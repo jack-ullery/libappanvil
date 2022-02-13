@@ -1,3 +1,12 @@
+# Test data generated elsewhere
+
+The tests in `parser` generate additional test profiles in
+`parser/tst/simple_tests/`: see `gen-dbus.py` and `gen-xtrans.py`.
+
+`utils/test/test-parser-simple-tests.py` uses this test data when it is
+available. If this test data has not been generated, this test will not
+complain: it will simply exercise fewer test profiles.
+
 # Running individual tests
 
 Python's unittest allows individual tests to be executed by specifying the class name and the test on the command line.
