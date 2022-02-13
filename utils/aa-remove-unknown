@@ -63,7 +63,7 @@ fi
 # We have to do this check because error checking awk's getline() below is
 # tricky and, as is, results in an infinite loop when apparmorfs returns an
 # error from open().
-if ! IFS= read _line < "$PROFILES" ; then
+if ! IFS= read -r _line < "$PROFILES" ; then
 	echo "ERROR: Unable to read apparmorfs profiles file" 1>&2
 	exit 1
 elif [ ! -w "$REMOVE" ] ; then
@@ -79,6 +79,7 @@ fi
 # on removing the parent profile when the profile has had its
 # child profile names changed.
 
+# shellcheck disable=SC2086
 LOADED_PROFILES=$("$PARSER" -N $PROFILE_DIRS) || {
 	ret=$?
 	echo 'apparmor_parser exited with failure, aborting.' >&2
@@ -103,7 +104,7 @@ END {
     }
 }
 ' | LC_COLLATE=C sort -r | \
-	while IFS= read profile ; do
+	while IFS= read -r profile ; do
 		if [ "$DRY_RUN" -ne 0 ]; then
 			echo "Would remove '${profile}'"
 		else
