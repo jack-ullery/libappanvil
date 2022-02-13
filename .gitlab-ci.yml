@@ -58,7 +58,7 @@ shellcheck:
   script:
   - apt-get install --no-install-recommends -y file shellcheck xmlstarlet
   - shellcheck --version
-  - './tests/bin/shellcheck-tree --format=checkstyle --severity=warning
+  - './tests/bin/shellcheck-tree --format=checkstyle --severity=info
        | xmlstarlet tr tests/checkstyle2junit.xslt
        > shellcheck.xml'
   artifacts:
