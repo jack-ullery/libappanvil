@@ -33,7 +33,7 @@ confined_args="--log=$confined_log $listnames"
 message_gendbusprofile()
 {
 	gendbusprofile "${confined_log} w,
-  $@"
+  $*"
 }
 
 start_bus

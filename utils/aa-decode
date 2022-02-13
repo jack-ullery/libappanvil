@@ -58,7 +58,7 @@ if [ -n "$1" ]; then
         exit 1
     fi
 
-    d=`decode $e`
+    d=$(decode "$e")
     if [ -z "$d" ]; then
         echo "Could not decode string"
         exit 1
@@ -71,6 +71,12 @@ fi
 # For now just look at 'name=...' and 'profile=...',
 # so validate input against this and output based on it.
 # TODO: better handle other cases too
+# This loop relies on subtle shell quoting/escaping behavior, and
+# non-trivial surgery would be required to make shellcheck happy.
+# shellcheck disable=SC2162
+# shellcheck disable=SC2086
+# shellcheck disable=SC2001
+# shellcheck disable=SC2006
 while read line ; do
 
     # check if line contains encoded name= or profile=

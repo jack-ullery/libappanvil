@@ -62,7 +62,7 @@ service_runchecktest()
 service_gendbusprofile()
 {
 	gendbusprofile "$unconfined_log w,
-  $@"
+  $*"
 }
 
 start_bus

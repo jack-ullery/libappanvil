@@ -91,7 +91,7 @@ is_container_with_internal_policy() {
 	local ns_name
 
 	# WSL needs to be detected explicitly
-	if [ $(systemd-detect-virt --container) = "wsl" ]; then
+	if [ "$(systemd-detect-virt --container)" = "wsl" ]; then
 		return 0
 	fi
 
@@ -131,8 +131,8 @@ __parse_profiles_dir() {
 		return 1
 	fi
 
-	"$PARSER" $PARSER_OPTS "$parser_cmd" -- "$profile_dir"
-	if [ $? -ne 0 ]; then
+	# shellcheck disable=SC2086
+	if ! "$PARSER" $PARSER_OPTS "$parser_cmd" -- "$profile_dir"; then
 		status=1
 		aa_log_failure_msg "At least one profile failed to load"
 	fi
@@ -217,7 +217,7 @@ apparmor_start() {
 	fi
 
 	# if there is anything in the profiles file don't load
-	if ! read -r line < "$SFS_MOUNTPOINT/profiles"; then
+	if ! read -r _ < "$SFS_MOUNTPOINT/profiles"; then
 		parse_profiles load
 	else
 		aa_log_skipped_msg ": already loaded with profiles."
