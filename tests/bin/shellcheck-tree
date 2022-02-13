@@ -8,8 +8,10 @@ from pathlib import Path
 
 
 def is_excluded(f):
-    return re.match(r"^([.]git)/",
-                    f) or Path(f).is_dir()
+    return (re.match(
+        r"^([.]git/|parser/tst/|tests/|utils/test/|parser/rc[.]apparmor[.]slackware)",
+        f,
+    ) or Path(f).is_dir())
 
 
 def mimetype(f):
