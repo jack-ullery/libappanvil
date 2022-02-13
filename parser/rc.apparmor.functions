@@ -159,7 +159,6 @@ parse_profiles() {
 	# run the parser on all of the apparmor profiles
 	if [ ! -f "$PARSER" ]; then
 		aa_log_failure_msg "AppArmor parser not found"
-		aa_log_action_end 1
 		exit 1
 	fi
 
@@ -266,7 +265,7 @@ remove_profiles() {
 }
 
 apparmor_stop() {
-	aa_log_daemon_msg "Unloading AppArmor profiles "
+	aa_log_daemon_msg "Unloading AppArmor profiles"
 	remove_profiles
 	rc=$?
 	aa_log_end_msg "$rc"
