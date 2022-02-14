@@ -17,7 +17,7 @@ from __future__ import division, with_statement
 import os
 import re
 import shutil
-import subprocess
+import subprocess  # nosec
 import sys
 import time
 import traceback
@@ -341,7 +341,7 @@ def get_output(params):
     '''Runs the program with the given args and returns the return code and stdout (as list of lines)'''
     try:
         # Get the output of the program
-        output = subprocess.check_output(params)
+        output = subprocess.check_output(params)  # nosec
         ret = 0
     except OSError as e:
         raise AppArmorException(_("Unable to fork: %(program)s\n\t%(error)s") % { 'program': params[0], 'error': str(e) })

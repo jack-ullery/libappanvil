@@ -1,11 +1,5 @@
 ---
 image: ubuntu:latest
-before_script:
-  - export DEBIAN_FRONTEND=noninteractive
-  - apt-get update -qq
-  - apt-get install --no-install-recommends -y gcc perl liblocale-gettext-perl linux-libc-dev lsb-release make
-  - lsb_release -a
-  - uname -a
 
 # XXX - add a deploy stage to publish man pages, docs, and coverage
 # reports
@@ -14,11 +8,21 @@ stages:
   - build
   - test
 
+.ubuntu-before_script:
+  before_script:
+    - export DEBIAN_FRONTEND=noninteractive
+    - apt-get update -qq
+    - apt-get install --no-install-recommends -y gcc perl liblocale-gettext-perl linux-libc-dev lsb-release make
+    - lsb_release -a
+    - uname -a
+
 .install-c-build-deps: &install-c-build-deps
   - apt-get install --no-install-recommends -y build-essential apache2-dev autoconf automake bison dejagnu flex libpam-dev libtool pkg-config python3-all-dev python3-setuptools ruby-dev swig zlib1g-dev
 
 build-all:
   stage: build
+  extends:
+    - .ubuntu-before_script
   artifacts:
     name: ${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
     expire_in: 30 days
@@ -44,6 +48,8 @@ build-all:
 test-libapparmor:
   stage: test
   needs: ["build-all"]
+  extends:
+    - .ubuntu-before_script
   script:
     - *install-c-build-deps
     - make -C libraries/libapparmor check
@@ -51,6 +57,8 @@ test-libapparmor:
 test-parser:
   stage: test
   needs: ["build-all"]
+  extends:
+    - .ubuntu-before_script
   script:
     - *install-c-build-deps
     - make -C parser check
@@ -58,12 +66,16 @@ test-parser:
 test-binutils:
   stage: test
   needs: ["build-all"]
+  extends:
+    - .ubuntu-before_script
   script:
     - make -C binutils check
 
 test-utils:
   stage: test
   needs: ["build-all"]
+  extends:
+    - .ubuntu-before_script
   script:
     - apt-get install --no-install-recommends -y libc6-dev libjs-jquery libjs-jquery-throttle-debounce libjs-jquery-isonscreen libjs-jquery-tablesorter pyflakes3 python3-coverage python3-notify2 python3-psutil
     # See apparmor/apparmor#221
@@ -79,12 +91,16 @@ test-utils:
 test-mod-apparmor:
   stage: test
   needs: ["build-all"]
+  extends:
+    - .ubuntu-before_script
   script:
     - make -C changehat/mod_apparmor check
 
 test-profiles:
   stage: test
   needs: ["build-all"]
+  extends:
+    - .ubuntu-before_script
   script:
     - make -C profiles check-parser
     - make -C profiles check-abstractions.d
@@ -92,6 +108,8 @@ test-profiles:
 shellcheck:
   stage: test
   needs: []
+  extends:
+    - .ubuntu-before_script
   script:
   - apt-get install --no-install-recommends -y file shellcheck xmlstarlet
   - shellcheck --version
@@ -110,3 +128,11 @@ shellcheck:
 #  - stage: test
 #  - script:
 #    - cd changehat/pam_apparmor && make check
+
+include:
+  - template: SAST.gitlab-ci.yml
+  - template: Secret-Detection.gitlab-ci.yml
+
+variables:
+  SAST_EXCLUDED_ANALYZERS: "eslint,flawfinder,semgrep,spotbugs"
+  SAST_BANDIT_EXCLUDED_PATHS: "*/tst/*, */test/*"
