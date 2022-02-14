@@ -1,7 +1,9 @@
 ---
 image: ubuntu:latest
 before_script:
-  - export DEBIAN_FRONTEND=noninteractive && apt-get update -qq && apt-get install --no-install-recommends -y build-essential apache2-dev autoconf automake bison dejagnu flex libjs-jquery libjs-jquery-throttle-debounce libjs-jquery-isonscreen libjs-jquery-tablesorter libpam-dev libtool perl liblocale-gettext-perl pkg-config python-all-dev python3-all-dev pyflakes3 ruby-dev swig lsb-release python3-coverage python3-notify2 python3-psutil python3-setuptools zlib1g-dev
+  - export DEBIAN_FRONTEND=noninteractive
+  - apt-get update -qq
+  - apt-get install --no-install-recommends -y gcc perl liblocale-gettext-perl linux-libc-dev lsb-release make
   - lsb_release -a
   - uname -a
 
@@ -12,6 +14,9 @@ stages:
   - build
   - test
 
+.install-c-build-deps: &install-c-build-deps
+  - apt-get install --no-install-recommends -y build-essential apache2-dev autoconf automake bison dejagnu flex libpam-dev libtool pkg-config python3-all-dev python3-setuptools ruby-dev swig zlib1g-dev
+
 build-all:
   stage: build
   artifacts:
@@ -19,38 +24,70 @@ build-all:
     expire_in: 30 days
     untracked: true
     paths:
-        - libraries/libapparmor/
-        - parser/
-        - binutils/
-        - utils/
-        - changehat/mod_apparmor/
-        - changehat/pam_apparmor/
-        - profiles/
+      - libraries/libapparmor/
+      - parser/
+      - binutils/
+      - utils/
+      - changehat/mod_apparmor/
+      - changehat/pam_apparmor/
+      - profiles/
   script:
-      - cd libraries/libapparmor && ./autogen.sh && ./configure --with-perl --with-python --prefix=/usr && make && cd ../.. || { cat config.log ; exit 1 ; }
-      - make -C parser
-      - make -C binutils
-      - make -C utils
-      - make -C changehat/mod_apparmor
-      - make -C changehat/pam_apparmor
-      - make -C profiles
+    - *install-c-build-deps
+    - cd libraries/libapparmor && ./autogen.sh && ./configure --with-perl --with-python --prefix=/usr && make && cd ../.. || { cat config.log ; exit 1 ; }
+    - make -C parser
+    - make -C binutils
+    - make -C utils
+    - make -C changehat/mod_apparmor
+    - make -C changehat/pam_apparmor
+    - make -C profiles
 
-test-all:
+test-libapparmor:
   stage: test
   needs: ["build-all"]
   script:
-      - make -C libraries/libapparmor check
-      - make -C parser check
-      - make -C binutils check
-      - make -C utils check
-      - make -C utils/test coverage-regression
-      - make -C changehat/mod_apparmor check
-      - make -C profiles check-parser
-      - make -C profiles check-abstractions.d
+    - *install-c-build-deps
+    - make -C libraries/libapparmor check
+
+test-parser:
+  stage: test
+  needs: ["build-all"]
+  script:
+    - *install-c-build-deps
+    - make -C parser check
+
+test-binutils:
+  stage: test
+  needs: ["build-all"]
+  script:
+    - make -C binutils check
+
+test-utils:
+  stage: test
+  needs: ["build-all"]
+  script:
+    - apt-get install --no-install-recommends -y libc6-dev libjs-jquery libjs-jquery-throttle-debounce libjs-jquery-isonscreen libjs-jquery-tablesorter pyflakes3 python3-coverage python3-notify2 python3-psutil
+    # See apparmor/apparmor#221
+    - make -C parser/tst gen_dbus
+    - make -C parser/tst gen_xtrans
+    - make -C utils check
+    - make -C utils/test coverage-regression
   artifacts:
     paths:
       - utils/test/htmlcov/
     when: always
+
+test-mod-apparmor:
+  stage: test
+  needs: ["build-all"]
+  script:
+    - make -C changehat/mod_apparmor check
+
+test-profiles:
+  stage: test
+  needs: ["build-all"]
+  script:
+    - make -C profiles check-parser
+    - make -C profiles check-abstractions.d
 
 shellcheck:
   stage: test
@@ -67,7 +104,7 @@ shellcheck:
       junit: shellcheck.xml
 
 # Disabled due to aa-logprof dependency on /sbin/apparmor_parser existing
-#      - make -C profiles check-profiles
+#   - make -C profiles check-profiles
 
 # test-pam_apparmor:
 #  - stage: test
