@@ -24,7 +24,11 @@
 . /lib/apparmor/rc.apparmor.functions
 
 # do not load in a container
-[ -x /usr/bin/systemd-detect-virt ] && systemd-detect-virt --quiet --container && ! is_container_with_internal_policy && exit 0 || true
+if [ -x /usr/bin/systemd-detect-virt ] && \
+       systemd-detect-virt --quiet --container && \
+       ! is_container_with_internal_policy; then
+    exit 0
+fi
 
 [ -d /rofs/etc/apparmor.d ]  && exit 0 # do not load if running liveCD
 
