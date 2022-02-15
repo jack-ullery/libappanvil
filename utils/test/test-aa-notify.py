@@ -148,13 +148,15 @@ Feb  4 13:40:38 XPS-13-9370 kernel: [128552.880347] audit: type=1400 audit({epoc
         '''Test output of help text'''
 
         expected_return_code = 0
-        expected_output_is = \
+        expected_output_1 = \
 '''usage: aa-notify [-h] [-p] [--display DISPLAY] [-f FILE] [-l] [-s NUM] [-v]
                  [-u USER] [-w NUM] [--debug]
 
 Display AppArmor notifications or messages for DENIED entries.
+'''
 
-optional arguments:
+        expected_output_2 = \
+'''
   -h, --help            show this help message and exit
   -p, --poll            poll AppArmor logs and display notifications
   --display DISPLAY     set the DISPLAY environment variable (might be needed if
@@ -174,8 +176,9 @@ optional arguments:
         return_code, output = cmd(aanotify_bin + ['--help'])
         result = 'Got return code %d, expected %d\n' % (return_code, expected_return_code)
         self.assertEqual(expected_return_code, return_code, result + output)
-        result = 'Got output "%s", expected "%s"\n' % (output, expected_output_is)
-        self.assertEqual(expected_output_is, output, result + output)
+
+        self.assertIn(expected_output_1, output)
+        self.assertIn(expected_output_2, output)
 
     def test_entries_since_100_days(self):
         '''Test showing log entries since 100 days'''
