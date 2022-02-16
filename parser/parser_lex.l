@@ -141,6 +141,8 @@ static int include_dir_cb(int dirfd unused, const char *name, struct stat *st,
 		return 0;
 	}
 
+	/* Handle symlink here. See _aa_dirat_for_each in private.c */
+
 	if (S_ISREG(st->st_mode)) {
 		if (!(yyin = fopen(path,"r")))
 			yyerror(_("Could not open '%s' in '%s'"), path, d->filename);

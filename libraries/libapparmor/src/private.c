@@ -452,7 +452,8 @@ int _aa_overlaydirat_for_each(int dirfd[], int n, void *data,
  *
  * The cb function is called with the DIR in use and the name of the
  * file in that directory.  If the file is to be opened it should
- * use the openat, fstatat, and related fns.
+ * use the openat, fstatat, and related fns. If the file is a symlink
+ * _aa_dirat_for_each currently tries to traverse it for the caller
  *
  * Returns: 0 on success, else -1 and errno is set to the error code
  */
@@ -485,13 +486,33 @@ int _aa_dirat_for_each(int dirfd, const char *name, void *data,
 		autofree struct dirent *dir = namelist[i];
 		struct stat my_stat;
 
-		if (rc)
-			continue;
-
-		if (fstatat(cb_dirfd, dir->d_name, &my_stat, 0)) {
+		if (fstatat(cb_dirfd, dir->d_name, &my_stat, AT_SYMLINK_NOFOLLOW)) {
 			PDEBUG("stat failed for '%s': %m\n", dir->d_name);
 			rc = -1;
 			continue;
+		}
+		/* currently none of the callers handle symlinks, and this
+		 * same basic code was applied to each. So for this patch
+		 * just drop it here.
+		 *
+		 * Going forward we need to start handling symlinks as
+		 * they have meaning.
+		 * In the case of
+		 * cache: they act as a place holder for files that have been
+		 *        combined into a single binary. This enables the
+		 *        file based cache lookup time find that relation
+		 *        and dedup, so multiple loads aren't done.
+		 * profiles: just a profile in an alternate location, but
+		 *           should do dedup detection when doing dir reads
+		 *           so we don't double process.
+		 */
+		if (S_ISLNK(my_stat.st_mode)) {
+			/* just traverse the symlink */
+			if (fstatat(cb_dirfd, dir->d_name, &my_stat, 0)) {
+				PDEBUG("symlink target stat failed for '%s': %m\n", dir->d_name);
+				rc = -1;
+				continue;
+			}
 		}
 
 		if (cb(cb_dirfd, dir->d_name, &my_stat, data)) {

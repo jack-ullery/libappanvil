@@ -45,6 +45,8 @@ struct aa_policy_cache {
 static int clear_cache_cb(int dirfd, const char *path, struct stat *st,
 			  void *data unused)
 {
+	/* Handle symlink here. See _aa_dirat_for_each in private.c */
+
 	if (S_ISREG(st->st_mode)) {
 		/* remove regular files */
 		return unlinkat(dirfd, path, 0);

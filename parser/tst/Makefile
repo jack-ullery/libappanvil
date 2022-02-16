@@ -17,8 +17,8 @@ endif
 
 all: tests
 
-.PHONY: tests error_output gen_dbus gen_xtrans parser_sanity caching minimize equality valgrind
-tests: error_output caching minimize equality parser_sanity
+.PHONY: tests error_output gen_dbus gen_xtrans parser_sanity caching minimize equality dirtest valgrind
+tests: error_output caching minimize equality dirtest parser_sanity
 
 GEN_TRANS_DIRS=simple_tests/generated_x/ simple_tests/generated_perms_leading/ simple_tests/generated_perms_safe/ simple_tests/generated_dbus
 
@@ -45,6 +45,9 @@ minimize: $(PARSER)
 
 equality: $(PARSER)
 	LANG=C APPARMOR_PARSER="$(PARSER) $(PARSER_ARGS)" ./equality.sh
+
+dirtest: $(PARSER)
+	LANG=C APPARMOR_PARSER="$(PARSER) $(PARSER_ARGS)" ./dirtest.sh
 
 valgrind: $(PARSER) gen_xtrans gen_dbus
 	LANG=C ./valgrind_simple.py -p "$(PARSER) $(PARSER_ARGS)" -v simple_tests

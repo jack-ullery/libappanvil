@@ -194,6 +194,8 @@ static int features_dir_cb(int dirfd, const char *name, struct stat *st,
 	if (features_snprintf(fst, "%s {", name) == -1)
 		return -1;
 
+	/* Handle symlink here. See _aa_dirat_for_each in private.c */
+
 	if (S_ISREG(st->st_mode)) {
 		ssize_t len;
 		size_t remaining;
