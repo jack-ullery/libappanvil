@@ -60,7 +60,7 @@ WARNINGS = -Wall
 CXX_WARNINGS = ${WARNINGS} ${EXTRA_WARNINGS}
 CPP_WARNINGS =
 ifndef CFLAGS
-CFLAGS	= -g -O2 -pipe
+CFLAGS	= -g -O2 -pipe -flto-partition=none
 
 ifdef DEBUG
 CFLAGS += -pg -D DEBUG
