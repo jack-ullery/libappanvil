@@ -6,6 +6,10 @@
 
   include <abstractions/nameservice>
 
+  # Allow other processes to read our /proc entries
+  ptrace (readby),
+  # Allow other processes to trace us by default
+  ptrace (tracedby),
   # Allow unconfined processes to send us signals by default
   signal (receive) peer=unconfined,
   # Allow apache to send us signals by default
