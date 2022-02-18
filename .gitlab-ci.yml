@@ -131,7 +131,11 @@ shellcheck:
 
 include:
   - template: SAST.gitlab-ci.yml
-  - template: Secret-Detection.gitlab-ci.yml
+# Temporarily disable secret-detection because it is failing with
+#    fatal: error in object: unshallow sha1
+# and none of the suggested work-arounds work
+# see https://gitlab.com/gitlab-org/gitlab/-/issues/351976
+#  - template: Secret-Detection.gitlab-ci.yml
 
 variables:
   SAST_EXCLUDED_ANALYZERS: "eslint,flawfinder,semgrep,spotbugs"
