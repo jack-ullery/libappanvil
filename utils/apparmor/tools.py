@@ -248,7 +248,4 @@ class aa_tools:
         if not self.do_reload:
             return
 
-        cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '--base', apparmor.profile_dir, '-r', profile])
-
-        if cmd_info[0] != 0:
-            raise AppArmorException(cmd_info[1])
+        apparmor.reload_profile(profile, raise_exc=True)

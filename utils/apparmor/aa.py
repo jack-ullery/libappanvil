@@ -32,7 +32,7 @@ from copy import deepcopy
 
 from apparmor.aare import AARE
 
-from apparmor.common import (AppArmorException, AppArmorBug, is_skippable_file, open_file_read, valid_path, hasher,
+from apparmor.common import (AppArmorException, AppArmorBug, cmd, is_skippable_file, open_file_read, valid_path, hasher,
                              combine_profname, split_name, type_is_str, open_file_write, DebugLogger)
 
 import apparmor.ui as aaui
@@ -2303,8 +2303,18 @@ def reload_base(bin_path):
 
     prof_filename = get_profile_filename_from_profile_name(bin_path, True)
 
-    # XXX use reload_profile() from tools.py instead (and don't hide output in /dev/null)
-    subprocess.call("cat '%s' | %s -I%s -r >/dev/null 2>&1" % (prof_filename, parser, profile_dir), shell=True)
+    reload_profile(prof_filename)
+
+def reload_profile(prof_filename, raise_exc=False):
+    ''' run apparmor_parser to reload the given profile file '''
+
+    ret, out = cmd([parser, '-I%s' % profile_dir, '--base', profile_dir, '-r', prof_filename])
+
+    if ret != 0:
+        if raise_exc:
+            raise AppArmorException(out)
+        else:
+            print(out)
 
 def reload(bin_path):
     bin_path = find_executable(bin_path)
