@@ -143,7 +143,7 @@ while not done_profiling:
         logmark = subprocess.check_output(['date | md5sum'], shell=True)
         logmark = logmark.decode('ascii').strip()
         logmark = re.search('^([0-9a-f]+)', logmark).groups()[0]
-        t=subprocess.call("%s -p kern.warn 'GenProf: %s'"%(apparmor.logger_path(), logmark), shell=True)
+        t=subprocess.call([apparmor.logger_path(), '-p', 'kern.warn', 'GenProf: %s'%logmark])
 
     else:
         logmark = last_audit_entry_time()
