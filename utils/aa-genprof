@@ -18,6 +18,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 
 import apparmor.aa as apparmor
 import apparmor.ui as aaui
@@ -140,10 +141,8 @@ if os.path.exists('/var/log/audit/audit.log'):
 
 while not done_profiling:
     if syslog:
-        logmark = subprocess.check_output(['date | md5sum'], shell=True)
-        logmark = logmark.decode('ascii').strip()
-        logmark = re.search('^([0-9a-f]+)', logmark).groups()[0]
-        t=subprocess.call("%s -p kern.warn 'GenProf: %s'"%(apparmor.logger_path(), logmark), shell=True)
+        logmark = 'logmark-%s' % str(int(time.time()))  # unix timestamp, seconds only
+        t=subprocess.call([apparmor.logger_path(), '-p', 'kern.warn', 'GenProf: %s'%logmark])
 
     else:
         logmark = last_audit_entry_time()
