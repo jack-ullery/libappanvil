@@ -42,6 +42,7 @@ profile smbd /usr/{bin,sbin}/smbd {
   /usr/lib/@{multiarch}/samba/*.so{,.[0-9]*} mr,
   /usr/lib/@{multiarch}/samba/**/ r,
   /usr/lib/@{multiarch}/samba/**/*.so{,.[0-9]*} mr,
+  /usr/share/samba/** r,
   /usr/{bin,sbin}/smbd mr,
   /usr/{bin,sbin}/smbldap-useradd Px,
   /var/cache/samba/** rwk,
