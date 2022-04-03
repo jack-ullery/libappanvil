@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#   Copyright (c) 2013
+#   Copyright (c) 2022
 #   Canonical, Ltd. (All rights reserved)
 #
 #   This program is free software; you can redistribute it and/or
@@ -37,7 +37,11 @@ do_tst() {
 		echo "failed: expected \"$expected\" but parser returned error"
 		return 1
 	fi
-        if ! diff -q "$tmpdir/out" dirtest/dirtest.out ; then
+	if [ $rc -eq 0 ] && [ "$expected" = "fail" ] ; then
+		echo "succeeded unexpectedly: expected \"$expected\" but parser returned success"
+		return 1
+	fi
+	if ! diff -q "$tmpdir/out" dirtest/dirtest.out ; then
 		echo "failed: expected \"$expected\" but output comparison failed"
 		diff -u dirtest/dirtest.out "$tmpdir/out"
 		return 1
