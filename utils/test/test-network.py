@@ -132,6 +132,7 @@ class NetworkTestParseFromLog(NetworkTest):
             'attr': None,
             'name2': None,
             'name': None,
+            'class': None,
         })
 
         obj = NetworkRule(parsed_event['family'], parsed_event['sock_type'], log_event=parsed_event)

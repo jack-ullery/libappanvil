@@ -168,6 +168,7 @@ key_peer		"peer"
 key_fstype		"fstype"
 key_flags		"flags"
 key_srcname		"srcname"
+key_class		"class"
 audit			"audit"
 
 /* network addrs */
@@ -355,6 +356,7 @@ yy_flex_debug = 0;
 {key_fstype}		{ return(TOK_KEY_FSTYPE); }
 {key_flags}		{ BEGIN(safe_string); return(TOK_KEY_FLAGS); }
 {key_srcname}		{ BEGIN(safe_string); return(TOK_KEY_SRCNAME); }
+{key_class}		{ BEGIN(safe_string); return(TOK_KEY_CLASS); }
 
 {socklogd_kernel}	{ BEGIN(dmesg_timestamp); return(TOK_SOCKLOGD_KERNEL); }
 {syslog_kernel}		{ BEGIN(dmesg_timestamp); return(TOK_SYSLOG_KERNEL); }

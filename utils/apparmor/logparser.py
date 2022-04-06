@@ -102,6 +102,7 @@ class ReadLog:
         ev['family'] = event.net_family
         ev['protocol'] = event.net_protocol
         ev['sock_type'] = event.net_sock_type
+        ev['class'] = event._class
 
         if event.ouid != ctypes.c_ulong(-1).value:  # ULONG_MAX
             ev['fsuid'] = event.fsuid

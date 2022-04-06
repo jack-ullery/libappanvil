@@ -35,6 +35,7 @@ OUTPUT_MAP = {
     'Local port':       'net_local_port',
     'Foreign port':     'net_foreign_port',
     'Audit subid':      'audit_sub_id',
+    'Class':            '_class',
 }
 
 # FIXME: pull this automatically out of LibAppArmor, but swig
@@ -109,7 +110,7 @@ class AAPythonBindingsTests(unittest.TestCase):
         """parse the swig created record and construct a dict from it"""
 
         new_record = dict()
-        for key in [x for x in dir(record) if not (x.startswith('_') or x == 'this')]:
+        for key in [x for x in dir(record) if not (x.startswith('__') or x == 'this')]:
             value = getattr(record, key)
             if key == "event" and value in EVENT_MAP:
                 new_record[key] = EVENT_MAP[value]

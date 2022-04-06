@@ -95,6 +95,7 @@ class TestParseEvent(AATest):
             'family': None,
             'protocol': None,
             'sock_type': None,
+            'class': None,
         })
 
         self.assertIsNotNone(ReadLog.RE_LOG_ALL.search(event))

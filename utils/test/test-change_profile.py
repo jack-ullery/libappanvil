@@ -129,6 +129,7 @@ class ChangeProfileTestParseFromLog(ChangeProfileTest):
             'family': None,
             'protocol': None,
             'sock_type': None,
+            'class': None,
         })
 
         obj = ChangeProfileRule(None, ChangeProfileRule.ALL, parsed_event['name2'], log_event=parsed_event)
