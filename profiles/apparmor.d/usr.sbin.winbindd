@@ -26,6 +26,7 @@ profile winbindd /usr/{bin,sbin}/winbindd {
   /usr/lib*/samba/idmap/*.so mr,
   /usr/lib*/samba/nss_info/*.so mr,
   /usr/lib*/samba/pdb/*.so mr,
+  /usr/lib*/samba/samba-dcerpcd Px -> samba-dcerpcd,
   /usr/{bin,sbin}/winbindd mr,
   /var/cache/krb5rcache/* rwk,
   /var/cache/samba/*.tdb rwk,
