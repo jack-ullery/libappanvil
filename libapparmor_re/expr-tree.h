@@ -599,9 +599,9 @@ public:
 
 	int min_match_len()
 	{
-		if (contains_oob()) {
-			return 0;
-		}
+		/* Inverse match does not match any oob char at this time
+		 * so only count characters
+		 */
 		return 1;
 	}
 
