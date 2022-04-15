@@ -39,6 +39,7 @@ profile smbd /usr/{bin,sbin}/smbd {
   /usr/lib*/samba/gensec/*.so mr,
   /usr/lib*/samba/pdb/*.so mr,
   /usr/lib*/samba/samba-bgqd Px -> samba-bgqd,
+  /usr/lib*/samba/samba-dcerpcd Px -> samba-dcerpcd,
   /usr/lib*/samba/{lowcase,upcase,valid}.dat r,
   /usr/lib/@{multiarch}/samba/*.so{,.[0-9]*} mr,
   /usr/lib/@{multiarch}/samba/**/ r,
