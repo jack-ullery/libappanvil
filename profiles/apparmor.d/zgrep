@@ -20,6 +20,7 @@ profile zgrep /usr/bin/{x,}zgrep {
   /usr/bin/{ba,da,}sh ix,
   /usr/bin/bzip2 Cx -> helper,
   /usr/bin/cat ix,
+  /usr/bin/expr ix,
   /usr/bin/grep Cx -> helper,
   /usr/bin/gzip Cx -> helper,
   /usr/bin/mktemp ix,
