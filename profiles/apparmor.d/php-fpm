@@ -16,8 +16,6 @@ profile php-fpm /usr/sbin/php-fpm* flags=(attach_disconnected) {
   # read the system certificates
   include <abstractions/ssl_certs>
 
-  /etc/php{,5,7}/** r,
-
   capability net_admin,
   # change user/group of a pool
   capability setuid,
