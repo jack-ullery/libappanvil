@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
-#    Copyright (C) 2015-2018 Christian Boltz <apparmor@cboltz.de>
+#    Copyright (C) 2015-2022 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -27,9 +27,11 @@ class aa_tools:
     def __init__(self, tool_name, args):
         apparmor.init_aa(profiledir=args.dir, confdir=args.configdir)
 
+        if not user_perm(apparmor.profile_dir):
+            raise AppArmorException("Cannot write to profile directory: %s" % (apparmor.profile_dir))
+
         self.name = tool_name
         self.profiling = args.program
-        self.check_profile_dir()
         self.silent = None
         self.do_reload = args.do_reload
 
@@ -40,10 +42,6 @@ class aa_tools:
             self.aa_mountpoint = apparmor.check_for_apparmor()
         elif tool_name == 'cleanprof':
             self.silent = args.silent
-
-    def check_profile_dir(self):
-        if not user_perm(apparmor.profile_dir):
-            raise AppArmorException("Cannot write to profile directory: %s" % (apparmor.profile_dir))
 
     def get_next_to_profile(self):
         '''Iterator function to walk the list of arguments passed'''
