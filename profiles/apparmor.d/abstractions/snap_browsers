@@ -1,6 +1,7 @@
 profile snap_browsers {
   include if exists <abstractions/snap_browsers.d>
   include <abstractions/base>
+  include <abstractions/dbus-session-strict>
 
   /etc/passwd r,
   /etc/nsswitch.conf r,
@@ -8,7 +9,6 @@ profile snap_browsers {
 
   # noisy
   deny owner /run/user/[0-9]*/gdm/Xauthority r, # not needed on Ubuntu
-  deny /run/snapd.socket rw,
 
   /{,snap/core/[0-9]*/,snap/snapd/[0-9]*/}usr/bin/snap mrix, # re-exec
   /{,snap/core/[0-9]*/,snap/snapd/[0-9]*/}usr/lib/snapd/info r,
@@ -16,14 +16,19 @@ profile snap_browsers {
   /{,snap/core/[0-9]*/,snap/snapd/[0-9]*/}usr/lib/snapd/snap-seccomp rPix,
   /{,snap/core/[0-9]*/,snap/snapd/[0-9]*/}usr/lib/snapd/snap-confine Pix,
   /var/lib/snapd/system-key r,
+  /run/snapd.socket rw,
 
   @{PROC}/version r,
   @{PROC}/cmdline r,
   @{PROC}/sys/net/core/somaxconn r,
   @{PROC}/sys/kernel/seccomp/actions_avail r,
+  @{PROC}/sys/kernel/random/uuid r,
+  owner @{PROC}/@{pid}/cgroup r,
   owner @{PROC}/@{pid}/mountinfo r,
   owner @{HOME}/.snap/auth.json r, # if exists, required
-  owner /run/user/[0-9]*/bus rw,
+
+  dbus send bus="session" path="/org/freedesktop/systemd1" interface="org.freedesktop.systemd1.Manager" member="StartTransientUnit" peer=(name="org.freedesktop.systemd1"),
+  dbus receive bus="session" path="/org/freedesktop/systemd1" interface="org.freedesktop.systemd1.Manager" member="JobRemoved",
 
   /sys/kernel/security/apparmor/features/ r,
 
@@ -31,5 +36,7 @@ profile snap_browsers {
   /snap/chromium/[0-9]*/meta/{snap.yaml,hooks/} r,
   /snap/firefox/[0-9]*/meta/{snap.yaml,hooks/} r,
   /snap/opera/[0-9]*/meta/{snap.yaml,hooks/} r,
+
+  /var/lib/snapd/sequence/{chromium,firefox,opera}.json r,
   # add other browsers here
 }
