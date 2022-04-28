@@ -29,6 +29,7 @@ profile zgrep /usr/bin/{x,}zgrep {
   /usr/bin/xz Cx -> helper,
   /usr/bin/xzgrep r,
   /usr/bin/zgrep Cx -> helper,
+  /usr/bin/zstd Cx -> helper,
   owner /tmp/zgrep* rw,
   /usr/bin/zgrep r,
 
@@ -45,6 +46,7 @@ profile zgrep /usr/bin/{x,}zgrep {
     /usr/bin/grep mr,
     /usr/bin/gzip mr,
     /usr/bin/xz mr,
+    /usr/bin/zstd mr,
     /{,**} r,
 
   }
