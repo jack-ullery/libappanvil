@@ -10,6 +10,8 @@
   # (src/intel/perf/gen_perf.c, load_oa_metrics())
   @{PROC}/sys/dev/i915/perf_stream_paranoid r,
 
+  @{sys}/devices/pci[0-9]*/**/{revision,config} r,
+
   # User files
   owner @{HOME}/.cache/ w, # if user clears all caches
   owner @{HOME}/.cache/mesa_shader_cache/ rw,
