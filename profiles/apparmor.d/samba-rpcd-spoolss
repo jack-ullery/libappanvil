@@ -16,6 +16,7 @@ include <tunables/global>
 profile samba-rpcd-spoolss /usr/lib*/samba/rpcd_spoolss {
   include <abstractions/samba-rpcd>
 
+  /usr/lib*/samba/rpcd_spoolss m,
   /usr/lib*/samba/samba-bgqd Px -> samba-bgqd,
 
   # Site-specific additions and overrides. See local/README for details.
