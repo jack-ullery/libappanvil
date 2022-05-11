@@ -17,6 +17,8 @@ profile samba-rpcd-classic /usr/lib*/samba/rpcd_classic {
   include <abstractions/samba-rpcd>
   include <abstractions/wutmp>
 
+  /usr/lib*/samba/rpcd_classic m,
+
   # Site-specific additions and overrides. See local/README for details.
   include if exists <local/samba-rpcd-classic>
 }
