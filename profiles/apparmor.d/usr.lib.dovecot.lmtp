@@ -31,6 +31,8 @@ profile dovecot-lmtp /usr/lib/dovecot/lmtp {
 
   @{HOME}/.dovecot.svbin r,
   @{PROC}/@{pid}/attr/{apparmor/,}current rw,
+  owner @{PROC}/@{pid}/io r,
+  owner @{PROC}/@{pid}/stat r,
   @{PROC}/*/mounts r,
   /tmp/dovecot.lmtp.* rw,
   /usr/lib/dovecot/lmtp mr,
