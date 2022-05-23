@@ -19,6 +19,7 @@
 #ifndef __AA_CAPABILITY_H
 #define __AA_CAPABILITY_H
 
+#include <cstdint>
 #include <linux/capability.h>
 
 #define NO_BACKMAP_CAP 0xff
