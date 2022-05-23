@@ -26,6 +26,7 @@ profile dovecot-pop3 /usr/lib/dovecot/pop3 {
   @{DOVECOT_MAILSTORE}/** rwkl,
 
   @{HOME} r, # ???
+  @{PROC}/@{pid}/stat r,
   /usr/lib/dovecot/pop3 mr,
 
   # Site-specific additions and overrides. See local/README for details.
