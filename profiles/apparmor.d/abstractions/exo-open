@@ -51,13 +51,6 @@
 
   /{,usr/}bin/which rix,
 
-  # Deny DBus
-
-  # for GTK error message dialog, not required exo-open to work.
-  deny dbus send
-    bus=session
-    path=/org/gtk/vfs/mounttracker,
-
   # System files
 
   /etc/xdg/{,xdg-*/}xfce4/helpers.rc r,
