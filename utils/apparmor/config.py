@@ -279,9 +279,8 @@ class Config(object):
 def py2_parser(filename):
     """Returns the de-dented ini file from the new format ini"""
     tmp = tempfile.NamedTemporaryFile('rw')
-    f_out = open(tmp.name, 'w')
     if os.path.exists(filename):
-        with open_file_read(filename) as f_in:
+        with open(tmp.name, 'w') as f_out, open_file_read(filename) as f_in:
             for line in f_in:
                 # The ini format allows for multi-line entries, with the subsequent
                 # entries being indented deeper hence simple lstrip() is not appropriate
@@ -290,5 +289,4 @@ def py2_parser(filename):
                 elif line[0] == '\t':
                     line = line[1:]
                 f_out.write(line)
-    f_out.flush()
     return tmp

@@ -114,14 +114,13 @@ Feb  4 13:40:38 XPS-13-9370 kernel: [128552.880347] audit: type=1400 audit({epoc
 
         handle, self.test_logfile = tempfile.mkstemp(prefix='test-aa-notify-')
         os.close(handle)
-        handle = open(self.test_logfile, "w+")
-        handle.write(
-            test_logfile_contents_999_days_old +
-            test_logfile_contents_30_days_old +
-            test_logfile_contents_unrelevant_entries +
-            test_logfile_contents_0_seconds_old
-        )
-        handle.close()
+        with open(self.test_logfile, "w+") as handle:
+            handle.write(
+                test_logfile_contents_999_days_old +
+                test_logfile_contents_30_days_old +
+                test_logfile_contents_unrelevant_entries +
+                test_logfile_contents_0_seconds_old
+            )
 
     def AATeardown(self):
         '''Remove temporary log file after tests ended'''

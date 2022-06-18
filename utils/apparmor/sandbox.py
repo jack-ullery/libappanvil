@@ -128,25 +128,24 @@ def aa_exec(command, opt, environ={}, verify_rules=[]):
         policy = easyp.gen_policy(**params)
         debug("\n%s" % policy)
 
-        tmp = tempfile.NamedTemporaryFile(prefix = '%s-' % policy_name)
-        if sys.version_info[0] >= 3:
-            tmp.write(bytes(policy, 'utf-8'))
-        else:
-            tmp.write(policy)
-        tmp.flush()
+        with tempfile.NamedTemporaryFile(prefix='%s-' % policy_name) as tmp:
+            if sys.version_info[0] >= 3:
+                tmp.write(bytes(policy, 'utf-8'))
+            else:
+                tmp.write(policy)
 
-        debug("using '%s' template" % opt.template)
-        # TODO: get rid of this
-        if opt.withx:
-            rc, report = cmd(['pkexec', 'apparmor_parser', '-r', '%s' % tmp.name])
-        else:
-            rc, report = cmd(['sudo', 'apparmor_parser', '-r', tmp.name])
-        if rc != 0:
-            raise AppArmorException("Could not load policy")
+            debug("using '%s' template" % opt.template)
+            # TODO: get rid of this
+            if opt.withx:
+                rc, report = cmd(['pkexec', 'apparmor_parser', '-r', '%s' % tmp.name])
+            else:
+                rc, report = cmd(['sudo', 'apparmor_parser', '-r', tmp.name])
+            if rc != 0:
+                raise AppArmorException("Could not load policy")
 
-        rc, report = cmd(['sudo', 'apparmor_parser', '-p', tmp.name])
-        if rc != 0:
-            raise AppArmorException("Could not dump policy")
+            rc, report = cmd(['sudo', 'apparmor_parser', '-p', tmp.name])
+            if rc != 0:
+                raise AppArmorException("Could not dump policy")
 
         # Make sure the dynamic profile has the appropriate line for X
         for r in verify_rules:

@@ -415,7 +415,8 @@ class AppArmorEasyProfile:
 
     def get_template(self):
         '''Get contents of current template'''
-        return open(self.template).read()
+        with open(self.template) as f:
+            return f.read()
 
     def set_template(self, template, allow_abs_path=True):
         '''Set current template'''
@@ -464,7 +465,8 @@ class AppArmorEasyProfile:
 
         if self.policy_groups == None or not p in self.policy_groups:
             raise AppArmorException("Policy group '%s' does not exist" % p)
-        return open(p).read()
+        with open(p) as f:
+            return f.read()
 
     def set_policygroup(self, policygroups):
         '''Set policygroups'''
