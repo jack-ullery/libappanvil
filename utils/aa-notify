@@ -162,7 +162,7 @@ def follow_apparmor_events(logfile, wait=0):
     '''Follow AppArmor events and yield relevant entries until process stops'''
 
     # If wait was given as argument but was type None (from ArgumentParser)
-    # ensure it type int and zero
+    # ensure it's type int and zero
     if not wait:
         wait = 0
 
@@ -518,7 +518,7 @@ def main():
                 os.environ['DBUS_SESSION_BUS_ADDRESS'] = 'unix:path=/run/user/{}/bus'.format(os.geteuid())
 
             # Before use, notify2 must be initialized and the DBUS channel
-            # should be opened using the non-root user. This this step needs to
+            # should be opened using the non-root user. This step needs to
             # be executed after the drop_privileges().
             notify2.init('AppArmor')
 

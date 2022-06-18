@@ -30,7 +30,7 @@ exp = namedtuple('exp', ['comment',
 
 class AliasTest(AATest):
     def _compare_obj(self, obj, expected):
-        # aliass don't support the allow, audit or deny keyword
+        # aliases don't support the allow, audit or deny keyword
         self.assertEqual(False, obj.allow_keyword)
         self.assertEqual(False, obj.audit)
         self.assertEqual(False, obj.deny)

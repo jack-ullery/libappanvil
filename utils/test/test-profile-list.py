@@ -62,7 +62,7 @@ class TestAdd_profile(AATest):
 
     def testAdd_profileError_2(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_profile('/etc/apparmor.d/bin.foo', None, None, self.dummy_profile)  # neither attachment or profile name
+            self.pl.add_profile('/etc/apparmor.d/bin.foo', None, None, self.dummy_profile)  # neither attachment nor profile name
 
     def testAdd_profileError_list_nonexisting_file(self):
         self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', None, self.dummy_profile)
