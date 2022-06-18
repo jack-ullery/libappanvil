@@ -22,7 +22,7 @@ def get_rule (quantifier, perms, session, name, path, interface, member, peer):
 
     result = ' '
 
-    for part in [quantifier, 'dbus', perms, session, name, path, interface, member, peer]:
+    for part in (quantifier, 'dbus', perms, session, name, path, interface, member, peer):
         if part:
             result += ' %s' % part
 
@@ -59,8 +59,8 @@ def gen_files (test, xres, quantifiers, perms, sessions, names, paths, interface
 
 count=0
 
-quantifier = ['', 'deny', 'audit']
-session = ['', 'bus=session', 'bus=system', 'bus=accessibility']
+quantifier = ('', 'deny', 'audit')
+session = ('', 'bus=session', 'bus=system', 'bus=accessibility')
 path = ['', 'path=/foo/bar', 'path="/foo/bar"']
 interface = ['', 'interface=com.baz', 'interface="com.baz"']
 member = ['', 'member=bar', 'member="bar"']
@@ -100,12 +100,14 @@ msg_perms = [
     '(receive write)',
 ]
 
+empty_tup = ('',)
+
 gen_files('message-rules', 'PASS', quantifier, msg_perms, session,
-	  [''], path, interface, member, peer)
+          empty_tup, path, interface, member, peer)
 gen_files('service-rules', 'PASS', quantifier, ['bind'], session,
-	  name, [''], [''], [''], [''])
+          name, empty_tup, empty_tup, empty_tup, empty_tup)
 gen_files('eavesdrop-rules', 'PASS', quantifier, ['eavesdrop'], session,
-	  [''], [''], [''], [''], [''])
+          empty_tup, empty_tup, empty_tup, empty_tup, empty_tup)
 gen_file('sloppy-formatting', 'PASS', '', '(send , receive )', 'bus=session',
 	 '', 'path ="/foo/bar"', 'interface = com.foo', '  member=bar',
 	 'peer =(   label= /usr/bin/app name  ="com.foo")')
@@ -122,26 +124,26 @@ interface.remove('')
 member.remove('')
 peer.remove('peer=()')
 
-gen_files('message-incompat', 'FAIL', quantifier, msg_perms, session, name, [''], [''], [''], [''])
-gen_files('service-incompat', 'FAIL', quantifier, ['bind'], session, name, path, [''], [''], [''])
-gen_files('service-incompat', 'FAIL', quantifier, ['bind'], session, name, [''], interface, [''], [''])
-gen_files('service-incompat', 'FAIL', quantifier, ['bind'], session, name, [''], [''], member, [''])
-gen_files('service-incompat', 'FAIL', quantifier, ['bind'], session, name, [''], [''], [''], peer)
-gen_files('eavesdrop-incompat', 'FAIL', quantifier, ['eavesdrop'], session, name, path, interface, member, peer)
+gen_files('message-incompat', 'FAIL', quantifier, msg_perms, session, name, empty_tup, empty_tup, empty_tup, empty_tup)
+gen_files('service-incompat', 'FAIL', quantifier, ('bind',), session, name, path, empty_tup, empty_tup, empty_tup)
+gen_files('service-incompat', 'FAIL', quantifier, ('bind',), session, name, empty_tup, interface, empty_tup, empty_tup)
+gen_files('service-incompat', 'FAIL', quantifier, ('bind',), session, name, empty_tup, empty_tup, member, empty_tup)
+gen_files('service-incompat', 'FAIL', quantifier, ('bind',), session, name, empty_tup, empty_tup, empty_tup, peer)
+gen_files('eavesdrop-incompat', 'FAIL', quantifier, ('eavesdrop',), session, name, path, interface, member, peer)
 
-gen_files('pairing-unsupported', 'FAIL', quantifier, ['send', 'bind'],
-	  session, ['name=sn', 'label=sl'], [''], [''], [''],
-	  ['peer=(name=pn)', 'peer=(label=pl)'])
+gen_files('pairing-unsupported', 'FAIL', quantifier, ('send', 'bind'),
+          session, ('name=sn', 'label=sl'), empty_tup, empty_tup, empty_tup,
+          ('peer=(name=pn)', 'peer=(label=pl)'))
 
 # missing bus= prefix
 gen_file('bad-formatting', 'FAIL', '', 'send', 'session', '', '', '', '', '')
 # incorrectly formatted permissions
-gen_files('bad-perms', 'FAIL', [''], ['send receive', '(send', 'send)'],
-	  ['bus=session'], [''], [''], [''], [''], [''])
+gen_files('bad-perms', 'FAIL', empty_tup, ('send receive', '(send', 'send)'),
+          ('bus=session',), empty_tup, empty_tup, empty_tup, empty_tup, empty_tup)
 # invalid permissions
-gen_files('bad-perms', 'FAIL', [''],
-	  ['a', 'x', 'Ux', 'ix', 'm', 'k', 'l', '(a)', '(x)'], [''], [''],
-	  [''], [''], [''], [''])
+gen_files('bad-perms', 'FAIL', empty_tup,
+          ('a', 'x', 'Ux', 'ix', 'm', 'k', 'l', '(a)', '(x)'), empty_tup, empty_tup,
+          empty_tup, empty_tup, empty_tup, empty_tup)
 
 gen_file('duplicated-conditionals', 'FAIL', '', 'bus=1 bus=2', '', '', '', '', '', '')
 gen_file('duplicated-conditionals', 'FAIL', '', 'name=1 name=2', '', '', '', '', '', '')
