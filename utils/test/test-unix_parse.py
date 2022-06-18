@@ -18,7 +18,7 @@ class AAParseUnixTest(AAParseTest):
     def setUp(self):
         self.parse_function = aa.parse_unix_rule
 
-    tests = [
+    tests = (
         ('unix,', 'unix base keyword'),
         ('unix r,', 'unix r rule'),
         ('unix w,', 'unix w rule'),
@@ -32,7 +32,7 @@ class AAParseUnixTest(AAParseTest):
         ('unix (receive),', 'unix (receive) rule'),
         ('unix (connect, receive, send) type=stream peer=(label=unconfined,addr="@/tmp/.X11-unix/X[0-9]*"),',
             'complex unix rule'),
-    ]
+    )
 
 setup_aa(aa)
 if __name__ == '__main__':

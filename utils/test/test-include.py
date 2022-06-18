@@ -27,9 +27,9 @@ from apparmor.common import AppArmorException, AppArmorBug
 from apparmor.translations import init_translation
 _ = init_translation()
 
-exp = namedtuple('exp', [ # 'audit', 'allow_keyword', 'deny',
+exp = namedtuple('exp', ( # 'audit', 'allow_keyword', 'deny',
         'comment',
-        'path', 'ifexists', 'ismagic'])
+        'path', 'ifexists', 'ismagic'))
 
 # --- tests for single IncludeRule --- #
 
@@ -45,7 +45,7 @@ class IncludeTest(AATest):
         self.assertEqual(expected.ismagic, obj.ismagic)
 
 class IncludeTestParse(IncludeTest):
-    tests = [
+    tests = (
         # IncludeRule object                                        comment             path                       if exists   ismagic
         # #include
         ('#include <abstractions/base>',                        exp('',                 'abstractions/base',       False,      True )),  # magic path
@@ -83,7 +83,7 @@ class IncludeTestParse(IncludeTest):
         ('include if exists "/foo/bar" # comment',              exp(' # comment',       '/foo/bar',                True,       False)),
         ('include if exists "/foo/bar"#comment',                exp(' #comment',        '/foo/bar',                True,       False)),
         ('   include if exists "/foo/bar"  ',                   exp('',                 '/foo/bar',                True,       False)),
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(IncludeRule.match(rawrule))
@@ -92,12 +92,12 @@ class IncludeTestParse(IncludeTest):
         self._compare_obj(obj, expected)
 
 class IncludeTestParseInvalid(IncludeTest):
-    tests = [
+    tests = (
 #       (' some #include if exists <abstractions/base>',        AppArmorException),
 #       ('  /etc/fstab r,',                                     AppArmorException),
 #       ('/usr/include r,',                                     AppArmorException),
 #       ('/include r,',                                         AppArmorException),
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(IncludeRule.match(rawrule))  # the above invalid rules still match the main regex!
@@ -107,34 +107,34 @@ class IncludeTestParseInvalid(IncludeTest):
 # class IncludeTestParseFromLog(IncludeTest):  # we'll never have log events for includes
 
 class IncludeFromInit(IncludeTest):
-    tests = [
+    tests = (
         # IncludeRule object                        ifexists    ismagic                       comment      path                    ifexists    ismagic
         (IncludeRule('abstractions/base',           False,      False)                  , exp('',          'abstractions/base',    False,      False    )),
         (IncludeRule('foo',                         True,       False)                  , exp('',          'foo',                  True,       False    )),
         (IncludeRule('bar',                         False,      True)                   , exp('',          'bar',                  False,      True     )),
         (IncludeRule('baz',                         True,       True)                   , exp('',          'baz',                  True,       True     )),
         (IncludeRule('comment',                     False,      False, comment='# cmt') , exp('# cmt',     'comment',              False,      False    )),
-    ]
+    )
 
     def _run_test(self, obj, expected):
         self._compare_obj(obj, expected)
 
 class InvalidIncludeInit(AATest):
-    tests = [
+    tests = (
         # init params                     expected exception
-        ([False,  False, False  ]    , AppArmorBug), # wrong type for path
-        (['',     False, False  ]    , AppArmorBug), # empty path
-        ([None,   False, False  ]    , AppArmorBug), # wrong type for path
-#       (['    ', False, False  ]    , AppArmorBug), # whitespace-only path
-        (['foo',  None,  False  ]    , AppArmorBug), # wrong type for ifexists
-        (['foo',  '',    False  ]    , AppArmorBug), # wrong type for ifexists
-        (['foo',  False, None   ]    , AppArmorBug), # wrong type for ismagic
-        (['foo',  False, ''     ]    , AppArmorBug), # wrong type for ismagic
-    ]
+        ((False,  False, False  )    , AppArmorBug), # wrong type for path
+        (('',     False, False  )    , AppArmorBug), # empty path
+        ((None,   False, False  )    , AppArmorBug), # wrong type for path
+#       (('    ', False, False  )    , AppArmorBug), # whitespace-only path
+        (('foo',  None,  False  )    , AppArmorBug), # wrong type for ifexists
+        (('foo',  '',    False  )    , AppArmorBug), # wrong type for ifexists
+        (('foo',  False, None   )    , AppArmorBug), # wrong type for ismagic
+        (('foo',  False, ''     )    , AppArmorBug), # wrong type for ismagic
+    )
 
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
-            IncludeRule(params[0], params[1], params[2])
+            IncludeRule(*params)
 
     def test_missing_params_1(self):
         with self.assertRaises(TypeError):
@@ -188,7 +188,7 @@ class WriteIncludeTestAATest(AATest):
         self.assertEqual(expected.strip(), clean, 'unexpected clean rule')
         self.assertEqual(rawrule.strip(), raw, 'unexpected raw rule')
 
-    tests = [
+    tests = (
         #  raw rule                                               clean rule
         ('     include      <foo>            ',                 'include <foo>'                     ),
 #       ('     include       foo             ',                 'include "foo"'                     ),  # several test cases disabled due to implementation restrictions, see re_match_include_parse()
@@ -226,7 +226,7 @@ class WriteIncludeTestAATest(AATest):
 #       ('    #include if    exists     "foo"            ',     'include if exists "foo"'           ),
 #       ('    #include if    exists      /foo            ',     'include if exists "/foo"'          ),
         ('    #include if    exists     "/foo"           ',     'include if exists "/foo"'          ),
-    ]
+    )
 
     def test_write_manually(self):
         obj = IncludeRule('abs/foo', False, True, comment=' # cmt')
@@ -253,29 +253,29 @@ class IncludeCoveredTest(AATest):
 class IncludeCoveredTest_01(IncludeCoveredTest):
     rule = 'include <foo>'
 
-    tests = [
+    tests = (
         #   rule                                equal     strict equal    covered     covered exact
-        ('include <foo>'                    , [ True    , True          , True      , True      ]),
-        ('#include <foo>'                   , [ True    , False         , True      , True      ]),
-        ('include if exists <foo>'          , [ False   , False         , True      , True      ]),
-        ('#include if exists <foo>'         , [ False   , False         , True      , True      ]),
-        ('include <foobar>'                 , [ False   , False         , False     , False     ]),
-#       ('include "foo"'                    , [ False   , False         , False     , False     ]),  # disabled due to implementation restrictions, see re_match_include_parse()
-#       ('include if exists "foo"'          , [ False   , False         , False     , False     ]),
-    ]
+        ('include <foo>'                    , ( True    , True          , True      , True      )),
+        ('#include <foo>'                   , ( True    , False         , True      , True      )),
+        ('include if exists <foo>'          , ( False   , False         , True      , True      )),
+        ('#include if exists <foo>'         , ( False   , False         , True      , True      )),
+        ('include <foobar>'                 , ( False   , False         , False     , False     )),
+#       ('include "foo"'                    , ( False   , False         , False     , False     )),  # disabled due to implementation restrictions, see re_match_include_parse()
+#       ('include if exists "foo"'          , ( False   , False         , False     , False     )),
+    )
 
 class IncludeCoveredTest_02(IncludeCoveredTest):
     rule = 'include if exists <foo>'
 
-    tests = [
+    tests = (
         #   rule                                equal     strict equal    covered     covered exact
-        ('include <foo>'                    , [ False   , False         , False     , False     ]),
-        ('#include <foo>'                   , [ False   , False         , False     , False     ]),
-        ('#include if exists <foo>'         , [ True    , False         , True      , True      ]),
-        ('include <foobar>'                 , [ False   , False         , False     , False     ]),
-#       ('include "foo"'                    , [ False   , False         , False     , False     ]),  # disabled due to implementation restrictions, see re_match_include_parse()
-#       ('include if exists "foo"'          , [ False   , False         , False     , False     ]),
-    ]
+        ('include <foo>'                    , ( False   , False         , False     , False     )),
+        ('#include <foo>'                   , ( False   , False         , False     , False     )),
+        ('#include if exists <foo>'         , ( True    , False         , True      , True      )),
+        ('include <foobar>'                 , ( False   , False         , False     , False     )),
+#       ('include "foo"'                    , ( False   , False         , False     , False     )),  # disabled due to implementation restrictions, see re_match_include_parse()
+#       ('include if exists "foo"'          , ( False   , False         , False     , False     )),
+    )
 
 class IncludeCoveredTest_Invalid(AATest):
 #   def test_borked_obj_is_covered_1(self):
@@ -304,10 +304,10 @@ class IncludeCoveredTest_Invalid(AATest):
             obj.is_equal(testobj)
 
 class IncludeLogprofHeaderTest(AATest):
-    tests = [
+    tests = (
         ('include <abstractions/base>',  [_('Include'), 'include <abstractions/base>'           ]),
         ('include "/what/ever"',         [_('Include'), 'include "/what/ever"',                 ]),
-    ]
+    )
 
     def _run_test(self, params, expected):
         obj = IncludeRule.parse(params)
@@ -333,16 +333,16 @@ class IncludeFullPathsTest(AATest):
         empty_dir = os.path.join(self.profile_dir, 'abstractions/empty.d')
         os.mkdir(empty_dir, 0o755)
 
-    tests = [
+    tests = (
         #                                                 @@ will be replaced with self.profile_dir
-        ('include <abstractions/base>',                 ['@@/abstractions/base']                                            ),
-#       ('include "foo"',                               ['@@/foo']                                                          ),  # TODO: adjust logic to honor quoted vs. magic paths (and allow quoted relative paths in re_match_include_parse())
-        ('include "/foo/bar"',                          ['/foo/bar']                                                        ),
-        ('include <abstractions/inc.d>',                ['@@/abstractions/inc.d/incbar', '@@/abstractions/inc.d/incfoo']    ),
-        ('include <abstractions/empty.d>',              []                                                                  ),
-        ('include <abstractions/not_found>',            ['@@/abstractions/not_found']                                       ),
-        ('include if exists <abstractions/not_found>',  []                                                                  ),
-    ]
+        ('include <abstractions/base>',                 ('@@/abstractions/base',)                                           ),
+#       ('include "foo"',                               ('@@/foo',)                                                         ),  # TODO: adjust logic to honor quoted vs. magic paths (and allow quoted relative paths in re_match_include_parse())
+        ('include "/foo/bar"',                          ('/foo/bar',)                                                       ),
+        ('include <abstractions/inc.d>',                ('@@/abstractions/inc.d/incbar', '@@/abstractions/inc.d/incfoo')    ),
+        ('include <abstractions/empty.d>',              ()                                                                  ),
+        ('include <abstractions/not_found>',            ('@@/abstractions/not_found',)                                      ),
+        ('include if exists <abstractions/not_found>',  ()                                                                  ),
+    )
 
     def _run_test(self, params, expected):
         exp2 = []
@@ -376,10 +376,10 @@ class IncludeRulesTest(AATest):
 
     def test_ruleset_1(self):
         ruleset = IncludeRuleset()
-        rules = [
+        rules = (
             ' include  <foo>  ',
             ' #include   "/bar" ',
-        ]
+        )
 
         expected_raw = [
             'include  <foo>',
@@ -414,12 +414,12 @@ class IncludeRulesTest(AATest):
 
     def test_ruleset_2(self):
         ruleset = IncludeRuleset()
-        rules = [
+        rules = (
             '   include   if  exists  <baz> ',
             ' include  <foo>  ',
             ' #include   "/bar" ',
             '#include if   exists   "/asdf"  ',
-        ]
+        )
 
         expected_raw = [
             'include   if  exists  <baz>',

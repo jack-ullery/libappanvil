@@ -35,7 +35,7 @@ class aa_tools:
         self.silent = None
         self.do_reload = args.do_reload
 
-        if tool_name in ['audit']:
+        if tool_name == 'audit':
             self.remove = args.remove
         elif tool_name == 'autodep':
             self.force = args.force

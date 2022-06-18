@@ -367,7 +367,7 @@ def get_reqs(file):
     if not os.path.isfile(ldd) or not os.access(ldd, os.EX_OK):
         raise AppArmorException('Can\'t find ldd')
 
-    ret, ldd_out = get_output([ldd, file])
+    ret, ldd_out = get_output((ldd, file))
     if ret == 0 or ret == 1:
         for line in ldd_out:
             if 'not a dynamic executable' in line:  # comes with ret == 1
@@ -432,7 +432,7 @@ def get_interpreter_and_abstraction(exec_target):
     interpreter_path = get_full_path(interpreter)
     interpreter = re.sub('^(/usr)?/bin/', '', interpreter_path)
 
-    if interpreter in ['bash', 'dash', 'sh']:
+    if interpreter in ('bash', 'dash', 'sh'):
         abstraction = 'abstractions/bash'
     elif interpreter == 'perl':
         abstraction = 'abstractions/perl'
@@ -755,7 +755,7 @@ def ask_addhat(hashlog):
                 context = profile + ' -> ^%s' % hat
                 ans = transitions.get(context, 'XXXINVALIDXXX')
 
-                while ans not in ['CMD_ADDHAT', 'CMD_USEDEFAULT', 'CMD_DENY']:
+                while ans not in ('CMD_ADDHAT', 'CMD_USEDEFAULT', 'CMD_DENY'):
                     q = aaui.PromptQuestion()
                     q.headers.extend((_('Profile'), profile))
 
@@ -883,7 +883,7 @@ def ask_exec(hashlog):
 
                         # ask user about the exec mode to use
                         ans = ''
-                        while ans not in ['CMD_ix', 'CMD_px', 'CMD_cx', 'CMD_nx', 'CMD_pix', 'CMD_cix', 'CMD_nix', 'CMD_ux', 'CMD_DENY']:  # add '(I)gnore'? (hotkey conflict with '(i)x'!)
+                        while ans not in ('CMD_ix', 'CMD_px', 'CMD_cx', 'CMD_nx', 'CMD_pix', 'CMD_cix', 'CMD_nix', 'CMD_ux', 'CMD_DENY'):  # add '(I)gnore'? (hotkey conflict with '(i)x'!)
                             ans = q.promptUser()[0]
 
                             if ans.startswith('CMD_EXEC_IX_'):
@@ -916,7 +916,7 @@ def ask_exec(hashlog):
 
                             if ans == 'CMD_ix':
                                 exec_mode = 'ix'
-                            elif ans in ['CMD_px', 'CMD_cx', 'CMD_pix', 'CMD_cix']:
+                            elif ans in ('CMD_px', 'CMD_cx', 'CMD_pix', 'CMD_cix'):
                                 exec_mode = ans.replace('CMD_', '')
                                 px_msg = _("Should AppArmor sanitise the environment when\nswitching profiles?\n\nSanitising environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH.")
                                 if parent_uses_ld_xxx:
@@ -1082,7 +1082,7 @@ def ask_the_questions(log_dict):
                         continue
 
                     ans = ''
-                    while ans not in ['CMD_ADDHAT', 'CMD_ADDSUBPROFILE', 'CMD_DENY']:
+                    while ans not in ('CMD_ADDHAT', 'CMD_ADDSUBPROFILE', 'CMD_DENY'):
                         q = aaui.PromptQuestion()
                         q.headers.extend((_('Profile'), profile))
 
@@ -1625,7 +1625,7 @@ def collapse_log(hashlog, ignore_null_profiles=True):
                                             # Depending on the access type, not all parameters are allowed.
                                             # Ignore them, even if some of them appear in the log.
                                             # Also, the log doesn't provide a peer name, therefore always use ALL.
-                                            if access in ['send', 'receive']:
+                                            if access in ('send', 'receive'):
                                                 dbus_event = DbusRule(access, bus, path,            DbusRule.ALL,   interface,   member,        DbusRule.ALL,   peer_profile, log_event=True)
                                             elif access == 'bind':
                                                 dbus_event = DbusRule(access, bus, DbusRule.ALL,    name,           DbusRule.ALL, DbusRule.ALL, DbusRule.ALL,   DbusRule.ALL, log_event=True)
@@ -1893,7 +1893,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
             mount_rule.audit = audit
             mount_rule.deny = (allow == 'deny')
 
-            mount_rules = profile_data[profname][allow].get('mount', list())
+            mount_rules = profile_data[profname][allow].get('mount', [])
             mount_rules.append(mount_rule)
             profile_data[profname][allow]['mount'] = mount_rules
 
@@ -1915,7 +1915,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
             pivot_root_rule.audit = audit
             pivot_root_rule.deny = (allow == 'deny')
 
-            pivot_root_rules = profile_data[profname][allow].get('pivot_root', list())
+            pivot_root_rules = profile_data[profname][allow].get('pivot_root', [])
             pivot_root_rules.append(pivot_root_rule)
             profile_data[profname][allow]['pivot_root'] = pivot_root_rules
 
@@ -1937,7 +1937,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
             unix_rule.audit = audit
             unix_rule.deny = (allow == 'deny')
 
-            unix_rules = profile_data[profname][allow].get('unix', list())
+            unix_rules = profile_data[profname][allow].get('unix', [])
             unix_rules.append(unix_rule)
             profile_data[profname][allow]['unix'] = unix_rules
 
@@ -2001,7 +2001,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
 def match_line_against_rule_classes(line, profile, file, lineno, in_preamble):
     ''' handle all lines handled by *Rule classes '''
 
-    for rule_name in [
+    for rule_name in (
             'abi',
             'alias',
             'boolean',
@@ -2015,7 +2015,7 @@ def match_line_against_rule_classes(line, profile, file, lineno, in_preamble):
             'ptrace',
             'rlimit',
             'signal',
-        ]:
+        ):
 
         if rule_name in ruletypes:
             rule_class = ruletypes[rule_name]['rule']
@@ -2246,8 +2246,8 @@ def get_file_perms(profile, path, audit, deny):
     for incname in includelist:
         incperms = include[incname][incname]['file'].get_perms_for_path(path, audit, deny)
 
-        for allow_or_deny in ['allow', 'deny']:
-            for owner_or_all in ['all', 'owner']:
+        for allow_or_deny in ('allow', 'deny'):
+            for owner_or_all in ('all', 'owner'):
                 for perm in incperms[allow_or_deny][owner_or_all]:
                     perms[allow_or_deny][owner_or_all].add(perm)
 
@@ -2311,7 +2311,7 @@ def reload_base(bin_path):
 def reload_profile(prof_filename, raise_exc=False):
     ''' run apparmor_parser to reload the given profile file '''
 
-    ret, out = cmd([parser, '-I%s' % profile_dir, '--base', profile_dir, '-r', prof_filename])
+    ret, out = cmd((parser, '-I%s' % profile_dir, '--base', profile_dir, '-r', prof_filename))
 
     if ret != 0:
         if raise_exc:

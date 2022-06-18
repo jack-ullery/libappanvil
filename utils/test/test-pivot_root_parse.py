@@ -17,12 +17,12 @@ class AAParsePivotRootTest(AAParseTest):
     def setUp(self):
         self.parse_function = aa.parse_pivot_root_rule
 
-    tests = [
+    tests = (
         ('pivot_root,', 'pivot_root base keyword'),
         ('pivot_root /old,', 'pivot_root oldroot rule'),
         ('pivot_root /old /new,', 'pivot_root old and new root rule'),
         ('pivot_root /old /new -> /usr/bin/child,', 'pivot_root child rule'),
-    ]
+    )
 
 setup_aa(aa)
 if __name__ == '__main__':

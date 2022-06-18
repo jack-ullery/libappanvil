@@ -36,9 +36,9 @@ class AAErrorTests(testlib.AATestTemplate):
         else:
             self.assertEqual(rc, 0, report)
 
-        ignore_messages = [
+        ignore_messages = (
             'Cache read/write disabled: interface file missing. (Kernel needs AppArmor 2.4 compatibility patch.)\n',
-        ]
+        )
         for ign in ignore_messages:
             if ign in outerr:
                 outerr = outerr.replace(ign, '')

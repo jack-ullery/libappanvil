@@ -24,8 +24,8 @@ from apparmor.logparser import ReadLog
 from apparmor.translations import init_translation
 _ = init_translation()
 
-exp = namedtuple('exp', ['audit', 'allow_keyword', 'deny', 'comment',
-        'access', 'all_access', 'bus', 'all_buses', 'path', 'all_paths', 'name', 'all_names', 'interface', 'all_interfaces', 'member', 'all_members', 'peername', 'all_peernames', 'peerlabel', 'all_peerlabels'])
+exp = namedtuple('exp', ('audit', 'allow_keyword', 'deny', 'comment',
+        'access', 'all_access', 'bus', 'all_buses', 'path', 'all_paths', 'name', 'all_names', 'interface', 'all_interfaces', 'member', 'all_members', 'peername', 'all_peernames', 'peerlabel', 'all_peerlabels'))
 
 # --- tests for single DbusRule --- #
 
@@ -61,7 +61,7 @@ class DbusTest(AATest):
             self.assertEqual(obj, expected)
 
 class DbusTestParse(DbusTest):
-    tests = [
+    tests = (
         # DbusRule object                                     audit  allow  deny   comment    access                all?    bus         all?    path            all?    name        all?    interface   all?    member  all?    peername    all?    peerlabel   all?
         ('dbus,'                                        , exp(False, False, False, '',        None  ,               True ,  None,       True,   None,           True,   None,       True,   None,       True,   None,   True,   None,       True,   None,       True)),
         ('dbus (   ),'                                  , exp(False, False, False, '',        None  ,               True ,  None,       True,   None,           True,   None,       True,   None,       True,   None,   True,   None,       True,   None,       True)),
@@ -93,7 +93,7 @@ class DbusTestParse(DbusTest):
         ('dbus bus=system path=/foo/bar bus=session,'   , exp(False, False, False, '',        None  ,               True ,  'session',  False,  '/foo/bar',     False,  None,       True,   None,       True,   None,   True,   None,       True,   None,       True)),  # XXX bus= specified twice, last one wins
         ('dbus send peer=(label="foo") bus=session,'    , exp(False, False, False, '',        {'send'},             False,  'session',  False,  None,           True,   None,       True,   None,       True,   None,   True,   None,       True,   'foo',      False)),
         ('dbus bus=1 bus=2 bus=3 bus=4 bus=5 bus=6,'    , exp(False, False, False, '',        None  ,               True ,  '6',        False,  None,           True,   None,       True,   None,       True,   None,   True,   None,       True,   None,       True)),  # XXX bus= specified multiple times, last one wins
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(DbusRule.match(rawrule))
@@ -102,7 +102,7 @@ class DbusTestParse(DbusTest):
         self._compare_obj(obj, expected)
 
 class DbusTestParseInvalid(DbusTest):
-    tests = [
+    tests = (
         ('dbus foo,'                     , AppArmorException),
         ('dbus foo bar,'                 , AppArmorException),
         ('dbus foo int,'                 , AppArmorException),
@@ -114,7 +114,7 @@ class DbusTestParseInvalid(DbusTest):
         ('dbus peer=,'                   , AppArmorException),
         ('dbus bus=session bind bus=system,', AppArmorException),
         ('dbus bus=1 bus=2 bus=3 bus=4 bus=5 bus=6 bus=7,', AppArmorException),
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(DbusRule.match(rawrule))  # the above invalid rules still match the main regex!
@@ -170,7 +170,7 @@ class DbusTestParseFromLog(DbusTest):
 #       self.assertEqual(obj.get_raw(1), '  dbus send bus=system path=/org/freedesktop/DBus name=org.freedesktop.DBus member=Hello peer=(name=unconfined),')
 
 class DbusFromInit(DbusTest):
-    tests = [
+    tests = (
         #DbusRule# access               bus             path            name            interface       member          peername        peerlabel   audit=, deny=, allow_keyword, comment=, log_event)
         (DbusRule( 'send' ,             'session',      DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL),
                     #exp# audit  allow  deny   comment    access                all?    bus         all?    path            all?    name        all?    interface   all?    member  all?    peername    all?    peerlabel   all?
@@ -185,13 +185,13 @@ class DbusFromInit(DbusTest):
         (DbusRule(DbusRule.ALL,         DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL,   '/int/face',    '/mem/ber',     '/peer/name',   '/peer/label'),
                     #exp# audit  allow  deny   comment    access                all?    bus         all?    path            all?    name        all?    interface   all?    member      all?   peername      all?    peerlabel     all?
                     exp(  False, False, False, '',        None  ,               True ,  None,       True,   None,           True,   None,       True,   '/int/face',False,  '/mem/ber', False, '/peer/name', False, '/peer/label', False)),
-    ]
+    )
 
     def _run_test(self, obj, expected):
         self._compare_obj(obj, expected)
 
 class InvalidDbusInit(AATest):
-    tests = [
+    tests = (
         #         access        bus             path            name            interface       member          peername        peerlabel       expected exception
 
         # empty fields
@@ -260,11 +260,11 @@ class InvalidDbusInit(AATest):
         (        (DbusRule.ALL, DbusRule.ALL,   'foo/bar',      DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL ), AppArmorException),  # path doesn't start with /
         (        (('foo'),      DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL ), AppArmorException),  # invalid access keyword
         (        (('foo', 'send'), DbusRule.ALL, DbusRule.ALL,  DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL,   DbusRule.ALL ), AppArmorException),  # valid + invalid access keyword
-    ]
+    )
 
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
-            DbusRule(params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7])
+            DbusRule(*params)
 
     def test_missing_params_1(self):
         with self.assertRaises(TypeError):
@@ -377,7 +377,7 @@ class WriteDbusTest(AATest):
         self.assertEqual(expected.strip(), clean, 'unexpected clean rule')
         self.assertEqual(rawrule.strip(), raw, 'unexpected raw rule')
 
-    tests = [
+    tests = (
         #  raw rule                                                           clean rule
         ('     dbus         ,    # foo        '                             , 'dbus, # foo'),
         ('    audit     dbus send,'                                         , 'audit dbus send,'),
@@ -403,7 +403,7 @@ class WriteDbusTest(AATest):
         ('dbus (send receive) peer=(name=/usr/bin/bar),'                    , 'dbus (receive send) peer=(name=/usr/bin/bar),'),
         ('dbus (,  receive  ,,, send  ,) interface=/sbin/baz,'              , 'dbus (receive send) interface=/sbin/baz,'),  # XXX leading and trailing ',' inside (...) causes error
         # XXX add more complex rules
-    ]
+    )
 
     def test_write_manually_1(self):
         #              access        bus             path            name            interface       member          peername        peerlabel       expected exception
@@ -440,251 +440,251 @@ class DbusCoveredTest(AATest):
 class DbusCoveredTest_01(DbusCoveredTest):
     rule = 'dbus send,'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        ('dbus,'                                        , [ False   , False         , False     , False     ]),
-        ('dbus send,'                                   , [ True    , True          , True      , True      ]),
-        ('dbus send member=unconfined,'                 , [ False   , False         , True      , True      ]),
-        ('dbus send, # comment'                         , [ True    , False         , True      , True      ]),
-        ('allow dbus send,'                             , [ True    , False         , True      , True      ]),
-        ('dbus     send,'                               , [ True    , False         , True      , True      ]),
-        ('dbus send bus=session,'                       , [ False   , False         , True      , True      ]),
-        ('dbus send member=(label=foo),'                , [ False   , False         , True      , True      ]),
-        ('audit dbus send,'                             , [ False   , False         , False     , False     ]),
-        ('audit dbus,'                                  , [ False   , False         , False     , False     ]),
-        ('dbus receive,'                                , [ False   , False         , False     , False     ]),
-        ('dbus member=(label=foo),'                     , [ False   , False         , False     , False     ]),
-        ('audit deny dbus send,'                        , [ False   , False         , False     , False     ]),
-        ('deny dbus send,'                              , [ False   , False         , False     , False     ]),
-    ]
+        ('dbus,'                                        , ( False   , False         , False     , False     )),
+        ('dbus send,'                                   , ( True    , True          , True      , True      )),
+        ('dbus send member=unconfined,'                 , ( False   , False         , True      , True      )),
+        ('dbus send, # comment'                         , ( True    , False         , True      , True      )),
+        ('allow dbus send,'                             , ( True    , False         , True      , True      )),
+        ('dbus     send,'                               , ( True    , False         , True      , True      )),
+        ('dbus send bus=session,'                       , ( False   , False         , True      , True      )),
+        ('dbus send member=(label=foo),'                , ( False   , False         , True      , True      )),
+        ('audit dbus send,'                             , ( False   , False         , False     , False     )),
+        ('audit dbus,'                                  , ( False   , False         , False     , False     )),
+        ('dbus receive,'                                , ( False   , False         , False     , False     )),
+        ('dbus member=(label=foo),'                     , ( False   , False         , False     , False     )),
+        ('audit deny dbus send,'                        , ( False   , False         , False     , False     )),
+        ('deny dbus send,'                              , ( False   , False         , False     , False     )),
+    )
 
 class DbusCoveredTest_02(DbusCoveredTest):
     rule = 'audit dbus send,'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        (      'dbus send,'                             , [ False   , False         , True      , False     ]),
-        ('audit dbus send,'                             , [ True    , True          , True      , True      ]),
-        (      'dbus send bus=session,'                 , [ False   , False         , True      , False     ]),
-        ('audit dbus send bus=session,'                 , [ False   , False         , True      , True      ]),
-        (      'dbus,'                                  , [ False   , False         , False     , False     ]),
-        ('audit dbus,'                                  , [ False   , False         , False     , False     ]),
-        ('dbus receive,'                                , [ False   , False         , False     , False     ]),
-    ]
+        (      'dbus send,'                             , ( False   , False         , True      , False     )),
+        ('audit dbus send,'                             , ( True    , True          , True      , True      )),
+        (      'dbus send bus=session,'                 , ( False   , False         , True      , False     )),
+        ('audit dbus send bus=session,'                 , ( False   , False         , True      , True      )),
+        (      'dbus,'                                  , ( False   , False         , False     , False     )),
+        ('audit dbus,'                                  , ( False   , False         , False     , False     )),
+        ('dbus receive,'                                , ( False   , False         , False     , False     )),
+    )
 
 class DbusCoveredTest_03(DbusCoveredTest):
     rule = 'dbus send bus=session,'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        (      'dbus send bus=session,'                 , [ True    , True          , True      , True      ]),
-        ('allow dbus send bus=session,'                 , [ True    , False         , True      , True      ]),
-        (      'dbus send,'                             , [ False   , False         , False     , False     ]),
-        (      'dbus,'                                  , [ False   , False         , False     , False     ]),
-        (      'dbus send member=(label=foo),'          , [ False   , False         , False     , False     ]),
-        ('audit dbus,'                                  , [ False   , False         , False     , False     ]),
-        ('audit dbus send bus=session,'                 , [ False   , False         , False     , False     ]),
-        ('audit dbus bus=session,'                      , [ False   , False         , False     , False     ]),
-        (      'dbus send,'                             , [ False   , False         , False     , False     ]),
-        (      'dbus,'                                  , [ False   , False         , False     , False     ]),
-    ]
+        (      'dbus send bus=session,'                 , ( True    , True          , True      , True      )),
+        ('allow dbus send bus=session,'                 , ( True    , False         , True      , True      )),
+        (      'dbus send,'                             , ( False   , False         , False     , False     )),
+        (      'dbus,'                                  , ( False   , False         , False     , False     )),
+        (      'dbus send member=(label=foo),'          , ( False   , False         , False     , False     )),
+        ('audit dbus,'                                  , ( False   , False         , False     , False     )),
+        ('audit dbus send bus=session,'                 , ( False   , False         , False     , False     )),
+        ('audit dbus bus=session,'                      , ( False   , False         , False     , False     )),
+        (      'dbus send,'                             , ( False   , False         , False     , False     )),
+        (      'dbus,'                                  , ( False   , False         , False     , False     )),
+    )
 
 class DbusCoveredTest_04(DbusCoveredTest):
     rule = 'dbus,'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        (      'dbus,'                                  , [ True    , True          , True      , True      ]),
-        ('allow dbus,'                                  , [ True    , False         , True      , True      ]),
-        (      'dbus send,'                             , [ False   , False         , True      , True      ]),
-        (      'dbus receive bus=session,'              , [ False   , False         , True      , True      ]),
-        (      'dbus member=(label=foo),'               , [ False   , False         , True      , True      ]),
-        (      'dbus send bus=session,'                 , [ False   , False         , True      , True      ]),
-        ('audit dbus,'                                  , [ False   , False         , False     , False     ]),
-        ('deny  dbus,'                                  , [ False   , False         , False     , False     ]),
-    ]
+        (      'dbus,'                                  , ( True    , True          , True      , True      )),
+        ('allow dbus,'                                  , ( True    , False         , True      , True      )),
+        (      'dbus send,'                             , ( False   , False         , True      , True      )),
+        (      'dbus receive bus=session,'              , ( False   , False         , True      , True      )),
+        (      'dbus member=(label=foo),'               , ( False   , False         , True      , True      )),
+        (      'dbus send bus=session,'                 , ( False   , False         , True      , True      )),
+        ('audit dbus,'                                  , ( False   , False         , False     , False     )),
+        ('deny  dbus,'                                  , ( False   , False         , False     , False     )),
+    )
 
 class DbusCoveredTest_05(DbusCoveredTest):
     rule = 'deny dbus send,'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        (      'deny dbus send,'                        , [ True    , True          , True      , True      ]),
-        ('audit deny dbus send,'                        , [ False   , False         , False     , False     ]),
-        (           'dbus send,'                        , [ False   , False         , False     , False     ]), # XXX should covered be true here?
-        (      'deny dbus receive,'                     , [ False   , False         , False     , False     ]),
-        (      'deny dbus,'                             , [ False   , False         , False     , False     ]),
-    ]
+        (      'deny dbus send,'                        , ( True    , True          , True      , True      )),
+        ('audit deny dbus send,'                        , ( False   , False         , False     , False     )),
+        (           'dbus send,'                        , ( False   , False         , False     , False     )), # XXX should covered be true here?
+        (      'deny dbus receive,'                     , ( False   , False         , False     , False     )),
+        (      'deny dbus,'                             , ( False   , False         , False     , False     )),
+    )
 
 class DbusCoveredTest_06(DbusCoveredTest):
     rule = 'dbus send peer=(name=unconfined),'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        ('dbus,'                                        , [ False   , False         , False     , False     ]),
-        ('dbus send,'                                   , [ False   , False         , False     , False     ]),
-        ('dbus send peer=(name=unconfined),'            , [ True    , True          , True      , True      ]),
-        ('dbus peer=(name=unconfined),'                 , [ False   , False         , False     , False     ]),
-        ('dbus send, # comment'                         , [ False   , False         , False     , False     ]),
-        ('allow dbus send,'                             , [ False   , False         , False     , False     ]),
-        ('allow dbus send peer=(name=unconfined),'      , [ True    , False         , True      , True      ]),
-        ('allow dbus send peer=(name=/foo/bar),'        , [ False   , False         , False     , False     ]),
-        ('allow dbus send peer=(name=/**),'             , [ False   , False         , False     , False     ]),
-        ('allow dbus send peer=(name=**),'              , [ False   , False         , False     , False     ]),
-        ('dbus    send,'                                , [ False   , False         , False     , False     ]),
-        ('dbus    send peer=(name=unconfined),'         , [ True    , False         , True      , True      ]),
-        ('dbus send bus=session,'                       , [ False   , False         , False     , False     ]),
-        ('dbus send peer=(name=unconfined label=foo),'  , [ False   , False         , True      , True      ]),
-        ('audit dbus send peer=(name=unconfined),'      , [ False   , False         , False     , False     ]),
-        ('audit dbus,'                                  , [ False   , False         , False     , False     ]),
-        ('dbus receive,'                                , [ False   , False         , False     , False     ]),
-        ('dbus peer=(label=foo),'                       , [ False   , False         , False     , False     ]),
-        ('audit deny dbus send,'                        , [ False   , False         , False     , False     ]),
-        ('deny dbus send,'                              , [ False   , False         , False     , False     ]),
-    ]
+        ('dbus,'                                        , ( False   , False         , False     , False     )),
+        ('dbus send,'                                   , ( False   , False         , False     , False     )),
+        ('dbus send peer=(name=unconfined),'            , ( True    , True          , True      , True      )),
+        ('dbus peer=(name=unconfined),'                 , ( False   , False         , False     , False     )),
+        ('dbus send, # comment'                         , ( False   , False         , False     , False     )),
+        ('allow dbus send,'                             , ( False   , False         , False     , False     )),
+        ('allow dbus send peer=(name=unconfined),'      , ( True    , False         , True      , True      )),
+        ('allow dbus send peer=(name=/foo/bar),'        , ( False   , False         , False     , False     )),
+        ('allow dbus send peer=(name=/**),'             , ( False   , False         , False     , False     )),
+        ('allow dbus send peer=(name=**),'              , ( False   , False         , False     , False     )),
+        ('dbus    send,'                                , ( False   , False         , False     , False     )),
+        ('dbus    send peer=(name=unconfined),'         , ( True    , False         , True      , True      )),
+        ('dbus send bus=session,'                       , ( False   , False         , False     , False     )),
+        ('dbus send peer=(name=unconfined label=foo),'  , ( False   , False         , True      , True      )),
+        ('audit dbus send peer=(name=unconfined),'      , ( False   , False         , False     , False     )),
+        ('audit dbus,'                                  , ( False   , False         , False     , False     )),
+        ('dbus receive,'                                , ( False   , False         , False     , False     )),
+        ('dbus peer=(label=foo),'                       , ( False   , False         , False     , False     )),
+        ('audit deny dbus send,'                        , ( False   , False         , False     , False     )),
+        ('deny dbus send,'                              , ( False   , False         , False     , False     )),
+    )
 
 class DbusCoveredTest_07(DbusCoveredTest):
     rule = 'dbus send peer=(label=unconfined),'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        ('dbus,'                                        , [ False   , False         , False     , False     ]),
-        ('dbus send,'                                   , [ False   , False         , False     , False     ]),
-        ('dbus send peer=(label=unconfined),'           , [ True    , True          , True      , True      ]),
-        ('dbus peer=(label=unconfined),'                , [ False   , False         , False     , False     ]),
-        ('dbus send, # comment'                         , [ False   , False         , False     , False     ]),
-        ('allow dbus send,'                             , [ False   , False         , False     , False     ]),
-        ('allow dbus send peer=(label=unconfined),'     , [ True    , False         , True      , True      ]),
-        ('allow dbus send peer=(label=/foo/bar),'       , [ False   , False         , False     , False     ]),
-        ('allow dbus send peer=(label=/**),'            , [ False   , False         , False     , False     ]),
-        ('allow dbus send peer=(label=**),'             , [ False   , False         , False     , False     ]),
-        ('dbus    send,'                                , [ False   , False         , False     , False     ]),
-        ('dbus    send peer=(label=unconfined),'        , [ True    , False         , True      , True      ]),
-        ('dbus send bus=session,'                       , [ False   , False         , False     , False     ]),
-        ('dbus send peer=(label=unconfined name=foo),'  , [ False   , False         , True      , True      ]),
-        ('audit dbus send peer=(label=unconfined),'     , [ False   , False         , False     , False     ]),
-        ('audit dbus,'                                  , [ False   , False         , False     , False     ]),
-        ('dbus receive,'                                , [ False   , False         , False     , False     ]),
-        ('dbus peer=(label=foo),'                       , [ False   , False         , False     , False     ]),
-        ('audit deny dbus send,'                        , [ False   , False         , False     , False     ]),
-        ('deny dbus send,'                              , [ False   , False         , False     , False     ]),
-    ]
+        ('dbus,'                                        , ( False   , False         , False     , False     )),
+        ('dbus send,'                                   , ( False   , False         , False     , False     )),
+        ('dbus send peer=(label=unconfined),'           , ( True    , True          , True      , True      )),
+        ('dbus peer=(label=unconfined),'                , ( False   , False         , False     , False     )),
+        ('dbus send, # comment'                         , ( False   , False         , False     , False     )),
+        ('allow dbus send,'                             , ( False   , False         , False     , False     )),
+        ('allow dbus send peer=(label=unconfined),'     , ( True    , False         , True      , True      )),
+        ('allow dbus send peer=(label=/foo/bar),'       , ( False   , False         , False     , False     )),
+        ('allow dbus send peer=(label=/**),'            , ( False   , False         , False     , False     )),
+        ('allow dbus send peer=(label=**),'             , ( False   , False         , False     , False     )),
+        ('dbus    send,'                                , ( False   , False         , False     , False     )),
+        ('dbus    send peer=(label=unconfined),'        , ( True    , False         , True      , True      )),
+        ('dbus send bus=session,'                       , ( False   , False         , False     , False     )),
+        ('dbus send peer=(label=unconfined name=foo),'  , ( False   , False         , True      , True      )),
+        ('audit dbus send peer=(label=unconfined),'     , ( False   , False         , False     , False     )),
+        ('audit dbus,'                                  , ( False   , False         , False     , False     )),
+        ('dbus receive,'                                , ( False   , False         , False     , False     )),
+        ('dbus peer=(label=foo),'                       , ( False   , False         , False     , False     )),
+        ('audit deny dbus send,'                        , ( False   , False         , False     , False     )),
+        ('deny dbus send,'                              , ( False   , False         , False     , False     )),
+    )
 
 class DbusCoveredTest_08(DbusCoveredTest):
     rule = 'dbus send path=/foo/bar,'
 
-    tests = [
+    tests = (
         #   rule                                              equal     strict equal    covered     covered exact
-        ('dbus,'                                        , [ False   , False         , False     , False     ]),
-        ('dbus send,'                                   , [ False   , False         , False     , False     ]),
-        ('dbus send path=/foo/bar,'                     , [ True    , True          , True      , True      ]),
-        ('dbus send path=/foo/*,'                       , [ False   , False         , False     , False     ]),
-        ('dbus send path=/**,'                          , [ False   , False         , False     , False     ]),
-        ('dbus send path=/what/*,'                      , [ False   , False         , False     , False     ]),
-        ('dbus path=/foo/bar,'                          , [ False   , False         , False     , False     ]),
-        ('dbus send, # comment'                         , [ False   , False         , False     , False     ]),
-        ('allow dbus send,'                             , [ False   , False         , False     , False     ]),
-        ('allow dbus send path=/foo/bar,'               , [ True    , False         , True      , True      ]),
-        ('dbus    send,'                                , [ False   , False         , False     , False     ]),
-        ('dbus    send path=/foo/bar,'                  , [ True    , False         , True      , True      ]),
-        ('dbus    send path=/what/ever,'                , [ False   , False         , False     , False     ]),
-        ('dbus send bus=session,'                       , [ False   , False         , False     , False     ]),
-        ('dbus send path=/foo/bar peer=(label=foo),'    , [ False   , False         , True      , True      ]),
-        ('audit dbus send path=/foo/bar,'               , [ False   , False         , False     , False     ]),
-        ('audit dbus,'                                  , [ False   , False         , False     , False     ]),
-        ('dbus receive,'                                , [ False   , False         , False     , False     ]),
-        ('dbus peer=(label=foo),'                       , [ False   , False         , False     , False     ]),
-        ('audit deny dbus send,'                        , [ False   , False         , False     , False     ]),
-        ('deny dbus send,'                              , [ False   , False         , False     , False     ]),
-    ]
+        ('dbus,'                                        , ( False   , False         , False     , False     )),
+        ('dbus send,'                                   , ( False   , False         , False     , False     )),
+        ('dbus send path=/foo/bar,'                     , ( True    , True          , True      , True      )),
+        ('dbus send path=/foo/*,'                       , ( False   , False         , False     , False     )),
+        ('dbus send path=/**,'                          , ( False   , False         , False     , False     )),
+        ('dbus send path=/what/*,'                      , ( False   , False         , False     , False     )),
+        ('dbus path=/foo/bar,'                          , ( False   , False         , False     , False     )),
+        ('dbus send, # comment'                         , ( False   , False         , False     , False     )),
+        ('allow dbus send,'                             , ( False   , False         , False     , False     )),
+        ('allow dbus send path=/foo/bar,'               , ( True    , False         , True      , True      )),
+        ('dbus    send,'                                , ( False   , False         , False     , False     )),
+        ('dbus    send path=/foo/bar,'                  , ( True    , False         , True      , True      )),
+        ('dbus    send path=/what/ever,'                , ( False   , False         , False     , False     )),
+        ('dbus send bus=session,'                       , ( False   , False         , False     , False     )),
+        ('dbus send path=/foo/bar peer=(label=foo),'    , ( False   , False         , True      , True      )),
+        ('audit dbus send path=/foo/bar,'               , ( False   , False         , False     , False     )),
+        ('audit dbus,'                                  , ( False   , False         , False     , False     )),
+        ('dbus receive,'                                , ( False   , False         , False     , False     )),
+        ('dbus peer=(label=foo),'                       , ( False   , False         , False     , False     )),
+        ('audit deny dbus send,'                        , ( False   , False         , False     , False     )),
+        ('deny dbus send,'                              , ( False   , False         , False     , False     )),
+    )
 
 class DbusCoveredTest_09(DbusCoveredTest):
     rule = 'dbus send member=**,'
 
-    tests = [
+    tests = (
         #   rule                                              equal     strict equal    covered     covered exact
-        ('dbus,'                                        , [ False   , False         , False     , False     ]),
-        ('dbus send,'                                   , [ False   , False         , False     , False     ]),
-        ('dbus send member=/foo/bar,'                   , [ False   , False         , True      , True      ]),
-        ('dbus send member=/foo/*,'                     , [ False   , False         , False     , False     ]),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
-        ('dbus send member=/**,'                        , [ False   , False         , False     , False     ]),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
-        ('dbus send member=/what/*,'                    , [ False   , False         , False     , False     ]),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
-        ('dbus member=/foo/bar,'                        , [ False   , False         , False     , False     ]),
-        ('dbus send, # comment'                         , [ False   , False         , False     , False     ]),
-        ('allow dbus send,'                             , [ False   , False         , False     , False     ]),
-        ('allow dbus send member=/foo/bar,'             , [ False   , False         , True      , True      ]),
-        ('dbus    send,'                                , [ False   , False         , False     , False     ]),
-        ('dbus    send member=/foo/bar,'                , [ False   , False         , True      , True      ]),
-        ('dbus    send member=/what/ever,'              , [ False   , False         , True      , True      ]),
-        ('dbus send bus=session,'                       , [ False   , False         , False     , False     ]),
-        ('dbus send member=/foo/bar peer=(label=foo),'  , [ False   , False         , True      , True      ]),
-        ('audit dbus send member=/foo/bar,'             , [ False   , False         , False     , False     ]),
-        ('audit dbus,'                                  , [ False   , False         , False     , False     ]),
-        ('dbus receive,'                                , [ False   , False         , False     , False     ]),
-        ('dbus member=(label=foo),'                     , [ False   , False         , False     , False     ]),
-        ('audit deny dbus send,'                        , [ False   , False         , False     , False     ]),
-        ('deny dbus send,'                              , [ False   , False         , False     , False     ]),
-    ]
+        ('dbus,'                                        , ( False   , False         , False     , False     )),
+        ('dbus send,'                                   , ( False   , False         , False     , False     )),
+        ('dbus send member=/foo/bar,'                   , ( False   , False         , True      , True      )),
+        ('dbus send member=/foo/*,'                     , ( False   , False         , False     , False     )),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
+        ('dbus send member=/**,'                        , ( False   , False         , False     , False     )),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
+        ('dbus send member=/what/*,'                    , ( False   , False         , False     , False     )),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
+        ('dbus member=/foo/bar,'                        , ( False   , False         , False     , False     )),
+        ('dbus send, # comment'                         , ( False   , False         , False     , False     )),
+        ('allow dbus send,'                             , ( False   , False         , False     , False     )),
+        ('allow dbus send member=/foo/bar,'             , ( False   , False         , True      , True      )),
+        ('dbus    send,'                                , ( False   , False         , False     , False     )),
+        ('dbus    send member=/foo/bar,'                , ( False   , False         , True      , True      )),
+        ('dbus    send member=/what/ever,'              , ( False   , False         , True      , True      )),
+        ('dbus send bus=session,'                       , ( False   , False         , False     , False     )),
+        ('dbus send member=/foo/bar peer=(label=foo),'  , ( False   , False         , True      , True      )),
+        ('audit dbus send member=/foo/bar,'             , ( False   , False         , False     , False     )),
+        ('audit dbus,'                                  , ( False   , False         , False     , False     )),
+        ('dbus receive,'                                , ( False   , False         , False     , False     )),
+        ('dbus member=(label=foo),'                     , ( False   , False         , False     , False     )),
+        ('audit deny dbus send,'                        , ( False   , False         , False     , False     )),
+        ('deny dbus send,'                              , ( False   , False         , False     , False     )),
+    )
 
 class DbusCoveredTest_10(DbusCoveredTest):
     rule = 'dbus (send, receive) interface=foo,'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        ('dbus,'                                        , [ False   , False         , False     , False     ]),
-        ('dbus send,'                                   , [ False   , False         , False     , False     ]),
-        ('dbus send interface=foo,'                     , [ False   , False         , True      , True      ]),
-        ('dbus receive bus=session interface=foo,'      , [ False   , False         , True      , True      ]),
-        ('dbus (receive,send) interface=foo,'           , [ True    , False         , True      , True      ]),
-        ('dbus (receive,send),'                         , [ False   , False         , False     , False     ]),
-        ('dbus send bus=session,'                       , [ False   , False         , False     , False     ]),
-        ('dbus send member=/foo/bar,'                   , [ False   , False         , False     , False     ]),
-        ('dbus send member=/foo/*,'                     , [ False   , False         , False     , False     ]),
-        ('dbus send member=/**,'                        , [ False   , False         , False     , False     ]),
-        ('dbus send member=/what/*,'                    , [ False   , False         , False     , False     ]),
-        ('dbus member=/foo/bar,'                        , [ False   , False         , False     , False     ]),
-        ('dbus send, # comment'                         , [ False   , False         , False     , False     ]),
-        ('allow dbus send,'                             , [ False   , False         , False     , False     ]),
-        ('allow dbus send member=/foo/bar,'             , [ False   , False         , False     , False     ]),
-        ('dbus    send,'                                , [ False   , False         , False     , False     ]),
-        ('dbus    send member=/foo/bar,'                , [ False   , False         , False     , False     ]),
-        ('dbus    send member=/what/ever,'              , [ False   , False         , False     , False     ]),
-        ('dbus send bus=session,'                       , [ False   , False         , False     , False     ]),
-        ('dbus send bus=session interface=foo,'         , [ False   , False         , True      , True      ]),
-        ('dbus send member=/foo/bar peer=(label=foo),'  , [ False   , False         , False     , False     ]),
-        ('audit dbus send member=/foo/bar,'             , [ False   , False         , False     , False     ]),
-        ('audit dbus,'                                  , [ False   , False         , False     , False     ]),
-        ('dbus receive,'                                , [ False   , False         , False     , False     ]),
-        ('dbus peer=(label=foo),'                       , [ False   , False         , False     , False     ]),
-        ('audit deny dbus send,'                        , [ False   , False         , False     , False     ]),
-        ('deny dbus send,'                              , [ False   , False         , False     , False     ]),
-    ]
+        ('dbus,'                                        , ( False   , False         , False     , False     )),
+        ('dbus send,'                                   , ( False   , False         , False     , False     )),
+        ('dbus send interface=foo,'                     , ( False   , False         , True      , True      )),
+        ('dbus receive bus=session interface=foo,'      , ( False   , False         , True      , True      )),
+        ('dbus (receive,send) interface=foo,'           , ( True    , False         , True      , True      )),
+        ('dbus (receive,send),'                         , ( False   , False         , False     , False     )),
+        ('dbus send bus=session,'                       , ( False   , False         , False     , False     )),
+        ('dbus send member=/foo/bar,'                   , ( False   , False         , False     , False     )),
+        ('dbus send member=/foo/*,'                     , ( False   , False         , False     , False     )),
+        ('dbus send member=/**,'                        , ( False   , False         , False     , False     )),
+        ('dbus send member=/what/*,'                    , ( False   , False         , False     , False     )),
+        ('dbus member=/foo/bar,'                        , ( False   , False         , False     , False     )),
+        ('dbus send, # comment'                         , ( False   , False         , False     , False     )),
+        ('allow dbus send,'                             , ( False   , False         , False     , False     )),
+        ('allow dbus send member=/foo/bar,'             , ( False   , False         , False     , False     )),
+        ('dbus    send,'                                , ( False   , False         , False     , False     )),
+        ('dbus    send member=/foo/bar,'                , ( False   , False         , False     , False     )),
+        ('dbus    send member=/what/ever,'              , ( False   , False         , False     , False     )),
+        ('dbus send bus=session,'                       , ( False   , False         , False     , False     )),
+        ('dbus send bus=session interface=foo,'         , ( False   , False         , True      , True      )),
+        ('dbus send member=/foo/bar peer=(label=foo),'  , ( False   , False         , False     , False     )),
+        ('audit dbus send member=/foo/bar,'             , ( False   , False         , False     , False     )),
+        ('audit dbus,'                                  , ( False   , False         , False     , False     )),
+        ('dbus receive,'                                , ( False   , False         , False     , False     )),
+        ('dbus peer=(label=foo),'                       , ( False   , False         , False     , False     )),
+        ('audit deny dbus send,'                        , ( False   , False         , False     , False     )),
+        ('deny dbus send,'                              , ( False   , False         , False     , False     )),
+    )
 
 class DbusCoveredTest_11(DbusCoveredTest):
     rule = 'dbus name=/foo/bar,'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        ('dbus,'                                        , [ False   , False         , False     , False     ]),
-        ('dbus name=/foo/bar,'                          , [ True    , True          , True      , True      ]),
-        ('dbus name=/foo/*,'                            , [ False   , False         , False     , False     ]),
-        ('dbus name=/**,'                               , [ False   , False         , False     , False     ]),
-        ('dbus name=/what/*,'                           , [ False   , False         , False     , False     ]),
-        ('dbus, # comment'                              , [ False   , False         , False     , False     ]),
-        ('allow dbus,'                                  , [ False   , False         , False     , False     ]),
-        ('allow dbus name=/foo/bar,'                    , [ True    , False         , True      , True      ]),
-        ('dbus   ,'                                     , [ False   , False         , False     , False     ]),
-        ('dbus    name=/foo/bar,'                       , [ True    , False         , True      , True      ]),
-        ('dbus    name=/what/ever,'                     , [ False   , False         , False     , False     ]),
-        ('dbus bus=session,'                            , [ False   , False         , False     , False     ]),
-        ('dbus name=/foo/bar peer=(label=foo),'         , [ False   , False         , True      , True      ]),
-        ('audit dbus name=/foo/bar,'                    , [ False   , False         , False     , False     ]),
-        ('audit dbus,'                                  , [ False   , False         , False     , False     ]),
-        ('dbus receive,'                                , [ False   , False         , False     , False     ]),
-        ('dbus peer=(label=foo),'                       , [ False   , False         , False     , False     ]),
-        ('audit deny dbus,'                             , [ False   , False         , False     , False     ]),
-        ('deny dbus,'                                   , [ False   , False         , False     , False     ]),
-    ]
+        ('dbus,'                                        , ( False   , False         , False     , False     )),
+        ('dbus name=/foo/bar,'                          , ( True    , True          , True      , True      )),
+        ('dbus name=/foo/*,'                            , ( False   , False         , False     , False     )),
+        ('dbus name=/**,'                               , ( False   , False         , False     , False     )),
+        ('dbus name=/what/*,'                           , ( False   , False         , False     , False     )),
+        ('dbus, # comment'                              , ( False   , False         , False     , False     )),
+        ('allow dbus,'                                  , ( False   , False         , False     , False     )),
+        ('allow dbus name=/foo/bar,'                    , ( True    , False         , True      , True      )),
+        ('dbus   ,'                                     , ( False   , False         , False     , False     )),
+        ('dbus    name=/foo/bar,'                       , ( True    , False         , True      , True      )),
+        ('dbus    name=/what/ever,'                     , ( False   , False         , False     , False     )),
+        ('dbus bus=session,'                            , ( False   , False         , False     , False     )),
+        ('dbus name=/foo/bar peer=(label=foo),'         , ( False   , False         , True      , True      )),
+        ('audit dbus name=/foo/bar,'                    , ( False   , False         , False     , False     )),
+        ('audit dbus,'                                  , ( False   , False         , False     , False     )),
+        ('dbus receive,'                                , ( False   , False         , False     , False     )),
+        ('dbus peer=(label=foo),'                       , ( False   , False         , False     , False     )),
+        ('audit deny dbus,'                             , ( False   , False         , False     , False     )),
+        ('deny dbus,'                                   , ( False   , False         , False     , False     )),
+    )
 
 
 
@@ -764,7 +764,7 @@ class DbusCoveredTest_Invalid(AATest):
             obj.is_equal(testobj)
 
 class DbusLogprofHeaderTest(AATest):
-    tests = [
+    tests = (
         ('dbus,',                        [                               _('Access mode'), _('ALL'),    _('Bus'), _('ALL'),    _('Path'), _('ALL'), _('Name'), _('ALL'),    _('Interface'), _('ALL'),  _('Member'), _('ALL'), _('Peer name'), _('ALL'),   _('Peer label'), _('ALL')]),
         ('dbus (send receive),',         [                               _('Access mode'), 'receive send', _('Bus'), _('ALL'), _('Path'), _('ALL'), _('Name'), _('ALL'),    _('Interface'), _('ALL'),  _('Member'), _('ALL'), _('Peer name'), _('ALL'),   _('Peer label'), _('ALL')]),
         ('dbus send bus=session,',       [                               _('Access mode'), 'send',      _('Bus'), 'session',   _('Path'), _('ALL'), _('Name'), _('ALL'),    _('Interface'), _('ALL'),  _('Member'), _('ALL'), _('Peer name'), _('ALL'),   _('Peer label'), _('ALL')]),
@@ -776,7 +776,7 @@ class DbusLogprofHeaderTest(AATest):
         ('dbus send bus=session path=/path interface=aa.test member=ExMbr peer=(name=(peer.name)),',
                                          [                               _('Access mode'), 'send',      _('Bus'), 'session',   _('Path'), '/path',  _('Name'), _('ALL'),    _('Interface'), 'aa.test', _('Member'), 'ExMbr',  _('Peer name'), 'peer.name',_('Peer label'), _('ALL')]),
         ('dbus send peer=(label=foo),',  [                               _('Access mode'), 'send',      _('Bus'), _('ALL'),    _('Path'), _('ALL'), _('Name'), _('ALL'),    _('Interface'), _('ALL'),  _('Member'), _('ALL'), _('Peer name'), _('ALL'),   _('Peer label'), 'foo'   ]),
-   ]
+    )
 
     def _run_test(self, params, expected):
         obj = DbusRule.parse(params)

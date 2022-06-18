@@ -38,7 +38,7 @@ skip_startswith = (
 )
 
 # testcases that should raise an exception, but don't
-exception_not_raised = [
+exception_not_raised = (
     # most abi/bad_* aren't detected as bad by the basic implementation in the tools
     'abi/bad_10.sd',
     'abi/bad_11.sd',
@@ -218,10 +218,10 @@ exception_not_raised = [
     'xtrans/simple_bad_conflicting_x_6.sd',
     'xtrans/simple_bad_conflicting_x_8.sd',
     'xtrans/x-conflict.sd',
-]
+)
 
 # testcases with lines that don't match any regex and end up as "unknown line"
-unknown_line = [
+unknown_line = (
     # 'other' keyword
     'file/allow/ok_other_1.sd',
     'file/allow/ok_other_2.sd',
@@ -298,10 +298,10 @@ unknown_line = [
     'bare_include_tests/ok_84.sd',
     'bare_include_tests/ok_85.sd',
     'bare_include_tests/ok_86.sd',
-]
+)
 
 # testcases with various unexpected failures
-syntax_failure = [
+syntax_failure = (
     # missing profile keywords
     'profile/re_named_ok2.sd',
 
@@ -404,7 +404,7 @@ syntax_failure = [
     'vars/vars_dbus_8.sd',  # Path doesn't start with / or variable: {/@{TLDS}/foo,/com/@{DOMAINS}}
     'vars/vars_simple_assignment_12.sd',  # Redefining existing variable @{BAR} ('\' not handled)
     'bare_include_tests/ok_2.sd',  # two #include<...> in one line
-]
+)
 
 class TestParseParserTests(AATest):
     tests = []  # filled by parse_test_profiles()

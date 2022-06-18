@@ -57,7 +57,7 @@ class AARegexHasComma(AATest):
         else:
             self.assertEqual(None, result, 'Found an unexpected comma in "%s"' % line)
 
-regex_has_comma_testcases = [
+regex_has_comma_testcases = (
     ('dbus send%s', 'simple'),
     ('dbus (r, w, bind, eavesdrop)%s', 'embedded parens 01'),
     ('dbus (r, w,, bind, eavesdrop) %s', 'embedded parens 02'),
@@ -112,7 +112,7 @@ regex_has_comma_testcases = [
     # ('@{BAR}={bar,baz,blort, %s', 'tricksy variable declaration')
     # The following fails the comma test, because it's really a no comma situation
     # ('@{BAR}="{bar,baz,blort%s" ', 'tricksy variable declaration')
-]
+)
 
 def setup_has_comma_testcases():
     i = 0
@@ -145,7 +145,7 @@ class AARegexSplitComment(AATest):
 # Tuples of (string, expected result), where expected result is False if
 # the string should not be considered as having a comment, or a second
 # tuple of the not comment and comment sections split apart
-regex_split_comment_testcases = [
+regex_split_comment_testcases = (
     ('dbus send # this is a comment', ('dbus send ', '# this is a comment')),
     ('dbus send member=no_comment', False),
     ('dbus send member=no_comment, ', False),
@@ -160,7 +160,7 @@ regex_split_comment_testcases = [
     ('ptrace (trace read) peer=/usr/bin/foo,', False),
     ('pivot_root, # comment', ('pivot_root, ', '# comment')),
     ('pivot_root /old /new -> child,', False),
-]
+)
 
 def setup_split_comment_testcases():
     i = 0
@@ -208,13 +208,13 @@ class AARegexCapability(AARegexTest):
     def AASetup(self):
         self.regex = RE_PROFILE_CAP
 
-    tests = [
+    tests = (
         ('   capability net_raw,', (None, None, 'net_raw', 'net_raw', None)),
         ('capability     net_raw   ,  ', (None, None, 'net_raw', 'net_raw', None)),
         ('   capability,', (None, None, None, None, None)),
         ('   capability   ,  ', (None, None, None, None, None)),
         ('   capabilitynet_raw,', False)
-    ]
+    )
 
 class AARegexDbus(AARegexTest):
     '''Tests for RE_PROFILE_DBUS'''
@@ -222,7 +222,7 @@ class AARegexDbus(AARegexTest):
     def AASetup(self):
         self.regex = RE_PROFILE_DBUS
 
-    tests = [
+    tests = (
         ('   dbus,',                                    (None,      None,   'dbus,',                            None,                       None)),
         ('   audit dbus,',                              ('audit',   None,   'dbus,',                            None,                       None)),
         ('   dbus send member=no_comment,',             (None,      None,   'dbus send member=no_comment,',     'send member=no_comment',   None)),
@@ -230,7 +230,7 @@ class AARegexDbus(AARegexTest):
 
         ('   dbusdriver,', False),
         ('   audit dbusdriver,', False),
-    ]
+    )
 
 class AARegexMount(AARegexTest):
     '''Tests for RE_PROFILE_MOUNT'''
@@ -238,7 +238,7 @@ class AARegexMount(AARegexTest):
     def AASetup(self):
         self.regex = aa.RE_PROFILE_MOUNT
 
-    tests = [
+    tests = (
         ('   mount,', (None, None, 'mount,', 'mount', None, None)),
         ('   audit mount,', ('audit', None, 'mount,', 'mount', None, None)),
         ('   umount,', (None, None, 'umount,', 'umount', None, None)),
@@ -252,7 +252,7 @@ class AARegexMount(AARegexTest):
 
         ('   mountain,', False),
         ('   audit mountain,', False),
-    ]
+    )
 
 
 
@@ -262,7 +262,7 @@ class AARegexSignal(AARegexTest):
     def AASetup(self):
         self.regex = RE_PROFILE_SIGNAL
 
-    tests = [
+    tests = (
         ('   signal,',                                  (None,    None, 'signal,',                                  None,                               None)),
         ('   audit signal,',                            ('audit', None, 'signal,',                                  None,                               None)),
         ('   signal receive,',                          (None,    None, 'signal receive,',                          'receive',                          None)),
@@ -275,7 +275,7 @@ class AARegexSignal(AARegexTest):
         ('   signalling,', False),
         ('   audit signalling,', False),
         ('   signalling receive,', False),
-    ]
+    )
 
 
 class AARegexPtrace(AARegexTest):
@@ -284,7 +284,7 @@ class AARegexPtrace(AARegexTest):
     def AASetup(self):
         self.regex = RE_PROFILE_PTRACE
 
-    tests = [
+    tests = (
         #                                            audit      allow  rule                                     rule details                    comment
         ('   ptrace,',                              (None,      None, 'ptrace,',                                None,                           None)),
         ('   audit ptrace,',                        ('audit',   None, 'ptrace,',                                None,                           None)),
@@ -296,7 +296,7 @@ class AARegexPtrace(AARegexTest):
         ('   ptraceback,', False),
         ('   audit ptraceback,', False),
         ('   ptraceback trace,', False),
-    ]
+    )
 
 
 class AARegexPivotRoot(AARegexTest):
@@ -305,7 +305,7 @@ class AARegexPivotRoot(AARegexTest):
     def AASetup(self):
         self.regex = aa.RE_PROFILE_PIVOT_ROOT
 
-    tests = [
+    tests = (
         ('   pivot_root,', (None, None, 'pivot_root,', None)),
         ('   audit pivot_root,', ('audit', None, 'pivot_root,', None)),
         ('   pivot_root oldroot=/new/old,',
@@ -324,7 +324,7 @@ class AARegexPivotRoot(AARegexTest):
         ('pivot_rootbeer, # comment', False),
         ('pivot_rootbeer /new,  ', False),
         ('pivot_rootbeer /new, # comment', False),
-    ]
+    )
 
 class AARegexUnix(AARegexTest):
     '''Tests for RE_PROFILE_UNIX'''
@@ -332,7 +332,7 @@ class AARegexUnix(AARegexTest):
     def AASetup(self):
         self.regex = aa.RE_PROFILE_UNIX
 
-    tests = [
+    tests = (
         ('   unix,', (None, None, 'unix,', None)),
         ('   audit unix,', ('audit', None, 'unix,', None)),
         ('   unix accept,', (None, None, 'unix accept,', None)),
@@ -349,7 +349,7 @@ class AARegexUnix(AARegexTest):
          (None, None, 'unix (connect, receive, send) type=stream peer=(label=unconfined,addr="@/tmp/dbus-*"),', None)),
         ('unixlike', False),
         ('deny unixlike,', False),
-    ]
+    )
 
 class AANamedRegexProfileStart_2(AANamedRegexTest):
     '''Tests for RE_PROFILE_START'''
@@ -357,7 +357,7 @@ class AANamedRegexProfileStart_2(AANamedRegexTest):
     def AASetup(self):
         self.regex = RE_PROFILE_START
 
-    tests = [
+    tests = (
         ('/bin/foo ', False), # no '{'
         ('/bin/foo /bin/bar', False), # missing 'profile' keyword
         ('profile {', False), # no attachment
@@ -387,11 +387,11 @@ class AANamedRegexProfileStart_2(AANamedRegexTest):
         ('/foo {',                        { 'plainprofile': '/foo',     'namedprofile': None,   'leadingspace': ''    }),
         ('   profile foo {',              { 'plainprofile': None,       'namedprofile': 'foo',  'leadingspace': '   ' }),
         ('profile foo {',                 { 'plainprofile': None,       'namedprofile': 'foo',  'leadingspace': ''    }),
-    ]
+    )
 
 
 class Test_parse_profile_start_line(AATest):
-    tests = [
+    tests = (
         ('   /foo {',                     { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': None,       'comment': None }),
         ('   "/foo" {',                   { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': None,       'comment': None }),
         ('   profile /foo {',             { 'profile': '/foo',    'profile_keyword': True,  'plainprofile': None,   'namedprofile': '/foo', 'attachment': None,   'flags': None,       'comment': None }),
@@ -414,7 +414,7 @@ class Test_parse_profile_start_line(AATest):
         ('  profile @{foo} /bar {',       { 'profile': '@{foo}',  'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': '/bar',   'flags': None,       'comment': None }),
         ('  profile foo @{bar} {',        { 'profile': 'foo',     'plainprofile': None,      'namedprofile': 'foo',         'attachment': '@{bar}', 'flags': None,       'comment': None }),
         ('  profile @{foo} @{bar} {',     { 'profile': '@{foo}',  'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': '@{bar}', 'flags': None,       'comment': None }),
-    ]
+    )
 
     def _run_test(self, line, expected):
         matches = parse_profile_start_line(line, 'somefile')
@@ -425,19 +425,19 @@ class Test_parse_profile_start_line(AATest):
             self.assertEqual(matches[exp], expected[exp], 'Group %s mismatch in rule %s' % (exp,line))
 
 class TestInvalid_parse_profile_start_line(AATest):
-    tests = [
+    tests = (
         ('/bin/foo ', False), # no '{'
         ('/bin/foo /bin/bar', False), # missing 'profile' keyword
         ('profile {', False), # no attachment
         ('   profile foo bar /foo {', False), # missing quotes around "foo bar"
-    ]
+    )
 
     def _run_test(self, line, expected):
         with self.assertRaises(AppArmorBug):
             parse_profile_start_line(line, 'somefile')
 
 class Test_re_match_include(AATest):
-    tests = [
+    tests = (
         # #include
         ('#include <abstractions/base>',            'abstractions/base'         ),  # magic path
         ('#include <abstractions/base> # comment',  'abstractions/base'         ),
@@ -463,13 +463,13 @@ class Test_re_match_include(AATest):
         ('/include r,',                             None,                       ),
         (' #include if exists <abstractions/base>', None,                       ),  # include if exists
         (' #include if exists "/foo/bar"',          None,                       ),
-    ]
+    )
 
     def _run_test(self, params, expected):
         self.assertEqual(re_match_include(params), expected)
 
 class TestInvalid_re_match_include(AATest):
-    tests = [
+    tests = (
         ('#include <>',                             AppArmorException   ),  # '#include'
         ('#include <  >',                           AppArmorException   ),
         ('#include ""',                             AppArmorException   ),
@@ -517,14 +517,14 @@ class TestInvalid_re_match_include(AATest):
         ('include /foo bar',                        AppArmorException   ),
         ('include "/foo bar"',                      AppArmorException   ),
         ('include "foo bar/baz"',                   AppArmorException   ),
-    ]
+    )
 
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
             re_match_include(params)
 
 class Test_re_match_include_parse(AATest):
-    tests = [
+    tests = (
         #                                                         path                      if exists   magic path
         # #include
         ('#include <abstractions/base>',                        ('abstractions/base',       False,      True )  ),  # magic path
@@ -568,13 +568,13 @@ class Test_re_match_include_parse(AATest):
         ('/usr/include r,',                                     (None,                       None,      None )  ),
         ('/include r,',                                         (None,                       None,      None )  ),
         ('abi <abi/4.19>,',                                     (None,                       None,      None )  ),  # abi rule
-    ]
+    )
 
     def _run_test(self, params, expected):
         self.assertEqual(re_match_include_parse(params, 'include'), expected)
 
 class Test_re_match_include_parse_abi(AATest):
-    tests = [
+    tests = (
         #                                                         path                      if exists   magic path
         ('abi <abi/4.19>,',                                     ('abi/4.19',                False,      True )  ),  # magic path
         ('abi <abi/4.19>, # comment',                           ('abi/4.19',                False,      True )  ),
@@ -589,13 +589,13 @@ class Test_re_match_include_parse_abi(AATest):
         ('/usr/abi r,',                                         (None,                      None,       None )  ),
         ('/abi r,',                                             (None,                      None,       None )  ),
         ('#include <abstractions/base>',                        (None,                      None,       None )  ),  # include rule path
-    ]
+    )
 
     def _run_test(self, params, expected):
         self.assertEqual(re_match_include_parse(params, 'abi'), expected)
 
 class Test_re_match_include_parse_errors(AATest):
-    tests = [
+    tests = (
         (('include <>',             'include'),                 AppArmorException),  # various rules with empty filename
         (('include ""',             'include'),                 AppArmorException),
         (('include   ',             'include'),                 AppArmorException),
@@ -603,7 +603,7 @@ class Test_re_match_include_parse_errors(AATest):
         (('abi "",',                'abi'),                     AppArmorException),
         (('abi   ,',                'abi'),                     AppArmorException),
         (('abi <foo>,',             'invalid'),                 AppArmorBug),  # invalid rule name
-     ]
+    )
 
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
@@ -611,7 +611,7 @@ class Test_re_match_include_parse_errors(AATest):
             re_match_include_parse(rule, rule_name)
 
 class TestStripParenthesis(AATest):
-    tests = [
+    tests = (
         ('foo',         'foo'       ),
         ('(foo)',       'foo'       ),
         ('(  foo )',    'foo'       ),
@@ -623,13 +623,13 @@ class TestStripParenthesis(AATest):
         ('(())',        '()'        ),
         (' (foo)',       '(foo)'    ),  # parenthesis not first char, whitespace stripped nevertheless
         ('(foo) ',       '(foo)'    ),  # parenthesis not last char, whitespace stripped nevertheless
-    ]
+    )
 
     def _run_test(self, params, expected):
         self.assertEqual(strip_parenthesis(params), expected)
 
 class TestStripQuotes(AATest):
-    tests = [
+    tests = (
         ('foo',                     'foo'),
         ('"foo"',                   'foo'),
         ('"foo',                    '"foo'),
@@ -641,7 +641,7 @@ class TestStripQuotes(AATest):
         ('',                        ''),
         ('/',                       '/'),
         ('"',                       '"'),
-    ]
+    )
 
     def _run_test(self, params, expected):
         self.assertEqual(strip_quotes(params), expected)

@@ -177,23 +177,23 @@ class RlimitRule(BaseRule):
         if unit == '':
             unit = default_unit
 
-        if unit in ['us', 'microsecond', 'microseconds']:
+        if unit in ('us', 'microsecond', 'microseconds'):
             number = number / 1000000.0
             if default_unit == 'seconds':
                 raise AppArmorException(_('Invalid unit in rlimit cpu %s rule') % value)
-        elif unit in ['ms', 'millisecond', 'milliseconds']:
+        elif unit in ('ms', 'millisecond', 'milliseconds'):
             number = number / 1000.0
             if default_unit == 'seconds':
                 raise AppArmorException(_('Invalid unit in rlimit cpu %s rule') % value)
-        elif unit in ['s', 'sec', 'second', 'seconds']: # manpage doesn't list sec
+        elif unit in ('s', 'sec', 'second', 'seconds'): # manpage doesn't list sec
             pass
-        elif unit in ['min', 'minute', 'minutes']:
+        elif unit in ('min', 'minute', 'minutes'):
             number = number * 60
-        elif unit in ['h', 'hour', 'hours']:
+        elif unit in ('h', 'hour', 'hours'):
             number = number * 60 * 60
-        elif unit in ['d', 'day', 'days']: # manpage doesn't list 'd'
+        elif unit in ('d', 'day', 'days'): # manpage doesn't list 'd'
             number = number * 60 * 60 * 24
-        elif unit in ['week', 'weeks']:
+        elif unit in ('week', 'weeks'):
             number = number * 60 * 60 * 24 * 7
         else:
             raise AppArmorException('Unknown unit %s in rlimit %s %s' % (unit, self.rlimit, value))

@@ -20,7 +20,7 @@ from common_test import AATest, setup_all_loops # , setup_aa
 from apparmor.common import AppArmorException
 
 class TestParseEvent(AATest):
-    tests = []
+    tests = ()
 
     def setUp(self):
         self.parser = ReadLog('', '', '')
@@ -100,10 +100,10 @@ class TestParseEvent(AATest):
         self.assertIsNotNone(ReadLog.RE_LOG_ALL.search(event))
 
 class TestParseEventForTreeInvalid(AATest):
-    tests = [
+    tests = (
         ('type=AVC msg=audit(1556742870.707:3614): apparmor="ALLOWED" operation="open" profile="/bin/hello" name="/dev/tty" pid=12856 comm="hello" requested_mask="wr" denied_mask="foo" fsuid=1000 ouid=0',    AppArmorException),  # invalid file permissions "foo"
         ('type=AVC msg=audit(1556742870.707:3614): apparmor="ALLOWED" operation="open" profile="/bin/hello" name="/dev/tty" pid=12856 comm="hello" requested_mask="wr" denied_mask="wr::w" fsuid=1000 ouid=0',  AppArmorException),  # "wr::w" mixes owner and other
-    ]
+    )
 
     def _fake_profile_exists(self, program):
         return True

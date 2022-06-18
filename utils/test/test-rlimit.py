@@ -24,8 +24,8 @@ from apparmor.common import AppArmorException, AppArmorBug
 from apparmor.translations import init_translation
 _ = init_translation()
 
-exp = namedtuple('exp', ['audit', 'allow_keyword', 'deny', 'comment',
-        'rlimit', 'value', 'all_values'])
+exp = namedtuple('exp', ('audit', 'allow_keyword', 'deny', 'comment',
+        'rlimit', 'value', 'all_values'))
 
 # --- tests for single RlimitRule --- #
 
@@ -40,7 +40,7 @@ class RlimitTest(AATest):
         self.assertEqual(expected.comment, obj.comment)
 
 class RlimitTestParse(RlimitTest):
-    tests = [
+    tests = (
         # rawrule                                    audit  allow  deny   comment         rlimit          value      all/infinity?
         ('set rlimit as <= 2047MB,'            , exp(False, False, False, ''           , 'as'           , '2047MB'      , False)),
         ('set rlimit as <= 2047 MB,'           , exp(False, False, False, ''           , 'as'           , '2047 MB'     , False)),
@@ -64,7 +64,7 @@ class RlimitTestParse(RlimitTest):
         ('set rlimit rss <= infinity, # cmt'   , exp(False, False, False, ' # cmt'     , 'rss'          , None          , True )),
         ('set rlimit memlock <= 10240,'        , exp(False, False, False, ''           , 'memlock'      , '10240'       , False)),
         ('set rlimit sigpending <= 42,'        , exp(False, False, False, ''           , 'sigpending'   , '42'          , False)),
-     ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(RlimitRule.match(rawrule))
@@ -73,7 +73,7 @@ class RlimitTestParse(RlimitTest):
         self._compare_obj(obj, expected)
 
 class RlimitTestParseInvalid(RlimitTest):
-    tests = [
+    tests = (
         ('set rlimit,'                      , AppArmorException), # missing parts
         ('set rlimit <= 5,'                 , AppArmorException),
         ('set rlimit cpu <= ,'              , AppArmorException),
@@ -86,7 +86,7 @@ class RlimitTestParseInvalid(RlimitTest):
         ('set rlimit cpu <= 20MB,'          , AppArmorException),
         ('set rlimit data <= 20seconds,'    , AppArmorException),
         ('set rlimit locks <= 20seconds,'   , AppArmorException),
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         #self.assertFalse(RlimitRule.match(rawrule))  # the main regex isn't very strict
@@ -117,7 +117,7 @@ class RlimitTestParseFromLog(RlimitTest):
 
 
 class RlimitFromInit(RlimitTest):
-    tests = [
+    tests = (
         # RlimitRule object                                  audit  allow  deny   comment        rlimit         value     all/infinity?
         (RlimitRule('as', '2047MB')                     , exp(False, False, False, ''           , 'as'      ,   '2047MB'    , False)),
         (RlimitRule('as', '2047 MB')                    , exp(False, False, False, ''           , 'as'      ,   '2047 MB'   , False)),
@@ -125,30 +125,30 @@ class RlimitFromInit(RlimitTest):
         (RlimitRule('rttime', '60minutes')              , exp(False, False, False, ''           , 'rttime'  ,    '60minutes', False)),
         (RlimitRule('nice', '-10')                      , exp(False, False, False, ''           , 'nice'    ,   '-10'       , False)),
         (RlimitRule('rss', RlimitRule.ALL)              , exp(False, False, False, ''           , 'rss'     ,   None        , True )),
-    ]
+    )
 
     def _run_test(self, obj, expected):
         self._compare_obj(obj, expected)
 
 
 class InvalidRlimitInit(AATest):
-    tests = [
+    tests = (
         # init params                     expected exception
-        (['as'  , ''               ]    , AppArmorBug), # empty value
-        ([''    , '1024'           ]    , AppArmorException), # empty rlimit
-        (['    ', '1024'           ]    , AppArmorException), # whitespace rlimit
-        (['as'  , '   '            ]    , AppArmorBug), # whitespace value
-        (['xyxy', '1024'           ]    , AppArmorException), # invalid rlimit
-        ([dict(), '1024'           ]    , AppArmorBug), # wrong type for rlimit
-        ([None  , '1024'           ]    , AppArmorBug), # wrong type for rlimit
-        (['as'  , dict()           ]    , AppArmorBug), # wrong type for value
-        (['as'  , None             ]    , AppArmorBug), # wrong type for value
-        (['cpu' , '100xy2'         ]    , AppArmorException), # invalid unit
-    ]
+        (('as'  , ''               )    , AppArmorBug), # empty value
+        ((''    , '1024'           )    , AppArmorException), # empty rlimit
+        (('    ', '1024'           )    , AppArmorException), # whitespace rlimit
+        (('as'  , '   '            )    , AppArmorBug), # whitespace value
+        (('xyxy', '1024'           )    , AppArmorException), # invalid rlimit
+        ((dict(), '1024'           )    , AppArmorBug), # wrong type for rlimit
+        ((None  , '1024'           )    , AppArmorBug), # wrong type for rlimit
+        (('as'  , dict()           )    , AppArmorBug), # wrong type for value
+        (('as'  , None             )    , AppArmorBug), # wrong type for value
+        (('cpu' , '100xy2'         )    , AppArmorException), # invalid unit
+    )
 
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
-            RlimitRule(params[0], params[1])
+            RlimitRule(*params)
 
     def test_missing_params_1(self):
         with self.assertRaises(TypeError):
@@ -202,7 +202,7 @@ class InvalidRlimitTest(AATest):
 
 
 class WriteRlimitTest(AATest):
-    tests = [
+    tests = (
         #  raw rule                                                      clean rule
         ('     set rlimit    cpu   <= 1024     ,    # foo        '              , 'set rlimit cpu <= 1024, # foo'),
         ('        set     rlimit  stack <= 1024GB  ,'                          , 'set rlimit stack <= 1024GB,'),
@@ -211,7 +211,7 @@ class WriteRlimitTest(AATest):
         ('    set rlimit     msgqueue <=   4444 ,   '         , 'set rlimit msgqueue <= 4444,'),
         ('    set rlimit   nice    <=  5   ,   # foo bar'     , 'set rlimit nice <= 5, # foo bar'),
         ('    set rlimit   nice <=   -5    , # cmt'           , 'set rlimit nice <= -5, # cmt'),
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(RlimitRule.match(rawrule))
@@ -247,73 +247,73 @@ class RlimitCoveredTest(AATest):
 class RlimitCoveredTest_01(RlimitCoveredTest):
     rule = 'set rlimit cpu <= 150,'
 
-    tests = [
+    tests = (
         #   rule                            equal     strict equal    covered     covered exact
-        ('set rlimit as <= 100MB,'      , [ False   , False         , False     , False     ]),
-        ('set rlimit rttime <= 150,'    , [ False   , False         , False     , False     ]),
-        ('set rlimit cpu <= 100,'       , [ False   , False         , True      , True      ]),
-        ('set rlimit cpu <= 150,'       , [ True    , True          , True      , True      ]),
-        ('set rlimit cpu <= 300,'       , [ False   , False         , False     , False     ]),
-        ('set rlimit cpu <= 10seconds,' , [ False   , False         , True      , True      ]),
-        ('set rlimit cpu <= 150seconds,', [ True    , False         , True      , True      ]),
-        ('set rlimit cpu <= 300seconds,', [ False   , False         , False     , False     ]),
-        ('set rlimit cpu <= 1minutes,'  , [ False   , False         , True      , True      ]),
-        ('set rlimit cpu <= 1min,'      , [ False   , False         , True      , True      ]),
-        ('set rlimit cpu <= 3minutes,'  , [ False   , False         , False     , False     ]),
-        ('set rlimit cpu <= 1hour,'     , [ False   , False         , False     , False     ]),
-        ('set rlimit cpu <= 2 days,'    , [ False   , False         , False     , False     ]),
-        ('set rlimit cpu <= 1 week,'    , [ False   , False         , False     , False     ]),
-    ]
+        ('set rlimit as <= 100MB,'      , ( False   , False         , False     , False     )),
+        ('set rlimit rttime <= 150,'    , ( False   , False         , False     , False     )),
+        ('set rlimit cpu <= 100,'       , ( False   , False         , True      , True      )),
+        ('set rlimit cpu <= 150,'       , ( True    , True          , True      , True      )),
+        ('set rlimit cpu <= 300,'       , ( False   , False         , False     , False     )),
+        ('set rlimit cpu <= 10seconds,' , ( False   , False         , True      , True      )),
+        ('set rlimit cpu <= 150seconds,', ( True    , False         , True      , True      )),
+        ('set rlimit cpu <= 300seconds,', ( False   , False         , False     , False     )),
+        ('set rlimit cpu <= 1minutes,'  , ( False   , False         , True      , True      )),
+        ('set rlimit cpu <= 1min,'      , ( False   , False         , True      , True      )),
+        ('set rlimit cpu <= 3minutes,'  , ( False   , False         , False     , False     )),
+        ('set rlimit cpu <= 1hour,'     , ( False   , False         , False     , False     )),
+        ('set rlimit cpu <= 2 days,'    , ( False   , False         , False     , False     )),
+        ('set rlimit cpu <= 1 week,'    , ( False   , False         , False     , False     )),
+    )
 
 class RlimitCoveredTest_02(RlimitCoveredTest):
     rule = 'set rlimit data <= 4MB,'
 
-    tests = [
+    tests = (
         #   rule                            equal     strict equal    covered     covered exact
-        ('set rlimit data <= 100,'      , [ False   , False         , True      , True      ]),
-        ('set rlimit data <= 2KB,'      , [ False   , False         , True      , True      ]),
-        ('set rlimit data <= 2MB,'      , [ False   , False         , True      , True      ]),
-        ('set rlimit data <= 4194304,'  , [ True    , False         , True      , True      ]),
-        ('set rlimit data <= 4096KB,'   , [ True    , False         , True      , True      ]),
-        ('set rlimit data <= 4MB,'      , [ True    , True          , True      , True      ]),
-        ('set rlimit data <= 4 MB,'     , [ True    , False         , True      , True      ]),
-        ('set rlimit data <= 6MB,'      , [ False   , False         , False     , False     ]),
-        ('set rlimit data <= 6 MB,'     , [ False   , False         , False     , False     ]),
-        ('set rlimit data <= 1GB,'      , [ False   , False         , False     , False     ]),
-    ]
+        ('set rlimit data <= 100,'      , ( False   , False         , True      , True      )),
+        ('set rlimit data <= 2KB,'      , ( False   , False         , True      , True      )),
+        ('set rlimit data <= 2MB,'      , ( False   , False         , True      , True      )),
+        ('set rlimit data <= 4194304,'  , ( True    , False         , True      , True      )),
+        ('set rlimit data <= 4096KB,'   , ( True    , False         , True      , True      )),
+        ('set rlimit data <= 4MB,'      , ( True    , True          , True      , True      )),
+        ('set rlimit data <= 4 MB,'     , ( True    , False         , True      , True      )),
+        ('set rlimit data <= 6MB,'      , ( False   , False         , False     , False     )),
+        ('set rlimit data <= 6 MB,'     , ( False   , False         , False     , False     )),
+        ('set rlimit data <= 1GB,'      , ( False   , False         , False     , False     )),
+    )
 
 class RlimitCoveredTest_03(RlimitCoveredTest):
     rule = 'set rlimit nice <= -1,'
 
-    tests = [
+    tests = (
         #   rule                            equal     strict equal    covered     covered exact
-        ('set rlimit nice <= 5,'        , [ False   , False         , True      , True      ]),
-        ('set rlimit nice <= 0,'        , [ False   , False         , True      , True      ]),
-        ('set rlimit nice <= -1,'       , [ True    , True          , True      , True      ]),
-        ('set rlimit nice <= -3,'       , [ False   , False         , False     , False     ]),
-    ]
+        ('set rlimit nice <= 5,'        , ( False   , False         , True      , True      )),
+        ('set rlimit nice <= 0,'        , ( False   , False         , True      , True      )),
+        ('set rlimit nice <= -1,'       , ( True    , True          , True      , True      )),
+        ('set rlimit nice <= -3,'       , ( False   , False         , False     , False     )),
+    )
 
 class RlimitCoveredTest_04(RlimitCoveredTest):
     rule = 'set rlimit locks <= 42,'
 
-    tests = [
+    tests = (
         #   rule                            equal     strict equal    covered     covered exact
-        ('set rlimit locks <= 20,'      , [ False   , False         , True      , True      ]),
-        ('set rlimit locks <= 40,'      , [ False   , False         , True      , True      ]),
-        ('set rlimit locks <= 42,'      , [ True    , True          , True      , True      ]),
-        ('set rlimit locks <= 60,'      , [ False   , False         , False     , False     ]),
-        ('set rlimit locks <= infinity,', [ False   , False         , False     , False     ]),
-    ]
+        ('set rlimit locks <= 20,'      , ( False   , False         , True      , True      )),
+        ('set rlimit locks <= 40,'      , ( False   , False         , True      , True      )),
+        ('set rlimit locks <= 42,'      , ( True    , True          , True      , True      )),
+        ('set rlimit locks <= 60,'      , ( False   , False         , False     , False     )),
+        ('set rlimit locks <= infinity,', ( False   , False         , False     , False     )),
+    )
 
 class RlimitCoveredTest_05(RlimitCoveredTest):
     rule = 'set rlimit locks <= infinity,'
 
-    tests = [
+    tests = (
         #   rule                            equal     strict equal    covered     covered exact
-        ('set rlimit locks <= 20,'      , [ False   , False         , True      , True      ]),
-        ('set rlimit cpu <= 40,'        , [ False   , False         , False     , False     ]),
-        ('set rlimit locks <= infinity,', [ True    , True          , True      , True      ]),
-    ]
+        ('set rlimit locks <= 20,'      , ( False   , False         , True      , True      )),
+        ('set rlimit cpu <= 40,'        , ( False   , False         , False     , False     )),
+        ('set rlimit locks <= infinity,', ( True    , True          , True      , True      )),
+    )
 
 class RlimitCoveredTest_Invalid(AATest):
     def test_borked_obj_is_covered_1(self):
@@ -351,12 +351,12 @@ class RlimitCoveredTest_Invalid(AATest):
             obj.is_equal(testobj)
 
 class RlimitLogprofHeaderTest(AATest):
-    tests = [
+    tests = (
         ('set rlimit cpu <= infinity,',         [_('Rlimit'), 'cpu',     _('Value'), 'infinity', ]),
         ('set rlimit as <= 200MB,',             [_('Rlimit'), 'as',      _('Value'), '200MB',    ]),
         ('set rlimit rttime <= 200ms,',         [_('Rlimit'), 'rttime',  _('Value'), '200ms',    ]),
         ('set rlimit nproc <= 1,',              [_('Rlimit'), 'nproc',   _('Value'), '1',        ]),
-    ]
+    )
 
     def _run_test(self, params, expected):
         obj = RlimitRule.parse(params)
@@ -424,11 +424,11 @@ class RlimitDeleteTestAATest(AATest):
 
 # --- other tests --- #
 class RlimitSplit_unitTest(AATest):
-    tests = [
+    tests = (
         ('40MB'  , ( 40, 'MB',)),
         ('40 MB' , ( 40, 'MB',)),
         ('40'  ,   ( 40, '',  )),
-    ]
+    )
 
     def _run_test(self, params, expected):
         self.assertEqual(split_unit(params), expected)
@@ -441,12 +441,12 @@ class RlimitSize_to_intTest(AATest):
     def AASetup(self):
         self.obj = RlimitRule('cpu', '1')
 
-    tests = [
+    tests = (
         ('40GB'  , 40 * 1024 * 1024 * 1024),
         ('40MB'  , 41943040),
         ('40KB'  , 40960),
         ('40'    , 40),
-    ]
+    )
 
     def _run_test(self, params, expected):
         self.assertEqual(self.obj.size_to_int(params), expected)
@@ -459,7 +459,7 @@ class RlimitTime_to_intTest(AATest):
     def AASetup(self):
         self.obj = RlimitRule('cpu', '1')
 
-    tests = [
+    tests = (
         ('40'       ,       0.00004),
         ('30us'     ,       0.00003),
         ('40ms'     ,       0.04),
@@ -468,7 +468,7 @@ class RlimitTime_to_intTest(AATest):
         ('2hours'   , 2*60*60),
         ('1 day'    , 1*60*60*24),
         ('2 weeks'  , 2*60*60*24*7),
-    ]
+    )
 
     def _run_test(self, params, expected):
         self.assertEqual(self.obj.time_to_int(params, 'us'), expected)

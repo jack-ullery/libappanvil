@@ -52,7 +52,7 @@ class BooleanRule(BaseRule):
             raise AppArmorException('Passed empty value to %s: %s' % (self.__class__.__name__, value))
 
         value = value.lower()
-        if value not in ['true', 'false']:
+        if value not in ('true', 'false'):
             raise AppArmorException('Passed invalid value to %s: %s' % (self.__class__.__name__, value))
 
         self.varname = varname

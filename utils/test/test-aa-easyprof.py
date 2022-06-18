@@ -114,7 +114,7 @@ class T(unittest.TestCase):
         self.tmpdir = os.path.realpath(tempfile.mkdtemp(prefix='test-aa-easyprof'))
 
         # Copy everything into place
-        for d in ['easyprof/policygroups', 'easyprof/templates']:
+        for d in ('easyprof/policygroups', 'easyprof/templates'):
             shutil.copytree(os.path.join(topdir, d),
                             os.path.join(self.tmpdir, os.path.basename(d)))
 
@@ -196,7 +196,7 @@ TEMPLATES_DIR="%s/templates"
         os.mkdir(self.test_include_dir)
         os.mkdir(os.path.join(self.test_include_dir, "templates"))
         os.mkdir(os.path.join(self.test_include_dir, "policygroups"))
-        for d in ['policygroups', 'templates']:
+        for d in ('policygroups', 'templates'):
             for f in easyprof.get_directory_contents(os.path.join(
                                                      self.tmpdir, d)):
                 shutil.copy(f, os.path.join(self.test_include_dir, d,
@@ -532,10 +532,7 @@ POLICYGROUPS_DIR="%s/templates"
 
     def test_templates_show(self):
         '''Test templates (show)'''
-        files = []
-        for f in glob.glob("%s/templates/*" % self.tmpdir):
-            files.append(f)
-
+        files = glob.glob("%s/templates/*" % self.tmpdir)
         for f in files:
             args = self.full_args
             args += ['--show-template', '--template', f]
@@ -572,10 +569,7 @@ POLICYGROUPS_DIR="%s/templates"
 
     def test_templates_show_include(self):
         '''Test templates (show with --include-templates-dir)'''
-        files = []
-        for f in glob.glob("%s/templates/*" % self.test_include_dir):
-            files.append(f)
-
+        files = glob.glob("%s/templates/*" % self.test_include_dir)
         for f in files:
             args = self.full_args
             args += ['--show-template',
@@ -610,10 +604,7 @@ POLICYGROUPS_DIR="%s/templates"
 
     def test_policygroups_show(self):
         '''Test policygroups (show)'''
-        files = []
-        for f in glob.glob("%s/policygroups/*" % self.tmpdir):
-            files.append(f)
-
+        files = glob.glob("%s/policygroups/*" % self.tmpdir)
         for f in files:
             args = self.full_args
             args += ['--show-policy-group',
@@ -651,10 +642,7 @@ POLICYGROUPS_DIR="%s/templates"
 
     def test_policygroups_show_include(self):
         '''Test policygroups (show with --include-policy-groups-dir)'''
-        files = []
-        for f in glob.glob("%s/policygroups/*" % self.test_include_dir):
-            files.append(f)
-
+        files = glob.glob("%s/policygroups/*" % self.test_include_dir)
         for f in files:
             args = self.full_args
             args += ['--show-policy-group',
@@ -689,7 +677,7 @@ POLICYGROUPS_DIR="%s/templates"
             f.write(contents)
 
         args = self.full_args
-        args.extend(['--manifest', self.manifest])
+        args.extend(('--manifest', self.manifest))
         easyprof.parse_args(args)
 
     def _manifest_conflicts(self, opt, value):
@@ -704,7 +692,7 @@ POLICYGROUPS_DIR="%s/templates"
 
         # opt first
         args = self.full_args
-        args.extend([opt, value, '--manifest', self.manifest])
+        args.extend((opt, value, '--manifest', self.manifest))
         raised = False
         try:
             easyprof.parse_args(args, InterceptingOptionParser())
@@ -716,7 +704,7 @@ POLICYGROUPS_DIR="%s/templates"
 
         # manifest first
         args = self.full_args
-        args.extend(['--manifest', self.manifest, opt, value])
+        args.extend(('--manifest', self.manifest, opt, value))
         raised = False
         try:
             easyprof.parse_args(args, InterceptingOptionParser())
@@ -845,7 +833,7 @@ POLICYGROUPS_DIR="%s/templates"
 
     def test__is_safe(self):
         '''Test _is_safe()'''
-        bad = [
+        bad = (
                "/../../../../etc/passwd",
                "abstraction with spaces",
                "semicolon;bad",
@@ -853,7 +841,7 @@ POLICYGROUPS_DIR="%s/templates"
                "foo/bar",
                "foo'bar",
                'foo"bar',
-              ]
+              )
         for s in bad:
             self.assertFalse(easyprof._is_safe(s), "'%s' should be bad" %s)
 
@@ -870,7 +858,7 @@ POLICYGROUPS_DIR="%s/templates"
 
         p = self._gen_policy(template=template)
 
-        for s in [self.test_template, test_string]:
+        for s in (self.test_template, test_string):
             self.assertTrue(s in p, "Could not find '%s' in:\n%s" % (s, p))
 
     def test_genpolicy_templates_system(self):
@@ -936,11 +924,11 @@ POLICYGROUPS_DIR="%s/templates"
 
     def test_genpolicy_abstractions_bad(self):
         '''Test genpolicy (abstractions - bad values)'''
-        bad = [
+        bad = (
                "nonexistent",
                "/../../../../etc/passwd",
                "abstraction with spaces",
-              ]
+              )
         for s in bad:
             try:
                 self._gen_policy(extra_args=['--abstractions=%s' % s])
@@ -1077,7 +1065,7 @@ POLICYGROUPS_DIR="%s/templates"
         groups = self.test_policygroup
         p = self._gen_policy(extra_args=['--policy-groups=%s' % groups])
 
-        for s in ['#include <abstractions/nameservice>', '#include <abstractions/gnome>']:
+        for s in ('#include <abstractions/nameservice>', '#include <abstractions/gnome>'):
             self.assertTrue(s in p, "Could not find '%s' in:\n%s" % (s, p))
         inv_s = '###POLICYGROUPS###'
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
@@ -1096,10 +1084,10 @@ POLICYGROUPS_DIR="%s/templates"
         groups = "%s,%s" % (self.test_policygroup, test_policygroup2)
         p = self._gen_policy(extra_args=['--policy-groups=%s' % groups])
 
-        for s in ['#include <abstractions/nameservice>',
+        for s in ('#include <abstractions/nameservice>',
                   '#include <abstractions/gnome>',
                   '#include <abstractions/kde>',
-                  '#include <abstractions/openssl>']:
+                  '#include <abstractions/openssl>'):
             self.assertTrue(s in p, "Could not find '%s' in:\n%s" % (s, p))
         inv_s = '###POLICYGROUPS###'
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
@@ -1543,7 +1531,7 @@ POLICYGROUPS_DIR="%s/templates"
         m.add_policygroups(groups)
         p = self._gen_manifest_policy(m)
 
-        for s in ['#include <abstractions/nameservice>', '#include <abstractions/gnome>']:
+        for s in ('#include <abstractions/nameservice>', '#include <abstractions/gnome>'):
             self.assertTrue(s in p, "Could not find '%s' in:\n%s" % (s, p))
         inv_s = '###POLICYGROUPS###'
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
@@ -1564,10 +1552,10 @@ POLICYGROUPS_DIR="%s/templates"
         m.add_policygroups(groups)
         p = self._gen_manifest_policy(m)
 
-        for s in ['#include <abstractions/nameservice>',
+        for s in ('#include <abstractions/nameservice>',
                   '#include <abstractions/gnome>',
                   '#include <abstractions/kde>',
-                  '#include <abstractions/openssl>']:
+                  '#include <abstractions/openssl>'):
             self.assertTrue(s in p, "Could not find '%s' in:\n%s" % (s, p))
         inv_s = '###POLICYGROUPS###'
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
@@ -1685,7 +1673,7 @@ POLICYGROUPS_DIR="%s/templates"
   }
 }'''
 
-        for d in ['policygroups', 'templates']:
+        for d in ('policygroups', 'templates'):
             shutil.copytree(os.path.join(self.tmpdir, d),
                             os.path.join(self.tmpdir, d, "somevendor/1.0"))
 
@@ -1725,7 +1713,7 @@ POLICYGROUPS_DIR="%s/templates"
   }
 }'''
 
-        for d in ['policygroups', 'templates']:
+        for d in ('policygroups', 'templates'):
             shutil.copytree(os.path.join(self.tmpdir, d),
                             os.path.join(self.tmpdir, d, "ubuntu/1.0"))
 
@@ -1854,7 +1842,7 @@ POLICYGROUPS_DIR="%s/templates"
   }
 }'''
 
-        for d in ['policygroups', 'templates']:
+        for d in ('policygroups', 'templates'):
             shutil.copytree(os.path.join(self.tmpdir, d),
                             os.path.join(self.tmpdir, d, "ubuntu/1.0"))
 
@@ -2070,7 +2058,7 @@ POLICYGROUPS_DIR="%s/templates"
 
     def test_verify_manifest_profile_template_var_bad(self):
         '''Test verify_manifest (bad template_var)'''
-        for v in ['"VAR1": "f*o"',
+        for v in ('"VAR1": "f*o"',
                   '"VAR2": "*foo"',
                   '"VAR3": "fo*"',
                   '"VAR4": "b{ar"',
@@ -2079,7 +2067,7 @@ POLICYGROUPS_DIR="%s/templates"
                   '"VAR7": "bar[0-9]"',
                   '"VAR8": "b{ar"',
                   '"VAR9": "foo/bar"' # this is valid, but potentially unsafe
-                  ]:
+                  ):
             m = '''{
   "security": {
    "profiles": {
@@ -2137,11 +2125,11 @@ POLICYGROUPS_DIR="%s/templates"
 
     def test_manifest_invalid4(self):
         '''Test invalid manifest (bad path in template var)'''
-        for v in ['"VAR1": "/tmp/../etc/passwd"',
+        for v in ('"VAR1": "/tmp/../etc/passwd"',
                   '"VAR2": "./"',
                   '"VAR3": "foo\"bar"',
                   '"VAR4": "foo//bar"',
-                  ]:
+                  ):
             m = '''{
   "security": {
    "profiles": {
@@ -2213,7 +2201,7 @@ POLICYGROUPS_DIR="%s/templates"
    }
   }
 }''' % (policy_vendor, policy_version)
-        for d in ['policygroups', 'templates']:
+        for d in ('policygroups', 'templates'):
             shutil.copytree(os.path.join(self.tmpdir, d),
                             os.path.join(self.tmpdir, d, policy_subdir))
 
@@ -2243,7 +2231,7 @@ POLICYGROUPS_DIR="%s/templates"
         policy_subdir = "%s/%s" % (policy_vendor, policy_version)
 
         # Create the directories
-        for d in ['policygroups', 'templates']:
+        for d in ('policygroups', 'templates'):
             shutil.copytree(os.path.join(self.tmpdir, d),
                             os.path.join(self.tmpdir, d, policy_subdir))
 

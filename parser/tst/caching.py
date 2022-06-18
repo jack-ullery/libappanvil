@@ -98,7 +98,8 @@ class AAParserCachingCommon(testlib.AATestTemplate):
                 shutil.rmtree(self.tmp_dir)
 
     def get_cache_dir(self, create=False):
-        cmd = [config.parser, '--print-cache-dir'] + self.cmd_prefix
+        cmd = [config.parser, '--print-cache-dir']
+        cmd.extend(self.cmd_prefix)
         rc, report = self.run_cmd(cmd)
         if rc != 0:
             if "unrecognized option '--print-cache-dir'" not in report:
@@ -153,7 +154,7 @@ class AAParserBasicCachingTests(AAParserCachingCommon):
         '''test profiles are not cached by default'''
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-q', '-r', self.profile])
+        cmd.extend(('-q', '-r', self.profile))
         self.run_cmd_check(cmd)
         self.assert_path_exists(os.path.join(self.cache_dir, PROFILE), expected=False)
 
@@ -161,7 +162,7 @@ class AAParserBasicCachingTests(AAParserCachingCommon):
         '''test profiles are not cached with --skip-cache'''
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-q', '--write-cache', '--skip-cache', '-r', self.profile])
+        cmd.extend(('-q', '--write-cache', '--skip-cache', '-r', self.profile))
         self.run_cmd_check(cmd)
         self.assert_path_exists(os.path.join(self.cache_dir, PROFILE), expected=False)
 
@@ -169,7 +170,7 @@ class AAParserBasicCachingTests(AAParserCachingCommon):
         '''test profiles are cached when requested'''
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-q', '--write-cache', '-r', self.profile])
+        cmd.extend(('-q', '--write-cache', '-r', self.profile))
         self.run_cmd_check(cmd)
         self.assert_path_exists(os.path.join(self.cache_dir, PROFILE))
 
@@ -177,7 +178,7 @@ class AAParserBasicCachingTests(AAParserCachingCommon):
         '''test features file is written when caching'''
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-q', '--write-cache', '-r', self.profile])
+        cmd.extend(('-q', '--write-cache', '-r', self.profile))
         self.run_cmd_check(cmd)
         self.assert_path_exists(os.path.join(self.cache_dir, PROFILE))
         self.assert_path_exists(os.path.join(self.cache_dir, '.features'))
@@ -188,7 +189,7 @@ class AAParserBasicCachingTests(AAParserCachingCommon):
         self.require_apparmorfs()
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-q', '--write-cache', '-r', self.profile])
+        cmd.extend(('-q', '--write-cache', '-r', self.profile))
         self.run_cmd_check(cmd)
         self.assert_path_exists(os.path.join(self.cache_dir, PROFILE))
         self.assert_path_exists(os.path.join(self.cache_dir, '.features'))
@@ -206,7 +207,7 @@ class AAParserAltCacheBasicTests(AAParserBasicCachingTests):
         os.chmod(alt_cache_loc, 0o755)
 
         self.unused_cache_loc = self.cache_dir
-        self.cmd_prefix.extend(['--cache-loc', alt_cache_loc])
+        self.cmd_prefix.extend(('--cache-loc', alt_cache_loc))
         self.cache_dir = self.get_cache_dir()
 
     def tearDown(self):
@@ -253,7 +254,7 @@ class AAParserCachingTests(AAParserCachingCommon):
     def _generate_cache_file(self):
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-q', '--write-cache', '-r', self.profile])
+        cmd.extend(('-q', '--write-cache', '-r', self.profile))
         self.run_cmd_check(cmd)
         self.assert_path_exists(self.cache_file)
 
@@ -282,7 +283,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self._generate_cache_file()
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-v', '-r', self.profile])
+        cmd.extend(('-v', '-r', self.profile))
         self.run_cmd_check(cmd, expected_string='Cached reload succeeded')
 
     def test_cache_not_loaded_when_skip_arg(self):
@@ -291,7 +292,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self._generate_cache_file()
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-v', '--skip-cache', '-r', self.profile])
+        cmd.extend(('-v', '--skip-cache', '-r', self.profile))
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
     def test_cache_not_loaded_when_skip_read_arg(self):
@@ -300,7 +301,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self._generate_cache_file()
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-v', '--skip-read-cache', '-r', self.profile])
+        cmd.extend(('-v', '--skip-read-cache', '-r', self.profile))
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
     def test_cache_not_loaded_when_features_differ(self):
@@ -311,7 +312,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         testlib.write_file(self.cache_dir, '.features', 'monkey\n')
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-v', '-r', self.profile])
+        cmd.extend(('-v', '-r', self.profile))
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
     def test_cache_writing_does_not_overwrite_features_when_features_differ(self):
@@ -322,7 +323,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         features_file = testlib.write_file(self.cache_dir, '.features', 'monkey\n')
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-v', '--write-cache', '--skip-bad-cache', '-r', self.profile])
+        cmd.extend(('-v', '--write-cache', '--skip-bad-cache', '-r', self.profile))
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
         self.assert_path_exists(features_file)
         # ensure that the features does *not* match the current features set
@@ -334,7 +335,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         testlib.write_file(self.cache_dir, '.features', 'monkey\n')
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-v', '--write-cache', '--skip-bad-cache', '-r', self.profile])
+        cmd.extend(('-v', '--write-cache', '--skip-bad-cache', '-r', self.profile))
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
         self.assert_path_exists(self.cache_file, expected=False)
 
@@ -349,7 +350,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         new_features_file = new_file + '/.features';
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-v', '--write-cache', '-r', self.profile])
+        cmd.extend(('-v', '--write-cache', '-r', self.profile))
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
         self.assert_path_exists(features_file)
         self.assert_path_exists(new_features_file)
@@ -362,7 +363,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         orig_stat = os.stat(cache_file)
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-v', '--write-cache', '-r', self.profile])
+        cmd.extend(('-v', '--write-cache', '-r', self.profile))
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
         self.assert_path_exists(cache_file)
         stat = os.stat(cache_file)
@@ -378,7 +379,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         check_file = testlib.write_file(self.cache_dir, 'monkey', 'monkey\n')
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-v', '--write-cache', '-r', self.profile])
+        cmd.extend(('-v', '--write-cache', '-r', self.profile))
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
         self.assert_path_exists(check_file, expected=False)
 
@@ -416,7 +417,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         orig_stat = os.stat(self.cache_file)
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-v', '-r', self.profile])
+        cmd.extend(('-v', '-r', self.profile))
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
         stat = os.stat(self.cache_file)
@@ -434,7 +435,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         orig_stat = os.stat(self.cache_file)
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-v', '-r', self.profile])
+        cmd.extend(('-v', '-r', self.profile))
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
         stat = os.stat(self.cache_file)
@@ -452,7 +453,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         orig_stat = os.stat(self.cache_file)
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-v', '-r', '-W', self.profile])
+        cmd.extend(('-v', '-r', '-W', self.profile))
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
         stat = os.stat(self.cache_file)
@@ -469,7 +470,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         orig_stat = os.stat(self.cache_file)
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-v', '-r', '-W', self.profile])
+        cmd.extend(('-v', '-r', '-W', self.profile))
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
         stat = os.stat(self.cache_file)
@@ -489,7 +490,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         cmd = list(self.cmd_prefix)
         cmd[0] = new_parser
-        cmd.extend(['-v', '-r', self.profile])
+        cmd.extend(('-v', '-r', self.profile))
         self.run_cmd_check(cmd, expected_string='Cached reload succeeded for')
 
     def _purge_cache_test(self, location):
@@ -497,7 +498,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         cache_file = testlib.write_file(self.cache_dir, location, 'monkey\n')
 
         cmd = list(self.cmd_prefix)
-        cmd.extend(['-v', '--purge-cache', '-r', self.profile])
+        cmd.extend(('-v', '--purge-cache', '-r', self.profile))
         self.run_cmd_check(cmd)
         # no message is output
         self.assert_path_exists(cache_file, expected=False)
@@ -526,7 +527,7 @@ class AAParserAltCacheTests(AAParserCachingTests):
         os.chmod(alt_cache_loc, 0o755)
 
         self.orig_cache_dir = self.cache_dir
-        self.cmd_prefix.extend(['--cache-loc', alt_cache_loc])
+        self.cmd_prefix.extend(('--cache-loc', alt_cache_loc))
         self.cache_dir = self.get_cache_dir(create=True)
         self.cache_file = os.path.join(self.cache_dir, PROFILE)
 
@@ -540,7 +541,7 @@ class AAParserAltCacheTests(AAParserCachingTests):
 
         # skip tearDown check to ensure non-alt cache is empty
         self.check_orig_cache = False
-        filelist = [PROFILE, '.features', 'monkey']
+        filelist = (PROFILE, '.features', 'monkey')
 
         for f in filelist:
             testlib.write_file(self.orig_cache_dir, f, 'monkey\n')

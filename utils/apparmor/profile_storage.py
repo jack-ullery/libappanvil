@@ -80,12 +80,12 @@ class ProfileStorage:
         data['deny'] = dict()
 
         # mount, pivot_root, unix have a .get() fallback to list() - initialize them nevertheless
-        data['allow']['mount']   = list()
-        data['deny']['mount']    = list()
-        data['allow']['pivot_root'] = list()
-        data['deny']['pivot_root']  = list()
-        data['allow']['unix']    = list()
-        data['deny']['unix']     = list()
+        data['allow']['mount'] = []
+        data['deny']['mount'] = []
+        data['allow']['pivot_root'] = []
+        data['deny']['pivot_root'] = []
+        data['allow']['unix'] = []
+        data['deny']['unix'] = []
 
         self.data = data
 

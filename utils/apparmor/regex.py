@@ -131,7 +131,7 @@ def parse_profile_start_line(line, filename):
             result[section] = matches.group(section)
 
             # sections with optional quotes
-            if section in ['plainprofile', 'namedprofile', 'attachment', 'hat']:
+            if section in ('plainprofile', 'namedprofile', 'attachment', 'hat'):
                 result[section] = strip_quotes(result[section])
         else:
             result[section] = None

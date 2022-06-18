@@ -99,13 +99,13 @@ class TestAdd_profile(AATest):
             self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo', 'wrong_type')
 
 class TestFilename_from_profile_name(AATest):
-    tests = [
+    tests = (
         ('foo',         '/etc/apparmor.d/bin.foo'),
         ('/bin/foo',    None),
         ('bar',         None),
         ('/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}',   '/etc/apparmor.d/usr.bin.wine'),
         ('/usr/lib/wine/bin/wine-preloader-staging-foo',                                            None),  # no AARE matching for profile names
-    ]
+    )
 
     def AASetup(self):
         self.pl = ProfileList()
@@ -117,7 +117,7 @@ class TestFilename_from_profile_name(AATest):
         self.assertEqual(self.pl.filename_from_profile_name(params), expected)
 
 class TestFilename_from_attachment(AATest):
-    tests = [
+    tests = (
         ('/bin/foo',    '/etc/apparmor.d/bin.foo'),
         ('/bin/baz',    '/etc/apparmor.d/bin.baz'),
         ('/bin/foobar', '/etc/apparmor.d/bin.foobar'),
@@ -125,7 +125,7 @@ class TestFilename_from_attachment(AATest):
         ('/bin/404',    None),
         ('/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}',   '/etc/apparmor.d/usr.bin.wine'),  # XXX should this really match, or should attachment matching only use AARE?
         ('/usr/lib/wine/bin/wine-preloader-staging-foo',                                            '/etc/apparmor.d/usr.bin.wine'),  # AARE match
-    ]
+    )
 
     def AASetup(self):
         self.pl = ProfileList()
@@ -331,7 +331,7 @@ class TestGet(AATest):
             self.pl.get_raw('/etc/apparmor.d/not.found')
 
 class AaTest_get_all_merged_variables(AATest):
-    tests = []
+    tests = ()
 
     def AASetup(self):
         self.createTmpdir()

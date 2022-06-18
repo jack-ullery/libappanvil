@@ -52,7 +52,7 @@ class TestLibapparmorTestMulti(AATest):
                 raise Exception("Log event doesn't match RE_LOG_ALL")
 
             for label in expected:
-                if label in [
+                if label in (
                         'file',  # filename of the *.in file
                         'event_type',  # mapped to aamode
                         'audit_id', 'audit_sub_id',  # not set nor relevant
@@ -66,9 +66,9 @@ class TestLibapparmorTestMulti(AATest):
                         'src_name',  # pivotroot
                         'dbus_bus', 'dbus_interface', 'dbus_member', 'dbus_path',  # dbus
                         'peer_pid', 'peer_profile',  # dbus
-                        ]:
+                        ):
                     pass
-                elif parsed_items['operation'] == 'exec' and label in ['sock_type', 'family', 'protocol']:
+                elif parsed_items['operation'] == 'exec' and label in ('sock_type', 'family', 'protocol'):
                     pass  # XXX 'exec' + network? really?
                 elif parsed_items['operation'] == 'ptrace' and label == 'name2' and params.endswith('/ptrace_garbage_lp1689667_1'):
                     pass  # libapparmor would better qualify this case as invalid event
@@ -215,10 +215,10 @@ def logfile_to_profile(logfile):
 
     aamode = parsed_event['aamode']
 
-    if aamode in['AUDIT', 'STATUS', 'HINT']: # ignore some event types  # XXX maybe we shouldn't ignore AUDIT events?
+    if aamode in ('AUDIT', 'STATUS', 'HINT'): # ignore some event types  # XXX maybe we shouldn't ignore AUDIT events?
         return None, aamode
 
-    if aamode not in ['PERMITTING', 'REJECTING']:
+    if aamode not in ('PERMITTING', 'REJECTING'):
         raise Exception('Unexpected aamode %s' % parsed_event['aamode'])
 
     # cleanup apparmor.aa storage
@@ -288,7 +288,7 @@ def find_test_multi(log_dir):
         for file in files:
             if file.endswith('.in'):
                 file_with_path = os.path.join(root, file[:-3])  # filename without '.in'
-                tests.append([file_with_path, True])  # True is a dummy testresult, parsing of the *.out files is done while running the tests
+                tests.append((file_with_path, True))  # True is a dummy testresult, parsing of the *.out files is done while running the tests
 
             elif file.endswith('.out') or file.endswith('.err') or file.endswith('.profile'):
                 pass

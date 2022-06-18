@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
         easyprof_Policygroup = './policygroups'
         easyprof_Templates = './templates'
 
-        self.assertEqual(sorted(list(conf[''].keys())), sorted(easyprof_sections))
+        self.assertEqual(sorted(conf[''].keys()), easyprof_sections)
         self.assertEqual(conf['']['POLICYGROUPS_DIR'], easyprof_Policygroup)
         self.assertEqual(conf['']['TEMPLATES_DIR'], easyprof_Templates)
 

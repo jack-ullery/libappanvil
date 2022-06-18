@@ -15,14 +15,14 @@ import subprocess
 import sys
 
 # dangerous capabilities
-danger_caps = ["audit_control",
+danger_caps = ("audit_control",
                "audit_write",
                "mac_override",
                "mac_admin",
                "setfcap",
                "sys_admin",
                "sys_module",
-               "sys_rawio"]
+               "sys_rawio")
 
 
 def cmd(command, input=None, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, stdin=None, timeout=None):
@@ -32,7 +32,7 @@ def cmd(command, input=None, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, s
     try:
         sp = subprocess.Popen(command, stdin=stdin, stdout=stdout, stderr=stderr, close_fds=True, universal_newlines=True)
     except OSError as ex:
-        return [127, str(ex)]
+        return 127, str(ex)
 
     out, outerr = sp.communicate(input)
 
@@ -42,10 +42,10 @@ def cmd(command, input=None, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, s
     # Handle redirection of stderr
     if outerr is None:
         outerr = ''
-    return [sp.returncode, out, outerr]
+    return sp.returncode, out, outerr
 
 # get capabilities list
-(rc, output, outerr) = cmd(['../../common/list_capabilities.sh'])
+(rc, output, outerr) = cmd(('../../common/list_capabilities.sh',))
 if rc != 0:
     sys.stderr.write("make list_capabilities failed: " + output + outerr)
     exit(rc)
@@ -57,7 +57,7 @@ for cap in capabilities:
         benign_caps.append(cap)
 
 # get network protos list
-(rc, output, outerr) = cmd(['../../common/list_af_names.sh'])
+(rc, output, outerr) = cmd(('../../common/list_af_names.sh',))
 if rc != 0:
     sys.stderr.write("make list_af_names failed: " + output + outerr)
     exit(rc)
@@ -76,7 +76,7 @@ for af_pair in af_pairs:
 
 aa_network_types = r'\s+tcp|\s+udp|\s+icmp'
 
-aa_flags = ['complain',
+aa_flags = ('complain',
             'audit',
             'attach_disconnected',
             'no_attach_disconnected',
@@ -85,7 +85,7 @@ aa_flags = ['complain',
             'chroot_relative',
             'namespace_relative',
             'mediate_deleted',
-            'delegate_deleted']
+            'delegate_deleted')
 
 filename = r'(\/|\@\{\S*\})\S*'
 

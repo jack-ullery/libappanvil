@@ -48,7 +48,7 @@ def cmd(command):
             preexec_fn=subprocess_setup
         )
     except OSError as e:
-        return [127, str(e)]
+        return 127, str(e)
 
     stdout, stderr = sp.communicate(input)
 
@@ -59,7 +59,7 @@ def cmd(command):
     else:
         out = stdout
 
-    return [sp.returncode, out.decode('utf-8')]
+    return sp.returncode, out.decode('utf-8')
 
 
 class AANotifyTest(AATest):

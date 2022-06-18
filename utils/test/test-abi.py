@@ -24,9 +24,9 @@ from apparmor.common import AppArmorException, AppArmorBug
 from apparmor.translations import init_translation
 _ = init_translation()
 
-exp = namedtuple('exp', [ # 'audit', 'allow_keyword', 'deny',
+exp = namedtuple('exp', ( # 'audit', 'allow_keyword', 'deny',
         'comment',
-        'path', 'ifexists', 'ismagic'])
+        'path', 'ifexists', 'ismagic'))
 
 # --- tests for single AbiRule --- #
 
@@ -43,7 +43,7 @@ class AbiTest(AATest):
         self.assertEqual(expected.ismagic, obj.ismagic)
 
 class AbiTestParse(AbiTest):
-    tests = [
+    tests = (
         # AbiRule object                                        comment             path                       if exists   ismagic
         ('abi <abstractions/base>,',                        exp('',                 'abstractions/base',       False,      True )),  # magic path
         ('abi <abstractions/base>, # comment',              exp(' # comment',       'abstractions/base',       False,      True )),
@@ -53,7 +53,7 @@ class AbiTestParse(AbiTest):
         ('abi "/foo/bar", # comment',                       exp(' # comment',       '/foo/bar',                False,      False)),
         ('abi "/foo/bar",#comment',                         exp(' #comment',        '/foo/bar',                False,      False)),
         ('   abi "/foo/bar" , ',                            exp('',                 '/foo/bar',                False,      False)),
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(AbiRule.match(rawrule))
@@ -62,12 +62,12 @@ class AbiTestParse(AbiTest):
         self._compare_obj(obj, expected)
 
 class AbiTestParseInvalid(AbiTest):
-    tests = [
+    tests = (
 #       (' some abi <abstractions/base>',                       AppArmorException),
 #       ('  /etc/fstab r,',                                     AppArmorException),
 #       ('/usr/abi r,',                                         AppArmorException),
 #       ('/abi r,',                                             AppArmorException),
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(AbiRule.match(rawrule))  # the above invalid rules still match the main regex!
@@ -77,34 +77,34 @@ class AbiTestParseInvalid(AbiTest):
 # class AbiTestParseFromLog(AbiTest):  # we'll never have log events for abi
 
 class AbiFromInit(AbiTest):
-    tests = [
+    tests = (
         # AbiRule object                        ifexists    ismagic                       comment      path                    ifexists    ismagic
         (AbiRule('abi/4.19',                    False,      False)                  , exp('',          'abi/4.19',             False,      False    )),
         (AbiRule('foo',                         False,      False)                  , exp('',          'foo',                  False,      False    )),
         (AbiRule('bar',                         False,      True)                   , exp('',          'bar',                  False,      True     )),
         (AbiRule('comment',                     False,      False, comment='# cmt') , exp('# cmt',     'comment',              False,      False    )),
-    ]
+    )
 
     def _run_test(self, obj, expected):
         self._compare_obj(obj, expected)
 
 class InvalidAbiInit(AATest):
-    tests = [
+    tests = (
         # init params                     expected exception
-        ([False,  False, False  ]    , AppArmorBug), # wrong type for path
-        (['',     False, False  ]    , AppArmorBug), # empty path
-        ([None,   False, False  ]    , AppArmorBug), # wrong type for path
-#       (['    ', False, False  ]    , AppArmorBug), # whitespace-only path
-        (['foo',  None,  False  ]    , AppArmorBug), # wrong type for ifexists
-        (['foo',  '',    False  ]    , AppArmorBug), # wrong type for ifexists
-        (['foo',  False, None   ]    , AppArmorBug), # wrong type for ismagic
-        (['foo',  False, ''     ]    , AppArmorBug), # wrong type for ismagic
-        (['',     True,  False  ]    , AppArmorBug), # ifexists set
-    ]
+        ((False,  False, False  )    , AppArmorBug), # wrong type for path
+        (('',     False, False  )    , AppArmorBug), # empty path
+        ((None,   False, False  )    , AppArmorBug), # wrong type for path
+#       (('    ', False, False  )    , AppArmorBug), # whitespace-only path
+        (('foo',  None,  False  )    , AppArmorBug), # wrong type for ifexists
+        (('foo',  '',    False  )    , AppArmorBug), # wrong type for ifexists
+        (('foo',  False, None   )    , AppArmorBug), # wrong type for ismagic
+        (('foo',  False, ''     )    , AppArmorBug), # wrong type for ismagic
+        (('',     True,  False  )    , AppArmorBug), # ifexists set
+    )
 
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
-            AbiRule(params[0], params[1], params[2])
+            AbiRule(*params)
 
     def test_missing_params_1(self):
         with self.assertRaises(TypeError):
@@ -162,7 +162,7 @@ class WriteAbiTestAATest(AATest):
         self.assertEqual(expected.strip(), clean, 'unexpected clean rule')
         self.assertEqual(rawrule.strip(), raw, 'unexpected raw rule')
 
-    tests = [
+    tests = (
         #  raw rule                                         clean rule
         ('     abi      <foo>   ,        ',                 'abi <foo>,'                     ),
         ('     abi       foo    ,        ',                 'abi "foo",'                     ),
@@ -175,7 +175,7 @@ class WriteAbiTestAATest(AATest):
         ('     abi      "foo", # bar     ',                 'abi "foo", # bar'               ),
         ('     abi       /foo,  # bar     ',                'abi "/foo", # bar'              ),
         ('     abi      "/foo", # bar     ',                'abi "/foo", # bar'              ),
-    ]
+    )
 
     def test_write_manually(self):
         obj = AbiRule('abs/foo', False, True, comment=' # cmt')
@@ -202,24 +202,24 @@ class AbiCoveredTest(AATest):
 class AbiCoveredTest_01(AbiCoveredTest):
     rule = 'abi <foo>,'
 
-    tests = [
+    tests = (
         #   rule                             equal     strict equal    covered     covered exact
-        ('abi <foo>,'                    , [ True    , True          , True      , True      ]),
-        ('abi "foo",'                    , [ False   , False         , False     , False     ]),
-        ('abi <foobar>,'                 , [ False   , False         , False     , False     ]),
-        ('abi "foo",'                    , [ False   , False         , False     , False     ]),
-    ]
+        ('abi <foo>,'                    , ( True    , True          , True      , True      )),
+        ('abi "foo",'                    , ( False   , False         , False     , False     )),
+        ('abi <foobar>,'                 , ( False   , False         , False     , False     )),
+        ('abi "foo",'                    , ( False   , False         , False     , False     )),
+    )
 
 class AbiCoveredTest_02(AbiCoveredTest):
     rule = 'abi "foo",'
 
-    tests = [
+    tests = (
         #   rule                            equal     strict equal    covered     covered exact
-        ('abi <foo>,'                   , [ False   , False         , False     , False     ]),
-        ('abi "foo",'                   , [ True    , True          , True      , True      ]),
-        ('abi "foobar",'                , [ False   , False         , False     , False     ]),
-        ('abi foo,'                     , [ True    , False         , True      , True      ]),
-    ]
+        ('abi <foo>,'                   , ( False   , False         , False     , False     )),
+        ('abi "foo",'                   , ( True    , True          , True      , True      )),
+        ('abi "foobar",'                , ( False   , False         , False     , False     )),
+        ('abi foo,'                     , ( True    , False         , True      , True      )),
+    )
 
 #class AbiCoveredTest_Invalid(AATest):
 #   def test_borked_obj_is_covered_1(self):
@@ -266,10 +266,10 @@ class AbiCoveredTest_02(AbiCoveredTest):
 #           obj.is_equal(testobj)
 
 class AbiLogprofHeaderTest(AATest):
-    tests = [
+    tests = (
         ('abi <abi/3.0>,',              [_('Abi'), 'abi <abi/3.0>,',        ]),
         ('abi "/foo/bar",',             [_('Abi'), 'abi "/foo/bar",',       ]),
-    ]
+    )
 
     def _run_test(self, params, expected):
         obj = AbiRule.parse(params)
@@ -289,10 +289,10 @@ class AbiRulesTest(AATest):
 
     def test_ruleset_1(self):
         ruleset = AbiRuleset()
-        rules = [
+        rules = (
             ' abi  <foo>  ,',
             ' abi   "/bar", ',
-        ]
+        )
 
         expected_raw = [
             'abi  <foo>  ,',

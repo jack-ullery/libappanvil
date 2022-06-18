@@ -52,7 +52,7 @@ class VariableRule(BaseRule):
 
         if not type_is_str(mode):
             raise AppArmorBug('Passed unknown type for variable assignment mode to %s: %s' % (self.__class__.__name__, mode))
-        if mode not in ['=', '+=']:
+        if mode not in ('=', '+='):
             raise AppArmorBug('Passed unknown variable assignment mode to %s: %s' % (self.__class__.__name__, mode))
 
         if type(values) is not set:

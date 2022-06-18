@@ -23,8 +23,7 @@ from apparmor.common import AppArmorException, AppArmorBug
 from apparmor.translations import init_translation
 _ = init_translation()
 
-exp = namedtuple('exp', ['comment',
-        'varname', 'value'])
+exp = namedtuple('exp', ('comment', 'varname', 'value'))
 
 # --- tests for single BooleanRule --- #
 
@@ -40,7 +39,7 @@ class BooleanTest(AATest):
         self.assertEqual(expected.comment, obj.comment)
 
 class BooleanTestParse(BooleanTest):
-    tests = [
+    tests = (
         # rawrule                                            comment        varname    value
         ('$foo=true',                                 exp('',               '$foo',    'true'    )),
         ('$foo = false',                              exp('',               '$foo',    'false'   )),
@@ -48,7 +47,7 @@ class BooleanTestParse(BooleanTest):
         ('$foo = FaLsE',                              exp('',               '$foo',    'false'   )),
         ('  $foo =   true   ',                        exp('',               '$foo',    'true'    )),
         ('  $foo =   true        # comment',          exp(' # comment',     '$foo',    'true'    )),
-     ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(BooleanRule.match(rawrule))
@@ -57,7 +56,7 @@ class BooleanTestParse(BooleanTest):
         self._compare_obj(obj, expected)
 
 class BooleanTestParseInvalid(BooleanTest):
-    tests = [
+    tests = (
         # rawrule                                   matches regex   exception
         ('$foo =',                                  (False,         AppArmorException)),
         ('$ foo =      # comment',                  (False,         AppArmorException)),
@@ -66,7 +65,7 @@ class BooleanTestParseInvalid(BooleanTest):
         # ('$foo = true,',                            (True,          AppArmorException)),  # trailing comma
         # ('$foo = false   ,  ',                      (True,          AppArmorException)),  # trailing comma
         # ('$foo = true,   # comment',                (True,          AppArmorException)),  # trailing comma
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertEqual(BooleanRule.match(rawrule), expected[0])
@@ -74,34 +73,34 @@ class BooleanTestParseInvalid(BooleanTest):
             BooleanRule.parse(rawrule)
 
 class BooleanFromInit(BooleanTest):
-#   tests = [
+#   tests = (
 #       # BooleanRule object                                        comment     varname     value
 #       (BooleanRule('$foo',    True,                           exp('',         '$foo',     True              ))),
 #       (BooleanRule('$foo',    False,                          exp('',         '$foo',     False             ))),
 #       (BooleanRule('$foo',    True,       comment='# cmt'),   exp('# cmt',    '$foo',     True              ))),
 #       (BooleanRule('$foo',    False,      comment='# cmt'),   exp('# cmt',    '$foo',     False             ))),
-#   ]
+#   )
 
     def _run_test(self, obj, expected):
         self._compare_obj(obj, expected)
 
 
 class InvalidBooleanInit(AATest):
-    tests = [
+    tests = (
         # init params                     expected exception
-        ([None,     True            ],      AppArmorBug),  # varname not a str
-        (['',       True            ],      AppArmorException),  # empty varname
-        (['foo',    True            ],      AppArmorException),  # varname not starting with '$'
-        (['foo',    True            ],      AppArmorException),  # varname not starting with '$'
+        ((None,     True            ),      AppArmorBug),  # varname not a str
+        (('',       True            ),      AppArmorException),  # empty varname
+        (('foo',    True            ),      AppArmorException),  # varname not starting with '$'
+        (('foo',    True            ),      AppArmorException),  # varname not starting with '$'
 
-        (['$foo',   None            ],      AppArmorBug),  # value not a string
-        (['$foo',   ''              ],      AppArmorException),  # empty value
-        (['$foo',   'maybe'         ],      AppArmorException),  # invalid value
-    ]
+        (('$foo',   None            ),      AppArmorBug),  # value not a string
+        (('$foo',   ''              ),      AppArmorException),  # empty value
+        (('$foo',   'maybe'         ),      AppArmorException),  # invalid value
+    )
 
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
-            BooleanRule(params[0], params[1])
+            BooleanRule(*params)
 
     def test_missing_params_1(self):
         with self.assertRaises(TypeError):
@@ -137,13 +136,13 @@ class InvalidBooleanTest(AATest):
 
 
 class WriteBooleanTestAATest(AATest):
-    tests = [
+    tests = (
         #  raw rule                                                      clean rule
         ('  $foo  =  true   ',                                          '$foo = true'),
         ('  $foo  =  true   # comment',                                 '$foo = true'),
         ('  $foo   =    false   ',                                      '$foo = false'),
         ('  $foo   =    false      # comment',                          '$foo = false'),
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(BooleanRule.match(rawrule))
@@ -187,27 +186,27 @@ class BooleanCoveredTest(AATest):
 class BooleanCoveredTest_01(BooleanCoveredTest):
     rule = '$foo = true'
 
-    tests = [
+    tests = (
         #   rule                                        equal     strict equal    covered     covered exact
-        ('           $foo = true'                   , [ True    , True          , True      , True      ]),
-        ('           $foo = TRUE'                   , [ True    , False         , True      , True      ]),  # upper vs. lower case
-        ('           $foo = true   # comment'       , [ True    , False         , True      , True      ]),
-        ('           $foo = false'                  , [ False   , False         , False     , False     ]),
-        ('           $foo = false     # cmt'        , [ False   , False         , False     , False     ]),
-        ('           $bar = true'                   , [ False   , False         , False     , False     ]),  # different variable name
-     ]
+        ('           $foo = true'                   , ( True    , True          , True      , True      )),
+        ('           $foo = TRUE'                   , ( True    , False         , True      , True      )),  # upper vs. lower case
+        ('           $foo = true   # comment'       , ( True    , False         , True      , True      )),
+        ('           $foo = false'                  , ( False   , False         , False     , False     )),
+        ('           $foo = false     # cmt'        , ( False   , False         , False     , False     )),
+        ('           $bar = true'                   , ( False   , False         , False     , False     )),  # different variable name
+    )
 
 class BooleanCoveredTest_02(BooleanCoveredTest):
     rule = '$foo = false'
 
-    tests = [
+    tests = (
         #   rule                                        equal     strict equal    covered     covered exact
-        ('           $foo = false'                  , [ True    , True          , True      , True      ]),
-        ('           $foo = false  # comment'       , [ True    , False         , True      , True      ]),
-        ('           $foo = true'                   , [ False   , False         , False     , False     ]),
-        ('           $foo = true      # cmt'        , [ False   , False         , False     , False     ]),
-        ('           $bar = false'                  , [ False   , False         , False     , False     ]),  # different variable name
-     ]
+        ('           $foo = false'                  , ( True    , True          , True      , True      )),
+        ('           $foo = false  # comment'       , ( True    , False         , True      , True      )),
+        ('           $foo = true'                   , ( False   , False         , False     , False     )),
+        ('           $foo = true      # cmt'        , ( False   , False         , False     , False     )),
+        ('           $bar = false'                  , ( False   , False         , False     , False     )),  # different variable name
+    )
 
 class BooleanCoveredTest_Invalid(AATest):
     def test_borked_obj_is_covered_2(self):
@@ -236,9 +235,9 @@ class BooleanCoveredTest_Invalid(AATest):
             obj.is_equal(testobj)
 
 class BooleanLogprofHeaderTest(AATest):
-    tests = [
+    tests = (
         ('$foo = true',                             [_('Boolean Variable'), '$foo = true'       ]),
-    ]
+    )
 
     def _run_test(self, params, expected):
         obj = BooleanRule.parse(params)
