@@ -144,7 +144,8 @@ class T(unittest.TestCase):
 }
 
 ''' % (self.test_template)
-        open(os.path.join(self.tmpdir, 'templates', self.test_template), 'w').write(contents)
+        with open(os.path.join(self.tmpdir, 'templates', self.test_template), 'w') as f:
+            f.write(contents)
 
         # Create a test policygroup
         self.test_policygroup = "test-policygroup"
@@ -153,7 +154,8 @@ class T(unittest.TestCase):
   #include <abstractions/gnome>
   #include <abstractions/nameservice>
 ''' % (self.test_policygroup)
-        open(os.path.join(self.tmpdir, 'policygroups', self.test_policygroup), 'w').write(contents)
+        with open(os.path.join(self.tmpdir, 'policygroups', self.test_policygroup), 'w') as f:
+            f.write(contents)
 
         # setup our conffile
         self.conffile = os.path.join(self.tmpdir, 'easyprof.conf')
@@ -161,7 +163,8 @@ class T(unittest.TestCase):
 POLICYGROUPS_DIR="%s/policygroups"
 TEMPLATES_DIR="%s/templates"
 ''' % (self.tmpdir, self.tmpdir)
-        open(self.conffile, 'w').write(contents)
+        with open(self.conffile, 'w') as f:
+            f.write(contents)
 
         self.binary = "/opt/bin/foo"
         self.full_args = ['-c', self.conffile, self.binary]
@@ -217,7 +220,8 @@ POLICYGROUPS_DIR=
 TEMPLATES_DIR="%s/templates"
 ''' % (self.tmpdir)
 
-        open(self.conffile, 'w').write(contents)
+        with open(self.conffile, 'w') as f:
+            f.write(contents)
         try:
             easyprof.AppArmorEasyProfile(self.binary, self.options)
         except AppArmorException:
@@ -234,7 +238,8 @@ POLICYGROUPS_DIR="%s"
 TEMPLATES_DIR="%s/templates"
 ''' % ('', self.tmpdir)
 
-        open(self.conffile, 'w').write(contents)
+        with open(self.conffile, 'w') as f:
+            f.write(contents)
         try:
             easyprof.AppArmorEasyProfile(self.binary, self.options)
         except AppArmorException:
@@ -251,7 +256,8 @@ POLICYGROUPS_DIR="%s/policygroups"
 TEMPLATES_DIR="%s/templates"
 ''' % ('/nonexistent', self.tmpdir)
 
-        open(self.conffile, 'w').write(contents)
+        with open(self.conffile, 'w') as f:
+            f.write(contents)
         try:
             easyprof.AppArmorEasyProfile(self.binary, self.options)
         except AppArmorException:
@@ -341,7 +347,8 @@ TEMPLATES_DIR=
 POLICYGROUPS_DIR="%s/templates"
 ''' % (self.tmpdir)
 
-        open(self.conffile, 'w').write(contents)
+        with open(self.conffile, 'w') as f:
+            f.write(contents)
         try:
             easyprof.AppArmorEasyProfile(self.binary, self.options)
         except AppArmorException:
@@ -358,7 +365,8 @@ TEMPLATES_DIR="%s"
 POLICYGROUPS_DIR="%s/templates"
 ''' % ('', self.tmpdir)
 
-        open(self.conffile, 'w').write(contents)
+        with open(self.conffile, 'w') as f:
+            f.write(contents)
         try:
             easyprof.AppArmorEasyProfile(self.binary, self.options)
         except AppArmorException:
@@ -375,7 +383,8 @@ TEMPLATES_DIR="%s/policygroups"
 POLICYGROUPS_DIR="%s/templates"
 ''' % ('/nonexistent', self.tmpdir)
 
-        open(self.conffile, 'w').write(contents)
+        with open(self.conffile, 'w') as f:
+            f.write(contents)
         try:
             easyprof.AppArmorEasyProfile(self.binary, self.options)
         except AppArmorException:
@@ -535,7 +544,8 @@ POLICYGROUPS_DIR="%s/templates"
 
             path = os.path.join(easyp.dirs['templates'], f)
             self.assertTrue(os.path.exists(path), "Could not find '%s'" % path)
-            open(path).read()
+            with open(path) as fd:
+                fd.read()
 
     def test_templates_list_include(self):
         '''Test templates (list with --include-templates-dir)'''
@@ -577,7 +587,8 @@ POLICYGROUPS_DIR="%s/templates"
 
             path = os.path.join(easyp.dirs['templates_include'], f)
             self.assertTrue(os.path.exists(path), "Could not find '%s'" % path)
-            open(path).read()
+            with open(path) as fd:
+                fd.read()
 
             bn = os.path.basename(f)
             # setup() copies everything in the include prefixed with inc_
@@ -612,7 +623,8 @@ POLICYGROUPS_DIR="%s/templates"
 
             path = os.path.join(easyp.dirs['policygroups'], f)
             self.assertTrue(os.path.exists(path), "Could not find '%s'" % path)
-            open(path).read()
+            with open(path) as fd:
+                fd.read()
 
     def test_policygroups_list_include(self):
         '''Test policygroups (list with --include-policy-groups-dir)'''
@@ -654,7 +666,8 @@ POLICYGROUPS_DIR="%s/templates"
 
             path = os.path.join(easyp.dirs['policygroups_include'], f)
             self.assertTrue(os.path.exists(path), "Could not find '%s'" % path)
-            open(path).read()
+            with open(path) as fd:
+                fd.read()
 
             bn = os.path.basename(f)
             # setup() copies everything in the include prefixed with inc_
@@ -672,7 +685,8 @@ POLICYGROUPS_DIR="%s/templates"
         contents = '''
 {"security": {"domain.reverse.appname": {"name": "simple-app"}}}
 '''
-        open(self.manifest, 'w').write(contents)
+        with open(self.manifest, 'w') as f:
+            f.write(contents)
 
         args = self.full_args
         args.extend(['--manifest', self.manifest])
@@ -685,7 +699,8 @@ POLICYGROUPS_DIR="%s/templates"
         contents = '''
 {"security": {"domain.reverse.appname": {"binary": /nonexistent"}}}
 '''
-        open(self.manifest, 'w').write(contents)
+        with open(self.manifest, 'w') as f:
+            f.write(contents)
 
         # opt first
         args = self.full_args
@@ -847,9 +862,11 @@ POLICYGROUPS_DIR="%s/templates"
         # create a new template
         template = os.path.join(self.tmpdir, "test-abspath-template")
         shutil.copy(os.path.join(self.tmpdir, 'templates', self.test_template), template)
-        contents = open(template).read()
+        with open(template) as f:
+            contents = f.read()
         test_string = "#teststring"
-        open(template, 'w').write(contents + "\n%s\n" % test_string)
+        with open(template, 'w') as f:
+            f.write(contents + "\n%s\n" % test_string)
 
         p = self._gen_policy(template=template)
 
@@ -951,14 +968,16 @@ POLICYGROUPS_DIR="%s/templates"
   # Abstraction file for testing
   /%s r,
 ''' % (f)
-            open(os.path.join(abstractions_dir, f), 'w').write(contents)
+            with open(os.path.join(abstractions_dir, f), 'w') as fd:
+                fd.write(contents)
 
         for f in tunables:
             contents = '''
 # Tunable file for testing
 @{AA_TEST_%s}=foo
 ''' % (f)
-            open(os.path.join(tunables_dir, f), 'w').write(contents)
+            with open(os.path.join(tunables_dir, f), 'w') as fd:
+                fd.write(contents)
 
         return base_dir
 
@@ -1071,7 +1090,8 @@ POLICYGROUPS_DIR="%s/templates"
   #include <abstractions/kde>
   #include <abstractions/openssl>
 ''' % (self.test_policygroup)
-        open(os.path.join(self.tmpdir, 'policygroups', test_policygroup2), 'w').write(contents)
+        with open(os.path.join(self.tmpdir, 'policygroups', test_policygroup2), 'w') as f:
+            f.write(contents)
 
         groups = "%s,%s" % (self.test_policygroup, test_policygroup2)
         p = self._gen_policy(extra_args=['--policy-groups=%s' % groups])
@@ -1364,7 +1384,8 @@ POLICYGROUPS_DIR="%s/templates"
         # create a new template
         template = os.path.join(self.tmpdir, "test-invalid-template")
         shutil.copy(os.path.join(self.tmpdir, 'templates', self.test_template), template)
-        contents = open(template).read()
+        with open(template) as f:
+            contents = f.read()
         bad_pol = ""
         bad_string = "bzzzt"
         for line in contents.splitlines():
@@ -1373,7 +1394,8 @@ POLICYGROUPS_DIR="%s/templates"
             else:
                 bad_pol += line
             bad_pol += "\n"
-        open(template, 'w').write(bad_pol)
+        with open(template, 'w') as f:
+            f.write(bad_pol)
         try:
             self._gen_policy(template=template)
         except AppArmorException:
@@ -1534,7 +1556,8 @@ POLICYGROUPS_DIR="%s/templates"
   #include <abstractions/kde>
   #include <abstractions/openssl>
 ''' % (self.test_policygroup)
-        open(os.path.join(self.tmpdir, 'policygroups', test_policygroup2), 'w').write(contents)
+        with open(os.path.join(self.tmpdir, 'policygroups', test_policygroup2), 'w') as f:
+            f.write(contents)
 
         groups = "%s,%s" % (self.test_policygroup, test_policygroup2)
         m = Manifest("test_gen_manifest_policy")

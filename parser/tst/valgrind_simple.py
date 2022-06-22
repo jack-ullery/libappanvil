@@ -68,10 +68,10 @@ def create_suppressions():
 
     handle, name = tempfile.mkstemp(suffix='.suppressions', prefix='aa-parser-valgrind')
     os.close(handle)
-    handle = open(name,"w+")
-    handle.write(VALGRIND_SUPPRESSIONS)
-    handle.close()
+    with open(name, "w+") as handle:
+        handle.write(VALGRIND_SUPPRESSIONS)
     return name
+
 
 def main():
     rc = 0
