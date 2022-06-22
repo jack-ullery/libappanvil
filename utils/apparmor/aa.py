@@ -1815,7 +1815,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
                         load_include(incname, in_preamble)
 
         elif RE_PROFILE_START.search(line) or RE_PROFILE_HAT_DEF.search(line):  # Starting line of a profile/hat
-            # in_contained_hat is needed to know if we are already in a profile or not. (Simply checking if we are in a hat doesn't work,
+            # in_contained_hat is needed to know if we are already in a profile or not. Simply checking if we are in a hat doesn't work,
             # because something like "profile foo//bar" will set profile and hat at once, and later (wrongfully) expect another "}".
             # The logic is simple and resembles a "poor man's stack" (with limited/hardcoded height).
             if profile:

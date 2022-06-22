@@ -120,8 +120,8 @@ def gen_file (name, xres, leading1, qual1, rule1, perm1, target1, leading2, qual
 #
 # will conflict
 #
-# NOTE: conflict tests don't tests leading permissions or using unsafe keywords
-#      It is assumed that there are extra tests to verify 1 to 1 coorispondance
+# NOTE: conflict tests don't test leading permissions or using unsafe keywords
+#      It is assumed that there are extra tests to verify 1 to 1 correspondance
 def gen_files(name, rule1, rule2, default):
     perms = gen_list()
 
@@ -172,7 +172,7 @@ def gen_leading_perms (name, rule1, rule2):
                 gen_file(file, "PASS", 0, q, rule1, i, t, 1, q, rule2, i, t)
 
 # test for rules with leading safe or unsafe keywords.
-# check they are equivalent to their counter part,
+# check they are equivalent to their counterpart,
 # or if $invert that they properly conflict with their counterpart
 def gen_safe_perms(name, xres, invert, rule1, rule2):
     perms = gen_list()

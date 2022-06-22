@@ -680,7 +680,7 @@ class AppArmorEasyProfile:
             else: # should not ever reach this
                 raise AppArmorException("Could not determine output filename")
 
-            # Generate an absolute path, convertng any path delimiters to '.'
+            # Generate an absolute path, converting any path delimiters to '.'
             out_fn = os.path.join(dir, re.sub(r'/', '.', out_fn.lstrip('/')))
             if os.path.exists(out_fn):
                 raise AppArmorException("'%s' already exists" % out_fn)

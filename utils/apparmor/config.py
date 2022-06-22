@@ -219,7 +219,7 @@ class Config(object):
         if os.path.exists(self.input_file):
             with open_file_read(self.input_file) as f_in:
                 for line in f_in:
-                    # If its a section
+                    # If it's a section
                     if line.lstrip().startswith('['):
                         # If any options from preceding section remain write them
                         if options:
