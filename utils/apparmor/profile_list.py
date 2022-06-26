@@ -32,6 +32,7 @@ preamble_ruletypes = {
     'variable': {'rule': VariableRule,  'ruleset': VariableRuleset  },
     'boolean':  {'rule': BooleanRule,   'ruleset': BooleanRuleset   },
 }
+header_rule_write_order = ('abi', 'alias', 'inc_ie', 'variable', 'boolean')  # TODO: Dicts are ordered in Python 3.7+; use above dict's keys instead
 
 
 class ProfileList:
@@ -179,11 +180,8 @@ class ProfileList:
             raise AppArmorBug('%s not listed in ProfileList files' % filename)
 
         data = []
-        data += self.files[filename]['abi'].get_raw(depth)
-        data += self.files[filename]['alias'].get_raw(depth)
-        data += self.files[filename]['inc_ie'].get_raw(depth)
-        data += self.files[filename]['variable'].get_raw(depth)
-        data += self.files[filename]['boolean'].get_raw(depth)
+        for rule_type in header_rule_write_order:
+            data.extend(self.files[filename][rule_type].get_raw(depth))
         return data
 
     def get_clean(self, filename, depth=0):
@@ -192,11 +190,8 @@ class ProfileList:
             raise AppArmorBug('%s not listed in ProfileList files' % filename)
 
         data = []
-        data += self.files[filename]['abi'].get_clean_unsorted(depth)
-        data += self.files[filename]['alias'].get_clean_unsorted(depth)
-        data += self.files[filename]['inc_ie'].get_clean_unsorted(depth)
-        data += self.files[filename]['variable'].get_clean_unsorted(depth)
-        data += self.files[filename]['boolean'].get_clean_unsorted(depth)
+        for rule_type in header_rule_write_order:
+            data.extend(self.files[filename][rule_type].get_clean_unsorted(depth))
         return data
 
     def filename_from_profile_name(self, name):

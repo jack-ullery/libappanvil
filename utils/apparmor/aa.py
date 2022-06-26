@@ -394,7 +394,7 @@ def handle_binfmt(profile, path):
         library = get_full_path(library)  # resolve symlinks
         if not reqs_processed.get(library, False):
             if get_reqs(library):
-                reqs += get_reqs(library)
+                reqs.extend(get_reqs(library))
             reqs_processed[library] = True
 
         library_rule = FileRule(library, 'mr', None, FileRule.ALL, owner=False, log_event=True)
@@ -729,7 +729,7 @@ def build_x_functions(default, options, exec_toggle):
         if fallback_toggle:
             ret_list.append('CMD_EXEC_IX_ON')
 
-    ret_list += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
+    ret_list.extend(('CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED'))
     return ret_list
 
 def ask_addhat(hashlog):
@@ -757,17 +757,17 @@ def ask_addhat(hashlog):
 
                 while ans not in ['CMD_ADDHAT', 'CMD_USEDEFAULT', 'CMD_DENY']:
                     q = aaui.PromptQuestion()
-                    q.headers += [_('Profile'), profile]
+                    q.headers.extend((_('Profile'), profile))
 
                     if default_hat:
-                        q.headers += [_('Default Hat'), default_hat]
+                        q.headers.extend((_('Default Hat'), default_hat))
 
-                    q.headers += [_('Requested Hat'), hat]
+                    q.headers.extend((_('Requested Hat'), hat))
 
                     q.functions.append('CMD_ADDHAT')
                     if default_hat:
                         q.functions.append('CMD_USEDEFAULT')
-                    q.functions += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
+                    q.functions.extend(('CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED'))
 
                     q.default = 'CMD_DENY'
                     if aamode == 'PERMITTING':
@@ -870,14 +870,16 @@ def ask_exec(hashlog):
                         # Prompt portion starts
                         q = aaui.PromptQuestion()
 
-                        q.headers += [_('Profile'), combine_name(profile, hat)]
+                        q.headers.extend((
+                            _('Profile'), combine_name(profile, hat),
 
-                        # to_name should not exist here since, transitioning is already handled
-                        q.headers += [_('Execute'), exec_target]
-                        q.headers += [_('Severity'), severity]
+                            # to_name should not exist here since, transitioning is already handled
+                            _('Execute'), exec_target,
+                            _('Severity'), severity,
+                        ))
 
                         exec_toggle = False
-                        q.functions += build_x_functions(default, options, exec_toggle)
+                        q.functions.extend(build_x_functions(default, options, exec_toggle))
 
                         # ask user about the exec mode to use
                         ans = ''
@@ -1082,16 +1084,16 @@ def ask_the_questions(log_dict):
                     ans = ''
                     while ans not in ['CMD_ADDHAT', 'CMD_ADDSUBPROFILE', 'CMD_DENY']:
                         q = aaui.PromptQuestion()
-                        q.headers += [_('Profile'), profile]
+                        q.headers.extend((_('Profile'), profile))
 
                         if log_dict[aamode][full_profile]['is_hat']:
-                            q.headers += [_('Requested Hat'), hat]
+                            q.headers.extend((_('Requested Hat'), hat))
                             q.functions.append('CMD_ADDHAT')
                         else:
-                            q.headers += [_('Requested Subprofile'), hat]
+                            q.headers.extend((_('Requested Subprofile'), hat))
                             q.functions.append('CMD_ADDSUBPROFILE')
 
-                        q.functions += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
+                        q.functions.extend(('CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED'))
 
                         q.default = 'CMD_DENY'
 
@@ -1146,7 +1148,7 @@ def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
                         newincludes = match_includes(the_profile, ruletype, rule_obj)
                         q = aaui.PromptQuestion()
                         if newincludes:
-                            options += list(map(lambda inc: 'include <%s>' % inc, sorted(set(newincludes))))
+                            options.extend(map(lambda inc: 'include <%s>' % inc, sorted(set(newincludes))))
 
                         if ruletype == 'file' and rule_obj.path:
                             options += propose_file_rules(the_profile, rule_obj)
@@ -1158,12 +1160,12 @@ def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
                             q.options = options
                             q.selected = default_option - 1
                             q.headers = [_('Profile'), profile_name]
-                            q.headers += rule_obj.logprof_header()
+                            q.headers.extend(rule_obj.logprof_header())
 
                             # Load variables into sev_db? Not needed/used for capabilities and network rules.
                             severity = rule_obj.severity(sev_db)
                             if severity != sev_db.NOT_IMPLEMENTED:
-                                q.headers += [_('Severity'), severity]
+                                q.headers.extend((_('Severity'), severity))
 
                             q.functions = available_buttons(rule_obj)
 
@@ -1323,31 +1325,31 @@ def available_buttons(rule_obj):
     buttons = []
 
     if not rule_obj.deny:
-        buttons += ['CMD_ALLOW']
+        buttons.append('CMD_ALLOW')
 
-    buttons += ['CMD_DENY', 'CMD_IGNORE_ENTRY']
+    buttons.extend(('CMD_DENY', 'CMD_IGNORE_ENTRY'))
 
     if rule_obj.can_glob:
-        buttons += ['CMD_GLOB']
+        buttons.append('CMD_GLOB')
 
     if rule_obj.can_glob_ext:
-        buttons += ['CMD_GLOBEXT']
+        buttons.append('CMD_GLOBEXT')
 
     if rule_obj.can_edit:
-        buttons += ['CMD_NEW']
+        buttons.append('CMD_NEW')
 
     if rule_obj.audit:
-        buttons += ['CMD_AUDIT_OFF']
+        buttons.append('CMD_AUDIT_OFF')
     else:
-        buttons += ['CMD_AUDIT_NEW']
+        buttons.append('CMD_AUDIT_NEW')
 
     if rule_obj.can_owner:
         if rule_obj.owner:
-            buttons += ['CMD_USER_OFF']
+            buttons.append('CMD_USER_OFF')
         else:
-            buttons += ['CMD_USER_ON']
+            buttons.append('CMD_USER_ON')
 
-    buttons += ['CMD_ABORT', 'CMD_FINISHED']
+    buttons.extend(('CMD_ABORT', 'CMD_FINISHED'))
 
     return buttons
 
@@ -1376,10 +1378,11 @@ def ask_conflict_mode(old_profile, merge_profile):
 
         if conflictingrules.rules:
             q = aaui.PromptQuestion()
-            q.headers = [_('Path'), oldrule.path.regex]
-            q.headers += [_('Select the appropriate mode'), '']
-            options = []
-            options.append(oldrule.get_clean())
+            q.headers = [
+                _('Path'), oldrule.path.regex,
+                _('Select the appropriate mode'), '',
+            ]
+            options = [oldrule.get_clean()]
             for rule in conflictingrules.rules:
                 options.append(rule.get_clean())
             q.options = options
@@ -2109,7 +2112,7 @@ def write_piece(profile_data, depth, name, nhat):
         for hat in all_childs:
             if name == nhat and profile_data[hat].get('external', False):
                 data.append('')
-                data += list(map(lambda x: '  %s' % x, write_piece(profile_data, depth - 1, name, nhat)))
+                data.extend(map(lambda x: '  %s' % x, write_piece(profile_data, depth - 1, name, nhat)))
                 data.append('  }')
 
     return data
@@ -2136,7 +2139,7 @@ def serialize_profile(profile_data, name, options):
     else:
         prof_filename = get_profile_filename_from_profile_name(name, True)
 
-    data += active_profiles.get_clean(prof_filename, 0)
+    data.extend(active_profiles.get_clean(prof_filename, 0))
 
     #Here should be all the profiles from the files added write after global/common stuff
     for prof in sorted(active_profiles.profiles_in_file(prof_filename)):
@@ -2144,15 +2147,15 @@ def serialize_profile(profile_data, name, options):
             if original_aa[prof][prof].get('initial_comment', False):
                 comment = original_aa[prof][prof]['initial_comment']
                 comment.replace('\\n', '\n')
-                data += [comment + '\n']
-            data += write_piece(split_to_merged(original_aa), 0, prof, prof)
+                data.append(comment + '\n')
+            data.extend(write_piece(split_to_merged(original_aa), 0, prof, prof))
         else:
             if profile_data[name].get('initial_comment', False):
                 comment = profile_data[name]['initial_comment']
                 comment.replace('\\n', '\n')
-                data += [comment + '\n']
+                data.append(comment + '\n')
 
-            data += write_piece(profile_data, 0, name, name)
+            data.extend(write_piece(profile_data, 0, name, name))
 
     string += '\n'.join(data)
 
@@ -2215,7 +2218,7 @@ def include_list_recursive(profile, in_preamble=False):
         for childinc in look_at['inc_ie'].rules:
             for childinc_file in childinc.get_full_paths(profile_dir):
                 if childinc_file not in full_list:
-                    includelist += [childinc_file]
+                    includelist.append(childinc_file)
 
     return full_list
 

@@ -159,7 +159,8 @@ def aa_exec(command, opt, environ={}, verify_rules=[]):
                 raise AppArmorException("Could not find required rule: %s" % r)
 
     set_environ(environ)
-    args = ['aa-exec', '-p', policy_name, '--'] + command
+    args = ['aa-exec', '-p', policy_name, '--']
+    args.extend(command)
     rc, report = cmd(args)
     return rc, report
 

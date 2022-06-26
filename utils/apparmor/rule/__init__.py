@@ -259,17 +259,17 @@ class BaseRule(object):
         qualifier = []
 
         if self.audit:
-            qualifier += ['audit']
+            qualifier.append('audit')
 
         if self.deny:
-            qualifier += ['deny']
+            qualifier.append('deny')
         elif self.allow_keyword:
-            qualifier += ['allow']
+            qualifier.append('allow')
 
         if qualifier:
-            headers += [_('Qualifier'), ' '.join(qualifier)]
+            headers.extend((_('Qualifier'), ' '.join(qualifier)))
 
-        headers += self.logprof_header_localvars()
+        headers.extend(self.logprof_header_localvars())
 
         return headers
 

@@ -33,24 +33,22 @@ class TestLibapparmorTestMulti(AATest):
 
         expected = self._parse_libapparmor_test_multi(params)
 
+        loglines = []
         with open_file_read('%s.in' % params) as f_in:
-            loglines = f_in.readlines()
+            for line in f_in:
+                if line.strip():
+                    loglines.append(line)
 
-        loglines2 = []
-        for line in loglines:
-            if line.strip():
-                loglines2 += [line]
-
-        self.assertEqual(len(loglines2), 1, '%s.in should only contain one line!' % params)
+        self.assertEqual(len(loglines), 1, '%s.in should only contain one line!' % params)
 
         parser = ReadLog('', '', '')
-        parsed_event = parser.parse_event(loglines2[0])
+        parsed_event = parser.parse_event(loglines[0])
 
         if parsed_event and expected:
             parsed_items = dict(parsed_event.items())
 
             # check if the line passes the regex in logparser.py
-            if not parser.RE_LOG_ALL.search(loglines2[0]):
+            if not parser.RE_LOG_ALL.search(loglines[0]):
                 raise Exception("Log event doesn't match RE_LOG_ALL")
 
             for label in expected:

@@ -179,15 +179,16 @@ class ChangeProfileRule(BaseRule):
         headers = []
 
         if self.execmode:
-            headers += [_('Exec Mode'), self.execmode]
+            headers.extend((_('Exec Mode'), self.execmode))
 
         execcond_txt        = logprof_value_or_all(self.execcond,       self.all_execconds)
         targetprofiles_txt  = logprof_value_or_all(self.targetprofile,  self.all_targetprofiles)
 
-        return headers + [
+        headers.extend((
             _('Exec Condition'), execcond_txt,
             _('Target Profile'), targetprofiles_txt,
-        ]
+        ))
+        return headers
 
 class ChangeProfileRuleset(BaseRuleset):
     '''Class to handle and store a collection of change_profile rules'''
