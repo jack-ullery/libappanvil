@@ -73,13 +73,13 @@ class AAParserCachingCommon(testlib.AATestTemplate):
         self.cmd_prefix = [config.parser, '--config-file=./parser.conf', '--base', self.tmp_dir, '--skip-kernel-load']
 
         if not self.is_apparmorfs_mounted():
-            self.cmd_prefix += ['-M', './features_files/features.all']
+            self.cmd_prefix.extend(('-M', './features_files/features.all'))
 
         # Otherwise get_cache_dir() will try to create /var/cache/apparmor
         # and will fail when the test suite is run as non-root.
-        self.cmd_prefix += [
+        self.cmd_prefix.extend((
             '--cache-loc', os.path.join(self.tmp_dir, 'cache')
-        ]
+        ))
 
         # create directory for cached blobs
         # NOTE: get_cache_dir() requires cmd_prefix to be fully initialized
