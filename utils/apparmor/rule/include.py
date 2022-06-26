@@ -161,6 +161,6 @@ class IncludeRuleset(BaseRuleset):
 
         paths = []
         for rule_obj in self.rules:
-            paths += rule_obj.get_full_paths(profile_dir)
+            paths.extend(rule_obj.get_full_paths(profile_dir))
 
         return paths

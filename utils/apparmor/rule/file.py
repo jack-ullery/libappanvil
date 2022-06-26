@@ -362,7 +362,7 @@ class FileRule(BaseRule):
         headers = []
 
         path = logprof_value_or_all(self.path, self.all_paths)
-        headers += [_('Path'), path]
+        headers.extend((_('Path'), path))
 
         old_mode = ''
         if self.original_perms:
@@ -379,7 +379,7 @@ class FileRule(BaseRule):
                 old_mode = ''
 
         if old_mode:
-            headers += [_('Old Mode'), old_mode]
+            headers.extend((_('Old Mode'), old_mode))
 
         perms = logprof_value_or_all(self.perms, self.all_perms)
         if self.perms or self.exec_perms:
@@ -391,7 +391,7 @@ class FileRule(BaseRule):
         if not self.all_targets:
             perms = "%s -> %s" % (perms, self.target.regex)
 
-        headers += [_('New Mode'), perms]
+        headers.extend((_('New Mode'), perms))
 
         # TODO: different output for link rules?
 

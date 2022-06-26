@@ -24,8 +24,8 @@ from apparmor.logparser import ReadLog
 from apparmor.translations import init_translation
 _ = init_translation()
 
-exp = namedtuple('exp', ['audit', 'allow_keyword', 'deny', 'comment',
-        'access', 'all_access', 'signal', 'all_signals', 'peer', 'all_peers'])
+exp = namedtuple('exp', ('audit', 'allow_keyword', 'deny', 'comment',
+        'access', 'all_access', 'signal', 'all_signals', 'peer', 'all_peers'))
 
 # --- tests for single SignalRule --- #
 

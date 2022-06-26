@@ -200,9 +200,9 @@ class ProfileStorage:
 
         for ruletype in write_order:
             if write_functions.get(ruletype):
-                data += write_functions[ruletype](self.data, depth)
+                data.extend(write_functions[ruletype](self.data, depth))
             else:
-                data += self.data[ruletype].get_clean(depth)
+                data.extend(self.data[ruletype].get_clean(depth))
 
         return data
 
@@ -309,7 +309,7 @@ def write_mount_rules(prof_data, depth, allow):
 
 def write_mount(prof_data, depth):
     data = write_mount_rules(prof_data, depth, 'deny')
-    data += write_mount_rules(prof_data, depth, 'allow')
+    data.extend(write_mount_rules(prof_data, depth, 'allow'))
     return data
 
 def write_pivot_root_rules(prof_data, depth, allow):
@@ -327,12 +327,12 @@ def write_pivot_root_rules(prof_data, depth, allow):
 
 def write_pivot_root(prof_data, depth):
     data = write_pivot_root_rules(prof_data, depth, 'deny')
-    data += write_pivot_root_rules(prof_data, depth, 'allow')
+    data.extend(write_pivot_root_rules(prof_data, depth, 'allow'))
     return data
 
 def write_unix(prof_data, depth):
     data = write_unix_rules(prof_data, depth, 'deny')
-    data += write_unix_rules(prof_data, depth, 'allow')
+    data.extend(write_unix_rules(prof_data, depth, 'allow'))
     return data
 
 def write_unix_rules(prof_data, depth, allow):
