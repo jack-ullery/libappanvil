@@ -19,7 +19,7 @@ from apparmor.common import convert_regexp, AppArmorBug, AppArmorException
 from apparmor.aare import AARE, convert_expression_to_aare
 
 class TestConvert_regexp(AATest):
-    tests = [
+    tests = (
         ('/foo',                '^/foo$'),
         ('/{foo,bar}',          '^/(foo|bar)$'),
         # ('/\{foo,bar}',         '^/\{foo,bar}$'), # XXX gets converted to ^/\(foo|bar)$
@@ -31,13 +31,13 @@ class TestConvert_regexp(AATest):
         ('/fo?',                '^/fo[^/\000]$'),
         ('/foo/*',              '^/foo/(((?<=/)[^/\000]+)|((?<!/)[^/\000]*))$'),
         ('/foo/**.bar',         '^/foo/(((?<=/)[^\000]+)|((?<!/)[^\000]*))\.bar$'),
-    ]
+    )
 
     def _run_test(self, params, expected):
         self.assertEqual(convert_regexp(params), expected)
 
 class Test_convert_expression_to_aare(AATest):
-    tests = [
+    tests = (
         # note that \ always needs to be escaped in python, so \\ is actually just \ in the string
         ('/foo',        '/foo'                  ),
         ('/foo?',       '/foo\\?'               ),
@@ -49,88 +49,88 @@ class Test_convert_expression_to_aare(AATest):
         ('/foo\\',      '/foo\\\\'              ),
         ('/foo"',       '/foo\\"'               ),
         ('}]"\\[{',     '\\}\\]\\"\\\\\\[\\{'   ),
-    ]
+    )
 
     def _run_test(self, params, expected):
         self.assertEqual(convert_expression_to_aare(params), expected)
 
 class TestConvert_regexpAndAAREMatch(AATest):
-    tests = [
+    tests = (
         #  aare                  path to check                         match expected?
-        (['/foo/**/bar/',       '/foo/user/tools/bar/'              ], True),
-        (['/foo/**/bar/',       '/foo/apparmor/bar/'                ], True),
-        (['/foo/**/bar/',       '/foo/apparmor/bar'                 ], False),
-        (['/foo/**/bar/',       '/a/foo/apparmor/bar/'              ], False),
-        (['/foo/**/bar/',       '/foo/apparmor/bar/baz'             ], False),
+        (('/foo/**/bar/',       '/foo/user/tools/bar/'              ), True),
+        (('/foo/**/bar/',       '/foo/apparmor/bar/'                ), True),
+        (('/foo/**/bar/',       '/foo/apparmor/bar'                 ), False),
+        (('/foo/**/bar/',       '/a/foo/apparmor/bar/'              ), False),
+        (('/foo/**/bar/',       '/foo/apparmor/bar/baz'             ), False),
 
-        (['/foo/*/bar/',        '/foo/apparmor/bar/'                ], True),
-        (['/foo/*/bar/',        '/foo/apparmor/tools/bar/'          ], False),
-        (['/foo/*/bar/',        '/foo/apparmor/bar'                 ], False),
+        (('/foo/*/bar/',        '/foo/apparmor/bar/'                ), True),
+        (('/foo/*/bar/',        '/foo/apparmor/tools/bar/'          ), False),
+        (('/foo/*/bar/',        '/foo/apparmor/bar'                 ), False),
 
-        (['/foo/user/ba?/',     '/foo/user/bar/'                    ], True),
-        (['/foo/user/ba?/',     '/foo/user/bar/apparmor/'           ], False),
-        (['/foo/user/ba?/',     '/foo/user/ba/'                     ], False),
-        (['/foo/user/ba?/',     '/foo/user/ba//'                    ], False),
+        (('/foo/user/ba?/',     '/foo/user/bar/'                    ), True),
+        (('/foo/user/ba?/',     '/foo/user/bar/apparmor/'           ), False),
+        (('/foo/user/ba?/',     '/foo/user/ba/'                     ), False),
+        (('/foo/user/ba?/',     '/foo/user/ba//'                    ), False),
 
-        (['/foo/user/bar/**',   '/foo/user/bar/apparmor'            ], True),
-        (['/foo/user/bar/**',   '/foo/user/bar/apparmor/tools'      ], True),
-        (['/foo/user/bar/**',   '/foo/user/bar/'                    ], False),
+        (('/foo/user/bar/**',   '/foo/user/bar/apparmor'            ), True),
+        (('/foo/user/bar/**',   '/foo/user/bar/apparmor/tools'      ), True),
+        (('/foo/user/bar/**',   '/foo/user/bar/'                    ), False),
 
-        (['/foo/user/bar/*',    '/foo/user/bar/apparmor'            ], True),
-        (['/foo/user/bar/*',    '/foo/user/bar/apparmor/tools'      ], False),
-        (['/foo/user/bar/*',    '/foo/user/bar/'                    ], False),
-        (['/foo/user/bar/*',    '/foo/user/bar/apparmor/'           ], False),
+        (('/foo/user/bar/*',    '/foo/user/bar/apparmor'            ), True),
+        (('/foo/user/bar/*',    '/foo/user/bar/apparmor/tools'      ), False),
+        (('/foo/user/bar/*',    '/foo/user/bar/'                    ), False),
+        (('/foo/user/bar/*',    '/foo/user/bar/apparmor/'           ), False),
 
-        (['/foo/**.jpg',        '/foo/bar/baz/foobar.jpg'           ], True),
-        (['/foo/**.jpg',        '/foo/bar/foobar.jpg'               ], True),
-        (['/foo/**.jpg',        '/foo/bar/*.jpg'                    ], True),
-        (['/foo/**.jpg',        '/foo/bar.jpg'                      ], True),
-        (['/foo/**.jpg',        '/foo/**.jpg'                       ], True),
-        (['/foo/**.jpg',        '/foo/*.jpg'                        ], True),
-        (['/foo/**.jpg',        '/foo/barjpg'                       ], False),
-        (['/foo/**.jpg',        '/foo/.*'                           ], False),
-        (['/foo/**.jpg',        '/bar.jpg'                          ], False),
-        (['/foo/**.jpg',        '/**.jpg'                           ], False),
-        (['/foo/**.jpg',        '/*.jpg'                            ], False),
-        (['/foo/**.jpg',        '/foo/*.bar'                        ], False),
+        (('/foo/**.jpg',        '/foo/bar/baz/foobar.jpg'           ), True),
+        (('/foo/**.jpg',        '/foo/bar/foobar.jpg'               ), True),
+        (('/foo/**.jpg',        '/foo/bar/*.jpg'                    ), True),
+        (('/foo/**.jpg',        '/foo/bar.jpg'                      ), True),
+        (('/foo/**.jpg',        '/foo/**.jpg'                       ), True),
+        (('/foo/**.jpg',        '/foo/*.jpg'                        ), True),
+        (('/foo/**.jpg',        '/foo/barjpg'                       ), False),
+        (('/foo/**.jpg',        '/foo/.*'                           ), False),
+        (('/foo/**.jpg',        '/bar.jpg'                          ), False),
+        (('/foo/**.jpg',        '/**.jpg'                           ), False),
+        (('/foo/**.jpg',        '/*.jpg'                            ), False),
+        (('/foo/**.jpg',        '/foo/*.bar'                        ), False),
 
-        (['/foo/{**,}',         '/foo/'                             ], True),
-        (['/foo/{**,}',         '/foo/bar'                          ], True),
-        (['/foo/{**,}',         '/foo/bar/'                         ], True),
-        (['/foo/{**,}',         '/foo/bar/baz'                      ], True),
-        (['/foo/{**,}',         '/foo/bar/baz/'                     ], True),
-        (['/foo/{**,}',         '/bar/'                             ], False),
+        (('/foo/{**,}',         '/foo/'                             ), True),
+        (('/foo/{**,}',         '/foo/bar'                          ), True),
+        (('/foo/{**,}',         '/foo/bar/'                         ), True),
+        (('/foo/{**,}',         '/foo/bar/baz'                      ), True),
+        (('/foo/{**,}',         '/foo/bar/baz/'                     ), True),
+        (('/foo/{**,}',         '/bar/'                             ), False),
 
-        (['/foo/{,**}',         '/foo/'                             ], True),
-        (['/foo/{,**}',         '/foo/bar'                          ], True),
-        (['/foo/{,**}',         '/foo/bar/'                         ], True),
-        (['/foo/{,**}',         '/foo/bar/baz'                      ], True),
-        (['/foo/{,**}',         '/foo/bar/baz/'                     ], True),
-        (['/foo/{,**}',         '/bar/'                             ], False),
+        (('/foo/{,**}',         '/foo/'                             ), True),
+        (('/foo/{,**}',         '/foo/bar'                          ), True),
+        (('/foo/{,**}',         '/foo/bar/'                         ), True),
+        (('/foo/{,**}',         '/foo/bar/baz'                      ), True),
+        (('/foo/{,**}',         '/foo/bar/baz/'                     ), True),
+        (('/foo/{,**}',         '/bar/'                             ), False),
 
-        (['/foo/a[bcd]e',       '/foo/abe'                          ], True),
-        (['/foo/a[bcd]e',       '/foo/abend'                        ], False),
-        (['/foo/a[bcd]e',       '/foo/axe'                          ], False),
+        (('/foo/a[bcd]e',       '/foo/abe'                          ), True),
+        (('/foo/a[bcd]e',       '/foo/abend'                        ), False),
+        (('/foo/a[bcd]e',       '/foo/axe'                          ), False),
 
-        (['/foo/a[b-d]e',       '/foo/abe'                          ], True),
-        (['/foo/a[b-d]e',       '/foo/ace'                          ], True),
-        (['/foo/a[b-d]e',       '/foo/abend'                        ], False),
-        (['/foo/a[b-d]e',       '/foo/axe'                          ], False),
+        (('/foo/a[b-d]e',       '/foo/abe'                          ), True),
+        (('/foo/a[b-d]e',       '/foo/ace'                          ), True),
+        (('/foo/a[b-d]e',       '/foo/abend'                        ), False),
+        (('/foo/a[b-d]e',       '/foo/axe'                          ), False),
 
-        (['/foo/a[^bcd]e',      '/foo/abe'                          ], False),
-        (['/foo/a[^bcd]e',      '/foo/abend'                        ], False),
-        (['/foo/a[^bcd]e',      '/foo/axe'                          ], True),
+        (('/foo/a[^bcd]e',      '/foo/abe'                          ), False),
+        (('/foo/a[^bcd]e',      '/foo/abend'                        ), False),
+        (('/foo/a[^bcd]e',      '/foo/axe'                          ), True),
 
-        (['/foo/{foo,bar,user,other}/bar/',                         '/foo/user/bar/'                ], True),
-        (['/foo/{foo,bar,user,other}/bar/',                         '/foo/bar/bar/'                 ], True),
-        (['/foo/{foo,bar,user,other}/bar/',                         '/foo/wrong/bar/'               ], False),
+        (('/foo/{foo,bar,user,other}/bar/',                         '/foo/user/bar/'                ), True),
+        (('/foo/{foo,bar,user,other}/bar/',                         '/foo/bar/bar/'                 ), True),
+        (('/foo/{foo,bar,user,other}/bar/',                         '/foo/wrong/bar/'               ), False),
 
-        (['/foo/{foo,bar,user,other}/test,ca}se/{aa,sd,nd}/bar/',   '/foo/user/test,ca}se/aa/bar/'  ], True),
-        (['/foo/{foo,bar,user,other}/test,ca}se/{aa,sd,nd}/bar/',   '/foo/bar/test,ca}se/sd/bar/'   ], True),
-        (['/foo/{foo,bar,user,other}/test,ca}se/{aa,sd,nd}/bar/',   '/foo/wrong/user/bar/'          ], False),
-        (['/foo/{foo,bar,user,other}/test,ca}se/{aa,sd,nd}/bar/',   '/foo/user/wrong/bar/'          ], False),
-        (['/foo/{foo,bar,user,other}/test,ca}se/{aa,sd,nd}/bar/',   '/foo/wrong/aa/bar/'            ], False),
-    ]
+        (('/foo/{foo,bar,user,other}/test,ca}se/{aa,sd,nd}/bar/',   '/foo/user/test,ca}se/aa/bar/'  ), True),
+        (('/foo/{foo,bar,user,other}/test,ca}se/{aa,sd,nd}/bar/',   '/foo/bar/test,ca}se/sd/bar/'   ), True),
+        (('/foo/{foo,bar,user,other}/test,ca}se/{aa,sd,nd}/bar/',   '/foo/wrong/user/bar/'          ), False),
+        (('/foo/{foo,bar,user,other}/test,ca}se/{aa,sd,nd}/bar/',   '/foo/user/wrong/bar/'          ), False),
+        (('/foo/{foo,bar,user,other}/test,ca}se/{aa,sd,nd}/bar/',   '/foo/wrong/aa/bar/'            ), False),
+    )
 
     def _run_test(self, params, expected):
         regex, path = params
@@ -167,18 +167,18 @@ class TestConvert_regexpAndAAREMatch(AATest):
             aare_obj.match(set())
 
 class TestAAREMatchFromLog(AATest):
-    tests = [
+    tests = (
         #  AARE                 log event                  match expected?
-        (['/foo/bar',           '/foo/bar'              ], True),
-        (['/foo/*',             '/foo/bar'              ], True),
-        (['/**',                '/foo/bar'              ], True),
-        (['/foo/*',             '/bar/foo'              ], False),
-        (['/foo/*',             '/foo/"*'               ], True),
-        (['/foo/bar',           '/foo/*'                ], False),
-        (['/foo/?',             '/foo/('                ], True),
-        (['/foo/{bar,baz}',     '/foo/bar'              ], True),
-        (['/foo/{bar,baz}',     '/foo/bars'             ], False),
-    ]
+        (('/foo/bar',           '/foo/bar'              ), True),
+        (('/foo/*',             '/foo/bar'              ), True),
+        (('/**',                '/foo/bar'              ), True),
+        (('/foo/*',             '/bar/foo'              ), False),
+        (('/foo/*',             '/foo/"*'               ), True),
+        (('/foo/bar',           '/foo/*'                ), False),
+        (('/foo/?',             '/foo/('                ), True),
+        (('/foo/{bar,baz}',     '/foo/bar'              ), True),
+        (('/foo/{bar,baz}',     '/foo/bars'             ), False),
+    )
 
     def _run_test(self, params, expected):
         regex, log_event = params
@@ -187,12 +187,12 @@ class TestAAREMatchFromLog(AATest):
         self.assertEqual(aare_obj_1.match(aare_obj_2), expected)
 
 class TestAAREIsEqual(AATest):
-    tests = [
+    tests = (
         # regex         is path?    check for       expected
-        (['/foo',       True,       '/foo'      ],  True ),
-        (['@{foo}',     True,       '@{foo}'    ],  True ),
-        (['/**',        True,       '/foo'      ],  False),
-    ]
+        (('/foo',       True,       '/foo'      ),  True ),
+        (('@{foo}',     True,       '@{foo}'    ),  True ),
+        (('/**',        True,       '/foo'      ),  False),
+    )
 
     def _run_test(self, params, expected):
         regex, is_path, check_for = params
@@ -207,12 +207,12 @@ class TestAAREIsEqual(AATest):
             aare_obj.is_equal(42)
 
 class TestAAREIsPath(AATest):
-    tests = [
+    tests = (
         # regex         is path?    match for       expected
-        (['/foo*',      True,       '/foobar'   ],  True ),
-        (['@{PROC}/',   True,       '/foobar'   ],  False),
-        (['foo*',       False,      'foobar'    ],  True ),
-    ]
+        (('/foo*',      True,       '/foobar'   ),  True ),
+        (('@{PROC}/',   True,       '/foobar'   ),  False),
+        (('foo*',       False,      'foobar'    ),  True ),
+    )
 
     def _run_test(self, params, expected):
         regex, is_path, check_for = params
@@ -229,13 +229,13 @@ class TestAARERepr(AATest):
         self.assertEqual(str(obj), "AARE('/foo')")
 
 class TestAAREDeepcopy(AATest):
-    tests = [
+    tests = (
         # regex         is path?    log event     expected (dummy value)
         (AARE('/foo',   False)                  , True),
         (AARE('/foo',   False,      True)       , True),
         (AARE('/foo',   True)                   , True),
         (AARE('/foo',   True,       True)       , True),
-    ]
+    )
 
     def _run_test(self, params, expected):
         dup = deepcopy(params)
@@ -248,7 +248,7 @@ class TestAAREDeepcopy(AATest):
         self.assertEqual(params.orig_regex, dup.orig_regex)
 
 class TestAAREglobPath(AATest):
-    tests = [
+    tests = (
         # _run_test() will also run each test with '/' appended
         # regex                     expected AARE.regex
         ('/foo/bar/baz**',          '/foo/bar/**'),
@@ -296,8 +296,7 @@ class TestAAREglobPath(AATest):
         ('/usr/foo/*/*',            '/usr/foo/**',),
         ('/usr/foo/*/**',           '/usr/foo/**',),
         ('/**',                     '/**',),
-
-    ]
+    )
 
     def _run_test(self, params, expected):
         # test for files
@@ -311,7 +310,7 @@ class TestAAREglobPath(AATest):
         self.assertEqual(expected + '/', newpath.regex)
 
 class TestAAREglobPathWithExt(AATest):
-    tests = [
+    tests = (
         # _run_test() will also run each test with '/' appended
         # regex                     expected AARE.regex
 
@@ -403,9 +402,7 @@ class TestAAREglobPathWithExt(AATest):
         ('/usr/bin/*foo*.baz',          '/usr/bin/*.baz'),
         ('/usr/foo/*/*.baz',            '/usr/foo/**.baz'),
         ('/usr/foo/*/**.baz',           '/usr/foo/**.baz'),
-
-
-    ]
+    )
 
     def _run_test(self, params, expected):
         # test for files

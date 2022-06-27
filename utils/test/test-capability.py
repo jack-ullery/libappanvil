@@ -426,13 +426,13 @@ class CapabilityCoveredTest(AATest):
         self.assertTrue(self._is_covered(obj2, 'capability ptrace,'))
 
 class CapabiliySeverityTest(AATest):
-    tests = [
+    tests = (
         ('fsetid',                      9),
         ('dac_read_search',             7),
         (['fsetid', 'dac_read_search'], 9),
         (CapabilityRule.ALL,            10),
         ('foo',                         'unknown'),
-    ]
+    )
     def _run_test(self, params, expected):
         sev_db = severity.Severity('../severity.db', 'unknown')
         obj = CapabilityRule(params)
@@ -440,7 +440,7 @@ class CapabiliySeverityTest(AATest):
         self.assertEqual(rank, expected)
 
 class CapabilityLogprofHeaderTest(AATest):
-    tests = [
+    tests = (
         ('capability,',                         [                               _('Capability'), _('ALL'),         ]),
         ('capability chown,',                   [                               _('Capability'), 'chown',          ]),
         ('capability chown fsetid,',            [                               _('Capability'), 'chown fsetid',   ]),
@@ -448,7 +448,7 @@ class CapabilityLogprofHeaderTest(AATest):
         ('deny capability chown,',              [_('Qualifier'), 'deny',        _('Capability'), 'chown',          ]),
         ('allow capability chown fsetid,',      [_('Qualifier'), 'allow',       _('Capability'), 'chown fsetid',   ]),
         ('audit deny capability,',              [_('Qualifier'), 'audit deny',  _('Capability'), _('ALL'),         ]),
-    ]
+    )
 
     def _run_test(self, params, expected):
         obj = CapabilityRule.parse(params)

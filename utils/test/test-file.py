@@ -25,8 +25,8 @@ from apparmor.logparser import ReadLog
 from apparmor.translations import init_translation
 _ = init_translation()
 
-exp = namedtuple('exp', ['audit', 'allow_keyword', 'deny', 'comment',
-        'path', 'all_paths', 'perms', 'all_perms', 'exec_perms', 'target', 'all_targets', 'owner', 'file_keyword', 'leading_perms'])
+exp = namedtuple('exp', ('audit', 'allow_keyword', 'deny', 'comment',
+        'path', 'all_paths', 'perms', 'all_perms', 'exec_perms', 'target', 'all_targets', 'owner', 'file_keyword', 'leading_perms'))
 
 # --- tests for single FileRule --- #
 
@@ -57,7 +57,7 @@ class FileTest(AATest):
             self.assertEqual(obj, expected)
 
 class FileTestParse(FileTest):
-    tests = [
+    tests = (
         # FileRule object                             audit  allow  deny   comment    path              all_paths   perms           all?    exec_perms  target      all?    owner   file keyword    leading perms
 
         # bare file rules
@@ -96,7 +96,7 @@ class FileTestParse(FileTest):
         # link rules
         ('link /foo -> /bar,'                   , exp(False, False, False, '',        '/foo',           False,      {'link'},       False,  None,       '/bar',     False,  False,  False,          True        )),
         ('link subset /foo -> /bar,'            , exp(False, False, False, '',        '/foo',           False,      {'link', 'subset'}, False, None,    '/bar',     False,  False,  False,          True        )),
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(FileRule.match(rawrule))
@@ -105,7 +105,7 @@ class FileTestParse(FileTest):
         self._compare_obj(obj, expected)
 
 class FileTestParseInvalid(FileTest):
-    tests = [
+    tests = (
         ('/foo x,'                      , AppArmorException),  # should be *x
         ('/foo raw,'                    , AppArmorException),  # r and a conflict
         ('deny /foo ix,'                , AppArmorException),  # endy only allows x, but not *x
@@ -117,7 +117,7 @@ class FileTestParseInvalid(FileTest):
         ('/foo PxUx,'                   , AppArmorException),  # exec mode conflict
         ('/foo PUxPix,'                 , AppArmorException),  # exec mode conflict
         ('/foo Pi,'                     , AppArmorException),  # missing 'x'
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(FileRule.match(rawrule))  # the above invalid rules still match the main regex!
@@ -125,7 +125,7 @@ class FileTestParseInvalid(FileTest):
             FileRule.parse(rawrule)
 
 class FileTestNonMatch(AATest):
-    tests = [
+    tests = (
         ('file /foo,'       , False ),
         ('file rw,'         , False ),
         ('file -> bar,'     , False ),
@@ -136,7 +136,7 @@ class FileTestNonMatch(AATest):
         ('link -> /bar,'    , False ),  # missing path
         ('/foo -> bar link,', False ),  # link has to be leading keyword
         ('link,'            , False ),  # link isn't available as bare keyword
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertFalse(FileRule.match(rawrule))
@@ -187,7 +187,7 @@ class FileTestParseFromLog(FileTest):
 # TODO: add logparser example for link event
 
 class FileFromInit(FileTest):
-    tests = [
+    tests = (
 
         #FileRule# path,            perms,  exec_perms, target,         owner,  file_keyword,   leading_perms
         (FileRule(  '/foo',         'rw',   None,       FileRule.ALL,   False,  False,          False,          audit=True,     deny=True   ),
@@ -204,13 +204,13 @@ class FileFromInit(FileTest):
                     #exp#   audit   allow   deny    comment     path            all_paths   perms           all?    exec_perms  target      all?    owner   file keyword    leading perms
                     exp(    True,   False,  True,   '',         '/foo',         False,      {'link', 'subset'}, False,  None,   '/bar',     False,  False,  False,          True       )),
 
-    ]
+    )
 
     def _run_test(self, obj, expected):
         self._compare_obj(obj, expected)
 
 class InvalidFileInit(AATest):
-    tests = [
+    tests = (
         #FileRule# path,            perms,  exec_perms, target,         owner,  file_keyword,   leading_perms
 
         # empty fields
@@ -263,11 +263,11 @@ class InvalidFileInit(AATest):
         (       (  '/foo',          {'subset'}, None,   '/bar',         False,  False,          False,  ), AppArmorBug),        # subset without link
         (       (  '/foo',          {'link'},   'ix',   '/bar',         False,  False,          False,  ), AppArmorBug),        # link rule with exec perms
         (       (  '/foo',  {'link', 'subset'}, 'ix',   '/bar',         False,  False,          False,  ), AppArmorBug),        # link subset rule with exec perms
-    ]
+    )
 
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
-            FileRule(params[0], params[1], params[2], params[3], params[4], params[5], params[6])
+            FileRule(*params)
 
     def test_missing_params_1(self):
         with self.assertRaises(TypeError):
@@ -362,7 +362,7 @@ class FileGlobTest(AATest):
 
     # These tests are meant to ensure AARE integration in FileRule works as expected.
     # test-aare.py has more comprehensive globbing tests.
-    tests = [
+    tests = (
         # rule               can glob   can glob_ext    globbed rule        globbed_ext rule
         ('/foo/bar r,',     (True,      True,           '/foo/* r,',        '/foo/bar r,')),
         ('/foo/* r,',       (True,      True,           '/** r,',           '/foo/* r,')),
@@ -370,7 +370,7 @@ class FileGlobTest(AATest):
         ('/foo/*.xy r,',    (True,      True,           '/foo/* r,',        '/**.xy r,')),
         ('file,',           (False,     False,          'file,',            'file,')),  # bare 'file,' rules can't be globbed
         ('link /a/b -> /c,', (True,     True,           'link /a/* -> /c,', 'link /a/b -> /c,')),
-    ]
+    )
 
 class WriteFileTest(AATest):
     def _run_test(self, rawrule, expected):
@@ -382,7 +382,7 @@ class WriteFileTest(AATest):
        self.assertEqual(expected.strip(), clean, 'unexpected clean rule')
        self.assertEqual(rawrule.strip(), raw, 'unexpected raw rule')
 
-    tests = [
+    tests = (
         #  raw rule                                                           clean rule
         ('file,'                                                            , 'file,'),
         ('              file        ,  # foo        '                       , 'file, # foo'),
@@ -417,7 +417,7 @@ class WriteFileTest(AATest):
         ('  link    /foo    ->  /bar,'                                      , 'link /foo -> /bar,'),
         ('  audit deny owner link subset /foo -> /bar,'                     , 'audit deny owner link subset /foo -> /bar,'),
         ('                   link subset /foo -> /bar,'                     , 'link subset /foo -> /bar,')
-  ]
+    )
 
     def test_write_manually_1(self):
        #FileRule#      path,           perms,  exec_perms, target,         owner,  file_keyword,   leading_perms
@@ -458,212 +458,212 @@ class FileCoveredTest(AATest):
 class FileCoveredTest_01(FileCoveredTest):
     rule = 'file /foo r,'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        ('file /foo r,'                                 , [ True    , True          , True      , True      ]),
-        ('file /foo r ,'                                , [ True    , False         , True      , True      ]),
-        ('allow file /foo r,'                           , [ True    , False         , True      , True      ]),
-        ('allow /foo r, # comment'                      , [ True    , False         , True      , True      ]),
-        ('allow owner /foo r,'                          , [ False   , False         , True      , True      ]),
-        ('/foo r -> bar,'                               , [ False   , False         , True      , True      ]),
-        ('file r /foo,'                                 , [ True    , False         , True      , True      ]),
-        ('allow file r /foo,'                           , [ True    , False         , True      , True      ]),
-        ('allow r /foo, # comment'                      , [ True    , False         , True      , True      ]),
-        ('allow owner r /foo,'                          , [ False   , False         , True      , True      ]),
-        ('r /foo -> bar,'                               , [ False   , False         , True      , True      ]),
-        ('file,'                                        , [ False   , False         , False     , False     ]),
-        ('file /foo w,'                                 , [ False   , False         , False     , False     ]),
-        ('file /foo rw,'                                , [ False   , False         , False     , False     ]),
-        ('file /bar r,'                                 , [ False   , False         , False     , False     ]),
-        ('audit /foo r,'                                , [ False   , False         , False     , False     ]),
-        ('audit file,'                                  , [ False   , False         , False     , False     ]),
-        ('audit deny /foo r,'                           , [ False   , False         , False     , False     ]),
-        ('deny file /foo r,'                            , [ False   , False         , False     , False     ]),
-        ('/foo rPx,'                                    , [ False   , False         , False     , False     ]),
-        ('/foo Pxr,'                                    , [ False   , False         , False     , False     ]),
-        ('/foo Px,'                                     , [ False   , False         , False     , False     ]),
-        ('/foo ix,'                                     , [ False   , False         , False     , False     ]),
-        ('/foo ix -> bar,'                              , [ False   , False         , False     , False     ]),
-        ('/foo rPx -> bar,'                             , [ False   , False         , False     , False     ]),
-    ]
+        ('file /foo r,'                                 , ( True    , True          , True      , True      )),
+        ('file /foo r ,'                                , ( True    , False         , True      , True      )),
+        ('allow file /foo r,'                           , ( True    , False         , True      , True      )),
+        ('allow /foo r, # comment'                      , ( True    , False         , True      , True      )),
+        ('allow owner /foo r,'                          , ( False   , False         , True      , True      )),
+        ('/foo r -> bar,'                               , ( False   , False         , True      , True      )),
+        ('file r /foo,'                                 , ( True    , False         , True      , True      )),
+        ('allow file r /foo,'                           , ( True    , False         , True      , True      )),
+        ('allow r /foo, # comment'                      , ( True    , False         , True      , True      )),
+        ('allow owner r /foo,'                          , ( False   , False         , True      , True      )),
+        ('r /foo -> bar,'                               , ( False   , False         , True      , True      )),
+        ('file,'                                        , ( False   , False         , False     , False     )),
+        ('file /foo w,'                                 , ( False   , False         , False     , False     )),
+        ('file /foo rw,'                                , ( False   , False         , False     , False     )),
+        ('file /bar r,'                                 , ( False   , False         , False     , False     )),
+        ('audit /foo r,'                                , ( False   , False         , False     , False     )),
+        ('audit file,'                                  , ( False   , False         , False     , False     )),
+        ('audit deny /foo r,'                           , ( False   , False         , False     , False     )),
+        ('deny file /foo r,'                            , ( False   , False         , False     , False     )),
+        ('/foo rPx,'                                    , ( False   , False         , False     , False     )),
+        ('/foo Pxr,'                                    , ( False   , False         , False     , False     )),
+        ('/foo Px,'                                     , ( False   , False         , False     , False     )),
+        ('/foo ix,'                                     , ( False   , False         , False     , False     )),
+        ('/foo ix -> bar,'                              , ( False   , False         , False     , False     )),
+        ('/foo rPx -> bar,'                             , ( False   , False         , False     , False     )),
+    )
 
 class FileCoveredTest_02(FileCoveredTest):
     rule = 'audit /foo r,'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        ('file /foo r,'                                 , [ False   , False         , True      , False     ]),
-        ('allow file /foo r,'                           , [ False   , False         , True      , False     ]),
-        ('allow /foo r, # comment'                      , [ False   , False         , True      , False     ]),
-        ('allow owner /foo r,'                          , [ False   , False         , True      , False     ]),
-        ('/foo r -> bar,'                               , [ False   , False         , True      , False     ]),
-        ('file r /foo,'                                 , [ False   , False         , True      , False     ]),
-        ('allow file r /foo,'                           , [ False   , False         , True      , False     ]),
-        ('allow r /foo, # comment'                      , [ False   , False         , True      , False     ]),
-        ('allow owner r /foo,'                          , [ False   , False         , True      , False     ]),
-        ('r /foo -> bar,'                               , [ False   , False         , True      , False     ]), # XXX exact
-        ('file,'                                        , [ False   , False         , False     , False     ]),
-        ('file /foo w,'                                 , [ False   , False         , False     , False     ]),
-        ('file /foo rw,'                                , [ False   , False         , False     , False     ]),
-        ('file /bar r,'                                 , [ False   , False         , False     , False     ]),
-        ('audit /foo r,'                                , [ True    , True          , True      , True      ]),
-        ('audit file,'                                  , [ False   , False         , False     , False     ]),
-        ('audit deny /foo r,'                           , [ False   , False         , False     , False     ]),
-        ('deny file /foo r,'                            , [ False   , False         , False     , False     ]),
-        ('/foo rPx,'                                    , [ False   , False         , False     , False     ]),
-        ('/foo Pxr,'                                    , [ False   , False         , False     , False     ]),
-        ('/foo Px,'                                     , [ False   , False         , False     , False     ]),
-        ('/foo ix,'                                     , [ False   , False         , False     , False     ]),
-        ('/foo ix -> bar,'                              , [ False   , False         , False     , False     ]),
-        ('/foo rPx -> bar,'                             , [ False   , False         , False     , False     ]),
-    ]
+        ('file /foo r,'                                 , ( False   , False         , True      , False     )),
+        ('allow file /foo r,'                           , ( False   , False         , True      , False     )),
+        ('allow /foo r, # comment'                      , ( False   , False         , True      , False     )),
+        ('allow owner /foo r,'                          , ( False   , False         , True      , False     )),
+        ('/foo r -> bar,'                               , ( False   , False         , True      , False     )),
+        ('file r /foo,'                                 , ( False   , False         , True      , False     )),
+        ('allow file r /foo,'                           , ( False   , False         , True      , False     )),
+        ('allow r /foo, # comment'                      , ( False   , False         , True      , False     )),
+        ('allow owner r /foo,'                          , ( False   , False         , True      , False     )),
+        ('r /foo -> bar,'                               , ( False   , False         , True      , False     )), # XXX exact
+        ('file,'                                        , ( False   , False         , False     , False     )),
+        ('file /foo w,'                                 , ( False   , False         , False     , False     )),
+        ('file /foo rw,'                                , ( False   , False         , False     , False     )),
+        ('file /bar r,'                                 , ( False   , False         , False     , False     )),
+        ('audit /foo r,'                                , ( True    , True          , True      , True      )),
+        ('audit file,'                                  , ( False   , False         , False     , False     )),
+        ('audit deny /foo r,'                           , ( False   , False         , False     , False     )),
+        ('deny file /foo r,'                            , ( False   , False         , False     , False     )),
+        ('/foo rPx,'                                    , ( False   , False         , False     , False     )),
+        ('/foo Pxr,'                                    , ( False   , False         , False     , False     )),
+        ('/foo Px,'                                     , ( False   , False         , False     , False     )),
+        ('/foo ix,'                                     , ( False   , False         , False     , False     )),
+        ('/foo ix -> bar,'                              , ( False   , False         , False     , False     )),
+        ('/foo rPx -> bar,'                             , ( False   , False         , False     , False     )),
+    )
 
 class FileCoveredTest_03(FileCoveredTest):
     rule = '/foo mrwPx,'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        ('file /foo r,'                                 , [ False   , False         , True      , True      ]),
-        ('allow file /foo r,'                           , [ False   , False         , True      , True      ]),
-        ('allow /foo r, # comment'                      , [ False   , False         , True      , True      ]),
-        ('allow owner /foo r,'                          , [ False   , False         , True      , True      ]),
-        ('/foo r -> bar,'                               , [ False   , False         , True      , True      ]),
-        ('file r /foo,'                                 , [ False   , False         , True      , True      ]),
-        ('allow file r /foo,'                           , [ False   , False         , True      , True      ]),
-        ('allow r /foo, # comment'                      , [ False   , False         , True      , True      ]),
-        ('allow owner r /foo,'                          , [ False   , False         , True      , True      ]),
-        ('r /foo -> bar,'                               , [ False   , False         , True      , True      ]),
-        ('file,'                                        , [ False   , False         , False     , False     ]),
-        ('file /foo w,'                                 , [ False   , False         , True      , True      ]),
-        ('file /foo rw,'                                , [ False   , False         , True      , True      ]),
-        ('file /bar r,'                                 , [ False   , False         , False     , False     ]),
-        ('audit /foo r,'                                , [ False   , False         , False     , False     ]),
-        ('audit file,'                                  , [ False   , False         , False     , False     ]),
-        ('audit deny /foo r,'                           , [ False   , False         , False     , False     ]),
-        ('deny file /foo r,'                            , [ False   , False         , False     , False     ]),
-        ('/foo mrwPx,'                                  , [ True    , True          , True      , True      ]),
-        ('/foo wPxrm,'                                  , [ True    , False         , True      , True      ]),
-        ('/foo rm,'                                     , [ False   , False         , True      , True      ]),
-        ('/foo Px,'                                     , [ False   , False         , True      , True      ]),
-        ('/foo ix,'                                     , [ False   , False         , False     , False     ]),
-        ('/foo ix -> bar,'                              , [ False   , False         , False     , False     ]),
-        ('/foo mrwPx -> bar,'                           , [ False   , False         , False     , False     ]),
-    ]
+        ('file /foo r,'                                 , ( False   , False         , True      , True      )),
+        ('allow file /foo r,'                           , ( False   , False         , True      , True      )),
+        ('allow /foo r, # comment'                      , ( False   , False         , True      , True      )),
+        ('allow owner /foo r,'                          , ( False   , False         , True      , True      )),
+        ('/foo r -> bar,'                               , ( False   , False         , True      , True      )),
+        ('file r /foo,'                                 , ( False   , False         , True      , True      )),
+        ('allow file r /foo,'                           , ( False   , False         , True      , True      )),
+        ('allow r /foo, # comment'                      , ( False   , False         , True      , True      )),
+        ('allow owner r /foo,'                          , ( False   , False         , True      , True      )),
+        ('r /foo -> bar,'                               , ( False   , False         , True      , True      )),
+        ('file,'                                        , ( False   , False         , False     , False     )),
+        ('file /foo w,'                                 , ( False   , False         , True      , True      )),
+        ('file /foo rw,'                                , ( False   , False         , True      , True      )),
+        ('file /bar r,'                                 , ( False   , False         , False     , False     )),
+        ('audit /foo r,'                                , ( False   , False         , False     , False     )),
+        ('audit file,'                                  , ( False   , False         , False     , False     )),
+        ('audit deny /foo r,'                           , ( False   , False         , False     , False     )),
+        ('deny file /foo r,'                            , ( False   , False         , False     , False     )),
+        ('/foo mrwPx,'                                  , ( True    , True          , True      , True      )),
+        ('/foo wPxrm,'                                  , ( True    , False         , True      , True      )),
+        ('/foo rm,'                                     , ( False   , False         , True      , True      )),
+        ('/foo Px,'                                     , ( False   , False         , True      , True      )),
+        ('/foo ix,'                                     , ( False   , False         , False     , False     )),
+        ('/foo ix -> bar,'                              , ( False   , False         , False     , False     )),
+        ('/foo mrwPx -> bar,'                           , ( False   , False         , False     , False     )),
+    )
 
 class FileCoveredTest_04(FileCoveredTest):
     rule = '/foo mrwPx -> bar,'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        ('file /foo r,'                                 , [ False   , False         , True      , True      ]),
-        ('allow file /foo r,'                           , [ False   , False         , True      , True      ]),
-        ('allow /foo r, # comment'                      , [ False   , False         , True      , True      ]),
-        ('allow owner /foo r,'                          , [ False   , False         , True      , True      ]),
-        ('/foo r -> bar,'                               , [ False   , False         , True      , True      ]),
-        ('file r /foo,'                                 , [ False   , False         , True      , True      ]),
-        ('allow file r /foo,'                           , [ False   , False         , True      , True      ]),
-        ('allow r /foo, # comment'                      , [ False   , False         , True      , True      ]),
-        ('allow owner r /foo,'                          , [ False   , False         , True      , True      ]),
-        ('r /foo -> bar,'                               , [ False   , False         , True      , True      ]),
-        ('file,'                                        , [ False   , False         , False     , False     ]),
-        ('file /foo w,'                                 , [ False   , False         , True      , True      ]),
-        ('file /foo rw,'                                , [ False   , False         , True      , True      ]),
-        ('file /bar r,'                                 , [ False   , False         , False     , False     ]),
-        ('audit /foo r,'                                , [ False   , False         , False     , False     ]),
-        ('audit file,'                                  , [ False   , False         , False     , False     ]),
-        ('audit deny /foo r,'                           , [ False   , False         , False     , False     ]),
-        ('deny file /foo r,'                            , [ False   , False         , False     , False     ]),
-        ('/foo mrwPx,'                                  , [ False   , False         , False     , False     ]),
-        ('/foo wPxrm,'                                  , [ False   , False         , False     , False     ]),
-        ('/foo rm,'                                     , [ False   , False         , True      , True      ]),
-        ('/foo Px,'                                     , [ False   , False         , False     , False     ]),
-        ('/foo ix,'                                     , [ False   , False         , False     , False     ]),
-        ('/foo ix -> bar,'                              , [ False   , False         , False     , False     ]),
-        ('/foo mrwPx -> bar,'                           , [ True    , True          , True      , True      ]),
-    ]
+        ('file /foo r,'                                 , ( False   , False         , True      , True      )),
+        ('allow file /foo r,'                           , ( False   , False         , True      , True      )),
+        ('allow /foo r, # comment'                      , ( False   , False         , True      , True      )),
+        ('allow owner /foo r,'                          , ( False   , False         , True      , True      )),
+        ('/foo r -> bar,'                               , ( False   , False         , True      , True      )),
+        ('file r /foo,'                                 , ( False   , False         , True      , True      )),
+        ('allow file r /foo,'                           , ( False   , False         , True      , True      )),
+        ('allow r /foo, # comment'                      , ( False   , False         , True      , True      )),
+        ('allow owner r /foo,'                          , ( False   , False         , True      , True      )),
+        ('r /foo -> bar,'                               , ( False   , False         , True      , True      )),
+        ('file,'                                        , ( False   , False         , False     , False     )),
+        ('file /foo w,'                                 , ( False   , False         , True      , True      )),
+        ('file /foo rw,'                                , ( False   , False         , True      , True      )),
+        ('file /bar r,'                                 , ( False   , False         , False     , False     )),
+        ('audit /foo r,'                                , ( False   , False         , False     , False     )),
+        ('audit file,'                                  , ( False   , False         , False     , False     )),
+        ('audit deny /foo r,'                           , ( False   , False         , False     , False     )),
+        ('deny file /foo r,'                            , ( False   , False         , False     , False     )),
+        ('/foo mrwPx,'                                  , ( False   , False         , False     , False     )),
+        ('/foo wPxrm,'                                  , ( False   , False         , False     , False     )),
+        ('/foo rm,'                                     , ( False   , False         , True      , True      )),
+        ('/foo Px,'                                     , ( False   , False         , False     , False     )),
+        ('/foo ix,'                                     , ( False   , False         , False     , False     )),
+        ('/foo ix -> bar,'                              , ( False   , False         , False     , False     )),
+        ('/foo mrwPx -> bar,'                           , ( True    , True          , True      , True      )),
+    )
 
 class FileCoveredTest_05(FileCoveredTest):
     rule = 'file,'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        ('file /foo r,'                                 , [ False   , False         , True      , True      ]),
-        ('allow file /foo r,'                           , [ False   , False         , True      , True      ]),
-        ('allow /foo r, # comment'                      , [ False   , False         , True      , True      ]),
-        ('allow owner /foo r,'                          , [ False   , False         , True      , True      ]),
-        ('/foo r -> bar,'                               , [ False   , False         , True      , True      ]),
-        ('file r /foo,'                                 , [ False   , False         , True      , True      ]),
-        ('allow file r /foo,'                           , [ False   , False         , True      , True      ]),
-        ('allow r /foo, # comment'                      , [ False   , False         , True      , True      ]),
-        ('allow owner r /foo,'                          , [ False   , False         , True      , True      ]),
-        ('r /foo -> bar,'                               , [ False   , False         , True      , True      ]),
-        ('file,'                                        , [ True    , True          , True      , True      ]),
-        ('file /foo w,'                                 , [ False   , False         , True      , True      ]),
-        ('file /foo rw,'                                , [ False   , False         , True      , True      ]),
-        ('file /bar r,'                                 , [ False   , False         , True      , True      ]),
-        ('audit /foo r,'                                , [ False   , False         , False     , False     ]),
-        ('audit file,'                                  , [ False   , False         , False     , False     ]),
-        ('audit deny /foo r,'                           , [ False   , False         , False     , False     ]),
-        ('deny file /foo r,'                            , [ False   , False         , False     , False     ]),
-        ('/foo mrwPx,'                                  , [ False   , False         , False     , False     ]),
-        ('/foo wPxrm,'                                  , [ False   , False         , False     , False     ]),
-        ('/foo rm,'                                     , [ False   , False         , True      , True      ]),
-        ('/foo Px,'                                     , [ False   , False         , False     , False     ]),
-        ('/foo ix,'                                     , [ False   , False         , False     , False     ]),
-        ('/foo ix -> bar,'                              , [ False   , False         , False     , False     ]),
-        ('/foo mrwPx -> bar,'                           , [ False   , False         , False     , False     ]),
-    ]
+        ('file /foo r,'                                 , ( False   , False         , True      , True      )),
+        ('allow file /foo r,'                           , ( False   , False         , True      , True      )),
+        ('allow /foo r, # comment'                      , ( False   , False         , True      , True      )),
+        ('allow owner /foo r,'                          , ( False   , False         , True      , True      )),
+        ('/foo r -> bar,'                               , ( False   , False         , True      , True      )),
+        ('file r /foo,'                                 , ( False   , False         , True      , True      )),
+        ('allow file r /foo,'                           , ( False   , False         , True      , True      )),
+        ('allow r /foo, # comment'                      , ( False   , False         , True      , True      )),
+        ('allow owner r /foo,'                          , ( False   , False         , True      , True      )),
+        ('r /foo -> bar,'                               , ( False   , False         , True      , True      )),
+        ('file,'                                        , ( True    , True          , True      , True      )),
+        ('file /foo w,'                                 , ( False   , False         , True      , True      )),
+        ('file /foo rw,'                                , ( False   , False         , True      , True      )),
+        ('file /bar r,'                                 , ( False   , False         , True      , True      )),
+        ('audit /foo r,'                                , ( False   , False         , False     , False     )),
+        ('audit file,'                                  , ( False   , False         , False     , False     )),
+        ('audit deny /foo r,'                           , ( False   , False         , False     , False     )),
+        ('deny file /foo r,'                            , ( False   , False         , False     , False     )),
+        ('/foo mrwPx,'                                  , ( False   , False         , False     , False     )),
+        ('/foo wPxrm,'                                  , ( False   , False         , False     , False     )),
+        ('/foo rm,'                                     , ( False   , False         , True      , True      )),
+        ('/foo Px,'                                     , ( False   , False         , False     , False     )),
+        ('/foo ix,'                                     , ( False   , False         , False     , False     )),
+        ('/foo ix -> bar,'                              , ( False   , False         , False     , False     )),
+        ('/foo mrwPx -> bar,'                           , ( False   , False         , False     , False     )),
+    )
 
 class FileCoveredTest_06(FileCoveredTest):
     rule = 'deny /foo w,'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        ('/foo w,'                                      , [ False   , False         , False     , False     ]),
-        ('/foo a,'                                      , [ False   , False         , False     , False     ]),
-        ('deny /foo w,'                                 , [ True    , True          , True      , True      ]),
-        ('deny /foo a,'                                 , [ False   , False         , True      , True      ]),
-    ]
+        ('/foo w,'                                      , ( False   , False         , False     , False     )),
+        ('/foo a,'                                      , ( False   , False         , False     , False     )),
+        ('deny /foo w,'                                 , ( True    , True          , True      , True      )),
+        ('deny /foo a,'                                 , ( False   , False         , True      , True      )),
+    )
 
 class FileCoveredTest_07(FileCoveredTest):
     rule = '/foo w,'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        ('/foo w,'                                      , [ True    , True          , True      , True      ]),
-        ('/foo a,'                                      , [ False   , False         , True      , True      ]),
-        ('deny /foo w,'                                 , [ False   , False         , False     , False     ]),
-        ('deny /foo a,'                                 , [ False   , False         , False     , False     ]),
-    ]
+        ('/foo w,'                                      , ( True    , True          , True      , True      )),
+        ('/foo a,'                                      , ( False   , False         , True      , True      )),
+        ('deny /foo w,'                                 , ( False   , False         , False     , False     )),
+        ('deny /foo a,'                                 , ( False   , False         , False     , False     )),
+    )
 
 class FileCoveredTest_08(FileCoveredTest):
     rule = 'link /foo -> /bar,'
 
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        ('link /foo -> /bar,'                           , [ True    , True          , True      , True      ]),
-        ('link /asdf -> /bar,'                          , [ False   , False         , False     , False     ]),
-        ('link /foo -> /asdf,'                          , [ False   , False         , False     , False     ]),
-        ('deny link /foo -> /bar,'                      , [ False   , False         , False     , False     ]),
-        ('deny link /foo -> /bar,'                      , [ False   , False         , False     , False     ]),
-        ('link subset /foo -> /bar,'                    , [ False   , False         , True      , True      ]),  # subset makes the rule more strict
-      # ('/foo l -> /bar,'                              , [ ?       , ?             , ?         , ?         ]),  # TODO
-      # ('l /foo -> /bar,'                              , [ ?       , ?             , ?         , ?         ]),  # TODO
-    ]
+        ('link /foo -> /bar,'                           , ( True    , True          , True      , True      )),
+        ('link /asdf -> /bar,'                          , ( False   , False         , False     , False     )),
+        ('link /foo -> /asdf,'                          , ( False   , False         , False     , False     )),
+        ('deny link /foo -> /bar,'                      , ( False   , False         , False     , False     )),
+        ('deny link /foo -> /bar,'                      , ( False   , False         , False     , False     )),
+        ('link subset /foo -> /bar,'                    , ( False   , False         , True      , True      )),  # subset makes the rule more strict
+      # ('/foo l -> /bar,'                              , ( ?       , ?             , ?         , ?         )),  # TODO
+      # ('l /foo -> /bar,'                              , ( ?       , ?             , ?         , ?         )),  # TODO
+    )
 
 class FileCoveredTest_09(FileCoveredTest):
     rule = 'link subset /foo -> /bar,'
-    tests = [
+    tests = (
         #   rule                                            equal     strict equal    covered     covered exact
-        ('link subset /foo -> /bar,'                    , [ True    , True          , True      , True      ]),
-        ('link subset /asdf -> /bar,'                   , [ False   , False         , False     , False     ]),
-        ('link subset /foo -> /asdf,'                   , [ False   , False         , False     , False     ]),
-        ('deny link subset /foo -> /bar,'               , [ False   , False         , False     , False     ]),
-        ('deny link subset /foo -> /bar,'               , [ False   , False         , False     , False     ]),
-        ('link /foo -> /bar,'                           , [ False   , False         , False     , False     ]),  # no subset means more permissions
-      # ('/foo l -> /bar,'                              , [ ?       , ?             , ?         , ?         ]),  # TODO
-      # ('l /foo -> /bar,'                              , [ ?       , ?             , ?         , ?         ]),  # TODO
-    ]
+        ('link subset /foo -> /bar,'                    , ( True    , True          , True      , True      )),
+        ('link subset /asdf -> /bar,'                   , ( False   , False         , False     , False     )),
+        ('link subset /foo -> /asdf,'                   , ( False   , False         , False     , False     )),
+        ('deny link subset /foo -> /bar,'               , ( False   , False         , False     , False     )),
+        ('deny link subset /foo -> /bar,'               , ( False   , False         , False     , False     )),
+        ('link /foo -> /bar,'                           , ( False   , False         , False     , False     )),  # no subset means more permissions
+      # ('/foo l -> /bar,'                              , ( ?       , ?             , ?         , ?         )),  # TODO
+      # ('l /foo -> /bar,'                              , ( ?       , ?             , ?         , ?         )),  # TODO
+    )
 
 class FileCoveredTest_ManualOrInvalid(AATest):
     def AASetup(self):
@@ -782,7 +782,7 @@ class FileCoveredTest_ManualOrInvalid(AATest):
             obj.is_equal(testobj)
 
 class FileSeverityTest(AATest):
-    tests = [
+    tests = (
         ('/usr/bin/whatis ix,',         5),
         ('/etc ix,',                    'unknown'),
         ('/dev/doublehit ix,',          0),
@@ -795,7 +795,7 @@ class FileSeverityTest(AATest):
         ('/usr/foo@bar r,',             'unknown'),  # filename containing @
         ('/home/foo@bar rw,',           6),  # filename containing @
         ('file,',                       'unknown'),  # bare file rule XXX should return maximum severity
-    ]
+    )
 
     def _run_test(self, params, expected):
         sev_db = severity.Severity('../severity.db', 'unknown')
@@ -804,24 +804,24 @@ class FileSeverityTest(AATest):
         self.assertEqual(rank, expected)
 
 class FileLogprofHeaderTest(AATest):
-    tests = [
+    tests = (
         # log event                        old perms ALL / owner
-        (['file,',                              set(),      set()       ], [                               _('Path'), _('ALL'),                                         _('New Mode'), _('ALL')                 ]),
-        (['/foo r,',                            set(),      set()       ], [                               _('Path'), '/foo',                                           _('New Mode'), 'r'                      ]),
-        (['file /bar Px -> foo,',               set(),      set()       ], [                               _('Path'), '/bar',                                           _('New Mode'), 'Px -> foo'              ]),
-        (['deny file,',                         set(),      set()       ], [_('Qualifier'), 'deny',        _('Path'), _('ALL'),                                         _('New Mode'), _('ALL')                 ]),
-        (['allow file /baz rwk,',               set(),      set()       ], [_('Qualifier'), 'allow',       _('Path'), '/baz',                                           _('New Mode'), 'rwk'                    ]),
-        (['audit file /foo mr,',                set(),      set()       ], [_('Qualifier'), 'audit',       _('Path'), '/foo',                                           _('New Mode'), 'mr'                     ]),
-        (['audit deny /foo wk,',                set(),      set()       ], [_('Qualifier'), 'audit deny',  _('Path'), '/foo',                                           _('New Mode'), 'wk'                     ]),
-        (['owner file /foo ix,',                set(),      set()       ], [                               _('Path'), '/foo',                                           _('New Mode'), 'owner ix'               ]),
-        (['audit deny file /foo rlx -> /baz,',  set(),      set()       ], [_('Qualifier'), 'audit deny',  _('Path'), '/foo',                                           _('New Mode'), 'rlx -> /baz'            ]),
-        (['/foo rw,',                           set('r'),   set()       ], [                               _('Path'), '/foo',         _('Old Mode'), _('r'),            _('New Mode'), _('rw')                  ]),
-        (['/foo rw,',                           set(),      set('rw')   ], [                               _('Path'), '/foo',         _('Old Mode'), _('owner rw'),     _('New Mode'), _('rw')                  ]),
-        (['/foo mrw,',                          set('r'),   set('k')    ], [                               _('Path'), '/foo',         _('Old Mode'), _('r + owner k'),  _('New Mode'), _('mrw')                 ]),
-        (['/foo mrw,',                          set('r'),   set('rk')   ], [                               _('Path'), '/foo',         _('Old Mode'), _('r + owner k'),  _('New Mode'), _('mrw')                 ]),
-        (['link /foo -> /bar,',                 set(),      set()       ], [                               _('Path'), '/foo',                                           _('New Mode'), 'link -> /bar'           ]),
-        (['link subset /foo -> /bar,',          set(),      set()       ], [                               _('Path'), '/foo',                                           _('New Mode'), 'link subset -> /bar'    ]),
-   ]
+        (('file,',                              set(),      set()       ), [                               _('Path'), _('ALL'),                                         _('New Mode'), _('ALL')                 ]),
+        (('/foo r,',                            set(),      set()       ), [                               _('Path'), '/foo',                                           _('New Mode'), 'r'                      ]),
+        (('file /bar Px -> foo,',               set(),      set()       ), [                               _('Path'), '/bar',                                           _('New Mode'), 'Px -> foo'              ]),
+        (('deny file,',                         set(),      set()       ), [_('Qualifier'), 'deny',        _('Path'), _('ALL'),                                         _('New Mode'), _('ALL')                 ]),
+        (('allow file /baz rwk,',               set(),      set()       ), [_('Qualifier'), 'allow',       _('Path'), '/baz',                                           _('New Mode'), 'rwk'                    ]),
+        (('audit file /foo mr,',                set(),      set()       ), [_('Qualifier'), 'audit',       _('Path'), '/foo',                                           _('New Mode'), 'mr'                     ]),
+        (('audit deny /foo wk,',                set(),      set()       ), [_('Qualifier'), 'audit deny',  _('Path'), '/foo',                                           _('New Mode'), 'wk'                     ]),
+        (('owner file /foo ix,',                set(),      set()       ), [                               _('Path'), '/foo',                                           _('New Mode'), 'owner ix'               ]),
+        (('audit deny file /foo rlx -> /baz,',  set(),      set()       ), [_('Qualifier'), 'audit deny',  _('Path'), '/foo',                                           _('New Mode'), 'rlx -> /baz'            ]),
+        (('/foo rw,',                           set('r'),   set()       ), [                               _('Path'), '/foo',         _('Old Mode'), _('r'),            _('New Mode'), _('rw')                  ]),
+        (('/foo rw,',                           set(),      set('rw')   ), [                               _('Path'), '/foo',         _('Old Mode'), _('owner rw'),     _('New Mode'), _('rw')                  ]),
+        (('/foo mrw,',                          set('r'),   set('k')    ), [                               _('Path'), '/foo',         _('Old Mode'), _('r + owner k'),  _('New Mode'), _('mrw')                 ]),
+        (('/foo mrw,',                          set('r'),   set('rk')   ), [                               _('Path'), '/foo',         _('Old Mode'), _('r + owner k'),  _('New Mode'), _('mrw')                 ]),
+        (('link /foo -> /bar,',                 set(),      set()       ), [                               _('Path'), '/foo',                                           _('New Mode'), 'link -> /bar'           ]),
+        (('link subset /foo -> /bar,',          set(),      set()       ), [                               _('Path'), '/foo',                                           _('New Mode'), 'link subset -> /bar'    ]),
+    )
 
     def _run_test(self, params, expected):
         obj = FileRule.parse(params[0])
@@ -841,11 +841,11 @@ class FileEditHeaderTest(AATest):
         prompt, path_to_edit = rule_obj.edit_header()
         self.assertEqual(path_to_edit, expected)
 
-    tests = [
+    tests = (
         ('/foo/bar/baz r,',         '/foo/bar/baz'),
         ('/foo/**/baz r,',          '/foo/**/baz'),
         ('link /foo/** -> /bar,',   '/foo/**'),
-    ]
+    )
 
     def test_edit_header_bare_file(self):
         rule_obj = FileRule.parse('file,')
@@ -862,14 +862,14 @@ class FileValidateAndStoreEditTest(AATest):
         rule_obj.store_edit(params)
         self.assertEqual(rule_obj.get_raw(), '%s r,' % params)
 
-    tests = [
+    tests = (
         # edited path           match
         ('/foo/bar/baz',        True),
         ('/foo/bar/*',          True),
         ('/foo/bar/???',        True),
         ('/foo/xy**',           False),
         ('/foo/bar/baz/',       False),
-    ]
+    )
 
     def test_validate_not_a_path(self):
         rule_obj = FileRule.parse('/foo/bar/baz r,')
@@ -1008,7 +1008,7 @@ class FileRulesTest(AATest):
 #    pass
 
 class FileGetRulesForPath(AATest):
-    tests = [
+    tests = (
         #  path                                 audit   deny    expected
         (('/etc/foo/dovecot.conf',              False,  False), ['/etc/foo/* r,', '/etc/foo/dovecot.conf rw,',                                  '']),
         (('/etc/foo/foo.conf',                  False,  False), ['/etc/foo/* r,',                                                               '']),
@@ -1019,10 +1019,10 @@ class FileGetRulesForPath(AATest):
         (('/etc/foo/dovecot-deny.conf',         False,  True ), ['deny /etc/foo/dovecot-deny.conf r,',                                          '']),
         (('/etc/foo/foo.conf',                  False,  True ), [                                                                                 ]),
         (('/etc/foo/owner.conf',                False,  False), ['/etc/foo/* r,', 'owner /etc/foo/owner.conf w,',                               '']),
-    ]
+    )
 
     def _run_test(self, params, expected):
-        rules = [
+        rules = (
             '/etc/foo/* r,',
             '/etc/foo/dovecot.conf rw,',
             '/etc/foo/{auth,conf}.d/*.conf r,',
@@ -1030,18 +1030,18 @@ class FileGetRulesForPath(AATest):
             '/etc/foo/dovecot-database.conf.ext w,',
             'owner /etc/foo/owner.conf w,',
             'deny /etc/foo/dovecot-deny.conf r,',
-        ]
+        )
 
         ruleset = FileRuleset()
         for rule in rules:
             ruleset.add(FileRule.parse(rule))
 
-        matching = ruleset.get_rules_for_path(params[0], params[1], params[2])
+        matching = ruleset.get_rules_for_path(*params)
         self. assertEqual(matching.get_clean(), expected)
 
 
 class FileGetPermsForPath_1(AATest):
-    tests = [
+    tests = (
         #  path                                 audit   deny    expected
         (('/etc/foo/dovecot.conf',              False,  False), {'allow': {'all': {'r', 'w'},    'owner': set()  },  'deny': {'all': set(),          'owner': set()   }, 'paths': {'/etc/foo/*', '/etc/foo/dovecot.conf'                                    }   }),
         (('/etc/foo/foo.conf',                  False,  False), {'allow': {'all': {'r'     },    'owner': set()  },  'deny': {'all': set(),          'owner': set()   }, 'paths': {'/etc/foo/*'                                                             }   }),
@@ -1052,10 +1052,10 @@ class FileGetPermsForPath_1(AATest):
         (('/etc/foo/dovecot-deny.conf',         False,  True ), {'allow': {'all': set(),         'owner': set()  },  'deny': {'all': {'r'     },     'owner': set()   }, 'paths': {'/etc/foo/dovecot-deny.conf'                                             }   }),
         (('/etc/foo/foo.conf',                  False,  True ), {'allow': {'all': set(),         'owner': set()  },  'deny': {'all': set(),          'owner': set()   }, 'paths': set()                                                                         }),
         (('/usr/lib/dovecot/config',            False,  False), {'allow': {'all': set(),         'owner': set()  },  'deny': {'all': set(),          'owner': set()   }, 'paths': set()                     }),  # exec perms are not honored by get_perms_for_path()
-    ]
+    )
 
     def _run_test(self, params, expected):
-        rules = [
+        rules = (
             '/etc/foo/* r,',
             '/etc/foo/dovecot.conf rw,',
             '/etc/foo/{auth,conf}.d/*.conf r,',
@@ -1063,17 +1063,17 @@ class FileGetPermsForPath_1(AATest):
             '/etc/foo/dovecot-database.conf.ext w,',
             'deny /etc/foo/dovecot-deny.conf r,',
             '/usr/lib/dovecot/config ix,',
-        ]
+        )
 
         ruleset = FileRuleset()
         for rule in rules:
             ruleset.add(FileRule.parse(rule))
 
-        perms = ruleset.get_perms_for_path(params[0], params[1], params[2])
+        perms = ruleset.get_perms_for_path(*params)
         self. assertEqual(perms, expected)
 
 class FileGetPermsForPath_2(AATest):
-    tests = [
+    tests = (
         #  path                                 audit   deny    expected
         (('/etc/foo/dovecot.conf',              False,  False), {'allow': {'all': FileRule.ALL, 'owner': set()  },  'deny': {'all': FileRule.ALL,   'owner': set()  }, 'paths': {'/etc/foo/*', '/etc/foo/dovecot.conf'                                     }    }),
         (('/etc/foo/dovecot.conf',              True,   False), {'allow': {'all': {'r', 'w'},   'owner': set()  },  'deny': {'all': set(),          'owner': set()  }, 'paths': {'/etc/foo/dovecot.conf'                                                   }    }),
@@ -1086,10 +1086,10 @@ class FileGetPermsForPath_2(AATest):
         (('/etc/foo/dovecot-deny.conf',         False,  True ), {'allow': {'all': set(),        'owner': set()  },  'deny': {'all': FileRule.ALL,   'owner': set()  }, 'paths': {'/etc/foo/dovecot-deny.conf'                                              }    }),
         (('/etc/foo/foo.conf',                  False,  True ), {'allow': {'all': set(),        'owner': set()  },  'deny': {'all': FileRule.ALL,   'owner': set()  }, 'paths': set()                                                                           }),
     #   (('/etc/foo/owner.conf',                False,  True ), {'allow': {'all': set(),        'owner': {'w'}  },  'deny': {'all': FileRule.ALL,   'owner': set()  }, 'paths': {'/etc/foo/owner.conf'                                                     }    }), # XXX doesn't work yet
-    ]
+    )
 
     def _run_test(self, params, expected):
-        rules = [
+        rules = (
             '/etc/foo/* r,',
             'audit /etc/foo/dovecot.conf rw,',
             '/etc/foo/{auth,conf}.d/*.conf r,',
@@ -1099,29 +1099,29 @@ class FileGetPermsForPath_2(AATest):
             'file,',
             'owner /etc/foo/owner.conf w,',
             'deny file,',
-        ]
+        )
 
         ruleset = FileRuleset()
         for rule in rules:
             ruleset.add(FileRule.parse(rule))
 
-        perms = ruleset.get_perms_for_path(params[0], params[1], params[2])
+        perms = ruleset.get_perms_for_path(*params)
         self. assertEqual(perms, expected)
 
 class FileGetExecRulesForPath_1(AATest):
-    tests = [
+    tests = (
         ('/bin/foo',    ['audit /bin/foo ix,', '']                      ),
         ('/bin/bar',    ['deny /bin/bar x,', '']                        ),
         ('/foo',        []                                              ),
-    ]
+    )
 
     def _run_test(self, params, expected):
-        rules = [
+        rules = (
             '/foo r,',
             'audit /bin/foo ix,',
             '/bin/b* Px,',
             'deny /bin/bar x,',
-        ]
+        )
 
         ruleset = FileRuleset()
         for rule in rules:
@@ -1132,19 +1132,19 @@ class FileGetExecRulesForPath_1(AATest):
         self. assertEqual(matches, expected)
 
 class FileGetExecRulesForPath_2(AATest):
-    tests = [
+    tests = (
         ('/bin/foo',    ['audit /bin/foo ix,', '']                      ),
         ('/bin/bar',    ['deny /bin/bar x,', '', '/bin/b* Px,', '']     ),
         ('/foo',        []                                              ),
-    ]
+    )
 
     def _run_test(self, params, expected):
-        rules = [
+        rules = (
             '/foo r,',
             'audit /bin/foo ix,',
             '/bin/b* Px,',
             'deny /bin/bar x,',
-        ]
+        )
 
         ruleset = FileRuleset()
         for rule in rules:
@@ -1155,22 +1155,22 @@ class FileGetExecRulesForPath_2(AATest):
         self. assertEqual(matches, expected)
 
 class FileGetExecConflictRules_1(AATest):
-    tests = [
+    tests = (
         ('/bin/foo ix,',    ['/bin/foo Px,', '']                            ),
         ('/bin/bar Px,',    ['deny /bin/bar x,', '', '/bin/bar cx,', '']    ),
         ('/bin/bar cx,',    ['deny /bin/bar x,','',]                        ),
         ('/bin/foo r,',     []                                              ),
-    ]
+    )
 
     def _run_test(self, params, expected):
-        rules = [
+        rules = (
             '/foo r,',
             'audit /bin/foo ix,',
             '/bin/foo Px,',
             '/bin/b* Px,',
             '/bin/bar cx,',
             'deny /bin/bar x,',
-        ]
+        )
 
         ruleset = FileRuleset()
         for rule in rules:

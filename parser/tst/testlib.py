@@ -86,7 +86,7 @@ class AATestTemplate(unittest.TestCase, metaclass=AANoCleanupMetaClass):
         (rc, out, outerr) = self._run_cmd(command, input, stderr, stdout, stdin, timeout)
         report = out + outerr
 
-        return [rc, report]
+        return rc, report
 
     def _run_cmd(self, command, input=None, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
                  stdin=None, timeout=120):
@@ -96,7 +96,7 @@ class AATestTemplate(unittest.TestCase, metaclass=AANoCleanupMetaClass):
             sp = subprocess.Popen(command, stdin=stdin, stdout=stdout, stderr=stderr,
                                   close_fds=True, preexec_fn=subprocess_setup, universal_newlines=True)
         except OSError as e:
-            return [127, str(e)]
+            return 127, str(e)
 
         timeout_communicate = TimeoutFunction(sp.communicate, timeout)
         out, outerr = (None, None)
@@ -115,7 +115,7 @@ class AATestTemplate(unittest.TestCase, metaclass=AANoCleanupMetaClass):
         if outerr is None:
             outerr = ''
 
-        return (rc, out, outerr)
+        return rc, out, outerr
 
 
 # Timeout handler using alarm() from John P. Speno's Pythonic Avocado

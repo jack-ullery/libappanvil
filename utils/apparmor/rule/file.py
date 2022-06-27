@@ -78,7 +78,7 @@ class FileRule(BaseRule):
 
         if perms == {'subset'}:
             raise AppArmorBug('subset without link permissions given')
-        elif perms in [{'link'}, {'link', 'subset'}]:
+        elif perms in ({'link'}, {'link', 'subset'}):
             self.perms = perms
             self.all_perms = False
         else:
@@ -492,7 +492,7 @@ class FileRuleset(BaseRuleset):
 
         allow = {}
         deny = {}
-        for who in ['all', 'owner']:
+        for who in ('all', 'owner'):
             if all_perms['allow'][who]:
                 allow[who] = FileRule.ALL
             else:

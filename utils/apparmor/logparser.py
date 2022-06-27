@@ -157,7 +157,7 @@ class ReadLog:
         if aamode == 'UNKNOWN':
             raise AppArmorBug('aamode is UNKNOWN - %s' % e['type'])  # should never happen
 
-        if aamode in ['AUDIT', 'STATUS', 'ERROR']:
+        if aamode in ('AUDIT', 'STATUS', 'ERROR'):
             return None
 
         # Skip if AUDIT event was issued due to a change_hat in unconfined mode

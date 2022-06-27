@@ -501,7 +501,7 @@ def check_and_split_list(lst, allowed_keywords, all_obj, classname, keyword_name
         return None, True, None
     elif type_is_str(lst):
         result_list = {lst}
-    elif type(lst) in [list, tuple, set] and (len(lst) > 0 or allow_empty_list):
+    elif type(lst) in (list, tuple, set) and (len(lst) > 0 or allow_empty_list):
         result_list = set(lst)
     else:
         raise AppArmorBug('Passed unknown %(type)s object to %(classname)s: %(unknown_object)s' %

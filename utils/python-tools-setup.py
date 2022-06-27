@@ -37,18 +37,18 @@ class Install(_install, object):
             prefix = self.root
 
         # Install scripts, configuration files and data
-        scripts = ['/usr/bin/aa-easyprof']
+        scripts = ('/usr/bin/aa-easyprof',)
         self.mkpath(prefix + os.path.dirname(scripts[0]))
         for s in scripts:
             f = prefix + s
             self.copy_file(os.path.basename(s), f)
 
-        configs = ['easyprof/easyprof.conf']
+        configs = ('easyprof/easyprof.conf',)
         self.mkpath(prefix + "/etc/apparmor")
         for c in configs:
             self.copy_file(c, os.path.join(prefix + "/etc/apparmor", os.path.basename(c)))
 
-        data = ['easyprof/templates', 'easyprof/policygroups']
+        data = ('easyprof/templates', 'easyprof/policygroups')
         self.mkpath(prefix + "/usr/share/apparmor/easyprof")
         for d in data:
             self.copy_tree(d, os.path.join(prefix + "/usr/share/apparmor/easyprof", os.path.basename(d)))

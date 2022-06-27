@@ -255,9 +255,9 @@ def verify_policy(policy, exe, base=None, include=None):
 
     command = [exe, '-QTK']
     if base:
-        command.extend(['-b', base])
+        command.extend(('-b', base))
     if include:
-        command.extend(['-I', include])
+        command.extend(('-I', include))
     command.append(fn)
 
     rc, out = cmd(command)
@@ -329,9 +329,9 @@ class AppArmorEasyProfile:
             self.policy_vendor = opt.policy_vendor
             self.policy_version = str(opt.policy_version)
 
-            for i in ['templates', 'policygroups']:
-                d = os.path.join(self.dirs[i], \
-                                 self.policy_vendor, \
+            for i in ('templates', 'policygroups'):
+                d = os.path.join(self.dirs[i],
+                                 self.policy_vendor,
                                  self.policy_version)
                 if not os.path.isdir(d):
                     raise AppArmorException(

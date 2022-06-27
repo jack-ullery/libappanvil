@@ -52,7 +52,7 @@ class AATest(unittest.TestCase):
             self.createTmpdir()
         return write_file(self.tmpdir, file, contents)
 
-    tests = []
+    tests = ()
     tmpdir = None
 
 class AAParseTest(unittest.TestCase):

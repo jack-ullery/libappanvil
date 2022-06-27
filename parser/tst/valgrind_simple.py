@@ -42,8 +42,8 @@ class AAParserValgrindTests(testlib.AATestTemplate):
         self.maxDiff = None
 
     def _runtest(self, testname, config):
-        parser_args = ['-Q', '-I', config.testdir, '-M', './features_files/features.all']
-        failure_rc = [VALGRIND_ERROR_CODE, testlib.TIMEOUT_ERROR_CODE]
+        parser_args = ('-Q', '-I', config.testdir, '-M', './features_files/features.all')
+        failure_rc = (VALGRIND_ERROR_CODE, testlib.TIMEOUT_ERROR_CODE)
         command = [config.valgrind]
         command.extend(VALGRIND_ARGS)
         command.append(config.parser)

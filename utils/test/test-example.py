@@ -14,20 +14,20 @@ from common_test import AATest, setup_all_loops # , setup_aa
 # import apparmor.aa as aa  # see the setup_aa() call for details
 
 class TestFoo(AATest):
-    tests = [
+    tests = (
         (0,  0 ),
         (42, 42),
-    ]
+    )
 
     def _run_test(self, params, expected):
         self.assertEqual(params, expected)
 
 class TestBar(AATest):
-    tests = [
+    tests = (
         ('a', 'foo'),
         ('b', 'bar'),
         ('c', 'baz'),
-    ]
+    )
 
     def _run_test(self, params, expected):
         self.assertNotEqual(params, expected)

@@ -79,24 +79,24 @@ class AaTest_check_for_apparmor(AaTestWithTempdir):
         self.assertEqual('%s/security/apparmor' % self.tmpdir, check_for_apparmor(filesystems, mounts))
 
 class AATest_get_output(AATest):
-    tests = [
-        (['./fake_ldd', '/AATest/lib64/libc-2.22.so'],  (0, ['        /AATest/lib64/ld-linux-x86-64.so.2 (0x0000556858473000)', '        linux-vdso.so.1 (0x00007ffe98912000)']     )),
-        (['./fake_ldd', '/tmp/aa-test-foo'],            (0, ['        not a dynamic executable']                                                                                    )),
-        (['./fake_ldd', 'invalid'],                     (1, []                                                                                                                      )),  # stderr is not part of output
-    ]
+    tests = (
+        (('./fake_ldd', '/AATest/lib64/libc-2.22.so'),  (0, ['        /AATest/lib64/ld-linux-x86-64.so.2 (0x0000556858473000)', '        linux-vdso.so.1 (0x00007ffe98912000)']     )),
+        (('./fake_ldd', '/tmp/aa-test-foo'),            (0, ['        not a dynamic executable']                                                                                    )),
+        (('./fake_ldd', 'invalid'),                     (1, []                                                                                                                      )),  # stderr is not part of output
+    )
     def _run_test(self, params, expected):
         self.assertEqual(get_output(params), expected)
 
     def test_get_output_nonexisting(self):
         with self.assertRaises(AppArmorException):
-            ret, output = get_output(['./_file_/_not_/_found_'])
+            ret, output = get_output(('./_file_/_not_/_found_',))
 
 class AATest_get_reqs(AATest):
-    tests = [
+    tests = (
         ('/AATest/bin/bash',    ['/AATest/lib64/libreadline.so.6', '/AATest/lib64/libtinfo.so.6', '/AATest/lib64/libdl.so.2', '/AATest/lib64/libc.so.6', '/AATest/lib64/ld-linux-x86-64.so.2']),
         ('/tmp/aa-test-foo',    []),
         ('/AATest/sbin/ldconfig', []),  # comes with $? == 1
-    ]
+    )
 
     def _run_test(self, params, expected):
         # for some reason, setting the ldd config option does not get
@@ -110,12 +110,12 @@ class AATest_get_reqs(AATest):
         self.assertEqual(get_reqs(params), expected)
 
 class AaTest_create_new_profile(AATest):
-    tests = [
+    tests = (
         # file content              filename            expected interpreter    expected abstraction (besides 'base')   expected profiles
         (('#!/bin/bash\ntrue',      'script'),          (u'/bin/bash',          'abstractions/bash',                    ['script'])),
         (('foo bar',                'fake_binary'),     (None,                  None,                                   ['fake_binary'])),
         (('hats expected',          'apache2'),         (None,                  None,                                   ['apache2', 'apache2//DEFAULT_URI', 'apache2//HANDLING_UNTRUSTED_INPUT'])),
-    ]
+    )
     def _run_test(self, params, expected):
         apparmor.aa.cfg['settings']['ldd'] = './fake_ldd'
         # for some reason, setting the ldd config option does not get
@@ -164,7 +164,7 @@ class AaTest_create_new_profile(AATest):
             self.assertEqual(profile[program]['inc_ie'].get_clean(), ['include <abstractions/base>', ''])
 
 class AaTest_get_interpreter_and_abstraction(AATest):
-    tests = [
+    tests = (
         ('#!/bin/bash',             ('/bin/bash',           'abstractions/bash')),
         ('#!/bin/dash',             ('/bin/dash',           'abstractions/bash')),
         ('#!/bin/sh',               ('/bin/sh',             'abstractions/bash')),
@@ -182,7 +182,7 @@ class AaTest_get_interpreter_and_abstraction(AATest):
         ('#!/usr/bin/ruby1.9.1',    ('/usr/bin/ruby1.9.1',  'abstractions/ruby')),
         ('#!/usr/bin/foobarbaz',    ('/usr/bin/foobarbaz',  None)),  # we don't have an abstraction for "foobarbaz"
         ('foo',                     (None,                  None)),  # no hashbang - not a script
-    ]
+    )
 
     def _run_test(self, params, expected):
         exp_interpreter_path, exp_abstraction = expected
@@ -406,13 +406,13 @@ class AaTest_change_profile_flags(AaTestWithTempdir):
             change_profile_flags('%s/file-not-found' % self.tmpdir, '/foo', 'audit', True)
 
 class AaTest_set_options_audit_mode(AATest):
-    tests = [
+    tests = (
         ((FileRule.parse('audit /foo/bar r,'),      ['/foo/bar r,', '/foo/* r,', '/** r,']                      ), ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),
         ((FileRule.parse('audit /foo/bar r,'),      ['/foo/bar r,', 'audit /foo/* r,', 'audit /** r,']          ), ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),
         ((FileRule.parse('/foo/bar r,'),            ['/foo/bar r,', '/foo/* r,', '/** r,']                      ), ['/foo/bar r,', '/foo/* r,', '/** r,']),
         ((FileRule.parse('/foo/bar r,'),            ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']    ), ['/foo/bar r,', '/foo/* r,', '/** r,']),
         ((FileRule.parse('audit /foo/bar r,'),      ['/foo/bar r,', '/foo/* r,', '#include <abstractions/base>']), ['audit /foo/bar r,', 'audit /foo/* r,', '#include <abstractions/base>']),
-    ]
+    )
 
     def _run_test(self, params, expected):
         rule_obj, options = params
@@ -420,13 +420,13 @@ class AaTest_set_options_audit_mode(AATest):
         self.assertEqual(new_options, expected)
 
 class AaTest_set_options_owner_mode(AATest):
-    tests = [
+    tests = (
         ((FileRule.parse('owner /foo/bar r,'),      ['/foo/bar r,', '/foo/* r,', '/** r,']                                  ), ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),
         ((FileRule.parse('owner /foo/bar r,'),      ['/foo/bar r,', 'owner /foo/* r,', 'owner /** r,']                      ), ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),
         ((FileRule.parse('/foo/bar r,'),            ['/foo/bar r,', '/foo/* r,', '/** r,']                                  ), ['/foo/bar r,', '/foo/* r,', '/** r,']),
         ((FileRule.parse('/foo/bar r,'),            ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']                ), ['/foo/bar r,', '/foo/* r,', '/** r,']),
         ((FileRule.parse('audit owner /foo/bar r,'),['audit /foo/bar r,', 'audit /foo/* r,', '#include <abstractions/base>']), ['audit owner /foo/bar r,', 'audit owner /foo/* r,', '#include <abstractions/base>']),
-    ]
+    )
 
     def _run_test(self, params, expected):
         rule_obj, options = params
@@ -540,14 +540,14 @@ class AaTest_parse_profile_data(AATest):
             parse_profile_data(d.split(), 'somefile', False, False)
 
 class AaTest_get_file_perms_1(AATest):
-    tests = [
+    tests = (
         ('/usr/share/common-licenses/foo/bar',      {'allow': {'all': set(),            'owner': {'w'}  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/share/common-licenses/**'}  }),
         ('/dev/null',                               {'allow': {'all': {'r', 'w', 'k'},  'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/dev/null'}                      }),
         ('/foo/bar',                                {'allow': {'all': {'r', 'w'},       'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/foo/bar'}                       }),  # exec perms not included
         ('/no/thing',                               {'allow': {'all': set(),            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': set()                              }),
         ('/usr/lib/ispell/',                        {'allow': {'all': set(),            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': set()                              }),
         ('/usr/lib/aspell/*.so',                    {'allow': {'all': set(),            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': set()                              }),
-    ]
+    )
 
     def _run_test(self, params, expected):
         self.createTmpdir()
@@ -567,7 +567,7 @@ class AaTest_get_file_perms_1(AATest):
         self.assertEqual(perms, expected)
 
 class AaTest_get_file_perms_2(AATest):
-    tests = [
+    tests = (
         ('/usr/share/common-licenses/foo/bar',      {'allow': {'all': {'r'},            'owner': {'w'}  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/share/common-licenses/**'}              }),
         ('/usr/share/common-licenses/what/ever',    {'allow': {'all': {'r'},            'owner': {'w'}  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/share/common-licenses/**', '/usr/share/common-licenses/what/ever'}      }),
         ('/dev/null',                               {'allow': {'all': {'r', 'w', 'k'},  'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/dev/null'}                                  }),
@@ -575,7 +575,7 @@ class AaTest_get_file_perms_2(AATest):
         ('/no/thing',                               {'allow': {'all': set(),            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': set()                                          }),
         ('/usr/lib/ispell/',                        {'allow': {'all': {'r'},            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/lib/ispell/', '/{usr/,}lib{,32,64}/**'}    }),  # from abstractions/enchant
         ('/usr/lib/aspell/*.so',                    {'allow': {'all': {'m', 'r'},       'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/lib/aspell/*', '/usr/lib/aspell/*.so', '/{usr/,}lib{,32,64}/**', '/{usr/,}lib{,32,64}/**.so*'} }),  # from abstractions/aspell via abstractions/enchant and from abstractions/base
-    ]
+    )
 
     def _run_test(self, params, expected):
         self.createTmpdir()
@@ -605,15 +605,15 @@ class AaTest_get_file_perms_2(AATest):
         self.assertEqual(perms, expected)
 
 class AaTest_propose_file_rules(AATest):
-    tests = [
+    tests = (
         # log event path                   and perms    expected proposals
-        (['/usr/share/common-licenses/foo/bar', 'w'],   ['/usr/share/common*/foo/* rw,', '/usr/share/common-licenses/** rw,', '/usr/share/common-licenses/foo/bar rw,']         ),
-        (['/dev/null',                          'wk'],  ['/dev/null rwk,']                                                                                                      ),
-        (['/foo/bar',                           'rw'],  ['/foo/bar rw,']                                                                                                        ),
-        (['/usr/lib/ispell/',                   'w'],   ['/{usr/,}lib{,32,64}/** rw,', '/usr/lib/ispell/ rw,']                                                                     ),
-        (['/usr/lib/aspell/some.so',            'k'],   ['/usr/lib/aspell/* mrk,', '/usr/lib/aspell/*.so mrk,', '/{usr/,}lib{,32,64}/** mrk,', '/{usr/,}lib{,32,64}/**.so* mrk,', '/usr/lib/aspell/some.so mrk,']     ),
-        (['/foo/log',                           'w'],   ['/foo/log w,']                                                                                                            ),
-    ]
+        (('/usr/share/common-licenses/foo/bar', 'w'),   ['/usr/share/common*/foo/* rw,', '/usr/share/common-licenses/** rw,', '/usr/share/common-licenses/foo/bar rw,']         ),
+        (('/dev/null',                          'wk'),  ['/dev/null rwk,']                                                                                                      ),
+        (('/foo/bar',                           'rw'),  ['/foo/bar rw,']                                                                                                        ),
+        (('/usr/lib/ispell/',                   'w'),   ['/{usr/,}lib{,32,64}/** rw,', '/usr/lib/ispell/ rw,']                                                                     ),
+        (('/usr/lib/aspell/some.so',            'k'),   ['/usr/lib/aspell/* mrk,', '/usr/lib/aspell/*.so mrk,', '/{usr/,}lib{,32,64}/** mrk,', '/{usr/,}lib{,32,64}/**.so* mrk,', '/usr/lib/aspell/some.so mrk,']     ),
+        (('/foo/log',                           'w'),   ['/foo/log w,']                                                                                                            ),
+    )
 
     def _run_test(self, params, expected):
         self.createTmpdir()
@@ -650,13 +650,13 @@ class AaTest_propose_file_rules(AATest):
 
 
 class AaTest_propose_file_rules_with_absolute_includes(AATest):
-    tests = [
+    tests = (
         # log event path       and perms    expected proposals
-        (['/not/found/anywhere',    'r'],   ['/not/found/anywhere r,']),
-        (['/dev/null',              'w'],   ['/dev/null rw,']),
-        (['/some/random/include',   'r'],   ['/some/random/include rw,']),
-        (['/some/other/include',    'w'],   ['/some/other/* rw,', '/some/other/inc* rw,', '/some/other/include rw,']),
-    ]
+        (('/not/found/anywhere',    'r'),   ['/not/found/anywhere r,']),
+        (('/dev/null',              'w'),   ['/dev/null rw,']),
+        (('/some/random/include',   'r'),   ['/some/random/include rw,']),
+        (('/some/other/include',    'w'),   ['/some/other/* rw,', '/some/other/inc* rw,', '/some/other/include rw,']),
+    )
 
     def _run_test(self, params, expected):
         self.createTmpdir()
@@ -690,21 +690,21 @@ class AaTest_propose_file_rules_with_absolute_includes(AATest):
 
 
 class AaTest_nonexistent_includes(AATest):
-    tests = [
+    tests = (
         ("/nonexistent/absolute/path",      AppArmorException),
         ("nonexistent/relative/path",       AppArmorBug),       # load_include() only accepts absolute paths
-    ]
+    )
 
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
             apparmor.aa.load_include(params)
 
 class AaTest_merged_to_split(AATest):
-    tests = [
+    tests = (
         ("foo",                             ("foo", "foo")),
         ("foo//bar",                        ("foo", "bar")),
         ("foo//bar//baz",                   ("foo", "bar")),  # XXX known limitation
-    ]
+    )
 
     def _run_test(self, params, expected):
         merged = {}
@@ -718,10 +718,10 @@ class AaTest_merged_to_split(AATest):
         self.assertTrue(result[profile][hat])
 
 class AaTest_split_to_merged(AATest):
-    tests = [
+    tests = (
         (("foo", "foo"),                    "foo"),
         (("foo", "bar"),                    "foo//bar"),
-    ]
+    )
 
     def _run_test(self, params, expected):
         old = {}

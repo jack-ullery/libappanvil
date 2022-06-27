@@ -137,13 +137,13 @@ def aa_exec(command, opt, environ={}, verify_rules=[]):
             debug("using '%s' template" % opt.template)
             # TODO: get rid of this
             if opt.withx:
-                rc, report = cmd(['pkexec', 'apparmor_parser', '-r', '%s' % tmp.name])
+                rc, report = cmd(('pkexec', 'apparmor_parser', '-r', '%s' % tmp.name))
             else:
-                rc, report = cmd(['sudo', 'apparmor_parser', '-r', tmp.name])
+                rc, report = cmd(('sudo', 'apparmor_parser', '-r', tmp.name))
             if rc != 0:
                 raise AppArmorException("Could not load policy")
 
-            rc, report = cmd(['sudo', 'apparmor_parser', '-p', tmp.name])
+            rc, report = cmd(('sudo', 'apparmor_parser', '-p', tmp.name))
             if rc != 0:
                 raise AppArmorException("Could not dump policy")
 
@@ -185,8 +185,8 @@ class SandboxXserver():
 
         # preserve our environment
         self.old_environ = dict()
-        for env in ['DISPLAY', 'XAUTHORITY', 'UBUNTU_MENUPROXY',
-                    'QT_X11_NO_NATIVE_MENUBAR', 'LIBOVERLAY_SCROLLBAR']:
+        for env in ('DISPLAY', 'XAUTHORITY', 'UBUNTU_MENUPROXY',
+                    'QT_X11_NO_NATIVE_MENUBAR', 'LIBOVERLAY_SCROLLBAR'):
             if env in os.environ:
                 self.old_environ[env] = os.environ[env]
 
@@ -243,7 +243,7 @@ class SandboxXserver():
                                #       sandboxed applications
             tmp = ":%d" % i
             os.environ["DISPLAY"] = tmp
-            rc, report = cmd(['xset', '-q'])
+            rc, report = cmd(('xset', '-q'))
             if rc != 0 and 'Invalid MIT-MAGIC-COOKIE-1' not in report:
                 display = tmp
                 break
@@ -271,7 +271,7 @@ class SandboxXserver():
             old_lang = os.environ['LANG']
 
         os.environ['LANG'] = 'C'
-        rc, report = cmd(['xhost'])
+        rc, report = cmd(('xhost',))
 
         if old_lang:
             os.environ['LANG'] = old_lang
@@ -289,22 +289,22 @@ class SandboxXserver():
         # clean up the old one
         if os.path.exists(self.xauth):
             os.unlink(self.xauth)
-        rc, cookie = cmd(['mcookie'])
+        rc, cookie = cmd(('mcookie',))
         if rc != 0:
             raise AppArmorException("Could not generate magic cookie")
 
-        rc, out = cmd(['xauth', '-f', self.xauth, \
+        rc, out = cmd(('xauth', '-f', self.xauth, \
                        'add', \
                        self.display, \
                        'MIT-MAGIC-COOKIE-1', \
-                       cookie.strip()])
+                       cookie.strip()))
         if rc != 0:
             raise AppArmorException("Could not generate '%s'" % self.display)
 
 
 class SandboxXephyr(SandboxXserver):
     def start(self):
-        for e in ['Xephyr', 'matchbox-window-manager']:
+        for e in ('Xephyr', 'matchbox-window-manager'):
             debug("Searching for '%s'" % e)
             if which(e) is None:
                 raise AppArmorException("Could not find '%s'" % e)
@@ -376,7 +376,7 @@ class SandboxXpra(SandboxXserver):
 
         # Annoyingly, xpra doesn't clean up itself well if the application
         # failed for some reason. Try to account for that.
-        rc, report = cmd(['ps', 'auxww'])
+        rc, report = cmd(('ps', 'auxww'))
         for line in report.splitlines():
             if '-for-Xpra-%s' % self.display in line:
                 self.pids.append(int(line.split()[1]))
@@ -585,7 +585,7 @@ EndSection
             os.environ['XAUTHORITY'] = self.xauth
 
             # This will clean out any dead sessions
-            cmd(['xpra', 'list'])
+            cmd(('xpra', 'list'))
 
             x_args = ['--no-daemon',
                       #'--no-mmap', # for security?
@@ -621,7 +621,7 @@ EndSection
             raise AppArmorException("Could not start xpra (try again with -d)")
 
         for i in range(self.timeout): # Up to self.timeout seconds to start
-            rc, out = cmd(['xpra', 'list'])
+            rc, out = cmd(('xpra', 'list'))
 
             if 'DEAD session at %s' % self.display in out:
                 error("xpra session at '%s' died" % self.display, do_exit=False)
@@ -663,7 +663,7 @@ EndSection
         # Make sure that a client has attached
         for i in range(self.timeout): # up to self.timeout seconds to attach
             time.sleep(1)
-            rc, out = cmd (['xpra', 'info', self.display])
+            rc, out = cmd (('xpra', 'info', self.display))
             search = 'clients=1'
             if search in out:
                 debug("Client successfully attached!")

@@ -46,7 +46,7 @@ class SignalTest(AATest):
         self.assertEqual(expected.comment, obj.comment)
 
 class SignalTestParse(SignalTest):
-    tests = [
+    tests = (
         # SignalRule object                       audit  allow  deny   comment        access        all?   signal           all?   peer            all?
         ('signal,'                              , exp(False, False, False, '',        None  ,       True , None,            True,  None,           True     )),
         ('signal send,'                         , exp(False, False, False, '',        {'send'},     False, None,            True,  None,           True     )),
@@ -61,7 +61,7 @@ class SignalTestParse(SignalTest):
         ('signal send  set = ( quit , int ) ,'  , exp(False, False, False, '',        {'send'},     False, {'quit', 'int'}, False, None,           True     )),
         ('signal peer=/foo,'                    , exp(False, False, False, '',        None  ,       True , None,            True,  '/foo',         False    )),
         ('signal r set=quit set=int peer=/foo,' , exp(False, False, False, '',        {'r'},        False, {'quit', 'int'}, False, '/foo',         False    )),
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(SignalRule.match(rawrule))
@@ -70,7 +70,7 @@ class SignalTestParse(SignalTest):
         self._compare_obj(obj, expected)
 
 class SignalTestParseInvalid(SignalTest):
-    tests = [
+    tests = (
         ('signal foo,'                     , AppArmorException),
         ('signal foo bar,'                 , AppArmorException),
         ('signal foo int,'                 , AppArmorException),
@@ -80,7 +80,7 @@ class SignalTestParseInvalid(SignalTest):
         ('signal set=int set=,'            , AppArmorException),
         ('signal set=invalid,'             , AppArmorException),
         ('signal peer=,'                   , AppArmorException),
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(SignalRule.match(rawrule))  # the above invalid rules still match the main regex!
@@ -129,7 +129,7 @@ class SignalTestParseFromLog(SignalTest):
         self.assertEqual(obj.get_raw(1), '  signal send set=term peer=/usr/bin/pulseaudio///usr/lib/pulseaudio/pulse/gconf-helper,')
 
 class SignalFromInit(SignalTest):
-    tests = [
+    tests = (
         # SignalRule object                                               audit  allow  deny   comment        access        all?   signal           all?   peer            all?
         (SignalRule('r',            'hup', 'unconfined', deny=True) , exp(False, False, True , ''           , {'r'},        False, {'hup'},         False, 'unconfined',   False)),
         (SignalRule(('r', 'send'),  ('hup', 'int'), '/bin/foo')     , exp(False, False, False, ''           , {'r', 'send'},False, {'hup', 'int'},  False, '/bin/foo',     False)),
@@ -137,34 +137,34 @@ class SignalFromInit(SignalTest):
         (SignalRule('rw',           SignalRule.ALL, '/bin/foo')     , exp(False, False, False, ''           , {'rw'},       False, None,            True,  '/bin/foo',     False )),
         (SignalRule('rw',           ('int'),        SignalRule.ALL) , exp(False, False, False, ''           , {'rw'},       False, {'int'},         False, None,           True )),
         (SignalRule(SignalRule.ALL, SignalRule.ALL, SignalRule.ALL) , exp(False, False, False, ''           , None  ,       True,  None,            True,  None,           True )),
-    ]
+    )
 
     def _run_test(self, obj, expected):
         self._compare_obj(obj, expected)
 
 class InvalidSignalInit(AATest):
-    tests = [
+    tests = (
         # init params                     expected exception
-        (['send', ''    , '/foo'    ]    , AppArmorBug), # empty signal
-        ([''    , 'int' , '/foo'    ]    , AppArmorBug), # empty access
-        (['send', 'int' , ''        ]    , AppArmorBug), # empty peer
-        (['    ', 'int' , '/foo'    ]    , AppArmorBug), # whitespace access
-        (['send', '   ' , '/foo'    ]    , AppArmorBug), # whitespace signal
-        (['send', 'int' , '    '    ]    , AppArmorBug), # whitespace peer
-        (['xyxy', 'int' , '/foo'    ]    , AppArmorException), # invalid access
-        (['send', 'xyxy', '/foo'    ]    , AppArmorException), # invalid signal
+        (('send', ''    , '/foo'    )    , AppArmorBug), # empty signal
+        ((''    , 'int' , '/foo'    )    , AppArmorBug), # empty access
+        (('send', 'int' , ''        )    , AppArmorBug), # empty peer
+        (('    ', 'int' , '/foo'    )    , AppArmorBug), # whitespace access
+        (('send', '   ' , '/foo'    )    , AppArmorBug), # whitespace signal
+        (('send', 'int' , '    '    )    , AppArmorBug), # whitespace peer
+        (('xyxy', 'int' , '/foo'    )    , AppArmorException), # invalid access
+        (('send', 'xyxy', '/foo'    )    , AppArmorException), # invalid signal
         # XXX is 'invalid peer' possible at all?
-        ([dict(), 'int' , '/foo'    ]    , AppArmorBug), # wrong type for access
-        ([None  , 'int' , '/foo'    ]    , AppArmorBug), # wrong type for access
-        (['send', dict(), '/foo'    ]    , AppArmorBug), # wrong type for signal
-        (['send', None  , '/foo'    ]    , AppArmorBug), # wrong type for signal
-        (['send', 'int' , dict()    ]    , AppArmorBug), # wrong type for peer
-        (['send', 'int' , None      ]    , AppArmorBug), # wrong type for peer
-    ]
+        ((dict(), 'int' , '/foo'    )    , AppArmorBug), # wrong type for access
+        ((None  , 'int' , '/foo'    )    , AppArmorBug), # wrong type for access
+        (('send', dict(), '/foo'    )    , AppArmorBug), # wrong type for signal
+        (('send', None  , '/foo'    )    , AppArmorBug), # wrong type for signal
+        (('send', 'int' , dict()    )    , AppArmorBug), # wrong type for peer
+        (('send', 'int' , None      )    , AppArmorBug), # wrong type for peer
+    )
 
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
-            SignalRule(params[0], params[1], params[2])
+            SignalRule(*params)
 
     def test_missing_params_1(self):
         with self.assertRaises(TypeError):
@@ -225,7 +225,7 @@ class WriteSignalTestAATest(AATest):
         self.assertEqual(expected.strip(), clean, 'unexpected clean rule')
         self.assertEqual(rawrule.strip(), raw, 'unexpected raw rule')
 
-    tests = [
+    tests = (
         #  raw rule                                               clean rule
         ('     signal         ,    # foo        '              , 'signal, # foo'),
         ('    audit     signal send,'                          , 'audit signal send,'),
@@ -250,7 +250,7 @@ class WriteSignalTestAATest(AATest):
         ('signal receive peer=foo,'                            , 'signal receive peer=foo,'),
         ('signal (send receive) peer=/usr/bin/bar,'            , 'signal (receive send) peer=/usr/bin/bar,'),
         ('signal wr set=(pipe, usr1) peer=/sbin/baz,'          , 'signal wr set=(pipe usr1) peer=/sbin/baz,'),
-    ]
+    )
 
     def test_write_manually(self):
         obj = SignalRule('send', 'quit', '/foo', allow_keyword=True)
@@ -277,197 +277,197 @@ class SignalCoveredTest(AATest):
 class SignalCoveredTest_01(SignalCoveredTest):
     rule = 'signal send,'
 
-    tests = [
+    tests = (
         #   rule                                equal     strict equal    covered     covered exact
-        ('signal,'                         , [ False   , False         , False     , False     ]),
-        ('signal send,'                    , [ True    , True          , True      , True      ]),
-        ('signal send peer=unconfined,'    , [ False   , False         , True      , True      ]),
-        ('signal send, # comment'          , [ True    , False         , True      , True      ]),
-        ('allow signal send,'              , [ True    , False         , True      , True      ]),
-        ('signal     send,'                , [ True    , False         , True      , True      ]),
-        ('signal send set=quit,'           , [ False   , False         , True      , True      ]),
-        ('signal send set=int,'            , [ False   , False         , True      , True      ]),
-        ('audit signal send,'              , [ False   , False         , False     , False     ]),
-        ('audit signal,'                   , [ False   , False         , False     , False     ]),
-        ('signal receive,'                 , [ False   , False         , False     , False     ]),
-        ('signal set=int,'                 , [ False   , False         , False     , False     ]),
-        ('audit deny signal send,'         , [ False   , False         , False     , False     ]),
-        ('deny signal send,'               , [ False   , False         , False     , False     ]),
-    ]
+        ('signal,'                         , ( False   , False         , False     , False     )),
+        ('signal send,'                    , ( True    , True          , True      , True      )),
+        ('signal send peer=unconfined,'    , ( False   , False         , True      , True      )),
+        ('signal send, # comment'          , ( True    , False         , True      , True      )),
+        ('allow signal send,'              , ( True    , False         , True      , True      )),
+        ('signal     send,'                , ( True    , False         , True      , True      )),
+        ('signal send set=quit,'           , ( False   , False         , True      , True      )),
+        ('signal send set=int,'            , ( False   , False         , True      , True      )),
+        ('audit signal send,'              , ( False   , False         , False     , False     )),
+        ('audit signal,'                   , ( False   , False         , False     , False     )),
+        ('signal receive,'                 , ( False   , False         , False     , False     )),
+        ('signal set=int,'                 , ( False   , False         , False     , False     )),
+        ('audit deny signal send,'         , ( False   , False         , False     , False     )),
+        ('deny signal send,'               , ( False   , False         , False     , False     )),
+    )
 
 class SignalCoveredTest_02(SignalCoveredTest):
     rule = 'audit signal send,'
 
-    tests = [
+    tests = (
         #   rule                                equal     strict equal    covered     covered exact
-        (      'signal send,'              , [ False   , False         , True      , False     ]),
-        ('audit signal send,'              , [ True    , True          , True      , True      ]),
-        (      'signal send set=quit,'     , [ False   , False         , True      , False     ]),
-        ('audit signal send set=quit,'     , [ False   , False         , True      , True      ]),
-        (      'signal,'                   , [ False   , False         , False     , False     ]),
-        ('audit signal,'                   , [ False   , False         , False     , False     ]),
-        ('signal receive,'                 , [ False   , False         , False     , False     ]),
-    ]
+        (      'signal send,'              , ( False   , False         , True      , False     )),
+        ('audit signal send,'              , ( True    , True          , True      , True      )),
+        (      'signal send set=quit,'     , ( False   , False         , True      , False     )),
+        ('audit signal send set=quit,'     , ( False   , False         , True      , True      )),
+        (      'signal,'                   , ( False   , False         , False     , False     )),
+        ('audit signal,'                   , ( False   , False         , False     , False     )),
+        ('signal receive,'                 , ( False   , False         , False     , False     )),
+    )
 
 class SignalCoveredTest_03(SignalCoveredTest):
     rule = 'signal send set=quit,'
 
-    tests = [
+    tests = (
         #   rule                                equal     strict equal    covered     covered exact
-        (      'signal send set=quit,'     , [ True    , True          , True      , True      ]),
-        ('allow signal send set=quit,'     , [ True    , False         , True      , True      ]),
-        (      'signal send,'              , [ False   , False         , False     , False     ]),
-        (      'signal,'                   , [ False   , False         , False     , False     ]),
-        (      'signal send set=int,'      , [ False   , False         , False     , False     ]),
-        ('audit signal,'                   , [ False   , False         , False     , False     ]),
-        ('audit signal send set=quit,'     , [ False   , False         , False     , False     ]),
-        ('audit signal set=quit,'          , [ False   , False         , False     , False     ]),
-        (      'signal send,'              , [ False   , False         , False     , False     ]),
-        (      'signal,'                   , [ False   , False         , False     , False     ]),
-    ]
+        (      'signal send set=quit,'     , ( True    , True          , True      , True      )),
+        ('allow signal send set=quit,'     , ( True    , False         , True      , True      )),
+        (      'signal send,'              , ( False   , False         , False     , False     )),
+        (      'signal,'                   , ( False   , False         , False     , False     )),
+        (      'signal send set=int,'      , ( False   , False         , False     , False     )),
+        ('audit signal,'                   , ( False   , False         , False     , False     )),
+        ('audit signal send set=quit,'     , ( False   , False         , False     , False     )),
+        ('audit signal set=quit,'          , ( False   , False         , False     , False     )),
+        (      'signal send,'              , ( False   , False         , False     , False     )),
+        (      'signal,'                   , ( False   , False         , False     , False     )),
+    )
 
 class SignalCoveredTest_04(SignalCoveredTest):
     rule = 'signal,'
 
-    tests = [
+    tests = (
         #   rule                                equal     strict equal    covered     covered exact
-        (      'signal,'                   , [ True    , True          , True      , True      ]),
-        ('allow signal,'                   , [ True    , False         , True      , True      ]),
-        (      'signal send,'              , [ False   , False         , True      , True      ]),
-        (      'signal w set=quit,'        , [ False   , False         , True      , True      ]),
-        (      'signal set=int,'           , [ False   , False         , True      , True      ]),
-        (      'signal send set=quit,'     , [ False   , False         , True      , True      ]),
-        ('audit signal,'                   , [ False   , False         , False     , False     ]),
-        ('deny  signal,'                   , [ False   , False         , False     , False     ]),
-    ]
+        (      'signal,'                   , ( True    , True          , True      , True      )),
+        ('allow signal,'                   , ( True    , False         , True      , True      )),
+        (      'signal send,'              , ( False   , False         , True      , True      )),
+        (      'signal w set=quit,'        , ( False   , False         , True      , True      )),
+        (      'signal set=int,'           , ( False   , False         , True      , True      )),
+        (      'signal send set=quit,'     , ( False   , False         , True      , True      )),
+        ('audit signal,'                   , ( False   , False         , False     , False     )),
+        ('deny  signal,'                   , ( False   , False         , False     , False     )),
+    )
 
 class SignalCoveredTest_05(SignalCoveredTest):
     rule = 'deny signal send,'
 
-    tests = [
+    tests = (
         #   rule                                equal     strict equal    covered     covered exact
-        (      'deny signal send,'         , [ True    , True          , True      , True      ]),
-        ('audit deny signal send,'         , [ False   , False         , False     , False     ]),
-        (           'signal send,'         , [ False   , False         , False     , False     ]), # XXX should covered be true here?
-        (      'deny signal receive,'      , [ False   , False         , False     , False     ]),
-        (      'deny signal,'              , [ False   , False         , False     , False     ]),
-    ]
+        (      'deny signal send,'         , ( True    , True          , True      , True      )),
+        ('audit deny signal send,'         , ( False   , False         , False     , False     )),
+        (           'signal send,'         , ( False   , False         , False     , False     )), # XXX should covered be true here?
+        (      'deny signal receive,'      , ( False   , False         , False     , False     )),
+        (      'deny signal,'              , ( False   , False         , False     , False     )),
+    )
 
 class SignalCoveredTest_06(SignalCoveredTest):
     rule = 'signal send peer=unconfined,'
 
-    tests = [
+    tests = (
         #   rule                                  equal     strict equal    covered     covered exact
-        ('signal,'                            , [ False   , False         , False     , False     ]),
-        ('signal send,'                       , [ False   , False         , False     , False     ]),
-        ('signal send peer=unconfined,'       , [ True    , True          , True      , True      ]),
-        ('signal peer=unconfined,'            , [ False   , False         , False     , False     ]),
-        ('signal send, # comment'             , [ False   , False         , False     , False     ]),
-        ('allow signal send,'                 , [ False   , False         , False     , False     ]),
-        ('allow signal send peer=unconfined,' , [ True    , False         , True      , True      ]),
-        ('allow signal send peer=/foo/bar,'   , [ False   , False         , False     , False     ]),
-        ('allow signal send peer=/**,'        , [ False   , False         , False     , False     ]),
-        ('allow signal send peer=**,'         , [ False   , False         , False     , False     ]),
-        ('signal    send,'                    , [ False   , False         , False     , False     ]),
-        ('signal    send peer=unconfined,'    , [ True    , False         , True      , True      ]),
-        ('signal send set=quit,'              , [ False   , False         , False     , False     ]),
-        ('signal send set=int peer=unconfined,',[ False   , False         , True      , True      ]),
-        ('audit signal send peer=unconfined,' , [ False   , False         , False     , False     ]),
-        ('audit signal,'                      , [ False   , False         , False     , False     ]),
-        ('signal receive,'                    , [ False   , False         , False     , False     ]),
-        ('signal set=int,'                    , [ False   , False         , False     , False     ]),
-        ('audit deny signal send,'            , [ False   , False         , False     , False     ]),
-        ('deny signal send,'                  , [ False   , False         , False     , False     ]),
-    ]
+        ('signal,'                            , ( False   , False         , False     , False     )),
+        ('signal send,'                       , ( False   , False         , False     , False     )),
+        ('signal send peer=unconfined,'       , ( True    , True          , True      , True      )),
+        ('signal peer=unconfined,'            , ( False   , False         , False     , False     )),
+        ('signal send, # comment'             , ( False   , False         , False     , False     )),
+        ('allow signal send,'                 , ( False   , False         , False     , False     )),
+        ('allow signal send peer=unconfined,' , ( True    , False         , True      , True      )),
+        ('allow signal send peer=/foo/bar,'   , ( False   , False         , False     , False     )),
+        ('allow signal send peer=/**,'        , ( False   , False         , False     , False     )),
+        ('allow signal send peer=**,'         , ( False   , False         , False     , False     )),
+        ('signal    send,'                    , ( False   , False         , False     , False     )),
+        ('signal    send peer=unconfined,'    , ( True    , False         , True      , True      )),
+        ('signal send set=quit,'              , ( False   , False         , False     , False     )),
+        ('signal send set=int peer=unconfined,',( False   , False         , True      , True      )),
+        ('audit signal send peer=unconfined,' , ( False   , False         , False     , False     )),
+        ('audit signal,'                      , ( False   , False         , False     , False     )),
+        ('signal receive,'                    , ( False   , False         , False     , False     )),
+        ('signal set=int,'                    , ( False   , False         , False     , False     )),
+        ('audit deny signal send,'            , ( False   , False         , False     , False     )),
+        ('deny signal send,'                  , ( False   , False         , False     , False     )),
+    )
 
 class SignalCoveredTest_07(SignalCoveredTest):
     rule = 'signal send peer=/foo/bar,'
 
-    tests = [
+    tests = (
         #   rule                                  equal     strict equal    covered     covered exact
-        ('signal,'                            , [ False   , False         , False     , False     ]),
-        ('signal send,'                       , [ False   , False         , False     , False     ]),
-        ('signal send peer=/foo/bar,'         , [ True    , True          , True      , True      ]),
-        ('signal send peer=/foo/*,'           , [ False   , False         , False     , False     ]),
-        ('signal send peer=/**,'              , [ False   , False         , False     , False     ]),
-        ('signal send peer=/what/*,'          , [ False   , False         , False     , False     ]),
-        ('signal peer=/foo/bar,'              , [ False   , False         , False     , False     ]),
-        ('signal send, # comment'             , [ False   , False         , False     , False     ]),
-        ('allow signal send,'                 , [ False   , False         , False     , False     ]),
-        ('allow signal send peer=/foo/bar,'   , [ True    , False         , True      , True      ]),
-        ('signal    send,'                    , [ False   , False         , False     , False     ]),
-        ('signal    send peer=/foo/bar,'      , [ True    , False         , True      , True      ]),
-        ('signal    send peer=/what/ever,'    , [ False   , False         , False     , False     ]),
-        ('signal send set=quit,'              , [ False   , False         , False     , False     ]),
-        ('signal send set=int peer=/foo/bar,' , [ False   , False         , True      , True      ]),
-        ('audit signal send peer=/foo/bar,'   , [ False   , False         , False     , False     ]),
-        ('audit signal,'                      , [ False   , False         , False     , False     ]),
-        ('signal receive,'                    , [ False   , False         , False     , False     ]),
-        ('signal set=int,'                    , [ False   , False         , False     , False     ]),
-        ('audit deny signal send,'            , [ False   , False         , False     , False     ]),
-        ('deny signal send,'                  , [ False   , False         , False     , False     ]),
-    ]
+        ('signal,'                            , ( False   , False         , False     , False     )),
+        ('signal send,'                       , ( False   , False         , False     , False     )),
+        ('signal send peer=/foo/bar,'         , ( True    , True          , True      , True      )),
+        ('signal send peer=/foo/*,'           , ( False   , False         , False     , False     )),
+        ('signal send peer=/**,'              , ( False   , False         , False     , False     )),
+        ('signal send peer=/what/*,'          , ( False   , False         , False     , False     )),
+        ('signal peer=/foo/bar,'              , ( False   , False         , False     , False     )),
+        ('signal send, # comment'             , ( False   , False         , False     , False     )),
+        ('allow signal send,'                 , ( False   , False         , False     , False     )),
+        ('allow signal send peer=/foo/bar,'   , ( True    , False         , True      , True      )),
+        ('signal    send,'                    , ( False   , False         , False     , False     )),
+        ('signal    send peer=/foo/bar,'      , ( True    , False         , True      , True      )),
+        ('signal    send peer=/what/ever,'    , ( False   , False         , False     , False     )),
+        ('signal send set=quit,'              , ( False   , False         , False     , False     )),
+        ('signal send set=int peer=/foo/bar,' , ( False   , False         , True      , True      )),
+        ('audit signal send peer=/foo/bar,'   , ( False   , False         , False     , False     )),
+        ('audit signal,'                      , ( False   , False         , False     , False     )),
+        ('signal receive,'                    , ( False   , False         , False     , False     )),
+        ('signal set=int,'                    , ( False   , False         , False     , False     )),
+        ('audit deny signal send,'            , ( False   , False         , False     , False     )),
+        ('deny signal send,'                  , ( False   , False         , False     , False     )),
+    )
 
 class SignalCoveredTest_08(SignalCoveredTest):
     rule = 'signal send peer=**,'
 
-    tests = [
+    tests = (
         #   rule                                  equal     strict equal    covered     covered exact
-        ('signal,'                            , [ False   , False         , False     , False     ]),
-        ('signal send,'                       , [ False   , False         , False     , False     ]),
-        ('signal send peer=/foo/bar,'         , [ False   , False         , True      , True      ]),
-        ('signal send peer=/foo/*,'           , [ False   , False         , False     , False     ]),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
-        ('signal send peer=/**,'              , [ False   , False         , False     , False     ]),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
-        ('signal send peer=/what/*,'          , [ False   , False         , False     , False     ]),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
-        ('signal peer=/foo/bar,'              , [ False   , False         , False     , False     ]),
-        ('signal send, # comment'             , [ False   , False         , False     , False     ]),
-        ('allow signal send,'                 , [ False   , False         , False     , False     ]),
-        ('allow signal send peer=/foo/bar,'   , [ False   , False         , True      , True      ]),
-        ('signal    send,'                    , [ False   , False         , False     , False     ]),
-        ('signal    send peer=/foo/bar,'      , [ False   , False         , True      , True      ]),
-        ('signal    send peer=/what/ever,'    , [ False   , False         , True      , True      ]),
-        ('signal send set=quit,'              , [ False   , False         , False     , False     ]),
-        ('signal send set=int peer=/foo/bar,' , [ False   , False         , True      , True      ]),
-        ('audit signal send peer=/foo/bar,'   , [ False   , False         , False     , False     ]),
-        ('audit signal,'                      , [ False   , False         , False     , False     ]),
-        ('signal receive,'                    , [ False   , False         , False     , False     ]),
-        ('signal set=int,'                    , [ False   , False         , False     , False     ]),
-        ('audit deny signal send,'            , [ False   , False         , False     , False     ]),
-        ('deny signal send,'                  , [ False   , False         , False     , False     ]),
-    ]
+        ('signal,'                            , ( False   , False         , False     , False     )),
+        ('signal send,'                       , ( False   , False         , False     , False     )),
+        ('signal send peer=/foo/bar,'         , ( False   , False         , True      , True      )),
+        ('signal send peer=/foo/*,'           , ( False   , False         , False     , False     )),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
+        ('signal send peer=/**,'              , ( False   , False         , False     , False     )),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
+        ('signal send peer=/what/*,'          , ( False   , False         , False     , False     )),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
+        ('signal peer=/foo/bar,'              , ( False   , False         , False     , False     )),
+        ('signal send, # comment'             , ( False   , False         , False     , False     )),
+        ('allow signal send,'                 , ( False   , False         , False     , False     )),
+        ('allow signal send peer=/foo/bar,'   , ( False   , False         , True      , True      )),
+        ('signal    send,'                    , ( False   , False         , False     , False     )),
+        ('signal    send peer=/foo/bar,'      , ( False   , False         , True      , True      )),
+        ('signal    send peer=/what/ever,'    , ( False   , False         , True      , True      )),
+        ('signal send set=quit,'              , ( False   , False         , False     , False     )),
+        ('signal send set=int peer=/foo/bar,' , ( False   , False         , True      , True      )),
+        ('audit signal send peer=/foo/bar,'   , ( False   , False         , False     , False     )),
+        ('audit signal,'                      , ( False   , False         , False     , False     )),
+        ('signal receive,'                    , ( False   , False         , False     , False     )),
+        ('signal set=int,'                    , ( False   , False         , False     , False     )),
+        ('audit deny signal send,'            , ( False   , False         , False     , False     )),
+        ('deny signal send,'                  , ( False   , False         , False     , False     )),
+    )
 
 class SignalCoveredTest_09(SignalCoveredTest):
     rule = 'signal (send, receive) set=(int, quit),'
 
-    tests = [
+    tests = (
         #   rule                                  equal     strict equal    covered     covered exact
-        ('signal,'                            , [ False   , False         , False     , False     ]),
-        ('signal send,'                       , [ False   , False         , False     , False     ]),
-        ('signal send set=int,'               , [ False   , False         , True      , True      ]),
-        ('signal receive set=quit,'           , [ False   , False         , True      , True      ]),
-        ('signal (receive,send) set=int,'     , [ False   , False         , True      , True      ]),
-        ('signal (receive,send) set=(int quit),',[True    , False         , True      , True      ]),
-        ('signal send set=(quit int),'        , [ False   , False         , True      , True      ]),
-        ('signal send peer=/foo/bar,'         , [ False   , False         , False     , False     ]),
-        ('signal send peer=/foo/*,'           , [ False   , False         , False     , False     ]),
-        ('signal send peer=/**,'              , [ False   , False         , False     , False     ]),
-        ('signal send peer=/what/*,'          , [ False   , False         , False     , False     ]),
-        ('signal peer=/foo/bar,'              , [ False   , False         , False     , False     ]),
-        ('signal send, # comment'             , [ False   , False         , False     , False     ]),
-        ('allow signal send,'                 , [ False   , False         , False     , False     ]),
-        ('allow signal send peer=/foo/bar,'   , [ False   , False         , False     , False     ]),
-        ('signal    send,'                    , [ False   , False         , False     , False     ]),
-        ('signal    send peer=/foo/bar,'      , [ False   , False         , False     , False     ]),
-        ('signal    send peer=/what/ever,'    , [ False   , False         , False     , False     ]),
-        ('signal send set=quit,'              , [ False   , False         , True      , True      ]),
-        ('signal send set=int peer=/foo/bar,' , [ False   , False         , True      , True      ]),
-        ('audit signal send peer=/foo/bar,'   , [ False   , False         , False     , False     ]),
-        ('audit signal,'                      , [ False   , False         , False     , False     ]),
-        ('signal receive,'                    , [ False   , False         , False     , False     ]),
-        ('signal set=int,'                    , [ False   , False         , False     , False     ]),
-        ('audit deny signal send,'            , [ False   , False         , False     , False     ]),
-        ('deny signal send,'                  , [ False   , False         , False     , False     ]),
-    ]
+        ('signal,'                            , ( False   , False         , False     , False     )),
+        ('signal send,'                       , ( False   , False         , False     , False     )),
+        ('signal send set=int,'               , ( False   , False         , True      , True      )),
+        ('signal receive set=quit,'           , ( False   , False         , True      , True      )),
+        ('signal (receive,send) set=int,'     , ( False   , False         , True      , True      )),
+        ('signal (receive,send) set=(int quit),',(True    , False         , True      , True      )),
+        ('signal send set=(quit int),'        , ( False   , False         , True      , True      )),
+        ('signal send peer=/foo/bar,'         , ( False   , False         , False     , False     )),
+        ('signal send peer=/foo/*,'           , ( False   , False         , False     , False     )),
+        ('signal send peer=/**,'              , ( False   , False         , False     , False     )),
+        ('signal send peer=/what/*,'          , ( False   , False         , False     , False     )),
+        ('signal peer=/foo/bar,'              , ( False   , False         , False     , False     )),
+        ('signal send, # comment'             , ( False   , False         , False     , False     )),
+        ('allow signal send,'                 , ( False   , False         , False     , False     )),
+        ('allow signal send peer=/foo/bar,'   , ( False   , False         , False     , False     )),
+        ('signal    send,'                    , ( False   , False         , False     , False     )),
+        ('signal    send peer=/foo/bar,'      , ( False   , False         , False     , False     )),
+        ('signal    send peer=/what/ever,'    , ( False   , False         , False     , False     )),
+        ('signal send set=quit,'              , ( False   , False         , True      , True      )),
+        ('signal send set=int peer=/foo/bar,' , ( False   , False         , True      , True      )),
+        ('audit signal send peer=/foo/bar,'   , ( False   , False         , False     , False     )),
+        ('audit signal,'                      , ( False   , False         , False     , False     )),
+        ('signal receive,'                    , ( False   , False         , False     , False     )),
+        ('signal set=int,'                    , ( False   , False         , False     , False     )),
+        ('audit deny signal send,'            , ( False   , False         , False     , False     )),
+        ('deny signal send,'                  , ( False   , False         , False     , False     )),
+    )
 
 
 
@@ -516,7 +516,7 @@ class SignalCoveredTest_Invalid(AATest):
             obj.is_equal(testobj)
 
 class SignalLogprofHeaderTest(AATest):
-    tests = [
+    tests = (
         ('signal,',                     [                               _('Access mode'), _('ALL'),         _('Signal'), _('ALL'),      _('Peer'), _('ALL'),    ]),
         ('signal send,',                [                               _('Access mode'), 'send',           _('Signal'), _('ALL'),      _('Peer'), _('ALL'),    ]),
         ('signal send set=quit,',       [                               _('Access mode'), 'send',           _('Signal'), 'quit',        _('Peer'), _('ALL'),    ]),
@@ -527,7 +527,7 @@ class SignalLogprofHeaderTest(AATest):
         ('signal set=(int, quit),',     [                               _('Access mode'), _('ALL'),         _('Signal'), 'int quit',    _('Peer'), _('ALL'),    ]),
         ('signal set=( quit, int),',    [                               _('Access mode'), _('ALL'),         _('Signal'), 'int quit',    _('Peer'), _('ALL'),    ]),
         ('signal (send, receive) set=( quit, int) peer=/foo,',    [     _('Access mode'), 'receive send',   _('Signal'), 'int quit',    _('Peer'), '/foo',      ]),
-    ]
+    )
 
     def _run_test(self, params, expected):
         obj = SignalRule.parse(params)
@@ -546,10 +546,10 @@ class SignalRulesTest(AATest):
 
     def test_ruleset_1(self):
         ruleset = SignalRuleset()
-        rules = [
+        rules = (
             'signal set=int,',
             'signal send,',
-        ]
+        )
 
         expected_raw = [
             'signal set=int,',
@@ -571,11 +571,11 @@ class SignalRulesTest(AATest):
 
     def test_ruleset_2(self):
         ruleset = SignalRuleset()
-        rules = [
+        rules = (
             'signal send set=int,',
             'allow signal send,',
             'deny signal set=quit, # example comment',
-        ]
+        )
 
         expected_raw = [
             '  signal send set=int,',

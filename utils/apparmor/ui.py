@@ -129,7 +129,7 @@ def UI_YesNo(text, default):
     yeskey = get_translated_hotkey(yes).lower()
     nokey = get_translated_hotkey(no).lower()
     ans = 'XXXINVALIDXXX'
-    while ans not in ['y', 'n']:
+    while ans not in ('y', 'n'):
         if UI_mode == 'json':
             jsonout = {'dialog': 'yesno', 'text': text, 'default': default}
             write_json(jsonout)
@@ -173,7 +173,7 @@ def UI_YesNoCancel(text, default):
     cancelkey = get_translated_hotkey(cancel).lower()
 
     ans = 'XXXINVALIDXXX'
-    while ans not in ['c', 'n', 'y']:
+    while ans not in ('c', 'n', 'y'):
         if UI_mode == 'json':
             jsonout = {'dialog': 'yesnocancel', 'text': text, 'default': default}
             write_json(jsonout)
@@ -373,8 +373,8 @@ class PromptQuestion(object):
     helptext = None
 
     def __init__(self):
-        self.headers = list()
-        self.functions = list()
+        self.headers = []
+        self.functions = []
         self.selected = 0
 
     def promptUser(self, params=''):
@@ -400,7 +400,7 @@ class PromptQuestion(object):
         if helptext:
             functions.append('CMD_HELP')
 
-        menu_items = list()
+        menu_items = []
         keys = dict()
 
         for cmd in functions:

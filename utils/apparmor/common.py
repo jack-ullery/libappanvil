@@ -273,7 +273,7 @@ if sys.version_info[0] > 2:
 
 def type_is_str(var):
     ''' returns True if the given variable is a str (or unicode string when using python 2)'''
-    if type(var) in [str, unicode]:  # python 2 sometimes uses the 'unicode' type
+    if type(var) in (str, unicode):  # python 2 sometimes uses the 'unicode' type
         return True
     else:
         return False

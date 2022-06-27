@@ -24,8 +24,8 @@ from apparmor.logparser import ReadLog
 from apparmor.translations import init_translation
 _ = init_translation()
 
-exp = namedtuple('exp', ['audit', 'allow_keyword', 'deny', 'comment',
-        'access', 'all_access', 'peer', 'all_peers'])
+exp = namedtuple('exp', ('audit', 'allow_keyword', 'deny', 'comment',
+        'access', 'all_access', 'peer', 'all_peers'))
 
 # # --- tests for single PtraceRule --- #
 
@@ -44,7 +44,7 @@ class PtraceTest(AATest):
         self.assertEqual(expected.comment, obj.comment)
 
 class PtraceTestParse(PtraceTest):
-    tests = [
+    tests = (
         # PtraceRule object                       audit  allow  deny   comment        access        all?   peer            all?
         ('ptrace,'                              , exp(False, False, False, '',        None  ,       True , None,           True     )),
 #        ('ptrace (),'                           , exp(False, False, False, '',        None  ,       True , None,           True     )), # XXX also broken in SignalRule?
@@ -59,7 +59,7 @@ class PtraceTestParse(PtraceTest):
         ('ptrace peer=/foo,'                    , exp(False, False, False, '',        None  ,       True , '/foo',         False    )),
         ('ptrace r peer=/foo,'                  , exp(False, False, False, '',        {'r'},        False, '/foo',         False    )),
         ('ptrace r peer="/foo bar",'            , exp(False, False, False, '',        {'r'},        False, '/foo bar',     False    )),
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(PtraceRule.match(rawrule))
@@ -68,14 +68,14 @@ class PtraceTestParse(PtraceTest):
         self._compare_obj(obj, expected)
 
 class PtraceTestParseInvalid(PtraceTest):
-    tests = [
+    tests = (
         ('ptrace foo,'                     , AppArmorException),
         ('ptrace foo bar,'                 , AppArmorException),
         ('ptrace foo int,'                 , AppArmorException),
         ('ptrace read bar,'                , AppArmorException),
         ('ptrace read tracedby,'           , AppArmorException),
         ('ptrace peer=,'                   , AppArmorException),
-    ]
+    )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(PtraceRule.match(rawrule))  # the above invalid rules still match the main regex!
@@ -124,7 +124,7 @@ class PtraceTestParseFromLog(PtraceTest):
         self.assertEqual(obj.get_raw(1), '  ptrace tracedby peer=/home/ubuntu/bzr/apparmor/tests/regression/apparmor/ptrace,')
 
 class PtraceFromInit(PtraceTest):
-    tests = [
+    tests = (
         # PtraceRule object                                   audit  allow  deny   comment        access        all?   peer            all?
         (PtraceRule('r',                'unconfined', deny=True) , exp(False, False, True , ''           , {'r'},        False, 'unconfined',   False)),
         (PtraceRule(('r', 'read'),      '/bin/foo')     , exp(False, False, False, ''           , {'r', 'read'},False, '/bin/foo',     False)),
@@ -132,29 +132,29 @@ class PtraceFromInit(PtraceTest):
         (PtraceRule('rw',               '/bin/foo')     , exp(False, False, False, ''           , {'rw'},       False, '/bin/foo',     False )),
         (PtraceRule('rw',               PtraceRule.ALL) , exp(False, False, False, ''           , {'rw'},       False, None,           True )),
         (PtraceRule(PtraceRule.ALL,     PtraceRule.ALL) , exp(False, False, False, ''           , None  ,       True,  None,           True )),
-    ]
+    )
 
     def _run_test(self, obj, expected):
         self._compare_obj(obj, expected)
 
 class InvalidPtraceInit(AATest):
-    tests = [
+    tests = (
         # init params                     expected exception
-        ([''    ,   '/foo'    ]    , AppArmorBug), # empty access
-        (['read',   ''        ]    , AppArmorBug), # empty peer
-        (['    ',   '/foo'    ]    , AppArmorBug), # whitespace access
-        (['read',   '    '    ]    , AppArmorBug), # whitespace peer
-        (['xyxy',   '/foo'    ]    , AppArmorException), # invalid access
+        ((''    ,   '/foo'    )    , AppArmorBug), # empty access
+        (('read',   ''        )    , AppArmorBug), # empty peer
+        (('    ',   '/foo'    )    , AppArmorBug), # whitespace access
+        (('read',   '    '    )    , AppArmorBug), # whitespace peer
+        (('xyxy',   '/foo'    )    , AppArmorException), # invalid access
         # XXX is 'invalid peer' possible at all?
-        ([dict(),   '/foo'    ]    , AppArmorBug), # wrong type for access
-        ([None  ,   '/foo'    ]    , AppArmorBug), # wrong type for access
-        (['read',   dict()    ]    , AppArmorBug), # wrong type for peer
-        (['read',   None      ]    , AppArmorBug), # wrong type for peer
-    ]
+        ((dict(),   '/foo'    )    , AppArmorBug), # wrong type for access
+        ((None  ,   '/foo'    )    , AppArmorBug), # wrong type for access
+        (('read',   dict()    )    , AppArmorBug), # wrong type for peer
+        (('read',   None      )    , AppArmorBug), # wrong type for peer
+    )
 
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
-            PtraceRule(params[0], params[1])
+            PtraceRule(*params)
 
     def test_missing_params_1(self):
         with self.assertRaises(TypeError):
@@ -204,7 +204,7 @@ class WritePtraceTestAATest(AATest):
         self.assertEqual(expected.strip(), clean, 'unexpected clean rule')
         self.assertEqual(rawrule.strip(), raw, 'unexpected raw rule')
 
-    tests = [
+    tests = (
         #  raw rule                                               clean rule
         ('ptrace,'                                              , 'ptrace,'),
         ('     ptrace         ,    # foo        '               , 'ptrace, # foo'),
@@ -232,7 +232,7 @@ class WritePtraceTestAATest(AATest):
         ('ptrace (read tracedby) peer=/usr/bin/bar,'            , 'ptrace (read tracedby) peer=/usr/bin/bar,'),
         ('ptrace (trace read) peer=/usr/bin/bar,'               , 'ptrace (read trace) peer=/usr/bin/bar,'),
         ('ptrace wr peer=/sbin/baz,'                            , 'ptrace wr peer=/sbin/baz,'),
-    ]
+    )
 
     def test_write_manually(self):
         obj = PtraceRule('read', '/foo', allow_keyword=True)
@@ -259,160 +259,160 @@ class PtraceCoveredTest(AATest):
 class PtraceCoveredTest_01(PtraceCoveredTest):
     rule = 'ptrace read,'
 
-    tests = [
+    tests = (
         #   rule                                equal     strict equal    covered     covered exact
-        ('ptrace,'                          , [ False   , False         , False     , False     ]),
-        ('ptrace read,'                     , [ True    , True          , True      , True      ]),
-        ('ptrace read peer=unconfined,'     , [ False   , False         , True      , True      ]),
-        ('ptrace read, # comment'           , [ True    , False         , True      , True      ]),
-        ('allow ptrace read,'               , [ True    , False         , True      , True      ]),
-        ('ptrace     read,'                 , [ True    , False         , True      , True      ]),
-        ('audit ptrace read,'               , [ False   , False         , False     , False     ]),
-        ('audit ptrace,'                    , [ False   , False         , False     , False     ]),
-        ('ptrace tracedby,'                 , [ False   , False         , False     , False     ]),
-        ('audit deny ptrace read,'          , [ False   , False         , False     , False     ]),
-        ('deny ptrace read,'                , [ False   , False         , False     , False     ]),
-    ]
+        ('ptrace,'                          , ( False   , False         , False     , False     )),
+        ('ptrace read,'                     , ( True    , True          , True      , True      )),
+        ('ptrace read peer=unconfined,'     , ( False   , False         , True      , True      )),
+        ('ptrace read, # comment'           , ( True    , False         , True      , True      )),
+        ('allow ptrace read,'               , ( True    , False         , True      , True      )),
+        ('ptrace     read,'                 , ( True    , False         , True      , True      )),
+        ('audit ptrace read,'               , ( False   , False         , False     , False     )),
+        ('audit ptrace,'                    , ( False   , False         , False     , False     )),
+        ('ptrace tracedby,'                 , ( False   , False         , False     , False     )),
+        ('audit deny ptrace read,'          , ( False   , False         , False     , False     )),
+        ('deny ptrace read,'                , ( False   , False         , False     , False     )),
+    )
 
 class PtraceCoveredTest_02(PtraceCoveredTest):
     rule = 'audit ptrace read,'
 
-    tests = [
+    tests = (
         #   rule                                equal     strict equal    covered     covered exact
-        (      'ptrace read,'               , [ False   , False         , True      , False     ]),
-        ('audit ptrace read,'               , [ True    , True          , True      , True      ]),
-        (      'ptrace,'                    , [ False   , False         , False     , False     ]),
-        ('audit ptrace,'                    , [ False   , False         , False     , False     ]),
-        ('ptrace tracedby,'                 , [ False   , False         , False     , False     ]),
-    ]
+        (      'ptrace read,'               , ( False   , False         , True      , False     )),
+        ('audit ptrace read,'               , ( True    , True          , True      , True      )),
+        (      'ptrace,'                    , ( False   , False         , False     , False     )),
+        ('audit ptrace,'                    , ( False   , False         , False     , False     )),
+        ('ptrace tracedby,'                 , ( False   , False         , False     , False     )),
+    )
 
 class PtraceCoveredTest_03(PtraceCoveredTest):
     rule = 'ptrace,'
 
-    tests = [
+    tests = (
         #   rule                                equal     strict equal    covered     covered exact
-        (      'ptrace,'                    , [ True    , True          , True      , True      ]),
-        ('allow ptrace,'                    , [ True    , False         , True      , True      ]),
-        (      'ptrace read,'               , [ False   , False         , True      , True      ]),
-        (      'ptrace w,'                  , [ False   , False         , True      , True      ]),
-        ('audit ptrace,'                    , [ False   , False         , False     , False     ]),
-        ('deny  ptrace,'                    , [ False   , False         , False     , False     ]),
-    ]
+        (      'ptrace,'                    , ( True    , True          , True      , True      )),
+        ('allow ptrace,'                    , ( True    , False         , True      , True      )),
+        (      'ptrace read,'               , ( False   , False         , True      , True      )),
+        (      'ptrace w,'                  , ( False   , False         , True      , True      )),
+        ('audit ptrace,'                    , ( False   , False         , False     , False     )),
+        ('deny  ptrace,'                    , ( False   , False         , False     , False     )),
+    )
 
 class PtraceCoveredTest_04(PtraceCoveredTest):
     rule = 'deny ptrace read,'
 
-    tests = [
+    tests = (
         #   rule                                equal     strict equal    covered     covered exact
-        (      'deny ptrace read,'          , [ True    , True          , True      , True      ]),
-        ('audit deny ptrace read,'          , [ False   , False         , False     , False     ]),
-        (           'ptrace read,'          , [ False   , False         , False     , False     ]), # XXX should covered be true here?
-        (      'deny ptrace tracedby,'      , [ False   , False         , False     , False     ]),
-        (      'deny ptrace,'               , [ False   , False         , False     , False     ]),
-    ]
+        (      'deny ptrace read,'          , ( True    , True          , True      , True      )),
+        ('audit deny ptrace read,'          , ( False   , False         , False     , False     )),
+        (           'ptrace read,'          , ( False   , False         , False     , False     )), # XXX should covered be true here?
+        (      'deny ptrace tracedby,'      , ( False   , False         , False     , False     )),
+        (      'deny ptrace,'               , ( False   , False         , False     , False     )),
+    )
 
 class PtraceCoveredTest_05(PtraceCoveredTest):
     rule = 'ptrace read peer=unconfined,'
 
-    tests = [
+    tests = (
         #   rule                                    equal     strict equal    covered     covered exact
-        ('ptrace,'                              , [ False   , False         , False     , False     ]),
-        ('ptrace read,'                         , [ False   , False         , False     , False     ]),
-        ('ptrace read peer=unconfined,'         , [ True    , True          , True      , True      ]),
-        ('ptrace peer=unconfined,'              , [ False   , False         , False     , False     ]),
-        ('ptrace read, # comment'               , [ False   , False         , False     , False     ]),
-        ('allow ptrace read,'                   , [ False   , False         , False     , False     ]),
-        ('allow ptrace read peer=unconfined,'   , [ True    , False         , True      , True      ]),
-        ('allow ptrace read peer=/foo/bar,'     , [ False   , False         , False     , False     ]),
-        ('allow ptrace read peer=/**,'          , [ False   , False         , False     , False     ]),
-        ('allow ptrace read peer=**,'           , [ False   , False         , False     , False     ]),
-        ('ptrace    read,'                      , [ False   , False         , False     , False     ]),
-        ('ptrace    read peer=unconfined,'      , [ True    , False         , True      , True      ]),
-        ('audit ptrace read peer=unconfined,'   , [ False   , False         , False     , False     ]),
-        ('audit ptrace,'                        , [ False   , False         , False     , False     ]),
-        ('ptrace tracedby,'                     , [ False   , False         , False     , False     ]),
-        ('audit deny ptrace read,'              , [ False   , False         , False     , False     ]),
-        ('deny ptrace read,'                    , [ False   , False         , False     , False     ]),
-    ]
+        ('ptrace,'                              , ( False   , False         , False     , False     )),
+        ('ptrace read,'                         , ( False   , False         , False     , False     )),
+        ('ptrace read peer=unconfined,'         , ( True    , True          , True      , True      )),
+        ('ptrace peer=unconfined,'              , ( False   , False         , False     , False     )),
+        ('ptrace read, # comment'               , ( False   , False         , False     , False     )),
+        ('allow ptrace read,'                   , ( False   , False         , False     , False     )),
+        ('allow ptrace read peer=unconfined,'   , ( True    , False         , True      , True      )),
+        ('allow ptrace read peer=/foo/bar,'     , ( False   , False         , False     , False     )),
+        ('allow ptrace read peer=/**,'          , ( False   , False         , False     , False     )),
+        ('allow ptrace read peer=**,'           , ( False   , False         , False     , False     )),
+        ('ptrace    read,'                      , ( False   , False         , False     , False     )),
+        ('ptrace    read peer=unconfined,'      , ( True    , False         , True      , True      )),
+        ('audit ptrace read peer=unconfined,'   , ( False   , False         , False     , False     )),
+        ('audit ptrace,'                        , ( False   , False         , False     , False     )),
+        ('ptrace tracedby,'                     , ( False   , False         , False     , False     )),
+        ('audit deny ptrace read,'              , ( False   , False         , False     , False     )),
+        ('deny ptrace read,'                    , ( False   , False         , False     , False     )),
+    )
 
 class PtraceCoveredTest_06(PtraceCoveredTest):
     rule = 'ptrace read peer=/foo/bar,'
 
-    tests = [
+    tests = (
         #   rule                                  equal     strict equal    covered     covered exact
-        ('ptrace,'                              , [ False   , False         , False     , False     ]),
-        ('ptrace read,'                         , [ False   , False         , False     , False     ]),
-        ('ptrace read peer=/foo/bar,'           , [ True    , True          , True      , True      ]),
-        ('ptrace read peer=/foo/*,'             , [ False   , False         , False     , False     ]),
-        ('ptrace read peer=/**,'                , [ False   , False         , False     , False     ]),
-        ('ptrace read peer=/what/*,'            , [ False   , False         , False     , False     ]),
-        ('ptrace peer=/foo/bar,'                , [ False   , False         , False     , False     ]),
-        ('ptrace read, # comment'               , [ False   , False         , False     , False     ]),
-        ('allow ptrace read,'                   , [ False   , False         , False     , False     ]),
-        ('allow ptrace read peer=/foo/bar,'     , [ True    , False         , True      , True      ]),
-        ('ptrace    read,'                      , [ False   , False         , False     , False     ]),
-        ('ptrace    read peer=/foo/bar,'        , [ True    , False         , True      , True      ]),
-        ('ptrace    read peer=/what/ever,'      , [ False   , False         , False     , False     ]),
-        ('audit ptrace read peer=/foo/bar,'     , [ False   , False         , False     , False     ]),
-        ('audit ptrace,'                        , [ False   , False         , False     , False     ]),
-        ('ptrace tracedby,'                     , [ False   , False         , False     , False     ]),
-        ('audit deny ptrace read,'              , [ False   , False         , False     , False     ]),
-        ('deny ptrace read,'                    , [ False   , False         , False     , False     ]),
-    ]
+        ('ptrace,'                              , ( False   , False         , False     , False     )),
+        ('ptrace read,'                         , ( False   , False         , False     , False     )),
+        ('ptrace read peer=/foo/bar,'           , ( True    , True          , True      , True      )),
+        ('ptrace read peer=/foo/*,'             , ( False   , False         , False     , False     )),
+        ('ptrace read peer=/**,'                , ( False   , False         , False     , False     )),
+        ('ptrace read peer=/what/*,'            , ( False   , False         , False     , False     )),
+        ('ptrace peer=/foo/bar,'                , ( False   , False         , False     , False     )),
+        ('ptrace read, # comment'               , ( False   , False         , False     , False     )),
+        ('allow ptrace read,'                   , ( False   , False         , False     , False     )),
+        ('allow ptrace read peer=/foo/bar,'     , ( True    , False         , True      , True      )),
+        ('ptrace    read,'                      , ( False   , False         , False     , False     )),
+        ('ptrace    read peer=/foo/bar,'        , ( True    , False         , True      , True      )),
+        ('ptrace    read peer=/what/ever,'      , ( False   , False         , False     , False     )),
+        ('audit ptrace read peer=/foo/bar,'     , ( False   , False         , False     , False     )),
+        ('audit ptrace,'                        , ( False   , False         , False     , False     )),
+        ('ptrace tracedby,'                     , ( False   , False         , False     , False     )),
+        ('audit deny ptrace read,'              , ( False   , False         , False     , False     )),
+        ('deny ptrace read,'                    , ( False   , False         , False     , False     )),
+    )
 
 class PtraceCoveredTest_07(PtraceCoveredTest):
     rule = 'ptrace read peer=**,'
 
-    tests = [
+    tests = (
         #   rule                                    equal     strict equal    covered     covered exact
-        ('ptrace,'                              , [ False   , False         , False     , False     ]),
-        ('ptrace read,'                         , [ False   , False         , False     , False     ]),
-        ('ptrace read peer=/foo/bar,'           , [ False   , False         , True      , True      ]),
-        ('ptrace read peer=/foo/*,'             , [ False   , False         , False     , False     ]),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
-        ('ptrace read peer=/**,'                , [ False   , False         , False     , False     ]),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
-        ('ptrace read peer=/what/*,'            , [ False   , False         , False     , False     ]),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
-        ('ptrace peer=/foo/bar,'                , [ False   , False         , False     , False     ]),
-        ('ptrace read, # comment'               , [ False   , False         , False     , False     ]),
-        ('allow ptrace read,'                   , [ False   , False         , False     , False     ]),
-        ('allow ptrace read peer=/foo/bar,'     , [ False   , False         , True      , True      ]),
-        ('ptrace    read,'                      , [ False   , False         , False     , False     ]),
-        ('ptrace    read peer=/foo/bar,'        , [ False   , False         , True      , True      ]),
-        ('ptrace    read peer=/what/ever,'      , [ False   , False         , True      , True      ]),
-        ('audit ptrace read peer=/foo/bar,'     , [ False   , False         , False     , False     ]),
-        ('audit ptrace,'                        , [ False   , False         , False     , False     ]),
-        ('ptrace tracedby,'                     , [ False   , False         , False     , False     ]),
-        ('audit deny ptrace read,'              , [ False   , False         , False     , False     ]),
-        ('deny ptrace read,'                    , [ False   , False         , False     , False     ]),
-    ]
+        ('ptrace,'                              , ( False   , False         , False     , False     )),
+        ('ptrace read,'                         , ( False   , False         , False     , False     )),
+        ('ptrace read peer=/foo/bar,'           , ( False   , False         , True      , True      )),
+        ('ptrace read peer=/foo/*,'             , ( False   , False         , False     , False     )),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
+        ('ptrace read peer=/**,'                , ( False   , False         , False     , False     )),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
+        ('ptrace read peer=/what/*,'            , ( False   , False         , False     , False     )),  # TODO: wildcard vs. wildcard never matches in is_covered_aare()
+        ('ptrace peer=/foo/bar,'                , ( False   , False         , False     , False     )),
+        ('ptrace read, # comment'               , ( False   , False         , False     , False     )),
+        ('allow ptrace read,'                   , ( False   , False         , False     , False     )),
+        ('allow ptrace read peer=/foo/bar,'     , ( False   , False         , True      , True      )),
+        ('ptrace    read,'                      , ( False   , False         , False     , False     )),
+        ('ptrace    read peer=/foo/bar,'        , ( False   , False         , True      , True      )),
+        ('ptrace    read peer=/what/ever,'      , ( False   , False         , True      , True      )),
+        ('audit ptrace read peer=/foo/bar,'     , ( False   , False         , False     , False     )),
+        ('audit ptrace,'                        , ( False   , False         , False     , False     )),
+        ('ptrace tracedby,'                     , ( False   , False         , False     , False     )),
+        ('audit deny ptrace read,'              , ( False   , False         , False     , False     )),
+        ('deny ptrace read,'                    , ( False   , False         , False     , False     )),
+    )
 
 class PtraceCoveredTest_08(PtraceCoveredTest):
     rule = 'ptrace (trace, tracedby) peer=/foo/*,'
 
-    tests = [
+    tests = (
         #   rule                                  equal     strict equal    covered     covered exact
-        ('ptrace,'                              , [ False   , False         , False     , False     ]),
-        ('ptrace trace,'                        , [ False   , False         , False     , False     ]),
-        ('ptrace (tracedby, trace),'            , [ False   , False         , False     , False     ]),
-        ('ptrace trace peer=/foo/bar,'          , [ False   , False         , True      , True      ]),
-        ('ptrace (tracedby trace) peer=/foo/bar,',[ False   , False         , True      , True      ]),
-        ('ptrace (tracedby, trace) peer=/foo/*,', [ True    , False         , True      , True      ]),
-        ('ptrace tracedby peer=/foo/bar,'       , [ False   , False         , True      , True      ]),
-        ('ptrace trace peer=/foo/*,'            , [ False   , False         , True      , True      ]),
-        ('ptrace trace peer=/**,'               , [ False   , False         , False     , False     ]),
-        ('ptrace trace peer=/what/*,'           , [ False   , False         , False     , False     ]),
-        ('ptrace peer=/foo/bar,'                , [ False   , False         , False     , False     ]),
-        ('ptrace trace, # comment'              , [ False   , False         , False     , False     ]),
-        ('allow ptrace trace,'                  , [ False   , False         , False     , False     ]),
-        ('allow ptrace trace peer=/foo/bar,'    , [ False   , False         , True      , True      ]),
-        ('ptrace    trace,'                     , [ False   , False         , False     , False     ]),
-        ('ptrace    trace peer=/foo/bar,'       , [ False   , False         , True      , True      ]),
-        ('ptrace    trace peer=/what/ever,'     , [ False   , False         , False     , False     ]),
-        ('audit ptrace trace peer=/foo/bar,'    , [ False   , False         , False     , False     ]),
-        ('audit ptrace,'                        , [ False   , False         , False     , False     ]),
-        ('ptrace tracedby,'                     , [ False   , False         , False     , False     ]),
-        ('audit deny ptrace trace,'             , [ False   , False         , False     , False     ]),
-        ('deny ptrace trace,'                   , [ False   , False         , False     , False     ]),
-    ]
+        ('ptrace,'                              , ( False   , False         , False     , False     )),
+        ('ptrace trace,'                        , ( False   , False         , False     , False     )),
+        ('ptrace (tracedby, trace),'            , ( False   , False         , False     , False     )),
+        ('ptrace trace peer=/foo/bar,'          , ( False   , False         , True      , True      )),
+        ('ptrace (tracedby trace) peer=/foo/bar,',( False   , False         , True      , True      )),
+        ('ptrace (tracedby, trace) peer=/foo/*,', ( True    , False         , True      , True      )),
+        ('ptrace tracedby peer=/foo/bar,'       , ( False   , False         , True      , True      )),
+        ('ptrace trace peer=/foo/*,'            , ( False   , False         , True      , True      )),
+        ('ptrace trace peer=/**,'               , ( False   , False         , False     , False     )),
+        ('ptrace trace peer=/what/*,'           , ( False   , False         , False     , False     )),
+        ('ptrace peer=/foo/bar,'                , ( False   , False         , False     , False     )),
+        ('ptrace trace, # comment'              , ( False   , False         , False     , False     )),
+        ('allow ptrace trace,'                  , ( False   , False         , False     , False     )),
+        ('allow ptrace trace peer=/foo/bar,'    , ( False   , False         , True      , True      )),
+        ('ptrace    trace,'                     , ( False   , False         , False     , False     )),
+        ('ptrace    trace peer=/foo/bar,'       , ( False   , False         , True      , True      )),
+        ('ptrace    trace peer=/what/ever,'     , ( False   , False         , False     , False     )),
+        ('audit ptrace trace peer=/foo/bar,'    , ( False   , False         , False     , False     )),
+        ('audit ptrace,'                        , ( False   , False         , False     , False     )),
+        ('ptrace tracedby,'                     , ( False   , False         , False     , False     )),
+        ('audit deny ptrace trace,'             , ( False   , False         , False     , False     )),
+        ('deny ptrace trace,'                   , ( False   , False         , False     , False     )),
+    )
 
 
 
@@ -462,7 +462,7 @@ class PtraceCoveredTest_Invalid(AATest):
 
 
 class PtraceLogprofHeaderTest(AATest):
-    tests = [
+    tests = (
         ('ptrace,',                             [                               _('Access mode'), _('ALL'),         _('Peer'), _('ALL'),    ]),
         ('ptrace read,',                        [                               _('Access mode'), 'read',           _('Peer'), _('ALL'),    ]),
         ('deny ptrace,',                        [_('Qualifier'), 'deny',        _('Access mode'), _('ALL'),         _('Peer'), _('ALL'),    ]),
@@ -470,7 +470,7 @@ class PtraceLogprofHeaderTest(AATest):
         ('audit ptrace read,',                  [_('Qualifier'), 'audit',       _('Access mode'), 'read',           _('Peer'), _('ALL'),    ]),
         ('audit deny ptrace read,',             [_('Qualifier'), 'audit deny',  _('Access mode'), 'read',           _('Peer'), _('ALL'),    ]),
         ('ptrace (read, tracedby) peer=/foo,',  [                               _('Access mode'), 'read tracedby',  _('Peer'), '/foo',      ]),
-    ]
+    )
 
     def _run_test(self, params, expected):
         obj = PtraceRule.parse(params)
@@ -493,10 +493,10 @@ class PtraceRulesTest(AATest):
 
     def test_ruleset_1(self):
         ruleset = PtraceRuleset()
-        rules = [
+        rules = (
             'ptrace peer=/foo,',
             'ptrace read,',
-        ]
+        )
 
         expected_raw = [
             'ptrace peer=/foo,',
@@ -522,11 +522,11 @@ class PtraceRulesTest(AATest):
 
     def test_ruleset_2(self):
         ruleset = PtraceRuleset()
-        rules = [
+        rules = (
             'ptrace read peer=/foo,',
             'allow ptrace read,',
             'deny ptrace peer=/bar, # example comment',
-        ]
+        )
 
         expected_raw = [
             '  ptrace read peer=/foo,',
