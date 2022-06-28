@@ -96,7 +96,7 @@ class AATestTemplate(unittest.TestCase, metaclass=AANoCleanupMetaClass):
             sp = subprocess.Popen(command, stdin=stdin, stdout=stdout, stderr=stderr,
                                   close_fds=True, preexec_fn=subprocess_setup, universal_newlines=True)
         except OSError as e:
-            return 127, str(e)
+            return 127, str(e), ''
 
         timeout_communicate = TimeoutFunction(sp.communicate, timeout)
         out, outerr = (None, None)
