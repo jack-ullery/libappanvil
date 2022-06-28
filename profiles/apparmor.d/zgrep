@@ -20,7 +20,9 @@ profile zgrep /usr/bin/{x,}zgrep {
   /usr/bin/{ba,da,}sh ix,
   /usr/bin/bzip2 Cx -> helper,
   /usr/bin/cat ix,
+  /usr/bin/egrep Cx -> helper,
   /usr/bin/expr ix,
+  /usr/bin/fgrep Cx -> helper,
   /usr/bin/grep Cx -> helper,
   /usr/bin/gzip Cx -> helper,
   /usr/bin/mktemp ix,
@@ -41,9 +43,11 @@ profile zgrep /usr/bin/{x,}zgrep {
     capability dac_override,
     capability dac_read_search,
 
+    /dev/tty w,
+
     /usr/bin/{ba,da,}sh ix,
     /usr/bin/bzip2 mr,
-    /usr/bin/grep mr,
+    /usr/bin/grep mrix,
     /usr/bin/gzip mr,
     /usr/bin/xz mr,
     /usr/bin/zstd mr,
