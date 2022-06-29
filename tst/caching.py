@@ -17,7 +17,6 @@
 
 from argparse import ArgumentParser
 import os
-import platform
 import shutil
 import time
 import tempfile
@@ -147,9 +146,6 @@ class AAParserCachingCommon(testlib.AATestTemplate):
 
 class AAParserBasicCachingTests(AAParserCachingCommon):
 
-    def setUp(self):
-        super(AAParserBasicCachingTests, self).setUp()
-
     def test_no_cache_by_default(self):
         '''test profiles are not cached by default'''
 
@@ -201,7 +197,7 @@ class AAParserAltCacheBasicTests(AAParserBasicCachingTests):
     '''Same tests as above, but with an alternate cache location specified on the command line'''
 
     def setUp(self):
-        super(AAParserAltCacheBasicTests, self).setUp()
+        super().setUp()
 
         alt_cache_loc = tempfile.mkdtemp(prefix='aa-alt-cache', dir=self.tmp_dir)
         os.chmod(alt_cache_loc, 0o755)
@@ -213,14 +209,14 @@ class AAParserAltCacheBasicTests(AAParserBasicCachingTests):
     def tearDown(self):
         if len(os.listdir(self.unused_cache_loc)) > 0:
             self.fail('original cache dir \'%s\' not empty' % self.unused_cache_loc)
-        super(AAParserAltCacheBasicTests, self).tearDown()
+        super().tearDown()
 
 
 class AAParserCreateCacheBasicTestsCacheExists(AAParserBasicCachingTests):
     '''Same tests as above, but with create cache option on the command line and the cache already exists'''
 
     def setUp(self):
-        super(AAParserCreateCacheBasicTestsCacheExists, self).setUp()
+        super().setUp()
         self.cmd_prefix.append('--create-cache-dir')
 
 
@@ -228,7 +224,7 @@ class AAParserCreateCacheBasicTestsCacheNotExist(AAParserBasicCachingTests):
     '''Same tests as above, but with create cache option on the command line and cache dir removed'''
 
     def setUp(self):
-        super(AAParserCreateCacheBasicTestsCacheNotExist, self).setUp()
+        super().setUp()
         shutil.rmtree(self.cache_dir)
         self.cmd_prefix.append('--create-cache-dir')
 
@@ -238,7 +234,7 @@ class AAParserCreateCacheAltCacheTestsCacheNotExist(AAParserBasicCachingTests):
        alt cache specified, and cache dir removed'''
 
     def setUp(self):
-        super(AAParserCreateCacheAltCacheTestsCacheNotExist, self).setUp()
+        super().setUp()
         shutil.rmtree(self.cache_dir)
         self.cmd_prefix.append('--create-cache-dir')
 
@@ -246,7 +242,7 @@ class AAParserCreateCacheAltCacheTestsCacheNotExist(AAParserBasicCachingTests):
 class AAParserCachingTests(AAParserCachingCommon):
 
     def setUp(self):
-        super(AAParserCachingTests, self).setUp()
+        super().setUp()
 
         r = testlib.filesystem_time_resolution()
         self.mtime_res = r[1]
@@ -258,24 +254,10 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.run_cmd_check(cmd)
         self.assert_path_exists(self.cache_file)
 
-    def _assertTimeStampEquals(self, time1, time2):
-        '''Compare two timestamps to ensure equality'''
-
-        # python 3.2 and earlier don't support writing timestamps with
-        # nanosecond resolution, only microsecond. When comparing
-        # timestamps in such an environment, loosen the equality bounds
-        # to compensate
-        # Reference: https://bugs.python.org/issue12904
-        (major, minor, _) = platform.python_version_tuple()
-        if (int(major) < 3) or ((int(major) == 3) and (int(minor) <= 2)):
-            self.assertAlmostEquals(time1, time2, places=5)
-        else:
-            self.assertEqual(time1, time2)
-
     def _set_mtime(self, path, mtime):
         atime = os.stat(path).st_atime
         os.utime(path, (atime, mtime))
-        self._assertTimeStampEquals(os.stat(path).st_mtime, mtime)
+        self.assertEqual(os.stat(path).st_mtime, mtime)
 
     def test_cache_loaded_when_exists(self):
         '''test cache is loaded when it exists, is newer than profile,  and features match'''
@@ -458,7 +440,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         stat = os.stat(self.cache_file)
         self.assertNotEqual(orig_stat.st_ino, stat.st_ino)
-        self._assertTimeStampEquals(profile_mtime, stat.st_mtime)
+        self.assertEqual(profile_mtime, stat.st_mtime)
 
     def test_abstraction_newer_rewrites_cache(self):
         '''test cache is rewritten if abstraction is newer'''
@@ -475,7 +457,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         stat = os.stat(self.cache_file)
         self.assertNotEqual(orig_stat.st_ino, stat.st_ino)
-        self._assertTimeStampEquals(abstraction_mtime, stat.st_mtime)
+        self.assertEqual(abstraction_mtime, stat.st_mtime)
 
     def test_parser_newer_uses_cache(self):
         '''test cache is not skipped if parser is newer'''
@@ -521,7 +503,7 @@ class AAParserAltCacheTests(AAParserCachingTests):
     check_orig_cache = True
 
     def setUp(self):
-        super(AAParserAltCacheTests, self).setUp()
+        super().setUp()
 
         alt_cache_loc = tempfile.mkdtemp(prefix='aa-alt-cache', dir=self.tmp_dir)
         os.chmod(alt_cache_loc, 0o755)
@@ -534,7 +516,7 @@ class AAParserAltCacheTests(AAParserCachingTests):
     def tearDown(self):
         if self.check_orig_cache and len(os.listdir(self.orig_cache_dir)) > 0:
             self.fail('original cache dir \'%s\' not empty' % self.orig_cache_dir)
-        super(AAParserAltCacheTests, self).tearDown()
+        super().tearDown()
 
     def test_cache_purge_leaves_original_cache_alone(self):
         '''test cache purging only touches alt cache'''
