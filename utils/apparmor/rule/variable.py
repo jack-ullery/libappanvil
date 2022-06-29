@@ -14,7 +14,7 @@
 # ----------------------------------------------------------------------
 
 from apparmor.regex import RE_PROFILE_VARIABLE, strip_quotes
-from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.rule import BaseRule, BaseRuleset, parse_comment, quote_if_needed
 
 import re
@@ -32,10 +32,8 @@ class VariableRule(BaseRule):
     def __init__(self, varname, mode, values, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
-        super(VariableRule, self).__init__(audit=audit, deny=deny,
-                                             allow_keyword=allow_keyword,
-                                             comment=comment,
-                                             log_event=log_event)
+        super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
+                         comment=comment, log_event=log_event)
 
         # variables don't support audit or deny
         if audit:
@@ -43,14 +41,14 @@ class VariableRule(BaseRule):
         if deny:
             raise AppArmorBug('Attempt to initialize %s with deny flag' % self.__class__.__name__)
 
-        if not type_is_str(varname):
+        if type(varname) is not str:
             raise AppArmorBug('Passed unknown type for varname to %s: %s' % (self.__class__.__name__, varname))
         if not varname.startswith('@{'):
             raise AppArmorException("Passed invalid varname to %s (doesn't start with '@{'): %s" % (self.__class__.__name__, varname))
         if not varname.endswith('}'):
             raise AppArmorException("Passed invalid varname to %s (doesn't end with '}'): %s" % (self.__class__.__name__, varname))
 
-        if not type_is_str(mode):
+        if type(mode) is not str:
             raise AppArmorBug('Passed unknown type for variable assignment mode to %s: %s' % (self.__class__.__name__, mode))
         if mode not in ('=', '+='):
             raise AppArmorBug('Passed unknown variable assignment mode to %s: %s' % (self.__class__.__name__, mode))
@@ -151,7 +149,7 @@ class VariableRuleset(BaseRuleset):
                 if rule.varname == knownrule.varname:
                     raise AppArmorException(_('Redefining existing variable %(variable)s: %(value)s') % { 'variable': rule.varname, 'value': rule.values })
 
-        super(VariableRuleset, self).add(rule, cleanup)
+        super().add(rule, cleanup)
 
     def get_merged_variables(self):
         ''' Get merged variables of this VariableRuleset.

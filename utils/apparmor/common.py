@@ -9,7 +9,6 @@
 #
 # ------------------------------------------------------------------
 
-from __future__ import print_function
 import codecs
 import collections
 import glob
@@ -118,10 +117,7 @@ def cmd(command):
     except OSError as ex:
         return [127, str(ex)]
 
-    if sys.version_info[0] >= 3:
-        out = sp.communicate()[0].decode('ascii', 'ignore')
-    else:
-        out = sp.communicate()[0]
+    out = sp.communicate()[0].decode('ascii', 'ignore')
 
     return [sp.returncode, out]
 
@@ -134,10 +130,7 @@ def cmd_pipe(command1, command2):
     except OSError as ex:
         return [127, str(ex)]
 
-    if sys.version_info[0] >= 3:
-        out = sp2.communicate()[0].decode('ascii', 'ignore')
-    else:
-        out = sp2.communicate()[0]
+    out = sp2.communicate()[0].decode('ascii', 'ignore')
 
     return [sp2.returncode, out]
 
@@ -202,14 +195,7 @@ def open_file_anymode(mode, path, encoding='UTF-8'):
     # This avoids a crash when reading a logfile with special characters that
     # are not utf8-encoded (for example a latin1 "ö"), and also avoids crashes
     # at several other places we don't know yet ;-)
-    errorhandling = 'surrogateescape'
-
-    if sys.version_info[0] < 3:
-        errorhandling = 'replace'
-
-    orig = codecs.open(path, mode, encoding, errors=errorhandling)
-
-    return orig
+    return codecs.open(path, mode, encoding, errors='surrogateescape')
 
 def readkey():
     '''Returns the pressed key'''
@@ -268,15 +254,6 @@ def user_perm(prof_dir):
         return False
     return True
 
-if sys.version_info[0] > 2:
-    unicode = str  # python 3 dropped the unicode type. To keep type_is_str() simple (and pyflakes3 happy), re-create it as alias of str.
-
-def type_is_str(var):
-    ''' returns True if the given variable is a str (or unicode string when using python 2)'''
-    if type(var) in (str, unicode):  # python 2 sometimes uses the 'unicode' type
-        return True
-    else:
-        return False
 
 def split_name(full_profile):
     if '//' in full_profile:
@@ -301,7 +278,7 @@ def combine_profname(name_parts):
     return '//'.join(name_parts)
 
 
-class DebugLogger(object):
+class DebugLogger:
     '''Unified debug facility. Logs to file or stderr.
 
     Does not log anything by default. Will only log if environment variable

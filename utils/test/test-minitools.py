@@ -14,16 +14,13 @@
 import os
 import shutil
 import subprocess
-import sys
 import unittest
 from common_test import AATest, setup_all_loops, setup_aa
 
 import apparmor.aa as apparmor
 from common_test import read_file
 
-python_interpreter = 'python'
-if sys.version_info >= (3, 0):
-    python_interpreter = 'python3'
+python_interpreter = 'python3'
 
 class MinitoolsTest(AATest):
 

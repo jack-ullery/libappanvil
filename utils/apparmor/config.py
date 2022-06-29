@@ -11,29 +11,12 @@
 #    GNU General Public License for more details.
 #
 # ----------------------------------------------------------------------
-from __future__ import with_statement
 import os
 import shlex
 import shutil
 import stat
-import sys
 import tempfile
-if sys.version_info < (3, 0):
-    import ConfigParser as configparser
-
-    # Class to provide the object[section][option] behavior in Python2
-    class configparser_py2(configparser.ConfigParser):
-        def __getitem__(self, section):
-            section_val = self.items(section)
-            section_options = dict()
-            for option, value in section_val:
-                section_options[option] = value
-            return section_options
-
-
-else:
-    import configparser
-
+from configparser import ConfigParser
 
 from apparmor.common import AppArmorException, open_file_read  # , warn, msg,
 
@@ -41,7 +24,7 @@ from apparmor.common import AppArmorException, open_file_read  # , warn, msg,
 # CFG = None
 # REPO_CFG = None
 # SHELL_FILES = ['easyprof.conf', 'notify.conf', 'parser.conf']
-class Config(object):
+class Config:
     def __init__(self, conf_type, conf_dir='/etc/apparmor'):
         self.CONF_DIR = conf_dir
         # The type of config file that'll be read and/or written
@@ -55,7 +38,7 @@ class Config(object):
         if self.conf_type == 'shell':
             config = {'': dict()}
         elif self.conf_type == 'ini':
-            config = configparser.ConfigParser()
+            config = ConfigParser()
         return config
 
     def read_config(self, filename):
@@ -65,21 +48,10 @@ class Config(object):
         if self.conf_type == 'shell':
             config = self.read_shell(filepath)
         elif self.conf_type == 'ini':
-            if sys.version_info > (3, 0):
-                config = configparser.ConfigParser()
-            else:
-                config = configparser_py2()
+            config = ConfigParser()
             # Set the option form to string -prevents forced conversion to lowercase
             config.optionxform = str
-            if sys.version_info > (3, 0):
-                config.read(filepath)
-            else:
-                try:
-                    config.read(filepath)
-                except configparser.ParsingError:
-                    tmp_filepath = py2_parser(filepath)
-                    config.read(tmp_filepath.name)
-                    ##config.__get__()
+            config.read(filepath)
         return config
 
     def write_config(self, filename, config):
@@ -275,18 +247,3 @@ class Config(object):
             for option in options:
                 line = '  ' + option + ' = ' + config[section][option] + '\n'
                 f_out.write(line)
-
-def py2_parser(filename):
-    """Returns the de-dented ini file from the new format ini"""
-    tmp = tempfile.NamedTemporaryFile('rw')
-    if os.path.exists(filename):
-        with open(tmp.name, 'w') as f_out, open_file_read(filename) as f_in:
-            for line in f_in:
-                # The ini format allows for multi-line entries, with the subsequent
-                # entries being indented deeper hence simple lstrip() is not appropriate
-                if line[:2] == '  ':
-                    line = line[2:]
-                elif line[0] == '\t':
-                    line = line[1:]
-                f_out.write(line)
-    return tmp

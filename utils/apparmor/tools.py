@@ -14,6 +14,7 @@
 # ----------------------------------------------------------------------
 import os
 import sys
+from shutil import which
 
 import apparmor.aa as apparmor
 import apparmor.ui as aaui
@@ -61,9 +62,9 @@ class aa_tools:
                     program = fq_path
                     profile = apparmor.get_profile_filename_from_attachment(fq_path, True)
             else:
-                which = apparmor.which(p)
-                if which is not None:
-                    program = apparmor.get_full_path(which)
+                which_ = which(p)
+                if which_ is not None:
+                    program = apparmor.get_full_path(which_)
                     profile = apparmor.get_profile_filename_from_attachment(program, True)
                 elif os.path.exists(os.path.join(apparmor.profile_dir, p)):
                     program = None

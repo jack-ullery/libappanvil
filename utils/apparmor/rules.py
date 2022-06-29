@@ -8,7 +8,7 @@
 #
 # ------------------------------------------------------------------
 
-class _Raw_Rule(object):
+class _Raw_Rule:
     audit = False
     deny = False
 

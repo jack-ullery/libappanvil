@@ -13,7 +13,7 @@
 # ----------------------------------------------------------------------
 
 from apparmor.regex import RE_PROFILE_ALIAS, strip_quotes
-from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.rule import BaseRule, BaseRuleset, parse_comment, quote_if_needed
 
 # setup module translations
@@ -29,10 +29,8 @@ class AliasRule(BaseRule):
     def __init__(self, orig_path, target, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
-        super(AliasRule, self).__init__(audit=audit, deny=deny,
-                                             allow_keyword=allow_keyword,
-                                             comment=comment,
-                                             log_event=log_event)
+        super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
+                         comment=comment, log_event=log_event)
 
         # aliass don't support audit or deny
         if audit:
@@ -40,14 +38,14 @@ class AliasRule(BaseRule):
         if deny:
             raise AppArmorBug('Attempt to initialize %s with deny flag' % self.__class__.__name__)
 
-        if not type_is_str(orig_path):
+        if type(orig_path) is not str:
             raise AppArmorBug('Passed unknown type for orig_path to %s: %s' % (self.__class__.__name__, orig_path))
         if not orig_path:
             raise AppArmorException('Passed empty orig_path to %s: %s' % (self.__class__.__name__, orig_path))
         if not orig_path.startswith('/'):
             raise AppArmorException("Alias path doesn't start with '/'")
 
-        if not type_is_str(target):
+        if type(target) is not str:
             raise AppArmorBug('Passed unknown type for target to %s: %s' % (self.__class__.__name__, target))
         if not target:
             raise AppArmorException('Passed empty target to %s: %s' % (self.__class__.__name__, target))

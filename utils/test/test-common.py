@@ -13,19 +13,7 @@ import unittest
 from common_test import AATest, setup_all_loops
 from apparmor.common import AppArmorBug
 
-from apparmor.common import type_is_str, split_name, combine_profname
-
-class TestIs_str_type(AATest):
-    tests = (
-        ('foo',     True),
-        (u'foo',    True),
-        (42,        False),
-        (True,      False),
-        ([],        False),
-    )
-
-    def _run_test(self, params, expected):
-        self.assertEqual(type_is_str(params), expected)
+from apparmor.common import split_name, combine_profname
 
 class AaTest_split_name(AATest):
     tests = (

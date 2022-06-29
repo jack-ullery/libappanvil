@@ -79,9 +79,6 @@ class ReadLog:
         """Parse the event from log into key value pairs"""
         msg = msg.strip()
         self.debug_logger.info('parse_event: %s' % msg)
-        if sys.version_info < (3, 0):
-            # parse_record fails with u'foo' style strings hence typecasting to string
-            msg = str(msg)
         event = LibAppArmor.parse_record(msg)
         ev = dict()
         ev['resource'] = event.info
@@ -288,8 +285,7 @@ class ReadLog:
                 except AppArmorException as e:
                     ex_msg = ('%(msg)s\n\nThis error was caused by the log line:\n%(logline)s' %
                             {'msg': e.value, 'logline': line})
-                    # when py3 only: Drop the original AppArmorException by passing None as the parent exception
-                    raise AppArmorBug(ex_msg)  # py3-only: from None
+                    raise AppArmorBug(ex_msg) from None
 
         self.LOG.close()
         self.logmark = ''

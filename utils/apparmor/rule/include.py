@@ -13,7 +13,7 @@
 # ----------------------------------------------------------------------
 
 from apparmor.regex import RE_INCLUDE, re_match_include_parse
-from apparmor.common import AppArmorBug, AppArmorException, is_skippable_file, type_is_str
+from apparmor.common import AppArmorBug, AppArmorException, is_skippable_file
 from apparmor.rule import BaseRule, BaseRuleset, parse_comment
 import os
 
@@ -30,10 +30,8 @@ class IncludeRule(BaseRule):
     def __init__(self, path, ifexists, ismagic, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
-        super(IncludeRule, self).__init__(audit=audit, deny=deny,
-                                             allow_keyword=allow_keyword,
-                                             comment=comment,
-                                             log_event=log_event)
+        super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
+                         comment=comment, log_event=log_event)
 
         # include doesn't support audit or deny
         if audit:
@@ -45,7 +43,7 @@ class IncludeRule(BaseRule):
             raise AppArmorBug('Passed unknown type for ifexists to %s: %s' % (self.__class__.__name__, ifexists))
         if type(ismagic) is not bool:
             raise AppArmorBug('Passed unknown type for ismagic to %s: %s' % (self.__class__.__name__, ismagic))
-        if not type_is_str(path):
+        if type(path) is not str:
             raise AppArmorBug('Passed unknown type for path to %s: %s' % (self.__class__.__name__, path))
         if not path:
             raise AppArmorBug('Passed empty path to %s: %s' % (self.__class__.__name__, path))

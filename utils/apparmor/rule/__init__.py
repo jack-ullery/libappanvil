@@ -13,15 +13,17 @@
 #
 # ----------------------------------------------------------------------
 
+from abc import abstractmethod
+
 from apparmor.aare import AARE
-from apparmor.common import AppArmorBug, type_is_str
+from apparmor.common import AppArmorBug
 
 # setup module translations
 from apparmor.translations import init_translation
 _ = init_translation()
 
 
-class BaseRule(object):
+class BaseRule:
     '''Base class to handle and store a single rule'''
 
     # type specific rules should inherit from this class.
@@ -76,7 +78,7 @@ class BaseRule(object):
 
         if rulepart == self.ALL:
             return None, True
-        elif type_is_str(rulepart):
+        elif type(rulepart) is str:
             if len(rulepart.strip()) == 0:
                 raise AppArmorBug('Passed empty %(partname)s to %(classname)s: %(rulepart)s' %
                         {'partname': partname, 'classname': self.__class__.__name__, 'rulepart': str(rulepart)})
@@ -104,8 +106,8 @@ class BaseRule(object):
         else:
             return False
 
-    # @abstractmethod  FIXME - uncomment when python3 only
     @classmethod
+    @abstractmethod
     def _match(cls, raw_rule):
         '''parse raw_rule and return regex match object'''
         raise NotImplementedError("'%s' needs to implement _match(), but didn't" % (str(cls)))
@@ -117,14 +119,14 @@ class BaseRule(object):
         rule.raw_rule = raw_rule.strip()
         return rule
 
-    # @abstractmethod  FIXME - uncomment when python3 only
     @classmethod
+    @abstractmethod
     def _parse(cls, raw_rule):
         '''returns a Rule object created from parsing the raw rule.
            required to be implemented by subclasses; raise exception if not'''
         raise NotImplementedError("'%s' needs to implement _parse(), but didn't" % (str(cls)))
 
-    # @abstractmethod  FIXME - uncomment when python3 only
+    @abstractmethod
     def get_clean(self, depth=0):
         '''return clean rule (with default formatting, and leading whitespace as specified in the depth parameter)'''
         raise NotImplementedError("'%s' needs to implement get_clean(), but didn't" % (str(self.__class__)))
@@ -157,7 +159,7 @@ class BaseRule(object):
         # still here? -> then the common part is covered, check rule-specific things now
         return self.is_covered_localvars(other_rule)
 
-    # @abstractmethod  FIXME - uncomment when python3 only
+    @abstractmethod
     def is_covered_localvars(self, other_rule):
         '''check if the rule-specific parts of other_rule is covered by this rule object'''
         raise NotImplementedError("'%s' needs to implement is_covered_localvars(), but didn't" % (str(self)))
@@ -238,7 +240,7 @@ class BaseRule(object):
         # still here? -> then it is equal
         return True
 
-    # @abstractmethod  FIXME - uncomment when python3 only
+    @abstractmethod
     def is_equal_localvars(self, other_rule, strict):
         '''compare if rule-specific variables are equal'''
         raise NotImplementedError("'%s' needs to implement is_equal_localvars(), but didn't" % (str(self)))
@@ -273,24 +275,24 @@ class BaseRule(object):
 
         return headers
 
-    # @abstractmethod  FIXME - uncomment when python3 only
+    @abstractmethod
     def logprof_header_localvars(self):
         '''return the headers (human-readable version of the rule) to display in aa-logprof for this rule object
            returns {'label1': 'value1', 'label2': 'value2'} '''
         raise NotImplementedError("'%s' needs to implement logprof_header(), but didn't" % (str(self)))
 
-    # @abstractmethod  FIXME - uncomment when python3 only
+    @abstractmethod
     def edit_header(self):
         '''return the prompt for, and the path to edit when using '(N)ew' '''
         raise NotImplementedError("'%s' needs to implement edit_header(), but didn't" % (str(self)))
 
-    # @abstractmethod  FIXME - uncomment when python3 only
+    @abstractmethod
     def validate_edit(self, newpath):
         '''validate the new path.
            Returns True if it covers the previous path, False if it doesn't.'''
         raise NotImplementedError("'%s' needs to implement validate_edit(), but didn't" % (str(self)))
 
-    # @abstractmethod  FIXME - uncomment when python3 only
+    @abstractmethod
     def store_edit(self, newpath):
         '''store the changed path.
            This is done even if the new path doesn't match the original one.'''
@@ -314,7 +316,7 @@ class BaseRule(object):
         return '%s%s' % (auditstr, allowstr)
 
 
-class BaseRuleset(object):
+class BaseRuleset:
     '''Base class to handle and store a collection of rules'''
 
     # decides if the (G)lob and Glob w/ (E)xt options are displayed
@@ -499,7 +501,7 @@ def check_and_split_list(lst, allowed_keywords, all_obj, classname, keyword_name
 
     if lst == all_obj:
         return None, True, None
-    elif type_is_str(lst):
+    elif type(lst) is str:
         result_list = {lst}
     elif type(lst) in (list, tuple, set) and (len(lst) > 0 or allow_empty_list):
         result_list = set(lst)

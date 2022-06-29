@@ -66,7 +66,7 @@ class SignalRule(BaseRule):
 
     # Nothing external should reference this class, all external users
     # should reference the class field SignalRule.ALL
-    class __SignalAll(object):
+    class __SignalAll:
         pass
 
     ALL = __SignalAll
@@ -76,10 +76,8 @@ class SignalRule(BaseRule):
     def __init__(self, access, signal, peer, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
-        super(SignalRule, self).__init__(audit=audit, deny=deny,
-                                             allow_keyword=allow_keyword,
-                                             comment=comment,
-                                             log_event=log_event)
+        super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
+                         comment=comment, log_event=log_event)
 
         self.access, self.all_access, unknown_items = check_and_split_list(access, access_keywords, SignalRule.ALL, 'SignalRule', 'access')
         if unknown_items:

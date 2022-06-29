@@ -9,7 +9,6 @@
 # ------------------------------------------------------------------
 
 from apparmor.common import AppArmorException, debug, error, msg, cmd
-from apparmor.aa import which
 import apparmor.easyprof
 import optparse
 import os
@@ -20,6 +19,7 @@ import socket
 import sys
 import tempfile
 import time
+from shutil import which
 
 def check_requirements(binary):
     '''Verify necessary software is installed'''
@@ -129,10 +129,7 @@ def aa_exec(command, opt, environ={}, verify_rules=[]):
         debug("\n%s" % policy)
 
         with tempfile.NamedTemporaryFile(prefix='%s-' % policy_name) as tmp:
-            if sys.version_info[0] >= 3:
-                tmp.write(bytes(policy, 'utf-8'))
-            else:
-                tmp.write(policy)
+            tmp.write(bytes(policy, 'utf-8'))
 
             debug("using '%s' template" % opt.template)
             # TODO: get rid of this
@@ -543,10 +540,7 @@ EndSection
 
             tmp, xorg_conf = tempfile.mkstemp(prefix='aa-sandbox-xorg.conf-')
             self.tempfiles.append(xorg_conf)
-            if sys.version_info[0] >= 3:
-                os.write(tmp, bytes(conf, 'utf-8'))
-            else:
-                os.write(tmp, conf)
+            os.write(tmp, bytes(conf, 'utf-8'))
             os.close(tmp)
 
             xvfb_args.append('--xvfb=Xorg')

@@ -16,7 +16,7 @@
 import re
 
 from apparmor.regex import RE_PROFILE_RLIMIT, strip_quotes
-from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.rule import BaseRule, BaseRuleset, parse_comment, quote_if_needed
 
 # setup module translations
@@ -41,7 +41,7 @@ class RlimitRule(BaseRule):
 
     # Nothing external should reference this class, all external users
     # should reference the class field RlimitRule.ALL
-    class __RlimitAll(object):
+    class __RlimitAll:
         pass
 
     ALL = __RlimitAll
@@ -51,15 +51,13 @@ class RlimitRule(BaseRule):
     def __init__(self, rlimit, value, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
-        super(RlimitRule, self).__init__(audit=audit, deny=deny,
-                                             allow_keyword=allow_keyword,
-                                             comment=comment,
-                                             log_event=log_event)
+        super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
+                         comment=comment, log_event=log_event)
 
         if audit or deny or allow_keyword:
             raise AppArmorBug('The audit, allow or deny keywords are not allowed in rlimit rules.')
 
-        if type_is_str(rlimit):
+        if type(rlimit) is str:
             if rlimit in rlimit_all:
                 self.rlimit = rlimit
             else:
@@ -72,7 +70,7 @@ class RlimitRule(BaseRule):
         self.all_values = False
         if value == RlimitRule.ALL:
             self.all_values = True
-        elif type_is_str(value):
+        elif type(value) is str:
             if not value.strip():
                 raise AppArmorBug('Empty value in rlimit rule')
 

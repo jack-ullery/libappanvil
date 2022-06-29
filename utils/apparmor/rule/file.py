@@ -14,7 +14,7 @@
 
 from apparmor.aare import AARE
 from apparmor.regex import RE_PROFILE_FILE_ENTRY, strip_quotes
-from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.rule import BaseRule, BaseRuleset, check_and_split_list, logprof_value_or_all, parse_modifiers, quote_if_needed
 
 # setup module translations
@@ -34,9 +34,9 @@ class FileRule(BaseRule):
 
     # Nothing external should reference this class, all external users
     # should reference the class field FileRule.ALL
-    class __FileAll(object):
+    class __FileAll:
         pass
-    class __FileAnyExec(object):
+    class __FileAnyExec:
         pass
 
     ALL = __FileAll
@@ -58,8 +58,8 @@ class FileRule(BaseRule):
            - leading_perms: bool
         '''
 
-        super(FileRule, self).__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
-                                             comment=comment, log_event=log_event)
+        super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
+                         comment=comment, log_event=log_event)
 
         #                                                               rulepart        partperms       is_path log_event
         self.path,          self.all_paths          = self._aare_or_all(path,           'path',         True,   log_event)
@@ -69,7 +69,7 @@ class FileRule(BaseRule):
         self.can_glob_ext = not self.all_paths
         self.can_edit = not self.all_paths
 
-        if type_is_str(perms):
+        if type(perms) is str:
             perms, tmp_exec_perms = split_perms(perms, deny)
             if tmp_exec_perms:
                 raise AppArmorBug('perms must not contain exec perms')
@@ -96,7 +96,7 @@ class FileRule(BaseRule):
             raise AppArmorBug("link rules can't have execute permissions")
         elif exec_perms == self.ANY_EXEC:
             self.exec_perms = exec_perms
-        elif type_is_str(exec_perms):
+        elif type(exec_perms) is str:
             if deny:
                 if exec_perms != 'x':
                     raise AppArmorException(_("file deny rules only allow to use 'x' as execute mode, but not %s" % exec_perms))

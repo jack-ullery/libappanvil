@@ -16,7 +16,7 @@
 import re
 
 from apparmor.regex import RE_PROFILE_CAP
-from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.rule import BaseRule, BaseRuleset, logprof_value_or_all, parse_modifiers
 
 # setup module translations
@@ -29,7 +29,7 @@ class CapabilityRule(BaseRule):
 
     # Nothing external should reference this class, all external users
     # should reference the class field CapabilityRule.ALL
-    class __CapabilityAll(object):
+    class __CapabilityAll:
         pass
 
     ALL = __CapabilityAll
@@ -39,10 +39,8 @@ class CapabilityRule(BaseRule):
     def __init__(self, cap_list, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
-        super(CapabilityRule, self).__init__(audit=audit, deny=deny,
-                                             allow_keyword=allow_keyword,
-                                             comment=comment,
-                                             log_event=log_event)
+        super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
+                         comment=comment, log_event=log_event)
         # Because we support having multiple caps in one rule,
         # initializer needs to accept a list of caps.
         self.all_caps = False
@@ -50,7 +48,7 @@ class CapabilityRule(BaseRule):
             self.all_caps = True
             self.capability = set()
         else:
-            if type_is_str(cap_list):
+            if type(cap_list) is str:
                 self.capability = {cap_list}
             elif type(cap_list) == list and len(cap_list) > 0:
                 self.capability = set(cap_list)

@@ -14,7 +14,7 @@
 # ----------------------------------------------------------------------
 
 from apparmor.regex import RE_PROFILE_BOOLEAN
-from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.rule import BaseRule, BaseRuleset, parse_comment
 
 # setup module translations
@@ -30,10 +30,8 @@ class BooleanRule(BaseRule):
     def __init__(self, varname, value, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
-        super(BooleanRule, self).__init__(audit=audit, deny=deny,
-                                             allow_keyword=allow_keyword,
-                                             comment=comment,
-                                             log_event=log_event)
+        super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
+                         comment=comment, log_event=log_event)
 
         # boolean variables don't support audit or deny
         if audit:
@@ -41,12 +39,12 @@ class BooleanRule(BaseRule):
         if deny:
             raise AppArmorBug('Attempt to initialize %s with deny flag' % self.__class__.__name__)
 
-        if not type_is_str(varname):
+        if type(varname) is not str:
             raise AppArmorBug('Passed unknown type for boolean variable to %s: %s' % (self.__class__.__name__, varname))
         if not varname.startswith('$'):
             raise AppArmorException("Passed invalid boolean to %s (doesn't start with '$'): %s" % (self.__class__.__name__, varname))
 
-        if not type_is_str(value):
+        if type(value) is not str:
             raise AppArmorBug('Passed unknown type for value to %s: %s' % (self.__class__.__name__, value))
         if not value:
             raise AppArmorException('Passed empty value to %s: %s' % (self.__class__.__name__, value))
@@ -131,4 +129,4 @@ class BooleanRuleset(BaseRuleset):
             if rule.varname == knownrule.varname:
                 raise AppArmorException(_('Redefining existing variable %(variable)s: %(value)s') % { 'variable': rule.varname, 'value': rule.value })
 
-        super(BooleanRuleset, self).add(rule, cleanup)
+        super().add(rule, cleanup)

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 #    Copyright (C) 2012 Canonical Ltd.
 #
@@ -9,7 +9,6 @@
 #    Written by Steve Beattie <steve@nxnw.org>, based on work by
 #    Christian Boltz <apparmor@cboltz.de>
 
-from __future__ import with_statement
 import re
 import subprocess
 import sys

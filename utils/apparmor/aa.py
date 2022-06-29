@@ -13,7 +13,6 @@
 #
 # ----------------------------------------------------------------------
 # No old version logs, only 2.6 + supported
-from __future__ import division, with_statement
 import os
 import re
 import shutil
@@ -23,6 +22,7 @@ import time
 import traceback
 import atexit
 import tempfile
+from shutil import which
 
 import apparmor.config
 import apparmor.logparser
@@ -33,7 +33,7 @@ from copy import deepcopy
 from apparmor.aare import AARE
 
 from apparmor.common import (AppArmorException, AppArmorBug, cmd, is_skippable_file, open_file_read, valid_path, hasher,
-                             combine_profname, split_name, type_is_str, open_file_write, DebugLogger)
+                             combine_profname, split_name, open_file_write, DebugLogger)
 
 import apparmor.ui as aaui
 
@@ -175,18 +175,6 @@ def check_for_apparmor(filesystem='/proc/filesystems', mounts='/proc/mounts'):
                         aa_mountpoint = mountpoint
                         break
     return aa_mountpoint
-
-def which(file):
-    """Returns the executable fullpath for the file, None otherwise"""
-    if sys.version_info >= (3, 3):
-        return shutil.which(file)
-    env_dirs = os.getenv('PATH').split(':')
-    for env_dir in env_dirs:
-        env_path = os.path.join(env_dir, file)
-        # Test if the path is executable or not
-        if os.access(env_path, os.X_OK):
-            return env_path
-    return None
 
 def get_full_path(original_path):
     """Return the full path after resolving any symlinks"""
@@ -626,7 +614,7 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
     found = False
     depth = -1
 
-    if not flag or (type_is_str(flag) and flag.strip() == ''):
+    if not flag or (type(flag) is str and flag.strip() == ''):
         raise AppArmorBug('New flag for %s is empty' % prof_filename)
 
     with open_file_read(prof_filename) as f_in:
@@ -1529,28 +1517,28 @@ def save_profiles(is_mergeprof=False):
             ans, arg = q.promptUser()
 
             q.selected = arg  # remember selection
-            which = options[arg]
+            which_ = options[arg]
 
             if ans == 'CMD_SAVE_SELECTED':
-                write_profile_ui_feedback(which)
-                reload_base(which)
+                write_profile_ui_feedback(which_)
+                reload_base(which_)
                 q.selected = 0  # saving the selected profile removes it from the list, therefore reset selection
 
             elif ans == 'CMD_VIEW_CHANGES':
                 oldprofile = None
-                if aa[which][which].get('filename', False):
-                    oldprofile = aa[which][which]['filename']
+                if aa[which_][which_].get('filename', False):
+                    oldprofile = aa[which_][which_]['filename']
                 else:
-                    oldprofile = get_profile_filename_from_attachment(which, True)
+                    oldprofile = get_profile_filename_from_attachment(which_, True)
 
                 serialize_options = {'METADATA': True}
-                newprofile = serialize_profile(split_to_merged(aa), which, serialize_options)
+                newprofile = serialize_profile(split_to_merged(aa), which_, serialize_options)
 
                 aaui.UI_Changes(oldprofile, newprofile, comments=True)
 
             elif ans == 'CMD_VIEW_CHANGES_CLEAN':
-                oldprofile = serialize_profile(split_to_merged(original_aa), which, {})
-                newprofile = serialize_profile(split_to_merged(aa), which, {})
+                oldprofile = serialize_profile(split_to_merged(original_aa), which_, {})
+                newprofile = serialize_profile(split_to_merged(aa), which_, {})
 
                 aaui.UI_Changes(oldprofile, newprofile)
 
@@ -2385,10 +2373,7 @@ def check_qualifiers(program):
 
 def get_subdirectories(current_dir):
     """Returns a list of all directories directly inside given directory"""
-    if sys.version_info < (3, 0):
-        return os.walk(current_dir).next()[1]
-    else:
-        return os.walk(current_dir).__next__()[1]
+    return next(os.walk(current_dir))[1]
 
 def loadincludes():
     loadincludes_dir('tunables', True)
