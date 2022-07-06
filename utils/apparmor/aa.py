@@ -1517,28 +1517,28 @@ def save_profiles(is_mergeprof=False):
             ans, arg = q.promptUser()
 
             q.selected = arg  # remember selection
-            which_ = options[arg]
+            profile_name = options[arg]
 
             if ans == 'CMD_SAVE_SELECTED':
-                write_profile_ui_feedback(which_)
-                reload_base(which_)
+                write_profile_ui_feedback(profile_name)
+                reload_base(profile_name)
                 q.selected = 0  # saving the selected profile removes it from the list, therefore reset selection
 
             elif ans == 'CMD_VIEW_CHANGES':
                 oldprofile = None
-                if aa[which_][which_].get('filename', False):
-                    oldprofile = aa[which_][which_]['filename']
+                if aa[profile_name][profile_name].get('filename', False):
+                    oldprofile = aa[profile_name][profile_name]['filename']
                 else:
-                    oldprofile = get_profile_filename_from_attachment(which_, True)
+                    oldprofile = get_profile_filename_from_attachment(profile_name, True)
 
                 serialize_options = {'METADATA': True}
-                newprofile = serialize_profile(split_to_merged(aa), which_, serialize_options)
+                newprofile = serialize_profile(split_to_merged(aa), profile_name, serialize_options)
 
                 aaui.UI_Changes(oldprofile, newprofile, comments=True)
 
             elif ans == 'CMD_VIEW_CHANGES_CLEAN':
-                oldprofile = serialize_profile(split_to_merged(original_aa), which_, {})
-                newprofile = serialize_profile(split_to_merged(aa), which_, {})
+                oldprofile = serialize_profile(split_to_merged(original_aa), profile_name, {})
+                newprofile = serialize_profile(split_to_merged(aa), profile_name, {})
 
                 aaui.UI_Changes(oldprofile, newprofile)
 
