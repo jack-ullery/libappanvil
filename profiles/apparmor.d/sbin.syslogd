@@ -30,12 +30,16 @@ profile syslogd /{usr/,}{bin,sbin}/syslogd {
 
   /dev/log                      wl,
   /var/lib/*/dev/log            wl,
+  /proc/kmsg                    r,
 
   /dev/tty*                     w,
   /dev/xconsole                 rw,
   /etc/syslog.conf              r,
+  /etc/syslog.d/                r,
+  /etc/syslog.d/*               r,
   /{usr/,}{bin,sbin}/syslogd    rmix,
   /var/log/**                   rw,
+  @{run}/syslog.pid           krwl,
   @{run}/syslogd.pid          krwl,
   @{run}/utmp                 rw,
   /var/spool/compaq/nic/messages_fifo rw,
