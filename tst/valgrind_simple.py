@@ -13,7 +13,7 @@
 # TODO
 # - finish adding suppressions for valgrind false positives
 
-from argparse import ArgumentParser  # requires python 2.7 or newer
+from argparse import ArgumentParser
 import os
 import sys
 import tempfile
