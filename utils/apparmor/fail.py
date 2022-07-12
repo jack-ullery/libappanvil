@@ -8,8 +8,6 @@
 #
 # ------------------------------------------------------------------
 
-from __future__ import print_function  # needed in py2 for print('...', file=sys.stderr)
-
 import cgitb
 import os
 import sys

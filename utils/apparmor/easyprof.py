@@ -8,8 +8,6 @@
 #
 # ------------------------------------------------------------------
 
-from __future__ import with_statement
-
 import codecs
 import copy
 import glob
@@ -21,8 +19,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from shutil import which
 
-from apparmor.aa import which
 from apparmor.common import AppArmorException
 
 

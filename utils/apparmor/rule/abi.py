@@ -30,10 +30,9 @@ class AbiRule(IncludeRule):
     def __init__(self, path, ifexists, ismagic, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
-        super(AbiRule, self).__init__(path, ifexists, ismagic,
-                                      audit=audit, deny=deny, allow_keyword=allow_keyword,
-                                      comment=comment,
-                                      log_event=log_event)
+        super().__init__(path, ifexists, ismagic,
+                         audit=audit, deny=deny, allow_keyword=allow_keyword,
+                         comment=comment, log_event=log_event)
 
         # abi doesn't support 'if exists'
         if ifexists:

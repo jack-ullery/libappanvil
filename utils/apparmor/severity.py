@@ -11,11 +11,10 @@
 #    GNU General Public License for more details.
 #
 # ----------------------------------------------------------------------
-from __future__ import with_statement
 import re
 from apparmor.common import AppArmorException, open_file_read, warn, convert_regexp  # , msg, error, debug
 
-class Severity(object):
+class Severity:
     def __init__(self, dbname=None, default_rank=10):
         """Initialises the class object"""
         self.PROF_DIR = '/etc/apparmor.d'  # The profile directory

@@ -58,7 +58,7 @@ class InterceptingOptionParser(optparse.OptionParser):
         raise InterceptedError(error_message=msg)
 
 
-class Manifest(object):
+class Manifest:
     def __init__(self, profile_name):
         self.security = dict()
         self.security['profiles'] = dict()

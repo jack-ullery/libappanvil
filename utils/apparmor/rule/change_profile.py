@@ -14,7 +14,7 @@
 # ----------------------------------------------------------------------
 
 from apparmor.regex import RE_PROFILE_CHANGE_PROFILE, strip_quotes
-from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.rule import BaseRule, BaseRuleset, parse_modifiers, logprof_value_or_all, quote_if_needed
 
 # setup module translations
@@ -27,7 +27,7 @@ class ChangeProfileRule(BaseRule):
 
     # Nothing external should reference this class, all external users
     # should reference the class field ChangeProfileRule.ALL
-    class __ChangeProfileAll(object):
+    class __ChangeProfileAll:
         pass
 
     ALL = __ChangeProfileAll
@@ -43,10 +43,8 @@ class ChangeProfileRule(BaseRule):
             CHANGE_PROFILE RULE = 'change_profile' [ [ EXEC MODE ] EXEC COND ] [ -> PROGRAMCHILD ]
         '''
 
-        super(ChangeProfileRule, self).__init__(audit=audit, deny=deny,
-                                             allow_keyword=allow_keyword,
-                                             comment=comment,
-                                             log_event=log_event)
+        super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
+                         comment=comment, log_event=log_event)
 
         if execmode:
             if execmode != 'safe' and execmode != 'unsafe':
@@ -59,7 +57,7 @@ class ChangeProfileRule(BaseRule):
         self.all_execconds = False
         if execcond == ChangeProfileRule.ALL:
             self.all_execconds = True
-        elif type_is_str(execcond):
+        elif type(execcond) is str:
             if not execcond.strip():
                 raise AppArmorBug('Empty exec condition in change_profile rule')
             elif execcond.startswith('/') or execcond.startswith('@'):
@@ -73,7 +71,7 @@ class ChangeProfileRule(BaseRule):
         self.all_targetprofiles = False
         if targetprofile == ChangeProfileRule.ALL:
             self.all_targetprofiles = True
-        elif type_is_str(targetprofile):
+        elif type(targetprofile) is str:
             if targetprofile.strip():
                 self.targetprofile = targetprofile
             else:

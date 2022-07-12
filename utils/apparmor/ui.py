@@ -31,10 +31,6 @@ _ = init_translation()
 # Set up UI logger for separate messages from UI module
 debug_logger = DebugLogger('UI')
 
-# If Python3, wrap input in raw_input so make check passes
-if 'raw_input' not in dir(__builtins__):
-    raw_input = input
-
 ARROWS = {'A': 'UP', 'B': 'DOWN', 'C': 'RIGHT', 'D': 'LEFT'}
 
 UI_mode = 'text'
@@ -70,7 +66,7 @@ def set_text_mode():
 # reads the response on command line for json and verifies the response
 # for the dialog type
 def json_response(dialog_type):
-    string = raw_input('\n')
+    string = input('\n')
     rh = json.loads(string.strip())
     if rh["dialog"] != dialog_type:
         raise AppArmorException('Expected response %s got %s.' % (dialog_type, string))
@@ -222,7 +218,7 @@ def UI_GetString(text, default):
     else:  # text mode
         readline.set_startup_hook(lambda: readline.insert_text(default))
         try:
-            string = raw_input('\n' + text)
+            string = input('\n' + text)
         except EOFError:
             string = ''
         finally:
@@ -362,7 +358,7 @@ CMDS = {'CMD_ALLOW': _('(A)llow'),
         }
 
 
-class PromptQuestion(object):
+class PromptQuestion:
     title = None
     headers = None
     explanation = None

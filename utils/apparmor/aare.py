@@ -14,9 +14,9 @@
 
 import re
 
-from apparmor.common import convert_regexp, type_is_str, AppArmorBug, AppArmorException
+from apparmor.common import convert_regexp, AppArmorBug, AppArmorException
 
-class AARE(object):
+class AARE:
     '''AARE (AppArmor Regular Expression) wrapper class'''
 
     def __init__(self, regex, is_path, log_event=None):
@@ -68,7 +68,7 @@ class AARE(object):
                 expression = expression.regex
             else:
                 return self.is_equal(expression)  # better safe than sorry
-        elif not type_is_str(expression):
+        elif type(expression) is not str:
             raise AppArmorBug('AARE.match() called with unknown object: %s' % str(expression))
 
         if self._regex_compiled is None:
@@ -81,7 +81,7 @@ class AARE(object):
 
         if type(expression) == AARE:
             return self.regex == expression.regex
-        elif type_is_str(expression):
+        elif type(expression) is str:
             return self.regex == expression
         else:
             raise AppArmorBug('AARE.is_equal() called with unknown object: %s' % str(expression))

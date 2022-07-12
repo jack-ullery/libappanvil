@@ -14,7 +14,7 @@
 # ----------------------------------------------------------------------
 
 
-from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.common import AppArmorBug, AppArmorException
 
 from apparmor.rule.abi              import AbiRule,             AbiRuleset
 from apparmor.rule.capability       import CapabilityRule,      CapabilityRuleset
@@ -108,14 +108,14 @@ class ProfileStorage:
 
         # allow writing str or None to some keys
         elif key in ('flags', 'filename'):
-            if type_is_str(value) or value is None:
+            if type(value) is str or value is None:
                 self.data[key] = value
             else:
                 raise AppArmorBug('Attempt to change type of "%s" from %s to %s, value %s' % (key, type(self.data[key]), type(value), value))
 
         # allow writing str values
-        elif type_is_str(self.data[key]):
-            if type_is_str(value):
+        elif type(self.data[key]) is str:
+            if type(value) is str:
                 self.data[key] = value
             else:
                 raise AppArmorBug('Attempt to change type of "%s" from %s to %s, value %s' % (key, type(self.data[key]), type(value), value))
@@ -268,10 +268,10 @@ def split_flags(flags):
 def add_or_remove_flag(flags, flags_to_change, set_flag):
     '''add (if set_flag == True) or remove the given flags_to_change to flags'''
 
-    if type_is_str(flags) or flags is None:
+    if type(flags) is str or flags is None:
         flags = split_flags(flags)
 
-    if type_is_str(flags_to_change) or flags_to_change is None:
+    if type(flags_to_change) is str or flags_to_change is None:
         flags_to_change = split_flags(flags_to_change)
 
     if set_flag:

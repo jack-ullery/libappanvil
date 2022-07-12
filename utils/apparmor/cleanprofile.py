@@ -14,7 +14,7 @@
 # ----------------------------------------------------------------------
 import apparmor.aa as apparmor
 
-class Prof(object):
+class Prof:
     def __init__(self, filename):
         apparmor.init_aa()
         self.aa = apparmor.aa
@@ -22,7 +22,7 @@ class Prof(object):
         self.include = apparmor.include
         self.filename = filename
 
-class CleanProf(object):
+class CleanProf:
     def __init__(self, same_file, profile, other):
         #If same_file we're basically comparing the file against itself to check superfluous rules
         self.same_file = same_file

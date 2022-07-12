@@ -16,7 +16,7 @@
 import re
 
 from apparmor.regex import RE_PROFILE_NETWORK
-from apparmor.common import AppArmorBug, AppArmorException, type_is_str
+from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.rule import BaseRule, BaseRuleset, logprof_value_or_all, parse_modifiers
 
 # setup module translations
@@ -49,7 +49,7 @@ class NetworkRule(BaseRule):
 
     # Nothing external should reference this class, all external users
     # should reference the class field NetworkRule.ALL
-    class __NetworkAll(object):
+    class __NetworkAll:
         pass
 
     ALL = __NetworkAll
@@ -59,16 +59,14 @@ class NetworkRule(BaseRule):
     def __init__(self, domain, type_or_protocol, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
 
-        super(NetworkRule, self).__init__(audit=audit, deny=deny,
-                                             allow_keyword=allow_keyword,
-                                             comment=comment,
-                                             log_event=log_event)
+        super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
+                         comment=comment, log_event=log_event)
 
         self.domain = None
         self.all_domains = False
         if domain == NetworkRule.ALL:
             self.all_domains = True
-        elif type_is_str(domain):
+        elif type(domain) is str:
             if domain in network_domain_keywords:
                 self.domain = domain
             else:
@@ -80,7 +78,7 @@ class NetworkRule(BaseRule):
         self.all_type_or_protocols = False
         if type_or_protocol == NetworkRule.ALL:
             self.all_type_or_protocols = True
-        elif type_is_str(type_or_protocol):
+        elif type(type_or_protocol) is str:
             if type_or_protocol in network_protocol_keywords:
                 self.type_or_protocol = type_or_protocol
             elif type_or_protocol in network_type_keywords:
