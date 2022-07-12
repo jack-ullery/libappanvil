@@ -8,7 +8,6 @@
 #
 # ------------------------------------------------------------------
 
-import codecs
 import copy
 import glob
 import json
@@ -21,7 +20,7 @@ import sys
 import tempfile
 from shutil import which
 
-from apparmor.common import AppArmorException
+from apparmor.common import AppArmorException, open_file_read
 
 
 DEBUGGING = False
@@ -224,15 +223,6 @@ def get_directory_contents(path):
     files.sort()
     return files
 
-def open_file_read(path):
-    '''Open specified file read-only'''
-    try:
-        orig = codecs.open(path, 'r', "UTF-8")
-    except Exception:
-        raise
-
-    return orig
-
 
 def verify_policy(policy, exe, base=None, include=None):
     '''Verify policy compiles'''
@@ -383,19 +373,17 @@ class AppArmorEasyProfile:
             raise AppArmorException("Could not find '%s'" % self.conffile)
 
         # Read in the configuration
-        f = open_file_read(self.conffile)
-
         pat = re.compile(r'^\w+=".*"?')
-        for line in f:
-            if not pat.search(line):
-                continue
-            if line.startswith("POLICYGROUPS_DIR="):
-                d = re.split(r'=', line.strip())[1].strip('["\']')
-                self.dirs['policygroups'] = d
-            elif line.startswith("TEMPLATES_DIR="):
-                d = re.split(r'=', line.strip())[1].strip('["\']')
-                self.dirs['templates'] = d
-        f.close()
+        with open_file_read(self.conffile) as f:
+            for line in f:
+                if not pat.search(line):
+                    continue
+                if line.startswith("POLICYGROUPS_DIR="):
+                    d = re.split(r'=', line.strip())[1].strip('["\']')
+                    self.dirs['policygroups'] = d
+                elif line.startswith("TEMPLATES_DIR="):
+                    d = re.split(r'=', line.strip())[1].strip('["\']')
+                    self.dirs['templates'] = d
 
         keys = self.dirs.keys()
         if 'templates' not in keys:

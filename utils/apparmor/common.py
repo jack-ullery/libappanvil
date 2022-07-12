@@ -9,7 +9,6 @@
 #
 # ------------------------------------------------------------------
 
-import codecs
 import collections
 import glob
 import logging
@@ -195,7 +194,7 @@ def open_file_anymode(mode, path, encoding='UTF-8'):
     # This avoids a crash when reading a logfile with special characters that
     # are not utf8-encoded (for example a latin1 "ö"), and also avoids crashes
     # at several other places we don't know yet ;-)
-    return codecs.open(path, mode, encoding, errors='surrogateescape')
+    return open(path, mode, encoding=encoding, errors='surrogateescape')
 
 def readkey():
     '''Returns the pressed key'''
