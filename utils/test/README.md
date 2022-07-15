@@ -16,7 +16,7 @@ For more information, refer to the [unittest documentation](https://docs.python.
 Make sure to set the environment variables pointing to the in-tree apparmor modules, and the in-tree libapparmor and its python wrapper:
 
 ```bash
-$ export PYTHONPATH=..:../../libraries/libapparmor/swig/python/build/$(/usr/bin/python3 -c "import sysconfig; print(\"lib.%s-%s\" %(sysconfig.get_platform(), sysconfig.get_python_version()))")
+$ export PYTHONPATH=..:../../libraries/libapparmor/swig/python/build/$(/usr/bin/python3 ../../libraries/libapparmor/swig/python/test/buildpath.py)
 $ export __AA_CONFDIR=.
 ```
 

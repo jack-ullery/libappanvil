@@ -31,8 +31,8 @@ ifdef USE_SYSTEM
     BASEDIR=
     PARSER=
 else
-    # PYTHON_DIST_BUILD_PATH based on libapparmor/swig/python/test/Makefile.am
-    PYTHON_DIST_BUILD_PATH = ../../libraries/libapparmor/swig/python/build/$$($(PYTHON) -c "import sysconfig; print(\"lib.%s-%s\" %(sysconfig.get_platform(), sysconfig.get_python_version()))")
+    # PYTHON_DIST_BUILD_PATH based on libapparmor/swig/python/test/testbuildpath.py
+    PYTHON_DIST_BUILD_PATH = ../../libraries/libapparmor/swig/python/build/$$($(PYTHON) ../../libraries/libapparmor/swig/python/test/buildpath.py)
     LIBAPPARMOR_PATH=../../libraries/libapparmor/src/.libs/
     LD_LIBRARY_PATH=$(LIBAPPARMOR_PATH):$(PYTHON_DIST_BUILD_PATH)
     PYTHONPATH=..:$(PYTHON_DIST_BUILD_PATH)
