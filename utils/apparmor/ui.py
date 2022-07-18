@@ -19,8 +19,8 @@ import sys
 import re
 import readline
 import os
-import tempfile
 import subprocess
+from tempfile import NamedTemporaryFile
 
 from apparmor.common import readkey, AppArmorException, DebugLogger
 
@@ -249,34 +249,29 @@ def UI_BusyStop():
 
 
 def diff(oldprofile, newprofile):
-    difftemp = tempfile.NamedTemporaryFile('w')
+    difftemp = NamedTemporaryFile('w')
     subprocess.call('diff -u -p %s %s > %s' % (oldprofile, newprofile, difftemp.name), shell=True)
     return difftemp
 
 
 def write_profile_to_tempfile(profile):
-    temp = tempfile.NamedTemporaryFile('w')
+    temp = NamedTemporaryFile('w')
     temp.write(profile)
     temp.flush()
     return temp
 
 
 def generate_diff(oldprofile, newprofile):
-    oldtemp = write_profile_to_tempfile(oldprofile)
-    newtemp = write_profile_to_tempfile(newprofile)
-    difftemp = diff(oldtemp.name, newtemp.name)
-    oldtemp.close()
-    newtemp.close()
-    return difftemp
+    with write_profile_to_tempfile(oldprofile) as oldtemp, \
+            write_profile_to_tempfile(newprofile) as newtemp:
+        return diff(oldtemp.name, newtemp.name)
 
 
 def generate_diff_with_comments(oldprofile, newprofile):
     if not os.path.exists(oldprofile):
         raise AppArmorException(_("Can't find existing profile %s to compare changes.") % oldprofile)
-    newtemp = write_profile_to_tempfile(newprofile)
-    difftemp = diff(oldprofile, newtemp.name)
-    newtemp.close()
-    return difftemp
+    with write_profile_to_tempfile(newprofile) as newtemp:
+        return diff(oldprofile, newtemp.name)
 
 
 def UI_Changes(oldprofile, newprofile, comments=False):
@@ -286,8 +281,8 @@ def UI_Changes(oldprofile, newprofile, comments=False):
     else:
         difftemp = generate_diff_with_comments(oldprofile, newprofile)
         header = 'View Changes with comments'
-    UI_ShowFile(header, difftemp.name)
-    difftemp.close()
+    with difftemp:
+        UI_ShowFile(header, difftemp.name)
 
 def UI_ShowFile(header, filename):
     if UI_mode == 'json':

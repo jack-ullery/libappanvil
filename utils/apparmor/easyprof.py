@@ -14,11 +14,10 @@ import json
 import optparse
 import os
 import re
-import shutil
 import subprocess
 import sys
-import tempfile
 from shutil import which
+from tempfile import NamedTemporaryFile
 
 from apparmor.common import AppArmorException, open_file_read
 
@@ -230,16 +229,15 @@ def verify_policy(policy, exe, base=None, include=None):
         warn("Could not find apparmor_parser. Skipping verify")
         return True
 
-    fn = ""
     # if policy starts with '/' and is one line, assume it is a path
     if len(policy.splitlines()) == 1 and valid_path(policy):
         fn = policy
     else:
-        f, fn = tempfile.mkstemp(prefix='aa-easyprof')
-        if not isinstance(policy, bytes):
-            policy = policy.encode('utf-8')
-        os.write(f, policy)
-        os.close(f)
+        with NamedTemporaryFile('wb', prefix='aa-easyprof', delete=False) as f:
+            fn = f.name
+            if not isinstance(policy, bytes):
+                policy = policy.encode('utf-8')
+            f.write(policy)
 
     command = [exe, '-QTK']
     if base:
@@ -250,9 +248,7 @@ def verify_policy(policy, exe, base=None, include=None):
 
     rc, out = cmd(command)
     os.unlink(fn)
-    if rc == 0:
-        return True
-    return False
+    return rc == 0
 
 #
 # End utility functions
@@ -679,13 +675,10 @@ class AppArmorEasyProfile:
             if not os.path.isdir(dir):
                 raise AppArmorException("'%s' is not a directory" % dir)
 
-            f, fn = tempfile.mkstemp(prefix='aa-easyprof')
             if not isinstance(policy, bytes):
                 policy = policy.encode('utf-8')
-            os.write(f, policy)
-            os.close(f)
-
-            shutil.move(fn, out_fn)
+            with open(out_fn, "wb") as f:
+                f.write(policy)
 
     def gen_manifest(self, params):
         '''Take params list and output a JSON file'''

@@ -17,9 +17,10 @@ import re
 import signal
 import socket
 import sys
-import tempfile
 import time
 from shutil import which
+from tempfile import NamedTemporaryFile
+
 
 def check_requirements(binary):
     '''Verify necessary software is installed'''
@@ -128,8 +129,8 @@ def aa_exec(command, opt, environ={}, verify_rules=[]):
         policy = easyp.gen_policy(**params)
         debug("\n%s" % policy)
 
-        with tempfile.NamedTemporaryFile(prefix='%s-' % policy_name) as tmp:
-            tmp.write(bytes(policy, 'utf-8'))
+        with NamedTemporaryFile(prefix='%s-' % policy_name) as tmp:
+            tmp.write(policy.encode('utf-8'))
 
             debug("using '%s' template" % opt.template)
             # TODO: get rid of this
@@ -537,11 +538,9 @@ Section "ServerLayout"
   InputDevice  "NoKeyboard"
 EndSection
 '''
-
-            tmp, xorg_conf = tempfile.mkstemp(prefix='aa-sandbox-xorg.conf-')
-            self.tempfiles.append(xorg_conf)
-            os.write(tmp, bytes(conf, 'utf-8'))
-            os.close(tmp)
+            with NamedTemporaryFile('wb', prefix='aa-sandbox-xorg.conf-', delete=False) as tmp:
+                self.tempfiles.append(tmp.name)
+                tmp.write(conf.encode('utf-8'))
 
             xvfb_args.append('--xvfb=Xorg')
             xvfb_args.append('-dpi 96') # https://www.xpra.org/trac/ticket/163
@@ -549,10 +548,10 @@ EndSection
             xvfb_args.append('-noreset')
             xvfb_args.append('-logfile %s' % os.path.expanduser('~/.xpra/%s.log' % self.display))
             xvfb_args.append('-auth %s' % self.new_environ['XAUTHORITY'])
-            xvfb_args.append('-config %s' % xorg_conf)
-            extensions = ['Composite', 'GLX', 'RANDR', 'RENDER', 'SECURITY']
-            for i in extensions:
-                xvfb_args.append('+extension %s' % i)
+            xvfb_args.append('-config %s' % tmp.name)
+            xvfb_args.extend(
+                '+extension %s' % i for i in ('Composite', 'GLX', 'RANDR', 'RENDER', 'SECURITY')
+            )
         else:
             raise AppArmorException("Unsupported X driver '%s'" % self.driver)
 

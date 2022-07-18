@@ -15,8 +15,8 @@ import os
 import shlex
 import shutil
 import stat
-import tempfile
 from configparser import ConfigParser
+from tempfile import NamedTemporaryFile
 
 from apparmor.common import AppArmorException, open_file_read  # , warn, msg,
 
@@ -60,18 +60,17 @@ class Config:
         permission_600 = stat.S_IRUSR | stat.S_IWUSR    # Owner read and write
         try:
             # Open a temporary file in the CONF_DIR to write the config file
-            config_file = tempfile.NamedTemporaryFile('w', prefix='aa_temp', delete=False, dir=self.CONF_DIR)
-            if os.path.exists(self.input_file):
-                # Copy permissions from an existing file to temporary file
-                shutil.copymode(self.input_file, config_file.name)
-            else:
-                # If no existing permission set the file permissions as 0600
-                os.chmod(config_file.name, permission_600)
-            if self.conf_type == 'shell':
-                self.write_shell(filepath, config_file, config)
-            elif self.conf_type == 'ini':
-                self.write_configparser(filepath, config_file, config)
-            config_file.close()
+            with NamedTemporaryFile('w', prefix='aa_temp', delete=False, dir=self.CONF_DIR) as config_file:
+                if os.path.exists(self.input_file):
+                    # Copy permissions from an existing file to temporary file
+                    shutil.copymode(self.input_file, config_file.name)
+                else:
+                    # If no existing permission set the file permissions as 0600
+                    os.chmod(config_file.name, permission_600)
+                if self.conf_type == 'shell':
+                    self.write_shell(filepath, config_file, config)
+                elif self.conf_type == 'ini':
+                    self.write_configparser(filepath, config_file, config)
         except IOError:
             raise AppArmorException("Unable to write to %s" % filename)
         else:

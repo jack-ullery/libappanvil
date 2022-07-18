@@ -9,10 +9,9 @@
 # ------------------------------------------------------------------
 
 import cgitb
-import os
 import sys
-import tempfile
 import traceback
+from tempfile import NamedTemporaryFile
 
 from apparmor.common import error
 
@@ -32,21 +31,18 @@ def handle_exception(*exc_info):
         print('', file=sys.stderr)
         error(ex.value)
     else:
-        (fd, path) = tempfile.mkstemp(prefix='apparmor-bugreport-', suffix='.txt')
-        file = os.fdopen(fd, 'w')
-        #file = open_file_write(path)  # writes everything converted to utf8 - not sure if we want this...
+        with NamedTemporaryFile('w', prefix='apparmor-bugreport-', suffix='.txt', delete=False) as file:
+            cgitb_hook = cgitb.Hook(display=1, file=file, format='text', context=10)
+            cgitb_hook.handle(exc_info)
 
-        cgitb_hook = cgitb.Hook(display=1, file=file, format='text', context=10)
-        cgitb_hook.handle(exc_info)
-
-        file.write('Please consider reporting a bug at https://gitlab.com/apparmor/apparmor/-/issues\n')
-        file.write('and attach this file.\n')
+            file.write('Please consider reporting a bug at https://gitlab.com/apparmor/apparmor/-/issues\n')
+            file.write('and attach this file.\n')
 
         print(''.join(traceback.format_exception(*exc_info)), file=sys.stderr)
         print('', file=sys.stderr)
         print('An unexpected error occurred!', file=sys.stderr)
         print('', file=sys.stderr)
-        print('For details, see %s' % path, file=sys.stderr)
+        print('For details, see %s' % file.name, file=sys.stderr)
         print('Please consider reporting a bug at https://gitlab.com/apparmor/apparmor/-/issues', file=sys.stderr)
         print('and attach this file.', file=sys.stderr)
 

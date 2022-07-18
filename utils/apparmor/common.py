@@ -18,6 +18,8 @@ import subprocess
 import sys
 import termios
 import tty
+from tempfile import NamedTemporaryFile
+
 import apparmor.rules as rules
 
 DEBUGGING = False
@@ -312,8 +314,8 @@ class DebugLogger:
                                     format='%(asctime)s - %(name)s - %(message)s\n')
             except IOError:
                 # Unable to open the default logfile, so create a temporary logfile and tell use about it
-                import tempfile
-                templog = tempfile.NamedTemporaryFile('w', prefix='apparmor', suffix='.log', delete=False)
+                templog = NamedTemporaryFile('w', prefix='apparmor', suffix='.log', delete=False)
+                templog.close()
                 sys.stdout.write("\nCould not open: %s\nLogging to: %s\n" % (self.logfile, templog.name))
 
                 logging.basicConfig(filename=templog.name, level=self.debug_level,
