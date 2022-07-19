@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # the build path has changed in setuptools 61.2
 import sys
 import sysconfig
