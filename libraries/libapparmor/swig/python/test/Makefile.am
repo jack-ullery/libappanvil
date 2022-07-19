@@ -10,8 +10,7 @@ test_python.py: test_python.py.in $(top_builddir)/config.status
 
 CLEANFILES = test_python.py
 
-# bah, how brittle is this?
-PYTHON_DIST_BUILD_PATH = '$(builddir)/../build/$$($(PYTHON) -c "import sysconfig; print(\"lib.%s-%s\" %(sysconfig.get_platform(), sysconfig.get_python_version()))")'
+PYTHON_DIST_BUILD_PATH = '$(builddir)/../build/$$($(PYTHON) buildpath.py)'
 
 TESTS	= test_python.py
 TESTS_ENVIRONMENT = \
