@@ -2164,8 +2164,15 @@ def write_profile(profile, is_attachment=False):
 
     serialize_options = {'METADATA': True, 'is_attachment': is_attachment}
     profile_string = serialize_profile(split_to_merged(aa), profile, serialize_options)
-    with open(prof_filename, 'w') as file:  # Keep this context simple: don't want to corrupt file.
-        file.write(profile_string)
+    with NamedTemporaryFile('w', suffix='~', delete=False, dir=profile_dir) as newprof:
+        if os.path.exists(prof_filename):
+            shutil.copymode(prof_filename, newprof.name)
+        else:
+            # permission_600 = stat.S_IRUSR | stat.S_IWUSR    # Owner read and write
+            # os.chmod(newprof.name, permission_600)
+            pass
+        newprof.write(profile_string)
+    os.rename(newprof.name, prof_filename)
 
     if profile in changed:
         changed.pop(profile)

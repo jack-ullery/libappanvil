@@ -677,8 +677,9 @@ class AppArmorEasyProfile:
 
             if not isinstance(policy, bytes):
                 policy = policy.encode('utf-8')
-            with open(out_fn, "wb") as f:
+            with NamedTemporaryFile('wb', prefix='aa-easyprof', suffix='~', delete=False) as f:
                 f.write(policy)
+            os.rename(f.name, out_fn)
 
     def gen_manifest(self, params):
         '''Take params list and output a JSON file'''
