@@ -13,9 +13,9 @@
 import os
 import signal
 import subprocess
-import tempfile
 import time
 import unittest
+from tempfile import NamedTemporaryFile
 
 from common_test import AATest, setup_all_loops, setup_aa
 import apparmor.aa as aa
@@ -112,10 +112,9 @@ Feb  4 13:40:38 XPS-13-9370 kernel: [128552.875891] audit: type=1400 audit({epoc
 Feb  4 13:40:38 XPS-13-9370 kernel: [128552.880347] audit: type=1400 audit({epoch}:122): apparmor="ALLOWED" operation="file_mmap" profile="libreoffice-soffice//null-/usr/bin/file" name="/usr/bin/file" pid=4111 comm="file" requested_mask="rm" denied_mask="rm" fsuid=1001 ouid=0
 '''.format(epoch=round(time.time(), 3))
 
-        handle, self.test_logfile = tempfile.mkstemp(prefix='test-aa-notify-')
-        os.close(handle)
-        with open(self.test_logfile, "w+") as handle:
-            handle.write(
+        with NamedTemporaryFile("w+", prefix='test-aa-notify-', delete=False) as temp_file:
+            self.test_logfile = temp_file.name
+            temp_file.write(
                 test_logfile_contents_999_days_old +
                 test_logfile_contents_30_days_old +
                 test_logfile_contents_unrelevant_entries +

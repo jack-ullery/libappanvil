@@ -263,31 +263,31 @@ class ReadLog:
             self.LOG = open_file_read(self.filename)
         except IOError:
             raise AppArmorException('Can not read AppArmor logfile: ' + self.filename)
-        line = True
-        while line:
-            line = self.get_next_log_entry()
-            if not line:
-                break
-            line = line.strip()
-            self.debug_logger.debug('read_log: %s' % line)
-            if self.logmark in line:
-                seenmark = True
+        with self.LOG:
+            line = True
+            while line:
+                line = self.get_next_log_entry()
+                if not line:
+                    break
+                line = line.strip()
+                self.debug_logger.debug('read_log: %s' % line)
+                if self.logmark in line:
+                    seenmark = True
 
-            self.debug_logger.debug('read_log: seenmark = %s' % seenmark)
-            if not seenmark:
-                continue
+                self.debug_logger.debug('read_log: seenmark = %s' % seenmark)
+                if not seenmark:
+                    continue
 
-            event = self.parse_event(line)
-            if event:
-                try:
-                    self.parse_event_for_tree(event)
+                event = self.parse_event(line)
+                if event:
+                    try:
+                        self.parse_event_for_tree(event)
 
-                except AppArmorException as e:
-                    ex_msg = ('%(msg)s\n\nThis error was caused by the log line:\n%(logline)s' %
-                            {'msg': e.value, 'logline': line})
-                    raise AppArmorBug(ex_msg) from None
+                    except AppArmorException as e:
+                        ex_msg = ('%(msg)s\n\nThis error was caused by the log line:\n%(logline)s' %
+                                {'msg': e.value, 'logline': line})
+                        raise AppArmorBug(ex_msg) from None
 
-        self.LOG.close()
         self.logmark = ''
 
         return self.hashlog

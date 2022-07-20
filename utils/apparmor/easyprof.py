@@ -8,20 +8,18 @@
 #
 # ------------------------------------------------------------------
 
-import codecs
 import copy
 import glob
 import json
 import optparse
 import os
 import re
-import shutil
 import subprocess
 import sys
-import tempfile
 from shutil import which
+from tempfile import NamedTemporaryFile
 
-from apparmor.common import AppArmorException
+from apparmor.common import AppArmorException, open_file_read
 
 
 DEBUGGING = False
@@ -224,15 +222,6 @@ def get_directory_contents(path):
     files.sort()
     return files
 
-def open_file_read(path):
-    '''Open specified file read-only'''
-    try:
-        orig = codecs.open(path, 'r', "UTF-8")
-    except Exception:
-        raise
-
-    return orig
-
 
 def verify_policy(policy, exe, base=None, include=None):
     '''Verify policy compiles'''
@@ -240,16 +229,15 @@ def verify_policy(policy, exe, base=None, include=None):
         warn("Could not find apparmor_parser. Skipping verify")
         return True
 
-    fn = ""
     # if policy starts with '/' and is one line, assume it is a path
     if len(policy.splitlines()) == 1 and valid_path(policy):
         fn = policy
     else:
-        f, fn = tempfile.mkstemp(prefix='aa-easyprof')
-        if not isinstance(policy, bytes):
-            policy = policy.encode('utf-8')
-        os.write(f, policy)
-        os.close(f)
+        with NamedTemporaryFile('wb', prefix='aa-easyprof', delete=False) as f:
+            fn = f.name
+            if not isinstance(policy, bytes):
+                policy = policy.encode('utf-8')
+            f.write(policy)
 
     command = [exe, '-QTK']
     if base:
@@ -260,9 +248,7 @@ def verify_policy(policy, exe, base=None, include=None):
 
     rc, out = cmd(command)
     os.unlink(fn)
-    if rc == 0:
-        return True
-    return False
+    return rc == 0
 
 #
 # End utility functions
@@ -383,19 +369,17 @@ class AppArmorEasyProfile:
             raise AppArmorException("Could not find '%s'" % self.conffile)
 
         # Read in the configuration
-        f = open_file_read(self.conffile)
-
         pat = re.compile(r'^\w+=".*"?')
-        for line in f:
-            if not pat.search(line):
-                continue
-            if line.startswith("POLICYGROUPS_DIR="):
-                d = re.split(r'=', line.strip())[1].strip('["\']')
-                self.dirs['policygroups'] = d
-            elif line.startswith("TEMPLATES_DIR="):
-                d = re.split(r'=', line.strip())[1].strip('["\']')
-                self.dirs['templates'] = d
-        f.close()
+        with open_file_read(self.conffile) as f:
+            for line in f:
+                if not pat.search(line):
+                    continue
+                if line.startswith("POLICYGROUPS_DIR="):
+                    d = re.split(r'=', line.strip())[1].strip('["\']')
+                    self.dirs['policygroups'] = d
+                elif line.startswith("TEMPLATES_DIR="):
+                    d = re.split(r'=', line.strip())[1].strip('["\']')
+                    self.dirs['templates'] = d
 
         keys = self.dirs.keys()
         if 'templates' not in keys:
@@ -691,13 +675,11 @@ class AppArmorEasyProfile:
             if not os.path.isdir(dir):
                 raise AppArmorException("'%s' is not a directory" % dir)
 
-            f, fn = tempfile.mkstemp(prefix='aa-easyprof')
             if not isinstance(policy, bytes):
                 policy = policy.encode('utf-8')
-            os.write(f, policy)
-            os.close(f)
-
-            shutil.move(fn, out_fn)
+            with NamedTemporaryFile('wb', prefix='aa-easyprof', suffix='~', delete=False) as f:
+                f.write(policy)
+            os.rename(f.name, out_fn)
 
     def gen_manifest(self, params):
         '''Take params list and output a JSON file'''

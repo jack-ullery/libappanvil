@@ -21,8 +21,8 @@ import sys
 import time
 import traceback
 import atexit
-import tempfile
 from shutil import which
+from tempfile import NamedTemporaryFile
 
 import apparmor.config
 import apparmor.logparser
@@ -618,7 +618,8 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
         raise AppArmorBug('New flag for %s is empty' % prof_filename)
 
     with open_file_read(prof_filename) as f_in:
-        temp_file = tempfile.NamedTemporaryFile('w', prefix=prof_filename, suffix='~', delete=False, dir=profile_dir)
+        temp_file = NamedTemporaryFile('w', prefix=prof_filename, suffix='~', delete=False, dir=profile_dir)
+        temp_file.close()
         shutil.copymode(prof_filename, temp_file.name)
         with open_file_write(temp_file.name) as f_out:
             for lineno, line in enumerate(f_in):
@@ -2154,7 +2155,6 @@ def write_profile_ui_feedback(profile, is_attachment=False):
     write_profile(profile, is_attachment)
 
 def write_profile(profile, is_attachment=False):
-    prof_filename = None
     if aa[profile][profile].get('filename', False):
         prof_filename = aa[profile][profile]['filename']
     elif is_attachment:
@@ -2162,20 +2162,16 @@ def write_profile(profile, is_attachment=False):
     else:
         prof_filename = get_profile_filename_from_profile_name(profile, True)
 
-    newprof = tempfile.NamedTemporaryFile('w', suffix='~', delete=False, dir=profile_dir)
-    if os.path.exists(prof_filename):
-        shutil.copymode(prof_filename, newprof.name)
-    else:
-        #permission_600 = stat.S_IRUSR | stat.S_IWUSR    # Owner read and write
-        #os.chmod(newprof.name, permission_600)
-        pass
-
     serialize_options = {'METADATA': True, 'is_attachment': is_attachment}
-
     profile_string = serialize_profile(split_to_merged(aa), profile, serialize_options)
-    newprof.write(profile_string)
-    newprof.close()
-
+    with NamedTemporaryFile('w', suffix='~', delete=False, dir=profile_dir) as newprof:
+        if os.path.exists(prof_filename):
+            shutil.copymode(prof_filename, newprof.name)
+        else:
+            # permission_600 = stat.S_IRUSR | stat.S_IWUSR    # Owner read and write
+            # os.chmod(newprof.name, permission_600)
+            pass
+        newprof.write(profile_string)
     os.rename(newprof.name, prof_filename)
 
     if profile in changed:

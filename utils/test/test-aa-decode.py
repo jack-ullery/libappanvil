@@ -12,10 +12,10 @@
 import os
 import signal
 import subprocess
-import tempfile
 import unittest
+from tempfile import NamedTemporaryFile
 
-# The locationg of the aa-decode utility can be overridden by setting
+# The location of the aa-decode utility can be overridden by setting
 # the APPARMOR_DECODE environment variable; this is useful for running
 # these tests in an installed environment
 aadecode_bin = "../aa-decode"
@@ -57,26 +57,7 @@ def cmd(command, stdin=None):
     return sp.returncode, out.decode('utf-8')
 
 
-def mkstemp_fill(contents, suffix='', prefix='tst-aadecode-', dir=None):
-    '''As tempfile.mkstemp does, return a (file, name) pair, but with prefilled contents.'''
-
-    handle, name = tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dir)
-    os.close(handle)
-    handle = open(name, "w+")
-    handle.write(contents)
-    handle.flush()
-    handle.seek(0)
-
-    return handle, name
-
 class AADecodeTest(unittest.TestCase):
-
-    def setUp(self):
-        self.tmpfile = None
-
-    def tearDown(self):
-        if self.tmpfile and os.path.exists(self.tmpfile):
-            os.remove(self.tmpfile)
 
     def test_help(self):
         '''Test --help argument'''
@@ -92,15 +73,18 @@ class AADecodeTest(unittest.TestCase):
 
         expected_return_code = 0
 
-        (f, self.tmpfile) = mkstemp_fill(content)
+        with NamedTemporaryFile("w+", prefix='tst-aadecode-') as temp_file:
+            self.tmpfile = temp_file.name
+            temp_file.write(content)
+            temp_file.flush()
+            temp_file.seek(0)
+            rc, report = cmd((aadecode_bin,), stdin=temp_file)
 
-        rc, report = cmd((aadecode_bin,), stdin=f)
         result = 'Got exit code %d, expected %d\n' % (rc, expected_return_code)
         self.assertEqual(expected_return_code, rc, result + report)
         for expected_string in expected:
             result = 'could not find expected %s in output:\n' % (expected_string)
             self.assertIn(expected_string, report, result + report)
-        f.close()
 
     def test_simple_decode(self):
         '''Test simple decode on command line'''

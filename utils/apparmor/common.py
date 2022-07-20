@@ -9,7 +9,6 @@
 #
 # ------------------------------------------------------------------
 
-import codecs
 import collections
 import glob
 import logging
@@ -19,6 +18,8 @@ import subprocess
 import sys
 import termios
 import tty
+from tempfile import NamedTemporaryFile
+
 import apparmor.rules as rules
 
 DEBUGGING = False
@@ -195,7 +196,7 @@ def open_file_anymode(mode, path, encoding='UTF-8'):
     # This avoids a crash when reading a logfile with special characters that
     # are not utf8-encoded (for example a latin1 "ö"), and also avoids crashes
     # at several other places we don't know yet ;-)
-    return codecs.open(path, mode, encoding, errors='surrogateescape')
+    return open(path, mode, encoding=encoding, errors='surrogateescape')
 
 def readkey():
     '''Returns the pressed key'''
@@ -313,8 +314,8 @@ class DebugLogger:
                                     format='%(asctime)s - %(name)s - %(message)s\n')
             except IOError:
                 # Unable to open the default logfile, so create a temporary logfile and tell use about it
-                import tempfile
-                templog = tempfile.NamedTemporaryFile('w', prefix='apparmor', suffix='.log', delete=False)
+                templog = NamedTemporaryFile('w', prefix='apparmor', suffix='.log', delete=False)
+                templog.close()
                 sys.stdout.write("\nCould not open: %s\nLogging to: %s\n" % (self.logfile, templog.name))
 
                 logging.basicConfig(filename=templog.name, level=self.debug_level,

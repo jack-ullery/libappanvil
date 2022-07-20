@@ -16,9 +16,9 @@
 from argparse import ArgumentParser
 import os
 import sys
-import tempfile
 import unittest
 import testlib
+from tempfile import NamedTemporaryFile
 
 DEFAULT_TESTDIR = "./simple_tests/vars"
 VALGRIND_ERROR_CODE = 151
@@ -65,12 +65,9 @@ def find_testcases(testdir):
 
 def create_suppressions():
     '''generate valgrind suppressions file'''
-
-    handle, name = tempfile.mkstemp(suffix='.suppressions', prefix='aa-parser-valgrind')
-    os.close(handle)
-    with open(name, "w+") as handle:
-        handle.write(VALGRIND_SUPPRESSIONS)
-    return name
+    with NamedTemporaryFile("w+", suffix='.suppressions', prefix='aa-parser-valgrind', delete=False) as temp_file:
+        temp_file.write(VALGRIND_SUPPRESSIONS)
+    return temp_file.name
 
 
 def main():
