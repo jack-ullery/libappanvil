@@ -282,7 +282,7 @@ TEMPLATES_DIR="%s/templates"
         # no fallback
         self.assertTrue(easyp.dirs['policygroups'] == rel, "Not using specified --policy-groups-dir\n" +
                                                            "Specified dir: %s\nActual dir: %s" % (rel, str(easyp.dirs['policygroups'])))
-        self.assertFalse(easyp.get_policy_groups() == None, "Could not find policy-groups")
+        self.assertFalse(easyp.get_policy_groups() is None, "Could not find policy-groups")
 
     def test_policygroups_dir_nonexistent(self):
         '''Test --policy-groups-dir (nonexistent DIR)'''
@@ -298,7 +298,7 @@ TEMPLATES_DIR="%s/templates"
         self.assertFalse(easyp.dirs['policygroups'] == rel, "Using nonexistent --policy-groups-dir")
 
         # test fallback
-        self.assertTrue(easyp.get_policy_groups() != None, "Found policy-groups when shouldn't have")
+        self.assertTrue(easyp.get_policy_groups() is not None, "Found policy-groups when shouldn't have")
 
     def test_policygroups_dir_valid(self):
         '''Test --policy-groups-dir (valid DIR)'''
@@ -314,7 +314,7 @@ TEMPLATES_DIR="%s/templates"
 
         # no fallback
         self.assertTrue(easyp.dirs['policygroups'] == valid, "Not using specified --policy-groups-dir")
-        self.assertFalse(easyp.get_policy_groups() == None, "Could not find policy-groups")
+        self.assertFalse(easyp.get_policy_groups() is None, "Could not find policy-groups")
 
     def test_policygroups_dir_valid_with_vendor(self):
         '''Test --policy-groups-dir (valid DIR with vendor)'''
@@ -336,7 +336,7 @@ TEMPLATES_DIR="%s/templates"
         easyp = easyprof.AppArmorEasyProfile(self.binary, self.options)
 
         self.assertTrue(easyp.dirs['policygroups'] == valid, "Not using specified --policy-groups-dir")
-        self.assertFalse(easyp.get_policy_groups() == None, "Could not find policy-groups")
+        self.assertFalse(easyp.get_policy_groups() is None, "Could not find policy-groups")
         for f in easyp.get_policy_groups():
             self.assertFalse(os.path.basename(f) == vendor, "Found '%s' in %s" % (vendor, f))
 
@@ -409,7 +409,7 @@ POLICYGROUPS_DIR="%s/templates"
         # no fallback
         self.assertTrue(easyp.dirs['templates'] == rel, "Not using specified --template-dir\n" +
                                                         "Specified dir: %s\nActual dir: %s" % (rel, str(easyp.dirs['templates'])))
-        self.assertFalse(easyp.get_templates() == None, "Could not find templates")
+        self.assertFalse(easyp.get_templates() is None, "Could not find templates")
 
     def test_templates_dir_nonexistent(self):
         '''Test --templates-dir (nonexistent DIR)'''
@@ -425,7 +425,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(easyp.dirs['templates'] == rel, "Using nonexistent --template-dir")
 
         # test fallback
-        self.assertTrue(easyp.get_templates() != None, "Found templates when shouldn't have")
+        self.assertTrue(easyp.get_templates() is not None, "Found templates when shouldn't have")
 
     def test_templates_dir_valid(self):
         '''Test --templates-dir (valid DIR)'''
@@ -441,7 +441,7 @@ POLICYGROUPS_DIR="%s/templates"
 
         # no fallback
         self.assertTrue(easyp.dirs['templates'] == valid, "Not using specified --template-dir")
-        self.assertFalse(easyp.get_templates() == None, "Could not find templates")
+        self.assertFalse(easyp.get_templates() is None, "Could not find templates")
 
     def test_templates_dir_valid_with_vendor(self):
         '''Test --templates-dir (valid DIR with vendor)'''
@@ -463,7 +463,7 @@ POLICYGROUPS_DIR="%s/templates"
         easyp = easyprof.AppArmorEasyProfile(self.binary, self.options)
 
         self.assertTrue(easyp.dirs['templates'] == valid, "Not using specified --template-dir")
-        self.assertFalse(easyp.get_templates() == None, "Could not find templates")
+        self.assertFalse(easyp.get_templates() is None, "Could not find templates")
         for f in easyp.get_templates():
             self.assertFalse(os.path.basename(f) == vendor, "Found '%s' in %s" % (vendor, f))
 
@@ -772,12 +772,12 @@ POLICYGROUPS_DIR="%s/templates"
         # Build up our args
         args = self.full_args
 
-        if template == None:
+        if template is None:
             args.append('--template=%s' % self.test_template)
         else:
             args.append('--template=%s' % template)
 
-        if name != None:
+        if name is not None:
             args.append('--name=%s' % name)
 
         if len(extra_args) > 0:
@@ -793,10 +793,10 @@ POLICYGROUPS_DIR="%s/templates"
 
         # We always need to check for these
         search_terms = [self.binary]
-        if name != None:
+        if name is not None:
             search_terms.append(name)
 
-        if template == None:
+        if template is None:
             search_terms.append(self.test_template)
 
         for s in search_terms:

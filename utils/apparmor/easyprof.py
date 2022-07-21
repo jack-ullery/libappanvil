@@ -340,7 +340,7 @@ class AppArmorEasyProfile:
         self.set_policygroup(opt.policy_groups)
         if opt.name:
             self.set_name(opt.name)
-        elif self.binary != None:
+        elif self.binary is not None:
             self.set_name(self.binary)
 
         self.templates = []
@@ -445,7 +445,7 @@ class AppArmorEasyProfile:
             elif inc_p is not None and os.path.exists(inc_p):
                 p = inc_p
 
-        if self.policy_groups == None or not p in self.policy_groups:
+        if self.policy_groups is None or not p in self.policy_groups:
             raise AppArmorException("Policy group '%s' does not exist" % p)
         with open(p) as f:
             return f.read()
@@ -453,7 +453,7 @@ class AppArmorEasyProfile:
     def set_policygroup(self, policygroups):
         '''Set policygroups'''
         self.policy_groups = []
-        if policygroups != None:
+        if policygroups is not None:
             for p in policygroups.split(','):
                 # If have abs path, just use it
                 if p.startswith('/'):
@@ -573,20 +573,20 @@ class AppArmorEasyProfile:
         policy = re.sub(r'###NAME###', name, policy)
 
         # Fill-in various comment fields
-        if comment != None:
+        if comment is not None:
             policy = re.sub(r'###COMMENT###', "Comment: %s" % comment, policy)
 
-        if author != None:
+        if author is not None:
             policy = re.sub(r'###AUTHOR###', "Author: %s" % author, policy)
 
-        if copyright != None:
+        if copyright is not None:
             policy = re.sub(r'###COPYRIGHT###', "Copyright: %s" % copyright, policy)
 
         # Fill-in rules and variables with proper indenting
         search = '###ABSTRACTIONS###'
         prefix = find_prefix(policy, search)
         s = "%s# No abstractions specified" % prefix
-        if abstractions != None:
+        if abstractions is not None:
             s = "%s# Specified abstractions" % (prefix)
             t = abstractions.split(',')
             t.sort()
@@ -597,7 +597,7 @@ class AppArmorEasyProfile:
         search = '###POLICYGROUPS###'
         prefix = find_prefix(policy, search)
         s = "%s# No policy groups specified" % prefix
-        if policy_groups != None:
+        if policy_groups is not None:
             s = "%s# Rules specified via policy groups" % (prefix)
             t = policy_groups.split(',')
             t.sort()
@@ -869,7 +869,7 @@ def parse_args(args=None, parser=None):
     '''Parse arguments'''
     global DEBUGGING
 
-    if parser == None:
+    if parser is None:
         parser = optparse.OptionParser()
 
     parser.add_option("-c", "--config-file",
@@ -1102,11 +1102,11 @@ def verify_options(opt, strict=False):
     '''Make sure our options are valid'''
     if hasattr(opt, 'binary') and opt.binary and not valid_path(opt.binary):
         raise AppArmorException("Invalid binary '%s'" % opt.binary)
-    if hasattr(opt, 'profile_name') and opt.profile_name != None and \
+    if hasattr(opt, 'profile_name') and opt.profile_name is not None and \
        not valid_profile_name(opt.profile_name):
         raise AppArmorException("Invalid profile name '%s'" % opt.profile_name)
     if hasattr(opt, 'binary') and opt.binary and \
-       hasattr(opt, 'profile_name') and opt.profile_name != None and \
+       hasattr(opt, 'profile_name') and opt.profile_name is not None and \
        opt.profile_name.startswith('/'):
         raise AppArmorException("Profile name should not specify path with binary")
     if hasattr(opt, 'policy_vendor') and opt.policy_vendor and \

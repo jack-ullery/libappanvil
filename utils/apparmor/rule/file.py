@@ -73,7 +73,7 @@ class FileRule(BaseRule):
             perms, tmp_exec_perms = split_perms(perms, deny)
             if tmp_exec_perms:
                 raise AppArmorBug('perms must not contain exec perms')
-        elif perms == None:
+        elif perms is None:
             perms = set()
 
         if perms == {'subset'}:

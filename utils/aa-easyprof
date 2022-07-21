@@ -100,7 +100,7 @@ if __name__ == "__main__":
 
             apparmor.easyprof.print_files(files)
             sys.exit(0)
-        elif binary == None and not options.profile_name and \
+        elif binary is None and not options.profile_name and \
              not options.manifest:
             error("Must specify binary and/or profile name\n%s" % m)
 

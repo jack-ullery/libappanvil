@@ -33,7 +33,7 @@ class Install(_install):
         super().run()
 
         prefix = self.prefix
-        if self.root != None:
+        if self.root is not None:
             prefix = self.root
 
         # Install scripts, configuration files and data

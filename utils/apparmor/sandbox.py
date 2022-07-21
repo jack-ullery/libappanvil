@@ -41,7 +41,7 @@ def check_requirements(binary):
 
 def parse_args(args=None, parser=None):
     '''Parse arguments'''
-    if parser == None:
+    if parser is None:
         parser = optparse.OptionParser()
 
     parser.add_option('-X', '--with-x',
@@ -113,7 +113,7 @@ def set_environ(env):
 
 def aa_exec(command, opt, environ={}, verify_rules=[]):
     '''Execute binary under specified policy'''
-    if opt.profile != None:
+    if opt.profile is not None:
         policy_name = opt.profile
     else:
         opt.ensure_value("template_var", None)
@@ -390,7 +390,7 @@ class SandboxXpra(SandboxXserver):
 
         xvfb_args = []
 
-        if self.driver == None:
+        if self.driver is None:
             # The default from the man page, but be explicit in what we enable
             xvfb_args.append('--xvfb=Xvfb')
             xvfb_args.append('-screen 0 3840x2560x24+32')
