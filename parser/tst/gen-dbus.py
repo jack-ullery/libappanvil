@@ -109,12 +109,12 @@ gen_files('service-rules', 'PASS', quantifier, ['bind'], session,
 gen_files('eavesdrop-rules', 'PASS', quantifier, ['eavesdrop'], session,
           empty_tup, empty_tup, empty_tup, empty_tup, empty_tup)
 gen_file('sloppy-formatting', 'PASS', '', '(send , receive )', 'bus=session',
-	 '', 'path ="/foo/bar"', 'interface = com.foo', '  member=bar',
-	 'peer =(   label= /usr/bin/app name  ="com.foo")')
+         '', 'path ="/foo/bar"', 'interface = com.foo', '  member=bar',
+         'peer =(   label= /usr/bin/app name  ="com.foo")')
 gen_file('sloppy-formatting', 'PASS', '', 'bind', 'bus =session',
-	 'name= com.foo', '', '', '', '')
+         'name= com.foo', '', '', '', '')
 gen_file('sloppy-formatting', 'PASS', '', 'eavesdrop', 'bus = system',
-	 '', '', '', '', '')
+         '', '', '', '', '')
 
 # Don't use the empty element from each array since all empty conditionals would PASS but we want all FAILs
 msg_perms.remove('')

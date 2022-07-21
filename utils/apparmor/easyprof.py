@@ -285,8 +285,8 @@ class AppArmorEasyProfile:
              opt.template and \
              os.path.isfile(opt.template) and \
              valid_path(opt.template):
-	    # If we specified the template and it is an absolute path, just set
-	    # the templates directory to the parent of the template so we don't
+            # If we specified the template and it is an absolute path, just set
+            # the templates directory to the parent of the template so we don't
             # have to require --template-dir with absolute paths.
             self.dirs['templates'] = os.path.abspath(os.path.dirname(opt.template))
 
