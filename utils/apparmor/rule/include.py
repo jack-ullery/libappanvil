@@ -92,7 +92,7 @@ class IncludeRule(BaseRule):
         if (self.path != other_rule.path):
             return False
 
-        if (self.ifexists != other_rule.ifexists) and (self.ifexists == True):  # "if exists" is allowed to differ
+        if (self.ifexists != other_rule.ifexists) and self.ifexists:  # "if exists" is allowed to differ
             return False
 
         if (self.ismagic != other_rule.ismagic):
@@ -146,7 +146,7 @@ class IncludeRule(BaseRule):
         elif os.path.exists(full_path):
             files.append(full_path)
 
-        elif self.ifexists == False:
+        elif not self.ifexists:
             files.append(full_path)  # add full_path even if it doesn't exist on disk. Might cause a 'file not found' error later.
 
         return files

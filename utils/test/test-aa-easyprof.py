@@ -33,7 +33,7 @@ def recursive_rm(dirPath, contents_only=False):
             os.unlink(path)
         else:
             recursive_rm(path)
-    if contents_only == False:
+    if not contents_only:
         os.rmdir(dirPath)
 
 # From Lib/test/test_optparse.py from python 2.7.4

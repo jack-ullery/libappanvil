@@ -114,7 +114,7 @@ class AAParserCachingCommon(testlib.AATestTemplate):
         return cache_dir
 
     def assert_path_exists(self, path, expected=True):
-        if expected is True:
+        if expected:
             self.assertTrue(os.path.exists(path),
                             'test did not create file %s, when it was expected to do so' % path)
         else:

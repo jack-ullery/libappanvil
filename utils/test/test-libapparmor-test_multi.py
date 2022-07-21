@@ -268,10 +268,10 @@ def logfile_to_profile(logfile):
 
     if logfile.split('/')[-1][:-3] in log_to_profile_known_empty_log:
         # unfortunately this function might be called outside Unittest.TestCase, therefore we can't use assertEqual / assertNotEqual
-        if log_is_empty == False:
+        if not log_is_empty:
             raise Exception('got non-empty log for logfile in log_to_profile_known_empty_log: %s %s' % (logfile, hashlog))
     else:
-        if log_is_empty == True:
+        if log_is_empty:
             raise Exception('got empty log for logfile not in log_to_profile_known_empty_log: %s %s' % (logfile, hashlog))
 
     new_profile = apparmor.aa.serialize_profile(log_dict[aamode], profile, {})

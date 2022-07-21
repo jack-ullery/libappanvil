@@ -266,7 +266,7 @@ def split_flags(flags):
     return sorted(set(flags_list))
 
 def add_or_remove_flag(flags, flags_to_change, set_flag):
-    '''add (if set_flag == True) or remove the given flags_to_change to flags'''
+    '''add (if set_flag is True) or remove the given flags_to_change to flags'''
 
     if type(flags) is str or flags is None:
         flags = split_flags(flags)
