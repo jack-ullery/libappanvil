@@ -60,7 +60,7 @@ WARNINGS = -Wall
 CXX_WARNINGS = ${WARNINGS} ${EXTRA_WARNINGS}
 CPP_WARNINGS =
 ifndef CFLAGS
-CFLAGS	= -g -O2 -pipe -flto-partition=none
+CFLAGS	= -g -O2 -pipe
 
 ifdef DEBUG
 CFLAGS += -pg -D DEBUG
@@ -69,6 +69,8 @@ ifdef COVERAGE
 CFLAGS = -g -pg -fprofile-arcs -ftest-coverage
 endif
 endif #CFLAGS
+
+CFLAGS	+= -flto-partition=none
 
 EXTRA_CXXFLAGS = ${CFLAGS} ${CPPFLAGS} ${CXX_WARNINGS} -std=gnu++0x
 EXTRA_CFLAGS = ${EXTRA_CXXFLAGS} ${CPP_WARNINGS}
