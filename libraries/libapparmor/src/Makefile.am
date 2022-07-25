@@ -11,6 +11,9 @@ INCLUDES = $(all_includes)
 # 3. If any interfaces have been added, removed, or changed since the last
 #    update,
 #    - increment AA_LIB_CURRENT
+#      - by 1 if bugfix release
+#      - by 5 on larger releases. This gives room to fix library interface
+#        problems in the unlikely event where an interface has to break.
 #    - set AA_LIB_REVISION to 0.
 # 4. If any interfaces have been added since the last public release, then
 #    - increment AA_LIB_AGE.
