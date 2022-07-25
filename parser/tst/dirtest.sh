@@ -31,8 +31,9 @@ do_tst() {
 	shift 2
 	#global tmpdir
 
-	${APPARMOR_PARSER} "$@" > "$tmpdir/out" 2>/dev/null
+	${APPARMOR_PARSER} "$@" > "$tmpdir/out.unsorted" 2>/dev/null
 	rc=$?
+	LC_ALL=C sort "$tmpdir/out.unsorted" > "$tmpdir/out"
 	if [ $rc -ne 0 ] && [ "$expected" != "fail" ] ; then
 		echo "failed: expected \"$expected\" but parser returned error"
 		return 1
