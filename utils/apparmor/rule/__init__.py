@@ -80,12 +80,14 @@ class BaseRule:
             return None, True
         elif type(rulepart) is str:
             if len(rulepart.strip()) == 0:
-                raise AppArmorBug('Passed empty %(partname)s to %(classname)s: %(rulepart)s' %
-                        {'partname': partname, 'classname': self.__class__.__name__, 'rulepart': str(rulepart)})
+                raise AppArmorBug(
+                    'Passed empty %(partname)s to %(classname)s: %(rulepart)s'
+                    % {'partname': partname, 'classname': self.__class__.__name__, 'rulepart': str(rulepart)})
             return AARE(rulepart, is_path=is_path, log_event=log_event), False
         else:
-            raise AppArmorBug('Passed unknown %(partname)s to %(classname)s: %(rulepart)s'
-                    % {'partname': partname, 'classname': self.__class__.__name__, 'rulepart': str(rulepart)})
+            raise AppArmorBug(
+                'Passed unknown %(partname)s to %(classname)s: %(rulepart)s'
+                % {'partname': partname, 'classname': self.__class__.__name__, 'rulepart': str(rulepart)})
 
     def __repr__(self):
         classname = self.__class__.__name__
@@ -506,14 +508,16 @@ def check_and_split_list(lst, allowed_keywords, all_obj, classname, keyword_name
     elif type(lst) in (list, tuple, set) and (len(lst) > 0 or allow_empty_list):
         result_list = set(lst)
     else:
-        raise AppArmorBug('Passed unknown %(type)s object to %(classname)s: %(unknown_object)s' %
-                {'type': type(lst), 'classname': classname, 'unknown_object': str(lst)})
+        raise AppArmorBug(
+            'Passed unknown %(type)s object to %(classname)s: %(unknown_object)s' %
+            {'type': type(lst), 'classname': classname, 'unknown_object': str(lst)})
 
     unknown_items = set()
     for item in result_list:
         if not item.strip():
-            raise AppArmorBug('Passed empty %(keyword_name)s to %(classname)s' %
-                    {'keyword_name': keyword_name, 'classname': classname})
+            raise AppArmorBug(
+                'Passed empty %(keyword_name)s to %(classname)s' %
+            {'keyword_name': keyword_name, 'classname': classname})
         if item not in allowed_keywords:
             unknown_items.add(item)
 

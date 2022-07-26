@@ -143,7 +143,7 @@ class SignalRule(BaseRule):
             peer = SignalRule.ALL
 
         return SignalRule(access, signal, peer,
-                           audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
+                          audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
         '''return rule (in clean/default formatting)'''

@@ -56,7 +56,7 @@ class PtraceRule(BaseRule):
                  comment='', log_event=None):
 
         super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
-                          comment=comment, log_event=log_event)
+                         comment=comment, log_event=log_event)
 
         self.access, self.all_access, unknown_items = check_and_split_list(access, access_keywords, PtraceRule.ALL, 'PtraceRule', 'access')
         if unknown_items:
@@ -104,8 +104,8 @@ class PtraceRule(BaseRule):
             access = PtraceRule.ALL
             peer = PtraceRule.ALL
 
-        return PtraceRule(access, peer,
-                           audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
+        return PtraceRule(
+            access, peer, audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
         '''return rule (in clean/default formatting)'''

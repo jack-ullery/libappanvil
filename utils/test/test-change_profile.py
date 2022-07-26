@@ -144,8 +144,7 @@ class ChangeProfileFromInit(ChangeProfileTest):
         (ChangeProfileRule('unsafe', '/foo', '/bar')                     , exp(False, False, False, ''           , 'unsafe', '/foo',   False, '/bar'    , False)),
         (ChangeProfileRule(None    , '/foo', ChangeProfileRule.ALL)      , exp(False, False, False, ''           , None  , '/foo',   False,  None     , True )),
         (ChangeProfileRule(None    , ChangeProfileRule.ALL, '/bar')      , exp(False, False, False, ''           , None  , None  ,   True , '/bar'    , False)),
-        (ChangeProfileRule(None    , ChangeProfileRule.ALL,
-                             ChangeProfileRule.ALL)            , exp(False, False, False, ''           , None, None  ,   True , None      , True )),
+        (ChangeProfileRule(None    , ChangeProfileRule.ALL, ChangeProfileRule.ALL), exp(False, False, False, ''           , None, None  ,   True , None      , True )),
     )
 
     def _run_test(self, obj, expected):

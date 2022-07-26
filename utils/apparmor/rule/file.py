@@ -188,7 +188,7 @@ class FileRule(BaseRule):
         file_keyword = bool(matches.group('file_keyword'))
 
         return FileRule(path, perms, exec_perms, target, owner, file_keyword, leading_perms,
-                           audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
+                        audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
         '''return rule (in clean/default formatting)'''

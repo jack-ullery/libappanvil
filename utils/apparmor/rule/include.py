@@ -69,8 +69,7 @@ class IncludeRule(BaseRule):
         # TODO: move re_match_include_parse() from regex.py to this class after converting all code to use IncludeRule
         path, ifexists, ismagic = re_match_include_parse(raw_rule, cls.rule_name)
 
-        return cls(path, ifexists, ismagic,
-                           audit=False, deny=False, allow_keyword=False, comment=comment)
+        return cls(path, ifexists, ismagic, audit=False, deny=False, allow_keyword=False, comment=comment)
 
     def get_clean(self, depth=0):
         '''return rule (in clean/default formatting)'''

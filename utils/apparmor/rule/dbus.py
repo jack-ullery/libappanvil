@@ -190,7 +190,7 @@ class DbusRule(BaseRule):
             peerlabel = DbusRule.ALL
 
         return DbusRule(access, bus, path, name, interface, member, peername, peerlabel,
-                           audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
+                        audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
         '''return rule (in clean/default formatting)'''

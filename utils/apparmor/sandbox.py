@@ -101,8 +101,7 @@ def parse_args(args=None, parser=None):
 
 def gen_policy_name(binary):
     '''Generate a temporary policy based on the binary name'''
-    return "sandbox-%s%s" % (pwd.getpwuid(os.geteuid())[0],
-                              re.sub(r'/', '_', binary))
+    return "sandbox-%s%s" % (pwd.getpwuid(os.geteuid())[0], re.sub(r'/', '_', binary))
 
 def set_environ(env):
     keys = env.keys()
@@ -169,10 +168,7 @@ def run_sandbox(command, opt):
     return rc, report
 
 class SandboxXserver():
-    def __init__(self, title, geometry=None,
-                              driver=None,
-                              xauth=None,
-                              clipboard=False):
+    def __init__(self, title, geometry=None, driver=None, xauth=None, clipboard=False):
         self.geometry = geometry
         self.title = title
         self.pids = []
@@ -673,17 +669,14 @@ def run_xsandbox(command, opt):
 
     # first, start X
     if opt.xserver.lower() == "xephyr":
-        x = SandboxXephyr(command[0], geometry=opt.xephyr_geometry,
-                                      xauth=opt.xauthority)
+        x = SandboxXephyr(command[0], geometry=opt.xephyr_geometry, xauth=opt.xauthority)
     elif opt.xserver.lower() == "xpra3d":
-        x = SandboxXpra(command[0], geometry=None,
-                                    driver="xdummy",
-                                    xauth=opt.xauthority,
-                                    clipboard=opt.with_clipboard)
+        x = SandboxXpra(
+            command[0], geometry=None, driver="xdummy", xauth=opt.xauthority,
+            clipboard=opt.with_clipboard)
     else:
-        x = SandboxXpra(command[0], geometry=None,
-                                    xauth=opt.xauthority,
-                                    clipboard=opt.with_clipboard)
+        x = SandboxXpra(
+            command[0], geometry=None, xauth=opt.xauthority, clipboard=opt.with_clipboard)
 
     x.verify_host_setup()
 

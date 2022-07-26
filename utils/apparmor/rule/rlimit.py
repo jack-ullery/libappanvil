@@ -131,8 +131,7 @@ class RlimitRule(BaseRule):
         else:
             raise AppArmorException(_("Invalid rlimit rule '%s' - value missing") % raw_rule)  # pragma: no cover - would need breaking the regex
 
-        return RlimitRule(rlimit, value,
-                           comment=comment)
+        return RlimitRule(rlimit, value, comment=comment)
 
     def get_clean(self, depth=0):
         '''return rule (in clean/default formatting)'''

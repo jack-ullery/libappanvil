@@ -269,8 +269,7 @@ class AARegexSignal(AARegexTest):
         ('   signal (send, receive),',                  (None,    None, 'signal (send, receive),',                  '(send, receive)',                  None)),
         ('   audit signal (receive),',                  ('audit', None, 'signal (receive),',                        '(receive)',                        None)),
         ('   signal (send, receive) set=(usr1 usr2),',  (None,    None, 'signal (send, receive) set=(usr1 usr2),',  '(send, receive) set=(usr1 usr2)',  None)),
-        ('   signal send set=(hup, quit) peer=/usr/sbin/daemon,', (None, None, 'signal send set=(hup, quit) peer=/usr/sbin/daemon,',
-                                                                                                          'send set=(hup, quit) peer=/usr/sbin/daemon', None)),
+        ('   signal send set=(hup, quit) peer=/usr/sbin/daemon,', (None, None, 'signal send set=(hup, quit) peer=/usr/sbin/daemon,', 'send set=(hup, quit) peer=/usr/sbin/daemon', None)),
 
         ('   signalling,', False),
         ('   audit signalling,', False),

@@ -282,9 +282,9 @@ class AppArmorEasyProfile:
         if opt.templates_dir and os.path.isdir(opt.templates_dir):
             self.dirs['templates'] = os.path.abspath(opt.templates_dir)
         elif not opt.templates_dir and \
-             opt.template and \
-             os.path.isfile(opt.template) and \
-             valid_path(opt.template):
+                opt.template and \
+                os.path.isfile(opt.template) and \
+                valid_path(opt.template):
             # If we specified the template and it is an absolute path, just set
             # the templates directory to the parent of the template so we don't
             # have to require --template-dir with absolute paths.
@@ -521,18 +521,20 @@ class AppArmorEasyProfile:
         return rule
 
 
-    def gen_policy(self, name,
-                         binary=None,
-                         profile_name=None,
-                         template_var=[],
-                         abstractions=None,
-                         policy_groups=None,
-                         read_path=[],
-                         write_path=[],
-                         author=None,
-                         comment=None,
-                         copyright=None,
-                         no_verify=False):
+    def gen_policy(
+            self,
+            name,
+            binary=None,
+            profile_name=None,
+            template_var=[],
+            abstractions=None,
+            policy_groups=None,
+            read_path=[],
+            write_path=[],
+            author=None,
+            comment=None,
+            copyright=None,
+            no_verify=False):
         def find_prefix(t, s):
             '''Calculate whitespace prefix based on occurrence of s in t'''
             pat = re.compile(r'^ *%s' % s)
