@@ -137,11 +137,13 @@ class AAParserCachingCommon(testlib.AATestTemplate):
         with open(features_path) as f:
             features = f.read()
         if expected:
-            self.assertEqual(expected_output, features,
-                              "features contents differ, expected:\n%s\nresult:\n%s" % (expected_output, features))
+            self.assertEqual(
+                expected_output, features,
+                "features contents differ, expected:\n%s\nresult:\n%s" % (expected_output, features))
         else:
-            self.assertNotEqual(expected_output, features,
-                                 "features contents equal, expected:\n%s\nresult:\n%s" % (expected_output, features))
+            self.assertNotEqual(
+                expected_output, features,
+                "features contents equal, expected:\n%s\nresult:\n%s" % (expected_output, features))
 
 
 class AAParserBasicCachingTests(AAParserCachingCommon):
