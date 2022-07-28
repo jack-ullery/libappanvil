@@ -269,6 +269,7 @@ optflag_table_t warnflag_table[] = {
 	{ 1, "missing", "warn when missing qualifier and a default is used", WARN_MISSING },
 	{ 1, "override", "warn when overriding", WARN_OVERRIDE },
 	{ 1, "dev", "turn on warnings that are useful for profile development", WARN_DEV },
+	{ 1, "pound-include", "warn when #include is used", WARN_INCLUDE },
 	{ 1, "all", "turn on all warnings", WARN_ALL},
 	{ 0, NULL, NULL, 0 },
 };

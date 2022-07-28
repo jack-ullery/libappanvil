@@ -613,6 +613,7 @@ GT		>
 	/* Don't use PUSH() macro here as we don't want #include echoed out.
 	 * It needs to be handled specially
 	 */
+	pwarn(WARN_INCLUDE, _("deprecated use of '#include'\n"));
 	yy_push_state(INCLUDE_EXISTS);
 }
 
@@ -627,6 +628,7 @@ include{WS}+if{WS}+exists/{WS}	{
 	/* Don't use PUSH() macro here as we don't want #include echoed out.
 	 * It needs to be handled specially
 	 */
+	pwarn(WARN_INCLUDE, _("deprecated use of '#include'\n"));
 	yy_push_state(INCLUDE);
 }
 
