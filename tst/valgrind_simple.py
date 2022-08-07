@@ -57,7 +57,7 @@ class AAParserValgrindTests(testlib.AATestTemplate):
 
 
 def find_testcases(testdir):
-    '''dig testcases out of passed directory'''
+    """dig testcases out of passed directory"""
 
     for (fdir, direntries, files) in os.walk(testdir):
         for f in files:
@@ -66,7 +66,7 @@ def find_testcases(testdir):
 
 
 def create_suppressions():
-    '''generate valgrind suppressions file'''
+    """generate valgrind suppressions file"""
     with NamedTemporaryFile("w+", suffix='.suppressions', prefix='aa-parser-valgrind', delete=False) as temp_file:
         temp_file.write(VALGRIND_SUPPRESSIONS)
     return temp_file.name

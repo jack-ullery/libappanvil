@@ -74,7 +74,7 @@ def gen_list():
 
 
 def test_gen_list():
-    ''' test if gen_list returns the expected output '''
+    """test if gen_list returns the expected output"""
 
     expected = "pix pux px Pix Pux Px cix cux cx Cix Cux Cx ux ix".split()
     actual = gen_list()
