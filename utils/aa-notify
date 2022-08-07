@@ -255,27 +255,27 @@ def get_apparmor_events(logfile, since=0):
 def parse_logdata(logsource):
     """Traverse any iterable log source and extract relevant AppArmor events"""
 
-    RE_audit_time_id = '(msg=)?audit\([\d\.\:]+\):\s+'  # 'audit(1282626827.320:411): '
-    RE_kernel_time = '\[[\d\.\s]+\]'    # '[ 1612.746129]'
-    RE_type_num = '1[45][0-9][0-9]'     # 1400..1599
-    RE_aa_or_op = '(apparmor=|operation=)'
+    re_audit_time_id = '(msg=)?audit\([\d\.\:]+\):\s+'  # 'audit(1282626827.320:411): '
+    re_kernel_time = '\[[\d\.\s]+\]'    # '[ 1612.746129]'
+    re_type_num = '1[45][0-9][0-9]'     # 1400..1599
+    re_aa_or_op = '(apparmor=|operation=)'
 
-    RE_log_parts = [
-        'kernel:\s+(' + RE_kernel_time + '\s+)?(audit:\s+)?type=' + RE_type_num + '\s+' + RE_audit_time_id + RE_aa_or_op,  # v2_6 syslog
-        'kernel:\s+(' + RE_kernel_time + '\s+)?' + RE_audit_time_id + 'type=' + RE_type_num + '\s+' + RE_aa_or_op,
-        'type=(AVC|APPARMOR[_A-Z]*|' + RE_type_num + ')\s+' + RE_audit_time_id + '(type=' + RE_type_num + '\s+)?' + RE_aa_or_op,  # v2_6 audit and dmesg
-        'type=USER_AVC\s+' + RE_audit_time_id + '.*apparmor=',  # dbus
-        'type=UNKNOWN\[' + RE_type_num + '\]\s+' + RE_audit_time_id + RE_aa_or_op,
+    re_log_parts = [
+        'kernel:\s+(' + re_kernel_time + '\s+)?(audit:\s+)?type=' + re_type_num + '\s+' + re_audit_time_id + re_aa_or_op,  # v2_6 syslog
+        'kernel:\s+(' + re_kernel_time + '\s+)?' + re_audit_time_id + 'type=' + re_type_num + '\s+' + re_aa_or_op,
+        'type=(AVC|APPARMOR[_A-Z]*|' + re_type_num + ')\s+' + re_audit_time_id + '(type=' + re_type_num + '\s+)?' + re_aa_or_op,  # v2_6 audit and dmesg
+        'type=USER_AVC\s+' + re_audit_time_id + '.*apparmor=',  # dbus
+        'type=UNKNOWN\[' + re_type_num + '\]\s+' + re_audit_time_id + re_aa_or_op,
         'dbus\[[0-9]+\]:\s+apparmor=',  # dbus
     ]
 
     # Pre-filter log lines so that we hand over only relevant lines to LibAppArmor parsing
-    RE_LOG_ALL = re.compile('(' + '|'.join(RE_log_parts) + ')')
+    re_log_all = re.compile('(' + '|'.join(re_log_parts) + ')')
 
     for entry in logsource:
 
         # Check the start of the log line and only process lines from AppArmor
-        apparmor_entry = RE_LOG_ALL.search(entry)
+        apparmor_entry = re_log_all.search(entry)
         if apparmor_entry:
             # Parse the line using LibAppArmor (C library)
             # See aalogparse.h for data structure

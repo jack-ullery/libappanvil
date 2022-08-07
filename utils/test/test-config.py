@@ -37,12 +37,12 @@ class Test(unittest.TestCase):
         shell_config.CONF_DIR = '.'
         conf = shell_config.read_config('easyprof.conf')
         easyprof_sections = ['POLICYGROUPS_DIR', 'TEMPLATES_DIR']
-        easyprof_Policygroup = './policygroups'
-        easyprof_Templates = './templates'
+        easyprof_policygroup = './policygroups'
+        easyprof_templates = './templates'
 
         self.assertEqual(sorted(conf[''].keys()), easyprof_sections)
-        self.assertEqual(conf['']['POLICYGROUPS_DIR'], easyprof_Policygroup)
-        self.assertEqual(conf['']['TEMPLATES_DIR'], easyprof_Templates)
+        self.assertEqual(conf['']['POLICYGROUPS_DIR'], easyprof_policygroup)
+        self.assertEqual(conf['']['TEMPLATES_DIR'], easyprof_templates)
 
 
 if __name__ == "__main__":
