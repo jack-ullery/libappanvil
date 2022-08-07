@@ -173,7 +173,7 @@ class TestAdd_inc_ie(AATest):
 
     def testAdd_inc_ie_error_1(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', 'tunables/global')  # str insteadd of IncludeRule
+            self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', 'tunables/global')  # str instead of IncludeRule
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def test_dedup_inc_ie_1(self):
@@ -211,7 +211,7 @@ class TestAdd_abi(AATest):
 
     def testAdd_abi_error_1(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_abi('/etc/apparmor.d/bin.foo', 'abi/4.19')  # str insteadd of AbiRule
+            self.pl.add_abi('/etc/apparmor.d/bin.foo', 'abi/4.19')  # str instead of AbiRule
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def test_dedup_abi_1(self):
@@ -250,17 +250,17 @@ class TestAdd_alias(AATest):
 
     def testAdd_alias_error_1(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule(None, '/foo'))  # alias None insteadd of str
+            self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule(None, '/foo'))  # alias None instead of str
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def testAdd_alias_error_2(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/foo', None))  # target None insteadd of str
+            self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/foo', None))  # target None instead of str
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def testAdd_alias_error_3(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_alias('/etc/apparmor.d/bin.foo', 'alias /foo -> /bar,')  # str insteadd of AliasRule
+            self.pl.add_alias('/etc/apparmor.d/bin.foo', 'alias /foo -> /bar,')  # str instead of AliasRule
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def test_dedup_alias_1(self):
@@ -293,7 +293,7 @@ class TestAdd_variable(AATest):
 
     def testAdd_variable_error_1(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_variable('/etc/apparmor.d/bin.foo', '@{foo}')  # str insteadd of IncludeRule
+            self.pl.add_variable('/etc/apparmor.d/bin.foo', '@{foo}')  # str instead of IncludeRule
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def test_dedup_variable_1(self):
@@ -331,7 +331,7 @@ class TestAdd_boolean(AATest):
 
     def testAdd_variable_error_1(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_boolean('/etc/apparmor.d/bin.foo', '$foo')  # str insteadd of IncludeRule
+            self.pl.add_boolean('/etc/apparmor.d/bin.foo', '$foo')  # str instead of IncludeRule
         self.assertEqual(list(self.pl.files.keys()), [])
 
 
