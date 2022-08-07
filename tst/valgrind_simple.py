@@ -50,8 +50,10 @@ class AAParserValgrindTests(testlib.AATestTemplate):
         command.extend(parser_args)
         command.append(testname)
         rc, output = self.run_cmd(command, timeout=120)
-        self.assertNotIn(rc, failure_rc,
-                    "valgrind returned error code %d, gave the following output\n%s\ncommand run: %s" % (rc, output, " ".join(command)))
+        self.assertNotIn(
+            rc, failure_rc,
+            "valgrind returned error code %d, gave the following output\n%s\ncommand run: %s"
+            % (rc, output, " ".join(command)))
 
 
 def find_testcases(testdir):
@@ -121,6 +123,7 @@ def main():
         os.remove(suppression_file)
 
     return rc
+
 
 if __name__ == "__main__":
     rc = main()

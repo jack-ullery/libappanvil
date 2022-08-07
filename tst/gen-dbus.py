@@ -18,7 +18,8 @@
 
 from testlib import write_file
 
-def get_rule (quantifier, perms, session, name, path, interface, member, peer):
+
+def get_rule(quantifier, perms, session, name, path, interface, member, peer):
 
     result = ' '
 
@@ -29,6 +30,7 @@ def get_rule (quantifier, perms, session, name, path, interface, member, peer):
     result += ',\n'
 
     return result
+
 
 def gen_file(test, xres, quantifier, perms, session, name, path, interface, member, peer):
     global count
@@ -46,7 +48,8 @@ def gen_file(test, xres, quantifier, perms, session, name, path, interface, memb
 
     count += 1
 
-def gen_files (test, xres, quantifiers, perms, sessions, names, paths, interfaces, members, peers):
+
+def gen_files(test, xres, quantifiers, perms, sessions, names, paths, interfaces, members, peers):
     for quantifier in quantifiers:
         for perm in perms:
             for session in sessions:
@@ -57,7 +60,8 @@ def gen_files (test, xres, quantifiers, perms, sessions, names, paths, interface
                                 for peer in peers:
                                     gen_file(test, xres, quantifier, perm, session, name, path, interface, member, peer)
 
-count=0
+
+count = 0
 
 quantifier = ('', 'deny', 'audit')
 session = ('', 'bus=session', 'bus=system', 'bus=accessibility')
