@@ -20,9 +20,9 @@ import sys
 import tempfile
 
 
-    #def test_readkey(self):
-    #    print("Please press the Y button on the keyboard.")
-    #    self.assertEqual(apparmor.common.readkey().lower(), 'y', 'Error reading key from shell!')
+# def test_readkey(self):
+#     print("Please press the Y button on the keyboard.")
+#     self.assertEqual(apparmor.common.readkey().lower(), 'y', 'Error reading key from shell!')
 
 
 class AATest(unittest.TestCase):
@@ -55,15 +55,18 @@ class AATest(unittest.TestCase):
     tests = ()
     tmpdir = None
 
+
 class AAParseTest(unittest.TestCase):
     parse_function = None
 
     def _test_parse_rule(self, rule):
         self.assertIsNot(self.parse_function, 'Test class did not set a parse_function')
         parsed = self.parse_function(rule)
-        self.assertEqual(rule, parsed.serialize(),
+        self.assertEqual(
+            rule, parsed.serialize(),
             'parse object %s returned "%s", expected "%s"' \
-            %(self.parse_function.__doc__, parsed.serialize(), rule))
+            % (self.parse_function.__doc__, parsed.serialize(), rule))
+
 
 def setup_all_loops(module_name):
     '''call setup_tests_loop() for each class in module_name'''
@@ -71,6 +74,7 @@ def setup_all_loops(module_name):
         if inspect.isclass(obj):
             if issubclass(obj, unittest.TestCase):
                 setup_tests_loop(obj)
+
 
 def setup_tests_loop(test_class):
     '''Create tests in test_class using test_class.tests and self._run_test()
@@ -103,6 +107,7 @@ def setup_regex_tests(test_class):
         stub_test.__doc__ = "test '%s': %s" % (line, desc)
         setattr(test_class, 'test_%d' % (i), stub_test)
 
+
 def setup_aa(aa):
     confdir = os.getenv('__AA_CONFDIR')
     try:
@@ -114,6 +119,7 @@ def setup_aa(aa):
         # apparmor.aa module versions <= 2.11 do not have the init_aa() method
         pass
 
+
 def write_file(directory, file, contents):
     '''construct path, write contents to it, and return the constructed path'''
     path = os.path.join(directory, file)
@@ -121,13 +127,13 @@ def write_file(directory, file, contents):
         f.write(contents)
     return path
 
+
 def read_file(path):
     '''read and return file contents'''
     with open(path, 'r') as f:
         return f.read()
 
 
-
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.test_RegexParser']
+    # import sys;sys.argv = ['', 'Test.test_RegexParser']
     unittest.main()

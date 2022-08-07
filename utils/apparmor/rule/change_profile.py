@@ -34,7 +34,7 @@ class ChangeProfileRule(BaseRule):
 
     rule_name = 'change_profile'
 
-    equiv_execmodes = [ 'safe', '', None ]
+    equiv_execmodes = ['safe', '', None]
 
     def __init__(self, execmode, execcond, targetprofile, audit=False, deny=False, allow_keyword=False,
                  comment='', log_event=None):
@@ -106,7 +106,7 @@ class ChangeProfileRule(BaseRule):
             targetprofile = ChangeProfileRule.ALL
 
         return ChangeProfileRule(execmode, execcond, targetprofile,
-                           audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
+                                 audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
         '''return rule (in clean/default formatting)'''
@@ -132,14 +132,14 @@ class ChangeProfileRule(BaseRule):
         else:
             raise AppArmorBug('Empty target profile in change_profile rule')
 
-        return('%s%schange_profile%s%s%s,%s' % (space, self.modifiers_str(), execmode, execcond, targetprofile, self.comment))
+        return ('%s%schange_profile%s%s%s,%s' % (space, self.modifiers_str(), execmode, execcond, targetprofile, self.comment))
 
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
 
         if self.execmode != other_rule.execmode and \
-           (self.execmode not in ChangeProfileRule.equiv_execmodes or \
-            other_rule.execmode not in ChangeProfileRule.equiv_execmodes):
+                (self.execmode not in ChangeProfileRule.equiv_execmodes or \
+                 other_rule.execmode not in ChangeProfileRule.equiv_execmodes):
             return False
 
         if not self._is_covered_plain(self.execcond, self.all_execconds, other_rule.execcond, other_rule.all_execconds, 'exec condition'):
@@ -159,8 +159,8 @@ class ChangeProfileRule(BaseRule):
             raise AppArmorBug('Passed non-change_profile rule: %s' % str(rule_obj))
 
         if self.execmode != rule_obj.execmode and \
-           (self.execmode not in ChangeProfileRule.equiv_execmodes or \
-            rule_obj.execmode not in ChangeProfileRule.equiv_execmodes):
+                (self.execmode not in ChangeProfileRule.equiv_execmodes or \
+                 rule_obj.execmode not in ChangeProfileRule.equiv_execmodes):
             return False
 
         if (self.execcond != rule_obj.execcond
@@ -179,14 +179,15 @@ class ChangeProfileRule(BaseRule):
         if self.execmode:
             headers.extend((_('Exec Mode'), self.execmode))
 
-        execcond_txt        = logprof_value_or_all(self.execcond,       self.all_execconds)
-        targetprofiles_txt  = logprof_value_or_all(self.targetprofile,  self.all_targetprofiles)
+        execcond_txt       = logprof_value_or_all(self.execcond,      self.all_execconds)  # noqa: E221
+        targetprofiles_txt = logprof_value_or_all(self.targetprofile, self.all_targetprofiles)
 
         headers.extend((
             _('Exec Condition'), execcond_txt,
             _('Target Profile'), targetprofiles_txt,
         ))
         return headers
+
 
 class ChangeProfileRuleset(BaseRuleset):
     '''Class to handle and store a collection of change_profile rules'''

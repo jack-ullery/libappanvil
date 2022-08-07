@@ -24,10 +24,12 @@ from apparmor.logparser import ReadLog
 from apparmor.translations import init_translation
 _ = init_translation()
 
-exp = namedtuple('exp', ('audit', 'allow_keyword', 'deny', 'comment',
-        'domain', 'all_domains', 'type_or_protocol', 'all_type_or_protocols'))
+exp = namedtuple(
+    'exp', ('audit', 'allow_keyword', 'deny', 'comment',
+            'domain', 'all_domains', 'type_or_protocol', 'all_type_or_protocols'))
 
 # --- check if the keyword list is up to date --- #
+
 
 class NetworkKeywordsTest(AATest):
     def test_network_keyword_list(self):
@@ -48,10 +50,14 @@ class NetworkKeywordsTest(AATest):
                 # keywords missing in the system are ok (= older kernel), but network_domain_keywords needs to have the full list
                 missing_af_names.append(keyword)
 
-        self.assertEqual(missing_af_names, [], 'Missing af_names in NetworkRule network_domain_keywords. This test is likely running '
-                'on an newer kernel and will require updating the list of network domain keywords in utils/apparmor/rule/network.py')
+        self.assertEqual(
+            missing_af_names, [],
+            'Missing af_names in NetworkRule network_domain_keywords. This test is likely running '
+            'on an newer kernel and will require updating the list of network domain keywords in '
+            'utils/apparmor/rule/network.py')
 
 # --- tests for single NetworkRule --- #
+
 
 class NetworkTest(AATest):
     def _compare_obj(self, obj, expected):
@@ -64,15 +70,16 @@ class NetworkTest(AATest):
         self.assertEqual(expected.deny, obj.deny)
         self.assertEqual(expected.comment, obj.comment)
 
+
 class NetworkTestParse(NetworkTest):
     tests = (
-        # rawrule                                     audit  allow  deny   comment        domain    all?   type/proto  all?
-        ('network,'                             , exp(False, False, False, ''           , None  ,   True , None     , True )),
-        ('network inet,'                        , exp(False, False, False, ''           , 'inet',   False, None     , True )),
-        ('network inet stream,'                 , exp(False, False, False, ''           , 'inet',   False, 'stream' , False)),
-        ('deny network inet stream, # comment'  , exp(False, False, True , ' # comment' , 'inet',   False, 'stream' , False)),
-        ('audit allow network tcp,'             , exp(True , True , False, ''           , None  ,   True , 'tcp'    , False)),
-        ('network stream,'                      , exp(False, False, False, ''           , None  ,   True , 'stream' , False)),
+        # rawrule                                   audit  allow  deny   comment       domain  all?   type/proto  all?
+        ('network,',                            exp(False, False, False, '',           None,   True,  None,       True)),
+        ('network inet,',                       exp(False, False, False, '',           'inet', False, None,       True)),
+        ('network inet stream,',                exp(False, False, False, '',           'inet', False, 'stream',   False)),
+        ('deny network inet stream, # comment', exp(False, False, True,  ' # comment', 'inet', False, 'stream',   False)),
+        ('audit allow network tcp,',            exp(True,  True,  False, '',           None,   True,  'tcp',      False)),
+        ('network stream,',                     exp(False, False, False, '',           None,   True,  'stream',   False)),
     )
 
     def _run_test(self, rawrule, expected):
@@ -81,18 +88,20 @@ class NetworkTestParse(NetworkTest):
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
 
+
 class NetworkTestParseInvalid(NetworkTest):
     tests = (
-        ('network foo,'                     , AppArmorException),
-        ('network foo bar,'                 , AppArmorException),
-        ('network foo tcp,'                 , AppArmorException),
-        ('network inet bar,'                , AppArmorException),
+        ('network foo,',      AppArmorException),
+        ('network foo bar,',  AppArmorException),
+        ('network foo tcp,',  AppArmorException),
+        ('network inet bar,', AppArmorException),
     )
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(NetworkRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
             NetworkRule.parse(rawrule)
+
 
 class NetworkTestParseFromLog(NetworkTest):
     def test_net_from_log(self):
@@ -126,8 +135,8 @@ class NetworkTestParseFromLog(NetworkTest):
 
         obj = NetworkRule(parsed_event['family'], parsed_event['sock_type'], log_event=parsed_event)
 
-        #              audit  allow  deny   comment        domain    all?   type/proto  all?
-        expected = exp(False, False, False, ''           , 'inet',   False, 'raw'    , False)
+        #              audit  allow  deny   comment  domain  all?   type/proto  all?
+        expected = exp(False, False, False, '',      'inet', False, 'raw',      False)
 
         self._compare_obj(obj, expected)
 
@@ -136,13 +145,13 @@ class NetworkTestParseFromLog(NetworkTest):
 
 class NetworkFromInit(NetworkTest):
     tests = (
-        # NetworkRule object                                  audit  allow  deny   comment        domain    all?   type/proto  all?
-        (NetworkRule('inet', 'raw', deny=True)          , exp(False, False, True , ''           , 'inet',   False, 'raw'    , False)),
-        (NetworkRule('inet', 'raw')                     , exp(False, False, False, ''           , 'inet',   False, 'raw'    , False)),
-        (NetworkRule('inet', NetworkRule.ALL)           , exp(False, False, False, ''           , 'inet',   False, None     , True )),
-        (NetworkRule(NetworkRule.ALL, NetworkRule.ALL)  , exp(False, False, False, ''           , None  ,   True , None     , True )),
-        (NetworkRule(NetworkRule.ALL, 'tcp')            , exp(False, False, False, ''           , None  ,   True , 'tcp'    , False)),
-        (NetworkRule(NetworkRule.ALL, 'stream')         , exp(False, False, False, ''           , None  ,   True , 'stream' , False)),
+        # NetworkRule object                                audit  allow  deny   comment  domain  all?   type/proto  all?
+        (NetworkRule('inet', 'raw', deny=True),         exp(False, False, True,  '',      'inet', False, 'raw',     False)),
+        (NetworkRule('inet', 'raw'),                    exp(False, False, False, '',      'inet', False, 'raw',     False)),
+        (NetworkRule('inet', NetworkRule.ALL),          exp(False, False, False, '',      'inet', False, None,      True)),
+        (NetworkRule(NetworkRule.ALL, NetworkRule.ALL), exp(False, False, False, '',      None,   True,  None,      True)),
+        (NetworkRule(NetworkRule.ALL, 'tcp'),           exp(False, False, False, '',      None,   True,  'tcp',     False)),
+        (NetworkRule(NetworkRule.ALL, 'stream'),        exp(False, False, False, '',      None,   True,  'stream',  False)),
     )
 
     def _run_test(self, obj, expected):
@@ -151,17 +160,17 @@ class NetworkFromInit(NetworkTest):
 
 class InvalidNetworkInit(AATest):
     tests = (
-        # init params                     expected exception
-        (('inet', ''               )    , AppArmorBug), # empty type_or_protocol
-        ((''    , 'tcp'            )    , AppArmorBug), # empty domain
-        (('    ', 'tcp'            )    , AppArmorBug), # whitespace domain
-        (('inet', '   '            )    , AppArmorBug), # whitespace type_or_protocol
-        (('xyxy', 'tcp'            )    , AppArmorBug), # invalid domain
-        (('inet', 'xyxy'           )    , AppArmorBug), # invalid type_or_protocol
-        ((dict(), 'tcp'            )    , AppArmorBug), # wrong type for domain
-        ((None  , 'tcp'            )    , AppArmorBug), # wrong type for domain
-        (('inet', dict()           )    , AppArmorBug), # wrong type for type_or_protocol
-        (('inet', None             )    , AppArmorBug), # wrong type for type_or_protocol
+        # init params      expected exception
+        (('inet', ''),     AppArmorBug),  # empty type_or_protocol
+        (('',     'tcp'),  AppArmorBug),  # empty domain
+        (('    ', 'tcp'),  AppArmorBug),  # whitespace domain
+        (('inet', '   '),  AppArmorBug),  # whitespace type_or_protocol
+        (('xyxy', 'tcp'),  AppArmorBug),  # invalid domain
+        (('inet', 'xyxy'), AppArmorBug),  # invalid type_or_protocol
+        ((dict(), 'tcp'),  AppArmorBug),  # wrong type for domain
+        ((None,   'tcp'),  AppArmorBug),  # wrong type for domain
+        (('inet', dict()), AppArmorBug),  # wrong type for type_or_protocol
+        (('inet', None),   AppArmorBug),  # wrong type for type_or_protocol
     )
 
     def _run_test(self, params, expected):
@@ -218,12 +227,12 @@ class WriteNetworkTestAATest(AATest):
         self.assertEqual(rawrule.strip(), raw, 'unexpected raw rule')
 
     tests = (
-        #  raw rule                                               clean rule
-        ('     network         ,    # foo        '              , 'network, # foo'),
-        ('    audit     network inet,'                          , 'audit network inet,'),
-        ('   deny network         inet      stream,# foo bar'   , 'deny network inet stream, # foo bar'),
-        ('   deny network         inet      ,# foo bar'         , 'deny network inet, # foo bar'),
-        ('   allow network         tcp      ,# foo bar'         , 'allow network tcp, # foo bar'),
+        #  raw rule                                            clean rule
+        ('     network         ,    # foo        ',            'network, # foo'),
+        ('    audit     network inet,',                        'audit network inet,'),
+        ('   deny network         inet      stream,# foo bar', 'deny network inet stream, # foo bar'),
+        ('   deny network         inet      ,# foo bar',       'deny network inet, # foo bar'),
+        ('   allow network         tcp      ,# foo bar',       'allow network tcp, # foo bar'),
     )
 
     def test_write_manually(self):
@@ -242,44 +251,54 @@ class NetworkCoveredTest(AATest):
 
         self.assertTrue(NetworkRule.match(param))
 
-        self.assertEqual(obj.is_equal(check_obj), expected[0], 'Mismatch in is_equal, expected %s' % expected[0])
-        self.assertEqual(obj.is_equal(check_obj, True), expected[1], 'Mismatch in is_equal/strict, expected %s' % expected[1])
+        self.assertEqual(
+            obj.is_equal(check_obj), expected[0],
+            'Mismatch in is_equal, expected %s' % expected[0])
+        self.assertEqual(
+            obj.is_equal(check_obj, True), expected[1],
+            'Mismatch in is_equal/strict, expected %s' % expected[1])
 
-        self.assertEqual(obj.is_covered(check_obj), expected[2], 'Mismatch in is_covered, expected %s' % expected[2])
-        self.assertEqual(obj.is_covered(check_obj, True, True), expected[3], 'Mismatch in is_covered/exact, expected %s' % expected[3])
+        self.assertEqual(
+            obj.is_covered(check_obj), expected[2],
+            'Mismatch in is_covered, expected %s' % expected[2])
+        self.assertEqual(
+            obj.is_covered(check_obj, True, True), expected[3],
+            'Mismatch in is_covered/exact, expected %s' % expected[3])
+
 
 class NetworkCoveredTest_01(NetworkCoveredTest):
     rule = 'network inet,'
 
     tests = (
-        #   rule                                equal     strict equal    covered     covered exact
-        ('network,'                         , ( False   , False         , False     , False     )),
-        ('network inet,'                    , ( True    , True          , True      , True      )),
-        ('network inet, # comment'          , ( True    , False         , True      , True      )),
-        ('allow network inet,'              , ( True    , False         , True      , True      )),
-        ('network     inet,'                , ( True    , False         , True      , True      )),
-        ('network inet stream,'             , ( False   , False         , True      , True      )),
-        ('network inet tcp,'                , ( False   , False         , True      , True      )),
-        ('audit network inet,'              , ( False   , False         , False     , False     )),
-        ('audit network,'                   , ( False   , False         , False     , False     )),
-        ('network unix,'                    , ( False   , False         , False     , False     )),
-        ('network tcp,'                     , ( False   , False         , False     , False     )),
-        ('audit deny network inet,'         , ( False   , False         , False     , False     )),
-        ('deny network inet,'               , ( False   , False         , False     , False     )),
+        #   rule                      equal  strict equal  covered  covered exact
+        ('network,',                 (False, False,        False,   False)),
+        ('network inet,',            (True,  True,         True,    True)),
+        ('network inet, # comment',  (True,  False,        True,    True)),
+        ('allow network inet,',      (True,  False,        True,    True)),
+        ('network     inet,',        (True,  False,        True,    True)),
+        ('network inet stream,',     (False, False,        True,    True)),
+        ('network inet tcp,',        (False, False,        True,    True)),
+        ('audit network inet,',      (False, False,        False,   False)),
+        ('audit network,',           (False, False,        False,   False)),
+        ('network unix,',            (False, False,        False,   False)),
+        ('network tcp,',             (False, False,        False,   False)),
+        ('audit deny network inet,', (False, False,        False,   False)),
+        ('deny network inet,',       (False, False,        False,   False)),
     )
+
 
 class NetworkCoveredTest_02(NetworkCoveredTest):
     rule = 'audit network inet,'
 
     tests = (
-        #   rule                                equal     strict equal    covered     covered exact
-        (      'network inet,'              , ( False   , False         , True      , False     )),
-        ('audit network inet,'              , ( True    , True          , True      , True      )),
-        (      'network inet stream,'       , ( False   , False         , True      , False     )),
-        ('audit network inet stream,'       , ( False   , False         , True      , True      )),
-        (      'network,'                   , ( False   , False         , False     , False     )),
-        ('audit network,'                   , ( False   , False         , False     , False     )),
-        ('network unix,'                    , ( False   , False         , False     , False     )),
+        #   rule                        equal  strict equal  covered  covered exact
+        (      'network inet,',        (False, False,        True,    False)),
+        ('audit network inet,',        (True,  True,         True,    True)),
+        (      'network inet stream,', (False, False,        True,    False)),
+        ('audit network inet stream,', (False, False,        True,    True)),
+        (      'network,',             (False, False,        False,   False)),
+        ('audit network,',             (False, False,        False,   False)),
+        ('network unix,',              (False, False,        False,   False)),
     )
 
 
@@ -287,43 +306,45 @@ class NetworkCoveredTest_03(NetworkCoveredTest):
     rule = 'network inet stream,'
 
     tests = (
-        #   rule                                equal     strict equal    covered     covered exact
-        (      'network inet stream,'       , ( True    , True          , True      , True      )),
-        ('allow network inet stream,'       , ( True    , False         , True      , True      )),
-        (      'network inet,'              , ( False   , False         , False     , False     )),
-        (      'network,'                   , ( False   , False         , False     , False     )),
-        (      'network inet tcp,'          , ( False   , False         , False     , False     )),
-        ('audit network,'                   , ( False   , False         , False     , False     )),
-        ('audit network inet stream,'       , ( False   , False         , False     , False     )),
-        (      'network unix,'              , ( False   , False         , False     , False     )),
-        (      'network,'                   , ( False   , False         , False     , False     )),
+        #   rule                        equal  strict equal  covered  covered exact
+        (      'network inet stream,', (True,  True,         True,    True)),
+        ('allow network inet stream,', (True,  False,        True,    True)),
+        (      'network inet,',        (False, False,        False,   False)),
+        (      'network,',             (False, False,        False,   False)),
+        (      'network inet tcp,',    (False, False,        False,   False)),
+        ('audit network,',             (False, False,        False,   False)),
+        ('audit network inet stream,', (False, False,        False,   False)),
+        (      'network unix,',        (False, False,        False,   False)),
+        (      'network,',             (False, False,        False,   False)),
     )
+
 
 class NetworkCoveredTest_04(NetworkCoveredTest):
     rule = 'network,'
 
     tests = (
-        #   rule                                equal     strict equal    covered     covered exact
-        (      'network,'                   , ( True    , True          , True      , True      )),
-        ('allow network,'                   , ( True    , False         , True      , True      )),
-        (      'network inet,'              , ( False   , False         , True      , True      )),
-        (      'network inet6 stream,'      , ( False   , False         , True      , True      )),
-        (      'network tcp,'               , ( False   , False         , True      , True      )),
-        (      'network inet raw,'          , ( False   , False         , True      , True      )),
-        ('audit network,'                   , ( False   , False         , False     , False     )),
-        ('deny  network,'                   , ( False   , False         , False     , False     )),
+        #   rule                         equal  strict equal  covered  covered exact
+        (      'network,',              (True,  True,         True,    True)),
+        ('allow network,',              (True,  False,        True,    True)),
+        (      'network inet,',         (False, False,        True,    True)),
+        (      'network inet6 stream,', (False, False,        True,    True)),
+        (      'network tcp,',          (False, False,        True,    True)),
+        (      'network inet raw,',     (False, False,        True,    True)),
+        ('audit network,',              (False, False,        False,   False)),
+        ('deny  network,',              (False, False,        False,   False)),
     )
+
 
 class NetworkCoveredTest_05(NetworkCoveredTest):
     rule = 'deny network inet,'
 
     tests = (
-        #   rule                                equal     strict equal    covered     covered exact
-        (      'deny network inet,'         , ( True    , True          , True      , True      )),
-        ('audit deny network inet,'         , ( False   , False         , False     , False     )),
-        (           'network inet,'         , ( False   , False         , False     , False     )), # XXX should covered be true here?
-        (      'deny network unix,'         , ( False   , False         , False     , False     )),
-        (      'deny network,'              , ( False   , False         , False     , False     )),
+        #   rule                      equal  strict equal  covered  covered exact
+        (      'deny network inet,', (True,  True,         True,    True)),
+        ('audit deny network inet,', (False, False,        False,   False)),
+        (           'network inet,', (False, False,        False,   False)),  # XXX should covered be true here?
+        (      'deny network unix,', (False, False,        False,   False)),
+        (      'deny network,',      (False, False,        False,   False)),
     )
 
 
@@ -362,26 +383,29 @@ class NetworkCoveredTest_Invalid(AATest):
         with self.assertRaises(AppArmorBug):
             obj.is_equal(testobj)
 
+
 class NetworkLogprofHeaderTest(AATest):
     tests = (
-        ('network,',                    [                               _('Network Family'), _('ALL'),     _('Socket Type'), _('ALL'),     ]),
-        ('network inet,',               [                               _('Network Family'), 'inet',       _('Socket Type'), _('ALL'),     ]),
-        ('network inet stream,',        [                               _('Network Family'), 'inet',       _('Socket Type'), 'stream',     ]),
-        ('deny network,',               [_('Qualifier'), 'deny',        _('Network Family'), _('ALL'),     _('Socket Type'), _('ALL'),     ]),
-        ('allow network inet,',         [_('Qualifier'), 'allow',       _('Network Family'), 'inet',       _('Socket Type'), _('ALL'),     ]),
-        ('audit network inet stream,',  [_('Qualifier'), 'audit',       _('Network Family'), 'inet',       _('Socket Type'), 'stream',     ]),
-        ('audit deny network inet,',    [_('Qualifier'), 'audit deny',  _('Network Family'), 'inet',       _('Socket Type'), _('ALL'),     ]),
+        ('network,',                   [                              _('Network Family'), _('ALL'), _('Socket Type'), _('ALL')]),
+        ('network inet,',              [                              _('Network Family'), 'inet',   _('Socket Type'), _('ALL')]),
+        ('network inet stream,',       [                              _('Network Family'), 'inet',   _('Socket Type'), 'stream']),
+        ('deny network,',              [_('Qualifier'), 'deny',       _('Network Family'), _('ALL'), _('Socket Type'), _('ALL')]),
+        ('allow network inet,',        [_('Qualifier'), 'allow',      _('Network Family'), 'inet',   _('Socket Type'), _('ALL')]),
+        ('audit network inet stream,', [_('Qualifier'), 'audit',      _('Network Family'), 'inet',   _('Socket Type'), 'stream']),
+        ('audit deny network inet,',   [_('Qualifier'), 'audit deny', _('Network Family'), 'inet',   _('Socket Type'), _('ALL')]),
     )
 
     def _run_test(self, params, expected):
         obj = NetworkRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
 
+
 class NetworkRuleReprTest(AATest):
     tests = (
         (NetworkRule('inet', 'stream'),                             '<NetworkRule> network inet stream,'),
         (NetworkRule.parse(' allow  network  inet  stream, # foo'), '<NetworkRule> allow  network  inet  stream, # foo'),
     )
+
     def _run_test(self, params, expected):
         self.assertEqual(str(params), expected)
 
@@ -469,8 +493,10 @@ class NetworkGlobTestAATest(AATest):
             # get_glob_ext is not available for network rules
             self.ruleset.get_glob_ext('network inet raw,')
 
+
 class NetworkDeleteTestAATest(AATest):
     pass
+
 
 class NetworkRulesetReprTest(AATest):
     def test_network_ruleset_repr(self):
@@ -480,7 +506,6 @@ class NetworkRulesetReprTest(AATest):
 
         expected = '<NetworkRuleset>\n  network inet stream,\n  allow  network  inet  stream, # foo\n</NetworkRuleset>'
         self.assertEqual(str(obj), expected)
-
 
 
 setup_all_loops(__name__)

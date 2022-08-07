@@ -16,6 +16,7 @@ import re
 
 from apparmor.common import convert_regexp, AppArmorBug, AppArmorException
 
+
 class AARE:
     '''AARE (AppArmor Regular Expression) wrapper class'''
 
@@ -101,17 +102,17 @@ class AARE:
             else:
                 newpath = re.sub('/[^/]+/$', '/*/', self.regex)
         else:
-                if self.regex[-3:] == '/**' or self.regex[-2:] == '/*':
-                    # /foo/** and /foo/* => /**
-                    newpath = re.sub('/[^/]+/\*{1,2}$', '/**', self.regex)
-                elif re.search('/[^/]*\*\*[^/]+$', self.regex):
-                    # /**foo and /foor**bar => /**
-                    newpath = re.sub('/[^/]*\*\*[^/]+$', '/**', self.regex)
-                elif re.search('/[^/]+\*\*$', self.regex):
-                    # /foo** => /**
-                    newpath = re.sub('/[^/]+\*\*$', '/**', self.regex)
-                else:
-                    newpath = re.sub('/[^/]+$', '/*', self.regex)
+            if self.regex[-3:] == '/**' or self.regex[-2:] == '/*':
+                # /foo/** and /foo/* => /**
+                newpath = re.sub('/[^/]+/\*{1,2}$', '/**', self.regex)
+            elif re.search('/[^/]*\*\*[^/]+$', self.regex):
+                # /**foo and /foor**bar => /**
+                newpath = re.sub('/[^/]*\*\*[^/]+$', '/**', self.regex)
+            elif re.search('/[^/]+\*\*$', self.regex):
+                # /foo** => /**
+                newpath = re.sub('/[^/]+\*\*$', '/**', self.regex)
+            else:
+                newpath = re.sub('/[^/]+$', '/*', self.regex)
         return AARE(newpath, False)
 
     def glob_path_withext(self):

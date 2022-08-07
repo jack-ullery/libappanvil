@@ -16,39 +16,43 @@ import re
 
 from apparmor.regex import RE_PROFILE_SIGNAL, RE_PROFILE_NAME
 from apparmor.common import AppArmorBug, AppArmorException
-from apparmor.rule import BaseRule, BaseRuleset, check_and_split_list, logprof_value_or_all, parse_modifiers, quote_if_needed
+from apparmor.rule import (
+    BaseRule, BaseRuleset, check_and_split_list, logprof_value_or_all,
+    parse_modifiers, quote_if_needed)
 
 # setup module translations
 from apparmor.translations import init_translation
 _ = init_translation()
 
 
-access_keywords_read    = ['receive', 'r', 'read']
-access_keywords_write   = ['send', 'w', 'write']
-access_keywords_rw      = ['rw', 'wr']
-access_keywords         = access_keywords_read + access_keywords_write + access_keywords_rw
+access_keywords_read = ['receive', 'r', 'read']
+access_keywords_write = ['send', 'w', 'write']
+access_keywords_rw = ['rw', 'wr']
+access_keywords = access_keywords_read + access_keywords_write + access_keywords_rw
 
-signal_keywords    = ['hup', 'int', 'quit', 'ill', 'trap', 'abrt', 'bus', 'fpe', 'kill', 'usr1',
-                      'segv', 'usr2', 'pipe', 'alrm', 'term', 'stkflt', 'chld', 'cont', 'stop',
-                      'stp', 'ttin', 'ttou', 'urg', 'xcpu', 'xfsz', 'vtalrm', 'prof', 'winch',
-                      'io', 'pwr', 'sys', 'emt', 'exists']
+signal_keywords = [
+    'hup', 'int', 'quit', 'ill', 'trap', 'abrt', 'bus', 'fpe', 'kill', 'usr1',
+    'segv', 'usr2', 'pipe', 'alrm', 'term', 'stkflt', 'chld', 'cont', 'stop',
+    'stp', 'ttin', 'ttou', 'urg', 'xcpu', 'xfsz', 'vtalrm', 'prof', 'winch',
+    'io', 'pwr', 'sys', 'emt', 'exists']
 RE_SIGNAL_REALTIME = re.compile('^rtmin\+0*([0-9]|[12][0-9]|3[0-2])$')  # rtmin+0..rtmin+32, number may have leading zeros
 
 joint_access_keyword = '\s*(' + '|'.join(access_keywords) + ')\s*'
-RE_ACCESS_KEYWORDS = ( joint_access_keyword +  # one of the access_keyword or
-                       '|' +                                           # or
-                       '\(' + joint_access_keyword + '(' + '(\s|,)+' + joint_access_keyword + ')*' + '\)'  # one or more access_keyword in (...)
-                     )
+RE_ACCESS_KEYWORDS = (
+    joint_access_keyword +  # one of the access_keyword or
+    '|' +                                           # or
+    '\(' + joint_access_keyword + '(' + '(\s|,)+' + joint_access_keyword + ')*' + '\)'  # one or more access_keyword in (...)
+)
 
 signal_keyword = '\s*([a-z0-9+]+|"[a-z0-9+]+")\s*'  # don't check against the signal keyword list in the regex to allow a more helpful error message
 RE_SIGNAL_KEYWORDS = (
-                       'set\s*=\s*' + signal_keyword +  # one of the signal_keyword or
-                       '|' +                                           # or
-                       'set\s*=\s*\(' + signal_keyword + '(' + '(\s|,)+' + signal_keyword + ')*' + '\)'  # one or more signal_keyword in (...)
-                     )
+    'set\s*=\s*' + signal_keyword +  # one of the signal_keyword or
+    '|' +                                           # or
+    'set\s*=\s*\(' + signal_keyword + '(' + '(\s|,)+' + signal_keyword + ')*' + '\)'  # one or more signal_keyword in (...)
+)
 
 
-RE_SIGNAL_DETAILS  = re.compile(
+RE_SIGNAL_DETAILS = re.compile(
     '^' +
     '(\s+(?P<access>' + RE_ACCESS_KEYWORDS + '))?' +  # optional access keyword(s)
     '(?P<signal>' + '(\s+(' + RE_SIGNAL_KEYWORDS + '))+' + ')?' +  # optional signal set(s)
@@ -60,6 +64,7 @@ RE_FILTER_SET_1 = re.compile('set\s*=\s*\(([^)]*)\)')
 RE_FILTER_SET_2 = re.compile('set\s*=')
 RE_FILTER_PARENTHESIS = re.compile('\((.*)\)')
 RE_FILTER_QUOTES = re.compile('"([a-z0-9]+)"')  # used to strip quotes around signal keywords - don't use for peer!
+
 
 class SignalRule(BaseRule):
     '''Class to handle and store a single signal rule'''
@@ -79,11 +84,13 @@ class SignalRule(BaseRule):
         super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
                          comment=comment, log_event=log_event)
 
-        self.access, self.all_access, unknown_items = check_and_split_list(access, access_keywords, SignalRule.ALL, 'SignalRule', 'access')
+        self.access, self.all_access, unknown_items = check_and_split_list(
+            access, access_keywords, SignalRule.ALL, 'SignalRule', 'access')
         if unknown_items:
             raise AppArmorException(_('Passed unknown access keyword to SignalRule: %s') % ' '.join(unknown_items))
 
-        self.signal, self.all_signals, unknown_items = check_and_split_list(signal, signal_keywords, SignalRule.ALL, 'SignalRule', 'signal')
+        self.signal, self.all_signals, unknown_items = check_and_split_list(
+            signal, signal_keywords, SignalRule.ALL, 'SignalRule', 'signal')
         if unknown_items:
             for item in unknown_items:
                 if RE_SIGNAL_REALTIME.match(item):
@@ -175,7 +182,7 @@ class SignalRule(BaseRule):
         else:
             raise AppArmorBug('Empty peer in signal rule')
 
-        return('%s%ssignal%s%s%s,%s' % (space, self.modifiers_str(), access, signal, peer, self.comment))
+        return ('%s%ssignal%s%s%s,%s' % (space, self.modifiers_str(), access, signal, peer, self.comment))
 
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
@@ -212,14 +219,14 @@ class SignalRule(BaseRule):
         return True
 
     def logprof_header_localvars(self):
-        access  = logprof_value_or_all(self.access, self.all_access)
-        signal  = logprof_value_or_all(self.signal, self.all_signals)
-        peer    = logprof_value_or_all(self.peer,   self.all_peers)
+        access = logprof_value_or_all(self.access, self.all_access)
+        signal = logprof_value_or_all(self.signal, self.all_signals)
+        peer   = logprof_value_or_all(self.peer,   self.all_peers)  # noqa: E221
 
         return [
             _('Access mode'), access,
-            _('Signal'),      signal,
-            _('Peer'),        peer
+            _('Signal'), signal,
+            _('Peer'), peer
         ]
 
 
@@ -230,4 +237,3 @@ class SignalRuleset(BaseRuleset):
         '''Return the next possible glob. For signal rules, that means removing access, signal or peer'''
         # XXX only remove one part, not all
         return 'signal,'
-

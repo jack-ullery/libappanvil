@@ -13,9 +13,11 @@ import apparmor.aa as aa
 import unittest
 from common_test import AAParseTest, setup_regex_tests, setup_aa
 
+
 class BaseAAParseMountTest(AAParseTest):
     def setUp(self):
         self.parse_function = aa.parse_mount_rule
+
 
 class AAParseMountTest(BaseAAParseMountTest):
     tests = (
@@ -24,12 +26,14 @@ class AAParseMountTest(BaseAAParseMountTest):
         ('mount -o rw /dev/sdb1 -> /mnt/external,', 'mount rw with mount point'),
     )
 
+
 class AAParseRemountTest(BaseAAParseMountTest):
     tests = (
         ('remount,', 'remount base keyword rule'),
         ('remount -o ro,', 'remount ro rule'),
         ('remount -o ro /,', 'remount ro with mountpoint'),
     )
+
 
 class AAParseUmountTest(BaseAAParseMountTest):
     tests = (
@@ -38,6 +42,7 @@ class AAParseUmountTest(BaseAAParseMountTest):
         ('unmount,', 'unmount base keyword rule'),
         ('unmount /mnt/external,', 'unmount with mount point'),
     )
+
 
 setup_aa(aa)
 if __name__ == '__main__':

@@ -18,6 +18,7 @@ import apparmor.severity as severity
 
 import re
 
+
 class TestBaserule(AATest):
     def test_abstract__parse(self):
         with self.assertRaises(NotImplementedError):

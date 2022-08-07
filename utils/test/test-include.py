@@ -23,15 +23,16 @@ import shutil
 from apparmor.rule.include import IncludeRule, IncludeRuleset
 from apparmor.rule import BaseRule
 from apparmor.common import AppArmorException, AppArmorBug
-#from apparmor.logparser import ReadLog
+# from apparmor.logparser import ReadLog
 from apparmor.translations import init_translation
 _ = init_translation()
 
-exp = namedtuple('exp', ( # 'audit', 'allow_keyword', 'deny',
-        'comment',
-        'path', 'ifexists', 'ismagic'))
+exp = namedtuple(
+    'exp', (  # 'audit', 'allow_keyword', 'deny',
+            'comment', 'path', 'ifexists', 'ismagic'))
 
 # --- tests for single IncludeRule --- #
+
 
 class IncludeTest(AATest):
     def _compare_obj(self, obj, expected):
@@ -44,45 +45,46 @@ class IncludeTest(AATest):
         self.assertEqual(expected.ifexists, obj.ifexists)
         self.assertEqual(expected.ismagic, obj.ismagic)
 
+
 class IncludeTestParse(IncludeTest):
     tests = (
-        # IncludeRule object                                        comment             path                       if exists   ismagic
+        # IncludeRule object                                      comment       path                 if exists  ismagic
         # #include
-        ('#include <abstractions/base>',                        exp('',                 'abstractions/base',       False,      True )),  # magic path
-        ('#include <abstractions/base> # comment',              exp(' # comment',       'abstractions/base',       False,      True )),
-        ('#include<abstractions/base>#comment',                 exp(' #comment',        'abstractions/base',       False,      True )),
-        ('   #include     <abstractions/base>  ',               exp('',                 'abstractions/base',       False,      True )),
-        ('#include "/foo/bar"',                                 exp('',                 '/foo/bar',                False,      False)),  # absolute path
-        ('#include "/foo/bar" # comment',                       exp(' # comment',       '/foo/bar',                False,      False)),
-        ('#include "/foo/bar"#comment',                         exp(' #comment',        '/foo/bar',                False,      False)),
-        ('   #include "/foo/bar"  ',                            exp('',                 '/foo/bar',                False,      False)),
+        ('#include <abstractions/base>',                      exp('',           'abstractions/base', False,     True)),  # magic path
+        ('#include <abstractions/base> # comment',            exp(' # comment', 'abstractions/base', False,     True)),
+        ('#include<abstractions/base>#comment',               exp(' #comment',  'abstractions/base', False,     True)),
+        ('   #include     <abstractions/base>  ',             exp('',           'abstractions/base', False,     True)),
+        ('#include "/foo/bar"',                               exp('',           '/foo/bar',          False,     False)),  # absolute path
+        ('#include "/foo/bar" # comment',                     exp(' # comment', '/foo/bar',          False,     False)),
+        ('#include "/foo/bar"#comment',                       exp(' #comment',  '/foo/bar',          False,     False)),
+        ('   #include "/foo/bar"  ',                          exp('',           '/foo/bar',          False,     False)),
         # include (without #)
-        ('include <abstractions/base>',                         exp('',                 'abstractions/base',       False,      True )),  # magic path
-        ('include <abstractions/base> # comment',               exp(' # comment',       'abstractions/base',       False,      True )),
-        ('include<abstractions/base>#comment',                  exp(' #comment',        'abstractions/base',       False,      True )),
-        ('   include     <abstractions/base>  ',                exp('',                 'abstractions/base',       False,      True )),
-        ('include "/foo/bar"',                                  exp('',                 '/foo/bar',                False,      False)),  # absolute path
-        ('include "/foo/bar" # comment',                        exp(' # comment',       '/foo/bar',                False,      False)),
-        ('include "/foo/bar"#comment',                          exp(' #comment',        '/foo/bar',                False,      False)),
-        ('   include "/foo/bar"  ',                             exp('',                 '/foo/bar',                False,      False)),
+        ('include <abstractions/base>',                       exp('',           'abstractions/base', False,     True)),  # magic path
+        ('include <abstractions/base> # comment',             exp(' # comment', 'abstractions/base', False,     True)),
+        ('include<abstractions/base>#comment',                exp(' #comment',  'abstractions/base', False,     True)),
+        ('   include     <abstractions/base>  ',              exp('',           'abstractions/base', False,     True)),
+        ('include "/foo/bar"',                                exp('',           '/foo/bar',          False,     False)),  # absolute path
+        ('include "/foo/bar" # comment',                      exp(' # comment', '/foo/bar',          False,     False)),
+        ('include "/foo/bar"#comment',                        exp(' #comment',  '/foo/bar',          False,     False)),
+        ('   include "/foo/bar"  ',                           exp('',           '/foo/bar',          False,     False)),
         # #include if exists
-        ('#include if exists <abstractions/base>',              exp('',                 'abstractions/base',       True,       True )),  # magic path
-        ('#include if exists <abstractions/base> # comment',    exp(' # comment',       'abstractions/base',       True,       True )),
-        ('#include if exists<abstractions/base>#comment',       exp(' #comment',        'abstractions/base',       True,       True )),
-        ('   #include    if     exists<abstractions/base>  ',   exp('',                 'abstractions/base',       True,       True )),
-        ('#include if exists "/foo/bar"',                       exp('',                 '/foo/bar',                True,       False)),  # absolute path
-        ('#include if exists "/foo/bar" # comment',             exp(' # comment',       '/foo/bar',                True,       False)),
-        ('#include if exists "/foo/bar"#comment',               exp(' #comment',        '/foo/bar',                True,       False)),
-        ('   #include if exists "/foo/bar"  ',                  exp('',                 '/foo/bar',                True,       False)),
+        ('#include if exists <abstractions/base>',            exp('',           'abstractions/base', True,      True)),  # magic path
+        ('#include if exists <abstractions/base> # comment',  exp(' # comment', 'abstractions/base', True,      True)),
+        ('#include if exists<abstractions/base>#comment',     exp(' #comment',  'abstractions/base', True,      True)),
+        ('   #include    if     exists<abstractions/base>  ', exp('',           'abstractions/base', True,      True)),
+        ('#include if exists "/foo/bar"',                     exp('',           '/foo/bar',          True,      False)),  # absolute path
+        ('#include if exists "/foo/bar" # comment',           exp(' # comment', '/foo/bar',          True,      False)),
+        ('#include if exists "/foo/bar"#comment',             exp(' #comment',  '/foo/bar',          True,      False)),
+        ('   #include if exists "/foo/bar"  ',                exp('',           '/foo/bar',          True,      False)),
         # include if exists (without #)
-        ('include if exists <abstractions/base>',               exp('',                 'abstractions/base',       True,       True )),  # magic path
-        ('include if exists <abstractions/base> # comment',     exp(' # comment',       'abstractions/base',       True,       True )),
-        ('include if exists<abstractions/base>#comment',        exp(' #comment',        'abstractions/base',       True,       True )),
-        ('   include    if     exists<abstractions/base>  ',    exp('',                 'abstractions/base',       True,       True )),
-        ('include if exists "/foo/bar"',                        exp('',                 '/foo/bar',                True,       False)),  # absolute path
-        ('include if exists "/foo/bar" # comment',              exp(' # comment',       '/foo/bar',                True,       False)),
-        ('include if exists "/foo/bar"#comment',                exp(' #comment',        '/foo/bar',                True,       False)),
-        ('   include if exists "/foo/bar"  ',                   exp('',                 '/foo/bar',                True,       False)),
+        ('include if exists <abstractions/base>',             exp('',           'abstractions/base', True,      True)),  # magic path
+        ('include if exists <abstractions/base> # comment',   exp(' # comment', 'abstractions/base', True,      True)),
+        ('include if exists<abstractions/base>#comment',      exp(' #comment',  'abstractions/base', True,      True)),
+        ('   include    if     exists<abstractions/base>  ',  exp('',           'abstractions/base', True,      True)),
+        ('include if exists "/foo/bar"',                      exp('',           '/foo/bar',          True,      False)),  # absolute path
+        ('include if exists "/foo/bar" # comment',            exp(' # comment', '/foo/bar',          True,      False)),
+        ('include if exists "/foo/bar"#comment',              exp(' #comment',  '/foo/bar',          True,      False)),
+        ('   include if exists "/foo/bar"  ',                 exp('',           '/foo/bar',          True,      False)),
     )
 
     def _run_test(self, rawrule, expected):
@@ -91,12 +93,13 @@ class IncludeTestParse(IncludeTest):
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
 
+
 class IncludeTestParseInvalid(IncludeTest):
     tests = (
-#       (' some #include if exists <abstractions/base>',        AppArmorException),
-#       ('  /etc/fstab r,',                                     AppArmorException),
-#       ('/usr/include r,',                                     AppArmorException),
-#       ('/include r,',                                         AppArmorException),
+      # (' some #include if exists <abstractions/base>', AppArmorException),
+      # ('  /etc/fstab r,',                              AppArmorException),
+      # ('/usr/include r,',                              AppArmorException),
+      # ('/include r,',                                  AppArmorException),
     )
 
     def _run_test(self, rawrule, expected):
@@ -106,30 +109,32 @@ class IncludeTestParseInvalid(IncludeTest):
 
 # class IncludeTestParseFromLog(IncludeTest):  # we'll never have log events for includes
 
+
 class IncludeFromInit(IncludeTest):
     tests = (
-        # IncludeRule object                        ifexists    ismagic                       comment      path                    ifexists    ismagic
-        (IncludeRule('abstractions/base',           False,      False)                  , exp('',          'abstractions/base',    False,      False    )),
-        (IncludeRule('foo',                         True,       False)                  , exp('',          'foo',                  True,       False    )),
-        (IncludeRule('bar',                         False,      True)                   , exp('',          'bar',                  False,      True     )),
-        (IncludeRule('baz',                         True,       True)                   , exp('',          'baz',                  True,       True     )),
-        (IncludeRule('comment',                     False,      False, comment='# cmt') , exp('# cmt',     'comment',              False,      False    )),
+        # IncludeRule object            ifexists  ismagic                     comment  path               ifexists  ismagic
+        (IncludeRule('abstractions/base', False, False),                  exp('',      'abstractions/base', False, False)),
+        (IncludeRule('foo',               True,  False),                  exp('',      'foo',               True,  False)),
+        (IncludeRule('bar',               False, True),                   exp('',      'bar',               False, True)),
+        (IncludeRule('baz',               True,  True),                   exp('',      'baz',               True,  True)),
+        (IncludeRule('comment',           False, False, comment='# cmt'), exp('# cmt', 'comment',           False, False)),
     )
 
     def _run_test(self, obj, expected):
         self._compare_obj(obj, expected)
 
+
 class InvalidIncludeInit(AATest):
     tests = (
-        # init params                     expected exception
-        ((False,  False, False  )    , AppArmorBug), # wrong type for path
-        (('',     False, False  )    , AppArmorBug), # empty path
-        ((None,   False, False  )    , AppArmorBug), # wrong type for path
-#       (('    ', False, False  )    , AppArmorBug), # whitespace-only path
-        (('foo',  None,  False  )    , AppArmorBug), # wrong type for ifexists
-        (('foo',  '',    False  )    , AppArmorBug), # wrong type for ifexists
-        (('foo',  False, None   )    , AppArmorBug), # wrong type for ismagic
-        (('foo',  False, ''     )    , AppArmorBug), # wrong type for ismagic
+        # init params            expected exception
+        ((False,  False, False), AppArmorBug),  # wrong type for path
+        (('',     False, False), AppArmorBug),  # empty path
+        ((None,   False, False), AppArmorBug),  # wrong type for path
+        # (('    ', False, False), AppArmorBug),  # whitespace-only path
+        (('foo',  None,  False), AppArmorBug),  # wrong type for ifexists
+        (('foo',  '',    False), AppArmorBug),  # wrong type for ifexists
+        (('foo',  False, None),  AppArmorBug),  # wrong type for ismagic
+        (('foo',  False, ''),    AppArmorBug),  # wrong type for ismagic
     )
 
     def _run_test(self, params, expected):
@@ -156,8 +161,9 @@ class InvalidIncludeInit(AATest):
         with self.assertRaises(AppArmorBug):
             IncludeRule('foo', False, False, deny=True)
 
+
 class InvalidIncludeTest(AATest):
-    def _check_invalid_rawrule(self, rawrule, matches_regex = False):
+    def _check_invalid_rawrule(self, rawrule, matches_regex=False):
         obj = None
         self.assertEqual(IncludeRule.match(rawrule), matches_regex)
         with self.assertRaises(AppArmorException):
@@ -171,12 +177,13 @@ class InvalidIncludeTest(AATest):
     def test_invalid_non_IncludeRule(self):
         self._check_invalid_rawrule('dbus,')  # not a include rule
 
-#   def test_empty_data_1(self):
-#       obj = IncludeRule('foo', False, False)
-#       obj.path = ''
-#       # no path set
-#       with self.assertRaises(AppArmorBug):
-#           obj.get_clean(1)
+    # def test_empty_data_1(self):
+    #     obj = IncludeRule('foo', False, False)
+    #     obj.path = ''
+    #     # no path set
+    #     with self.assertRaises(AppArmorBug):
+    #         obj.get_clean(1)
+
 
 class WriteIncludeTestAATest(AATest):
     def _run_test(self, rawrule, expected):
@@ -189,43 +196,43 @@ class WriteIncludeTestAATest(AATest):
         self.assertEqual(rawrule.strip(), raw, 'unexpected raw rule')
 
     tests = (
-        #  raw rule                                               clean rule
-        ('     include      <foo>            ',                 'include <foo>'                     ),
-#       ('     include       foo             ',                 'include "foo"'                     ),  # several test cases disabled due to implementation restrictions, see re_match_include_parse()
-#       ('     include      "foo"            ',                 'include "foo"'                     ),
-#       ('     include       /foo             ',                'include "/foo"'                    ),
-        ('     include      "/foo"            ',                'include "/foo"'                    ),
+        #  (raw rule, clean rule)
+        ('     include      <foo>            ',             'include <foo>'),
+        # ('     include       foo             ',             'include "foo"'),  # several test cases disabled due to implementation restrictions, see re_match_include_parse()
+        # ('     include      "foo"            ',             'include "foo"'),
+        # ('     include       /foo             ',            'include "/foo"'),
+        ('     include      "/foo"            ',            'include "/foo"'),
 
-        ('     include      <foo>  # bar     ',                 'include <foo> # bar'               ),
-#       ('     include       foo   # bar     ',                 'include "foo" # bar'               ),
-#       ('     include      "foo"  # bar     ',                 'include "foo" # bar'               ),
-#       ('     include       /foo   # bar     ',                'include "/foo" # bar'              ),
-        ('     include      "/foo"  # bar     ',                'include "/foo" # bar'              ),
+        ('     include      <foo>  # bar     ',             'include <foo> # bar'),
+        # ('     include       foo   # bar     ',             'include "foo" # bar'),
+        # ('     include      "foo"  # bar     ',             'include "foo" # bar'),
+        # ('     include       /foo   # bar     ',            'include "/foo" # bar'),
+        ('     include      "/foo"  # bar     ',            'include "/foo" # bar'),
 
-        ('     include if    exists     <foo>            ',     'include if exists <foo>'           ),
-#       ('     include if    exists      foo             ',     'include if exists "foo"'           ),
-#       ('     include if    exists     "foo"            ',     'include if exists "foo"'           ),
-#       ('     include if    exists      /foo            ',     'include if exists "/foo"'          ),
-        ('     include if    exists     "/foo"           ',     'include if exists "/foo"'          ),
+        ('     include if    exists     <foo>            ', 'include if exists <foo>'),
+        # ('     include if    exists      foo             ', 'include if exists "foo"'),
+        # ('     include if    exists     "foo"            ', 'include if exists "foo"'),
+        # ('     include if    exists      /foo            ', 'include if exists "/foo"'),
+        ('     include if    exists     "/foo"           ', 'include if exists "/foo"'),
 
         # and the same again with #include...
-        ('    #include      <foo>            ',                 'include <foo>'                     ),
-#       ('    #include       foo             ',                 'include "foo"'                     ),
-#       ('    #include      "foo"            ',                 'include "foo"'                     ),
-#       ('    #include       /foo             ',                'include "/foo"'                    ),
-        ('    #include      "/foo"            ',                'include "/foo"'                    ),
+        ('    #include      <foo>            ',             'include <foo>'),
+        # ('    #include       foo             ',             'include "foo"'),
+        # ('    #include      "foo"            ',             'include "foo"'),
+        # ('    #include       /foo             ',            'include "/foo"'),
+        ('    #include      "/foo"            ',            'include "/foo"'),
 
-        ('    #include      <foo>  # bar     ',                 'include <foo> # bar'               ),
-#       ('    #include       foo   # bar     ',                 'include "foo" # bar'               ),
-#       ('    #include      "foo"  # bar     ',                 'include "foo" # bar'               ),
-#       ('    #include       /foo   # bar     ',                'include "/foo" # bar'              ),
-        ('    #include      "/foo"  # bar     ',                'include "/foo" # bar'              ),
+        ('    #include      <foo>  # bar     ',             'include <foo> # bar'),
+        # ('    #include       foo   # bar     ',             'include "foo" # bar'),
+        # ('    #include      "foo"  # bar     ',             'include "foo" # bar'),
+        # ('    #include       /foo   # bar     ',            'include "/foo" # bar'),
+        ('    #include      "/foo"  # bar     ',            'include "/foo" # bar'),
 
-        ('    #include if    exists     <foo>            ',     'include if exists <foo>'           ),
-#       ('    #include if    exists      foo             ',     'include if exists "foo"'           ),
-#       ('    #include if    exists     "foo"            ',     'include if exists "foo"'           ),
-#       ('    #include if    exists      /foo            ',     'include if exists "/foo"'          ),
-        ('    #include if    exists     "/foo"           ',     'include if exists "/foo"'          ),
+        ('    #include if    exists     <foo>            ', 'include if exists <foo>'),
+        # ('    #include if    exists      foo             ', 'include if exists "foo"'),
+        # ('    #include if    exists     "foo"            ', 'include if exists "foo"'),
+        # ('    #include if    exists      /foo            ', 'include if exists "/foo"'),
+        ('    #include if    exists     "/foo"           ', 'include if exists "/foo"'),
     )
 
     def test_write_manually(self):
@@ -250,42 +257,45 @@ class IncludeCoveredTest(AATest):
         self.assertEqual(obj.is_covered(check_obj), expected[2], 'Mismatch in is_covered, expected %s' % expected[2])
         self.assertEqual(obj.is_covered(check_obj, True, True), expected[3], 'Mismatch in is_covered/exact, expected %s' % expected[3])
 
+
 class IncludeCoveredTest_01(IncludeCoveredTest):
     rule = 'include <foo>'
 
     tests = (
-        #   rule                                equal     strict equal    covered     covered exact
-        ('include <foo>'                    , ( True    , True          , True      , True      )),
-        ('#include <foo>'                   , ( True    , False         , True      , True      )),
-        ('include if exists <foo>'          , ( False   , False         , True      , True      )),
-        ('#include if exists <foo>'         , ( False   , False         , True      , True      )),
-        ('include <foobar>'                 , ( False   , False         , False     , False     )),
-#       ('include "foo"'                    , ( False   , False         , False     , False     )),  # disabled due to implementation restrictions, see re_match_include_parse()
-#       ('include if exists "foo"'          , ( False   , False         , False     , False     )),
+        #   rule                      equal  strict equal  covered  covered exact
+        ('include <foo>',            (True,  True,         True,    True)),
+        ('#include <foo>',           (True,  False,        True,    True)),
+        ('include if exists <foo>',  (False, False,        True,    True)),
+        ('#include if exists <foo>', (False, False,        True,    True)),
+        ('include <foobar>',         (False, False,        False,   False)),
+        # ('include "foo"',            (False, False,        False,   False)),  # disabled due to implementation restrictions, see re_match_include_parse()
+        # ('include if exists "foo"',  (False, False,        False,   False)),
     )
+
 
 class IncludeCoveredTest_02(IncludeCoveredTest):
     rule = 'include if exists <foo>'
 
     tests = (
-        #   rule                                equal     strict equal    covered     covered exact
-        ('include <foo>'                    , ( False   , False         , False     , False     )),
-        ('#include <foo>'                   , ( False   , False         , False     , False     )),
-        ('#include if exists <foo>'         , ( True    , False         , True      , True      )),
-        ('include <foobar>'                 , ( False   , False         , False     , False     )),
-#       ('include "foo"'                    , ( False   , False         , False     , False     )),  # disabled due to implementation restrictions, see re_match_include_parse()
-#       ('include if exists "foo"'          , ( False   , False         , False     , False     )),
+        #   rule                      equal  strict equal  covered  covered exact
+        ('include <foo>',            (False, False,        False,   False)),
+        ('#include <foo>',           (False, False,        False,   False)),
+        ('#include if exists <foo>', (True,  False,        True,    True)),
+        ('include <foobar>',         (False, False,        False,   False)),
+        # ('include "foo"',            (False, False,        False,   False)),  # disabled due to implementation restrictions, see re_match_include_parse()
+        # ('include if exists "foo"',  (False, False,        False,   False)),
     )
 
+
 class IncludeCoveredTest_Invalid(AATest):
-#   def test_borked_obj_is_covered_1(self):
-#       obj = IncludeRule.parse('include <foo>')
-
-#       testobj = IncludeRule('foo', True, True)
-#       testobj.path = ''
-
-#       with self.assertRaises(AppArmorBug):
-#           obj.is_covered(testobj)
+    # def test_borked_obj_is_covered_1(self):
+    #     obj = IncludeRule.parse('include <foo>')
+    #
+    #     testobj = IncludeRule('foo', True, True)
+    #     testobj.path = ''
+    #
+    #     with self.assertRaises(AppArmorBug):
+    #         obj.is_covered(testobj)
 
     def test_invalid_is_covered(self):
         obj = IncludeRule.parse('include <abstractions/base>')
@@ -303,21 +313,23 @@ class IncludeCoveredTest_Invalid(AATest):
         with self.assertRaises(AppArmorBug):
             obj.is_equal(testobj)
 
+
 class IncludeLogprofHeaderTest(AATest):
     tests = (
-        ('include <abstractions/base>',  [_('Include'), 'include <abstractions/base>'           ]),
-        ('include "/what/ever"',         [_('Include'), 'include "/what/ever"',                 ]),
+        ('include <abstractions/base>', [_('Include'), 'include <abstractions/base>']),
+        ('include "/what/ever"',        [_('Include'), 'include "/what/ever"']),
     )
 
     def _run_test(self, params, expected):
         obj = IncludeRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
 
+
 class IncludeFullPathsTest(AATest):
     def AASetup(self):
         self.createTmpdir()
 
-        #copy the local profiles to the test directory
+        # copy the local profiles to the test directory
         self.profile_dir = '%s/profiles' % self.tmpdir
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
@@ -334,14 +346,14 @@ class IncludeFullPathsTest(AATest):
         os.mkdir(empty_dir, 0o755)
 
     tests = (
-        #                                                 @@ will be replaced with self.profile_dir
-        ('include <abstractions/base>',                 ('@@/abstractions/base',)                                           ),
-#       ('include "foo"',                               ('@@/foo',)                                                         ),  # TODO: adjust logic to honor quoted vs. magic paths (and allow quoted relative paths in re_match_include_parse())
-        ('include "/foo/bar"',                          ('/foo/bar',)                                                       ),
-        ('include <abstractions/inc.d>',                ('@@/abstractions/inc.d/incbar', '@@/abstractions/inc.d/incfoo')    ),
-        ('include <abstractions/empty.d>',              ()                                                                  ),
-        ('include <abstractions/not_found>',            ('@@/abstractions/not_found',)                                      ),
-        ('include if exists <abstractions/not_found>',  ()                                                                  ),
+        #                                                @@ will be replaced with self.profile_dir
+        ('include <abstractions/base>',                ('@@/abstractions/base',)),
+        # ('include "foo"',                              ('@@/foo',)),  # TODO: adjust logic to honor quoted vs. magic paths (and allow quoted relative paths in re_match_include_parse())
+        ('include "/foo/bar"',                         ('/foo/bar',)),
+        ('include <abstractions/inc.d>',               ('@@/abstractions/inc.d/incbar', '@@/abstractions/inc.d/incfoo')),
+        ('include <abstractions/empty.d>',             ()),
+        ('include <abstractions/not_found>',           ('@@/abstractions/not_found',)),
+        ('include if exists <abstractions/not_found>', ()),
     )
 
     def _run_test(self, params, expected):
@@ -352,13 +364,14 @@ class IncludeFullPathsTest(AATest):
         obj = IncludeRule.parse(params)
         self.assertEqual(obj.get_full_paths(self.profile_dir), exp2)
 
+
 ## --- tests for IncludeRuleset --- #
 
 class IncludeRulesTest(AATest):
     def AASetup(self):
         self.createTmpdir()
 
-        #copy the local profiles to the test directory
+        # copy the local profiles to the test directory
         self.profile_dir = '%s/profiles' % self.tmpdir
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
@@ -459,23 +472,26 @@ class IncludeRulesTest(AATest):
         self.assertEqual(expected_clean_unsorted, ruleset.get_clean_unsorted())
         self.assertEqual(expected_fullpaths, ruleset.get_all_full_paths(self.profile_dir))
 
+
 class IncludeGlobTestAATest(AATest):
     def setUp(self):
         self.maxDiff = None
         self.ruleset = IncludeRuleset()
 
-#   def test_glob(self):
-#       with self.assertRaises(NotImplementedError):
-#           # get_glob_ext is not available for include rules
-#           self.ruleset.get_glob('include send set=int,')
+    # def test_glob(self):
+    #     with self.assertRaises(NotImplementedError):
+    #         # get_glob_ext is not available for include rules
+    #         self.ruleset.get_glob('include send set=int,')
 
     def test_glob_ext(self):
         with self.assertRaises(NotImplementedError):
             # get_glob_ext is not available for include rules
             self.ruleset.get_glob_ext('include send set=int,')
 
-#class IncludeDeleteTestAATest(AATest):
-#    pass
+
+# class IncludeDeleteTestAATest(AATest):
+#     pass
+
 
 setup_all_loops(__name__)
 if __name__ == '__main__':

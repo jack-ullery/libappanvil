@@ -49,6 +49,7 @@ from apparmor.translations import init_translation
 
 import LibAppArmor  # C-library to parse one log line
 
+
 def get_user_login():
     '''Portable function to get username. Should not trigger any
     "OSError: [Errno 25] Inappropriate ioctl for device" errors in Giltab-CI'''
@@ -59,7 +60,6 @@ def get_user_login():
         if not username and hasattr(os, 'getlogin'):
             username = os.getlogin()
     return username
-
 
 
 def format_event(event, logsource):
@@ -143,7 +143,7 @@ def show_entries_since_last_login(logfile, username=get_user_login()):
 
     if args.verbose:
         print(_('Showing entries since {} logged in').format(username))
-        print() # Newline
+        print()  # Newline
     epoch_since = get_last_login_timestamp(username)
     if epoch_since == 0:
         print(_('ERROR: Could not find last login'), file=sys.stderr)
@@ -313,6 +313,7 @@ def drop_privileges():
         os.setegid(int(next_gid))
         os.seteuid(int(next_uid))
 
+
 def raise_privileges():
     '''If was running as user with saved user ID 0, raise back to root privileges'''
 
@@ -323,6 +324,7 @@ def raise_privileges():
         # os.setgid(int(next_gid))
         os.seteuid(original_effective_user)
 
+
 def read_notify_conf(path, shell_config):
     try:
         shell_config.CONF_DIR = path
@@ -331,6 +333,7 @@ def read_notify_conf(path, shell_config):
         return conf_dict
     except FileNotFoundError:
         return {}
+
 
 def main():
     '''

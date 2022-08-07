@@ -35,4 +35,3 @@ args = parser.parse_args()
 tool = apparmor.tools.aa_tools('audit', args)
 
 tool.cmd_audit()
-

@@ -69,7 +69,8 @@ class IncludeRule(BaseRule):
         # TODO: move re_match_include_parse() from regex.py to this class after converting all code to use IncludeRule
         path, ifexists, ismagic = re_match_include_parse(raw_rule, cls.rule_name)
 
-        return cls(path, ifexists, ismagic, audit=False, deny=False, allow_keyword=False, comment=comment)
+        return cls(path, ifexists, ismagic,
+                   audit=False, deny=False, allow_keyword=False, comment=comment)
 
     def get_clean(self, depth=0):
         '''return rule (in clean/default formatting)'''
@@ -81,9 +82,9 @@ class IncludeRule(BaseRule):
             ifexists_txt = ' if exists'
 
         if self.ismagic:
-            return('%s%s%s <%s>%s' % (space, self.rule_name, ifexists_txt, self.path, self.comment))
+            return ('%s%s%s <%s>%s' % (space, self.rule_name, ifexists_txt, self.path, self.comment))
         else:
-            return('%s%s%s "%s"%s' % (space, self.rule_name, ifexists_txt, self.path, self.comment))
+            return ('%s%s%s "%s"%s' % (space, self.rule_name, ifexists_txt, self.path, self.comment))
 
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
@@ -118,9 +119,7 @@ class IncludeRule(BaseRule):
         return True
 
     def logprof_header_localvars(self):
-        return [
-            _('Include'), self.get_clean(),
-        ]
+        return [_('Include'), self.get_clean()]
 
     def get_full_paths(self, profile_dir):
         ''' get list of full paths of an include (can contain multiple paths if self.path is a directory) '''
@@ -149,6 +148,7 @@ class IncludeRule(BaseRule):
             files.append(full_path)  # add full_path even if it doesn't exist on disk. Might cause a 'file not found' error later.
 
         return files
+
 
 class IncludeRuleset(BaseRuleset):
     '''Class to handle and store a collection of include rules'''

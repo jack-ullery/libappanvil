@@ -67,7 +67,9 @@ class AACliBootstrapTest(AATest):
         aaui.set_json_mode()
         sys.stdout.getvalue()
         aaui.UI_Info('Test string')
-        self.assertEqual(sys.stdout.getvalue(), '{"dialog": "apparmor-json-version","data": "2.12"}\n{"dialog": "info","data": "Test string"}\n')
+        self.assertEqual(
+            sys.stdout.getvalue(),
+            '{"dialog": "apparmor-json-version","data": "2.12"}\n{"dialog": "info","data": "Test string"}\n')
         aaui.set_text_mode()
 
 

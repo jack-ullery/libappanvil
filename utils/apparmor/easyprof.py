@@ -24,6 +24,7 @@ from apparmor.common import AppArmorException, open_file_read
 
 DEBUGGING = False
 
+
 #
 # TODO: move this out to a utilities library
 #
@@ -131,7 +132,7 @@ def valid_path(path, relative_ok=False):
         debug("%s (relative)" % (m))
         return False
 
-    if '"' in path: # We double quote elsewhere
+    if '"' in path:  # We double quote elsewhere
         debug("%s (quote)" % (m))
         return False
 
@@ -520,7 +521,6 @@ class AppArmorEasyProfile:
 
         return rule
 
-
     def gen_policy(
             self,
             name,
@@ -663,7 +663,7 @@ class AppArmorEasyProfile:
                 out_fn = params['profile_name']
             elif 'binary' in params:
                 out_fn = params['binary']
-            else: # should not ever reach this
+            else:  # should not ever reach this
                 raise AppArmorException("Could not determine output filename")
 
             # Generate an absolute path, converting any path delimiters to '.'
@@ -715,9 +715,9 @@ class AppArmorEasyProfile:
         for key in params:
             if key == 'profile_name' or \
                (key == 'binary' and not 'profile_name' in params):
-                continue # don't re-add the pkey
+                continue  # don't re-add the pkey
             elif key == 'binary' and not params[key]:
-                continue # binary can by None when specifying --profile-name
+                continue  # binary can by None when specifying --profile-name
             elif key == 'template_var':
                 d['security']['profiles'][pkey]['template_variables'] = dict()
                 for tvar in params[key]:
@@ -731,21 +731,25 @@ class AppArmorEasyProfile:
                 d['security']['profiles'][pkey][key].sort()
             else:
                 d['security']['profiles'][pkey][key] = params[key]
-        json_str = json.dumps(d,
-                              sort_keys=True,
-                              indent=2,
-                              separators=(',', ': ')
-                             )
+        json_str = json.dumps(
+            d,
+            sort_keys=True,
+            indent=2,
+            separators=(',', ': ')
+        )
         return json_str
+
 
 def print_basefilenames(files):
     for i in files:
         sys.stdout.write("%s\n" % (os.path.basename(i)))
 
+
 def print_files(files):
     for i in files:
         with open(i) as f:
             sys.stdout.write(f.read()+"\n")
+
 
 def check_manifest_conflict_args(option, opt_str, value, parser):
     '''Check for -m/--manifest with conflicting args'''
@@ -769,6 +773,7 @@ def check_manifest_conflict_args(option, opt_str, value, parser):
                                             "argument" % conflict)
     setattr(parser.values, option.dest, value)
 
+
 def check_for_manifest_arg(option, opt_str, value, parser):
     '''Check for -m/--manifest with conflicting args'''
     if parser.values.manifest:
@@ -776,12 +781,14 @@ def check_for_manifest_arg(option, opt_str, value, parser):
                                         "argument" % opt_str.lstrip('-'))
     setattr(parser.values, option.dest, value)
 
+
 def check_for_manifest_arg_append(option, opt_str, value, parser):
     '''Check for -m/--manifest with conflicting args (with append)'''
     if parser.values.manifest:
         raise optparse.OptionValueError("can't use --%s with --manifest " \
                                         "argument" % opt_str.lstrip('-'))
     parser.values.ensure_value(option.dest, []).append(value)
+
 
 def add_parser_policy_args(parser):
     '''Add parser arguments'''
@@ -866,6 +873,7 @@ def add_parser_policy_args(parser):
                       dest="profile_name",
                       help="AppArmor profile name",
                       metavar="PROFILENAME")
+
 
 def parse_args(args=None, parser=None):
     '''Parse arguments'''
@@ -963,7 +971,6 @@ def parse_args(args=None, parser=None):
                       dest="verify_manifest",
                       help="Verify JSON manifest file")
 
-
     # add policy args now
     add_parser_policy_args(parser)
 
@@ -972,6 +979,7 @@ def parse_args(args=None, parser=None):
     if my_opt.debug:
         DEBUGGING = True
     return (my_opt, my_args)
+
 
 def gen_policy_params(binary, opt):
     '''Generate parameters for gen_policy'''
@@ -991,7 +999,7 @@ def gen_policy_params(binary, opt):
         elif binary:
             params['name'] = os.path.basename(binary)
 
-    if opt.template_var: # What about specified multiple times?
+    if opt.template_var:  # What about specified multiple times?
         params['template_var'] = opt.template_var
     if opt.abstractions:
         params['abstractions'] = opt.abstractions
@@ -1014,6 +1022,7 @@ def gen_policy_params(binary, opt):
 
     return params
 
+
 def parse_manifest(manifest, opt_orig):
     '''Take a JSON manifest as a string and updates options, returning an
        updated binary. Note that a JSON file may contain multiple profiles.'''
@@ -1033,21 +1042,22 @@ def parse_manifest(manifest, opt_orig):
     table = top_table['profiles']
 
     # generally mirrors what is settable in gen_policy_params()
-    valid_keys = ['abstractions',
-                  'author',
-                  'binary',
-                  'comment',
-                  'copyright',
-                  'name',
-                  'policy_groups',
-                  'policy_version',
-                  'policy_vendor',
-                  'profile_name',
-                  'read_path',
-                  'template',
-                  'template_variables',
-                  'write_path',
-                 ]
+    valid_keys = [
+        'abstractions',
+        'author',
+        'binary',
+        'comment',
+        'copyright',
+        'name',
+        'policy_groups',
+        'policy_version',
+        'policy_vendor',
+        'profile_name',
+        'read_path',
+        'template',
+        'template_variables',
+        'write_path',
+    ]
 
     profiles = []
 
@@ -1082,7 +1092,7 @@ def parse_manifest(manifest, opt_orig):
                 raise AppArmorException("Invalid key '%s'" % key)
 
             if key == 'binary':
-                continue #  handled above
+                continue  # handled above
             elif key == 'abstractions' or key == 'policy_groups':
                 setattr(opt, key, ",".join(table[profile_name][key]))
             elif key == "template_variables":
@@ -1095,7 +1105,7 @@ def parse_manifest(manifest, opt_orig):
                 if hasattr(opt, key):
                     setattr(opt, key, table[profile_name][key])
 
-        profiles.append( (binary, opt) )
+        profiles.append((binary, opt))
 
     return profiles
 
@@ -1180,4 +1190,3 @@ def verify_manifest(params, args=None):
         return False
 
     return True
-

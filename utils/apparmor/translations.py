@@ -13,6 +13,7 @@ TRANSLATION_DOMAIN = 'apparmor-utils'
 
 __apparmor_gettext__ = None
 
+
 def init_translation():
     global __apparmor_gettext__
     if __apparmor_gettext__ is None:

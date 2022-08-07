@@ -43,6 +43,7 @@ def cmd(command, input=None, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, s
         outerr = ''
     return sp.returncode, out, outerr
 
+
 # get capabilities list
 (rc, output, outerr) = cmd(('../../common/list_capabilities.sh',))
 if rc != 0:
@@ -149,7 +150,7 @@ filerule = filerule + create_file_rule('sdEntryIX',  r'(r|m|k|ix)+',  'ix(mr) - 
 filerule = filerule + create_file_rule('sdEntryM',   r'(r|m|k)+',  'mr - mmap with PROT_EXEC')
 
 filerule = filerule + create_file_rule('sdEntryM',   r'(r|m|k|x)+',  'special case: deny x is allowed (does not need to be ix, px, ux or cx)', 1)
-#syn match  sdEntryM /@@DENYFILE@@(r|m|k|x)+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
+# syn match  sdEntryM /@@DENYFILE@@(r|m|k|x)+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
 
 
 filerule = filerule + create_file_rule('sdError',    r'\S*(w\S*a|a\S*w)\S*',  'write + append is an error')

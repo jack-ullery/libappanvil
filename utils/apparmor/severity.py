@@ -14,6 +14,7 @@
 import re
 from apparmor.common import AppArmorException, open_file_read, warn, convert_regexp  # , msg, error, debug
 
+
 class Severity:
     def __init__(self, dbname=None, default_rank=10):
         """Initialises the class object"""
@@ -40,10 +41,14 @@ class Severity:
                         path, read, write, execute = line.split()
                         read, write, execute = int(read), int(write), int(execute)
                     except ValueError:
-                        raise AppArmorException("Insufficient values for permissions in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
+                        raise AppArmorException(
+                            "Insufficient values for permissions in file: %s\n\t[Line %s]: %s"
+                            % (dbname, lineno, line))
                     else:
                         if read not in range(0, 11) or write not in range(0, 11) or execute not in range(0, 11):
-                            raise AppArmorException("Inappropriate values for permissions in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
+                            raise AppArmorException(
+                                "Inappropriate values for permissions in file: %s\n\t[Line %s]: %s"
+                                % (dbname, lineno, line))
                         path = path.lstrip('/')
                         if '*' not in path:
                             self.severity['FILES'][path] = {'r': read, 'w': write, 'x': execute}
@@ -65,11 +70,13 @@ class Severity:
                         severity = int(severity)
                     except ValueError:
                         error_message = 'No severity value present in file: %s\n\t[Line %s]: %s' % (dbname, lineno, line)
-                        #error(error_message)
+                        # error(error_message)
                         raise AppArmorException(error_message)  # from None
                     else:
                         if severity not in range(0, 11):
-                            raise AppArmorException("Inappropriate severity value present in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
+                            raise AppArmorException(
+                                "Inappropriate severity value present in file: %s\n\t[Line %s]: %s"
+                                % (dbname, lineno, line))
                         self.severity['CAPABILITIES'][resource] = severity
                 else:
                     raise AppArmorException("Unexpected line in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
@@ -146,7 +153,7 @@ class Severity:
         if matches:
             rank = self.severity['DEFAULT_RANK']
             variable = '@{%s}' % matches.groups()[0]
-            #variables = regex_variable.findall(resource)
+            # variables = regex_variable.findall(resource)
             for replacement in self.severity['VARIABLES'][variable]:
                 resource_replaced = self.variable_replace(variable, replacement, resource)
                 rank_new = self.handle_variable_rank(resource_replaced, mode)

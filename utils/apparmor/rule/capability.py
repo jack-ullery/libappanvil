@@ -91,11 +91,11 @@ class CapabilityRule(BaseRule):
 
         space = '  ' * depth
         if self.all_caps:
-            return('%s%scapability,%s' % (space, self.modifiers_str(), self.comment))
+            return ('%s%scapability,%s' % (space, self.modifiers_str(), self.comment))
         else:
             caps = ' '.join(self.capability).strip()  # XXX return multiple lines, one for each capability, instead?
             if caps:
-                return('%s%scapability %s,%s' % (space, self.modifiers_str(), ' '.join(sorted(self.capability)), self.comment))
+                return ('%s%scapability %s,%s' % (space, self.modifiers_str(), ' '.join(sorted(self.capability)), self.comment))
             else:
                 raise AppArmorBug("Empty capability rule")
 

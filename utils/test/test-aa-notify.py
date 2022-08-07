@@ -25,6 +25,7 @@ import apparmor.aa as aa
 # these tests in an installed environment
 aanotify_bin = ["../aa-notify"]
 
+
 # http://www.chiark.greenend.org.uk/ucgi/~cjwatson/blosxom/2009-07-02-python-sigpipe.html
 # This is needed so that the subprocesses that produce endless output
 # actually quit when the reader goes away.

@@ -23,17 +23,17 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 
-access_keywords         = ['r', 'w', 'rw', 'wr', 'read', 'write', 'readby', 'trace', 'tracedby']  # XXX 'wr' and 'write' accepted by the parser, but not documented in apparmor.d.pod
+access_keywords = ['r', 'w', 'rw', 'wr', 'read', 'write', 'readby', 'trace', 'tracedby']  # XXX 'wr' and 'write' accepted by the parser, but not documented in apparmor.d.pod
 
 # XXX joint_access_keyword and RE_ACCESS_KEYWORDS exactly as in PtraceRule - move to function!
 joint_access_keyword = '\s*(' + '|'.join(access_keywords) + ')\s*'
-RE_ACCESS_KEYWORDS = ( joint_access_keyword +  # one of the access_keyword or
-                       '|' +                                           # or
-                       '\(' + joint_access_keyword + '(' + '(\s|,)+' + joint_access_keyword + ')*' + '\)'  # one or more access_keyword in (...)
-                     )
+RE_ACCESS_KEYWORDS = (joint_access_keyword +  # one of the access_keyword or
+                      '|' +                                           # or
+                      '\(' + joint_access_keyword + '(' + '(\s|,)+' + joint_access_keyword + ')*' + '\)'  # one or more access_keyword in (...)
+                      )
 
 
-RE_PTRACE_DETAILS  = re.compile(
+RE_PTRACE_DETAILS = re.compile(
     '^' +
     '(\s+(?P<access>' + RE_ACCESS_KEYWORDS + '))?' +  # optional access keyword(s)
     '(\s+(peer=' + RE_PROFILE_NAME % 'peer' + '))?' +  # optional peer
@@ -58,7 +58,8 @@ class PtraceRule(BaseRule):
         super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
                          comment=comment, log_event=log_event)
 
-        self.access, self.all_access, unknown_items = check_and_split_list(access, access_keywords, PtraceRule.ALL, 'PtraceRule', 'access')
+        self.access, self.all_access, unknown_items = check_and_split_list(
+            access, access_keywords, PtraceRule.ALL, 'PtraceRule', 'access')
         if unknown_items:
             raise AppArmorException(_('Passed unknown access keyword to PtraceRule: %s') % ' '.join(unknown_items))
 
@@ -104,8 +105,8 @@ class PtraceRule(BaseRule):
             access = PtraceRule.ALL
             peer = PtraceRule.ALL
 
-        return PtraceRule(
-            access, peer, audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
+        return PtraceRule(access, peer,
+                          audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
         '''return rule (in clean/default formatting)'''
@@ -128,7 +129,7 @@ class PtraceRule(BaseRule):
         else:
             raise AppArmorBug('Empty peer in ptrace rule')
 
-        return('%s%sptrace%s%s,%s' % (space, self.modifiers_str(), access, peer, self.comment))
+        return ('%s%sptrace%s%s,%s' % (space, self.modifiers_str(), access, peer, self.comment))
 
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
@@ -158,12 +159,12 @@ class PtraceRule(BaseRule):
         return True
 
     def logprof_header_localvars(self):
-        access   = logprof_value_or_all(self.access,self.all_access)
-        peer     = logprof_value_or_all(self.peer,  self.all_peers)
+        access = logprof_value_or_all(self.access, self.all_access)
+        peer   = logprof_value_or_all(self.peer,   self.all_peers)  # noqa: E221
 
         return [
             _('Access mode'), access,
-            _('Peer'),        peer
+            _('Peer'), peer,
         ]
 
 

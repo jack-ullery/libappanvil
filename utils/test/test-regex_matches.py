@@ -14,14 +14,16 @@ import unittest
 from common_test import AATest, setup_all_loops, setup_aa
 from apparmor.common import AppArmorBug, AppArmorException
 
-from apparmor.regex import ( strip_parenthesis, strip_quotes, parse_profile_start_line, re_match_include,
-     re_match_include_parse,
-     RE_PROFILE_START, RE_PROFILE_DBUS, RE_PROFILE_CAP, RE_PROFILE_PTRACE, RE_PROFILE_SIGNAL )
+from apparmor.regex import (
+    strip_parenthesis, strip_quotes, parse_profile_start_line, re_match_include,
+    re_match_include_parse,
+    RE_PROFILE_START, RE_PROFILE_DBUS, RE_PROFILE_CAP, RE_PROFILE_PTRACE, RE_PROFILE_SIGNAL)
 
 
 class AARegexTest(AATest):
     def _run_test(self, params, expected):
         return _regex_test(self, params, expected)
+
 
 class AANamedRegexTest(AATest):
     def _run_test(self, line, expected):
@@ -43,8 +45,7 @@ class AANamedRegexTest(AATest):
             match = matches.group(exp)
             if match:
                 match = match
-            self.assertEqual(match, expected[exp], 'Group %s mismatch in rule %s' % (exp,line))
-
+            self.assertEqual(match, expected[exp], 'Group %s mismatch in rule %s' % (exp, line))
 
 
 class AARegexHasComma(AATest):
@@ -56,6 +57,7 @@ class AARegexHasComma(AATest):
             self.assertTrue(result, 'Couldn\'t find a comma in "%s"' % line)
         else:
             self.assertEqual(None, result, 'Found an unexpected comma in "%s"' % line)
+
 
 regex_has_comma_testcases = (
     ('dbus send%s', 'simple'),
@@ -114,18 +116,23 @@ regex_has_comma_testcases = (
     # ('@{BAR}="{bar,baz,blort%s" ', 'tricksy variable declaration')
 )
 
+
 def setup_has_comma_testcases():
     i = 0
     for (test_string, description) in regex_has_comma_testcases:
         i += 1
+
         def stub_test_comma(self, test_string=test_string):
             self._check(test_string % ',')
+
         def stub_test_no_comma(self, test_string=test_string):
             self._check(test_string % ' ', False)
+
         stub_test_comma.__doc__ = "test %s (w/comma)" % (description)
         stub_test_no_comma.__doc__ = "test %s (no comma)" % (description)
         setattr(AARegexHasComma, 'test_comma_%d' % (i), stub_test_comma)
         setattr(AARegexHasComma, 'test_no_comma_%d' % (i), stub_test_no_comma)
+
 
 class AARegexSplitComment(AATest):
     '''Tests for RE_HAS_COMMENT_SPLIT'''
@@ -134,13 +141,16 @@ class AARegexSplitComment(AATest):
         result = aa.RE_HAS_COMMENT_SPLIT.search(line)
         if expected:
             self.assertTrue(result, 'Couldn\'t find a comment in "%s"' % line)
-            self.assertEqual(result.group('comment'), comment, 'Expected comment "%s", got "%s"'
-                             % (comment, result.group('comment')))
-            self.assertEqual(result.group('not_comment'), not_comment, 'Expected not comment "%s", got "%s"'
-                             % (not_comment, result.group('not_comment')))
+            self.assertEqual(
+                result.group('comment'), comment,
+                'Expected comment "%s", got "%s"' % (comment, result.group('comment')))
+            self.assertEqual(
+                result.group('not_comment'), not_comment,
+                'Expected not comment "%s", got "%s"' % (not_comment, result.group('not_comment')))
         else:
             self.assertEqual(None, result, 'Found an unexpected comment "%s" in "%s"'
-                             % ("" if result is None else result.group('comment'), line ))
+                             % ("" if result is None else result.group('comment'), line))
+
 
 # Tuples of (string, expected result), where expected result is False if
 # the string should not be considered as having a comment, or a second
@@ -162,15 +172,18 @@ regex_split_comment_testcases = (
     ('pivot_root /old /new -> child,', False),
 )
 
+
 def setup_split_comment_testcases():
     i = 0
     for (test_string, result) in regex_split_comment_testcases:
         i += 1
+
         def stub_test(self, test_string=test_string, result=result):
             if result is False:
                 self._check(test_string, False)
             else:
                 self._check(test_string, True, not_comment=result[0], comment=result[1])
+
         stub_test.__doc__ = "test '%s'" % (test_string)
         setattr(AARegexSplitComment, 'test_split_comment_%d' % (i), stub_test)
 
@@ -196,10 +209,7 @@ def _regex_test(self, line, expected):
     for (i, group) in enumerate(groups):
         if group:
             group = group.strip()
-        self.assertEqual(group, expected[i], 'Group %d mismatch in rule %s' % (i,line))
-
-
-
+        self.assertEqual(group, expected[i], 'Group %d mismatch in rule %s' % (i, line))
 
 
 class AARegexCapability(AARegexTest):
@@ -216,6 +226,7 @@ class AARegexCapability(AARegexTest):
         ('   capabilitynet_raw,', False)
     )
 
+
 class AARegexDbus(AARegexTest):
     '''Tests for RE_PROFILE_DBUS'''
 
@@ -223,14 +234,15 @@ class AARegexDbus(AARegexTest):
         self.regex = RE_PROFILE_DBUS
 
     tests = (
-        ('   dbus,',                                    (None,      None,   'dbus,',                            None,                       None)),
-        ('   audit dbus,',                              ('audit',   None,   'dbus,',                            None,                       None)),
-        ('   dbus send member=no_comment,',             (None,      None,   'dbus send member=no_comment,',     'send member=no_comment',   None)),
-        ('   dbus send member=no_comment, # comment',   (None,      None,   'dbus send member=no_comment,',     'send member=no_comment',   '# comment')),
+        ('   dbus,',                                  (None,    None, 'dbus,',                        None,                     None)),
+        ('   audit dbus,',                            ('audit', None, 'dbus,',                        None,                     None)),
+        ('   dbus send member=no_comment,',           (None,    None, 'dbus send member=no_comment,', 'send member=no_comment', None)),
+        ('   dbus send member=no_comment, # comment', (None,    None, 'dbus send member=no_comment,', 'send member=no_comment', '# comment')),
 
         ('   dbusdriver,', False),
         ('   audit dbusdriver,', False),
     )
+
 
 class AARegexMount(AARegexTest):
     '''Tests for RE_PROFILE_MOUNT'''
@@ -239,21 +251,20 @@ class AARegexMount(AARegexTest):
         self.regex = aa.RE_PROFILE_MOUNT
 
     tests = (
-        ('   mount,', (None, None, 'mount,', 'mount', None, None)),
-        ('   audit mount,', ('audit', None, 'mount,', 'mount', None, None)),
-        ('   umount,', (None, None, 'umount,', 'umount', None, None)),
-        ('   audit umount,', ('audit', None, 'umount,', 'umount', None, None)),
-        ('   unmount,', (None, None, 'unmount,', 'unmount', None, None)),
-        ('   audit unmount,', ('audit', None, 'unmount,', 'unmount', None, None)),
-        ('   remount,', (None, None, 'remount,', 'remount', None, None)),
-        ('   deny remount,', (None, 'deny', 'remount,', 'remount', None, None)),
+        ('   mount,',           (None,    None,   'mount,',   'mount',   None, None)),
+        ('   audit mount,',     ('audit', None,   'mount,',   'mount',   None, None)),
+        ('   umount,',          (None,    None,   'umount,',  'umount',  None, None)),
+        ('   audit umount,',    ('audit', None,   'umount,',  'umount',  None, None)),
+        ('   unmount,',         (None,    None,   'unmount,', 'unmount', None, None)),
+        ('   audit unmount,',   ('audit', None,   'unmount,', 'unmount', None, None)),
+        ('   remount,',         (None,    None,   'remount,', 'remount', None, None)),
+        ('   deny remount,',    (None,    'deny', 'remount,', 'remount', None, None)),
 
-        ('   mount, # comment', (None, None, 'mount,', 'mount', None, '# comment')),
+        ('   mount, # comment', (None,    None,   'mount,',   'mount',   None, '# comment')),
 
         ('   mountain,', False),
         ('   audit mountain,', False),
     )
-
 
 
 class AARegexSignal(AARegexTest):
@@ -263,13 +274,13 @@ class AARegexSignal(AARegexTest):
         self.regex = RE_PROFILE_SIGNAL
 
     tests = (
-        ('   signal,',                                  (None,    None, 'signal,',                                  None,                               None)),
-        ('   audit signal,',                            ('audit', None, 'signal,',                                  None,                               None)),
-        ('   signal receive,',                          (None,    None, 'signal receive,',                          'receive',                          None)),
-        ('   signal (send, receive),',                  (None,    None, 'signal (send, receive),',                  '(send, receive)',                  None)),
-        ('   audit signal (receive),',                  ('audit', None, 'signal (receive),',                        '(receive)',                        None)),
-        ('   signal (send, receive) set=(usr1 usr2),',  (None,    None, 'signal (send, receive) set=(usr1 usr2),',  '(send, receive) set=(usr1 usr2)',  None)),
-        ('   signal send set=(hup, quit) peer=/usr/sbin/daemon,', (None, None, 'signal send set=(hup, quit) peer=/usr/sbin/daemon,', 'send set=(hup, quit) peer=/usr/sbin/daemon', None)),
+        ('   signal,',                                            (None,    None, 'signal,',                                            None,                                         None)),
+        ('   audit signal,',                                      ('audit', None, 'signal,',                                            None,                                         None)),
+        ('   signal receive,',                                    (None,    None, 'signal receive,',                                    'receive',                                    None)),
+        ('   signal (send, receive),',                            (None,    None, 'signal (send, receive),',                            '(send, receive)',                            None)),
+        ('   audit signal (receive),',                            ('audit', None, 'signal (receive),',                                  '(receive)',                                  None)),
+        ('   signal (send, receive) set=(usr1 usr2),',            (None,    None, 'signal (send, receive) set=(usr1 usr2),',            '(send, receive) set=(usr1 usr2)',            None)),
+        ('   signal send set=(hup, quit) peer=/usr/sbin/daemon,', (None,    None, 'signal send set=(hup, quit) peer=/usr/sbin/daemon,', 'send set=(hup, quit) peer=/usr/sbin/daemon', None)),
 
         ('   signalling,', False),
         ('   audit signalling,', False),
@@ -284,13 +295,13 @@ class AARegexPtrace(AARegexTest):
         self.regex = RE_PROFILE_PTRACE
 
     tests = (
-        #                                            audit      allow  rule                                     rule details                    comment
-        ('   ptrace,',                              (None,      None, 'ptrace,',                                None,                           None)),
-        ('   audit ptrace,',                        ('audit',   None, 'ptrace,',                                None,                           None)),
-        ('   ptrace trace,',                        (None,      None, 'ptrace trace,',                          'trace',                        None)),
-        ('   ptrace (tracedby, readby),',           (None,      None, 'ptrace (tracedby, readby),',             '(tracedby, readby)',           None)),
-        ('   audit ptrace (read),',                 ('audit',   None, 'ptrace (read),',                         '(read)',                       None)),
-        ('   ptrace trace peer=/usr/sbin/daemon,',  (None,      None, 'ptrace trace peer=/usr/sbin/daemon,',    'trace peer=/usr/sbin/daemon',  None)),
+        #                                            audit    allow  rule                                  rule details                   comment
+        ('   ptrace,',                              (None,    None, 'ptrace,',                             None,                          None)),
+        ('   audit ptrace,',                        ('audit', None, 'ptrace,',                             None,                          None)),
+        ('   ptrace trace,',                        (None,    None, 'ptrace trace,',                       'trace',                       None)),
+        ('   ptrace (tracedby, readby),',           (None,    None, 'ptrace (tracedby, readby),',          '(tracedby, readby)',          None)),
+        ('   audit ptrace (read),',                 ('audit', None, 'ptrace (read),',                      '(read)',                      None)),
+        ('   ptrace trace peer=/usr/sbin/daemon,',  (None,    None, 'ptrace trace peer=/usr/sbin/daemon,', 'trace peer=/usr/sbin/daemon', None)),
 
         ('   ptraceback,', False),
         ('   audit ptraceback,', False),
@@ -305,16 +316,12 @@ class AARegexPivotRoot(AARegexTest):
         self.regex = aa.RE_PROFILE_PIVOT_ROOT
 
     tests = (
-        ('   pivot_root,', (None, None, 'pivot_root,', None)),
-        ('   audit pivot_root,', ('audit', None, 'pivot_root,', None)),
-        ('   pivot_root oldroot=/new/old,',
-         (None, None, 'pivot_root oldroot=/new/old,', None)),
-        ('   pivot_root oldroot=/new/old /new,',
-         (None, None, 'pivot_root oldroot=/new/old /new,', None)),
-        ('   pivot_root oldroot=/new/old /new -> child,',
-         (None, None, 'pivot_root oldroot=/new/old /new -> child,', None)),
-        ('   audit pivot_root oldroot=/new/old /new -> child,',
-         ('audit', None, 'pivot_root oldroot=/new/old /new -> child,', None)),
+        ('   pivot_root,',                                      (None,    None, 'pivot_root,',                                None)),
+        ('   audit pivot_root,',                                ('audit', None, 'pivot_root,',                                None)),
+        ('   pivot_root oldroot=/new/old,',                     (None,    None, 'pivot_root oldroot=/new/old,',               None)),
+        ('   pivot_root oldroot=/new/old /new,',                (None,    None, 'pivot_root oldroot=/new/old /new,',          None)),
+        ('   pivot_root oldroot=/new/old /new -> child,',       (None,    None, 'pivot_root oldroot=/new/old /new -> child,', None)),
+        ('   audit pivot_root oldroot=/new/old /new -> child,', ('audit', None, 'pivot_root oldroot=/new/old /new -> child,', None)),
 
         ('pivot_root', False),  # comma missing
 
@@ -325,6 +332,7 @@ class AARegexPivotRoot(AARegexTest):
         ('pivot_rootbeer /new, # comment', False),
     )
 
+
 class AARegexUnix(AARegexTest):
     '''Tests for RE_PROFILE_UNIX'''
 
@@ -332,23 +340,20 @@ class AARegexUnix(AARegexTest):
         self.regex = aa.RE_PROFILE_UNIX
 
     tests = (
-        ('   unix,', (None, None, 'unix,', None)),
-        ('   audit unix,', ('audit', None, 'unix,', None)),
-        ('   unix accept,', (None, None, 'unix accept,', None)),
-        ('   allow unix connect,', (None, 'allow', 'unix connect,', None)),
-        ('   audit allow unix bind,', ('audit', 'allow', 'unix bind,', None)),
-        ('   deny unix bind,', (None, 'deny', 'unix bind,', None)),
-        ('unix peer=(label=@{profile_name}),',
-         (None, None, 'unix peer=(label=@{profile_name}),', None)),
-        ('unix (receive) peer=(label=unconfined),',
-         (None, None, 'unix (receive) peer=(label=unconfined),', None)),
-        (' unix (getattr, shutdown) peer=(addr=none),',
-         (None, None, 'unix (getattr, shutdown) peer=(addr=none),', None)),
-        ('unix (connect, receive, send) type=stream peer=(label=unconfined,addr="@/tmp/dbus-*"),',
-         (None, None, 'unix (connect, receive, send) type=stream peer=(label=unconfined,addr="@/tmp/dbus-*"),', None)),
+        ('   unix,',                                                                               (None,    None,    'unix,',                                                                                 None)),
+        ('   audit unix,',                                                                         ('audit', None,    'unix,',                                                                                 None)),
+        ('   unix accept,',                                                                        (None,    None,    'unix accept,',                                                                          None)),
+        ('   allow unix connect,',                                                                 (None,    'allow', 'unix connect,',                                                                         None)),
+        ('   audit allow unix bind,',                                                              ('audit', 'allow', 'unix bind,',                                                                            None)),
+        ('   deny unix bind,',                                                                     (None,    'deny',  'unix bind,',                                                                            None)),
+        ('unix peer=(label=@{profile_name}),',                                                     (None,    None,    'unix peer=(label=@{profile_name}),',                                                    None)),
+        ('unix (receive) peer=(label=unconfined),',                                                (None,    None,    'unix (receive) peer=(label=unconfined),',                                               None)),
+        (' unix (getattr, shutdown) peer=(addr=none),',                                            (None,    None,    'unix (getattr, shutdown) peer=(addr=none),',                                            None)),
+        ('unix (connect, receive, send) type=stream peer=(label=unconfined,addr="@/tmp/dbus-*"),', (None,    None,    'unix (connect, receive, send) type=stream peer=(label=unconfined,addr="@/tmp/dbus-*"),', None)),
         ('unixlike', False),
         ('deny unixlike,', False),
     )
+
 
 class AANamedRegexProfileStart_2(AANamedRegexTest):
     '''Tests for RE_PROFILE_START'''
@@ -357,62 +362,62 @@ class AANamedRegexProfileStart_2(AANamedRegexTest):
         self.regex = RE_PROFILE_START
 
     tests = (
-        ('/bin/foo ', False), # no '{'
-        ('/bin/foo /bin/bar', False), # missing 'profile' keyword
-        ('profile {', False), # no attachment
-        ('   profile foo bar /foo {', False), # missing quotes around "foo bar"
-        ('bin/foo {', False), # not starting with '/'
-        ('"bin/foo" {', False), # not starting with '/', quoted version
+        ('/bin/foo ', False),  # no '{'
+        ('/bin/foo /bin/bar', False),  # missing 'profile' keyword
+        ('profile {', False),  # no attachment
+        ('   profile foo bar /foo {', False),  # missing quotes around "foo bar"
+        ('bin/foo {', False),  # not starting with '/'
+        ('"bin/foo" {', False),  # not starting with '/', quoted version
 
-        ('   /foo {',                     { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': None,       'comment': None }),
-        ('   "/foo" {',                   { 'plainprofile': '"/foo"',  'namedprofile': None,          'attachment': None,     'flags': None,       'comment': None }),
-        ('   profile /foo {',             { 'plainprofile': None,      'namedprofile': '/foo',        'attachment': None,     'flags': None,       'comment': None }),
-        ('   profile "/foo" {',           { 'plainprofile': None,      'namedprofile': '"/foo"',      'attachment': None,     'flags': None,       'comment': None }),
-        ('   profile foo /foo {',         { 'plainprofile': None,      'namedprofile': 'foo',         'attachment': '/foo',   'flags': None,       'comment': None }),
-        ('   profile foo /foo (audit) {', { 'plainprofile': None,      'namedprofile': 'foo',         'attachment': '/foo',   'flags': 'audit',    'comment': None }),
-        ('   profile "foo" "/foo" {',     { 'plainprofile': None,      'namedprofile': '"foo"',       'attachment': '"/foo"', 'flags': None,       'comment': None }),
-        ('   profile "foo bar" /foo {',   { 'plainprofile': None,      'namedprofile': '"foo bar"',   'attachment': '/foo',   'flags': None,       'comment': None }),
-        ('   /foo (complain) {',          { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': 'complain', 'comment': None }),
-        ('   /foo flags=(complain) {',    { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': 'complain', 'comment': None }),
-        ('   /foo (complain) { # x',      { 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': 'complain', 'comment': '# x'}),
-        ('   /foo flags = ( complain ){#',{ 'plainprofile': '/foo',    'namedprofile': None,          'attachment': None,     'flags': ' complain ', 'comment': '#'}),
-        ('  @{foo} {',                    { 'plainprofile': '@{foo}',  'namedprofile': None,          'attachment': None,     'flags': None,       'comment': None }),
-        ('  profile @{foo} {',            { 'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': None,     'flags': None,       'comment': None }),
-        ('  profile @{foo} /bar {',       { 'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': '/bar',   'flags': None,       'comment': None }),
-        ('  profile foo @{bar} {',        { 'plainprofile': None,      'namedprofile': 'foo',         'attachment': '@{bar}', 'flags': None,       'comment': None }),
-        ('  profile @{foo} @{bar} {',     { 'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': '@{bar}', 'flags': None,       'comment': None }),
+        ('   /foo {',                      {'plainprofile': '/foo',   'namedprofile': None,        'attachment': None,     'flags': None,         'comment': None}),
+        ('   "/foo" {',                    {'plainprofile': '"/foo"', 'namedprofile': None,        'attachment': None,     'flags': None,         'comment': None}),
+        ('   profile /foo {',              {'plainprofile': None,     'namedprofile': '/foo',      'attachment': None,     'flags': None,         'comment': None}),
+        ('   profile "/foo" {',            {'plainprofile': None,     'namedprofile': '"/foo"',    'attachment': None,     'flags': None,         'comment': None}),
+        ('   profile foo /foo {',          {'plainprofile': None,     'namedprofile': 'foo',       'attachment': '/foo',   'flags': None,         'comment': None}),
+        ('   profile foo /foo (audit) {',  {'plainprofile': None,     'namedprofile': 'foo',       'attachment': '/foo',   'flags': 'audit',      'comment': None}),
+        ('   profile "foo" "/foo" {',      {'plainprofile': None,     'namedprofile': '"foo"',     'attachment': '"/foo"', 'flags': None,         'comment': None}),
+        ('   profile "foo bar" /foo {',    {'plainprofile': None,     'namedprofile': '"foo bar"', 'attachment': '/foo',   'flags': None,         'comment': None}),
+        ('   /foo (complain) {',           {'plainprofile': '/foo',   'namedprofile': None,        'attachment': None,     'flags': 'complain',   'comment': None}),
+        ('   /foo flags=(complain) {',     {'plainprofile': '/foo',   'namedprofile': None,        'attachment': None,     'flags': 'complain',   'comment': None}),
+        ('   /foo (complain) { # x',       {'plainprofile': '/foo',   'namedprofile': None,        'attachment': None,     'flags': 'complain',   'comment': '# x'}),
+        ('   /foo flags = ( complain ){#', {'plainprofile': '/foo',   'namedprofile': None,        'attachment': None,     'flags': ' complain ', 'comment': '#'}),
+        ('  @{foo} {',                     {'plainprofile': '@{foo}', 'namedprofile': None,        'attachment': None,     'flags': None,         'comment': None}),
+        ('  profile @{foo} {',             {'plainprofile': None,     'namedprofile': '@{foo}',    'attachment': None,     'flags': None,         'comment': None}),
+        ('  profile @{foo} /bar {',        {'plainprofile': None,     'namedprofile': '@{foo}',    'attachment': '/bar',   'flags': None,         'comment': None}),
+        ('  profile foo @{bar} {',         {'plainprofile': None,     'namedprofile': 'foo',       'attachment': '@{bar}', 'flags': None,         'comment': None}),
+        ('  profile @{foo} @{bar} {',      {'plainprofile': None,     'namedprofile': '@{foo}',    'attachment': '@{bar}', 'flags': None,         'comment': None}),
 
-        ('   /foo {',                     { 'plainprofile': '/foo',     'namedprofile': None,   'leadingspace': '   ' }),
-        ('/foo {',                        { 'plainprofile': '/foo',     'namedprofile': None,   'leadingspace': ''    }),
-        ('   profile foo {',              { 'plainprofile': None,       'namedprofile': 'foo',  'leadingspace': '   ' }),
-        ('profile foo {',                 { 'plainprofile': None,       'namedprofile': 'foo',  'leadingspace': ''    }),
+        ('   /foo {',                      {'plainprofile': '/foo',   'namedprofile': None,  'leadingspace': '   '}),
+        ('/foo {',                         {'plainprofile': '/foo',   'namedprofile': None,  'leadingspace': ''}),
+        ('   profile foo {',               {'plainprofile': None,     'namedprofile': 'foo', 'leadingspace': '   '}),
+        ('profile foo {',                  {'plainprofile': None,     'namedprofile': 'foo', 'leadingspace': ''}),
     )
 
 
 class Test_parse_profile_start_line(AATest):
     tests = (
-        ('   /foo {',                     { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': None,       'comment': None }),
-        ('   "/foo" {',                   { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': None,       'comment': None }),
-        ('   profile /foo {',             { 'profile': '/foo',    'profile_keyword': True,  'plainprofile': None,   'namedprofile': '/foo', 'attachment': None,   'flags': None,       'comment': None }),
-        ('   profile "/foo" {',           { 'profile': '/foo',    'profile_keyword': True,  'plainprofile': None,   'namedprofile': '/foo', 'attachment': None,   'flags': None,       'comment': None }),
-        ('   profile foo /foo {',         { 'profile': 'foo',     'profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo',  'attachment': '/foo', 'flags': None,       'comment': None }),
-        ('   profile foo /foo (audit) {', { 'profile': 'foo',     'profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo',  'attachment': '/foo', 'flags': 'audit',    'comment': None }),
-        ('   profile "foo" "/foo" {',     { 'profile': 'foo',     'profile_keyword': True,  'plainprofile': None,   'namedprofile': 'foo',  'attachment': '/foo', 'flags': None,       'comment': None }),
-        ('   profile "foo bar" /foo {',   { 'profile': 'foo bar', 'profile_keyword': True,  'plainprofile': None, 'namedprofile': 'foo bar','attachment': '/foo', 'flags': None,    'comment': None }),
-        ('   /foo (complain) {',          { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': 'complain', 'comment': None }),
-        ('   /foo flags=(complain) {',    { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': 'complain', 'comment': None }),
-        ('   /foo flags = ( complain ){', { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': ' complain ', 'comment': None }),
-        ('   /foo (complain) { # x',      { 'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo', 'namedprofile': None,   'attachment': None,   'flags': 'complain', 'comment': '# x'}),
+        ('   /foo {',                     {'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo',   'namedprofile': None,      'attachment': None,     'flags': None,         'comment': None}),
+        ('   "/foo" {',                   {'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo',   'namedprofile': None,      'attachment': None,     'flags': None,         'comment': None}),
+        ('   profile /foo {',             {'profile': '/foo',    'profile_keyword': True,  'plainprofile': None,     'namedprofile': '/foo',    'attachment': None,     'flags': None,         'comment': None}),
+        ('   profile "/foo" {',           {'profile': '/foo',    'profile_keyword': True,  'plainprofile': None,     'namedprofile': '/foo',    'attachment': None,     'flags': None,         'comment': None}),
+        ('   profile foo /foo {',         {'profile': 'foo',     'profile_keyword': True,  'plainprofile': None,     'namedprofile': 'foo',     'attachment': '/foo',   'flags': None,         'comment': None}),
+        ('   profile foo /foo (audit) {', {'profile': 'foo',     'profile_keyword': True,  'plainprofile': None,     'namedprofile': 'foo',     'attachment': '/foo',   'flags': 'audit',      'comment': None}),
+        ('   profile "foo" "/foo" {',     {'profile': 'foo',     'profile_keyword': True,  'plainprofile': None,     'namedprofile': 'foo',     'attachment': '/foo',   'flags': None,         'comment': None}),
+        ('   profile "foo bar" /foo {',   {'profile': 'foo bar', 'profile_keyword': True,  'plainprofile': None,     'namedprofile': 'foo bar', 'attachment': '/foo',   'flags': None,         'comment': None}),
+        ('   /foo (complain) {',          {'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo',   'namedprofile': None,      'attachment': None,     'flags': 'complain',   'comment': None}),
+        ('   /foo flags=(complain) {',    {'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo',   'namedprofile': None,      'attachment': None,     'flags': 'complain',   'comment': None}),
+        ('   /foo flags = ( complain ){', {'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo',   'namedprofile': None,      'attachment': None,     'flags': ' complain ', 'comment': None}),
+        ('   /foo (complain) { # x',      {'profile': '/foo',    'profile_keyword': False, 'plainprofile': '/foo',   'namedprofile': None,      'attachment': None,     'flags': 'complain',   'comment': '# x'}),
 
-        ('   /foo {',                     { 'profile': '/foo',    'plainprofile': '/foo', 'namedprofile': None,  'leadingspace': '   ' }),
-        ('/foo {',                        { 'profile': '/foo',    'plainprofile': '/foo', 'namedprofile': None,  'leadingspace': None  }),
-        ('   profile foo {',              { 'profile': 'foo',     'plainprofile': None,   'namedprofile': 'foo', 'leadingspace': '   ' }),
-        ('profile foo {',                 { 'profile': 'foo',     'plainprofile': None,   'namedprofile': 'foo', 'leadingspace': None  }),
-        ('  @{foo} {',                    { 'profile': '@{foo}',  'plainprofile': '@{foo}',  'namedprofile': None,          'attachment': None,     'flags': None,       'comment': None }),
-        ('  profile @{foo} {',            { 'profile': '@{foo}',  'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': None,     'flags': None,       'comment': None }),
-        ('  profile @{foo} /bar {',       { 'profile': '@{foo}',  'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': '/bar',   'flags': None,       'comment': None }),
-        ('  profile foo @{bar} {',        { 'profile': 'foo',     'plainprofile': None,      'namedprofile': 'foo',         'attachment': '@{bar}', 'flags': None,       'comment': None }),
-        ('  profile @{foo} @{bar} {',     { 'profile': '@{foo}',  'plainprofile': None,      'namedprofile': '@{foo}',      'attachment': '@{bar}', 'flags': None,       'comment': None }),
+        ('   /foo {',                     {'profile': '/foo',  'leadingspace': '   ',      'plainprofile': '/foo',   'namedprofile': None}),
+        ('/foo {',                        {'profile': '/foo',  'leadingspace': None,       'plainprofile': '/foo',   'namedprofile': None}),
+        ('   profile foo {',              {'profile': 'foo',   'leadingspace': '   ',      'plainprofile': None,     'namedprofile': 'foo'}),
+        ('profile foo {',                 {'profile': 'foo',   'leadingspace': None,       'plainprofile': None,     'namedprofile': 'foo'}),
+        ('  @{foo} {',                    {'profile': '@{foo}',                            'plainprofile': '@{foo}', 'namedprofile': None,      'attachment': None,     'flags': None,         'comment': None}),
+        ('  profile @{foo} {',            {'profile': '@{foo}',                            'plainprofile': None,     'namedprofile': '@{foo}',  'attachment': None,     'flags': None,         'comment': None}),
+        ('  profile @{foo} /bar {',       {'profile': '@{foo}',                            'plainprofile': None,     'namedprofile': '@{foo}',  'attachment': '/bar',   'flags': None,         'comment': None}),
+        ('  profile foo @{bar} {',        {'profile': 'foo',                               'plainprofile': None,     'namedprofile': 'foo',     'attachment': '@{bar}', 'flags': None,         'comment': None}),
+        ('  profile @{foo} @{bar} {',     {'profile': '@{foo}',                            'plainprofile': None,     'namedprofile': '@{foo}',  'attachment': '@{bar}', 'flags': None,         'comment': None}),
     )
 
     def _run_test(self, line, expected):
@@ -421,187 +426,195 @@ class Test_parse_profile_start_line(AATest):
         self.assertTrue(matches)
 
         for exp in expected:
-            self.assertEqual(matches[exp], expected[exp], 'Group %s mismatch in rule %s' % (exp,line))
+            self.assertEqual(
+                matches[exp], expected[exp],
+                'Group %s mismatch in rule %s' % (exp, line))
+
 
 class TestInvalid_parse_profile_start_line(AATest):
     tests = (
-        ('/bin/foo ', False), # no '{'
-        ('/bin/foo /bin/bar', False), # missing 'profile' keyword
-        ('profile {', False), # no attachment
-        ('   profile foo bar /foo {', False), # missing quotes around "foo bar"
+        ('/bin/foo ', False),  # no '{'
+        ('/bin/foo /bin/bar', False),  # missing 'profile' keyword
+        ('profile {', False),  # no attachment
+        ('   profile foo bar /foo {', False),  # missing quotes around "foo bar"
     )
 
     def _run_test(self, line, expected):
         with self.assertRaises(AppArmorBug):
             parse_profile_start_line(line, 'somefile')
 
+
 class Test_re_match_include(AATest):
     tests = (
         # #include
-        ('#include <abstractions/base>',            'abstractions/base'         ),  # magic path
-        ('#include <abstractions/base> # comment',  'abstractions/base'         ),
-        ('#include<abstractions/base>#comment',     'abstractions/base'         ),
-        ('   #include    <abstractions/base>  ',    'abstractions/base'         ),
-        ('#include "/foo/bar"',                     '/foo/bar'                  ),  # absolute path
-        ('#include "/foo/bar" # comment',           '/foo/bar'                  ),
-        ('#include "/foo/bar"#comment',             '/foo/bar'                  ),
-        ('   #include "/foo/bar"  ',                '/foo/bar'                  ),
+        ('#include <abstractions/base>',            'abstractions/base'),  # magic path
+        ('#include <abstractions/base> # comment',  'abstractions/base'),
+        ('#include<abstractions/base>#comment',     'abstractions/base'),
+        ('   #include    <abstractions/base>  ',    'abstractions/base'),
+        ('#include "/foo/bar"',                     '/foo/bar'),  # absolute path
+        ('#include "/foo/bar" # comment',           '/foo/bar'),
+        ('#include "/foo/bar"#comment',             '/foo/bar'),
+        ('   #include "/foo/bar"  ',                '/foo/bar'),
         # include (without #)
-        ('include <abstractions/base>',            'abstractions/base'          ),  # magic path
-        ('include <abstractions/base> # comment',  'abstractions/base'          ),
-        ('include<abstractions/base>#comment',     'abstractions/base'          ),
-        ('   include    <abstractions/base>  ',    'abstractions/base'          ),
-        ('include "/foo/bar"',                     '/foo/bar'                   ),  # absolute path
-        ('include "/foo/bar" # comment',           '/foo/bar'                   ),
-        ('include "/foo/bar"#comment',             '/foo/bar'                   ),
-        ('   include "/foo/bar"  ',                '/foo/bar'                   ),
+        ('include <abstractions/base>',            'abstractions/base'),  # magic path
+        ('include <abstractions/base> # comment',  'abstractions/base'),
+        ('include<abstractions/base>#comment',     'abstractions/base'),
+        ('   include    <abstractions/base>  ',    'abstractions/base'),
+        ('include "/foo/bar"',                     '/foo/bar'),  # absolute path
+        ('include "/foo/bar" # comment',           '/foo/bar'),
+        ('include "/foo/bar"#comment',             '/foo/bar'),
+        ('   include "/foo/bar"  ',                '/foo/bar'),
 
-        (' some #include <abstractions/base>',      None,                       ),  # non-matching
-        ('  /etc/fstab r,',                         None,                       ),
-        ('/usr/include r,',                         None,                       ),
-        ('/include r,',                             None,                       ),
-        (' #include if exists <abstractions/base>', None,                       ),  # include if exists
-        (' #include if exists "/foo/bar"',          None,                       ),
+        (' some #include <abstractions/base>',      None),  # non-matching
+        ('  /etc/fstab r,',                         None),
+        ('/usr/include r,',                         None),
+        ('/include r,',                             None),
+        (' #include if exists <abstractions/base>', None),  # include if exists
+        (' #include if exists "/foo/bar"',          None),
     )
 
     def _run_test(self, params, expected):
         self.assertEqual(re_match_include(params), expected)
 
+
 class TestInvalid_re_match_include(AATest):
     tests = (
-        ('#include <>',                             AppArmorException   ),  # '#include'
-        ('#include <  >',                           AppArmorException   ),
-        ('#include ""',                             AppArmorException   ),
-        ('#include "  "',                           AppArmorException   ),
-        ('#include',                                AppArmorException   ),
-        ('#include  ',                              AppArmorException   ),
-        ('#include "foo"',                          AppArmorException   ),  # LP: 1738880 (relative)
-        ('#include "foo" # comment',                AppArmorException   ),
-        ('#include "foo"#comment',                  AppArmorException   ),
-        ('   #include "foo"  ',                     AppArmorException   ),
-        ('#include "foo/bar"',                      AppArmorException   ),
-        ('#include "foo/bar" # comment',            AppArmorException   ),
-        ('#include "foo/bar"#comment',              AppArmorException   ),
-        ('   #include "foo/bar"  ',                 AppArmorException   ),
-        ('#include foo',                            AppArmorException   ),  # LP: 1738879 (no quotes)
-        ('#include foo/bar',                        AppArmorException   ),
-        ('#include /foo/bar',                       AppArmorException   ),
-        ('#include foo bar',                        AppArmorException   ),  # LP: 1738877 (space in name)
-        ('#include foo bar/baz',                    AppArmorException   ),
-        ('#include "foo bar"',                      AppArmorException   ),
-        ('#include /foo bar',                       AppArmorException   ),
-        ('#include "/foo bar"',                     AppArmorException   ),
-        ('#include "foo bar/baz"',                  AppArmorException   ),
+        ('#include <>',                  AppArmorException),  # '#include'
+        ('#include <  >',                AppArmorException),
+        ('#include ""',                  AppArmorException),
+        ('#include "  "',                AppArmorException),
+        ('#include',                     AppArmorException),
+        ('#include  ',                   AppArmorException),
+        ('#include "foo"',               AppArmorException),  # LP: 1738880 (relative)
+        ('#include "foo" # comment',     AppArmorException),
+        ('#include "foo"#comment',       AppArmorException),
+        ('   #include "foo"  ',          AppArmorException),
+        ('#include "foo/bar"',           AppArmorException),
+        ('#include "foo/bar" # comment', AppArmorException),
+        ('#include "foo/bar"#comment',   AppArmorException),
+        ('   #include "foo/bar"  ',      AppArmorException),
+        ('#include foo',                 AppArmorException),  # LP: 1738879 (no quotes)
+        ('#include foo/bar',             AppArmorException),
+        ('#include /foo/bar',            AppArmorException),
+        ('#include foo bar',             AppArmorException),  # LP: 1738877 (space in name)
+        ('#include foo bar/baz',         AppArmorException),
+        ('#include "foo bar"',           AppArmorException),
+        ('#include /foo bar',            AppArmorException),
+        ('#include "/foo bar"',          AppArmorException),
+        ('#include "foo bar/baz"',       AppArmorException),
 
-        ('include <>',                              AppArmorException   ),  # 'include'
-        ('include <  >',                            AppArmorException   ),
-        ('include ""',                              AppArmorException   ),
-        ('include "  "',                            AppArmorException   ),
-        ('include',                                 AppArmorException   ),
-        ('include  ',                               AppArmorException   ),
-        ('include "foo"',                           AppArmorException   ),  # LP: 1738880 (relative)
-        ('include "foo" # comment',                 AppArmorException   ),
-        ('include "foo"#comment',                   AppArmorException   ),
-        ('   include "foo"  ',                      AppArmorException   ),
-        ('include "foo/bar"',                       AppArmorException   ),
-        ('include "foo/bar" # comment',             AppArmorException   ),
-        ('include "foo/bar"#comment',               AppArmorException   ),
-        ('   include "foo/bar"  ',                  AppArmorException   ),
-        ('include foo',                             AppArmorException   ),  # LP: 1738879 (no quotes)
-        ('include foo/bar',                         AppArmorException   ),
-        ('include /foo/bar',                        AppArmorException   ),
-        ('include foo bar',                         AppArmorException   ),  # LP: 1738877 (space in name)
-        ('include foo bar/baz',                     AppArmorException   ),
-        ('include "foo bar"',                       AppArmorException   ),
-        ('include /foo bar',                        AppArmorException   ),
-        ('include "/foo bar"',                      AppArmorException   ),
-        ('include "foo bar/baz"',                   AppArmorException   ),
+        ('include <>',                   AppArmorException),  # 'include'
+        ('include <  >',                 AppArmorException),
+        ('include ""',                   AppArmorException),
+        ('include "  "',                 AppArmorException),
+        ('include',                      AppArmorException),
+        ('include  ',                    AppArmorException),
+        ('include "foo"',                AppArmorException),  # LP: 1738880 (relative)
+        ('include "foo" # comment',      AppArmorException),
+        ('include "foo"#comment',        AppArmorException),
+        ('   include "foo"  ',           AppArmorException),
+        ('include "foo/bar"',            AppArmorException),
+        ('include "foo/bar" # comment',  AppArmorException),
+        ('include "foo/bar"#comment',    AppArmorException),
+        ('   include "foo/bar"  ',       AppArmorException),
+        ('include foo',                  AppArmorException),  # LP: 1738879 (no quotes)
+        ('include foo/bar',              AppArmorException),
+        ('include /foo/bar',             AppArmorException),
+        ('include foo bar',              AppArmorException),  # LP: 1738877 (space in name)
+        ('include foo bar/baz',          AppArmorException),
+        ('include "foo bar"',            AppArmorException),
+        ('include /foo bar',             AppArmorException),
+        ('include "/foo bar"',           AppArmorException),
+        ('include "foo bar/baz"',        AppArmorException),
     )
 
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
             re_match_include(params)
 
+
 class Test_re_match_include_parse(AATest):
     tests = (
-        #                                                         path                      if exists   magic path
+        #                                                       path            if exists  magic path
         # #include
-        ('#include <abstractions/base>',                        ('abstractions/base',       False,      True )  ),  # magic path
-        ('#include <abstractions/base> # comment',              ('abstractions/base',       False,      True )  ),
-        ('#include<abstractions/base>#comment',                 ('abstractions/base',       False,      True )  ),
-        ('   #include     <abstractions/base>  ',               ('abstractions/base',       False,      True )  ),
-        ('#include "/foo/bar"',                                 ('/foo/bar',                False,      False)  ),  # absolute path
-        ('#include "/foo/bar" # comment',                       ('/foo/bar',                False,      False)  ),
-        ('#include "/foo/bar"#comment',                         ('/foo/bar',                False,      False)  ),
-        ('   #include "/foo/bar"  ',                            ('/foo/bar',                False,      False)  ),
+        ('#include <abstractions/base>',                      ('abstractions/base', False, True)),  # magic path
+        ('#include <abstractions/base> # comment',            ('abstractions/base', False, True)),
+        ('#include<abstractions/base>#comment',               ('abstractions/base', False, True)),
+        ('   #include     <abstractions/base>  ',             ('abstractions/base', False, True)),
+        ('#include "/foo/bar"',                               ('/foo/bar',          False, False)),  # absolute path
+        ('#include "/foo/bar" # comment',                     ('/foo/bar',          False, False)),
+        ('#include "/foo/bar"#comment',                       ('/foo/bar',          False, False)),
+        ('   #include "/foo/bar"  ',                          ('/foo/bar',          False, False)),
         # include (without #)
-        ('include <abstractions/base>',                         ('abstractions/base',       False,      True )  ),  # magic path
-        ('include <abstractions/base> # comment',               ('abstractions/base',       False,      True )  ),
-        ('include<abstractions/base>#comment',                  ('abstractions/base',       False,      True )  ),
-        ('   include     <abstractions/base>  ',                ('abstractions/base',       False,      True )  ),
-        ('include "/foo/bar"',                                  ('/foo/bar',                False,      False)  ),  # absolute path
-        ('include "/foo/bar" # comment',                        ('/foo/bar',                False,      False)  ),
-        ('include "/foo/bar"#comment',                          ('/foo/bar',                False,      False)  ),
-        ('   include "/foo/bar"  ',                             ('/foo/bar',                False,      False)  ),
+        ('include <abstractions/base>',                       ('abstractions/base', False, True)),  # magic path
+        ('include <abstractions/base> # comment',             ('abstractions/base', False, True)),
+        ('include<abstractions/base>#comment',                ('abstractions/base', False, True)),
+        ('   include     <abstractions/base>  ',              ('abstractions/base', False, True)),
+        ('include "/foo/bar"',                                ('/foo/bar',          False, False)),  # absolute path
+        ('include "/foo/bar" # comment',                      ('/foo/bar',          False, False)),
+        ('include "/foo/bar"#comment',                        ('/foo/bar',          False, False)),
+        ('   include "/foo/bar"  ',                           ('/foo/bar',          False, False)),
         # #include if exists
-        ('#include if exists <abstractions/base>',              ('abstractions/base',       True,       True )  ),  # magic path
-        ('#include if exists <abstractions/base> # comment',    ('abstractions/base',       True,       True )  ),
-        ('#include if exists<abstractions/base>#comment',       ('abstractions/base',       True,       True )  ),
-        ('   #include    if     exists<abstractions/base>  ',   ('abstractions/base',       True,       True )  ),
-        ('#include if exists "/foo/bar"',                       ('/foo/bar',                True,       False)  ),  # absolute path
-        ('#include if exists "/foo/bar" # comment',             ('/foo/bar',                True,       False)  ),
-        ('#include if exists "/foo/bar"#comment',               ('/foo/bar',                True,       False)  ),
-        ('   #include if exists "/foo/bar"  ',                  ('/foo/bar',                True,       False)  ),
+        ('#include if exists <abstractions/base>',            ('abstractions/base', True,  True)),  # magic path
+        ('#include if exists <abstractions/base> # comment',  ('abstractions/base', True,  True)),
+        ('#include if exists<abstractions/base>#comment',     ('abstractions/base', True,  True)),
+        ('   #include    if     exists<abstractions/base>  ', ('abstractions/base', True,  True)),
+        ('#include if exists "/foo/bar"',                     ('/foo/bar',          True,  False)),  # absolute path
+        ('#include if exists "/foo/bar" # comment',           ('/foo/bar',          True,  False)),
+        ('#include if exists "/foo/bar"#comment',             ('/foo/bar',          True,  False)),
+        ('   #include if exists "/foo/bar"  ',                ('/foo/bar',          True,  False)),
         # include if exists (without #)
-        ('include if exists <abstractions/base>',               ('abstractions/base',       True,       True )  ),  # magic path
-        ('include if exists <abstractions/base> # comment',     ('abstractions/base',       True,       True )  ),
-        ('include if exists<abstractions/base>#comment',        ('abstractions/base',       True,       True )  ),
-        ('   include    if     exists<abstractions/base>  ',    ('abstractions/base',       True,       True )  ),
-        ('include if exists "/foo/bar"',                        ('/foo/bar',                True,       False)  ),  # absolute path
-        ('include if exists "/foo/bar" # comment',              ('/foo/bar',                True,       False)  ),
-        ('include if exists "/foo/bar"#comment',                ('/foo/bar',                True,       False)  ),
-        ('   include if exists "/foo/bar"  ',                   ('/foo/bar',                True,       False)  ),
+        ('include if exists <abstractions/base>',             ('abstractions/base', True,  True)),  # magic path
+        ('include if exists <abstractions/base> # comment',   ('abstractions/base', True,  True)),
+        ('include if exists<abstractions/base>#comment',      ('abstractions/base', True,  True)),
+        ('   include    if     exists<abstractions/base>  ',  ('abstractions/base', True,  True)),
+        ('include if exists "/foo/bar"',                      ('/foo/bar',          True,  False)),  # absolute path
+        ('include if exists "/foo/bar" # comment',            ('/foo/bar',          True,  False)),
+        ('include if exists "/foo/bar"#comment',              ('/foo/bar',          True,  False)),
+        ('   include if exists "/foo/bar"  ',                 ('/foo/bar',          True,  False)),
 
-        (' some #include if exists <abstractions/base>',        (None,                       None,      None )  ),  # non-matching
-        ('  /etc/fstab r,',                                     (None,                       None,      None )  ),
-        ('/usr/include r,',                                     (None,                       None,      None )  ),
-        ('/include r,',                                         (None,                       None,      None )  ),
-        ('abi <abi/4.19>,',                                     (None,                       None,      None )  ),  # abi rule
+        (' some #include if exists <abstractions/base>',      (None,                None,  None)),  # non-matching
+        ('  /etc/fstab r,',                                   (None,                None,  None)),
+        ('/usr/include r,',                                   (None,                None,  None)),
+        ('/include r,',                                       (None,                None,  None)),
+        ('abi <abi/4.19>,',                                   (None,                None,  None)),  # abi rule
     )
 
     def _run_test(self, params, expected):
         self.assertEqual(re_match_include_parse(params, 'include'), expected)
 
+
 class Test_re_match_include_parse_abi(AATest):
     tests = (
-        #                                                         path                      if exists   magic path
-        ('abi <abi/4.19>,',                                     ('abi/4.19',                False,      True )  ),  # magic path
-        ('abi <abi/4.19>, # comment',                           ('abi/4.19',                False,      True )  ),
-        ('   abi    <abi/4.19>   ,    #    comment',            ('abi/4.19',                False,      True )  ),
-        ('abi "/abi/4.19" ,',                                   ('/abi/4.19',               False,      False)  ),  # quoted path starting with /
-        ('abi "/abi/4.19",     #  comment',                     ('/abi/4.19',               False,      False)  ),
-        ('  abi     "/abi/4.19"    ,    #      comment  ',      ('/abi/4.19',               False,      False)  ),
-        ('  abi     "abi/4.19"    ,    #      comment  ',       ('abi/4.19',                False,      False)  ),  # quoted path, no leading /
-        ('abi abi/4.19,',                                       ('abi/4.19',                False,      False)  ),  # without quotes
-        ('some abi <abi/4.19>,',                                (None,                      None,       None )  ),  # non-matching
-        ('  /etc/fstab r,',                                     (None,                      None,       None )  ),
-        ('/usr/abi r,',                                         (None,                      None,       None )  ),
-        ('/abi r,',                                             (None,                      None,       None )  ),
-        ('#include <abstractions/base>',                        (None,                      None,       None )  ),  # include rule path
+        #                                                   path     if exists  magic path
+        ('abi <abi/4.19>,',                                ('abi/4.19',  False, True)),  # magic path
+        ('abi <abi/4.19>, # comment',                      ('abi/4.19',  False, True)),
+        ('   abi    <abi/4.19>   ,    #    comment',       ('abi/4.19',  False, True)),
+        ('abi "/abi/4.19" ,',                              ('/abi/4.19', False, False)),  # quoted path starting with /
+        ('abi "/abi/4.19",     #  comment',                ('/abi/4.19', False, False)),
+        ('  abi     "/abi/4.19"    ,    #      comment  ', ('/abi/4.19', False, False)),
+        ('  abi     "abi/4.19"    ,    #      comment  ',  ('abi/4.19',  False, False)),  # quoted path, no leading /
+        ('abi abi/4.19,',                                  ('abi/4.19',  False, False)),  # without quotes
+        ('some abi <abi/4.19>,',                           (None,        None,  None)),  # non-matching
+        ('  /etc/fstab r,',                                (None,        None,  None)),
+        ('/usr/abi r,',                                    (None,        None,  None)),
+        ('/abi r,',                                        (None,        None,  None)),
+        ('#include <abstractions/base>',                   (None,        None,  None)),  # include rule path
     )
 
     def _run_test(self, params, expected):
         self.assertEqual(re_match_include_parse(params, 'abi'), expected)
 
+
 class Test_re_match_include_parse_errors(AATest):
     tests = (
-        (('include <>',             'include'),                 AppArmorException),  # various rules with empty filename
-        (('include ""',             'include'),                 AppArmorException),
-        (('include   ',             'include'),                 AppArmorException),
-        (('abi <>,',                'abi'),                     AppArmorException),
-        (('abi "",',                'abi'),                     AppArmorException),
-        (('abi   ,',                'abi'),                     AppArmorException),
-        (('abi <foo>,',             'invalid'),                 AppArmorBug),  # invalid rule name
+        (('include <>', 'include'), AppArmorException),  # various rules with empty filename
+        (('include ""', 'include'), AppArmorException),
+        (('include   ', 'include'), AppArmorException),
+        (('abi <>,',    'abi'),     AppArmorException),
+        (('abi "",',    'abi'),     AppArmorException),
+        (('abi   ,',    'abi'),     AppArmorException),
+        (('abi <foo>,', 'invalid'), AppArmorBug),  # invalid rule name
     )
 
     def _run_test(self, params, expected):
@@ -609,37 +622,39 @@ class Test_re_match_include_parse_errors(AATest):
             rule, rule_name = params
             re_match_include_parse(rule, rule_name)
 
+
 class TestStripParenthesis(AATest):
     tests = (
-        ('foo',         'foo'       ),
-        ('(foo)',       'foo'       ),
-        ('(  foo )',    'foo'       ),
-        ('(foo',        '(foo'      ),
-        ('foo  )',      'foo  )'    ),
-        ('foo ()',      'foo ()'    ),
-        ('()',          ''          ),
-        ('(  )',        ''          ),
-        ('(())',        '()'        ),
-        (' (foo)',       '(foo)'    ),  # parenthesis not first char, whitespace stripped nevertheless
-        ('(foo) ',       '(foo)'    ),  # parenthesis not last char, whitespace stripped nevertheless
+        ('foo',      'foo'),
+        ('(foo)',    'foo'),
+        ('(  foo )', 'foo'),
+        ('(foo',     '(foo'),
+        ('foo  )',   'foo  )'),
+        ('foo ()',   'foo ()'),
+        ('()',       ''),
+        ('(  )',     ''),
+        ('(())',     '()'),
+        (' (foo)',   '(foo)'),  # parenthesis not first char, whitespace stripped nevertheless
+        ('(foo) ',   '(foo)'),  # parenthesis not last char, whitespace stripped nevertheless
     )
 
     def _run_test(self, params, expected):
         self.assertEqual(strip_parenthesis(params), expected)
 
+
 class TestStripQuotes(AATest):
     tests = (
-        ('foo',                     'foo'),
-        ('"foo"',                   'foo'),
-        ('"foo',                    '"foo'),
-        ('foo"',                    'foo"'),
-        ('""',                      ''),
-        ('foo"bar',                 'foo"bar'),
-        ('"foo"bar"',               'foo"bar'),
-        ('""""foo"bar""""',         '"""foo"bar"""'),
-        ('',                        ''),
-        ('/',                       '/'),
-        ('"',                       '"'),
+        ('foo',             'foo'),
+        ('"foo"',           'foo'),
+        ('"foo',            '"foo'),
+        ('foo"',            'foo"'),
+        ('""',              ''),
+        ('foo"bar',         'foo"bar'),
+        ('"foo"bar"',       'foo"bar'),
+        ('""""foo"bar""""', '"""foo"bar"""'),
+        ('',                ''),
+        ('/',               '/'),
+        ('"',               '"'),
     )
 
     def _run_test(self, params, expected):

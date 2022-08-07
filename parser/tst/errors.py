@@ -21,6 +21,7 @@ import testlib
 
 config = None
 
+
 class AAErrorTests(testlib.AATestTemplate):
     def setUp(self):
         self.maxDiff = None

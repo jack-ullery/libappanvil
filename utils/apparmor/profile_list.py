@@ -26,11 +26,11 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 preamble_ruletypes = {
-    'abi':      {'rule': AbiRule,       'ruleset': AbiRuleset       },
-    'alias':    {'rule': AliasRule,     'ruleset': AliasRuleset     },
-    'inc_ie':   {'rule': IncludeRule,   'ruleset': IncludeRuleset   },
-    'variable': {'rule': VariableRule,  'ruleset': VariableRuleset  },
-    'boolean':  {'rule': BooleanRule,   'ruleset': BooleanRuleset   },
+    'abi':      {'rule': AbiRule,      'ruleset': AbiRuleset},
+    'alias':    {'rule': AliasRule,    'ruleset': AliasRuleset},
+    'inc_ie':   {'rule': IncludeRule,  'ruleset': IncludeRuleset},
+    'variable': {'rule': VariableRule, 'ruleset': VariableRuleset},
+    'boolean':  {'rule': BooleanRule,  'ruleset': BooleanRuleset},
 }
 header_rule_write_order = ('abi', 'alias', 'inc_ie', 'variable', 'boolean')  # TODO: Dicts are ordered in Python 3.7+; use above dict's keys instead
 
@@ -51,7 +51,7 @@ class ProfileList:
         self.profiles = {}          # profile_name -> ProfileStorage
 
     def __repr__(self):
-        return('\n<ProfileList>\n%s\n</ProfileList>\n' % '\n'.join(self.files))
+        return ('\n<ProfileList>\n%s\n</ProfileList>\n' % '\n'.join(self.files))
 
     def init_file(self, filename):
         if self.files.get(filename):
@@ -77,10 +77,14 @@ class ProfileList:
             raise AppArmorBug('Invalid profile type: %s' % type(prof_storage))
 
         if profile_name in self.profile_names:
-            raise AppArmorException(_('Profile %(profile_name)s exists in %(filename)s and %(filename2)s' % {'profile_name': profile_name, 'filename': filename, 'filename2': self.profile_names[profile_name]}))
+            raise AppArmorException(
+                _('Profile %(profile_name)s exists in %(filename)s and %(filename2)s'
+                  % {'profile_name': profile_name, 'filename': filename, 'filename2': self.profile_names[profile_name]}))
 
         if attachment in self.attachments:
-            raise AppArmorException(_('Profile for %(profile_name)s exists in %(filename)s and %(filename2)s' % {'profile_name': attachment, 'filename': filename, 'filename2': self.attachments[attachment]}))
+            raise AppArmorException(
+                _('Profile for %(profile_name)s exists in %(filename)s and %(filename2)s'
+                  % {'profile_name': attachment, 'filename': filename, 'filename2': self.attachments[attachment]}))
 
         if profile_name:
             self.profile_names[profile_name] = filename
@@ -97,7 +101,6 @@ class ProfileList:
         else:
             self.files[filename]['profiles'].append(attachment)
             self.profiles[attachment] = prof_storage
-
 
     def add_rule(self, filename, ruletype, rule):
         ''' Store the given rule for the given profile filename preamble '''
@@ -202,7 +205,7 @@ class ProfileList:
     def filename_from_attachment(self, attachment):
         ''' Return profile filename for the given attachment/executable path, or None '''
 
-        if not attachment.startswith( ('/', '@', '{') ):
+        if not attachment.startswith(('/', '@', '{')):
             raise AppArmorBug('Called filename_from_attachment with non-path attachment: %s' % attachment)
 
         # plain path
@@ -248,8 +251,9 @@ class ProfileList:
 
             for var in inc_vars['=']:
                 if merged_variables.get(var):
-                    raise AppArmorException('While parsing %(profile)s: Conflicting variable definitions for variable %(var)s found in %(file1)s and %(file2)s.' % {
-                            'var': var, 'profile': filename, 'file1': set_in[var], 'file2': incname})
+                    raise AppArmorException(
+                        'While parsing %(profile)s: Conflicting variable definitions for variable %(var)s found in %(file1)s and %(file2)s.'
+                        % {'var': var, 'profile': filename, 'file1': set_in[var], 'file2': incname})
                 else:
                     merged_variables[var] = inc_vars['='][var]
                     set_in[var] = incname
@@ -264,8 +268,9 @@ class ProfileList:
                 if merged_variables.get(var):
                     merged_variables[var] |= inc_add[incname][var]
                 else:
-                    raise AppArmorException('While parsing %(profile)s: Variable %(var)s was not previously declared, but is being assigned additional value in file %(file)s.' % {
-                            'var': var, 'profile': filename, 'file': incname})
+                    raise AppArmorException(
+                        'While parsing %(profile)s: Variable %(var)s was not previously declared, but is being assigned additional value in file %(file)s.'
+                        % {'var': var, 'profile': filename, 'file': incname})
 
         return merged_variables
 

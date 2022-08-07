@@ -63,6 +63,7 @@ def set_text_mode():
     global UI_mode
     UI_mode = 'text'
 
+
 # reads the response on command line for json and verifies the response
 # for the dialog type
 def json_response(dialog_type):
@@ -284,6 +285,7 @@ def UI_Changes(oldprofile, newprofile, comments=False):
     with difftemp:
         UI_ShowFile(header, difftemp.name)
 
+
 def UI_ShowFile(header, filename):
     if UI_mode == 'json':
         jsonout = {'dialog': 'changes', 'header': header, 'filename': filename}
@@ -298,7 +300,7 @@ CMDS = {'CMD_ALLOW': _('(A)llow'),
         'CMD_AUDIT_NEW': _('Audi(t)'),
         'CMD_AUDIT_OFF': _('Audi(t) off'),
         'CMD_AUDIT_FULL': _('Audit (A)ll'),
-        #'CMD_OTHER': '(O)pts',
+        # 'CMD_OTHER': '(O)pts',
         'CMD_USER_ON': _('(O)wner permissions on'),
         'CMD_USER_OFF': _('(O)wner permissions off'),
         'CMD_DENY': _('(D)eny'),
@@ -403,7 +405,9 @@ class PromptQuestion:
             key = get_translated_hotkey(menutext).lower()
             # Duplicate hotkey
             if keys.get(key, False):
-                raise AppArmorException(_('PromptUser: Duplicate hotkey for %(command)s: %(menutext)s ') % { 'command': cmd, 'menutext': menutext })
+                raise AppArmorException(
+                    _('PromptUser: Duplicate hotkey for %(command)s: %(menutext)s ')
+                    % {'command': cmd, 'menutext': menutext})
 
             keys[key] = cmd
 

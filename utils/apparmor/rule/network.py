@@ -24,20 +24,21 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 
-network_domain_keywords   = [ 'unspec', 'unix', 'inet', 'ax25', 'ipx', 'appletalk', 'netrom', 'bridge', 'atmpvc', 'x25', 'inet6',
-                              'rose', 'netbeui', 'security', 'key', 'netlink', 'packet', 'ash', 'econet', 'atmsvc', 'rds', 'sna',
-                              'irda', 'pppox', 'wanpipe', 'llc', 'ib', 'mpls', 'can', 'tipc', 'bluetooth', 'iucv', 'rxrpc', 'isdn',
-                              'phonet', 'ieee802154', 'caif', 'alg', 'nfc', 'vsock', 'kcm', 'qipcrtr', 'smc', 'xdp', 'mctp' ]
+network_domain_keywords = [
+    'unspec', 'unix', 'inet', 'ax25', 'ipx', 'appletalk', 'netrom', 'bridge', 'atmpvc', 'x25', 'inet6',
+    'rose', 'netbeui', 'security', 'key', 'netlink', 'packet', 'ash', 'econet', 'atmsvc', 'rds', 'sna',
+    'irda', 'pppox', 'wanpipe', 'llc', 'ib', 'mpls', 'can', 'tipc', 'bluetooth', 'iucv', 'rxrpc', 'isdn',
+    'phonet', 'ieee802154', 'caif', 'alg', 'nfc', 'vsock', 'kcm', 'qipcrtr', 'smc', 'xdp', 'mctp']
 
-network_type_keywords     = ['stream', 'dgram', 'seqpacket', 'rdm', 'raw', 'packet']
+network_type_keywords = ['stream', 'dgram', 'seqpacket', 'rdm', 'raw', 'packet']
 network_protocol_keywords = ['tcp', 'udp', 'icmp']
 
 
-RE_NETWORK_DOMAIN   = '(' + '|'.join(network_domain_keywords) + ')'
-RE_NETWORK_TYPE     = '(' + '|'.join(network_type_keywords) + ')'
+RE_NETWORK_DOMAIN = '(' + '|'.join(network_domain_keywords) + ')'
+RE_NETWORK_TYPE = '(' + '|'.join(network_type_keywords) + ')'
 RE_NETWORK_PROTOCOL = '(' + '|'.join(network_protocol_keywords) + ')'
 
-RE_NETWORK_DETAILS  = re.compile(
+RE_NETWORK_DETAILS = re.compile(
     '^\s*' +
     '(?P<domain>' + RE_NETWORK_DOMAIN + ')?' +  # optional domain
     '(\s+(?P<type_or_protocol>' + RE_NETWORK_TYPE + '|' + RE_NETWORK_PROTOCOL + '))?' +  # optional type or protocol
@@ -146,7 +147,7 @@ class NetworkRule(BaseRule):
         else:
             raise AppArmorBug('Empty type or protocol in network rule')
 
-        return('%s%snetwork%s%s,%s' % (space, self.modifiers_str(), domain, type_or_protocol, self.comment))
+        return ('%s%snetwork%s%s,%s' % (space, self.modifiers_str(), domain, type_or_protocol, self.comment))
 
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
@@ -177,12 +178,12 @@ class NetworkRule(BaseRule):
         return True
 
     def logprof_header_localvars(self):
-        family      = logprof_value_or_all(self.domain,             self.all_domains)
-        sock_type   = logprof_value_or_all(self.type_or_protocol,   self.all_type_or_protocols)
+        family    = logprof_value_or_all(self.domain,           self.all_domains)  # noqa: E221
+        sock_type = logprof_value_or_all(self.type_or_protocol, self.all_type_or_protocols)
 
         return [
             _('Network Family'), family,
-            _('Socket Type'),    sock_type,
+            _('Socket Type'), sock_type,
         ]
 
 

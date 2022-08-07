@@ -32,5 +32,5 @@ parser.add_argument('--configdir', type=str, help=argparse.SUPPRESS)
 args = parser.parse_args()
 
 tool = apparmor.tools.aa_tools('complain', args)
-#print(args)
+# print(args)
 tool.cmd_complain()

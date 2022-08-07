@@ -16,11 +16,10 @@ import apparmor.aa as aa
 # If a profile can't be parsed by the tools, add it to skip_active_profiles or skip_extra_profiles.
 # Add only the filename (without path), for example 'usr.bin.foo'.
 # These skip lists are meant as a temporary solution, and should be empty on release.
-skip_active_profiles = [
-]
+skip_active_profiles = []
 
-skip_extra_profiles = [
-]
+skip_extra_profiles = []
+
 
 class TestFoo(AATest):
     # Make sure the python code can parse all profiles shipped with AppArmor.
@@ -38,6 +37,7 @@ class TestFoo(AATest):
         aa.read_inactive_profiles(skip_profiles=skip_extra_profiles)
 
         self.assertGreaterEqual(len(aa.extra_profiles.profile_names), 100)
+
 
 setup_aa(aa)
 setup_all_loops(__name__)

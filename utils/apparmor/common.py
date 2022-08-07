@@ -36,9 +36,10 @@ class AppArmorException(Exception):
     def __str__(self):
         return repr(self.value)
 
+
 class AppArmorBug(Exception):
     '''This class represents AppArmor exceptions "that should never happen"'''
-    pass
+
 
 #
 # Utility functions
@@ -53,6 +54,7 @@ def error(out, exit_code=1, do_exit=True):
     if do_exit:
         sys.exit(exit_code)
 
+
 def warn(out):
     '''Print warning message'''
     try:
@@ -60,12 +62,14 @@ def warn(out):
     except IOError:
         pass
 
+
 def msg(out, output=sys.stdout):
     '''Print message'''
     try:
         print("%s" % (out), file=output)
     except IOError:
         pass
+
 
 def debug(out):
     '''Print debug message'''
@@ -76,7 +80,8 @@ def debug(out):
         except IOError:
             pass
 
-def recursive_print(src, dpth = 0, key = ''):
+
+def recursive_print(src, dpth=0, key=''):
     # print recursively in a nicely formatted way
     # useful for debugging, too verbose for production code ;-)
 
@@ -88,26 +93,27 @@ def recursive_print(src, dpth = 0, key = ''):
     if isinstance(src, dict):
         empty = True
         for key in src.keys():
-            print (tabs + '[%s]' % key)
+            print(tabs + '[%s]' % key)
             recursive_print(src[key], dpth + 1, key)
             empty = False
         if empty:
-            print (tabs + '[--- empty ---]')
+            print(tabs + '[--- empty ---]')
     elif isinstance(src, list) or isinstance(src, tuple):
         if len(src) == 0:
-            print (tabs + '[--- empty ---]')
+            print(tabs + '[--- empty ---]')
         else:
-            print (tabs + "[")
+            print(tabs + "[")
             for litem in src:
                 recursive_print(litem, dpth + 1)
-            print (tabs + "]")
+            print(tabs + "]")
     elif isinstance(src, rules._Raw_Rule):
         src.recursive_print(dpth)
     else:
         if key:
-            print (tabs + '%s = %s' % (key, src))
+            print(tabs + '%s = %s' % (key, src))
         else:
-            print (tabs + '- %s' % src)
+            print(tabs + '- %s' % src)
+
 
 def cmd(command):
     '''Try to execute the given command.'''
@@ -135,6 +141,7 @@ def cmd_pipe(command1, command2):
 
     return [sp2.returncode, out]
 
+
 def valid_path(path):
     '''Valid path'''
     # No relative paths
@@ -154,6 +161,7 @@ def valid_path(path):
         return False
     return True
 
+
 def get_directory_contents(path):
     '''Find contents of the given directory'''
     if not valid_path(path):
@@ -166,6 +174,7 @@ def get_directory_contents(path):
     files.sort()
     return files
 
+
 def is_skippable_file(path):
     """Returns True if filename matches something to be skipped (rpm or dpkg backup files, hidden files etc.)
         The list of skippable files needs to be synced with apparmor initscript and libapparmor _aa_is_blacklisted()
@@ -176,19 +185,24 @@ def is_skippable_file(path):
     if not basename or basename[0] == '.' or basename == 'README':
         return True
 
-    skippable_suffix = ('.dpkg-new', '.dpkg-old', '.dpkg-dist', '.dpkg-bak', '.dpkg-remove', '.pacsave', '.pacnew', '.rpmnew', '.rpmsave', '.orig', '.rej', '~')
+    skippable_suffix = (
+        '.dpkg-new', '.dpkg-old', '.dpkg-dist', '.dpkg-bak', '.dpkg-remove',
+        '.pacsave', '.pacnew', '.rpmnew', '.rpmsave', '.orig', '.rej', '~')
     if basename.endswith(skippable_suffix):
         return True
 
     return False
 
+
 def open_file_read(path, encoding='UTF-8'):
     '''Open specified file read-only'''
     return open_file_anymode('r', path, encoding)
 
+
 def open_file_write(path):
     '''Open specified file in write/overwrite mode'''
     return open_file_anymode('w', path, 'UTF-8')
+
 
 def open_file_anymode(mode, path, encoding='UTF-8'):
     '''Crash-resistant wrapper to open a specified file in specified mode'''
@@ -197,6 +211,7 @@ def open_file_anymode(mode, path, encoding='UTF-8'):
     # are not utf8-encoded (for example a latin1 "ö"), and also avoids crashes
     # at several other places we don't know yet ;-)
     return open(path, mode, encoding=encoding, errors='surrogateescape')
+
 
 def readkey():
     '''Returns the pressed key'''
@@ -210,12 +225,14 @@ def readkey():
 
     return ch
 
+
 def hasher():
     '''A neat alternative to perl's hash reference'''
     # Creates a dictionary for any depth and returns empty dictionary otherwise
     # WARNING: when reading non-existing sub-dicts, empty dicts will be added.
     #          This might cause strange effects when using .keys()
     return collections.defaultdict(hasher)
+
 
 def convert_regexp(regexp):
     regex_paren = re.compile('^(.*){([^}]*)}(.*)$')
@@ -236,7 +253,7 @@ def convert_regexp(regexp):
 
     multi_glob = '__KJHDKVZH_AAPROF_INTERNAL_GLOB_SVCUZDGZID__'
     new_reg = new_reg.replace('**', multi_glob)
-    #print(new_reg)
+    # print(new_reg)
 
     # Match at least one character if * or ** after /
     # ?< is the negative lookback operator
@@ -247,6 +264,7 @@ def convert_regexp(regexp):
     if regexp[-1] != '$':
         new_reg = new_reg + '$'
     return new_reg
+
 
 def user_perm(prof_dir):
     if not os.access(prof_dir, os.W_OK):
@@ -265,6 +283,7 @@ def split_name(full_profile):
         hat = full_profile
 
     return (profile, hat)
+
 
 def combine_profname(name_parts):
     ''' combine name_parts (main profile, child) into a joint main//child profile name '''
@@ -346,4 +365,4 @@ class DebugLogger:
 
     def shutdown(self):
         logging.shutdown()
-        #logging.shutdown([self.logger])
+        # logging.shutdown([self.logger])

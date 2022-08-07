@@ -24,12 +24,14 @@ from tempfile import NamedTemporaryFile
 
 def check_requirements(binary):
     '''Verify necessary software is installed'''
-    exes = ['xset',        # for detecting free X display
-            'aa-easyprof', # for templates
-            'aa-exec',     # for changing profile
-            'sudo',        # eventually get rid of this
-            'pkexec',      # eventually get rid of this
-            binary]
+    exes = [
+        'xset',         # for detecting free X display
+        'aa-easyprof',  # for templates
+        'aa-exec',      # for changing profile
+        'sudo',         # eventually get rid of this
+        'pkexec',       # eventually get rid of this
+        binary
+    ]
 
     for e in exes:
         debug("Searching for '%s'" % e)
@@ -38,6 +40,7 @@ def check_requirements(binary):
             return False
 
     return True
+
 
 def parse_args(args=None, parser=None):
     '''Parse arguments'''
@@ -82,8 +85,8 @@ def parse_args(args=None, parser=None):
 
     valid_xservers = ['xpra', 'xpra3d', 'xephyr']
     if my_opt.withx and my_opt.xserver.lower() not in valid_xservers:
-        error("Invalid server '%s'. Use one of: %s" % (my_opt.xserver, \
-                                                       ", ".join(valid_xservers)))
+        error("Invalid server '%s'. Use one of: %s"
+              % (my_opt.xserver, ", ".join(valid_xservers)))
 
     if my_opt.withx:
         if my_opt.xephyr_geometry and my_opt.xserver.lower() != "xephyr":
@@ -99,9 +102,11 @@ def parse_args(args=None, parser=None):
 
     return (my_opt, my_args)
 
+
 def gen_policy_name(binary):
     '''Generate a temporary policy based on the binary name'''
     return "sandbox-%s%s" % (pwd.getpwuid(os.geteuid())[0], re.sub(r'/', '_', binary))
+
 
 def set_environ(env):
     keys = env.keys()
@@ -109,6 +114,7 @@ def set_environ(env):
     for k in keys:
         msg("Using: %s=%s" % (k, env[k]))
         os.environ[k] = env[k]
+
 
 def aa_exec(command, opt, environ={}, verify_rules=[]):
     '''Execute binary under specified policy'''
@@ -161,11 +167,13 @@ def aa_exec(command, opt, environ={}, verify_rules=[]):
     rc, report = cmd(args)
     return rc, report
 
+
 def run_sandbox(command, opt):
     '''Run application'''
     # aa-exec
     rc, report = aa_exec(command, opt)
     return rc, report
+
 
 class SandboxXserver():
     def __init__(self, title, geometry=None, driver=None, xauth=None, clipboard=False):
@@ -175,7 +183,7 @@ class SandboxXserver():
         self.driver = driver
         self.clipboard = clipboard
         self.tempfiles = []
-        self.timeout = 5 # used by xauth and for server starts
+        self.timeout = 5  # used by xauth and for server starts
 
         # preserve our environment
         self.old_environ = dict()
@@ -233,8 +241,7 @@ class SandboxXserver():
 
         display = ""
         current = self.old_environ["DISPLAY"]
-        for i in range(1,257): # TODO: this puts an artificial limit of 256
-                               #       sandboxed applications
+        for i in range(1, 257):  # TODO: this puts an artificial limit of 256 sandboxed applications
             tmp = ":%d" % i
             os.environ["DISPLAY"] = tmp
             rc, report = cmd(('xset', '-q'))
@@ -310,27 +317,30 @@ class SandboxXephyr(SandboxXserver):
         listener_x = os.fork()
         if listener_x == 0:
             # TODO: break into config file? Which are needed?
-            x_exts = ['-extension', 'GLX',
-                      '-extension', 'MIT-SHM',
-                      '-extension', 'RENDER',
-                      '-extension', 'SECURITY',
-                      '-extension', 'DAMAGE'
-                     ]
+            x_exts = [
+                '-extension', 'GLX',
+                '-extension', 'MIT-SHM',
+                '-extension', 'RENDER',
+                '-extension', 'SECURITY',
+                '-extension', 'DAMAGE'
+            ]
             # verify_these
-            x_extra_args = ['-host-cursor', # less secure?
-                            '-fakexa',      # for games? seems not needed
-                            '-nodri',       # more secure?
-                           ]
+            x_extra_args = [
+                '-host-cursor',  # less secure?
+                '-fakexa',  # for games? seems not needed
+                '-nodri',  # more secure?
+            ]
 
             if not self.geometry:
                 self.geometry = "640x480"
-            x_args = ['-nolisten', 'tcp',
-                      '-screen', self.geometry,
-                      '-br',        # black background
-                      '-reset',     # reset after last client exists
-                      '-terminate', # terminate at server reset
-                      '-title', self.generate_title(),
-                      ] + x_exts + x_extra_args
+            x_args = [
+                '-nolisten', 'tcp',
+                '-screen', self.geometry,
+                '-br',  # black background
+                '-reset',  # reset after last client exists
+                '-terminate',  # terminate at server reset
+                '-title', self.generate_title(),
+            ] + x_exts + x_extra_args
 
             args = ['/usr/bin/Xephyr'] + x_args + [self.display]
             debug(" ".join(args))
@@ -338,7 +348,7 @@ class SandboxXephyr(SandboxXserver):
             sys.exit(0)
         self.pids.append(listener_x)
 
-        time.sleep(1) # FIXME: detect if running
+        time.sleep(1)  # FIXME: detect if running
 
         # Next, start the window manager
         sys.stdout.flush()
@@ -354,7 +364,7 @@ class SandboxXephyr(SandboxXserver):
             sys.exit(0)
 
         self.pids.append(listener_wm)
-        time.sleep(1) # FIXME: detect if running
+        time.sleep(1)  # FIXME: detect if running
 
 
 class SandboxXpra(SandboxXserver):
@@ -539,7 +549,7 @@ EndSection
                 tmp.write(conf.encode('utf-8'))
 
             xvfb_args.append('--xvfb=Xorg')
-            xvfb_args.append('-dpi 96') # https://www.xpra.org/trac/ticket/163
+            xvfb_args.append('-dpi 96')  # https://www.xpra.org/trac/ticket/163
             xvfb_args.append('-nolisten tcp')
             xvfb_args.append('-noreset')
             xvfb_args.append('-logfile %s' % os.path.expanduser('~/.xpra/%s.log' % self.display))
@@ -577,7 +587,7 @@ EndSection
             cmd(('xpra', 'list'))
 
             x_args = ['--no-daemon',
-                      #'--no-mmap', # for security?
+                      # '--no-mmap', # for security?
                       '--no-pulseaudio']
             if not self.clipboard:
                 x_args.append('--no-clipboard')
@@ -597,7 +607,7 @@ EndSection
         # We need to wait for the xpra socket to exist before attaching
         fn = os.path.join(os.environ['HOME'], '.xpra', '%s-%s' % \
                           (socket.gethostname(), self.display.split(':')[1]))
-        for i in range(self.timeout * 2): # up to self.timeout seconds to start
+        for i in range(self.timeout * 2):  # up to self.timeout seconds to start
             if os.path.exists(fn):
                 debug("Found '%s'! Proceeding to attach" % fn)
                 break
@@ -609,7 +619,7 @@ EndSection
             self.cleanup()
             raise AppArmorException("Could not start xpra (try again with -d)")
 
-        for i in range(self.timeout): # Up to self.timeout seconds to start
+        for i in range(self.timeout):  # Up to self.timeout seconds to start
             rc, out = cmd(('xpra', 'list'))
 
             if 'DEAD session at %s' % self.display in out:
@@ -636,7 +646,7 @@ EndSection
         if listener_attach == 0:
             args = ['/usr/bin/xpra', 'attach', self.display,
                                      '--title=%s' % self.generate_title(),
-                                     #'--no-mmap', # for security?
+                                     # '--no-mmap', # for security?
                                      '--no-tray',
                                      '--no-pulseaudio']
             if not self.clipboard:
@@ -650,9 +660,9 @@ EndSection
         self.pids.append(listener_attach)
 
         # Make sure that a client has attached
-        for i in range(self.timeout): # up to self.timeout seconds to attach
+        for i in range(self.timeout):  # up to self.timeout seconds to attach
             time.sleep(1)
-            rc, out = cmd (('xpra', 'info', self.display))
+            rc, out = cmd(('xpra', 'info', self.display))
             search = 'clients=1'
             if search in out:
                 debug("Client successfully attached!")
@@ -684,7 +694,7 @@ def run_xsandbox(command, opt):
     keys = x.old_environ.keys()
     keys.sort()
     for k in keys:
-        debug ("Old: %s=%s" % (k, x.old_environ[k]))
+        debug("Old: %s=%s" % (k, x.old_environ[k]))
 
     try:
         x.start()

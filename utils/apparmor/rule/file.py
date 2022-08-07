@@ -22,11 +22,10 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 
-allow_exec_transitions          = ('ix', 'ux', 'Ux', 'px', 'Px', 'cx', 'Cx')  # 2 chars - len relevant for split_perms()
+allow_exec_transitions = ('ix', 'ux', 'Ux', 'px', 'Px', 'cx', 'Cx')  # 2 chars - len relevant for split_perms()
 allow_exec_fallback_transitions = ('pix', 'Pix', 'cix', 'Cix', 'pux', 'PUx', 'cux', 'CUx')  # 3 chars - len relevant for split_perms()
-deny_exec_transitions           = ('x')
-file_permissions                = ('m', 'r', 'w', 'a', 'l', 'k', 'link', 'subset')  # also defines the write order
-
+deny_exec_transitions = ('x')
+file_permissions = ('m', 'r', 'w', 'a', 'l', 'k', 'link', 'subset')  # also defines the write order
 
 
 class FileRule(BaseRule):
@@ -36,6 +35,7 @@ class FileRule(BaseRule):
     # should reference the class field FileRule.ALL
     class __FileAll:
         pass
+
     class __FileAnyExec:
         pass
 
@@ -45,7 +45,7 @@ class FileRule(BaseRule):
     rule_name = 'file'
 
     def __init__(self, path, perms, exec_perms, target, owner, file_keyword=False, leading_perms=False,
-                audit=False, deny=False, allow_keyword=False, comment='', log_event=None):
+                 audit=False, deny=False, allow_keyword=False, comment='', log_event=None):
         '''Initialize FileRule
 
            Parameters:
@@ -61,9 +61,9 @@ class FileRule(BaseRule):
         super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
                          comment=comment, log_event=log_event)
 
-        #                                                               rulepart        partperms       is_path log_event
-        self.path,          self.all_paths          = self._aare_or_all(path,           'path',         True,   log_event)
-        self.target,        self.all_targets,       = self._aare_or_all(target,         'target',       False,  log_event)
+        #                                              rulepart  partperms  is_path  log_event
+        self.path,   self.all_paths   = self._aare_or_all(path,   'path',   True,  log_event)
+        self.target, self.all_targets = self._aare_or_all(target, 'target', False, log_event)
 
         self.can_glob = not self.all_paths
         self.can_glob_ext = not self.all_paths
@@ -82,7 +82,8 @@ class FileRule(BaseRule):
             self.perms = perms
             self.all_perms = False
         else:
-            self.perms, self.all_perms, unknown_items = check_and_split_list(perms, file_permissions, FileRule.ALL, 'FileRule', 'permissions', allow_empty_list=True)
+            self.perms, self.all_perms, unknown_items = check_and_split_list(
+                perms, file_permissions, FileRule.ALL, 'FileRule', 'permissions', allow_empty_list=True)
             if unknown_items:
                 raise AppArmorBug('Passed unknown perms to FileRule: %s' % str(unknown_items))
             if self.perms and 'a' in self.perms and 'w' in self.perms:
@@ -232,9 +233,9 @@ class FileRule(BaseRule):
             file_keyword = ''
 
         if self.all_paths and self.all_perms and not path and not perms and not target:
-            return('%s%s%sfile,%s' % (space, self.modifiers_str(), owner, self.comment))  # plain 'file,' rule
+            return ('%s%s%sfile,%s' % (space, self.modifiers_str(), owner, self.comment))  # plain 'file,' rule
         elif not self.all_paths and not self.all_perms and path and perms:
-            return('%s%s%s%s%s%s,%s' % (space, self.modifiers_str(), file_keyword, owner, path_and_perms, target, self.comment))
+            return ('%s%s%s%s%s%s,%s' % (space, self.modifiers_str(), file_keyword, owner, path_and_perms, target, self.comment))
         else:
             raise AppArmorBug('Invalid combination of path and perms in file rule - either specify path and perms, or none of them')
 
@@ -261,7 +262,7 @@ class FileRule(BaseRule):
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
 
-        if not self._is_covered_aare(self.path,         self.all_paths,         other_rule.path,        other_rule.all_paths,           'path'):
+        if not self._is_covered_aare(self.path, self.all_paths, other_rule.path, other_rule.all_paths, 'path'):
             return False
 
         if self.perms and 'subset' in self.perms and other_rule.perms and 'subset' not in other_rule.perms:
@@ -293,7 +294,7 @@ class FileRule(BaseRule):
         if (other_rule.exec_perms and other_rule.exec_perms != self.ANY_EXEC) or \
            (other_rule.perms and 'l' in other_rule.perms) or \
            (other_rule.perms and 'link' in other_rule.perms):
-            if not self._is_covered_aare(self.target,   self.all_targets,       other_rule.target,      other_rule.all_targets,         'target'):
+            if not self._is_covered_aare(self.target, self.all_targets, other_rule.target, other_rule.all_targets, 'target'):
                 return False
 
             # a different target means running with a different profile, therefore we have to be more strict than _is_covered_aare()
@@ -309,7 +310,6 @@ class FileRule(BaseRule):
         # still here? -> then it is covered
         return True
 
-
     def is_equal_localvars(self, rule_obj, strict):
         '''compare if rule-specific variables are equal'''
 
@@ -319,7 +319,7 @@ class FileRule(BaseRule):
         if self.owner != rule_obj.owner:
             return False
 
-        if not self._is_equal_aare(self.path,           self.all_paths,         rule_obj.path,          rule_obj.all_paths,             'path'):
+        if not self._is_equal_aare(self.path, self.all_paths, rule_obj.path, rule_obj.all_paths, 'path'):
             return False
 
         if self.perms != rule_obj.perms:
@@ -331,7 +331,7 @@ class FileRule(BaseRule):
         if self.exec_perms != rule_obj.exec_perms:
             return False
 
-        if not self._is_equal_aare(self.target,         self.all_targets,       rule_obj.target,        rule_obj.all_targets,           'target'):
+        if not self._is_equal_aare(self.target, self.all_targets, rule_obj.target, rule_obj.all_targets, 'target'):
             return False
 
         if strict:  # file_keyword and leading_perms are only cosmetics, but still a difference
@@ -367,7 +367,8 @@ class FileRule(BaseRule):
         old_mode = ''
         if self.original_perms:
             original_perms_all = self._join_given_perms(self.original_perms['allow']['all'], None)
-            original_perms_owner = self._join_given_perms(self.original_perms['allow']['owner'] - self.original_perms['allow']['all'], None)  # only list owner perms that are not covered by other perms
+            original_perms_owner = self._join_given_perms(
+                self.original_perms['allow']['owner'] - self.original_perms['allow']['all'], None)  # only list owner perms that are not covered by other perms
 
             if original_perms_all and original_perms_owner:
                 old_mode = '%s + owner %s' % (original_perms_all, original_perms_owner)
@@ -418,7 +419,7 @@ class FileRule(BaseRule):
         if self.all_paths:
             raise AppArmorBug('Attemp to edit bare file rule')
 
-        return(_('Enter new path: '), self.path.regex)
+        return (_('Enter new path: '), self.path.regex)
 
     def validate_edit(self, newpath):
         if self.all_paths:
@@ -461,17 +462,17 @@ class FileRuleset(BaseRuleset):
                     'path':  involved_paths}
            Note: exec rules and exec/link target are not honored!
            '''
-           # XXX do we need to honor the link target?
+        # XXX do we need to honor the link target?
 
         perms = {
-            'allow':    {'owner': set(), 'all': set() },
-            'deny':     {'owner': set(), 'all': set() },
+            'allow': {'owner': set(), 'all': set()},
+            'deny':  {'owner': set(), 'all': set()},
         }
         all_perms = {
-            'allow':    {'owner': False, 'all': False },
-            'deny':     {'owner': False, 'all': False },
+            'allow': {'owner': False, 'all': False},
+            'deny':  {'owner': False, 'all': False},
         }
-        paths       = set()
+        paths = set()
 
         matching_rules = self.get_rules_for_path(path, audit, deny)
 
@@ -535,7 +536,6 @@ class FileRuleset(BaseRuleset):
         return conflictingrules
 
 
-
 def split_perms(perm_string, deny):
     '''parse permission string
        - perm_string: the permission string to parse
@@ -567,6 +567,7 @@ def split_perms(perm_string, deny):
             raise AppArmorException(_('permission contains unknown character(s) %s' % perm_string))
 
     return perms, exec_mode
+
 
 def perms_with_a(perms):
     '''if perms includes 'w', add 'a' perms

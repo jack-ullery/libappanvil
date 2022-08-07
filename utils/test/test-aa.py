@@ -17,14 +17,16 @@ import os
 import shutil
 
 import apparmor.aa  # needed to set global vars in some tests
-from apparmor.aa import (check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
-     get_profile_flags, change_profile_flags, set_options_audit_mode, set_options_owner_mode,
-     parse_profile_data,
-     get_file_perms, propose_file_rules, merged_to_split, split_to_merged)
+from apparmor.aa import (
+    check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
+    get_profile_flags, change_profile_flags, set_options_audit_mode, set_options_owner_mode,
+    parse_profile_data,
+    get_file_perms, propose_file_rules, merged_to_split, split_to_merged)
 from apparmor.aare import AARE
 from apparmor.common import AppArmorException, AppArmorBug, is_skippable_file
 from apparmor.rule.file import FileRule
 from apparmor.rule.include import IncludeRule
+
 
 class AaTestWithTempdir(AATest):
     def AASetup(self):
@@ -35,12 +37,14 @@ class AaTest_check_for_apparmor(AaTestWithTempdir):
     FILESYSTEMS_WITH_SECURITYFS = 'nodev\tdevtmpfs\nnodev\tsecurityfs\nnodev\tsockfs\n\text3\n\text2\n\text4'
     FILESYSTEMS_WITHOUT_SECURITYFS = 'nodev\tdevtmpfs\nnodev\tsockfs\n\text3\n\text2\n\text4'
 
-    MOUNTS_WITH_SECURITYFS = ( 'proc /proc proc rw,relatime 0 0\n'
+    MOUNTS_WITH_SECURITYFS = (
+        'proc /proc proc rw,relatime 0 0\n'
         'securityfs %s/security securityfs rw,nosuid,nodev,noexec,relatime 0 0\n'
-        '/dev/sda1 / ext3 rw,noatime,data=ordered 0 0' )
+        '/dev/sda1 / ext3 rw,noatime,data=ordered 0 0')
 
-    MOUNTS_WITHOUT_SECURITYFS = ( 'proc /proc proc rw,relatime 0 0\n'
-        '/dev/sda1 / ext3 rw,noatime,data=ordered 0 0' )
+    MOUNTS_WITHOUT_SECURITYFS = (
+        'proc /proc proc rw,relatime 0 0\n'
+        '/dev/sda1 / ext3 rw,noatime,data=ordered 0 0')
 
     def test_check_for_apparmor_None_1(self):
         filesystems = write_file(self.tmpdir, 'filesystems', self.FILESYSTEMS_WITHOUT_SECURITYFS)
@@ -77,18 +81,21 @@ class AaTest_check_for_apparmor(AaTestWithTempdir):
         mounts = write_file(self.tmpdir, 'mounts', self.MOUNTS_WITH_SECURITYFS % self.tmpdir)
         self.assertEqual('%s/security/apparmor' % self.tmpdir, check_for_apparmor(filesystems, mounts))
 
+
 class AATest_get_output(AATest):
     tests = (
-        (('./fake_ldd', '/AATest/lib64/libc-2.22.so'),  (0, ['        /AATest/lib64/ld-linux-x86-64.so.2 (0x0000556858473000)', '        linux-vdso.so.1 (0x00007ffe98912000)']     )),
-        (('./fake_ldd', '/tmp/aa-test-foo'),            (0, ['        not a dynamic executable']                                                                                    )),
-        (('./fake_ldd', 'invalid'),                     (1, []                                                                                                                      )),  # stderr is not part of output
+        (('./fake_ldd', '/AATest/lib64/libc-2.22.so'), (0, ['        /AATest/lib64/ld-linux-x86-64.so.2 (0x0000556858473000)', '        linux-vdso.so.1 (0x00007ffe98912000)'])),
+        (('./fake_ldd', '/tmp/aa-test-foo'),           (0, ['        not a dynamic executable'])),
+        (('./fake_ldd', 'invalid'),                    (1, [])),  # stderr is not part of output
     )
+
     def _run_test(self, params, expected):
         self.assertEqual(get_output(params), expected)
 
     def test_get_output_nonexisting(self):
         with self.assertRaises(AppArmorException):
             ret, output = get_output(('./_file_/_not_/_found_',))
+
 
 class AATest_get_reqs(AATest):
     tests = (
@@ -101,19 +108,21 @@ class AATest_get_reqs(AATest):
         apparmor.aa.cfg['settings']['ldd'] = './fake_ldd'
         self.assertEqual(get_reqs(params), expected)
 
+
 class AaTest_create_new_profile(AATest):
     tests = (
-        # file content              filename            expected interpreter    expected abstraction (besides 'base')   expected profiles
-        (('#!/bin/bash\ntrue',      'script'),          (u'/bin/bash',          'abstractions/bash',                    ['script'])),
-        (('foo bar',                'fake_binary'),     (None,                  None,                                   ['fake_binary'])),
-        (('hats expected',          'apache2'),         (None,                  None,                                   ['apache2', 'apache2//DEFAULT_URI', 'apache2//HANDLING_UNTRUSTED_INPUT'])),
+        # file content         filename        expected interpreter  expected abstraction (besides 'base')  expected profiles
+        (('#!/bin/bash\ntrue', 'script'),      (u'/bin/bash',        'abstractions/bash',                   ['script'])),
+        (('foo bar',           'fake_binary'), (None,                None,                                  ['fake_binary'])),
+        (('hats expected',     'apache2'),     (None,                None,                                  ['apache2', 'apache2//DEFAULT_URI', 'apache2//HANDLING_UNTRUSTED_INPUT'])),
     )
+
     def _run_test(self, params, expected):
         apparmor.aa.cfg['settings']['ldd'] = './fake_ldd'
 
         self.createTmpdir()
 
-        #copy the local profiles to the test directory
+        # copy the local profiles to the test directory
         self.profile_dir = '%s/profiles' % self.tmpdir
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
@@ -139,8 +148,12 @@ class AaTest_create_new_profile(AATest):
         self.assertEqual(list(profile.keys()), expected_profiles)
 
         if exp_interpreter_path:
-            self.assertEqual(set(profile[program]['file'].get_clean()), {'%s ix,' % exp_interpreter_path, '%s r,' % program, '',
-                    '/AATest/lib64/libtinfo.so.* mr,', '/AATest/lib64/libc.so.* mr,', '/AATest/lib64/libdl.so.* mr,', '/AATest/lib64/libreadline.so.* mr,', '/AATest/lib64/ld-linux-x86-64.so.* mr,' })
+            self.assertEqual(
+                set(profile[program]['file'].get_clean()),
+                {'%s ix,' % exp_interpreter_path, '%s r,' % program, '',
+                 '/AATest/lib64/libtinfo.so.* mr,', '/AATest/lib64/libc.so.* mr,',
+                 '/AATest/lib64/libdl.so.* mr,', '/AATest/lib64/libreadline.so.* mr,',
+                 '/AATest/lib64/ld-linux-x86-64.so.* mr,'})
         else:
             self.assertEqual(set(profile[program]['file'].get_clean()), {'%s mr,' % program, ''})
 
@@ -149,25 +162,26 @@ class AaTest_create_new_profile(AATest):
         else:
             self.assertEqual(profile[program]['inc_ie'].get_clean(), ['include <abstractions/base>', ''])
 
+
 class AaTest_get_interpreter_and_abstraction(AATest):
     tests = (
-        ('#!/bin/bash',             ('/bin/bash',           'abstractions/bash')),
-        ('#!/bin/dash',             ('/bin/dash',           'abstractions/bash')),
-        ('#!/bin/sh',               ('/bin/sh',             'abstractions/bash')),
-        ('#!  /bin/sh  ',           ('/bin/sh',             'abstractions/bash')),
-        ('#!  /bin/sh  -x ',        ('/bin/sh',             'abstractions/bash')),  # '-x' is not part of the interpreter path
-        ('#!/usr/bin/perl',         ('/usr/bin/perl',       'abstractions/perl')),
-        ('#!/usr/bin/perl -w',      ('/usr/bin/perl',       'abstractions/perl')),  # '-w' is not part of the interpreter path
-        ('#!/usr/bin/python',       ('/usr/bin/python',     'abstractions/python')),
-        ('#!/usr/bin/python2',      ('/usr/bin/python2',    'abstractions/python')),
-        ('#!/usr/bin/python2.7',    ('/usr/bin/python2.7',  'abstractions/python')),
-        ('#!/usr/bin/python3',      ('/usr/bin/python3',    'abstractions/python')),
-        ('#!/usr/bin/python4',      ('/usr/bin/python4',    None)),  # python abstraction is only applied to py2 and py3
-        ('#!/usr/bin/ruby',         ('/usr/bin/ruby',       'abstractions/ruby')),
-        ('#!/usr/bin/ruby2.2',      ('/usr/bin/ruby2.2',    'abstractions/ruby')),
-        ('#!/usr/bin/ruby1.9.1',    ('/usr/bin/ruby1.9.1',  'abstractions/ruby')),
-        ('#!/usr/bin/foobarbaz',    ('/usr/bin/foobarbaz',  None)),  # we don't have an abstraction for "foobarbaz"
-        ('foo',                     (None,                  None)),  # no hashbang - not a script
+        ('#!/bin/bash',          ('/bin/bash',          'abstractions/bash')),
+        ('#!/bin/dash',          ('/bin/dash',          'abstractions/bash')),
+        ('#!/bin/sh',            ('/bin/sh',            'abstractions/bash')),
+        ('#!  /bin/sh  ',        ('/bin/sh',            'abstractions/bash')),
+        ('#!  /bin/sh  -x ',     ('/bin/sh',            'abstractions/bash')),  # '-x' is not part of the interpreter path
+        ('#!/usr/bin/perl',      ('/usr/bin/perl',      'abstractions/perl')),
+        ('#!/usr/bin/perl -w',   ('/usr/bin/perl',      'abstractions/perl')),  # '-w' is not part of the interpreter path
+        ('#!/usr/bin/python',    ('/usr/bin/python',    'abstractions/python')),
+        ('#!/usr/bin/python2',   ('/usr/bin/python2',   'abstractions/python')),
+        ('#!/usr/bin/python2.7', ('/usr/bin/python2.7', 'abstractions/python')),
+        ('#!/usr/bin/python3',   ('/usr/bin/python3',   'abstractions/python')),
+        ('#!/usr/bin/python4',   ('/usr/bin/python4',   None)),  # python abstraction is only applied to py2 and py3
+        ('#!/usr/bin/ruby',      ('/usr/bin/ruby',      'abstractions/ruby')),
+        ('#!/usr/bin/ruby2.2',   ('/usr/bin/ruby2.2',   'abstractions/ruby')),
+        ('#!/usr/bin/ruby1.9.1', ('/usr/bin/ruby1.9.1', 'abstractions/ruby')),
+        ('#!/usr/bin/foobarbaz', ('/usr/bin/foobarbaz', None)),  # we don't have an abstraction for "foobarbaz"
+        ('foo',                  (None,                 None)),  # no hashbang - not a script
     )
 
     def _run_test(self, params, expected):
@@ -222,10 +236,11 @@ class AaTest_get_profile_flags(AaTestWithTempdir):
         with self.assertRaises(AppArmorException):
             self._test_get_flags('/no-such-profile flags=(complain)', 'complain')
 
+
 class AaTest_change_profile_flags(AaTestWithTempdir):
-    def _test_change_profile_flags(self, profile, old_flags, flags_to_change, set_flag, expected_flags, whitespace='', comment='',
-                        more_rules='', expected_more_rules='@-@-@',
-                        check_new_flags=True, profile_name='/foo'):
+    def _test_change_profile_flags(
+            self, profile, old_flags, flags_to_change, set_flag, expected_flags, whitespace='',
+            comment='', more_rules='', expected_more_rules='@-@-@', check_new_flags=True, profile_name='/foo'):
         if old_flags:
             old_flags = ' %s' % old_flags
 
@@ -304,39 +319,45 @@ class AaTest_change_profile_flags(AaTestWithTempdir):
 
     # test handling of hat flags
     def test_set_flags_with_hat_01(self):
-        self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
+        self._test_change_profile_flags(
+            '/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
             more_rules='\n  ^foobar {\n}\n',
             expected_more_rules='\n  ^foobar flags=(audit) {\n}\n'
         )
 
     def test_change_profile_flags_with_hat_02(self):
-        self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', False, 'complain',
+        self._test_change_profile_flags(
+            '/foo', 'flags=(complain)', 'audit', False, 'complain',
             profile_name=None,
             more_rules='\n  ^foobar flags=(audit) {\n}\n',
             expected_more_rules='\n  ^foobar {\n}\n'
         )
 
     def test_change_profile_flags_with_hat_03(self):
-        self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
+        self._test_change_profile_flags(
+            '/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
             more_rules='\n^foobar (attach_disconnected) { # comment\n}\n',
             expected_more_rules='\n  ^foobar flags=(attach_disconnected, audit) { # comment\n}\n'
         )
 
     def test_change_profile_flags_with_hat_04(self):
-        self._test_change_profile_flags('/foo', '', 'audit', True, 'audit',
+        self._test_change_profile_flags(
+            '/foo', '', 'audit', True, 'audit',
             more_rules='\n  hat foobar (attach_disconnected) { # comment\n}\n',
             expected_more_rules='\n  hat foobar flags=(attach_disconnected, audit) { # comment\n}\n'
         )
 
     def test_change_profile_flags_with_hat_05(self):
-        self._test_change_profile_flags('/foo', '(audit)', 'audit', False, '',
+        self._test_change_profile_flags(
+            '/foo', '(audit)', 'audit', False, '',
             more_rules='\n  hat foobar (attach_disconnected) { # comment\n}\n',
             expected_more_rules='\n  hat foobar flags=(attach_disconnected) { # comment\n}\n'
         )
 
     # test handling of child profiles
     def test_change_profile_flags_with_child_01(self):
-        self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
+        self._test_change_profile_flags(
+            '/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
             profile_name=None,
             more_rules='\n  profile /bin/bar {\n}\n',
             expected_more_rules='\n  profile /bin/bar flags=(audit) {\n}\n'
@@ -344,11 +365,11 @@ class AaTest_change_profile_flags(AaTestWithTempdir):
 
     def test_change_profile_flags_with_child_02(self):
         # XXX child profile flags aren't changed if profile parameter is not None
-        self._test_change_profile_flags('/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
+        self._test_change_profile_flags(
+            '/foo', 'flags=(complain)', 'audit', True, 'audit, complain',
             more_rules='\n  profile /bin/bar {\n}\n',
             expected_more_rules='\n  profile /bin/bar {\n}\n'  # flags(audit) should be added
         )
-
 
     def test_change_profile_flags_invalid_01(self):
         with self.assertRaises(AppArmorBug):
@@ -361,7 +382,7 @@ class AaTest_change_profile_flags(AaTestWithTempdir):
             self._test_change_profile_flags('/foo', '(  )', '', True, '', check_new_flags=False)
     def test_change_profile_flags_invalid_04(self):
         with self.assertRaises(AppArmorBug):
-            self._test_change_profile_flags('/foo', 'flags=(complain,  audit)', '  ', True, 'audit, complain', check_new_flags=False) # whitespace-only newflags
+            self._test_change_profile_flags('/foo', 'flags=(complain,  audit)', '  ', True, 'audit, complain', check_new_flags=False)  # whitespace-only newflags
 
     def test_change_profile_flags_other_profile(self):
         # test behaviour if the file doesn't contain the specified /foo profile
@@ -391,13 +412,14 @@ class AaTest_change_profile_flags(AaTestWithTempdir):
         with self.assertRaises(IOError):
             change_profile_flags('%s/file-not-found' % self.tmpdir, '/foo', 'audit', True)
 
+
 class AaTest_set_options_audit_mode(AATest):
     tests = (
-        ((FileRule.parse('audit /foo/bar r,'),      ['/foo/bar r,', '/foo/* r,', '/** r,']                      ), ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),
-        ((FileRule.parse('audit /foo/bar r,'),      ['/foo/bar r,', 'audit /foo/* r,', 'audit /** r,']          ), ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),
-        ((FileRule.parse('/foo/bar r,'),            ['/foo/bar r,', '/foo/* r,', '/** r,']                      ), ['/foo/bar r,', '/foo/* r,', '/** r,']),
-        ((FileRule.parse('/foo/bar r,'),            ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']    ), ['/foo/bar r,', '/foo/* r,', '/** r,']),
-        ((FileRule.parse('audit /foo/bar r,'),      ['/foo/bar r,', '/foo/* r,', '#include <abstractions/base>']), ['audit /foo/bar r,', 'audit /foo/* r,', '#include <abstractions/base>']),
+        ((FileRule.parse('audit /foo/bar r,'), ['/foo/bar r,', '/foo/* r,', '/** r,']),                       ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),
+        ((FileRule.parse('audit /foo/bar r,'), ['/foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),           ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),
+        ((FileRule.parse('/foo/bar r,'),       ['/foo/bar r,', '/foo/* r,', '/** r,']),                       ['/foo/bar r,', '/foo/* r,', '/** r,']),
+        ((FileRule.parse('/foo/bar r,'),       ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),     ['/foo/bar r,', '/foo/* r,', '/** r,']),
+        ((FileRule.parse('audit /foo/bar r,'), ['/foo/bar r,', '/foo/* r,', '#include <abstractions/base>']), ['audit /foo/bar r,', 'audit /foo/* r,', '#include <abstractions/base>']),
     )
 
     def _run_test(self, params, expected):
@@ -405,19 +427,21 @@ class AaTest_set_options_audit_mode(AATest):
         new_options = set_options_audit_mode(rule_obj, options)
         self.assertEqual(new_options, expected)
 
+
 class AaTest_set_options_owner_mode(AATest):
     tests = (
-        ((FileRule.parse('owner /foo/bar r,'),      ['/foo/bar r,', '/foo/* r,', '/** r,']                                  ), ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),
-        ((FileRule.parse('owner /foo/bar r,'),      ['/foo/bar r,', 'owner /foo/* r,', 'owner /** r,']                      ), ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),
-        ((FileRule.parse('/foo/bar r,'),            ['/foo/bar r,', '/foo/* r,', '/** r,']                                  ), ['/foo/bar r,', '/foo/* r,', '/** r,']),
-        ((FileRule.parse('/foo/bar r,'),            ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']                ), ['/foo/bar r,', '/foo/* r,', '/** r,']),
-        ((FileRule.parse('audit owner /foo/bar r,'),['audit /foo/bar r,', 'audit /foo/* r,', '#include <abstractions/base>']), ['audit owner /foo/bar r,', 'audit owner /foo/* r,', '#include <abstractions/base>']),
+        ((FileRule.parse('owner /foo/bar r,'),       ['/foo/bar r,', '/foo/* r,', '/** r,']),                                   ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),
+        ((FileRule.parse('owner /foo/bar r,'),       ['/foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),                       ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),
+        ((FileRule.parse('/foo/bar r,'),             ['/foo/bar r,', '/foo/* r,', '/** r,']),                                   ['/foo/bar r,', '/foo/* r,', '/** r,']),
+        ((FileRule.parse('/foo/bar r,'),             ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),                 ['/foo/bar r,', '/foo/* r,', '/** r,']),
+        ((FileRule.parse('audit owner /foo/bar r,'), ['audit /foo/bar r,', 'audit /foo/* r,', '#include <abstractions/base>']), ['audit owner /foo/bar r,', 'audit owner /foo/* r,', '#include <abstractions/base>']),
     )
 
     def _run_test(self, params, expected):
         rule_obj, options = params
         new_options = set_options_owner_mode(rule_obj, options)
         self.assertEqual(new_options, expected)
+
 
 class AaTest_is_skippable_file(AATest):
     def test_not_skippable_01(self):
@@ -466,6 +490,7 @@ class AaTest_is_skippable_file(AATest):
         self.assertTrue(is_skippable_file('/etc/apparmor.d/'))  # directory without filename
     def test_skippable_16(self):
         self.assertTrue(is_skippable_file('README'))
+
 
 class AaTest_parse_profile_data(AATest):
     def test_parse_empty_profile_01(self):
@@ -525,20 +550,21 @@ class AaTest_parse_profile_data(AATest):
             d = '/foo flags=(complain) xattrs=(user.bar=bar) {\n}\n'
             parse_profile_data(d.split(), 'somefile', False, False)
 
+
 class AaTest_get_file_perms_1(AATest):
     tests = (
-        ('/usr/share/common-licenses/foo/bar',      {'allow': {'all': set(),            'owner': {'w'}  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/share/common-licenses/**'}  }),
-        ('/dev/null',                               {'allow': {'all': {'r', 'w', 'k'},  'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/dev/null'}                      }),
-        ('/foo/bar',                                {'allow': {'all': {'r', 'w'},       'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/foo/bar'}                       }),  # exec perms not included
-        ('/no/thing',                               {'allow': {'all': set(),            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': set()                              }),
-        ('/usr/lib/ispell/',                        {'allow': {'all': set(),            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': set()                              }),
-        ('/usr/lib/aspell/*.so',                    {'allow': {'all': set(),            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': set()                              }),
+        ('/usr/share/common-licenses/foo/bar', {'allow': {'all': set(),           'owner': {'w'}}, 'deny': {'all': set(), 'owner': set()}, 'paths': {'/usr/share/common-licenses/**'}}),
+        ('/dev/null',                          {'allow': {'all': {'r', 'w', 'k'}, 'owner': set()}, 'deny': {'all': set(), 'owner': set()}, 'paths': {'/dev/null'}}),
+        ('/foo/bar',                           {'allow': {'all': {'r', 'w'},      'owner': set()}, 'deny': {'all': set(), 'owner': set()}, 'paths': {'/foo/bar'}}),  # exec perms not included
+        ('/no/thing',                          {'allow': {'all': set(),           'owner': set()}, 'deny': {'all': set(), 'owner': set()}, 'paths': set()}),
+        ('/usr/lib/ispell/',                   {'allow': {'all': set(),           'owner': set()}, 'deny': {'all': set(), 'owner': set()}, 'paths': set()}),
+        ('/usr/lib/aspell/*.so',               {'allow': {'all': set(),           'owner': set()}, 'deny': {'all': set(), 'owner': set()}, 'paths': set()}),
     )
 
     def _run_test(self, params, expected):
         self.createTmpdir()
 
-        #copy the local profiles to the test directory
+        # copy the local profiles to the test directory
         self.profile_dir = '%s/profiles' % self.tmpdir
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
@@ -552,21 +578,22 @@ class AaTest_get_file_perms_1(AATest):
         perms = get_file_perms(profile, params, False, False)  # only testing with audit and deny = False
         self.assertEqual(perms, expected)
 
+
 class AaTest_get_file_perms_2(AATest):
     tests = (
-        ('/usr/share/common-licenses/foo/bar',      {'allow': {'all': {'r'},            'owner': {'w'}  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/share/common-licenses/**'}              }),
-        ('/usr/share/common-licenses/what/ever',    {'allow': {'all': {'r'},            'owner': {'w'}  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/share/common-licenses/**', '/usr/share/common-licenses/what/ever'}      }),
-        ('/dev/null',                               {'allow': {'all': {'r', 'w', 'k'},  'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/dev/null'}                                  }),
-        ('/foo/bar',                                {'allow': {'all': {'r', 'w'},       'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/foo/bar'}                                   }),  # exec perms not included
-        ('/no/thing',                               {'allow': {'all': set(),            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': set()                                          }),
-        ('/usr/lib/ispell/',                        {'allow': {'all': {'r'},            'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/lib/ispell/', '/{usr/,}lib{,32,64}/**'}    }),  # from abstractions/enchant
-        ('/usr/lib/aspell/*.so',                    {'allow': {'all': {'m', 'r'},       'owner': set()  }, 'deny': {'all':set(),    'owner': set()},    'paths': {'/usr/lib/aspell/*', '/usr/lib/aspell/*.so', '/{usr/,}lib{,32,64}/**', '/{usr/,}lib{,32,64}/**.so*'} }),  # from abstractions/aspell via abstractions/enchant and from abstractions/base
+        ('/usr/share/common-licenses/foo/bar',   {'allow': {'all': {'r'},           'owner': {'w'}}, 'deny': {'all': set(), 'owner': set()}, 'paths': {'/usr/share/common-licenses/**'}}),
+        ('/usr/share/common-licenses/what/ever', {'allow': {'all': {'r'},           'owner': {'w'}}, 'deny': {'all': set(), 'owner': set()}, 'paths': {'/usr/share/common-licenses/**', '/usr/share/common-licenses/what/ever'}}),
+        ('/dev/null',                            {'allow': {'all': {'r', 'w', 'k'}, 'owner': set()}, 'deny': {'all': set(), 'owner': set()}, 'paths': {'/dev/null'}}),
+        ('/foo/bar',                             {'allow': {'all': {'r', 'w'},      'owner': set()}, 'deny': {'all': set(), 'owner': set()}, 'paths': {'/foo/bar'}}),  # exec perms not included
+        ('/no/thing',                            {'allow': {'all': set(),           'owner': set()}, 'deny': {'all': set(), 'owner': set()}, 'paths': set()}),
+        ('/usr/lib/ispell/',                     {'allow': {'all': {'r'},           'owner': set()}, 'deny': {'all': set(), 'owner': set()}, 'paths': {'/usr/lib/ispell/', '/{usr/,}lib{,32,64}/**'}}),  # from abstractions/enchant
+        ('/usr/lib/aspell/*.so',                 {'allow': {'all': {'m', 'r'},      'owner': set()}, 'deny': {'all': set(), 'owner': set()}, 'paths': {'/usr/lib/aspell/*', '/usr/lib/aspell/*.so', '/{usr/,}lib{,32,64}/**', '/{usr/,}lib{,32,64}/**.so*'}}),  # from abstractions/aspell via abstractions/enchant and from abstractions/base
     )
 
     def _run_test(self, params, expected):
         self.createTmpdir()
 
-        #copy the local profiles to the test directory
+        # copy the local profiles to the test directory
         self.profile_dir = '%s/profiles' % self.tmpdir
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
@@ -590,21 +617,22 @@ class AaTest_get_file_perms_2(AATest):
         perms = get_file_perms(profile, params, False, False)  # only testing with audit and deny = False
         self.assertEqual(perms, expected)
 
+
 class AaTest_propose_file_rules(AATest):
     tests = (
-        # log event path                   and perms    expected proposals
-        (('/usr/share/common-licenses/foo/bar', 'w'),   ['/usr/share/common*/foo/* rw,', '/usr/share/common-licenses/** rw,', '/usr/share/common-licenses/foo/bar rw,']         ),
-        (('/dev/null',                          'wk'),  ['/dev/null rwk,']                                                                                                      ),
-        (('/foo/bar',                           'rw'),  ['/foo/bar rw,']                                                                                                        ),
-        (('/usr/lib/ispell/',                   'w'),   ['/{usr/,}lib{,32,64}/** rw,', '/usr/lib/ispell/ rw,']                                                                     ),
-        (('/usr/lib/aspell/some.so',            'k'),   ['/usr/lib/aspell/* mrk,', '/usr/lib/aspell/*.so mrk,', '/{usr/,}lib{,32,64}/** mrk,', '/{usr/,}lib{,32,64}/**.so* mrk,', '/usr/lib/aspell/some.so mrk,']     ),
-        (('/foo/log',                           'w'),   ['/foo/log w,']                                                                                                            ),
+        # log event path                   and perms   expected proposals
+        (('/usr/share/common-licenses/foo/bar', 'w'),  ['/usr/share/common*/foo/* rw,', '/usr/share/common-licenses/** rw,', '/usr/share/common-licenses/foo/bar rw,']),
+        (('/dev/null',                          'wk'), ['/dev/null rwk,']),
+        (('/foo/bar',                           'rw'), ['/foo/bar rw,']),
+        (('/usr/lib/ispell/',                   'w'),  ['/{usr/,}lib{,32,64}/** rw,', '/usr/lib/ispell/ rw,']),
+        (('/usr/lib/aspell/some.so',            'k'),  ['/usr/lib/aspell/* mrk,', '/usr/lib/aspell/*.so mrk,', '/{usr/,}lib{,32,64}/** mrk,', '/{usr/,}lib{,32,64}/**.so* mrk,', '/usr/lib/aspell/some.so mrk,']),
+        (('/foo/log',                           'w'),  ['/foo/log w,']),
     )
 
     def _run_test(self, params, expected):
         self.createTmpdir()
 
-        #copy the local profiles to the test directory
+        # copy the local profiles to the test directory
         self.profile_dir = '%s/profiles' % self.tmpdir
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
@@ -624,7 +652,6 @@ class AaTest_propose_file_rules(AATest):
         profile['inc_ie'].add(IncludeRule.parse('include <abstractions/bash>'))
         profile['inc_ie'].add(IncludeRule.parse('include <abstractions/enchant>'))
 
-
         profile['file'].add(FileRule.parse('owner /usr/share/common-licenses/**  w,'))
         profile['file'].add(FileRule.parse('/dev/null rwk,'))
         profile['file'].add(FileRule.parse('/foo/bar rwix,'))
@@ -637,17 +664,17 @@ class AaTest_propose_file_rules(AATest):
 
 class AaTest_propose_file_rules_with_absolute_includes(AATest):
     tests = (
-        # log event path       and perms    expected proposals
-        (('/not/found/anywhere',    'r'),   ['/not/found/anywhere r,']),
-        (('/dev/null',              'w'),   ['/dev/null rw,']),
-        (('/some/random/include',   'r'),   ['/some/random/include rw,']),
-        (('/some/other/include',    'w'),   ['/some/other/* rw,', '/some/other/inc* rw,', '/some/other/include rw,']),
+        # log event path       and perms  expected proposals
+        (('/not/found/anywhere',    'r'), ['/not/found/anywhere r,']),
+        (('/dev/null',              'w'), ['/dev/null rw,']),
+        (('/some/random/include',   'r'), ['/some/random/include rw,']),
+        (('/some/other/include',    'w'), ['/some/other/* rw,', '/some/other/inc* rw,', '/some/other/include rw,']),
     )
 
     def _run_test(self, params, expected):
         self.createTmpdir()
 
-        #copy the local profiles to the test directory
+        # copy the local profiles to the test directory
         self.profile_dir = '%s/profiles' % self.tmpdir
         shutil.copytree('../../profiles/apparmor.d/', self.profile_dir, symlinks=True)
 
@@ -677,19 +704,20 @@ class AaTest_propose_file_rules_with_absolute_includes(AATest):
 
 class AaTest_nonexistent_includes(AATest):
     tests = (
-        ("/nonexistent/absolute/path",      AppArmorException),
-        ("nonexistent/relative/path",       AppArmorBug),       # load_include() only accepts absolute paths
+        ("/nonexistent/absolute/path", AppArmorException),
+        ("nonexistent/relative/path",  AppArmorBug),  # load_include() only accepts absolute paths
     )
 
     def _run_test(self, params, expected):
         with self.assertRaises(expected):
             apparmor.aa.load_include(params)
 
+
 class AaTest_merged_to_split(AATest):
     tests = (
-        ("foo",                             ("foo", "foo")),
-        ("foo//bar",                        ("foo", "bar")),
-        ("foo//bar//baz",                   ("foo", "bar")),  # XXX known limitation
+        ("foo",           ("foo", "foo")),
+        ("foo//bar",      ("foo", "bar")),
+        ("foo//bar//baz", ("foo", "bar")),  # XXX known limitation
     )
 
     def _run_test(self, params, expected):
@@ -703,10 +731,11 @@ class AaTest_merged_to_split(AATest):
         self.assertEqual(list(result[profile].keys()), [hat])
         self.assertTrue(result[profile][hat])
 
+
 class AaTest_split_to_merged(AATest):
     tests = (
-        (("foo", "foo"),                    "foo"),
-        (("foo", "bar"),                    "foo//bar"),
+        (("foo", "foo"), "foo"),
+        (("foo", "bar"), "foo//bar"),
     )
 
     def _run_test(self, params, expected):
@@ -720,6 +749,7 @@ class AaTest_split_to_merged(AATest):
 
         self.assertEqual(list(result.keys()), [expected])
         self.assertTrue(result[expected])
+
 
 setup_aa(apparmor.aa)
 setup_all_loops(__name__)

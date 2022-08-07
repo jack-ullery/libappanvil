@@ -116,6 +116,7 @@ class BooleanRule(BaseRule):
             _('Boolean Variable'), self.get_clean(),
         ]
 
+
 class BooleanRuleset(BaseRuleset):
     '''Class to handle and store a collection of variable rules'''
 
@@ -127,6 +128,7 @@ class BooleanRuleset(BaseRuleset):
 
         for knownrule in self.rules:
             if rule.varname == knownrule.varname:
-                raise AppArmorException(_('Redefining existing variable %(variable)s: %(value)s') % { 'variable': rule.varname, 'value': rule.value })
+                raise AppArmorException(_('Redefining existing variable %(variable)s: %(value)s')
+                                        % {'variable': rule.varname, 'value': rule.value})
 
         super().add(rule, cleanup)

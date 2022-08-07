@@ -20,6 +20,7 @@ from common_test import AATest, setup_all_loops
 import apparmor.severity as severity
 from apparmor.common import AppArmorException
 
+
 class SeverityBaseTest(AATest):
 
     def AASetup(self):
@@ -35,30 +36,32 @@ class SeverityBaseTest(AATest):
         self.assertEqual(rank, expected_rank,
                          'expected rank %s, got %s' % (expected_rank, rank))
 
+
 class SeverityTest(SeverityBaseTest):
     tests = (
-        (('/usr/bin/whatis',          'x'  ), 5),
-        (('/etc',                     'x'  ), 'unknown'),
-        (('/dev/doublehit',           'x'  ), 0),
-        (('/dev/doublehit',           'rx' ), 4),
+        (('/usr/bin/whatis',          'x'),   5),
+        (('/etc',                     'x'),   'unknown'),
+        (('/dev/doublehit',           'x'),   0),
+        (('/dev/doublehit',           'rx'),  4),
         (('/dev/doublehit',           'rwx'), 8),
         (('/dev/tty10',               'rwx'), 9),
-        (('/var/adm/foo/**',          'rx' ), 3),
-        (('/etc/apparmor/**',         'r'  ), 6),
-        (('/etc/**',                  'r'  ), 'unknown'),
-        (('/usr/foo@bar',             'r'  ), 'unknown'),  ## filename containing @
-        (('/home/foo@bar',            'rw' ), 6),  ## filename containing @
-        (('/etc/apache2/ssl.key/bar', 'r'  ), 7),  # /etc/apache2/** (3) vs. /etc/apache2/**ssl** (7)
-        (('/etc/apache2/foo/ssl/bar', 'r'  ), 7),  # additional path level triggers otherwise untested branch
+        (('/var/adm/foo/**',          'rx'),  3),
+        (('/etc/apparmor/**',         'r'),   6),
+        (('/etc/**',                  'r'),   'unknown'),
+        (('/usr/foo@bar',             'r'),   'unknown'),  # filename containing @
+        (('/home/foo@bar',            'rw'),  6),  # filename containing @
+        (('/etc/apache2/ssl.key/bar', 'r'),   7),  # /etc/apache2/** (3) vs. /etc/apache2/**ssl** (7)
+        (('/etc/apache2/foo/ssl/bar', 'r'),   7),  # additional path level triggers otherwise untested branch
         (('/proc/sys/kernel/hotplug', 'rwx'), 10),  # non-glob filename, severity depends on mode
     )
 
     def _run_test(self, params, expected):
-        self._simple_severity_w_perm(params[0], params[1], expected)  ## filename containing @
+        self._simple_severity_w_perm(params[0], params[1], expected)  # filename containing @
 
     def test_invalid_rank(self):
         with self.assertRaises(AppArmorException):
             self._simple_severity_w_perm('unexpected_unput', 'rw', 6)
+
 
 class SeverityTestCap(SeverityBaseTest):
     tests = (
@@ -79,27 +82,28 @@ class SeverityTestCap(SeverityBaseTest):
 
 class SeverityVarsTest(SeverityBaseTest):
     tests = (
-        (('@{PROC}/sys/vm/overcommit_memory',           'r'),    6),
-        (('@{HOME}/sys/@{PROC}/overcommit_memory',      'r'),    4),
-        (('/overco@{multiarch}mmit_memory',             'r'),    'unknown'),
-        (('@{PROC}/sys/@{TFTP_DIR}/overcommit_memory',  'r'),    6),
-        (('@{somepaths}/somefile',                      'r'),    7),
-        (('@{strangevar}/somefile',                     'r'),    6),
+        (('@{PROC}/sys/vm/overcommit_memory',          'r'), 6),
+        (('@{HOME}/sys/@{PROC}/overcommit_memory',     'r'), 4),
+        (('/overco@{multiarch}mmit_memory',            'r'), 'unknown'),
+        (('@{PROC}/sys/@{TFTP_DIR}/overcommit_memory', 'r'), 6),
+        (('@{somepaths}/somefile',                     'r'), 7),
+        (('@{strangevar}/somefile',                    'r'), 6),
     )
 
     def _run_test(self, params, expected):
         vars = {
-                            # Note: using [] instead of {} is intentional to keep order of checking (and therefore code coverage) constant
-            '@{HOME}':      ['@{HOMEDIRS}/*/', '/root/'],
-            '@{HOMEDIRS}':  ['/home/', '/storage/'],
-            '@{multiarch}': ['*-linux-gnu*'],
-            '@{TFTP_DIR}':  ['/var/tftp /srv/tftpboot'],
-            '@{PROC}':      ['/proc/'],
-            '@{somepaths}': ['/home/foo/downloads', '@{HOMEDIRS}/foo/.ssh/'],
+            # Note: using [] instead of {} is intentional to keep order of checking (and therefore code coverage) constant
+            '@{HOME}':       ['@{HOMEDIRS}/*/', '/root/'],
+            '@{HOMEDIRS}':   ['/home/', '/storage/'],
+            '@{multiarch}':  ['*-linux-gnu*'],
+            '@{TFTP_DIR}':   ['/var/tftp /srv/tftpboot'],
+            '@{PROC}':       ['/proc/'],
+            '@{somepaths}':  ['/home/foo/downloads', '@{HOMEDIRS}/foo/.ssh/'],
             '@{strangevar}': ['/srv/', '/proc/'],
         }
         self.sev_db.set_variables(vars)
         self._simple_severity_w_perm(params[0], params[1], expected)
+
 
 class SeverityDBTest(AATest):
     def _test_db(self, contents):
@@ -108,17 +112,17 @@ class SeverityDBTest(AATest):
         return self.sev_db
 
     tests = (
-        ("CAP_LEASE 18\n"               , AppArmorException),  # out of range
-        ("CAP_LEASE -1\n"               , AppArmorException),  # out of range
-        ("/etc/passwd* 0 4\n"           , AppArmorException),  # insufficient vals
-        ("/etc/passwd* 0 4 5 6\n"       , AppArmorException),  # too many vals
-        ("/etc/passwd* -2 4 6\n"        , AppArmorException),  # out of range
-        ("/etc/passwd* 12 4 6\n"        , AppArmorException),  # out of range
-        ("/etc/passwd* 2 -4 6\n"        , AppArmorException),  # out of range
-        ("/etc/passwd 2 14 6\n"         , AppArmorException),  # out of range
-        ("/etc/passwd 2 4 -12\n"        , AppArmorException),  # out of range
-        ("/etc/passwd 2 4 4294967297\n" , AppArmorException),  # out of range
-        ("garbage line\n"               , AppArmorException),
+        ("CAP_LEASE 18\n",               AppArmorException),  # out of range
+        ("CAP_LEASE -1\n",               AppArmorException),  # out of range
+        ("/etc/passwd* 0 4\n",           AppArmorException),  # insufficient vals
+        ("/etc/passwd* 0 4 5 6\n",       AppArmorException),  # too many vals
+        ("/etc/passwd* -2 4 6\n",        AppArmorException),  # out of range
+        ("/etc/passwd* 12 4 6\n",        AppArmorException),  # out of range
+        ("/etc/passwd* 2 -4 6\n",        AppArmorException),  # out of range
+        ("/etc/passwd 2 14 6\n",         AppArmorException),  # out of range
+        ("/etc/passwd 2 4 -12\n",        AppArmorException),  # out of range
+        ("/etc/passwd 2 4 4294967297\n", AppArmorException),  # out of range
+        ("garbage line\n",               AppArmorException),
     )
 
     def _run_test(self, params, expected):
@@ -146,6 +150,7 @@ class SeverityDBTest(AATest):
     def test_no_arg_to_severity(self):
         with self.assertRaises(AppArmorException):
             severity.Severity()
+
 
 setup_all_loops(__name__)
 if __name__ == '__main__':

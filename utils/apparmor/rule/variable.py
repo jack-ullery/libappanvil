@@ -81,7 +81,7 @@ class VariableRule(BaseRule):
         values = separate_vars(matches.group('values'))
 
         return VariableRule(varname, mode, values,
-                           audit=False, deny=False, allow_keyword=False, comment=comment)
+                            audit=False, deny=False, allow_keyword=False, comment=comment)
 
     def get_clean(self, depth=0):
         '''return rule (in clean/default formatting)'''
@@ -135,6 +135,7 @@ class VariableRule(BaseRule):
             _('Variable'), self.get_clean(),
         ]
 
+
 class VariableRuleset(BaseRuleset):
     '''Class to handle and store a collection of variable rules'''
 
@@ -147,7 +148,9 @@ class VariableRuleset(BaseRuleset):
         if rule.mode == '=':
             for knownrule in self.rules:
                 if rule.varname == knownrule.varname:
-                    raise AppArmorException(_('Redefining existing variable %(variable)s: %(value)s') % { 'variable': rule.varname, 'value': rule.values })
+                    raise AppArmorException(
+                        _('Redefining existing variable %(variable)s: %(value)s')
+                        % {'variable': rule.varname, 'value': rule.values})
 
         super().add(rule, cleanup)
 
@@ -170,6 +173,7 @@ class VariableRuleset(BaseRuleset):
                     var_add[rule.varname] |= rule.values
 
         return {'=': var_set, '+=': var_add}
+
 
 def separate_vars(vs):
     """Returns a list of all the values for a variable"""

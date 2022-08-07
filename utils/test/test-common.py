@@ -15,25 +15,27 @@ from apparmor.common import AppArmorBug
 
 from apparmor.common import split_name, combine_profname
 
+
 class AaTest_split_name(AATest):
     tests = (
-        # full profile name                 expected parts
-        ('foo',                             ('foo',             'foo')),
-        ('foo//bar',                        ('foo',             'bar')),
-        ('foo//bar//baz',                   ('foo',             'bar')),  # XXX nested child profiles get cut off
+        # full profile name  expected parts
+        ('foo',              ('foo', 'foo')),
+        ('foo//bar',         ('foo', 'bar')),
+        ('foo//bar//baz',    ('foo', 'bar')),  # XXX nested child profiles get cut off
     )
 
     def _run_test(self, params, expected):
         self.assertEqual(split_name(params), expected)
 
+
 class AaTest_combine_profname(AATest):
     tests = (
-        # name parts                        expected full profile name
-        (['foo'],                           'foo'),
-        (['foo', 'bar'],                    'foo//bar'),
-        (['foo', 'bar', 'baz'],             'foo//bar//baz'),
-        (['foo', 'bar', None],              'foo//bar'),
-        (['foo', 'bar', 'baz', None],       'foo//bar//baz'),
+        # name parts                  expected full profile name
+        (['foo'],                     'foo'),
+        (['foo', 'bar'],              'foo//bar'),
+        (['foo', 'bar', 'baz'],       'foo//bar//baz'),
+        (['foo', 'bar', None],        'foo//bar'),
+        (['foo', 'bar', 'baz', None], 'foo//bar//baz'),
     )
 
     def _run_test(self, params, expected):

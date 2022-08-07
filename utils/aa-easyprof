@@ -54,8 +54,8 @@ if __name__ == "__main__":
                                                       os.strerror(e.errno),
                                                       e.errno))
         profiles = apparmor.easyprof.parse_manifest(manifest, opt)
-    else: # fake up a tuple list when processing command line args
-        profiles.append( (binary, opt) )
+    else:  # fake up a tuple list when processing command line args
+        profiles.append((binary, opt))
 
     count = 0
     for (binary, options) in profiles:

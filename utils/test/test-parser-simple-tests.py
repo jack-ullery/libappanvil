@@ -406,6 +406,7 @@ syntax_failure = (
     'bare_include_tests/ok_2.sd',  # two #include<...> in one line
 )
 
+
 class TestParseParserTests(AATest):
     tests = []  # filled by parse_test_profiles()
 
@@ -433,6 +434,7 @@ class TestParseParserTests(AATest):
             with self.assertRaises(AppArmorException):
                 apparmor.parse_profile_data(data, params['file'], 0, True)
                 apparmor.active_profiles.get_all_merged_variables(params['file'], apparmor.include_list_recursive(apparmor.active_profiles.files[params['file']]))
+
 
 def parse_test_profiles(file_with_path):
     '''parse the test-related headers of a profile (for example EXRESULT) and add the profile to the set of tests'''

@@ -20,6 +20,7 @@ from apparmor.rule.include import IncludeRule, IncludeRuleset
 from apparmor.translations import init_translation
 _ = init_translation()
 
+
 # abi and include rules have a very similar syntax
 # base AbiRule on IncludeRule to inherit most of its behaviour
 class AbiRule(IncludeRule):
@@ -48,14 +49,12 @@ class AbiRule(IncludeRule):
         space = '  ' * depth
 
         if self.ismagic:
-            return('%s%s <%s>,%s' % (space, self.rule_name, self.path, self.comment))
+            return ('%s%s <%s>,%s' % (space, self.rule_name, self.path, self.comment))
         else:
-            return('%s%s "%s",%s' % (space, self.rule_name, self.path, self.comment))
+            return ('%s%s "%s",%s' % (space, self.rule_name, self.path, self.comment))
 
     def logprof_header_localvars(self):
-        return [
-            _('Abi'), self.get_clean(),
-        ]
+        return [_('Abi'), self.get_clean()]
 
 
 class AbiRuleset(IncludeRuleset):

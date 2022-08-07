@@ -34,4 +34,3 @@ args = parser.parse_args()
 tool = apparmor.tools.aa_tools('disable', args)
 
 tool.cmd_disable()
-

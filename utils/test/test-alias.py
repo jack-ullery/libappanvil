@@ -27,6 +27,7 @@ exp = namedtuple('exp', ('comment', 'orig_path', 'target'))
 
 # --- tests for single AliasRule --- #
 
+
 class AliasTest(AATest):
     def _compare_obj(self, obj, expected):
         # aliases don't support the allow, audit or deny keyword
@@ -38,12 +39,13 @@ class AliasTest(AATest):
         self.assertEqual(expected.target, obj.target)
         self.assertEqual(expected.comment, obj.comment)
 
+
 class AliasTestParse(AliasTest):
     tests = (
-        # rawrule                                            comment        orig_path       target
-        ('alias /foo -> /bar,',                         exp('',             '/foo',         '/bar'      )),
-        ('  alias   /foo    ->    /bar ,  # comment',   exp(' # comment',   '/foo',         '/bar'      )),
-        ('alias "/foo 2" -> "/bar 2"  ,',               exp('',             '/foo 2',       '/bar 2'    )),
+        # rawrule                                         comment       orig_path  target
+        ('alias /foo -> /bar,',                       exp('',           '/foo',    '/bar')),
+        ('  alias   /foo    ->    /bar ,  # comment', exp(' # comment', '/foo',    '/bar')),
+        ('alias "/foo 2" -> "/bar 2"  ,',             exp('',           '/foo 2',  '/bar 2')),
     )
 
     def _run_test(self, rawrule, expected):
@@ -52,14 +54,15 @@ class AliasTestParse(AliasTest):
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
 
+
 class AliasTestParseInvalid(AliasTest):
     tests = (
-        # rawrule                                   matches regex   exception
-        ('alias  ,'                               , (False,         AppArmorException)),
-        ('alias   /foo  ,'                        , (False,         AppArmorException)),
-        ('alias   /foo   ->   ,'                  , (True,          AppArmorException)),
-        ('alias   ->   /bar  ,'                   , (True,          AppArmorException)),
-        ('/foo  ->   bar ,'                       , (False,         AppArmorException)),
+        # rawrule                 matches regex  exception
+        ('alias  ,',              (False,        AppArmorException)),
+        ('alias   /foo  ,',       (False,        AppArmorException)),
+        ('alias   /foo   ->   ,', (True,         AppArmorException)),
+        ('alias   ->   /bar  ,',  (True,         AppArmorException)),
+        ('/foo  ->   bar ,',      (False,        AppArmorException)),
     )
 
     def _run_test(self, rawrule, expected):
@@ -67,11 +70,12 @@ class AliasTestParseInvalid(AliasTest):
         with self.assertRaises(expected[1]):
             AliasRule.parse(rawrule)
 
+
 class AliasFromInit(AliasTest):
     tests = (
-        # AliasRule object                                  comment     orig_path   target
-        (AliasRule('/foo',  '/bar'),                    exp('',         '/foo',     '/bar'  )),
-        (AliasRule('/foo',  '/bar', comment='# cmt'),   exp('# cmt',    '/foo',     '/bar'  )),
+        # AliasRule object                                comment  orig_path  target
+        (AliasRule('/foo',  '/bar'),                  exp('',      '/foo',    '/bar')),
+        (AliasRule('/foo',  '/bar', comment='# cmt'), exp('# cmt', '/foo',    '/bar')),
     )
 
     def _run_test(self, obj, expected):
@@ -80,14 +84,14 @@ class AliasFromInit(AliasTest):
 
 class InvalidAliasInit(AATest):
     tests = (
-        # init params                           expected exception
-        ((None,         '/bar'          ),      AppArmorBug),  # orig_path not a str
-        (('',           '/bar'          ),      AppArmorException),  # empty orig_path
-        (('foo',        '/bar'          ),      AppArmorException),  # orig_path not starting with /
+        # init params      expected exception
+        ((None,   '/bar'), AppArmorBug),        # orig_path not a str
+        (('',     '/bar'), AppArmorException),  # empty orig_path
+        (('foo',  '/bar'), AppArmorException),  # orig_path not starting with /
 
-        (('/foo',       None            ),      AppArmorBug),  # target not a str
-        (('/foo',       ''              ),      AppArmorException),  # empty target
-        (('/foo',       'bar'           ),      AppArmorException),  # target not starting with /
+        (('/foo', None),   AppArmorBug),        # target not a str
+        (('/foo', ''),     AppArmorException),  # empty target
+        (('/foo', 'bar'),  AppArmorException),  # target not starting with /
     )
 
     def _run_test(self, params, expected):
@@ -132,11 +136,11 @@ class InvalidAliasTest(AATest):
 
 class WriteAliasTestAATest(AATest):
     tests = (
-        #  raw rule                                                     clean rule
-        ('  alias  /foo  ->  /bar,  ',                                  'alias /foo -> /bar,'),
-        ('  alias  /foo  ->  /bar,  # comment',                         'alias /foo -> /bar,'),
-        ('  alias  "/foo"  ->  "/bar",  ',                              'alias /foo -> /bar,'),
-        ('  alias  "/foo 2"  ->  "/bar 2",  ',                          'alias "/foo 2" -> "/bar 2",'),
+        #  raw rule                             clean rule
+        ('  alias  /foo  ->  /bar,  ',          'alias /foo -> /bar,'),
+        ('  alias  /foo  ->  /bar,  # comment', 'alias /foo -> /bar,'),
+        ('  alias  "/foo"  ->  "/bar",  ',      'alias /foo -> /bar,'),
+        ('  alias  "/foo 2"  ->  "/bar 2",  ',  'alias "/foo 2" -> "/bar 2",'),
     )
 
     def _run_test(self, rawrule, expected):
@@ -178,37 +182,39 @@ class AliasCoveredTest(AATest):
         self.assertEqual(obj.is_covered(check_obj), expected[2], 'Mismatch in is_covered, expected %s' % expected[2])
         self.assertEqual(obj.is_covered(check_obj, True, True), expected[3], 'Mismatch in is_covered/exact, expected %s' % expected[3])
 
+
 class AliasCoveredTest_01(AliasCoveredTest):
     rule = 'alias /foo -> /bar,'
 
     tests = (
-        #   rule                                            equal     strict equal    covered     covered exact
-        ('           alias /foo -> /bar,'               , ( True    , True          , True      , True      )),
-        ('           alias   /foo   ->    /bar  ,  '    , ( True    , False         , True      , True      )),
-        ('           alias /foo -> /bar,   # comment'   , ( True    , False         , True      , True      )),
-        ('           alias /foo ->  /bar,  # comment'   , ( True    , False         , True      , True      )),
-        ('           alias /foo -> /asdf,'              , ( False   , False         , False     , False     )),
-        ('           alias /whatever -> /bar,'          , ( False   , False         , False     , False     )),
-        ('           alias /whatever -> /asdf,'         , ( False   , False         , False     , False     )),
+        #   rule                                        equal  strict equal  covered  covered exact
+        ('           alias /foo -> /bar,',             (True,  True,         True,    True)),
+        ('           alias   /foo   ->    /bar  ,  ',  (True,  False,        True,    True)),
+        ('           alias /foo -> /bar,   # comment', (True,  False,        True,    True)),
+        ('           alias /foo ->  /bar,  # comment', (True,  False,        True,    True)),
+        ('           alias /foo -> /asdf,',            (False, False,        False,   False)),
+        ('           alias /whatever -> /bar,',        (False, False,        False,   False)),
+        ('           alias /whatever -> /asdf,',       (False, False,        False,   False)),
     )
 
+
 class AliasCoveredTest_Invalid(AATest):
-#   def test_borked_obj_is_covered_1(self):
-#       obj = AliasRule.parse('alias /foo -> /bar,')
-
-#       testobj = AliasRule('/foo', '/bar')
-
-#       with self.assertRaises(AppArmorBug):
-#           obj.is_covered(testobj)
-
-#   def test_borked_obj_is_covered_2(self):
-#       obj = AliasRule.parse('alias /foo -> /bar,')
-
-#       testobj = AliasRule('/foo', '/bar')
-#       testobj.target = ''
-
-#       with self.assertRaises(AppArmorBug):
-#           obj.is_covered(testobj)
+    # def test_borked_obj_is_covered_1(self):
+    #     obj = AliasRule.parse('alias /foo -> /bar,')
+    #
+    #     testobj = AliasRule('/foo', '/bar')
+    #
+    #     with self.assertRaises(AppArmorBug):
+    #         obj.is_covered(testobj)
+    #
+    # def test_borked_obj_is_covered_2(self):
+    #     obj = AliasRule.parse('alias /foo -> /bar,')
+    #
+    #     testobj = AliasRule('/foo', '/bar')
+    #     testobj.target = ''
+    #
+    #     with self.assertRaises(AppArmorBug):
+    #         obj.is_covered(testobj)
 
     def test_invalid_is_covered_3(self):
         obj = AliasRule.parse('alias /foo -> /bar,')
@@ -226,14 +232,16 @@ class AliasCoveredTest_Invalid(AATest):
         with self.assertRaises(AppArmorBug):
             obj.is_equal(testobj)
 
+
 class AliasLogprofHeaderTest(AATest):
     tests = (
-        ('alias /foo -> /bar,',                         [_('Alias'), '/foo -> /bar'     ]),
+        ('alias /foo -> /bar,', [_('Alias'), '/foo -> /bar']),
     )
 
     def _run_test(self, params, expected):
         obj = AliasRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
+
 
 # --- tests for AliasRuleset --- #
 
@@ -286,6 +294,7 @@ class AliasRulesTest(AATest):
         self.assertEqual(expected_clean, ruleset.get_clean())
         self.assertEqual(expected_clean_unsorted, ruleset.get_clean_unsorted())
 
+
 class AliasGlobTestAATest(AATest):
     def setUp(self):
         self.ruleset = AliasRuleset()
@@ -299,8 +308,10 @@ class AliasGlobTestAATest(AATest):
             # get_glob_ext is not available for change_profile rules
             self.ruleset.get_glob_ext('@{foo} = /bar')
 
+
 class AliasDeleteTestAATest(AATest):
     pass
+
 
 setup_all_loops(__name__)
 if __name__ == '__main__':

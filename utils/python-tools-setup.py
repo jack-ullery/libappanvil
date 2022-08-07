@@ -26,6 +26,7 @@ import os
 import shutil
 import sys
 
+
 class Install(_install):
     '''Override setuptools to install the files where we want them.'''
     def run(self):
@@ -61,21 +62,22 @@ shutil.copytree('apparmor', 'staging')
 # Support the --version=... since this will be part of a Makefile
 version = "unknown-version"
 if "--version=" in sys.argv[-1]:
-    version=sys.argv[-1].split('=')[1]
+    version = sys.argv[-1].split('=')[1]
     sys.argv = sys.argv[0:-1]
 
-setup (name='apparmor',
-       version=version,
-       description='Python libraries for AppArmor utilities',
-       long_description='Python libraries for AppArmor utilities',
-       author='AppArmor Developers',
-       author_email='apparmor@lists.ubuntu.com',
-       url='https://gitlab.com/apparmor/apparmor',
-       license='GPL-2',
-       cmdclass={'install': Install},
-       package_dir={'apparmor': 'staging'},
-       packages=['apparmor', 'apparmor.rule'],
-       py_modules=['apparmor.easyprof']
+setup(
+    name='apparmor',
+    version=version,
+    description='Python libraries for AppArmor utilities',
+    long_description='Python libraries for AppArmor utilities',
+    author='AppArmor Developers',
+    author_email='apparmor@lists.ubuntu.com',
+    url='https://gitlab.com/apparmor/apparmor',
+    license='GPL-2',
+    cmdclass={'install': Install},
+    package_dir={'apparmor': 'staging'},
+    packages=['apparmor', 'apparmor.rule'],
+    py_modules=['apparmor.easyprof']
 )
 
 shutil.rmtree('staging')

@@ -31,6 +31,7 @@ def sane_timestamp(timestamp):
 
     return True
 
+
 def get_last_login_timestamp(username, filename='/var/log/wtmp'):
     '''Directly read wtmp and get last login for user as epoch timestamp'''
     timestamp = 0
@@ -48,10 +49,11 @@ def get_last_login_timestamp(username, filename='/var/log/wtmp'):
 
         # detect architecture based on utmp format differences
         wtmp_file.seek(340)  # first possible timestamp position
-        timestamp_x86_64    = struct.unpack("<L", wtmp_file.read(4))[0]
-        timestamp_aarch64   = struct.unpack("<L", wtmp_file.read(4))[0]
-        timestamp_s390x     = struct.unpack(">L", wtmp_file.read(4))[0]
-        debug_logger.debug('WTMP timestamps: x86_64 %s, aarch64 %s, s390x %s' % (timestamp_x86_64, timestamp_aarch64, timestamp_s390x))
+        timestamp_x86_64  = struct.unpack("<L", wtmp_file.read(4))[0]  # noqa: E221
+        timestamp_aarch64 = struct.unpack("<L", wtmp_file.read(4))[0]
+        timestamp_s390x   = struct.unpack(">L", wtmp_file.read(4))[0]  # noqa: E221
+        debug_logger.debug('WTMP timestamps: x86_64 %s, aarch64 %s, s390x %s'
+                           % (timestamp_x86_64, timestamp_aarch64, timestamp_s390x))
 
         if sane_timestamp(timestamp_x86_64):
             endianness = '<'  # little endian
@@ -66,7 +68,9 @@ def get_last_login_timestamp(username, filename='/var/log/wtmp'):
             extra_offset_before = 8
             extra_offset_after = 8
         else:
-            raise AppArmorBug('Your /var/log/wtmp is broken or has an unknown format. Please open a bugreport with /var/log/wtmp and the output of "last" attached!')
+            raise AppArmorBug(
+                'Your /var/log/wtmp is broken or has an unknown format. '
+                'Please open a bugreport with /var/log/wtmp and the output of "last" attached!')
 
         while offset < wtmp_filesize:
             wtmp_file.seek(offset)

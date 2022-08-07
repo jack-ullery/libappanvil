@@ -15,15 +15,17 @@ import unittest
 
 import apparmor.config as config
 
-class Test(unittest.TestCase):
 
+class Test(unittest.TestCase):
 
     def test_IniConfig(self):
         ini_config = config.Config('ini')
         ini_config.CONF_DIR = '.'
         conf = ini_config.read_config('logprof.conf')
         logprof_sections = ['settings', 'qualifiers', 'required_hats', 'defaulthat', 'globs']
-        logprof_sections_options = ['profiledir', 'inactive_profiledir', 'logfiles', 'parser', 'ldd', 'logger', 'default_owner_prompt', 'custom_includes']
+        logprof_sections_options = [
+            'profiledir', 'inactive_profiledir', 'logfiles', 'parser', 'ldd',
+            'logger', 'default_owner_prompt', 'custom_includes']
         logprof_settings_parser = '../../parser/apparmor_parser ../parser/apparmor_parser'
 
         self.assertEqual(conf.sections(), logprof_sections)
@@ -43,8 +45,6 @@ class Test(unittest.TestCase):
         self.assertEqual(conf['']['TEMPLATES_DIR'], easyprof_Templates)
 
 
-
-
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testConfig']
+    # import sys;sys.argv = ['', 'Test.testConfig']
     unittest.main()

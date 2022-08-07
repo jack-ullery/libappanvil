@@ -23,6 +23,7 @@ from apparmor.common import AppArmorException, AppArmorBug, hasher, open_file_re
 from apparmor.translations import init_translation
 _ = init_translation()
 
+
 class ReadLog:
 
     # used to pre-filter log lines so that we hand over only relevant lines to LibAppArmor parsing
@@ -32,7 +33,7 @@ class ReadLog:
         self.filename = filename
         self.profile_dir = profile_dir
         self.active_profiles = active_profiles
-        self.hashlog = { 'PERMITTING': {}, 'REJECTING': {} }  # structure inside {}: {'profilename': init_hashlog(aamode, profilename), 'profilename2': init_hashlog(...), ...}
+        self.hashlog = {'PERMITTING': {}, 'REJECTING': {}}  # structure inside {}: {'profilename': init_hashlog(aamode, profilename), 'profilename2': init_hashlog(...), ...}
         self.debug_logger = DebugLogger('ReadLog')
         self.LOG = None
         self.logmark = ''
@@ -244,7 +245,7 @@ class ReadLog:
             return None
 
         elif e['operation'] == 'signal':
-            self.hashlog[aamode][full_profile]['signal'][e['peer']][e['denied_mask']][e['signal']]= True
+            self.hashlog[aamode][full_profile]['signal'][e['peer']][e['denied_mask']][e['signal']] = True
             return None
 
         elif e['operation'].startswith('dbus_'):
@@ -285,7 +286,7 @@ class ReadLog:
 
                     except AppArmorException as e:
                         ex_msg = ('%(msg)s\n\nThis error was caused by the log line:\n%(logline)s' %
-                                {'msg': e.value, 'logline': line})
+                                  {'msg': e.value, 'logline': line})
                         raise AppArmorBug(ex_msg) from None
 
         self.logmark = ''
@@ -296,43 +297,43 @@ class ReadLog:
     # (used by op_type() which checks some event details to decide)
     OP_TYPE_FILE_OR_NET = {
         # Note: op_type() also uses some startswith() checks which are not listed here!
-       'create',
-       'post_create',
-       'bind',
-       'connect',
-       'listen',
-       'accept',
-       'sendmsg',
-       'recvmsg',
-       'getsockname',
-       'getpeername',
-       'getsockopt',
-       'setsockopt',
-       'socket_create',
-       'sock_shutdown',
-       'open',
-       'truncate',
-       'mkdir',
-       'mknod',
-       'chmod',
-       'chown',
-       'rename_src',
-       'rename_dest',
-       'unlink',
-       'rmdir',
-       'symlink',
-       'symlink_create',
-       'link',
-       'sysctl',
-       'getattr',
-       'setattr',
-       'xattr',
+        'create',
+        'post_create',
+        'bind',
+        'connect',
+        'listen',
+        'accept',
+        'sendmsg',
+        'recvmsg',
+        'getsockname',
+        'getpeername',
+        'getsockopt',
+        'setsockopt',
+        'socket_create',
+        'sock_shutdown',
+        'open',
+        'truncate',
+        'mkdir',
+        'mknod',
+        'chmod',
+        'chown',
+        'rename_src',
+        'rename_dest',
+        'unlink',
+        'rmdir',
+        'symlink',
+        'symlink_create',
+        'link',
+        'sysctl',
+        'getattr',
+        'setattr',
+        'xattr',
     }
 
     def op_type(self, event):
         """Returns the operation type if known, unknown otherwise"""
 
-        if ( event['operation'].startswith('file_') or event['operation'].startswith('inode_') or event['operation'] in self.OP_TYPE_FILE_OR_NET ):
+        if (event['operation'].startswith('file_') or event['operation'].startswith('inode_') or event['operation'] in self.OP_TYPE_FILE_OR_NET):
             # file or network event?
             if event['family'] and event['protocol'] and event['sock_type']:
                 # 'unix' events also use keywords like 'connect', but protocol is 0 and should therefore be filtered out

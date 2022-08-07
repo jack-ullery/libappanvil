@@ -23,17 +23,17 @@ from apparmor.rule import BaseRule, BaseRuleset, parse_comment, quote_if_needed
 from apparmor.translations import init_translation
 _ = init_translation()
 
-rlimit_size     = ['fsize', 'data', 'stack', 'core', 'rss', 'as', 'memlock', 'msgqueue']  # NUMBER ( 'K' | 'M' | 'G' )
-rlimit_number   = ['ofile', 'nofile', 'locks', 'sigpending', 'nproc', 'rtprio']
-rlimit_time     = ['cpu', 'rttime']  # number + time unit (cpu in seconds+, rttime in us+)
-rlimit_nice     = ['nice']  # a number between -20 and 19.
+rlimit_size = ['fsize', 'data', 'stack', 'core', 'rss', 'as', 'memlock', 'msgqueue']  # NUMBER ( 'K' | 'M' | 'G' )
+rlimit_number = ['ofile', 'nofile', 'locks', 'sigpending', 'nproc', 'rtprio']
+rlimit_time = ['cpu', 'rttime']  # number + time unit (cpu in seconds+, rttime in us+)
+rlimit_nice = ['nice']  # a number between -20 and 19.
 
-rlimit_all      = rlimit_size + rlimit_number + rlimit_time + rlimit_nice
+rlimit_all = rlimit_size + rlimit_number + rlimit_time + rlimit_nice
 
-RE_NUMBER_UNIT  = re.compile('^(?P<number>[0-9]+)\s*(?P<unit>[a-zA-Z]*)$')
-RE_NUMBER       = re.compile('^[0-9]+$')
-RE_UNIT_SIZE    = re.compile('^[0-9]+\s*([KMG]B?)?$')
-RE_NICE         = re.compile('^(-20|-[01]?[0-9]|[01]?[0-9])$')
+RE_NUMBER_UNIT = re.compile('^(?P<number>[0-9]+)\s*(?P<unit>[a-zA-Z]*)$')
+RE_NUMBER = re.compile('^[0-9]+$')
+RE_UNIT_SIZE = re.compile('^[0-9]+\s*([KMG]B?)?$')
+RE_NICE = re.compile('^(-20|-[01]?[0-9]|[01]?[0-9])$')
 
 
 class RlimitRule(BaseRule):
@@ -150,7 +150,7 @@ class RlimitRule(BaseRule):
         else:
             raise AppArmorBug('Empty value in rlimit rule')
 
-        return('%s%sset rlimit%s%s,%s' % (space, self.modifiers_str(), rlimit, value, self.comment))
+        return ('%s%sset rlimit%s%s,%s' % (space, self.modifiers_str(), rlimit, value, self.comment))
 
     def size_to_int(self, value):
         number, unit = split_unit(value)
@@ -182,13 +182,13 @@ class RlimitRule(BaseRule):
             number = number / 1000.0
             if default_unit == 'seconds':
                 raise AppArmorException(_('Invalid unit in rlimit cpu %s rule') % value)
-        elif unit in ('s', 'sec', 'second', 'seconds'): # manpage doesn't list sec
+        elif unit in ('s', 'sec', 'second', 'seconds'):  # manpage doesn't list sec
             pass
         elif unit in ('min', 'minute', 'minutes'):
             number = number * 60
         elif unit in ('h', 'hour', 'hours'):
             number = number * 60 * 60
-        elif unit in ('d', 'day', 'days'): # manpage doesn't list 'd'
+        elif unit in ('d', 'day', 'days'):  # manpage doesn't list 'd'
             number = number * 60 * 60 * 24
         elif unit in ('week', 'weeks'):
             number = number * 60 * 60 * 24 * 7
@@ -243,6 +243,7 @@ class RlimitRule(BaseRule):
             _('Value'),  values_txt,
         ]
 
+
 class RlimitRuleset(BaseRuleset):
     '''Class to handle and store a collection of rlimit rules'''
 
@@ -261,5 +262,3 @@ def split_unit(value):
     unit = matches.group('unit') or ''
 
     return number, unit
-
-

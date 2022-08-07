@@ -517,11 +517,12 @@ def check_and_split_list(lst, allowed_keywords, all_obj, classname, keyword_name
         if not item.strip():
             raise AppArmorBug(
                 'Passed empty %(keyword_name)s to %(classname)s' %
-            {'keyword_name': keyword_name, 'classname': classname})
+                {'keyword_name': keyword_name, 'classname': classname})
         if item not in allowed_keywords:
             unknown_items.add(item)
 
     return result_list, False, unknown_items
+
 
 def logprof_value_or_all(value, all_values):
     '''helper for logprof_header() to return 'all' (if all_values is True) or the specified value.
@@ -537,6 +538,7 @@ def logprof_value_or_all(value, all_values):
     else:
         return value
 
+
 def parse_comment(matches):
     '''returns the comment (with a leading space) from the matches object'''
     comment = ''
@@ -544,6 +546,7 @@ def parse_comment(matches):
         # include a space so that we don't need to add it everywhere when writing the rule
         comment = ' %s' % matches.group('comment')
     return comment
+
 
 def parse_modifiers(matches):
     '''returns audit, deny, allow_keyword and comment from the matches object
@@ -569,9 +572,9 @@ def parse_modifiers(matches):
 
     return (audit, deny, allow_keyword, comment)
 
+
 def quote_if_needed(data):
     '''quote data if it contains whitespace'''
     if ' ' in data:
         data = '"' + data + '"'
     return data
-

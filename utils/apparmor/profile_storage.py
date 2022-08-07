@@ -16,16 +16,16 @@
 
 from apparmor.common import AppArmorBug, AppArmorException
 
-from apparmor.rule.abi              import AbiRule,             AbiRuleset
-from apparmor.rule.capability       import CapabilityRule,      CapabilityRuleset
-from apparmor.rule.change_profile   import ChangeProfileRule,   ChangeProfileRuleset
-from apparmor.rule.dbus             import DbusRule,            DbusRuleset
-from apparmor.rule.file             import FileRule,            FileRuleset
-from apparmor.rule.include          import IncludeRule,         IncludeRuleset
-from apparmor.rule.network          import NetworkRule,         NetworkRuleset
-from apparmor.rule.ptrace           import PtraceRule,          PtraceRuleset
-from apparmor.rule.rlimit           import RlimitRule,          RlimitRuleset
-from apparmor.rule.signal           import SignalRule,          SignalRuleset
+from apparmor.rule.abi import AbiRule, AbiRuleset
+from apparmor.rule.capability import CapabilityRule, CapabilityRuleset
+from apparmor.rule.change_profile import ChangeProfileRule, ChangeProfileRuleset
+from apparmor.rule.dbus import DbusRule, DbusRuleset
+from apparmor.rule.file import FileRule, FileRuleset
+from apparmor.rule.include import IncludeRule, IncludeRuleset
+from apparmor.rule.network import NetworkRule, NetworkRuleset
+from apparmor.rule.ptrace import PtraceRule, PtraceRuleset
+from apparmor.rule.rlimit import RlimitRule, RlimitRuleset
+from apparmor.rule.signal import SignalRule, SignalRuleset
 
 from apparmor.rule import quote_if_needed
 
@@ -36,17 +36,18 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 ruletypes = {
-    'abi':              {'rule': AbiRule,           'ruleset': AbiRuleset,              },
-    'inc_ie':           {'rule': IncludeRule,       'ruleset': IncludeRuleset,          },
-    'capability':       {'rule': CapabilityRule,    'ruleset': CapabilityRuleset,       },
-    'change_profile':   {'rule': ChangeProfileRule, 'ruleset': ChangeProfileRuleset,    },
-    'dbus':             {'rule': DbusRule,          'ruleset': DbusRuleset,             },
-    'file':             {'rule': FileRule,          'ruleset': FileRuleset,             },
-    'network':          {'rule': NetworkRule,       'ruleset': NetworkRuleset,          },
-    'ptrace':           {'rule': PtraceRule,        'ruleset': PtraceRuleset,           },
-    'rlimit':           {'rule': RlimitRule,        'ruleset': RlimitRuleset,           },
-    'signal':           {'rule': SignalRule,        'ruleset': SignalRuleset,           },
+    'abi':            {'rule': AbiRule,           'ruleset': AbiRuleset},
+    'inc_ie':         {'rule': IncludeRule,       'ruleset': IncludeRuleset},
+    'capability':     {'rule': CapabilityRule,    'ruleset': CapabilityRuleset},
+    'change_profile': {'rule': ChangeProfileRule, 'ruleset': ChangeProfileRuleset},
+    'dbus':           {'rule': DbusRule,          'ruleset': DbusRuleset},
+    'file':           {'rule': FileRule,          'ruleset': FileRuleset},
+    'network':        {'rule': NetworkRule,       'ruleset': NetworkRuleset},
+    'ptrace':         {'rule': PtraceRule,        'ruleset': PtraceRuleset},
+    'rlimit':         {'rule': RlimitRule,        'ruleset': RlimitRuleset},
+    'signal':         {'rule': SignalRule,        'ruleset': SignalRuleset},
 }
+
 
 class ProfileStorage:
     '''class to store the content (header, rules, comments) of a profilename
@@ -63,18 +64,18 @@ class ProfileStorage:
         for rule in ruletypes:
             data[rule] = ruletypes[rule]['ruleset']()
 
-        data['filename']         = ''
-        data['logprof_suggest']  = ''  # set in abstractions that should be suggested by aa-logprof
-        data['name']             = ''
-        data['attachment']       = ''
-        data['xattrs']           = ''
-        data['flags']            = ''
-        data['external']         = False
-        data['header_comment']   = ''  # comment in the profile/hat start line
-        data['initial_comment']  = ''
-        data['profile_keyword']  = False
-        data['is_hat']           = False  # profile or hat?
-        data['hat_keyword']      = False  # True for 'hat foo', False for '^foo'
+        data['filename'] = ''
+        data['logprof_suggest'] = ''  # set in abstractions that should be suggested by aa-logprof
+        data['name'] = ''
+        data['attachment'] = ''
+        data['xattrs'] = ''
+        data['flags'] = ''
+        data['external'] = False
+        data['header_comment'] = ''  # comment in the profile/hat start line
+        data['initial_comment'] = ''
+        data['profile_keyword'] = False
+        data['is_hat'] = False  # profile or hat?
+        data['hat_keyword'] = False  # True for 'hat foo', False for '^foo'
 
         data['allow'] = dict()
         data['deny'] = dict()
@@ -125,7 +126,7 @@ class ProfileStorage:
             raise AppArmorBug('Attempt to overwrite "%s" with %s, type %s' % (key, value, type(value)))
 
     def __repr__(self):
-        return('\n<ProfileStorage>\n%s\n</ProfileStorage>\n' % '\n'.join(self.get_rules_clean(1)))
+        return ('\n<ProfileStorage>\n%s\n</ProfileStorage>\n' % '\n'.join(self.get_rules_clean(1)))
 
     def get(self, key, fallback=None):
         if key in self.data:
@@ -214,12 +215,14 @@ class ProfileStorage:
 
         if profile:  # we are inside a profile, so we expect a child profile
             if not matches['profile_keyword']:
-                raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: missing "profile" keyword.') % {
-                        'profile': profile, 'file': file, 'line': lineno + 1 })
+                raise AppArmorException(
+                    _('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: missing "profile" keyword.')
+                    % {'profile': profile, 'file': file, 'line': lineno + 1})
             if hat is not None:
                 # nesting limit reached - a child profile can't contain another child profile
-                raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: a child profile inside another child profile is not allowed.') % {
-                        'profile': profile, 'file': file, 'line': lineno + 1 })
+                raise AppArmorException(
+                    _('%(profile)s profile in %(file)s contains syntax errors in line %(line)s: a child profile inside another child profile is not allowed.')
+                    % {'profile': profile, 'file': file, 'line': lineno + 1})
 
             hat = matches['profile']
             pps_set_hat_external = False
@@ -227,7 +230,9 @@ class ProfileStorage:
         else:  # stand-alone profile
             profile = matches['profile']
             if len(profile.split('//')) > 2:
-                raise AppArmorException("Nested child profiles ('%(profile)s', found in %(file)s) are not supported by the AppArmor tools yet." % {'profile': profile, 'file': file})
+                raise AppArmorException(
+                    "Nested child profiles ('%(profile)s', found in %(file)s) are not supported by the AppArmor tools yet."
+                    % {'profile': profile, 'file': file})
             elif len(profile.split('//')) == 2:
                 profile, hat = profile.split('//')
                 pps_set_hat_external = True
@@ -265,6 +270,7 @@ def split_flags(flags):
     # sort and remove duplicates
     return sorted(set(flags_list))
 
+
 def add_or_remove_flag(flags, flags_to_change, set_flag):
     '''add (if set_flag is True) or remove the given flags_to_change to flags'''
 
@@ -294,6 +300,7 @@ def var_transform(ref):
         data.append(quote_if_needed(value))
     return ' '.join(data)
 
+
 def write_mount_rules(prof_data, depth, allow):
     pre = '  ' * depth
     data = []
@@ -307,10 +314,12 @@ def write_mount_rules(prof_data, depth, allow):
     data.append('')
     return data
 
+
 def write_mount(prof_data, depth):
     data = write_mount_rules(prof_data, depth, 'deny')
     data.extend(write_mount_rules(prof_data, depth, 'allow'))
     return data
+
 
 def write_pivot_root_rules(prof_data, depth, allow):
     pre = '  ' * depth
@@ -325,15 +334,18 @@ def write_pivot_root_rules(prof_data, depth, allow):
     data.append('')
     return data
 
+
 def write_pivot_root(prof_data, depth):
     data = write_pivot_root_rules(prof_data, depth, 'deny')
     data.extend(write_pivot_root_rules(prof_data, depth, 'allow'))
     return data
 
+
 def write_unix(prof_data, depth):
     data = write_unix_rules(prof_data, depth, 'deny')
     data.extend(write_unix_rules(prof_data, depth, 'allow'))
     return data
+
 
 def write_unix_rules(prof_data, depth, allow):
     pre = '  ' * depth
