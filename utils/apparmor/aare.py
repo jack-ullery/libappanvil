@@ -18,11 +18,11 @@ from apparmor.common import convert_regexp, AppArmorBug, AppArmorException
 
 
 class AARE:
-    '''AARE (AppArmor Regular Expression) wrapper class'''
+    """AARE (AppArmor Regular Expression) wrapper class"""
 
     def __init__(self, regex, is_path, log_event=None):
-        '''create an AARE instance for the given AppArmor regex
-        If is_path is true, the regex is expected to be a path and therefore must start with / or a variable.'''
+        """create an AARE instance for the given AppArmor regex
+        If is_path is true, the regex is expected to be a path and therefore must start with / or a variable."""
         # using the specified variables when matching.
 
         if is_path:
@@ -44,7 +44,7 @@ class AARE:
         # self.variables = variables  # XXX
 
     def __repr__(self):
-        '''returns a "printable" representation of AARE'''
+        """returns a "printable" representation of AARE"""
         return "AARE('%s')" % self.regex
 
     def __deepcopy__(self, memo):
@@ -59,7 +59,7 @@ class AARE:
     plain_path = re.compile('^[0-9a-zA-Z/._-]+$')
 
     def match(self, expression):
-        '''check if the given expression (string or AARE) matches the regex'''
+        """check if the given expression (string or AARE) matches the regex"""
 
         if type(expression) == AARE:
             if expression.orig_regex:
@@ -78,7 +78,7 @@ class AARE:
         return bool(self._regex_compiled.match(expression))
 
     def is_equal(self, expression):
-        '''check if the given expression is equal'''
+        """check if the given expression is equal"""
 
         if type(expression) == AARE:
             return self.regex == expression.regex
@@ -88,7 +88,7 @@ class AARE:
             raise AppArmorBug('AARE.is_equal() called with unknown object: %s' % str(expression))
 
     def glob_path(self):
-        '''Glob the given file or directory path'''
+        """Glob the given file or directory path"""
         if self.regex[-1] == '/':
             if self.regex[-4:] == '/**/' or self.regex[-3:] == '/*/':
                 # /foo/**/ and /foo/*/ => /**/
@@ -116,8 +116,8 @@ class AARE:
         return AARE(newpath, False)
 
     def glob_path_withext(self):
-        '''Glob given file path with extension
-           Files without extensions and directories won't be changed'''
+        """Glob given file path with extension
+           Files without extensions and directories won't be changed"""
         # match /**.ext and /*.ext
         match = re.search('/\*{1,2}(\.[^/]+)$', self.regex)
         if match:
@@ -140,7 +140,7 @@ class AARE:
 
 
 def convert_expression_to_aare(expression):
-    '''convert an expression (taken from audit.log) to an AARE string'''
+    """convert an expression (taken from audit.log) to an AARE string"""
 
     aare_escape_chars = ['\\', '?', '*', '[', ']', '{', '}', '"', '!']
     for char in aare_escape_chars:

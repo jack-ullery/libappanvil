@@ -181,5 +181,5 @@ class Severity:
         return resource.replace(variable, replacement)
 
     def set_variables(self, vars):
-        ''' Set the profile variables to use for rating the severity '''
+        """Set the profile variables to use for rating the severity"""
         self.severity['VARIABLES'] = vars

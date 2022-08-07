@@ -106,10 +106,10 @@ helpers = dict()  # Preserve this between passes # was our
 
 
 def reset_aa():
-    ''' Reset the most important global variables
+    """Reset the most important global variables
 
-        Used by aa-mergeprof and some tests.
-    '''
+       Used by aa-mergeprof and some tests.
+    """
 
     global aa, include, active_profiles, original_aa
 
@@ -241,7 +241,7 @@ def get_profile_filename_from_attachment(profile, get_new=False):
 
 
 def get_new_profile_filename(profile):
-    '''Compose filename for a new profile'''
+    """Compose filename for a new profile"""
     if profile.startswith('/'):
         # Remove leading /
         filename = profile[1:]
@@ -347,7 +347,7 @@ def head(file):
 
 
 def get_output(params):
-    '''Runs the program with the given args and returns the return code and stdout (as list of lines)'''
+    """Runs the program with the given args and returns the return code and stdout (as list of lines)"""
     try:
         # Get the output of the program
         output = subprocess.check_output(params)  # nosec
@@ -422,12 +422,12 @@ def handle_binfmt(profile, path):
 
 
 def get_interpreter_and_abstraction(exec_target):
-    '''Check if exec_target is a script.
+    """Check if exec_target is a script.
        If a hashbang is found, check if we have an abstraction for it.
 
        Returns (interpreter_path, abstraction)
        - interpreter_path is none if exec_target is not a script or doesn't have a hashbang line
-       - abstraction is None if no matching abstraction exists'''
+       - abstraction is None if no matching abstraction exists"""
 
     if not os.path.exists(exec_target):
         aaui.UI_Important(_('Execute target %s does not exist!') % exec_target)
@@ -527,7 +527,7 @@ def confirm_and_abort():
 
 
 def get_profile(prof_name):
-    '''search for inactive/extra profile, and ask if it should be used'''
+    """search for inactive/extra profile, and ask if it should be used"""
 
     if not extra_profiles.profiles.get(prof_name, False):
         return None  # no inactive profile found
@@ -759,7 +759,7 @@ def build_x_functions(default, options, exec_toggle):
 
 
 def ask_addhat(hashlog):
-    '''ask the user about change_hat events (requests to add a hat)'''
+    """ask the user about change_hat events (requests to add a hat)"""
 
     for aamode in hashlog:
         for profile in hashlog[aamode]:
@@ -827,7 +827,7 @@ def ask_addhat(hashlog):
 
 
 def ask_exec(hashlog):
-    '''ask the user about exec events (requests to execute another program) and which exec mode to use'''
+    """ask the user about exec events (requests to execute another program) and which exec mode to use"""
 
     for aamode in hashlog:
         for full_profile in hashlog[aamode]:
@@ -1183,18 +1183,18 @@ def ask_the_questions(log_dict):
 
 
 def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
-    ''' ask questions about rules to add to a single profile/hat
+    """ask questions about rules to add to a single profile/hat
 
-        parameter       typical value
-        prof_events     log_dict[aamode][full_profile]
-        profile_name    profile name (possible profile//hat)
-        the_profile     aa[profile][hat] -- will be modified
-        r_types         ruletypes
+       parameter       typical value
+       prof_events     log_dict[aamode][full_profile]
+       profile_name    profile name (possible profile//hat)
+       the_profile     aa[profile][hat] -- will be modified
+       r_types         ruletypes
 
-        returns:
-        changed         True if the profile was changed
-        end_profiling   True if the user wants to end profiling
-    '''
+       returns:
+       changed         True if the profile was changed
+       end_profiling   True if the user wants to end profiling
+    """
 
     changed = False
 
@@ -1358,21 +1358,21 @@ def selection_to_rule_obj(rule_obj, selection):
 
 
 def set_options_audit_mode(rule_obj, options):
-    '''change audit state in options (proposed rules) to audit state in rule_obj.
+    """change audit state in options (proposed rules) to audit state in rule_obj.
        #include options will be kept unchanged
-    '''
+    """
     return set_options_mode(rule_obj, options, 'audit')
 
 
 def set_options_owner_mode(rule_obj, options):
-    '''change owner state in options (proposed rules) to owner state in rule_obj.
+    """change owner state in options (proposed rules) to owner state in rule_obj.
        #include options will be kept unchanged
-    '''
+    """
     return set_options_mode(rule_obj, options, 'owner')
 
 
 def set_options_mode(rule_obj, options, what):
-    ''' helper function for set_options_audit_mode() and set_options_owner_mode'''
+    """helper function for set_options_audit_mode() and set_options_owner_mode"""
     new_options = []
 
     for rule in options:
@@ -1447,7 +1447,7 @@ def delete_all_duplicates(profile, incname, r_types):
 
 
 def ask_conflict_mode(old_profile, merge_profile):
-    '''ask user about conflicting exec rules'''
+    """ask user about conflicting exec rules"""
     for oldrule in old_profile['file'].rules:
         conflictingrules = merge_profile['file'].get_exec_conflict_rules(oldrule)
 
@@ -1482,10 +1482,10 @@ def ask_conflict_mode(old_profile, merge_profile):
 
 
 def match_includes(profile, rule_type, rule_obj):
-    ''' propose abstractions that allow the given rule_obj
+    """propose abstractions that allow the given rule_obj
 
-        Note: This function will return relative paths for includes inside profile_dir
-    '''
+       Note: This function will return relative paths for includes inside profile_dir
+    """
 
     newincludes = []
     for incname in include.keys():
@@ -1514,7 +1514,7 @@ def match_includes(profile, rule_type, rule_obj):
 
 
 def valid_include(incname):
-    ''' check if the given include file exists or is whitelisted in custom_includes '''
+    """check if the given include file exists or is whitelisted in custom_includes"""
     if cfg['settings']['custom_includes']:
         for incm in cfg['settings']['custom_includes'].split():
             if incm == incname:
@@ -1529,7 +1529,7 @@ def valid_include(incname):
 
 
 def set_logfile(filename):
-    ''' set logfile to a) the specified filename or b) if not given, the first existing logfile from logprof.conf'''
+    """set logfile to a) the specified filename or b) if not given, the first existing logfile from logprof.conf"""
 
     global logfile
 
@@ -2099,7 +2099,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
 
 
 def match_line_against_rule_classes(line, profile, file, lineno, in_preamble):
-    ''' handle all lines handled by *Rule classes '''
+    """handle all lines handled by *Rule classes"""
 
     for rule_name in (
             'abi',
@@ -2140,7 +2140,7 @@ def match_line_against_rule_classes(line, profile, file, lineno, in_preamble):
 
 
 def merged_to_split(profile_data):
-    ''' (temporary) helper function to convert a list of profile['foo//bar'] profiles into compat['foo']['bar']'''
+    """(temporary) helper function to convert a list of profile['foo//bar'] profiles into compat['foo']['bar']"""
     compat = hasher()
     for prof in profile_data:
         profile, hat = split_name(prof)  # XXX limited to two levels to avoid an Exception on nested child profiles or nested null-*
@@ -2150,7 +2150,7 @@ def merged_to_split(profile_data):
 
 
 def split_to_merged(profile_data):
-    ''' (temporary) helper function to convert a traditional compat['foo']['bar'] to a profile['foo//bar'] list '''
+    """(temporary) helper function to convert a traditional compat['foo']['bar'] to a profile['foo//bar'] list"""
 
     merged = {}
 
@@ -2307,7 +2307,7 @@ def write_profile(profile, is_attachment=False):
 
 
 def include_list_recursive(profile, in_preamble=False):
-    ''' get a list of all includes in a profile and its included files '''
+    """get a list of all includes in a profile and its included files"""
 
     includelist = profile['inc_ie'].get_all_full_paths(profile_dir)
     full_list = []
@@ -2348,7 +2348,7 @@ def is_known_rule(profile, rule_type, rule_obj):
 
 
 def get_file_perms(profile, path, audit, deny):
-    '''get the current permissions for the given path'''
+    """get the current permissions for the given path"""
 
     perms = profile['file'].get_perms_for_path(path, audit, deny)
 
@@ -2372,10 +2372,10 @@ def get_file_perms(profile, path, audit, deny):
 
 
 def propose_file_rules(profile_obj, rule_obj):
-    '''Propose merged file rules based on the existing profile and the log events
+    """Propose merged file rules based on the existing profile and the log events
        - permissions get merged
        - matching paths from existing rules, common_glob() and user_globs get proposed
-       - IMPORTANT: modifies rule_obj.original_perms and rule_obj.perms'''
+       - IMPORTANT: modifies rule_obj.original_perms and rule_obj.perms"""
     options = []
     original_path = rule_obj.path.regex
 
@@ -2423,7 +2423,7 @@ def reload_base(bin_path):
 
 
 def reload_profile(prof_filename, raise_exc=False):
-    ''' run apparmor_parser to reload the given profile file '''
+    """run apparmor_parser to reload the given profile file"""
 
     ret, out = cmd((parser, '-I%s' % profile_dir, '--base', profile_dir, '-r', prof_filename))
 
@@ -2455,9 +2455,9 @@ def get_include_data(filename):
 
 
 def include_dir_filelist(include_name):
-    '''returns a list of files in the given include_name directory,
+    """returns a list of files in the given include_name directory,
        except skippable files.
-    '''
+    """
 
     if not include_name.startswith('/'):
         raise AppArmorBug('incfile %s not starting with /' % include_name)

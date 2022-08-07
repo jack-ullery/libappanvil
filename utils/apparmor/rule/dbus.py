@@ -65,7 +65,7 @@ RE_DBUS_DETAILS = re.compile(
 
 
 class DbusRule(BaseRule):
-    '''Class to handle and store a single dbus rule'''
+    """Class to handle and store a single dbus rule"""
 
     # Nothing external should reference this class, all external users
     # should reference the class field DbusRule.ALL
@@ -111,7 +111,7 @@ class DbusRule(BaseRule):
 
     @classmethod
     def _parse(cls, raw_rule):
-        '''parse raw_rule and return DbusRule'''
+        """parse raw_rule and return DbusRule"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -194,7 +194,7 @@ class DbusRule(BaseRule):
                         audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
-        '''return rule (in clean/default formatting)'''
+        """return rule (in clean/default formatting)"""
 
         space = '  ' * depth
 
@@ -223,8 +223,8 @@ class DbusRule(BaseRule):
         return ('%s%sdbus%s%s%s%s%s%s%s,%s' % (space, self.modifiers_str(), access, bus, path, name, interface, member, peer, self.comment))
 
     def _get_aare_rule_part(self, prefix, value, all_values):
-        '''helper function to write a rule part
-           value is expected to be a AARE'''
+        """helper function to write a rule part
+           value is expected to be a AARE"""
         if all_values:
             return ''
         elif value:
@@ -233,7 +233,7 @@ class DbusRule(BaseRule):
             raise AppArmorBug('Empty %(prefix_name)s in %(rule_name)s rule' % {'prefix_name': prefix, 'rule_name': self.rule_name})
 
     def is_covered_localvars(self, other_rule):
-        '''check if other_rule is covered by this rule object'''
+        """check if other_rule is covered by this rule object"""
 
         if not self._is_covered_list(self.access,       self.all_access,        other_rule.access,      other_rule.all_access,      'access'):
             return False
@@ -263,7 +263,7 @@ class DbusRule(BaseRule):
         return True
 
     def is_equal_localvars(self, rule_obj, strict):
-        '''compare if rule-specific variables are equal'''
+        """compare if rule-specific variables are equal"""
 
         if not type(rule_obj) == DbusRule:
             raise AppArmorBug('Passed non-dbus rule: %s' % str(rule_obj))
@@ -318,9 +318,9 @@ class DbusRule(BaseRule):
 
 
 class DbusRuleset(BaseRuleset):
-    '''Class to handle and store a collection of dbus rules'''
+    """Class to handle and store a collection of dbus rules"""
 
     def get_glob(self, path_or_rule):
-        '''Return the next possible glob. For dbus rules, that means removing access or removing/globbing bus'''
+        """Return the next possible glob. For dbus rules, that means removing access or removing/globbing bus"""
         # XXX only remove one part, not all
         return 'dbus,'

@@ -28,7 +28,7 @@ import sys
 
 
 class Install(_install):
-    '''Override setuptools to install the files where we want them.'''
+    """Override setuptools to install the files where we want them."""
     def run(self):
         # Now byte-compile everything
         super().run()

@@ -168,7 +168,7 @@ RE_INCLUDE = re.compile('^\s*#?include(?P<ifexists>\s+if\s+exists)?\s*' + RE_MAG
 
 
 def re_match_include_parse(line, rule_name):
-    '''Matches the path for include, include if exists and abi rules
+    """Matches the path for include, include if exists and abi rules
 
     rule_name can be 'include' or 'abi'
 
@@ -176,7 +176,7 @@ def re_match_include_parse(line, rule_name):
     - if the "if exists" condition is given
     - the include/abi path
     - if the path is a magic path (enclosed in <...>)
-    '''
+    """
 
     if rule_name == 'include':
         matches = RE_INCLUDE.search(line)
@@ -223,7 +223,7 @@ def re_match_include_parse(line, rule_name):
 
 
 def re_match_include(line):
-    ''' return path of a 'include' rule '''
+    """return path of a 'include' rule"""
     (path, ifexists, ismagic) = re_match_include_parse(line, 'include')
 
     if not ifexists:
@@ -233,10 +233,10 @@ def re_match_include(line):
 
 
 def strip_parenthesis(data):
-    '''strips parenthesis from the given string and returns the strip()ped result.
+    """strips parenthesis from the given string and returns the strip()ped result.
        The parenthesis must be the first and last char, otherwise they won't be removed.
        Even if no parenthesis get removed, the result will be strip()ped.
-       '''
+    """
     if data[0] + data[-1] == '()':
         return data[1:-1].strip()
     else:

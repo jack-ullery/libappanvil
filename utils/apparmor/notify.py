@@ -22,7 +22,7 @@ debug_logger = DebugLogger('apparmor.notify')
 
 
 def sane_timestamp(timestamp):
-    ''' Check if the given timestamp is in a date range that makes sense for a wtmp file '''
+    """Check if the given timestamp is in a date range that makes sense for a wtmp file"""
 
     if timestamp < 946681200:  # 2000-01-01
         return False
@@ -33,7 +33,7 @@ def sane_timestamp(timestamp):
 
 
 def get_last_login_timestamp(username, filename='/var/log/wtmp'):
-    '''Directly read wtmp and get last login for user as epoch timestamp'''
+    """Directly read wtmp and get last login for user as epoch timestamp"""
     timestamp = 0
     last_login = 0
 

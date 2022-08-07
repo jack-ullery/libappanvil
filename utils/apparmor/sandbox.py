@@ -23,7 +23,7 @@ from tempfile import NamedTemporaryFile
 
 
 def check_requirements(binary):
-    '''Verify necessary software is installed'''
+    """Verify necessary software is installed"""
     exes = [
         'xset',         # for detecting free X display
         'aa-easyprof',  # for templates
@@ -43,7 +43,7 @@ def check_requirements(binary):
 
 
 def parse_args(args=None, parser=None):
-    '''Parse arguments'''
+    """Parse arguments"""
     if parser is None:
         parser = optparse.OptionParser()
 
@@ -104,7 +104,7 @@ def parse_args(args=None, parser=None):
 
 
 def gen_policy_name(binary):
-    '''Generate a temporary policy based on the binary name'''
+    """Generate a temporary policy based on the binary name"""
     return "sandbox-%s%s" % (pwd.getpwuid(os.geteuid())[0], re.sub(r'/', '_', binary))
 
 
@@ -117,7 +117,7 @@ def set_environ(env):
 
 
 def aa_exec(command, opt, environ={}, verify_rules=[]):
-    '''Execute binary under specified policy'''
+    """Execute binary under specified policy"""
     if opt.profile is not None:
         policy_name = opt.profile
     else:
@@ -169,7 +169,7 @@ def aa_exec(command, opt, environ={}, verify_rules=[]):
 
 
 def run_sandbox(command, opt):
-    '''Run application'''
+    """Run application"""
     # aa-exec
     rc, report = aa_exec(command, opt)
     return rc, report
@@ -209,7 +209,7 @@ class SandboxXserver():
         self.new_environ["LIBOVERLAY_SCROLLBAR"] = "0"
 
     def cleanup(self):
-        '''Cleanup our forked pids, reset the environment, etc'''
+        """Cleanup our forked pids, reset the environment, etc"""
         self.pids.reverse()
         debug(self.pids)
         for pid in self.pids:
@@ -233,7 +233,7 @@ class SandboxXserver():
         set_environ(self.old_environ)
 
     def find_free_x_display(self):
-        '''Find a free X display'''
+        """Find a free X display"""
         old_lang = None
         if 'LANG' in os.environ:
             old_lang = os.environ['LANG']
@@ -266,7 +266,7 @@ class SandboxXserver():
         return "(Sandbox%s) %s" % (self.display, self.title)
 
     def verify_host_setup(self):
-        '''Make sure we have everything we need'''
+        """Make sure we have everything we need"""
         old_lang = None
         if 'LANG' in os.environ:
             old_lang = os.environ['LANG']
@@ -286,7 +286,7 @@ class SandboxXserver():
             raise AppArmorException("Access control allows '%s' full access. Please see 'man aa-sandbox' for details" % username)
 
     def start(self):
-        '''Start a nested X server (need to override)'''
+        """Start a nested X server (need to override)"""
         # clean up the old one
         if os.path.exists(self.xauth):
             os.unlink(self.xauth)
@@ -312,10 +312,10 @@ class SandboxXephyr(SandboxXserver):
             if which(e) is None:
                 raise AppArmorException("Could not find '%s'" % e)
 
-        '''Run any setup code'''
+        # Run any setup code
         SandboxXserver.start(self)
 
-        '''Start a Xephyr server'''
+        # Start a Xephyr server
         listener_x = os.fork()
         if listener_x == 0:
             # TODO: break into config file? Which are needed?
@@ -390,7 +390,7 @@ class SandboxXpra(SandboxXserver):
         SandboxXserver.cleanup(self)
 
     def _get_xvfb_args(self):
-        '''Setup xvfb arguments'''
+        """Setup xvfb arguments"""
         # Debugging tip (can also use glxinfo):
         # $ xdpyinfo > /tmp/native
         # $ aa-sandbox -X -t sandbox-x /usr/bin/xdpyinfo > /tmp/nested
@@ -577,7 +577,7 @@ EndSection
             if not os.path.exists(drv):
                 raise AppArmorException("Could not find '%s'" % drv)
 
-        '''Run any setup code'''
+        # Run any setup code
         SandboxXserver.start(self)
 
         xvfb_args = self._get_xvfb_args()
@@ -676,7 +676,7 @@ EndSection
 
 
 def run_xsandbox(command, opt):
-    '''Run X application in a sandbox'''
+    """Run X application in a sandbox"""
     old_cwd = os.getcwd()
 
     # first, start X

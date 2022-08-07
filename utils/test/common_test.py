@@ -31,7 +31,7 @@ class AATest(unittest.TestCase):
         self.AASetup()
 
     def AASetup(self):
-        '''override this function if a test needs additional setup steps (instead of overriding setUp())'''
+        """override this function if a test needs additional setup steps (instead of overriding setUp())"""
 
     def tearDown(self):
         if self.tmpdir and os.path.exists(self.tmpdir):
@@ -40,7 +40,7 @@ class AATest(unittest.TestCase):
         self.AATeardown()
 
     def AATeardown(self):
-        '''override this function if a test needs additional teardown steps (instead of overriding tearDown())'''
+        """override this function if a test needs additional teardown steps (instead of overriding tearDown())"""
 
     def createTmpdir(self):
         self.tmpdir = tempfile.mkdtemp(prefix='aa-test-')
@@ -67,7 +67,7 @@ class AAParseTest(unittest.TestCase):
 
 
 def setup_all_loops(module_name):
-    '''call setup_tests_loop() for each class in module_name'''
+    """call setup_tests_loop() for each class in module_name"""
     for name, obj in inspect.getmembers(sys.modules[module_name]):
         if inspect.isclass(obj):
             if issubclass(obj, unittest.TestCase):
@@ -75,7 +75,7 @@ def setup_all_loops(module_name):
 
 
 def setup_tests_loop(test_class):
-    '''Create tests in test_class using test_class.tests and self._run_test()
+    """Create tests in test_class using test_class.tests and self._run_test()
 
     test_class.tests should be tuples of (test_data, expected_results)
     test_data and expected_results can be of any type as long as test_class._run_test()
@@ -83,7 +83,7 @@ def setup_tests_loop(test_class):
 
     A typical definition for _run_test() is:
         def test_class._run_test(self, test_data, expected)
-        '''
+    """
 
     for (i, (test_data, expected)) in enumerate(test_class.tests):
         def stub_test(self, test_data=test_data, expected=expected):
@@ -94,10 +94,10 @@ def setup_tests_loop(test_class):
 
 
 def setup_regex_tests(test_class):
-    '''Create tests in test_class using test_class.tests and AAParseTest._test_parse_rule()
+    """Create tests in test_class using test_class.tests and AAParseTest._test_parse_rule()
 
     test_class.tests should be tuples of (line, description)
-    '''
+    """
     for (i, (line, desc)) in enumerate(test_class.tests):
         def stub_test(self, line=line):
             self._test_parse_rule(line)
@@ -119,7 +119,7 @@ def setup_aa(aa):
 
 
 def write_file(directory, file, contents):
-    '''construct path, write contents to it, and return the constructed path'''
+    """construct path, write contents to it, and return the constructed path"""
     path = os.path.join(directory, file)
     with open(path, 'w+') as f:
         f.write(contents)
@@ -127,7 +127,7 @@ def write_file(directory, file, contents):
 
 
 def read_file(path):
-    '''read and return file contents'''
+    """read and return file contents"""
     with open(path, 'r') as f:
         return f.read()
 

@@ -41,7 +41,7 @@ class ReadLog:
         self.next_log_entry = None
 
     def init_hashlog(self, aamode, profile):
-        ''' initialize self.hashlog[aamode][profile] for all rule types'''
+        """initialize self.hashlog[aamode][profile] for all rule types"""
 
         if profile in self.hashlog[aamode].keys():
             return  # already initialized, don't overwrite existing data

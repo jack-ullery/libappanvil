@@ -27,10 +27,10 @@ from apparmor.translations import init_translation
 
 
 class AACliBootstrapTest(AATest):
-    '''
+    """
     Generic test of the core AppArmor Python libraries that all command
     line tools rely on.
-    '''
+    """
     def AASetup(self):
         # Redirect sys.stdout to a buffer
         sys.stdout = io.StringIO()

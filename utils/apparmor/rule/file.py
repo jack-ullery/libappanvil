@@ -29,7 +29,7 @@ file_permissions = ('m', 'r', 'w', 'a', 'l', 'k', 'link', 'subset')  # also defi
 
 
 class FileRule(BaseRule):
-    '''Class to handle and store a single file rule'''
+    """Class to handle and store a single file rule"""
 
     # Nothing external should reference this class, all external users
     # should reference the class field FileRule.ALL
@@ -46,7 +46,7 @@ class FileRule(BaseRule):
 
     def __init__(self, path, perms, exec_perms, target, owner, file_keyword=False, leading_perms=False,
                  audit=False, deny=False, allow_keyword=False, comment='', log_event=None):
-        '''Initialize FileRule
+        """Initialize FileRule
 
            Parameters:
            - path: string, AARE or FileRule.ALL
@@ -56,7 +56,7 @@ class FileRule(BaseRule):
            - owner: bool
            - file_keyword: bool
            - leading_perms: bool
-        '''
+        """
 
         super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
                          comment=comment, log_event=log_event)
@@ -138,7 +138,7 @@ class FileRule(BaseRule):
 
     @classmethod
     def _parse(cls, raw_rule):
-        '''parse raw_rule and return FileRule'''
+        """parse raw_rule and return FileRule"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -192,7 +192,7 @@ class FileRule(BaseRule):
                         audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
-        '''return rule (in clean/default formatting)'''
+        """return rule (in clean/default formatting)"""
 
         space = '  ' * depth
 
@@ -240,11 +240,11 @@ class FileRule(BaseRule):
             raise AppArmorBug('Invalid combination of path and perms in file rule - either specify path and perms, or none of them')
 
     def _joint_perms(self):
-        '''return the permissions as string (using self.perms and self.exec_perms)'''
+        """return the permissions as string (using self.perms and self.exec_perms)"""
         return self._join_given_perms(self.perms, self.exec_perms)
 
     def _join_given_perms(self, perms, exec_perms):
-        '''return the permissions as string (using the perms and exec_perms given as parameter)'''
+        """return the permissions as string (using the perms and exec_perms given as parameter)"""
         perm_string = ''
         for perm in file_permissions:
             if perm in perms:
@@ -260,7 +260,7 @@ class FileRule(BaseRule):
         return perm_string
 
     def is_covered_localvars(self, other_rule):
-        '''check if other_rule is covered by this rule object'''
+        """check if other_rule is covered by this rule object"""
 
         if not self._is_covered_aare(self.path, self.all_paths, other_rule.path, other_rule.all_paths, 'path'):
             return False
@@ -311,7 +311,7 @@ class FileRule(BaseRule):
         return True
 
     def is_equal_localvars(self, rule_obj, strict):
-        '''compare if rule-specific variables are equal'''
+        """compare if rule-specific variables are equal"""
 
         if not type(rule_obj) == FileRule:
             raise AppArmorBug('Passed non-file rule: %s' % str(rule_obj))
@@ -400,7 +400,7 @@ class FileRule(BaseRule):
         return headers
 
     def glob(self):
-        '''Change path to next possible glob'''
+        """Change path to next possible glob"""
         if self.all_paths:
             return
 
@@ -408,7 +408,7 @@ class FileRule(BaseRule):
         self.raw_rule = None
 
     def glob_ext(self):
-        '''Change path to next possible glob with extension'''
+        """Change path to next possible glob with extension"""
         if self.all_paths:
             return
 
@@ -437,13 +437,13 @@ class FileRule(BaseRule):
 
 
 class FileRuleset(BaseRuleset):
-    '''Class to handle and store a collection of file rules'''
+    """Class to handle and store a collection of file rules"""
 
     def get_rules_for_path(self, path, audit=False, deny=False):
-        '''Get all rules matching the given path
+        """Get all rules matching the given path
            path can be str or AARE
            If audit is True, only return rules with the audit flag set.
-           If deny is True, only return matching deny rules'''
+           If deny is True, only return matching deny rules"""
 
         matching_rules = FileRuleset()
         for rule in self.rules:
@@ -453,7 +453,7 @@ class FileRuleset(BaseRuleset):
         return matching_rules
 
     def get_perms_for_path(self, path, audit=False, deny=False):
-        '''Get the summarized permissions of all rules matching the given path, and the list of paths involved in the calculation
+        """Get the summarized permissions of all rules matching the given path, and the list of paths involved in the calculation
            path can be str or AARE
            If audit is True, only analyze rules with the audit flag set.
            If deny is True, only analyze matching deny rules
@@ -461,7 +461,7 @@ class FileRuleset(BaseRuleset):
                     'deny':  {'owner': set_of_perms, 'all': set_of_perms},
                     'path':  involved_paths}
            Note: exec rules and exec/link target are not honored!
-           '''
+        """
         # XXX do we need to honor the link target?
 
         perms = {
@@ -507,8 +507,8 @@ class FileRuleset(BaseRuleset):
         return {'allow': allow, 'deny': deny, 'paths': paths}
 
     def get_exec_rules_for_path(self, path, only_exact_matches=True):
-        '''Get all rules matching the given path that contain exec permissions
-           path can be str or AARE'''
+        """Get all rules matching the given path that contain exec permissions
+           path can be str or AARE"""
 
         matches = FileRuleset()
 
@@ -522,7 +522,7 @@ class FileRuleset(BaseRuleset):
         return matches
 
     def get_exec_conflict_rules(self, oldrule):
-        '''check if one of the exec rules conflict with oldrule. If yes, return the conflicting rules.'''
+        """check if one of the exec rules conflict with oldrule. If yes, return the conflicting rules."""
 
         conflictingrules = FileRuleset()
 
@@ -537,10 +537,10 @@ class FileRuleset(BaseRuleset):
 
 
 def split_perms(perm_string, deny):
-    '''parse permission string
+    """parse permission string
        - perm_string: the permission string to parse
        - deny: True if this is a deny rule
-   '''
+    """
     perms = set()
     exec_mode = None
 
@@ -570,9 +570,9 @@ def split_perms(perm_string, deny):
 
 
 def perms_with_a(perms):
-    '''if perms includes 'w', add 'a' perms
+    """if perms includes 'w', add 'a' perms
        - perms: the original permissions
-    '''
+    """
     perms_with_a = set()
     if perms:
         perms_with_a = set(perms)

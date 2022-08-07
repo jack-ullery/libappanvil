@@ -27,13 +27,13 @@ class AARegexTest(AATest):
 
 class AANamedRegexTest(AATest):
     def _run_test(self, line, expected):
-        '''Run a line through self.regex.search() and verify the result
+        """Run a line through self.regex.search() and verify the result
 
         Keyword arguments:
         line -- the line to search
         expected -- False if the search isn't expected to match or, if the search
                     is expected to match, a tuple of expected match groups.
-        '''
+        """
         matches = self.regex.search(line)
         if not expected:
             self.assertFalse(matches)
@@ -49,7 +49,7 @@ class AANamedRegexTest(AATest):
 
 
 class AARegexHasComma(AATest):
-    '''Tests for apparmor.aa.RE_RULE_HAS_COMMA'''
+    """Tests for apparmor.aa.RE_RULE_HAS_COMMA"""
 
     def _check(self, line, expected=True):
         result = aa.RE_RULE_HAS_COMMA.search(line)
@@ -135,7 +135,7 @@ def setup_has_comma_testcases():
 
 
 class AARegexSplitComment(AATest):
-    '''Tests for RE_HAS_COMMENT_SPLIT'''
+    """Tests for RE_HAS_COMMENT_SPLIT"""
 
     def _check(self, line, expected, comment=None, not_comment=None):
         result = aa.RE_HAS_COMMENT_SPLIT.search(line)
@@ -189,14 +189,14 @@ def setup_split_comment_testcases():
 
 
 def _regex_test(self, line, expected):
-    '''Run a line through self.regex.search() and verify the result
+    """Run a line through self.regex.search() and verify the result
 
     Keyword arguments:
     line -- the line to search
     expected -- False if the search isn't expected to match or, if the search
                 is expected to match, a tuple of expected match groups with all
                 of the strings stripped
-    '''
+    """
     result = self.regex.search(line)
     if not expected:
         self.assertFalse(result)
@@ -213,7 +213,7 @@ def _regex_test(self, line, expected):
 
 
 class AARegexCapability(AARegexTest):
-    '''Tests for RE_PROFILE_CAP'''
+    """Tests for RE_PROFILE_CAP"""
 
     def AASetup(self):
         self.regex = RE_PROFILE_CAP
@@ -228,7 +228,7 @@ class AARegexCapability(AARegexTest):
 
 
 class AARegexDbus(AARegexTest):
-    '''Tests for RE_PROFILE_DBUS'''
+    """Tests for RE_PROFILE_DBUS"""
 
     def AASetup(self):
         self.regex = RE_PROFILE_DBUS
@@ -245,7 +245,7 @@ class AARegexDbus(AARegexTest):
 
 
 class AARegexMount(AARegexTest):
-    '''Tests for RE_PROFILE_MOUNT'''
+    """Tests for RE_PROFILE_MOUNT"""
 
     def AASetup(self):
         self.regex = aa.RE_PROFILE_MOUNT
@@ -268,7 +268,7 @@ class AARegexMount(AARegexTest):
 
 
 class AARegexSignal(AARegexTest):
-    '''Tests for RE_PROFILE_SIGNAL'''
+    """Tests for RE_PROFILE_SIGNAL"""
 
     def AASetup(self):
         self.regex = RE_PROFILE_SIGNAL
@@ -289,7 +289,7 @@ class AARegexSignal(AARegexTest):
 
 
 class AARegexPtrace(AARegexTest):
-    '''Tests for RE_PROFILE_PTRACE'''
+    """Tests for RE_PROFILE_PTRACE"""
 
     def AASetup(self):
         self.regex = RE_PROFILE_PTRACE
@@ -310,7 +310,7 @@ class AARegexPtrace(AARegexTest):
 
 
 class AARegexPivotRoot(AARegexTest):
-    '''Tests for RE_PROFILE_PIVOT_ROOT'''
+    """Tests for RE_PROFILE_PIVOT_ROOT"""
 
     def AASetup(self):
         self.regex = aa.RE_PROFILE_PIVOT_ROOT
@@ -334,7 +334,7 @@ class AARegexPivotRoot(AARegexTest):
 
 
 class AARegexUnix(AARegexTest):
-    '''Tests for RE_PROFILE_UNIX'''
+    """Tests for RE_PROFILE_UNIX"""
 
     def AASetup(self):
         self.regex = aa.RE_PROFILE_UNIX
@@ -356,7 +356,7 @@ class AARegexUnix(AARegexTest):
 
 
 class AANamedRegexProfileStart_2(AANamedRegexTest):
-    '''Tests for RE_PROFILE_START'''
+    """Tests for RE_PROFILE_START"""
 
     def AASetup(self):
         self.regex = RE_PROFILE_START

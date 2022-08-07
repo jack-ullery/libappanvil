@@ -29,7 +29,7 @@ DEBUGGING = False
 # TODO: move this out to a utilities library
 #
 def error(out, exit_code=1, do_exit=True):
-    '''Print error message and exit'''
+    """Print error message and exit"""
     try:
         sys.stderr.write("ERROR: %s\n" % (out))
     except IOError:
@@ -40,7 +40,7 @@ def error(out, exit_code=1, do_exit=True):
 
 
 def warn(out):
-    '''Print warning message'''
+    """Print warning message"""
     try:
         sys.stderr.write("WARN: %s\n" % (out))
     except IOError:
@@ -48,7 +48,7 @@ def warn(out):
 
 
 def msg(out, output=sys.stdout):
-    '''Print message'''
+    """Print message"""
     try:
         sys.stdout.write("%s\n" % (out))
     except IOError:
@@ -56,7 +56,7 @@ def msg(out, output=sys.stdout):
 
 
 def cmd(command):
-    '''Try to execute the given command.'''
+    """Try to execute the given command."""
     debug(command)
     try:
         sp = subprocess.Popen(command, stdout=subprocess.PIPE,
@@ -69,7 +69,7 @@ def cmd(command):
 
 
 def debug(out):
-    '''Print debug message'''
+    """Print debug message"""
     if DEBUGGING:
         try:
             sys.stderr.write("DEBUG: %s\n" % (out))
@@ -78,7 +78,7 @@ def debug(out):
 
 
 def valid_binary_path(path):
-    '''Validate name'''
+    """Validate name"""
     try:
         a_path = os.path.abspath(path)
     except Exception:
@@ -101,7 +101,7 @@ def valid_binary_path(path):
 
 
 def valid_variable(v):
-    '''Validate variable name'''
+    """Validate variable name"""
     debug("Checking '%s'" % v)
     try:
         (key, value) = v.split('=')
@@ -126,7 +126,7 @@ def valid_variable(v):
 
 
 def valid_path(path, relative_ok=False):
-    '''Valid path'''
+    """Valid path"""
     m = "Invalid path: %s" % (path)
     if not relative_ok and not path.startswith('/'):
         debug("%s (relative)" % (m))
@@ -155,19 +155,19 @@ def valid_path(path, relative_ok=False):
 
 
 def _is_safe(s):
-    '''Known safe regex'''
+    """Known safe regex"""
     if re.search(r'^[a-zA-Z_0-9\-\.]+$', s):
         return True
     return False
 
 
 def valid_policy_vendor(s):
-    '''Verify the policy vendor'''
+    """Verify the policy vendor"""
     return _is_safe(s)
 
 
 def valid_policy_version(v):
-    '''Verify the policy version'''
+    """Verify the policy version"""
     try:
         float(v)
     except ValueError:
@@ -178,7 +178,7 @@ def valid_policy_version(v):
 
 
 def valid_template_name(s, strict=False):
-    '''Verify the template name'''
+    """Verify the template name"""
     if not strict and s.startswith('/'):
         if not valid_path(s):
             return False
@@ -187,12 +187,12 @@ def valid_template_name(s, strict=False):
 
 
 def valid_abstraction_name(s):
-    '''Verify the template name'''
+    """Verify the template name"""
     return _is_safe(s)
 
 
 def valid_profile_name(s):
-    '''Verify the profile name'''
+    """Verify the profile name"""
     # profile name specifies path
     if s.startswith('/'):
         if not valid_path(s):
@@ -207,12 +207,12 @@ def valid_profile_name(s):
 
 
 def valid_policy_group_name(s):
-    '''Verify policy group name'''
+    """Verify policy group name"""
     return _is_safe(s)
 
 
 def get_directory_contents(path):
-    '''Find contents of the given directory'''
+    """Find contents of the given directory"""
     if not valid_path(path):
         return None
 
@@ -225,7 +225,7 @@ def get_directory_contents(path):
 
 
 def verify_policy(policy, exe, base=None, include=None):
-    '''Verify policy compiles'''
+    """Verify policy compiles"""
     if not exe:
         warn("Could not find apparmor_parser. Skipping verify")
         return True
@@ -257,7 +257,7 @@ def verify_policy(policy, exe, base=None, include=None):
 
 
 class AppArmorEasyProfile:
-    '''Easy profile class'''
+    """Easy profile class"""
     def __init__(self, binary, opt):
         verify_options(opt)
         opt.ensure_value("conffile", "/etc/apparmor/easyprof.conf")
@@ -363,7 +363,7 @@ class AppArmorEasyProfile:
                     self.policy_groups.append(f)
 
     def _get_defaults(self):
-        '''Read in defaults from configuration'''
+        """Read in defaults from configuration"""
         if not os.path.exists(self.conffile):
             raise AppArmorException("Could not find '%s'" % self.conffile)
 
@@ -391,16 +391,16 @@ class AppArmorEasyProfile:
                 raise AppArmorException("Could not find '%s'" % self.dirs[k])
 
     def set_name(self, name):
-        '''Set name of policy'''
+        """Set name of policy"""
         self.name = name
 
     def get_template(self):
-        '''Get contents of current template'''
+        """Get contents of current template"""
         with open(self.template) as f:
             return f.read()
 
     def set_template(self, template, allow_abs_path=True):
-        '''Set current template'''
+        """Set current template"""
         if "../" in template:
             raise AppArmorException('template "%s" contains "../" escape path' % (template))
         elif template.startswith('/') and not allow_abs_path:
@@ -427,11 +427,11 @@ class AppArmorEasyProfile:
             raise AppArmorException('%s does not exist' % (template))
 
     def get_templates(self):
-        '''Get list of all available templates by filename'''
+        """Get list of all available templates by filename"""
         return self.templates
 
     def get_policygroup(self, policygroup):
-        '''Get contents of specific policygroup'''
+        """Get contents of specific policygroup"""
         p = policygroup
         if not p.startswith('/'):
             sys_p = os.path.join(self.dirs['policygroups'], p)
@@ -450,7 +450,7 @@ class AppArmorEasyProfile:
             return f.read()
 
     def set_policygroup(self, policygroups):
-        '''Set policygroups'''
+        """Set policygroups"""
         self.policy_groups = []
         if policygroups is not None:
             for p in policygroups.split(','):
@@ -475,11 +475,11 @@ class AppArmorEasyProfile:
                     raise AppArmorException('%s does not exist' % (p))
 
     def get_policy_groups(self):
-        '''Get list of all policy groups by filename'''
+        """Get list of all policy groups by filename"""
         return self.policy_groups
 
     def gen_abstraction_rule(self, abstraction):
-        '''Generate an abstraction rule'''
+        """Generate an abstraction rule"""
         base = os.path.join(self.parser_base, "abstractions", abstraction)
         if not os.path.exists(base):
             if not self.parser_include:
@@ -492,7 +492,7 @@ class AppArmorEasyProfile:
         return "#include <abstractions/%s>" % abstraction
 
     def gen_variable_declaration(self, dec):
-        '''Generate a variable declaration'''
+        """Generate a variable declaration"""
         if not valid_variable(dec):
             raise AppArmorException("Invalid variable declaration '%s'" % dec)
         # Make sure we always quote
@@ -534,7 +534,7 @@ class AppArmorEasyProfile:
             copyright=None,
             no_verify=False):
         def find_prefix(t, s):
-            '''Calculate whitespace prefix based on occurrence of s in t'''
+            """Calculate whitespace prefix based on occurrence of s in t"""
             pat = re.compile(r'^ *%s' % s)
             p = ""
             for line in t.splitlines():
@@ -648,7 +648,7 @@ class AppArmorEasyProfile:
         return policy
 
     def output_policy(self, params, count=0, dir=None):
-        '''Output policy'''
+        """Output policy"""
         policy = self.gen_policy(**params)
         if not dir:
             if count:
@@ -681,7 +681,7 @@ class AppArmorEasyProfile:
             os.rename(f.name, out_fn)
 
     def gen_manifest(self, params):
-        '''Take params list and output a JSON file'''
+        """Take params list and output a JSON file"""
         d = dict()
         d['security'] = dict()
         d['security']['profiles'] = dict()
@@ -749,7 +749,7 @@ def print_files(files):
 
 
 def check_manifest_conflict_args(option, opt_str, value, parser):
-    '''Check for -m/--manifest with conflicting args'''
+    """Check for -m/--manifest with conflicting args"""
     conflict_args = ['abstractions',
                      'read_path',
                      'write_path',
@@ -772,7 +772,7 @@ def check_manifest_conflict_args(option, opt_str, value, parser):
 
 
 def check_for_manifest_arg(option, opt_str, value, parser):
-    '''Check for -m/--manifest with conflicting args'''
+    """Check for -m/--manifest with conflicting args"""
     if parser.values.manifest:
         raise optparse.OptionValueError(
             "can't use --%s with --manifest argument" % opt_str.lstrip('-'))
@@ -780,7 +780,7 @@ def check_for_manifest_arg(option, opt_str, value, parser):
 
 
 def check_for_manifest_arg_append(option, opt_str, value, parser):
-    '''Check for -m/--manifest with conflicting args (with append)'''
+    """Check for -m/--manifest with conflicting args (with append)"""
     if parser.values.manifest:
         raise optparse.OptionValueError(
             "can't use --%s with --manifest argument" % opt_str.lstrip('-'))
@@ -788,7 +788,7 @@ def check_for_manifest_arg_append(option, opt_str, value, parser):
 
 
 def add_parser_policy_args(parser):
-    '''Add parser arguments'''
+    """Add parser arguments"""
     parser.add_option("--parser",
                       dest="parser_path",
                       help="The path to the profile parser used for verification",
@@ -873,7 +873,7 @@ def add_parser_policy_args(parser):
 
 
 def parse_args(args=None, parser=None):
-    '''Parse arguments'''
+    """Parse arguments"""
     global DEBUGGING
 
     if parser is None:
@@ -979,7 +979,7 @@ def parse_args(args=None, parser=None):
 
 
 def gen_policy_params(binary, opt):
-    '''Generate parameters for gen_policy'''
+    """Generate parameters for gen_policy"""
     params = dict(binary=binary)
 
     if not binary and not opt.profile_name:
@@ -1021,8 +1021,8 @@ def gen_policy_params(binary, opt):
 
 
 def parse_manifest(manifest, opt_orig):
-    '''Take a JSON manifest as a string and updates options, returning an
-       updated binary. Note that a JSON file may contain multiple profiles.'''
+    """Take a JSON manifest as a string and updates options, returning an
+       updated binary. Note that a JSON file may contain multiple profiles."""
 
     try:
         m = json.loads(manifest)
@@ -1108,7 +1108,7 @@ def parse_manifest(manifest, opt_orig):
 
 
 def verify_options(opt, strict=False):
-    '''Make sure our options are valid'''
+    """Make sure our options are valid"""
     if hasattr(opt, 'binary') and opt.binary and not valid_path(opt.binary):
         raise AppArmorException("Invalid binary '%s'" % opt.binary)
     if (hasattr(opt, 'profile_name') and opt.profile_name is not None
@@ -1150,7 +1150,7 @@ def verify_options(opt, strict=False):
 
 
 def verify_manifest(params, args=None):
-    '''Verify manifest for safe and unsafe options'''
+    """Verify manifest for safe and unsafe options"""
     err_str = ""
     (opt, args) = parse_args(args)
     fake_easyp = AppArmorEasyProfile(None, opt)

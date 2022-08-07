@@ -36,8 +36,8 @@ def subprocess_setup():
 
 
 def cmd(command):
-    '''Try to execute given command (array) and return its stdout, or return
-    a textual error if it failed.'''
+    """Try to execute given command (array) and return its stdout, or return
+    a textual error if it failed."""
 
     try:
         sp = subprocess.Popen(
@@ -66,7 +66,7 @@ def cmd(command):
 class AANotifyTest(AATest):
 
     def AASetup(self):
-        '''Create temporary log file with 30 enties of different age'''
+        """Create temporary log file with 30 enties of different age"""
 
         test_logfile_contents_999_days_old = \
 '''Feb  4 13:40:38 XPS-13-9370 kernel: [128552.834382] audit: type=1400 audit({epoch}:113): apparmor="ALLOWED" operation="exec" profile="libreoffice-soffice" name="/bin/uname" pid=4097 comm="sh" requested_mask="x" denied_mask="x" fsuid=1001 ouid=0 target="libreoffice-soffice//null-/bin/uname"
@@ -123,7 +123,7 @@ Feb  4 13:40:38 XPS-13-9370 kernel: [128552.880347] audit: type=1400 audit({epoc
             )
 
     def AATeardown(self):
-        '''Remove temporary log file after tests ended'''
+        """Remove temporary log file after tests ended"""
 
         if self.test_logfile and os.path.exists(self.test_logfile):
             os.remove(self.test_logfile)
@@ -132,7 +132,7 @@ Feb  4 13:40:38 XPS-13-9370 kernel: [128552.880347] audit: type=1400 audit({epoc
     # before printing help when invoked without arguments (sic!).
     @unittest.skipUnless(os.path.isfile('/var/log/kern.log'), 'Requires kern.log on system')
     def test_no_arguments(self):
-        '''Test using no arguments at all'''
+        """Test using no arguments at all"""
 
         expected_return_code = 0
         expected_output_has = 'usage: aa-notify'
@@ -144,7 +144,7 @@ Feb  4 13:40:38 XPS-13-9370 kernel: [128552.880347] audit: type=1400 audit({epoc
         self.assertIn(expected_output_has, output, result + output)
 
     def test_help_contents(self):
-        '''Test output of help text'''
+        """Test output of help text"""
 
         expected_return_code = 0
         expected_output_1 = \
@@ -180,7 +180,7 @@ Display AppArmor notifications or messages for DENIED entries.
         self.assertIn(expected_output_2, output)
 
     def test_entries_since_100_days(self):
-        '''Test showing log entries since 100 days'''
+        """Test showing log entries since 100 days"""
 
         expected_return_code = 0
         expected_output_has = 'AppArmor denials: 20 (since'
@@ -193,7 +193,7 @@ Display AppArmor notifications or messages for DENIED entries.
 
     @unittest.skipUnless(os.path.isfile('/var/log/wtmp'), 'Requires wtmp on system')
     def test_entries_since_login(self):
-        '''Test showing log entries since last login'''
+        """Test showing log entries since last login"""
 
         expected_return_code = 0
         expected_output_has = 'AppArmor denials: 10 (since'
@@ -208,7 +208,7 @@ Display AppArmor notifications or messages for DENIED entries.
 
     @unittest.skipUnless(os.path.isfile('/var/log/wtmp'), 'Requires wtmp on system')
     def test_entries_since_login_verbose(self):
-        '''Test showing log entries since last login in verbose mode'''
+        """Test showing log entries since last login in verbose mode"""
 
         expected_return_code = 0
         expected_output_has = \

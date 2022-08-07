@@ -37,7 +37,7 @@ RE_NICE = re.compile('^(-20|-[01]?[0-9]|[01]?[0-9])$')
 
 
 class RlimitRule(BaseRule):
-    '''Class to handle and store a single rlimit rule'''
+    """Class to handle and store a single rlimit rule"""
 
     # Nothing external should reference this class, all external users
     # should reference the class field RlimitRule.ALL
@@ -110,7 +110,7 @@ class RlimitRule(BaseRule):
 
     @classmethod
     def _parse(cls, raw_rule):
-        '''parse raw_rule and return RlimitRule'''
+        """parse raw_rule and return RlimitRule"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -134,7 +134,7 @@ class RlimitRule(BaseRule):
         return RlimitRule(rlimit, value, comment=comment)
 
     def get_clean(self, depth=0):
-        '''return rule (in clean/default formatting)'''
+        """return rule (in clean/default formatting)"""
 
         space = '  ' * depth
 
@@ -198,7 +198,7 @@ class RlimitRule(BaseRule):
         return number
 
     def is_covered_localvars(self, other_rule):
-        '''check if other_rule is covered by this rule object'''
+        """check if other_rule is covered by this rule object"""
 
         if not self._is_covered_plain(self.rlimit, False, other_rule.rlimit, False, 'rlimit'):  # rlimit can't be ALL, therefore using False
             return False
@@ -216,7 +216,7 @@ class RlimitRule(BaseRule):
         return True
 
     def is_equal_localvars(self, rule_obj, strict):
-        '''compare if rule-specific variables are equal'''
+        """compare if rule-specific variables are equal"""
 
         if not type(rule_obj) == RlimitRule:
             raise AppArmorBug('Passed non-rlimit rule: %s' % str(rule_obj))
@@ -245,10 +245,10 @@ class RlimitRule(BaseRule):
 
 
 class RlimitRuleset(BaseRuleset):
-    '''Class to handle and store a collection of rlimit rules'''
+    """Class to handle and store a collection of rlimit rules"""
 
     def get_glob(self, path_or_rule):
-        '''Return the next possible glob. For rlimit rules, that can mean changing the value to 'infinity' '''
+        """Return the next possible glob. For rlimit rules, that can mean changing the value to 'infinity'"""
         # XXX implement all options mentioned above ;-)
         raise AppArmorBug('get_glob() is not (yet) available for this rule type')
 

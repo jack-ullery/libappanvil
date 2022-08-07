@@ -50,10 +50,10 @@ ruletypes = {
 
 
 class ProfileStorage:
-    '''class to store the content (header, rules, comments) of a profilename
+    """class to store the content (header, rules, comments) of a profilename
 
        Acts like a dict(), but has some additional checks.
-    '''
+    """
 
     def __init__(self, profilename, hat, calledby):
         data = dict()
@@ -169,10 +169,10 @@ class ProfileStorage:
         return data
 
     def get_rules_clean(self, depth):
-        '''return all clean rules of a profile (with default formatting, and leading whitespace as specified in the depth parameter)
+        """return all clean rules of a profile (with default formatting, and leading whitespace as specified in the depth parameter)
 
            Note that the profile header and the closing "}" are _not_ included.
-        '''
+        """
 
         # "old" write functions for rule types not implemented as *Rule class yet
         write_functions = {
@@ -209,7 +209,7 @@ class ProfileStorage:
 
     @classmethod
     def parse(cls, line, file, lineno, profile, hat):
-        ''' parse a profile start line (using parse_profile_startline()) and convert it to a ProfileStorage '''
+        """parse a profile start line (using parse_profile_startline()) and convert it to a ProfileStorage"""
 
         matches = parse_profile_start_line(line, file)
 
@@ -260,7 +260,7 @@ class ProfileStorage:
 
 
 def split_flags(flags):
-    '''split the flags given as string into a sorted, de-duplicated list'''
+    """split the flags given as string into a sorted, de-duplicated list"""
 
     if flags is None:
         flags = ''
@@ -272,7 +272,7 @@ def split_flags(flags):
 
 
 def add_or_remove_flag(flags, flags_to_change, set_flag):
-    '''add (if set_flag is True) or remove the given flags_to_change to flags'''
+    """add (if set_flag is True) or remove the given flags_to_change to flags"""
 
     if type(flags) is str or flags is None:
         flags = split_flags(flags)

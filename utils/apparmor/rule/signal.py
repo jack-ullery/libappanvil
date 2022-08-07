@@ -67,7 +67,7 @@ RE_FILTER_QUOTES = re.compile('"([a-z0-9]+)"')  # used to strip quotes around si
 
 
 class SignalRule(BaseRule):
-    '''Class to handle and store a single signal rule'''
+    """Class to handle and store a single signal rule"""
 
     # Nothing external should reference this class, all external users
     # should reference the class field SignalRule.ALL
@@ -106,7 +106,7 @@ class SignalRule(BaseRule):
 
     @classmethod
     def _parse(cls, raw_rule):
-        '''parse raw_rule and return SignalRule'''
+        """parse raw_rule and return SignalRule"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -153,7 +153,7 @@ class SignalRule(BaseRule):
                           audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
-        '''return rule (in clean/default formatting)'''
+        """return rule (in clean/default formatting)"""
 
         space = '  ' * depth
 
@@ -185,7 +185,7 @@ class SignalRule(BaseRule):
         return ('%s%ssignal%s%s%s,%s' % (space, self.modifiers_str(), access, signal, peer, self.comment))
 
     def is_covered_localvars(self, other_rule):
-        '''check if other_rule is covered by this rule object'''
+        """check if other_rule is covered by this rule object"""
 
         if not self._is_covered_list(self.access, self.all_access, other_rule.access, other_rule.all_access, 'access'):
             return False
@@ -200,7 +200,7 @@ class SignalRule(BaseRule):
         return True
 
     def is_equal_localvars(self, rule_obj, strict):
-        '''compare if rule-specific variables are equal'''
+        """compare if rule-specific variables are equal"""
 
         if not type(rule_obj) == SignalRule:
             raise AppArmorBug('Passed non-signal rule: %s' % str(rule_obj))
@@ -231,9 +231,9 @@ class SignalRule(BaseRule):
 
 
 class SignalRuleset(BaseRuleset):
-    '''Class to handle and store a collection of signal rules'''
+    """Class to handle and store a collection of signal rules"""
 
     def get_glob(self, path_or_rule):
-        '''Return the next possible glob. For signal rules, that means removing access, signal or peer'''
+        """Return the next possible glob. For signal rules, that means removing access, signal or peer"""
         # XXX only remove one part, not all
         return 'signal,'

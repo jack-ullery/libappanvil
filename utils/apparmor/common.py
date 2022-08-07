@@ -29,7 +29,7 @@ DEBUGGING = False
 # Utility classes
 #
 class AppArmorException(Exception):
-    '''This class represents AppArmor exceptions'''
+    """This class represents AppArmor exceptions"""
     def __init__(self, value):
         self.value = value
 
@@ -38,14 +38,14 @@ class AppArmorException(Exception):
 
 
 class AppArmorBug(Exception):
-    '''This class represents AppArmor exceptions "that should never happen"'''
+    """This class represents AppArmor exceptions "that should never happen"."""
 
 
 #
 # Utility functions
 #
 def error(out, exit_code=1, do_exit=True):
-    '''Print error message and exit'''
+    """Print error message and exit"""
     try:
         print("ERROR: %s" % (out), file=sys.stderr)
     except IOError:
@@ -56,7 +56,7 @@ def error(out, exit_code=1, do_exit=True):
 
 
 def warn(out):
-    '''Print warning message'''
+    """Print warning message"""
     try:
         print("WARN: %s" % (out), file=sys.stderr)
     except IOError:
@@ -64,7 +64,7 @@ def warn(out):
 
 
 def msg(out, output=sys.stdout):
-    '''Print message'''
+    """Print message"""
     try:
         print("%s" % (out), file=output)
     except IOError:
@@ -72,7 +72,7 @@ def msg(out, output=sys.stdout):
 
 
 def debug(out):
-    '''Print debug message'''
+    """Print debug message"""
     global DEBUGGING
     if DEBUGGING:
         try:
@@ -87,7 +87,7 @@ def recursive_print(src, dpth=0, key=''):
 
     # based on code "stolen" from Scott S-Allen / MIT License
     # http://code.activestate.com/recipes/578094-recursively-print-nested-dictionaries/
-    """ Recursively prints nested elements."""
+    """Recursively prints nested elements."""
     tabs = ' ' * dpth * 4  # or 2 or 8 or...
 
     if isinstance(src, dict):
@@ -116,7 +116,7 @@ def recursive_print(src, dpth=0, key=''):
 
 
 def cmd(command):
-    '''Try to execute the given command.'''
+    """Try to execute the given command."""
     debug(command)
     try:
         sp = subprocess.Popen(command, stdout=subprocess.PIPE,
@@ -130,7 +130,7 @@ def cmd(command):
 
 
 def cmd_pipe(command1, command2):
-    '''Try to pipe command1 into command2.'''
+    """Try to pipe command1 into command2."""
     try:
         sp1 = subprocess.Popen(command1, stdout=subprocess.PIPE)
         sp2 = subprocess.Popen(command2, stdin=sp1.stdout)
@@ -143,7 +143,7 @@ def cmd_pipe(command1, command2):
 
 
 def valid_path(path):
-    '''Valid path'''
+    """Valid path"""
     # No relative paths
     m = "Invalid path: %s" % (path)
     if not path.startswith('/'):
@@ -163,7 +163,7 @@ def valid_path(path):
 
 
 def get_directory_contents(path):
-    '''Find contents of the given directory'''
+    """Find contents of the given directory"""
     if not valid_path(path):
         return None
 
@@ -195,17 +195,17 @@ def is_skippable_file(path):
 
 
 def open_file_read(path, encoding='UTF-8'):
-    '''Open specified file read-only'''
+    """Open specified file read-only"""
     return open_file_anymode('r', path, encoding)
 
 
 def open_file_write(path):
-    '''Open specified file in write/overwrite mode'''
+    """Open specified file in write/overwrite mode"""
     return open_file_anymode('w', path, 'UTF-8')
 
 
 def open_file_anymode(mode, path, encoding='UTF-8'):
-    '''Crash-resistant wrapper to open a specified file in specified mode'''
+    """Crash-resistant wrapper to open a specified file in specified mode"""
 
     # This avoids a crash when reading a logfile with special characters that
     # are not utf8-encoded (for example a latin1 "ö"), and also avoids crashes
@@ -214,7 +214,7 @@ def open_file_anymode(mode, path, encoding='UTF-8'):
 
 
 def readkey():
-    '''Returns the pressed key'''
+    """Returns the pressed key"""
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     try:
@@ -227,7 +227,7 @@ def readkey():
 
 
 def hasher():
-    '''A neat alternative to perl's hash reference'''
+    """A neat alternative to perl's hash reference"""
     # Creates a dictionary for any depth and returns empty dictionary otherwise
     # WARNING: when reading non-existing sub-dicts, empty dicts will be added.
     #          This might cause strange effects when using .keys()
@@ -286,7 +286,7 @@ def split_name(full_profile):
 
 
 def combine_profname(name_parts):
-    ''' combine name_parts (main profile, child) into a joint main//child profile name '''
+    """combine name_parts (main profile, child) into a joint main//child profile name"""
 
     if type(name_parts) is not list:
         raise AppArmorBug('combine_name() called with parameter of type %s, must be a list' % type(name_parts))
@@ -299,12 +299,12 @@ def combine_profname(name_parts):
 
 
 class DebugLogger:
-    '''Unified debug facility. Logs to file or stderr.
+    """Unified debug facility. Logs to file or stderr.
 
     Does not log anything by default. Will only log if environment variable
     LOGPROF_DEBUG is set to a number between 1 and 3 or if method activateStderr
     is run.
-    '''
+    """
     def __init__(self, module_name=__name__):
         self.debugging = False
         self.debug_level = logging.DEBUG

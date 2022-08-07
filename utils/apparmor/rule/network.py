@@ -46,7 +46,7 @@ RE_NETWORK_DETAILS = re.compile(
 
 
 class NetworkRule(BaseRule):
-    '''Class to handle and store a single network rule'''
+    """Class to handle and store a single network rule"""
 
     # Nothing external should reference this class, all external users
     # should reference the class field NetworkRule.ALL
@@ -95,7 +95,7 @@ class NetworkRule(BaseRule):
 
     @classmethod
     def _parse(cls, raw_rule):
-        '''parse raw_rule and return NetworkRule'''
+        """parse raw_rule and return NetworkRule"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -129,7 +129,7 @@ class NetworkRule(BaseRule):
                            audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
-        '''return rule (in clean/default formatting)'''
+        """return rule (in clean/default formatting)"""
 
         space = '  ' * depth
 
@@ -150,7 +150,7 @@ class NetworkRule(BaseRule):
         return ('%s%snetwork%s%s,%s' % (space, self.modifiers_str(), domain, type_or_protocol, self.comment))
 
     def is_covered_localvars(self, other_rule):
-        '''check if other_rule is covered by this rule object'''
+        """check if other_rule is covered by this rule object"""
 
         if not self._is_covered_plain(self.domain, self.all_domains, other_rule.domain, other_rule.all_domains, 'domain'):
             return False
@@ -162,7 +162,7 @@ class NetworkRule(BaseRule):
         return True
 
     def is_equal_localvars(self, rule_obj, strict):
-        '''compare if rule-specific variables are equal'''
+        """compare if rule-specific variables are equal"""
 
         if not type(rule_obj) == NetworkRule:
             raise AppArmorBug('Passed non-network rule: %s' % str(rule_obj))
@@ -188,9 +188,9 @@ class NetworkRule(BaseRule):
 
 
 class NetworkRuleset(BaseRuleset):
-    '''Class to handle and store a collection of network rules'''
+    """Class to handle and store a collection of network rules"""
 
     def get_glob(self, path_or_rule):
-        '''Return the next possible glob. For network rules, that's "network DOMAIN," or "network," (all network)'''
+        """Return the next possible glob. For network rules, that's "network DOMAIN," or "network," (all network)"""
         # XXX return 'network DOMAIN,' if 'network DOMAIN TYPE_OR_PROTOCOL' was given
         return 'network,'

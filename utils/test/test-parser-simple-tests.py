@@ -437,7 +437,7 @@ class TestParseParserTests(AATest):
 
 
 def parse_test_profiles(file_with_path):
-    '''parse the test-related headers of a profile (for example EXRESULT) and add the profile to the set of tests'''
+    """parse the test-related headers of a profile (for example EXRESULT) and add the profile to the set of tests"""
     exresult = None
     exresult_found = False
     description = None
@@ -506,11 +506,11 @@ def parse_test_profiles(file_with_path):
 
 
 def find_and_setup_test_profiles(profile_dir):
-    '''find all profiles in the given profile_dir, excluding
+    """find all profiles in the given profile_dir, excluding
     - skippable files
     - include directories
     - files in the main directory (readme, todo etc.)
-    '''
+    """
     skipped = 0
 
     profile_dir = os.path.abspath(profile_dir)

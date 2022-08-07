@@ -25,7 +25,7 @@ _ = init_translation()
 
 
 class CapabilityRule(BaseRule):
-    '''Class to handle and store a single capability rule'''
+    """Class to handle and store a single capability rule"""
 
     # Nothing external should reference this class, all external users
     # should reference the class field CapabilityRule.ALL
@@ -66,7 +66,7 @@ class CapabilityRule(BaseRule):
 
     @classmethod
     def _parse(cls, raw_rule):
-        '''parse raw_rule and return CapabilityRule'''
+        """parse raw_rule and return CapabilityRule"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -87,7 +87,7 @@ class CapabilityRule(BaseRule):
                               comment=comment)
 
     def get_clean(self, depth=0):
-        '''return rule (in clean/default formatting)'''
+        """return rule (in clean/default formatting)"""
 
         space = '  ' * depth
         if self.all_caps:
@@ -100,7 +100,7 @@ class CapabilityRule(BaseRule):
                 raise AppArmorBug("Empty capability rule")
 
     def is_covered_localvars(self, other_rule):
-        '''check if other_rule is covered by this rule object'''
+        """check if other_rule is covered by this rule object"""
 
         if not self._is_covered_list(self.capability, self.all_caps, other_rule.capability, other_rule.all_caps, 'capability'):
             return False
@@ -109,7 +109,7 @@ class CapabilityRule(BaseRule):
         return True
 
     def is_equal_localvars(self, rule_obj, strict):
-        '''compare if rule-specific variables are equal'''
+        """compare if rule-specific variables are equal"""
 
         if not type(rule_obj) == CapabilityRule:
             raise AppArmorBug('Passed non-capability rule: %s' % str(rule_obj))
@@ -144,8 +144,8 @@ class CapabilityRule(BaseRule):
 
 
 class CapabilityRuleset(BaseRuleset):
-    '''Class to handle and store a collection of capability rules'''
+    """Class to handle and store a collection of capability rules"""
 
     def get_glob(self, path_or_rule):
-        '''Return the next possible glob. For capability rules, that's always "capability," (all capabilities)'''
+        """Return the next possible glob. For capability rules, that's always "capability," (all capabilities)"""
         return 'capability,'

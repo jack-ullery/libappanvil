@@ -51,8 +51,8 @@ import LibAppArmor  # C-library to parse one log line
 
 
 def get_user_login():
-    '''Portable function to get username. Should not trigger any
-    "OSError: [Errno 25] Inappropriate ioctl for device" errors in Giltab-CI'''
+    """Portable function to get username. Should not trigger any
+    "OSError: [Errno 25] Inappropriate ioctl for device" errors in Giltab-CI"""
     if os.name == "posix":
         username = pwd.getpwuid(os.geteuid()).pw_name
     else:
@@ -159,7 +159,7 @@ def show_entries_since_days(logfile, since_days):
 
 
 def follow_apparmor_events(logfile, wait=0):
-    '''Follow AppArmor events and yield relevant entries until process stops'''
+    """Follow AppArmor events and yield relevant entries until process stops"""
 
     # If wait was given as argument but was type None (from ArgumentParser)
     # ensure it's type int and zero
@@ -239,7 +239,7 @@ def reopen_logfile_if_needed(logfile, logdata, log_inode, log_size):
 
 
 def get_apparmor_events(logfile, since=0):
-    '''Read audit events from log source and yield all relevant events'''
+    """Read audit events from log source and yield all relevant events"""
 
     # Get logdata from file
     # @TODO Implement more log sources in addition to just the logfile
@@ -253,7 +253,7 @@ def get_apparmor_events(logfile, since=0):
 
 
 def parse_logdata(logsource):
-    '''Traverse any iterable log source and extract relevant AppArmor events'''
+    """Traverse any iterable log source and extract relevant AppArmor events"""
 
     RE_audit_time_id = '(msg=)?audit\([\d\.\:]+\):\s+'  # 'audit(1282626827.320:411): '
     RE_kernel_time = '\[[\d\.\s]+\]'    # '[ 1612.746129]'
@@ -287,7 +287,7 @@ def parse_logdata(logsource):
 
 
 def drop_privileges():
-    '''If running as root, drop privileges to USER if known, or fall-back to nobody_user/group'''
+    """If running as root, drop privileges to USER if known, or fall-back to nobody_user/group"""
 
     if os.geteuid() == 0:
 
@@ -315,7 +315,7 @@ def drop_privileges():
 
 
 def raise_privileges():
-    '''If was running as user with saved user ID 0, raise back to root privileges'''
+    """If was running as user with saved user ID 0, raise back to root privileges"""
 
     if os.geteuid() != 0 and original_effective_user == 0:
 
@@ -336,10 +336,10 @@ def read_notify_conf(path, shell_config):
 
 
 def main():
-    '''
+    """
     Main function of aa-notify that parses command line
     arguments and starts the requested operations.
-    '''
+    """
 
     global _, debug_logger, config, args
     global debug_docs_url, nobody_user, original_effective_user, timeformat

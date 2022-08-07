@@ -22,7 +22,7 @@ from apparmor.profile_list import ProfileList
 
 
 class TestLibapparmorTestMulti(AATest):
-    '''Parse all libraries/libapparmor/testsuite/test_multi tests and compare the result with the *.out files'''
+    """Parse all libraries/libapparmor/testsuite/test_multi tests and compare the result with the *.out files"""
 
     tests = 'invalid'  # filled by parse_test_profiles()
 
@@ -108,7 +108,7 @@ class TestLibapparmorTestMulti(AATest):
     }
 
     def _parse_libapparmor_test_multi(self, file_with_path):
-        '''parse the libapparmor test_multi *.in tests and their expected result in *.out'''
+        """parse the libapparmor test_multi *.in tests and their expected result in *.out"""
 
         with open_file_read('%s.out' % file_with_path) as f_in:
             expected = f_in.readlines()
@@ -185,7 +185,7 @@ log_to_profile_known_empty_log = [
 
 
 class TestLogToProfile(AATest):
-    '''Check if the libraries/libapparmor/testsuite/test_multi tests result in the expected profile'''
+    """Check if the libraries/libapparmor/testsuite/test_multi tests result in the expected profile"""
 
     tests = 'invalid'  # filled by parse_test_profiles()
 
@@ -284,7 +284,7 @@ def logfile_to_profile(logfile):
 
 
 def find_test_multi(log_dir):
-    '''find all log sniplets in the given log_dir'''
+    """find all log sniplets in the given log_dir"""
 
     log_dir = os.path.abspath(log_dir)
 

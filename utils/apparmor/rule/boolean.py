@@ -23,7 +23,7 @@ _ = init_translation()
 
 
 class BooleanRule(BaseRule):
-    '''Class to handle and store a single variable rule'''
+    """Class to handle and store a single variable rule"""
 
     rule_name = 'boolean'
 
@@ -62,7 +62,7 @@ class BooleanRule(BaseRule):
 
     @classmethod
     def _parse(cls, raw_rule):
-        '''parse raw_rule and return BooleanRule'''
+        """parse raw_rule and return BooleanRule"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -77,14 +77,14 @@ class BooleanRule(BaseRule):
                            audit=False, deny=False, allow_keyword=False, comment=comment)
 
     def get_clean(self, depth=0):
-        '''return rule (in clean/default formatting)'''
+        """return rule (in clean/default formatting)"""
 
         space = '  ' * depth
 
         return '%s%s = %s' % (space, self.varname, self.value)
 
     def is_covered_localvars(self, other_rule):
-        '''check if other_rule is covered by this rule object'''
+        """check if other_rule is covered by this rule object"""
 
         if self.varname != other_rule.varname:
             return False
@@ -96,7 +96,7 @@ class BooleanRule(BaseRule):
         return True
 
     def is_equal_localvars(self, rule_obj, strict):
-        '''compare if rule-specific variables are equal'''
+        """compare if rule-specific variables are equal"""
 
         if not type(rule_obj) == BooleanRule:
             raise AppArmorBug('Passed non-boolean rule: %s' % str(rule_obj))
@@ -118,13 +118,13 @@ class BooleanRule(BaseRule):
 
 
 class BooleanRuleset(BaseRuleset):
-    '''Class to handle and store a collection of variable rules'''
+    """Class to handle and store a collection of variable rules"""
 
     def add(self, rule, cleanup=False):
-        ''' Add boolean variable rule object
+        """Add boolean variable rule object
 
-            If the variable name is already known, raise an exception because re-defining a variable isn't allowed.
-        '''
+           If the variable name is already known, raise an exception because re-defining a variable isn't allowed.
+        """
 
         for knownrule in self.rules:
             if rule.varname == knownrule.varname:

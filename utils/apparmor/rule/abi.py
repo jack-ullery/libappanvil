@@ -24,7 +24,7 @@ _ = init_translation()
 # abi and include rules have a very similar syntax
 # base AbiRule on IncludeRule to inherit most of its behaviour
 class AbiRule(IncludeRule):
-    '''Class to handle and store a single abi rule'''
+    """Class to handle and store a single abi rule"""
 
     rule_name = 'abi'
 
@@ -44,7 +44,7 @@ class AbiRule(IncludeRule):
         return RE_ABI.search(raw_rule)
 
     def get_clean(self, depth=0):
-        '''return rule (in clean/default formatting)'''
+        """return rule (in clean/default formatting)"""
 
         space = '  ' * depth
 
@@ -58,4 +58,4 @@ class AbiRule(IncludeRule):
 
 
 class AbiRuleset(IncludeRuleset):
-    '''Class to handle and store a collection of abi rules'''
+    """Class to handle and store a collection of abi rules"""

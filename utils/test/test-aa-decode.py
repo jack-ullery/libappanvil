@@ -32,8 +32,8 @@ def subprocess_setup():
 
 # Define only arguments that are actually ever used: command and stdin
 def cmd(command, stdin=None):
-    '''Try to execute given command (array) and return its stdout, or return
-    a textual error if it failed.'''
+    """Try to execute given command (array) and return its stdout, or return
+    a textual error if it failed."""
 
     try:
         sp = subprocess.Popen(
@@ -62,7 +62,7 @@ def cmd(command, stdin=None):
 class AADecodeTest(unittest.TestCase):
 
     def test_help(self):
-        '''Test --help argument'''
+        """Test --help argument"""
 
         expected = 0
         rc, report = cmd((aadecode_bin, "--help"))
@@ -70,8 +70,8 @@ class AADecodeTest(unittest.TestCase):
         self.assertEqual(expected, rc, result + report)
 
     def _run_file_test(self, content, expected):
-        '''test case helper function; takes log content and a list of
-           expected strings as arguments'''
+        """test case helper function; takes log content and a list of
+           expected strings as arguments"""
 
         expected_return_code = 0
 
@@ -89,7 +89,7 @@ class AADecodeTest(unittest.TestCase):
             self.assertIn(expected_string, report, result + report)
 
     def test_simple_decode(self):
-        '''Test simple decode on command line'''
+        """Test simple decode on command line"""
 
         expected = 0
         expected_output = 'Decoded: /tmp/foo bar'
@@ -102,7 +102,7 @@ class AADecodeTest(unittest.TestCase):
         self.assertIn(expected_output, report, result + report)
 
     def test_simple_filter(self):
-        '''test simple decoding of the name argument'''
+        """test simple decoding of the name argument"""
 
         expected_string = 'name="/tmp/foo bar"'
         content = \
@@ -112,7 +112,7 @@ class AADecodeTest(unittest.TestCase):
         self._run_file_test(content, (expected_string,))
 
     def test_simple_multiline(self):
-        '''test simple multiline decoding of the name argument'''
+        """test simple multiline decoding of the name argument"""
 
         expected_strings = (
             'ses=4294967295 new ses=2762',
@@ -128,9 +128,9 @@ type=AVC msg=audit(1348982148.195:2933): apparmor="DENIED" operation="file_lock"
         self._run_file_test(content, expected_strings)
 
     def test_simple_profile(self):
-        '''test simple decoding of the profile argument'''
+        """test simple decoding of the profile argument"""
 
-        '''Example take from LP: #897957'''
+        # Example take from LP: #897957
         expected_strings = (
             'name="/lib/x86_64-linux-gnu/libdl-2.13.so"', 'profile="/test space"')
         content = \
@@ -140,9 +140,9 @@ type=AVC msg=audit(1348982148.195:2933): apparmor="DENIED" operation="file_lock"
         self._run_file_test(content, expected_strings)
 
     def test_simple_profile2(self):
-        '''test simple decoding of name and profile argument'''
+        """test simple decoding of name and profile argument"""
 
-        '''Example take from LP: #897957'''
+        # Example take from LP: #897957
         expected_strings = ('name="/home/steve/tmp/my test file"',
                             'profile="/home/steve/tmp/my prog.sh"')
         content = \
@@ -152,7 +152,7 @@ type=AVC msg=audit(1348982148.195:2933): apparmor="DENIED" operation="file_lock"
         self._run_file_test(content, expected_strings)
 
     def test_simple_embedded_carat(self):
-        '''test simple decoding of embedded ^ in files'''
+        """test simple decoding of embedded ^ in files"""
 
         expected_strings = ('name="/home/steve/tmp/my test ^file"',)
         content = \
@@ -162,7 +162,7 @@ type=AVC msg=audit(1348982148.195:2933): apparmor="DENIED" operation="file_lock"
         self._run_file_test(content, expected_strings)
 
     def test_simple_embedded_backslash_carat(self):
-        '''test simple decoding of embedded \^ in files'''
+        """test simple decoding of embedded \^ in files"""
 
         expected_strings = ('name="/home/steve/tmp/my test \^file"',)
         content = \
@@ -172,7 +172,7 @@ type=AVC msg=audit(1348982148.195:2933): apparmor="DENIED" operation="file_lock"
         self._run_file_test(content, expected_strings)
 
     def test_simple_embedded_singlequote(self):
-        '''test simple decoding of embedded \' in files'''
+        """test simple decoding of embedded \' in files"""
 
         expected_strings = ('name="/home/steve/tmp/my test \'file"',)
         content = \
@@ -182,7 +182,7 @@ type=AVC msg=audit(1348982148.195:2933): apparmor="DENIED" operation="file_lock"
         self._run_file_test(content, expected_strings)
 
     def test_simple_encoded_nonpath_profiles(self):
-        '''test simple decoding of nonpath profiles'''
+        """test simple decoding of nonpath profiles"""
 
         expected_strings = ('name="/lib/x86_64-linux-gnu/libdl-2.13.so"', 'profile="test space"')
         content = \

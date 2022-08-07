@@ -46,7 +46,7 @@ class aa_tools:
             self.silent = args.silent
 
     def get_next_to_profile(self):
-        '''Iterator function to walk the list of arguments passed'''
+        """Iterator function to walk the list of arguments passed"""
 
         for p in self.profiling:
             if not p:

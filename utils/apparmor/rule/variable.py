@@ -25,7 +25,7 @@ _ = init_translation()
 
 
 class VariableRule(BaseRule):
-    '''Class to handle and store a single variable rule'''
+    """Class to handle and store a single variable rule"""
 
     rule_name = 'variable'
 
@@ -68,7 +68,7 @@ class VariableRule(BaseRule):
 
     @classmethod
     def _parse(cls, raw_rule):
-        '''parse raw_rule and return VariableRule'''
+        """parse raw_rule and return VariableRule"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -84,7 +84,7 @@ class VariableRule(BaseRule):
                             audit=False, deny=False, allow_keyword=False, comment=comment)
 
     def get_clean(self, depth=0):
-        '''return rule (in clean/default formatting)'''
+        """return rule (in clean/default formatting)"""
 
         space = '  ' * depth
 
@@ -97,7 +97,7 @@ class VariableRule(BaseRule):
         return '%s%s %s %s' % (space, self.varname, self.mode, ' '.join(data))
 
     def is_covered_localvars(self, other_rule):
-        '''check if other_rule is covered by this rule object'''
+        """check if other_rule is covered by this rule object"""
 
         if self.varname != other_rule.varname:
             return False
@@ -112,7 +112,7 @@ class VariableRule(BaseRule):
         return True
 
     def is_equal_localvars(self, rule_obj, strict):
-        '''compare if rule-specific variables are equal'''
+        """compare if rule-specific variables are equal"""
 
         if not type(rule_obj) == VariableRule:
             raise AppArmorBug('Passed non-variable rule: %s' % str(rule_obj))
@@ -137,13 +137,13 @@ class VariableRule(BaseRule):
 
 
 class VariableRuleset(BaseRuleset):
-    '''Class to handle and store a collection of variable rules'''
+    """Class to handle and store a collection of variable rules"""
 
     def add(self, rule, cleanup=False):
-        ''' Add variable rule object
+        """Add variable rule object
 
-            If the variable name is already known, raise an exception because re-defining a variable isn't allowed.
-        '''
+           If the variable name is already known, raise an exception because re-defining a variable isn't allowed.
+        """
 
         if rule.mode == '=':
             for knownrule in self.rules:
@@ -155,10 +155,10 @@ class VariableRuleset(BaseRuleset):
         super().add(rule, cleanup)
 
     def get_merged_variables(self):
-        ''' Get merged variables of this VariableRuleset.
+        """Get merged variables of this VariableRuleset.
 
-            Note that no error checking is done because variables can be defined in one file and extended in another.
-        '''
+           Note that no error checking is done because variables can be defined in one file and extended in another.
+        """
 
         var_set = {}
         var_add = {}

@@ -23,7 +23,7 @@ _ = init_translation()
 
 
 class IncludeRule(BaseRule):
-    '''Class to handle and store a single include rule'''
+    """Class to handle and store a single include rule"""
 
     rule_name = 'include'
 
@@ -58,7 +58,7 @@ class IncludeRule(BaseRule):
 
     @classmethod
     def _parse(cls, raw_rule):
-        '''parse raw_rule and return IncludeRule'''
+        """parse raw_rule and return IncludeRule"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -73,7 +73,7 @@ class IncludeRule(BaseRule):
                    audit=False, deny=False, allow_keyword=False, comment=comment)
 
     def get_clean(self, depth=0):
-        '''return rule (in clean/default formatting)'''
+        """return rule (in clean/default formatting)"""
 
         space = '  ' * depth
 
@@ -87,7 +87,7 @@ class IncludeRule(BaseRule):
             return ('%s%s%s "%s"%s' % (space, self.rule_name, ifexists_txt, self.path, self.comment))
 
     def is_covered_localvars(self, other_rule):
-        '''check if other_rule is covered by this rule object'''
+        """check if other_rule is covered by this rule object"""
 
         if (self.path != other_rule.path):
             return False
@@ -102,7 +102,7 @@ class IncludeRule(BaseRule):
         return True
 
     def is_equal_localvars(self, rule_obj, strict):
-        '''compare if rule-specific variables are equal'''
+        """compare if rule-specific variables are equal"""
 
         if not type(rule_obj) == type(self):
             raise AppArmorBug('Passed non-%s rule: %s' % (self.rule_name, str(rule_obj)))
@@ -122,7 +122,7 @@ class IncludeRule(BaseRule):
         return [_('Include'), self.get_clean()]
 
     def get_full_paths(self, profile_dir):
-        ''' get list of full paths of an include (can contain multiple paths if self.path is a directory) '''
+        """get list of full paths of an include (can contain multiple paths if self.path is a directory)"""
 
         # TODO: improve/fix logic to honor magic vs. quoted include paths
         if self.path.startswith('/'):
@@ -151,10 +151,10 @@ class IncludeRule(BaseRule):
 
 
 class IncludeRuleset(BaseRuleset):
-    '''Class to handle and store a collection of include rules'''
+    """Class to handle and store a collection of include rules"""
 
     def get_all_full_paths(self, profile_dir):
-        ''' get full path of all includes '''
+        """get full path of all includes"""
 
         paths = []
         for rule_obj in self.rules:

@@ -25,8 +25,8 @@ danger_caps = ("audit_control",
 
 
 def cmd(command, input=None, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, stdin=None, timeout=None):
-    '''Try to execute given command (array) and return its stdout, or
-    return a textual error if it failed.'''
+    """Try to execute given command (array) and return its stdout, or
+    return a textual error if it failed."""
 
     try:
         sp = subprocess.Popen(command, stdin=stdin, stdout=stdout, stderr=stderr, close_fds=True, universal_newlines=True)
