@@ -39,25 +39,25 @@ RE_SIGNAL_REALTIME = re.compile('^rtmin\+0*([0-9]|[12][0-9]|3[0-2])$')  # rtmin+
 
 joint_access_keyword = '\s*(' + '|'.join(access_keywords) + ')\s*'
 RE_ACCESS_KEYWORDS = (
-    joint_access_keyword +  # one of the access_keyword or
-    '|' +                                           # or
-    '\(' + joint_access_keyword + '(' + '(\s|,)+' + joint_access_keyword + ')*' + '\)'  # one or more access_keyword in (...)
+    joint_access_keyword  # one of the access_keyword or
+    + '|'                                           # or
+    + '\(' + joint_access_keyword + '(' + '(\s|,)+' + joint_access_keyword + ')*' + '\)'  # one or more access_keyword in (...)
 )
 
 signal_keyword = '\s*([a-z0-9+]+|"[a-z0-9+]+")\s*'  # don't check against the signal keyword list in the regex to allow a more helpful error message
 RE_SIGNAL_KEYWORDS = (
-    'set\s*=\s*' + signal_keyword +  # one of the signal_keyword or
-    '|' +                                           # or
-    'set\s*=\s*\(' + signal_keyword + '(' + '(\s|,)+' + signal_keyword + ')*' + '\)'  # one or more signal_keyword in (...)
+    'set\s*=\s*' + signal_keyword  # one of the signal_keyword or
+    + '|'                                                    # or
+    + 'set\s*=\s*\(' + signal_keyword + '(' + '(\s|,)+' + signal_keyword + ')*' + '\)'  # one or more signal_keyword in (...)
 )
 
 
 RE_SIGNAL_DETAILS = re.compile(
-    '^' +
-    '(\s+(?P<access>' + RE_ACCESS_KEYWORDS + '))?' +  # optional access keyword(s)
-    '(?P<signal>' + '(\s+(' + RE_SIGNAL_KEYWORDS + '))+' + ')?' +  # optional signal set(s)
-    '(\s+(peer=' + RE_PROFILE_NAME % 'peer' + '))?' +  # optional peer
-    '\s*$')
+    '^'
+    + '(\s+(?P<access>' + RE_ACCESS_KEYWORDS + '))?'  # optional access keyword(s)
+    + '(?P<signal>' + '(\s+(' + RE_SIGNAL_KEYWORDS + '))+' + ')?'  # optional signal set(s)
+    + '(\s+(peer=' + RE_PROFILE_NAME % 'peer' + '))?'  # optional peer
+    + '\s*$')
 
 
 RE_FILTER_SET_1 = re.compile('set\s*=\s*\(([^)]*)\)')

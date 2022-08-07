@@ -75,8 +75,8 @@ class AAPythonBindingsTests(unittest.TestCase):
 
         expected = self.parse_output_file(outfile)
         self.assertEqual(expected, record,
-                          "expected records did not match\n" +
-                          "expected = %s\nactual = %s" % (expected, record))
+                         "expected records did not match\n"
+                         "expected = %s\nactual = %s" % (expected, record))
 
     def parse_output_file(self, outfile):
         """parse testcase .out file and return dict"""

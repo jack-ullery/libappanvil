@@ -285,8 +285,8 @@ class ReadLog:
                         self.parse_event_for_tree(event)
 
                     except AppArmorException as e:
-                        ex_msg = ('%(msg)s\n\nThis error was caused by the log line:\n%(logline)s' %
-                                  {'msg': e.value, 'logline': line})
+                        ex_msg = ('%(msg)s\n\nThis error was caused by the log line:\n%(logline)s'
+                                  % {'msg': e.value, 'logline': line})
                         raise AppArmorBug(ex_msg) from None
 
         self.logmark = ''

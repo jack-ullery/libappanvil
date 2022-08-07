@@ -1922,8 +1922,8 @@ def parse_profile_data(data, file, do_include, in_preamble):
 
             if profile_data.get(profname, False):
                 raise AppArmorException(
-                    'Profile %(profile)s defined twice in %(file)s, last found in line %(line)s' %
-                    {'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat)})
+                    'Profile %(profile)s defined twice in %(file)s, last found in line %(line)s'
+                    % {'file': file, 'line': lineno + 1, 'profile': combine_name(profile, hat)})
 
             profile_data[profname] = prof_storage
 

@@ -561,8 +561,8 @@ POLICYGROUPS_DIR="%s/templates"
 
         args = self.full_args
         args.append('--list-templates')
-        args.append('--include-templates-dir=%s' %
-                    os.path.join(self.test_include_dir, 'templates'))
+        args.append('--include-templates-dir=%s'
+                    % os.path.join(self.test_include_dir, 'templates'))
         (self.options, self.args) = easyprof.parse_args(args)
 
         easyp = easyprof.AppArmorEasyProfile(None, self.options)
@@ -580,8 +580,8 @@ POLICYGROUPS_DIR="%s/templates"
             args = self.full_args
             args += ['--show-template',
                      '--template', f,
-                     '--include-templates-dir=%s' %
-                     os.path.join(self.test_include_dir, 'templates')]
+                     '--include-templates-dir=%s'
+                     % os.path.join(self.test_include_dir, 'templates')]
             (self.options, self.args) = easyprof.parse_args(args)
             easyp = easyprof.AppArmorEasyProfile(None, self.options)
 
@@ -634,8 +634,8 @@ POLICYGROUPS_DIR="%s/templates"
 
         args = self.full_args
         args.append('--list-policy-groups')
-        args.append('--include-policy-groups-dir=%s' %
-                    os.path.join(self.test_include_dir, 'policygroups'))
+        args.append('--include-policy-groups-dir=%s'
+                    % os.path.join(self.test_include_dir, 'policygroups'))
         (self.options, self.args) = easyprof.parse_args(args)
 
         easyp = easyprof.AppArmorEasyProfile(None, self.options)
@@ -653,8 +653,8 @@ POLICYGROUPS_DIR="%s/templates"
             args = self.full_args
             args += ['--show-policy-group',
                      '--policy-groups', os.path.basename(f),
-                     '--include-policy-groups-dir=%s' %
-                     os.path.join(self.test_include_dir, 'policygroups')]
+                     '--include-policy-groups-dir=%s'
+                     % os.path.join(self.test_include_dir, 'policygroups')]
             (self.options, self.args) = easyprof.parse_args(args)
             easyp = easyprof.AppArmorEasyProfile(None, self.options)
 

@@ -27,17 +27,16 @@ access_keywords = ['r', 'w', 'rw', 'wr', 'read', 'write', 'readby', 'trace', 'tr
 
 # XXX joint_access_keyword and RE_ACCESS_KEYWORDS exactly as in PtraceRule - move to function!
 joint_access_keyword = '\s*(' + '|'.join(access_keywords) + ')\s*'
-RE_ACCESS_KEYWORDS = (joint_access_keyword +  # one of the access_keyword or
-                      '|' +                                           # or
-                      '\(' + joint_access_keyword + '(' + '(\s|,)+' + joint_access_keyword + ')*' + '\)'  # one or more access_keyword in (...)
-                      )
+RE_ACCESS_KEYWORDS = (joint_access_keyword  # one of the access_keyword or
+                      + '|'                                           # or
+                      + '\(' + joint_access_keyword + '(' + '(\s|,)+' + joint_access_keyword + ')*' + '\)')  # one or more access_keyword in (...)
 
 
 RE_PTRACE_DETAILS = re.compile(
-    '^' +
-    '(\s+(?P<access>' + RE_ACCESS_KEYWORDS + '))?' +  # optional access keyword(s)
-    '(\s+(peer=' + RE_PROFILE_NAME % 'peer' + '))?' +  # optional peer
-    '\s*$')
+    '^'
+    + '(\s+(?P<access>' + RE_ACCESS_KEYWORDS + '))?'  # optional access keyword(s)
+    + '(\s+(peer=' + RE_PROFILE_NAME % 'peer' + '))?'  # optional peer
+    + '\s*$')
 
 
 class PtraceRule(BaseRule):

@@ -56,33 +56,33 @@ RE_PROFILE_UNIX = re.compile(RE_AUDIT_DENY + '(unix\s*,|unix\s+[^#]*\s*,)' + RE_
 __re_no_or_quoted_hash = '([^#"]|"[^"]*")*'
 
 RE_RULE_HAS_COMMA = re.compile(
-    '^' + __re_no_or_quoted_hash +
-    ',\s*(#.*)?$')  # match comma plus any trailing comment
+    '^' + __re_no_or_quoted_hash
+    + ',\s*(#.*)?$')  # match comma plus any trailing comment
 RE_HAS_COMMENT_SPLIT = re.compile(
-    '^(?P<not_comment>' + __re_no_or_quoted_hash + ')' +  # store in 'not_comment' group
-    '(?P<comment>#.*)$')  # match trailing comment and store in 'comment' group
+    '^(?P<not_comment>' + __re_no_or_quoted_hash + ')'  # store in 'not_comment' group
+    + '(?P<comment>#.*)$')  # match trailing comment and store in 'comment' group
 
 
 RE_PROFILE_START = re.compile(
-    '^(?P<leadingspace>\s*)' +
-    '(' +
-        RE_PROFILE_PATH_OR_VAR % 'plainprofile' +  # just a path
-        '|' +  # or
-        '(' + 'profile' + '\s+' + RE_PROFILE_NAME % 'namedprofile' + '(\s+' + RE_PROFILE_PATH_OR_VAR % 'attachment' + ')?' + ')' +  # 'profile', profile name, optionally attachment
-    ')' +
-    RE_XATTRS +
-    RE_FLAGS +
-    '\s*\{' +
-    RE_EOL)
+    '^(?P<leadingspace>\s*)'
+    + '('
+        + RE_PROFILE_PATH_OR_VAR % 'plainprofile'  # just a path
+        + '|'  # or
+        + '(' + 'profile' + '\s+' + RE_PROFILE_NAME % 'namedprofile' + '(\s+' + RE_PROFILE_PATH_OR_VAR % 'attachment' + ')?' + ')'  # 'profile', profile name, optionally attachment
+    + ')'
+    + RE_XATTRS
+    + RE_FLAGS
+    + '\s*\{'
+    + RE_EOL)
 
 
 RE_PROFILE_CHANGE_PROFILE = re.compile(
-    RE_AUDIT_DENY +
-    'change_profile' +
-    '(\s+' + RE_SAFE_OR_UNSAFE + ')?' +  # optionally exec mode
-    '(\s+' + RE_PROFILE_PATH_OR_VAR % 'execcond' + ')?' +  # optionally exec condition
-    '(\s+->\s*' + RE_PROFILE_NAME % 'targetprofile' + ')?' +  # optionally '->' target profile
-    RE_COMMA_EOL)
+    RE_AUDIT_DENY
+    + 'change_profile'
+    + '(\s+' + RE_SAFE_OR_UNSAFE + ')?'  # optionally exec mode
+    + '(\s+' + RE_PROFILE_PATH_OR_VAR % 'execcond' + ')?'  # optionally exec condition
+    + '(\s+->\s*' + RE_PROFILE_NAME % 'targetprofile' + ')?'  # optionally '->' target profile
+    + RE_COMMA_EOL)
 
 
 # RE_PATH_PERMS is as restrictive as possible, but might still cause mismatches when adding different rule types.
@@ -90,26 +90,26 @@ RE_PROFILE_CHANGE_PROFILE = re.compile(
 RE_PATH_PERMS = '(?P<%s>[mrwalkPUCpucix]+)'
 
 RE_PROFILE_FILE_ENTRY = re.compile(
-    RE_AUDIT_DENY +
-    '(?P<owner>owner\s+)?' +  # optionally: <owner>
-    '(' +
-        '(?P<bare_file>file)' +  # bare 'file,'
-    '|' +  # or
-        '(?P<file_keyword>file\s+)?' +  # optional 'file' keyword
-        '(' +
-            RE_PROFILE_PATH_OR_VAR % 'path' + '\s+' + RE_PATH_PERMS % 'perms' +  # path and perms
-        '|' +  # or
-            RE_PATH_PERMS % 'perms2' + '\s+' + RE_PROFILE_PATH_OR_VAR % 'path2' +  # perms and path
-        ')' +
-        '(\s+->\s*' + RE_PROFILE_NAME % 'target' + ')?' +
-    '|' +  # or
-        '(?P<link_keyword>link\s+)' +  # 'link' keyword
-        '(?P<subset_keyword>subset\s+)?' +  # optional 'subset' keyword
-        RE_PROFILE_PATH_OR_VAR % 'link_path' +  # path
-        '\s+' + '->' + '\s+' +  # ' -> '
-        RE_PROFILE_PATH_OR_VAR % 'link_target' +  # path
-    ')' +
-    RE_COMMA_EOL)
+    RE_AUDIT_DENY
+    + '(?P<owner>owner\s+)?'  # optionally: <owner>
+    + '('
+        + '(?P<bare_file>file)'  # bare 'file,'
+    + '|'  # or
+        + '(?P<file_keyword>file\s+)?'  # optional 'file' keyword
+        + '('
+           + RE_PROFILE_PATH_OR_VAR % 'path' + '\s+' + RE_PATH_PERMS % 'perms'  # path and perms
+        + '|'  # or
+           + RE_PATH_PERMS % 'perms2' + '\s+' + RE_PROFILE_PATH_OR_VAR % 'path2'  # perms and path
+        + ')'
+        + '(\s+->\s*' + RE_PROFILE_NAME % 'target' + ')?'
+    + '|'  # or
+        + '(?P<link_keyword>link\s+)'  # 'link' keyword
+        + '(?P<subset_keyword>subset\s+)?'  # optional 'subset' keyword
+        + RE_PROFILE_PATH_OR_VAR % 'link_path'  # path
+        + '\s+' + '->' + '\s+'  # ' -> '
+        + RE_PROFILE_PATH_OR_VAR % 'link_target'  # path
+    + ')'
+    + RE_COMMA_EOL)
 
 
 def parse_profile_start_line(line, filename):

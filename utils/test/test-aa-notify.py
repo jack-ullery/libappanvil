@@ -116,10 +116,10 @@ Feb  4 13:40:38 XPS-13-9370 kernel: [128552.880347] audit: type=1400 audit({epoc
         with NamedTemporaryFile("w+", prefix='test-aa-notify-', delete=False) as temp_file:
             self.test_logfile = temp_file.name
             temp_file.write(
-                test_logfile_contents_999_days_old +
-                test_logfile_contents_30_days_old +
-                test_logfile_contents_unrelevant_entries +
-                test_logfile_contents_0_seconds_old
+                test_logfile_contents_999_days_old
+                + test_logfile_contents_30_days_old
+                + test_logfile_contents_unrelevant_entries
+                + test_logfile_contents_0_seconds_old
             )
 
     def AATeardown(self):

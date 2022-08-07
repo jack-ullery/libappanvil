@@ -607,8 +607,8 @@ EndSection
         started = False
 
         # We need to wait for the xpra socket to exist before attaching
-        fn = os.path.join(os.environ['HOME'], '.xpra', '%s-%s' %
-                          (socket.gethostname(), self.display.split(':')[1]))
+        fn = os.path.join(os.environ['HOME'], '.xpra', '%s-%s'
+                          % (socket.gethostname(), self.display.split(':')[1]))
         for i in range(self.timeout * 2):  # up to self.timeout seconds to start
             if os.path.exists(fn):
                 debug("Found '%s'! Proceeding to attach" % fn)

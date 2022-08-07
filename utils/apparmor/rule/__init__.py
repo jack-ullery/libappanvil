@@ -508,15 +508,15 @@ def check_and_split_list(lst, allowed_keywords, all_obj, classname, keyword_name
         result_list = set(lst)
     else:
         raise AppArmorBug(
-            'Passed unknown %(type)s object to %(classname)s: %(unknown_object)s' %
-            {'type': type(lst), 'classname': classname, 'unknown_object': str(lst)})
+            'Passed unknown %(type)s object to %(classname)s: %(unknown_object)s'
+            % {'type': type(lst), 'classname': classname, 'unknown_object': str(lst)})
 
     unknown_items = set()
     for item in result_list:
         if not item.strip():
             raise AppArmorBug(
-                'Passed empty %(keyword_name)s to %(classname)s' %
-                {'keyword_name': keyword_name, 'classname': classname})
+                'Passed empty %(keyword_name)s to %(classname)s'
+                % {'keyword_name': keyword_name, 'classname': classname})
         if item not in allowed_keywords:
             unknown_items.add(item)
 
