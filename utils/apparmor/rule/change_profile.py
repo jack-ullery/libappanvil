@@ -137,9 +137,9 @@ class ChangeProfileRule(BaseRule):
     def is_covered_localvars(self, other_rule):
         '''check if other_rule is covered by this rule object'''
 
-        if self.execmode != other_rule.execmode and \
-                (self.execmode not in ChangeProfileRule.equiv_execmodes or \
-                 other_rule.execmode not in ChangeProfileRule.equiv_execmodes):
+        if (self.execmode != other_rule.execmode
+                and (self.execmode not in ChangeProfileRule.equiv_execmodes
+                     or other_rule.execmode not in ChangeProfileRule.equiv_execmodes)):
             return False
 
         if not self._is_covered_plain(self.execcond, self.all_execconds, other_rule.execcond, other_rule.all_execconds, 'exec condition'):
@@ -158,9 +158,9 @@ class ChangeProfileRule(BaseRule):
         if not type(rule_obj) == ChangeProfileRule:
             raise AppArmorBug('Passed non-change_profile rule: %s' % str(rule_obj))
 
-        if self.execmode != rule_obj.execmode and \
-                (self.execmode not in ChangeProfileRule.equiv_execmodes or \
-                 rule_obj.execmode not in ChangeProfileRule.equiv_execmodes):
+        if (self.execmode != rule_obj.execmode
+                and (self.execmode not in ChangeProfileRule.equiv_execmodes
+                     or rule_obj.execmode not in ChangeProfileRule.equiv_execmodes)):
             return False
 
         if (self.execcond != rule_obj.execcond

@@ -282,30 +282,28 @@ class AppArmorEasyProfile:
 
         if opt.templates_dir and os.path.isdir(opt.templates_dir):
             self.dirs['templates'] = os.path.abspath(opt.templates_dir)
-        elif not opt.templates_dir and \
-                opt.template and \
-                os.path.isfile(opt.template) and \
-                valid_path(opt.template):
+        elif (not opt.templates_dir
+                and opt.template
+                and os.path.isfile(opt.template)
+                and valid_path(opt.template)):
             # If we specified the template and it is an absolute path, just set
             # the templates directory to the parent of the template so we don't
             # have to require --template-dir with absolute paths.
             self.dirs['templates'] = os.path.abspath(os.path.dirname(opt.template))
 
-        if opt.include_templates_dir and \
-           os.path.isdir(opt.include_templates_dir):
+        if opt.include_templates_dir and os.path.isdir(opt.include_templates_dir):
             self.dirs['templates_include'] = os.path.abspath(opt.include_templates_dir)
 
         if opt.policy_groups_dir and os.path.isdir(opt.policy_groups_dir):
             self.dirs['policygroups'] = os.path.abspath(opt.policy_groups_dir)
 
-        if opt.include_policy_groups_dir and \
-           os.path.isdir(opt.include_policy_groups_dir):
+        if opt.include_policy_groups_dir and os.path.isdir(opt.include_policy_groups_dir):
             self.dirs['policygroups_include'] = os.path.abspath(opt.include_policy_groups_dir)
 
         self.policy_version = None
         self.policy_vendor = None
-        if (opt.policy_version and not opt.policy_vendor) or \
-           (opt.policy_vendor and not opt.policy_version):
+        if ((opt.policy_version and not opt.policy_vendor)
+                or (opt.policy_vendor and not opt.policy_version)):
             raise AppArmorException("Must specify both policy version and vendor")
 
         # If specified --policy-version and --policy-vendor, use
@@ -560,8 +558,7 @@ class AppArmorEasyProfile:
         attachment = ""
         if binary:
             if not valid_binary_path(binary):
-                raise AppArmorException("Invalid path for binary: '%s'" % \
-                                        binary)
+                raise AppArmorException("Invalid path for binary: '%s'" % binary)
             if profile_name:
                 attachment = 'profile "%s" "%s"' % (profile_name, binary)
             else:
@@ -713,8 +710,8 @@ class AppArmorEasyProfile:
             d['security']['profiles'][pkey]['policy_vendor'] = self.policy_vendor
 
         for key in params:
-            if key == 'profile_name' or \
-               (key == 'binary' and 'profile_name' not in params):
+            if (key == 'profile_name'
+                    or (key == 'binary' and 'profile_name' not in params)):
                 continue  # don't re-add the pkey
             elif key == 'binary' and not params[key]:
                 continue  # binary can by None when specifying --profile-name
@@ -769,24 +766,24 @@ def check_manifest_conflict_args(option, opt_str, value, parser):
                      'template_var']
     for conflict in conflict_args:
         if getattr(parser.values, conflict, False):
-            raise optparse.OptionValueError("can't use --%s with --manifest " \
-                                            "argument" % conflict)
+            raise optparse.OptionValueError(
+                "can't use --%s with --manifest argument" % conflict)
     setattr(parser.values, option.dest, value)
 
 
 def check_for_manifest_arg(option, opt_str, value, parser):
     '''Check for -m/--manifest with conflicting args'''
     if parser.values.manifest:
-        raise optparse.OptionValueError("can't use --%s with --manifest " \
-                                        "argument" % opt_str.lstrip('-'))
+        raise optparse.OptionValueError(
+            "can't use --%s with --manifest argument" % opt_str.lstrip('-'))
     setattr(parser.values, option.dest, value)
 
 
 def check_for_manifest_arg_append(option, opt_str, value, parser):
     '''Check for -m/--manifest with conflicting args (with append)'''
     if parser.values.manifest:
-        raise optparse.OptionValueError("can't use --%s with --manifest " \
-                                        "argument" % opt_str.lstrip('-'))
+        raise optparse.OptionValueError(
+            "can't use --%s with --manifest argument" % opt_str.lstrip('-'))
     parser.values.ensure_value(option.dest, []).append(value)
 
 
@@ -1114,23 +1111,21 @@ def verify_options(opt, strict=False):
     '''Make sure our options are valid'''
     if hasattr(opt, 'binary') and opt.binary and not valid_path(opt.binary):
         raise AppArmorException("Invalid binary '%s'" % opt.binary)
-    if hasattr(opt, 'profile_name') and opt.profile_name is not None and \
-       not valid_profile_name(opt.profile_name):
+    if (hasattr(opt, 'profile_name') and opt.profile_name is not None
+            and not valid_profile_name(opt.profile_name)):
         raise AppArmorException("Invalid profile name '%s'" % opt.profile_name)
-    if hasattr(opt, 'binary') and opt.binary and \
-       hasattr(opt, 'profile_name') and opt.profile_name is not None and \
-       opt.profile_name.startswith('/'):
+    if (hasattr(opt, 'binary') and opt.binary
+            and hasattr(opt, 'profile_name') and opt.profile_name is not None
+            and opt.profile_name.startswith('/')):
         raise AppArmorException("Profile name should not specify path with binary")
-    if hasattr(opt, 'policy_vendor') and opt.policy_vendor and \
-       not valid_policy_vendor(opt.policy_vendor):
-        raise AppArmorException("Invalid policy vendor '%s'" % \
-                                opt.policy_vendor)
-    if hasattr(opt, 'policy_version') and opt.policy_version and \
-       not valid_policy_version(opt.policy_version):
-        raise AppArmorException("Invalid policy version '%s'" % \
-                                opt.policy_version)
-    if hasattr(opt, 'template') and opt.template and \
-       not valid_template_name(opt.template, strict):
+    if (hasattr(opt, 'policy_vendor') and opt.policy_vendor
+            and not valid_policy_vendor(opt.policy_vendor)):
+        raise AppArmorException("Invalid policy vendor '%s'" % opt.policy_vendor)
+    if (hasattr(opt, 'policy_version') and opt.policy_version
+            and not valid_policy_version(opt.policy_version)):
+        raise AppArmorException("Invalid policy version '%s'" % opt.policy_version)
+    if (hasattr(opt, 'template') and opt.template
+            and not valid_template_name(opt.template, strict)):
         raise AppArmorException("Invalid template '%s'" % opt.template)
     if hasattr(opt, 'template_var') and opt.template_var:
         for i in opt.template_var:
@@ -1167,8 +1162,8 @@ def verify_manifest(params, args=None):
         if k in unsafe_keys:
             err_str += "\nfound %s key" % k
         elif k == 'profile_name':
-            if params['profile_name'].startswith('/') or \
-               '*' in params['profile_name']:
+            if (params['profile_name'].startswith('/')
+                    or '*' in params['profile_name']):
                 err_str += "\nprofile_name '%s'" % params['profile_name']
         elif k == 'abstractions':
             for a in params['abstractions'].split(','):

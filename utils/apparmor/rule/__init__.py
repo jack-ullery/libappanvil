@@ -334,7 +334,6 @@ class BaseRuleset:
 
     def _init_vars(self):
         '''called by __init__() and delete_all_rules() - override in child class to initialize more variables'''
-        pass
 
     def __repr__(self):
         classname = self.__class__.__name__

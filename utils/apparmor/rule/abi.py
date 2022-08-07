@@ -59,4 +59,3 @@ class AbiRule(IncludeRule):
 
 class AbiRuleset(IncludeRuleset):
     '''Class to handle and store a collection of abi rules'''
-    pass

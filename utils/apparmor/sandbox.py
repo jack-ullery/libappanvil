@@ -257,7 +257,7 @@ class SandboxXserver():
             raise AppArmorException("Could not find available X display")
 
         # Use dedicated .Xauthority file
-        xauth = os.path.join(os.path.expanduser('~'), \
+        xauth = os.path.join(os.path.expanduser('~'),
                              '.Xauthority-sandbox%s' % display.split(':')[1])
 
         return display, xauth
@@ -294,11 +294,13 @@ class SandboxXserver():
         if rc != 0:
             raise AppArmorException("Could not generate magic cookie")
 
-        rc, out = cmd(('xauth', '-f', self.xauth, \
-                       'add', \
-                       self.display, \
-                       'MIT-MAGIC-COOKIE-1', \
-                       cookie.strip()))
+        rc, out = cmd(
+            ('xauth', '-f', self.xauth,
+             'add',
+             self.display,
+             'MIT-MAGIC-COOKIE-1',
+             cookie.strip())
+        )
         if rc != 0:
             raise AppArmorException("Could not generate '%s'" % self.display)
 
@@ -605,7 +607,7 @@ EndSection
         started = False
 
         # We need to wait for the xpra socket to exist before attaching
-        fn = os.path.join(os.environ['HOME'], '.xpra', '%s-%s' % \
+        fn = os.path.join(os.environ['HOME'], '.xpra', '%s-%s' %
                           (socket.gethostname(), self.display.split(':')[1]))
         for i in range(self.timeout * 2):  # up to self.timeout seconds to start
             if os.path.exists(fn):

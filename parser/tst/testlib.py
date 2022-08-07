@@ -121,7 +121,6 @@ class AATestTemplate(unittest.TestCase, metaclass=AANoCleanupMetaClass):
 # Timeout handler using alarm() from John P. Speno's Pythonic Avocado
 class TimeoutFunctionException(Exception):
     """Exception to raise on a timeout"""
-    pass
 
 
 class TimeoutFunction:

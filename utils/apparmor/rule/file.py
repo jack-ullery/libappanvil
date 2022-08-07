@@ -291,9 +291,9 @@ class FileRule(BaseRule):
 
         # check exec_mode and target only if other_rule contains exec_perms (except ANY_EXEC) or link permissions
         # (for mrwk permissions, the target is ignored anyway)
-        if (other_rule.exec_perms and other_rule.exec_perms != self.ANY_EXEC) or \
-           (other_rule.perms and 'l' in other_rule.perms) or \
-           (other_rule.perms and 'link' in other_rule.perms):
+        if ((other_rule.exec_perms and other_rule.exec_perms != self.ANY_EXEC)
+                or (other_rule.perms and 'l' in other_rule.perms)
+                or (other_rule.perms and 'link' in other_rule.perms)):
             if not self._is_covered_aare(self.target, self.all_targets, other_rule.target, other_rule.all_targets, 'target'):
                 return False
 

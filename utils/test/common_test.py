@@ -32,7 +32,6 @@ class AATest(unittest.TestCase):
 
     def AASetup(self):
         '''override this function if a test needs additional setup steps (instead of overriding setUp())'''
-        pass
 
     def tearDown(self):
         if self.tmpdir and os.path.exists(self.tmpdir):
@@ -42,7 +41,6 @@ class AATest(unittest.TestCase):
 
     def AATeardown(self):
         '''override this function if a test needs additional teardown steps (instead of overriding tearDown())'''
-        pass
 
     def createTmpdir(self):
         self.tmpdir = tempfile.mkdtemp(prefix='aa-test-')
@@ -64,7 +62,7 @@ class AAParseTest(unittest.TestCase):
         parsed = self.parse_function(rule)
         self.assertEqual(
             rule, parsed.serialize(),
-            'parse object %s returned "%s", expected "%s"' \
+            'parse object %s returned "%s", expected "%s"'
             % (self.parse_function.__doc__, parsed.serialize(), rule))
 
 

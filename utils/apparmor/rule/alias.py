@@ -112,4 +112,3 @@ class AliasRule(BaseRule):
 
 class AliasRuleset(BaseRuleset):
     '''Class to handle and store a collection of alias rules'''
-    pass

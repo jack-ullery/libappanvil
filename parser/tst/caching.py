@@ -331,7 +331,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         features_file = testlib.write_file(self.cache_dir, '.features', 'monkey\n')
         new_file = self.get_cache_dir()
-        new_features_file = new_file + '/.features';
+        new_features_file = new_file + '/.features'
 
         cmd = list(self.cmd_prefix)
         cmd.extend(('-v', '--write-cache', '-r', self.profile))

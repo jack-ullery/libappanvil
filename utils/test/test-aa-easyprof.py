@@ -705,7 +705,7 @@ POLICYGROUPS_DIR="%s/templates"
         except InterceptedError:
             raised = True
 
-        self.assertTrue(raised, msg="%s and manifest arguments did not " \
+        self.assertTrue(raised, msg="%s and manifest arguments did not "
                                     "raise a parse error" % opt)
 
         # manifest first
@@ -717,7 +717,7 @@ POLICYGROUPS_DIR="%s/templates"
         except InterceptedError:
             raised = True
 
-        self.assertTrue(raised, msg="%s and manifest arguments did not " \
+        self.assertTrue(raised, msg="%s and manifest arguments did not "
                                     "raise a parse error" % opt)
 
     def test_manifest_conflicts_profilename(self):
@@ -2253,12 +2253,12 @@ POLICYGROUPS_DIR="%s/templates"
 
         tdir = os.path.join(self.tmpdir, 'templates', policy_subdir)
         for t in easyp.get_templates():
-            self.assertTrue(t.startswith(tdir), \
+            self.assertTrue(t.startswith(tdir),
                             "'%s' does not start with '%s'" % (t, tdir))
 
         pdir = os.path.join(self.tmpdir, 'policygroups', policy_subdir)
         for p in easyp.get_policy_groups():
-            self.assertTrue(p.startswith(pdir), \
+            self.assertTrue(p.startswith(pdir),
                             "'%s' does not start with '%s'" % (p, pdir))
 
         params = easyprof.gen_policy_params(self.binary, self.options)
