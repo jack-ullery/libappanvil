@@ -86,7 +86,7 @@ class Manifest:
         self.security['profiles'][self.profile_name]['template'] = template
 
     def add_template_variable(self, name, value):
-        if not 'template_variables' in self.security['profiles'][self.profile_name]:
+        if 'template_variables' not in self.security['profiles'][self.profile_name]:
             self.security['profiles'][self.profile_name]['template_variables'] = dict()
 
         self.security['profiles'][self.profile_name]['template_variables'][name] = value

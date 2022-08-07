@@ -323,9 +323,9 @@ class AppArmorEasyProfile:
                             "Could not find %s directory '%s'" % (i, d))
                 self.dirs[i] = d
 
-        if not 'templates' in self.dirs:
+        if 'templates' not in self.dirs:
             raise AppArmorException("Could not find templates directory")
-        if not 'policygroups' in self.dirs:
+        if 'policygroups' not in self.dirs:
             raise AppArmorException("Could not find policygroups directory")
 
         self.binary = binary
@@ -446,7 +446,7 @@ class AppArmorEasyProfile:
             elif inc_p is not None and os.path.exists(inc_p):
                 p = inc_p
 
-        if self.policy_groups is None or not p in self.policy_groups:
+        if self.policy_groups is None or p not in self.policy_groups:
             raise AppArmorException("Policy group '%s' does not exist" % p)
         with open(p) as f:
             return f.read()
@@ -714,7 +714,7 @@ class AppArmorEasyProfile:
 
         for key in params:
             if key == 'profile_name' or \
-               (key == 'binary' and not 'profile_name' in params):
+               (key == 'binary' and 'profile_name' not in params):
                 continue  # don't re-add the pkey
             elif key == 'binary' and not params[key]:
                 continue  # binary can by None when specifying --profile-name
@@ -1172,7 +1172,7 @@ def verify_manifest(params, args=None):
                 err_str += "\nprofile_name '%s'" % params['profile_name']
         elif k == 'abstractions':
             for a in params['abstractions'].split(','):
-                if not a in safe_abstractions:
+                if a not in safe_abstractions:
                     err_str += "\nfound '%s' abstraction" % a
         elif k == "template_var":
             pat = re.compile(r'[*/\{\}\[\]]')
