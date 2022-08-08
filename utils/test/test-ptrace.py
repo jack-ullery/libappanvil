@@ -15,13 +15,14 @@
 
 import unittest
 from collections import namedtuple
+
+from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.logparser import ReadLog
+from apparmor.rule import BaseRule
+from apparmor.rule.ptrace import PtraceRule, PtraceRuleset
+from apparmor.translations import init_translation
 from common_test import AATest, setup_all_loops
 
-from apparmor.rule.ptrace import PtraceRule, PtraceRuleset
-from apparmor.rule import BaseRule
-from apparmor.common import AppArmorException, AppArmorBug
-from apparmor.logparser import ReadLog
-from apparmor.translations import init_translation
 _ = init_translation()
 
 exp = namedtuple(

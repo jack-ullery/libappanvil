@@ -9,23 +9,19 @@
 #
 # ------------------------------------------------------------------
 
-import unittest
-from common_test import AATest, setup_all_loops, setup_aa
-from common_test import read_file, write_file
-
 import os
 import shutil
+import unittest
 
 import apparmor.aa  # needed to set global vars in some tests
 from apparmor.aa import (
-    check_for_apparmor, get_output, get_reqs, get_interpreter_and_abstraction, create_new_profile,
-    get_profile_flags, change_profile_flags, set_options_audit_mode, set_options_owner_mode,
-    parse_profile_data,
-    get_file_perms, propose_file_rules, merged_to_split, split_to_merged)
+    change_profile_flags, check_for_apparmor, create_new_profile, get_file_perms, get_interpreter_and_abstraction, get_output, get_profile_flags, get_reqs,
+    merged_to_split, parse_profile_data, propose_file_rules, set_options_audit_mode, set_options_owner_mode, split_to_merged)
 from apparmor.aare import AARE
-from apparmor.common import AppArmorException, AppArmorBug, is_skippable_file
+from apparmor.common import AppArmorBug, AppArmorException, is_skippable_file
 from apparmor.rule.file import FileRule
 from apparmor.rule.include import IncludeRule
+from common_test import AATest, read_file, setup_aa, setup_all_loops, write_file
 
 
 class AaTestWithTempdir(AATest):

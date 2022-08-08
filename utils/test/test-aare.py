@@ -10,13 +10,13 @@
 #
 # ------------------------------------------------------------------
 
-import unittest
-from common_test import AATest, setup_all_loops
-
-from copy import deepcopy
 import re
-from apparmor.common import convert_regexp, AppArmorBug, AppArmorException
+import unittest
+from copy import deepcopy
+
+from apparmor.common import AppArmorBug, AppArmorException, convert_regexp
 from apparmor.aare import AARE, convert_expression_to_aare
+from common_test import AATest, setup_all_loops
 
 
 class TestConvert_regexp(AATest):

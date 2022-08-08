@@ -10,10 +10,10 @@
 # ------------------------------------------------------------------
 
 import unittest
-from common_test import AATest, setup_all_loops
 
 from apparmor.common import AppArmorBug
 from apparmor.notify import get_last_login_timestamp, sane_timestamp
+from common_test import AATest, setup_all_loops
 
 
 class TestSane_timestamp(AATest):

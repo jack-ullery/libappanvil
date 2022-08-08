@@ -9,14 +9,13 @@
 #
 # ------------------------------------------------------------------
 
-import unittest
-from common_test import AATest, setup_all_loops
-
 import gettext
 import os
 import subprocess
+import unittest
 
 from apparmor.ui import CMDS, get_translated_hotkey
+from common_test import AATest, setup_all_loops
 
 
 class TestHotkeyConflicts(AATest):

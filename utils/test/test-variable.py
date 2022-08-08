@@ -17,10 +17,11 @@ import unittest
 from collections import namedtuple
 from common_test import AATest, setup_all_loops
 
-from apparmor.rule.variable import VariableRule, VariableRuleset, separate_vars
+from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.rule import BaseRule
-from apparmor.common import AppArmorException, AppArmorBug
+from apparmor.rule.variable import VariableRule, VariableRuleset, separate_vars
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 exp = namedtuple('exp', ('comment', 'varname', 'mode', 'values'))

@@ -7,11 +7,11 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
+__apparmor_gettext__ = None
+
 import gettext
 
 TRANSLATION_DOMAIN = 'apparmor-utils'
-
-__apparmor_gettext__ = None
 
 
 def init_translation():

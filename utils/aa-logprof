@@ -16,16 +16,12 @@ import argparse
 
 import apparmor.aa as apparmor
 import apparmor.ui as aaui
-
 from apparmor.common import AppArmorException
-
-# setup exception handling
 from apparmor.fail import enable_aa_exception_handler
-enable_aa_exception_handler()
-
-# setup module translations
 from apparmor.translations import init_translation
-_ = init_translation()
+
+enable_aa_exception_handler()  # setup exception handling
+_ = init_translation()  # setup module translations
 
 parser = argparse.ArgumentParser(description=_('Process log entries to generate profiles'))
 parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))

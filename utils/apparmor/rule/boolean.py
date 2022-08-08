@@ -13,12 +13,11 @@
 #
 # ----------------------------------------------------------------------
 
-from apparmor.regex import RE_PROFILE_BOOLEAN
 from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.regex import RE_PROFILE_BOOLEAN
 from apparmor.rule import BaseRule, BaseRuleset, parse_comment
-
-# setup module translations
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 

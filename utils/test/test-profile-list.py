@@ -9,13 +9,11 @@
 #
 # ------------------------------------------------------------------
 
-import unittest
-from common_test import AATest, setup_aa, setup_all_loops, write_file
-
-import apparmor.aa
 import os
 import shutil
+import unittest
 
+import apparmor.aa
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.profile_list import ProfileList
 from apparmor.profile_storage import ProfileStorage
@@ -24,6 +22,7 @@ from apparmor.rule.alias import AliasRule
 from apparmor.rule.boolean import BooleanRule
 from apparmor.rule.include import IncludeRule
 from apparmor.rule.variable import VariableRule
+from common_test import AATest, setup_aa, setup_all_loops, write_file
 
 
 class TestAdd_profile(AATest):

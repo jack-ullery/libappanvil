@@ -12,12 +12,11 @@
 #
 # ----------------------------------------------------------------------
 
-from apparmor.regex import RE_ABI
 from apparmor.common import AppArmorBug
+from apparmor.regex import RE_ABI
 from apparmor.rule.include import IncludeRule, IncludeRuleset
-
-# setup module translations
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 

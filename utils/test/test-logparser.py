@@ -14,10 +14,9 @@
 # ----------------------------------------------------------------------
 import unittest
 
-from apparmor.logparser import ReadLog
-
-from common_test import AATest, setup_all_loops  # , setup_aa
 from apparmor.common import AppArmorException
+from apparmor.logparser import ReadLog
+from common_test import AATest, setup_all_loops  # , setup_aa
 
 
 class TestParseEvent(AATest):

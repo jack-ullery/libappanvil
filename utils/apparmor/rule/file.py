@@ -13,14 +13,14 @@
 # ----------------------------------------------------------------------
 
 from apparmor.aare import AARE
-from apparmor.regex import RE_PROFILE_FILE_ENTRY, strip_quotes
 from apparmor.common import AppArmorBug, AppArmorException
-from apparmor.rule import BaseRule, BaseRuleset, check_and_split_list, logprof_value_or_all, parse_modifiers, quote_if_needed
-
-# setup module translations
+from apparmor.regex import RE_PROFILE_FILE_ENTRY, strip_quotes
+from apparmor.rule import (
+    BaseRule, BaseRuleset, check_and_split_list, logprof_value_or_all,
+    parse_modifiers, quote_if_needed)
 from apparmor.translations import init_translation
-_ = init_translation()
 
+_ = init_translation()
 
 allow_exec_transitions = ('ix', 'ux', 'Ux', 'px', 'Px', 'cx', 'Cx')  # 2 chars - len relevant for split_perms()
 allow_exec_fallback_transitions = ('pix', 'Pix', 'cix', 'Cix', 'pux', 'PUx', 'cux', 'CUx')  # 3 chars - len relevant for split_perms()

@@ -15,10 +15,10 @@
 #
 # ----------------------------------------------------------------------
 import unittest
-from common_test import AATest, setup_all_loops
 
 import apparmor.severity as severity
 from apparmor.common import AppArmorException
+from common_test import AATest, setup_all_loops
 
 
 class SeverityBaseTest(AATest):

@@ -14,14 +14,14 @@
 
 import re
 
-from apparmor.regex import RE_PROFILE_DBUS, RE_PROFILE_NAME, strip_parenthesis, strip_quotes
 from apparmor.common import AppArmorBug, AppArmorException
-from apparmor.rule import BaseRule, BaseRuleset, check_and_split_list, logprof_value_or_all, parse_modifiers, quote_if_needed
-
-# setup module translations
+from apparmor.regex import RE_PROFILE_DBUS, RE_PROFILE_NAME, strip_parenthesis, strip_quotes
+from apparmor.rule import (
+    BaseRule, BaseRuleset, check_and_split_list, logprof_value_or_all,
+    parse_modifiers, quote_if_needed)
 from apparmor.translations import init_translation
-_ = init_translation()
 
+_ = init_translation()
 
 message_keywords = ['send', 'receive', 'r', 'read', 'w', 'write', 'rw']
 access_keywords = ['bind', 'eavesdrop'] + message_keywords

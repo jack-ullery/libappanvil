@@ -10,10 +10,10 @@
 # ------------------------------------------------------------------
 
 import unittest
-from common_test import AATest, setup_all_loops
 
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.profile_storage import ProfileStorage, add_or_remove_flag, split_flags, var_transform
+from common_test import AATest, setup_all_loops
 
 
 class TestUnknownKey(AATest):

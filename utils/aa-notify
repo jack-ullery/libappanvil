@@ -30,24 +30,24 @@
 
 import argparse
 import atexit
+import grp
 import os
+import pwd
 import re
 import sys
 import time
+
 import notify2
 import psutil
-import pwd
-import grp
 
 import apparmor.aa as aa
 import apparmor.ui as aaui
 import apparmor.config as aaconfig
+import LibAppArmor  # C-library to parse one log line
 from apparmor.common import DebugLogger, open_file_read
 from apparmor.fail import enable_aa_exception_handler
 from apparmor.notify import get_last_login_timestamp
 from apparmor.translations import init_translation
-
-import LibAppArmor  # C-library to parse one log line
 
 
 def get_user_login():

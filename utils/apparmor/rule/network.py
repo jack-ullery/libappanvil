@@ -15,14 +15,12 @@
 
 import re
 
-from apparmor.regex import RE_PROFILE_NETWORK
 from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.regex import RE_PROFILE_NETWORK
 from apparmor.rule import BaseRule, BaseRuleset, logprof_value_or_all, parse_modifiers
-
-# setup module translations
 from apparmor.translations import init_translation
-_ = init_translation()
 
+_ = init_translation()
 
 network_domain_keywords = [
     'unspec', 'unix', 'inet', 'ax25', 'ipx', 'appletalk', 'netrom', 'bridge', 'atmpvc', 'x25', 'inet6',

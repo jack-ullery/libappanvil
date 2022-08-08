@@ -14,10 +14,10 @@
 # ----------------------------------------------------------------------
 
 import re
-from apparmor.common import AppArmorBug, AppArmorException
 
-# setup module translations
+from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 # Profile parsing Regex

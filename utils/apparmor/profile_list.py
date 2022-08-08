@@ -15,14 +15,13 @@
 from apparmor.aare import AARE
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.profile_storage import ProfileStorage
-from apparmor.rule.alias import AliasRule, AliasRuleset
 from apparmor.rule.abi import AbiRule, AbiRuleset
+from apparmor.rule.alias import AliasRule, AliasRuleset
 from apparmor.rule.boolean import BooleanRule, BooleanRuleset
 from apparmor.rule.include import IncludeRule, IncludeRuleset
 from apparmor.rule.variable import VariableRule, VariableRuleset
-
-# setup module translations
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 preamble_ruletypes = {

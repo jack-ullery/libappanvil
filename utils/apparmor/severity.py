@@ -12,7 +12,8 @@
 #
 # ----------------------------------------------------------------------
 import re
-from apparmor.common import AppArmorException, open_file_read, warn, convert_regexp  # , msg, error, debug
+
+from apparmor.common import AppArmorException, convert_regexp, open_file_read, warn  # , debug, error, msg
 
 
 class Severity:

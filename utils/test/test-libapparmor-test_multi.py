@@ -9,16 +9,15 @@
 #
 # ------------------------------------------------------------------
 
-import unittest
-from common_test import AATest, setup_all_loops, setup_aa, read_file
-
 import os
 import sys
-from apparmor.common import hasher, open_file_read, split_name
+import unittest
 
 import apparmor.aa
+from apparmor.common import hasher, open_file_read, split_name
 from apparmor.logparser import ReadLog
 from apparmor.profile_list import ProfileList
+from common_test import AATest, read_file, setup_aa, setup_all_loops
 
 
 class TestLibapparmorTestMulti(AATest):

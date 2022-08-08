@@ -15,12 +15,11 @@
 # - check cache not used if parser in $PATH is newer
 # - check cache used for force-complain, disable symlink, etc.
 
-from argparse import ArgumentParser
 import os
 import shutil
-import time
 import tempfile
 import unittest
+from argparse import ArgumentParser
 
 import testlib
 

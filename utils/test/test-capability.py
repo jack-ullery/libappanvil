@@ -14,14 +14,15 @@
 # ----------------------------------------------------------------------
 
 import unittest
+
+import apparmor.severity as severity
+from apparmor.common import AppArmorBug, AppArmorException, hasher
+from apparmor.logparser import ReadLog
+from apparmor.rule import BaseRule
+from apparmor.rule.capability import CapabilityRule, CapabilityRuleset
+from apparmor.translations import init_translation
 from common_test import AATest, setup_all_loops
 
-from apparmor.rule.capability import CapabilityRule, CapabilityRuleset
-from apparmor.rule import BaseRule
-import apparmor.severity as severity
-from apparmor.common import AppArmorException, AppArmorBug, hasher
-from apparmor.logparser import ReadLog
-from apparmor.translations import init_translation
 _ = init_translation()
 
 

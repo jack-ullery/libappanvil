@@ -13,18 +13,18 @@
 #
 # ----------------------------------------------------------------------
 
-import unittest
-from collections import namedtuple
-from common_test import AATest, setup_all_loops, write_file
-
 import os
 import shutil
+import unittest
+from collections import namedtuple
 
-from apparmor.rule.include import IncludeRule, IncludeRuleset
-from apparmor.rule import BaseRule
-from apparmor.common import AppArmorException, AppArmorBug
+from apparmor.common import AppArmorBug, AppArmorException
 # from apparmor.logparser import ReadLog
+from apparmor.rule import BaseRule
+from apparmor.rule.include import IncludeRule, IncludeRuleset
 from apparmor.translations import init_translation
+from common_test import AATest, setup_all_loops, write_file
+
 _ = init_translation()
 
 exp = namedtuple(

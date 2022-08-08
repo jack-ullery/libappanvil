@@ -15,10 +15,9 @@ import os
 import shutil
 import subprocess
 import unittest
-from common_test import AATest, setup_all_loops, setup_aa
 
 import apparmor.aa as apparmor
-from common_test import read_file
+from common_test import AATest, read_file, setup_aa, setup_all_loops
 
 python_interpreter = 'python3'
 

@@ -19,9 +19,8 @@ from shutil import which
 import apparmor.aa as apparmor
 import apparmor.ui as aaui
 from apparmor.common import AppArmorException, cmd, is_skippable_file, user_perm
-
-# setup module translations
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 

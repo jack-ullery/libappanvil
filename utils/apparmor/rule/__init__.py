@@ -17,9 +17,8 @@ from abc import abstractmethod
 
 from apparmor.aare import AARE
 from apparmor.common import AppArmorBug
-
-# setup module translations
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 

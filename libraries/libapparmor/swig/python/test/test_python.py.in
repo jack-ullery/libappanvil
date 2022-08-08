@@ -13,6 +13,7 @@
 import ctypes
 import os
 import unittest
+
 import LibAppArmor as libapparmor
 
 TESTDIR = "../../../testsuite/test_multi"

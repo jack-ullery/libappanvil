@@ -20,11 +20,12 @@
 # Note: --version=... must be the last argument to this script
 #
 
-from setuptools.command.install import install as _install
-from setuptools import setup
 import os
 import shutil
 import sys
+
+from setuptools import setup
+from setuptools.command.install import install as _install
 
 
 class Install(_install):

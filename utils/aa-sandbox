@@ -9,14 +9,14 @@
 #
 # ------------------------------------------------------------------
 
-import apparmor.sandbox
-from apparmor.common import error
 import optparse
 import sys
 
-# setup exception handling
+import apparmor.sandbox
+from apparmor.common import error
 from apparmor.fail import enable_aa_exception_handler
-enable_aa_exception_handler()
+
+enable_aa_exception_handler()  # setup exception handling
 
 if __name__ == "__main__":
     argv = sys.argv

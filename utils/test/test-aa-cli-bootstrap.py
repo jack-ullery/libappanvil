@@ -9,21 +9,18 @@
 #
 # ------------------------------------------------------------------
 
-import unittest
-from common_test import AATest, setup_all_loops, setup_aa
-
-# Imports for test code
+import atexit
 import io
 import os
 import sys
+import unittest
 
-# Imports for AppArmor
-import atexit
 import apparmor.aa as aa
 import apparmor.ui as aaui
 from apparmor.common import DebugLogger
 from apparmor.fail import enable_aa_exception_handler
 from apparmor.translations import init_translation
+from common_test import AATest, setup_aa, setup_all_loops
 
 
 class AACliBootstrapTest(AATest):

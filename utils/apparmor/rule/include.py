@@ -11,14 +11,13 @@
 #    GNU General Public License for more details.
 #
 # ----------------------------------------------------------------------
-
-from apparmor.regex import RE_INCLUDE, re_match_include_parse
-from apparmor.common import AppArmorBug, AppArmorException, is_skippable_file
-from apparmor.rule import BaseRule, BaseRuleset, parse_comment
 import os
 
-# setup module translations
+from apparmor.common import AppArmorBug, AppArmorException, is_skippable_file
+from apparmor.regex import RE_INCLUDE, re_match_include_parse
+from apparmor.rule import BaseRule, BaseRuleset, parse_comment
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 

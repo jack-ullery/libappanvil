@@ -15,17 +15,16 @@
 # ----------------------------------------------------------------------
 
 import json
-import sys
+import os
 import re
 import readline
-import os
 import subprocess
+import sys
 from tempfile import NamedTemporaryFile
 
-from apparmor.common import readkey, AppArmorException, DebugLogger
-
-# setup module translations
+from apparmor.common import AppArmorException, DebugLogger, readkey
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 # Set up UI logger for separate messages from UI module

@@ -9,15 +9,15 @@
 #
 # ------------------------------------------------------------------
 
-import apparmor.aa as aa
 import unittest
-from common_test import AATest, setup_all_loops, setup_aa
-from apparmor.common import AppArmorBug, AppArmorException
 
+import apparmor.aa as aa
+from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.regex import (
-    strip_parenthesis, strip_quotes, parse_profile_start_line, re_match_include,
-    re_match_include_parse,
-    RE_PROFILE_START, RE_PROFILE_DBUS, RE_PROFILE_CAP, RE_PROFILE_PTRACE, RE_PROFILE_SIGNAL)
+    RE_PROFILE_CAP, RE_PROFILE_DBUS, RE_PROFILE_PTRACE, RE_PROFILE_SIGNAL,
+    RE_PROFILE_START, parse_profile_start_line, re_match_include,
+    re_match_include_parse, strip_parenthesis, strip_quotes)
+from common_test import AATest, setup_aa, setup_all_loops
 
 
 class AARegexTest(AATest):

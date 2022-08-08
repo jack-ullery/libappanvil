@@ -13,10 +13,10 @@
 #
 # ------------------------------------------------------------------
 
-from argparse import ArgumentParser
-import os
-import unittest
 import subprocess
+import unittest
+from argparse import ArgumentParser
+
 import testlib
 
 config = None

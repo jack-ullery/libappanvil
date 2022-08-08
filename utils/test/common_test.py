@@ -12,12 +12,12 @@
 #    GNU General Public License for more details.
 #
 # ----------------------------------------------------------------------
-import unittest
 import inspect
 import os
 import shutil
 import sys
 import tempfile
+import unittest
 
 
 # def test_readkey(self):

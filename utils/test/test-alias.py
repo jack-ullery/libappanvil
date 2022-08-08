@@ -15,12 +15,13 @@
 
 import unittest
 from collections import namedtuple
+
+from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.rule import BaseRule
+from apparmor.rule.alias import AliasRule, AliasRuleset
+from apparmor.translations import init_translation
 from common_test import AATest, setup_all_loops
 
-from apparmor.rule.alias import AliasRule, AliasRuleset
-from apparmor.rule import BaseRule
-from apparmor.common import AppArmorException, AppArmorBug
-from apparmor.translations import init_translation
 _ = init_translation()
 
 exp = namedtuple('exp', ('comment', 'orig_path', 'target'))

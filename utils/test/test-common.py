@@ -10,10 +10,9 @@
 # ------------------------------------------------------------------
 
 import unittest
-from common_test import AATest, setup_all_loops
-from apparmor.common import AppArmorBug
 
-from apparmor.common import split_name, combine_profname
+from apparmor.common import AppArmorBug, combine_profname, split_name
+from common_test import AATest, setup_all_loops
 
 
 class AaTest_split_name(AATest):

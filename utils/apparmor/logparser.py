@@ -16,11 +16,11 @@ import ctypes
 import re
 import sys
 import time
-import LibAppArmor
-from apparmor.common import AppArmorException, AppArmorBug, hasher, open_file_read, split_name, DebugLogger
 
-# setup module translations
+import LibAppArmor
+from apparmor.common import AppArmorBug, AppArmorException, DebugLogger, hasher, open_file_read, split_name
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 

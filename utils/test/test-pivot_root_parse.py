@@ -9,9 +9,10 @@
 #
 # ------------------------------------------------------------------
 
-import apparmor.aa as aa
 import unittest
-from common_test import AAParseTest, setup_regex_tests, setup_aa
+
+import apparmor.aa as aa
+from common_test import AAParseTest, setup_aa, setup_regex_tests
 
 
 class AAParsePivotRootTest(AAParseTest):

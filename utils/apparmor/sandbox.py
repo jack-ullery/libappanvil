@@ -8,8 +8,6 @@
 #
 # ------------------------------------------------------------------
 
-from apparmor.common import AppArmorException, debug, error, msg, cmd
-import apparmor.easyprof
 import optparse
 import os
 import pwd
@@ -20,6 +18,9 @@ import sys
 import time
 from shutil import which
 from tempfile import NamedTemporaryFile
+
+import apparmor.easyprof
+from apparmor.common import AppArmorException, cmd, debug, error, msg
 
 
 def check_requirements(binary):

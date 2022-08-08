@@ -12,12 +12,11 @@
 #
 # ----------------------------------------------------------------------
 
-from apparmor.regex import RE_PROFILE_ALIAS, strip_quotes
 from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.regex import RE_PROFILE_ALIAS, strip_quotes
 from apparmor.rule import BaseRule, BaseRuleset, parse_comment, quote_if_needed
-
-# setup module translations
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 

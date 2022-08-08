@@ -9,12 +9,12 @@
 #
 # ------------------------------------------------------------------
 
-import unittest
-from common_test import AATest, setup_all_loops, setup_aa
-import apparmor.aa as apparmor
-
 import os
-from apparmor.common import open_file_read, AppArmorException, is_skippable_file
+import unittest
+
+import apparmor.aa as apparmor
+from apparmor.common import AppArmorException, is_skippable_file, open_file_read
+from common_test import AATest, setup_aa, setup_all_loops
 
 # This testcase will parse all parser/tst/simple_tests with parse_profile_data(),
 # except the files listed in one of the arrays below.

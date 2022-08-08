@@ -13,6 +13,7 @@
 #
 # ----------------------------------------------------------------------
 # No old version logs, only 2.6 + supported
+import atexit
 import os
 import re
 import shutil
@@ -20,37 +21,26 @@ import subprocess  # nosec
 import sys
 import time
 import traceback
-import atexit
+from copy import deepcopy
 from shutil import which
 from tempfile import NamedTemporaryFile
 
 import apparmor.config
 import apparmor.logparser
-import apparmor.severity
-
-from copy import deepcopy
-
-from apparmor.aare import AARE
-
-from apparmor.common import (
-    AppArmorException, AppArmorBug, cmd, is_skippable_file, open_file_read, valid_path, hasher,
-    combine_profname, split_name, open_file_write, DebugLogger)
-
-import apparmor.ui as aaui
-
-from apparmor.regex import (
-    RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_CONDITIONAL,
-    RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
-    RE_PROFILE_CHANGE_HAT, RE_PROFILE_HAT_DEF, RE_PROFILE_MOUNT,
-    RE_PROFILE_PIVOT_ROOT, RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
-    parse_profile_start_line, re_match_include)
-
-from apparmor.profile_list import ProfileList, preamble_ruletypes
-
-from apparmor.profile_storage import ProfileStorage, add_or_remove_flag, ruletypes
-
 import apparmor.rules as aarules
-
+import apparmor.severity
+import apparmor.ui as aaui
+from apparmor.aare import AARE
+from apparmor.common import (
+    AppArmorBug, AppArmorException, DebugLogger, cmd, combine_profname, hasher,
+    is_skippable_file, open_file_read, open_file_write, split_name, valid_path)
+from apparmor.profile_list import ProfileList, preamble_ruletypes
+from apparmor.profile_storage import ProfileStorage, add_or_remove_flag, ruletypes
+from apparmor.regex import (
+    RE_HAS_COMMENT_SPLIT, RE_PROFILE_CHANGE_HAT, RE_PROFILE_CONDITIONAL,
+    RE_PROFILE_CONDITIONAL_BOOLEAN, RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_END,
+    RE_PROFILE_HAT_DEF, RE_PROFILE_MOUNT, RE_PROFILE_PIVOT_ROOT, RE_PROFILE_START,
+    RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, parse_profile_start_line, re_match_include)
 from apparmor.rule.abi import AbiRule
 from apparmor.rule.capability import CapabilityRule
 from apparmor.rule.change_profile import ChangeProfileRule
@@ -60,9 +50,8 @@ from apparmor.rule.include import IncludeRule
 from apparmor.rule.network import NetworkRule
 from apparmor.rule.ptrace import PtraceRule
 from apparmor.rule.signal import SignalRule
-
-# setup module translations
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 # Setup logging in case debugging is enabled

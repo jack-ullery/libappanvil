@@ -17,8 +17,8 @@ import time
 import unittest
 from tempfile import NamedTemporaryFile
 
-from common_test import AATest, setup_all_loops, setup_aa
 import apparmor.aa as aa
+from common_test import AATest, setup_aa, setup_all_loops
 
 # The location of the aa-notify utility can be overridden by setting
 # the APPARMOR_NOTIFY environment variable; this is useful for running

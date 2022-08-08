@@ -14,16 +14,14 @@
 
 import re
 
-from apparmor.regex import RE_PROFILE_SIGNAL, RE_PROFILE_NAME
 from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.regex import RE_PROFILE_SIGNAL, RE_PROFILE_NAME
 from apparmor.rule import (
     BaseRule, BaseRuleset, check_and_split_list, logprof_value_or_all,
     parse_modifiers, quote_if_needed)
-
-# setup module translations
 from apparmor.translations import init_translation
-_ = init_translation()
 
+_ = init_translation()
 
 access_keywords_read = ['receive', 'r', 'read']
 access_keywords_write = ['send', 'w', 'write']

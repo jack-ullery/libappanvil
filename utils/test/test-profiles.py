@@ -10,8 +10,9 @@
 # ------------------------------------------------------------------
 
 import unittest
-from common_test import AATest, setup_all_loops, setup_aa
+
 import apparmor.aa as aa
+from common_test import AATest, setup_aa, setup_all_loops
 
 # If a profile can't be parsed by the tools, add it to skip_active_profiles or skip_extra_profiles.
 # Add only the filename (without path), for example 'usr.bin.foo'.

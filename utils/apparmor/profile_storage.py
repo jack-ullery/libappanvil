@@ -15,7 +15,8 @@
 
 
 from apparmor.common import AppArmorBug, AppArmorException
-
+from apparmor.regex import parse_profile_start_line
+from apparmor.rule import quote_if_needed
 from apparmor.rule.abi import AbiRule, AbiRuleset
 from apparmor.rule.capability import CapabilityRule, CapabilityRuleset
 from apparmor.rule.change_profile import ChangeProfileRule, ChangeProfileRuleset
@@ -26,13 +27,8 @@ from apparmor.rule.network import NetworkRule, NetworkRuleset
 from apparmor.rule.ptrace import PtraceRule, PtraceRuleset
 from apparmor.rule.rlimit import RlimitRule, RlimitRuleset
 from apparmor.rule.signal import SignalRule, SignalRuleset
-
-from apparmor.rule import quote_if_needed
-
-from apparmor.regex import parse_profile_start_line
-
-# setup module translations
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 ruletypes = {

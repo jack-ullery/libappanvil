@@ -10,8 +10,9 @@
 # ------------------------------------------------------------------
 
 import unittest
-from common_test import AATest, setup_all_loops  # , setup_aa
+
 # import apparmor.aa as aa  # see the setup_aa() call for details
+from common_test import AATest, setup_all_loops  # , setup_aa
 
 
 class TestFoo(AATest):
