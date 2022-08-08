@@ -209,7 +209,7 @@ class AAParserAltCacheBasicTests(AAParserBasicCachingTests):
 
     def tearDown(self):
         if len(os.listdir(self.unused_cache_loc)) > 0:
-            self.fail('original cache dir \'%s\' not empty' % self.unused_cache_loc)
+            self.fail("original cache dir '%s' not empty" % self.unused_cache_loc)
         super().tearDown()
 
 
@@ -516,7 +516,7 @@ class AAParserAltCacheTests(AAParserCachingTests):
 
     def tearDown(self):
         if self.check_orig_cache and len(os.listdir(self.orig_cache_dir)) > 0:
-            self.fail('original cache dir \'%s\' not empty' % self.orig_cache_dir)
+            self.fail("original cache dir '%s' not empty" % self.orig_cache_dir)
         super().tearDown()
 
     def test_cache_purge_leaves_original_cache_alone(self):

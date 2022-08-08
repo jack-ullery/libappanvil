@@ -81,7 +81,7 @@ class AATestTemplate(unittest.TestCase, metaclass=AANoCleanupMetaClass):
            return a textual error if it failed."""
 
         if self.debug:
-            print('\n===> Running command: \'%s\'' % (' '.join(command)))
+            print("\n===> Running command: '%s'" % (' '.join(command)))
 
         (rc, out, outerr) = self._run_cmd(command, input, stderr, stdout, stdin, timeout)
         report = out + outerr
