@@ -2640,7 +2640,7 @@ POLICYGROUPS_DIR="%s/templates"
             'foo/',
             'foo\\',
             'foo;',
-            'foo\'',
+            "foo'",
             'foo"',
             'foo<',
             'foo>',

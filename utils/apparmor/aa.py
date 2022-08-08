@@ -366,7 +366,7 @@ def get_reqs(file):
 
     ldd = conf.find_first_file(cfg['settings'].get('ldd')) or '/usr/bin/ldd'
     if not os.path.isfile(ldd) or not os.access(ldd, os.EX_OK):
-        raise AppArmorException('Can\'t find ldd')
+        raise AppArmorException("Can't find ldd")
 
     ret, ldd_out = get_output((ldd, file))
     if ret == 0 or ret == 1:
@@ -2491,7 +2491,7 @@ def check_qualifiers(program):
             fatal_error(
                 _("%s is currently marked as a program that should not have its own\n"
                   "profile.  Usually, programs are marked this way if creating a profile for \n"
-                  "them is likely to break the rest of the system.  If you know what you\'re\n"
+                  "them is likely to break the rest of the system.  If you know what you're\n"
                   "doing and are certain you want to create a profile for this program, edit\n"
                   "the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf.")
                 % program)
@@ -2589,10 +2589,10 @@ def init_aa(confdir=None, profiledir=None):
         profile_dir = conf.find_first_dir(cfg['settings'].get('profiledir')) or '/etc/apparmor.d'
     profile_dir = os.path.abspath(profile_dir)
     if not os.path.isdir(profile_dir):
-        raise AppArmorException('Can\'t find AppArmor profiles in %s' % (profile_dir))
+        raise AppArmorException("Can't find AppArmor profiles in %s" % (profile_dir))
 
     extra_profile_dir = conf.find_first_dir(cfg['settings'].get('inactive_profiledir')) or '/usr/share/apparmor/extra-profiles/'
 
     parser = conf.find_first_file(cfg['settings'].get('parser')) or '/sbin/apparmor_parser'
     if not os.path.isfile(parser) or not os.access(parser, os.EX_OK):
-        raise AppArmorException('Can\'t find apparmor_parser at %s' % (parser))
+        raise AppArmorException("Can't find apparmor_parser at %s" % (parser))
