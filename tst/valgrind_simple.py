@@ -13,12 +13,13 @@
 # TODO
 # - finish adding suppressions for valgrind false positives
 
-from argparse import ArgumentParser
 import os
 import sys
 import unittest
-import testlib
+from argparse import ArgumentParser
 from tempfile import NamedTemporaryFile
+
+import testlib
 
 DEFAULT_TESTDIR = "./simple_tests/vars"
 VALGRIND_ERROR_CODE = 151

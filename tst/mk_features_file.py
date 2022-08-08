@@ -10,10 +10,11 @@
 #
 # ------------------------------------------------------------------
 
-from testlib import read_features_dir
-from argparse import ArgumentParser
 import os
+from argparse import ArgumentParser
 from sys import stderr, exit
+
+from testlib import read_features_dir
 
 DEFAULT_FEATURES_DIR = '/sys/kernel/security/apparmor/features'
 
