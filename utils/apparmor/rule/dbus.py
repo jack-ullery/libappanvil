@@ -132,7 +132,7 @@ class DbusRule(BaseRule):
                 # XXX move to function _split_access()?
                 access = strip_parenthesis(details.group('access'))
                 access = access.replace(',', ' ').split()  # split by ',' or whitespace
-                if access == []:  # XXX that happens for "dbus ( )," rules - correct behaviour? (also: same for signal rules?)
+                if not access:  # XXX that happens for "dbus ( )," rules - correct behaviour? (also: same for signal rules?)
                     access = DbusRule.ALL
             else:
                 access = DbusRule.ALL

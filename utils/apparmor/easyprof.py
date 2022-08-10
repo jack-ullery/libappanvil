@@ -610,7 +610,7 @@ class AppArmorEasyProfile:
         search = '###VAR###'
         prefix = find_prefix(policy, search)
         s = "%s# No template variables specified" % prefix
-        if len(template_var) > 0:
+        if template_var:
             s = "%s# Specified profile variables" % (prefix)
             template_var.sort()
             for i in template_var:
@@ -620,7 +620,7 @@ class AppArmorEasyProfile:
         search = '###READS###'
         prefix = find_prefix(policy, search)
         s = "%s# No read paths specified" % prefix
-        if len(read_path) > 0:
+        if read_path:
             s = "%s# Specified read permissions" % (prefix)
             read_path.sort()
             for i in read_path:
@@ -631,7 +631,7 @@ class AppArmorEasyProfile:
         search = '###WRITES###'
         prefix = find_prefix(policy, search)
         s = "%s# No write paths specified" % prefix
-        if len(write_path) > 0:
+        if write_path:
             s = "%s# Specified write permissions" % (prefix)
             write_path.sort()
             for i in write_path:

@@ -78,7 +78,7 @@ class BaseRule:
         if rulepart == self.ALL:
             return None, True
         elif type(rulepart) is str:
-            if len(rulepart.strip()) == 0:
+            if not rulepart.strip():
                 raise AppArmorBug(
                     'Passed empty %(partname)s to %(classname)s: %(rulepart)s'
                     % {'partname': partname, 'classname': self.__class__.__name__, 'rulepart': str(rulepart)})
@@ -503,7 +503,7 @@ def check_and_split_list(lst, allowed_keywords, all_obj, classname, keyword_name
         return None, True, None
     elif type(lst) is str:
         result_list = {lst}
-    elif type(lst) in (list, tuple, set) and (len(lst) > 0 or allow_empty_list):
+    elif type(lst) in (list, tuple, set) and (lst or allow_empty_list):
         result_list = set(lst)
     else:
         raise AppArmorBug(

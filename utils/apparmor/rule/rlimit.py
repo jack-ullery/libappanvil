@@ -154,7 +154,7 @@ class RlimitRule(BaseRule):
     def size_to_int(self, value):
         number, unit = split_unit(value)
 
-        if unit == '':
+        if not unit:
             pass
         elif unit == 'K' or unit == 'KB':
             number = number * 1024
@@ -170,7 +170,7 @@ class RlimitRule(BaseRule):
     def time_to_int(self, value, default_unit):
         number, unit = split_unit(value)
 
-        if unit == '':
+        if not unit:
             unit = default_unit
 
         if unit in ('us', 'microsecond', 'microseconds'):

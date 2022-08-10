@@ -138,7 +138,7 @@ def parse_profile_start_line(line, filename):
         else:
             result[section] = None
 
-    if result['flags'] and result['flags'].strip() == '':
+    if result['flags'] and not result['flags'].strip():
         raise AppArmorException(
             _('Invalid syntax in %(filename)s: Empty set of flags in line %(line)s.'
               % {'filename': filename, 'line': line}))
@@ -204,11 +204,10 @@ def re_match_include_parse(line, rule_name):
         path = matches.group('quotedpath')
         # LP: 1738880 - parser doesn't handle relative paths everywhere, and
         # neither do we (see aa.py)
-        if rule_name == 'include' and len(path) > 0 and path[0] != '/':
+        if rule_name == 'include' and path and path[0] != '/':
             raise AppArmorException(_('Syntax error: %s must use quoted path or <...>') % rule_name)
 
-    # if path is empty or the empty string
-    if path is None or path == "":
+    if not path:
         raise AppArmorException(_('Syntax error: %s rule with empty filename') % rule_name)
 
     # LP: #1738877 - parser doesn't handle files with spaces in the name

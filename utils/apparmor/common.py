@@ -99,7 +99,7 @@ def recursive_print(src, dpth=0, key=''):
         if empty:
             print(tabs + '[--- empty ---]')
     elif isinstance(src, list) or isinstance(src, tuple):
-        if len(src) == 0:
+        if not src:
             print(tabs + '[--- empty ---]')
         else:
             print(tabs + "[")

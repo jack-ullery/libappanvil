@@ -67,7 +67,7 @@ af_pairs = re.sub('AF_', '', output.strip()).lower().split(",")
 for af_pair in af_pairs:
     af_name = af_pair.lstrip().split(" ")[0]
     # skip max af name definition
-    if len(af_name) > 0 and af_name != "max":
+    if af_name and af_name != "max":
         af_names.append(af_name)
 
 # TODO: does a "debug" flag exist? Listed in apparmor.vim.in sdFlagKey,

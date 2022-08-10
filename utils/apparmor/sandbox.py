@@ -254,7 +254,7 @@ class SandboxXserver():
             os.environ['LANG'] = old_lang
 
         os.environ["DISPLAY"] = current
-        if display == "":
+        if not display:
             raise AppArmorException("Could not find available X display")
 
         # Use dedicated .Xauthority file

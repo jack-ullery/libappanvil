@@ -91,7 +91,7 @@ def build_rule(leading, qual, name, perm, target):
     else:
         rule += "\t%s %s %s" % (qual, name, perm)
 
-    if target != "":
+    if target:
         rule += " -> %s" % target
 
     rule += ",\n"

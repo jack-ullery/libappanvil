@@ -784,7 +784,7 @@ POLICYGROUPS_DIR="%s/templates"
         if name is not None:
             args.append('--name=%s' % name)
 
-        if len(extra_args) > 0:
+        if extra_args:
             args += extra_args
 
         args.append(self.binary)

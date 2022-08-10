@@ -352,7 +352,7 @@ def get_output(params):
     output = output.decode('utf-8').split('\n')
 
     # Remove the extra empty string caused due to \n if present
-    if output[len(output) - 1] == '':
+    if not output[-1]:
         output.pop()
 
     return (ret, output)
@@ -637,7 +637,7 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
     found = False
     depth = -1
 
-    if not flag or (type(flag) is str and flag.strip() == ''):
+    if not flag or (type(flag) is str and not flag.strip()):
         raise AppArmorBug('New flag for %s is empty' % prof_filename)
 
     with open_file_read(prof_filename) as f_in:

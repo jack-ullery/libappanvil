@@ -35,7 +35,7 @@ class Severity:
         with open_file_read(dbname) as database:  # open(dbname, 'r')
             for lineno, line in enumerate(database, start=1):
                 line = line.strip()  # or only rstrip and lstrip?
-                if line == '' or line.startswith('#'):
+                if not line or line.startswith('#'):
                     continue
                 if line.startswith('/'):
                     try:
@@ -104,7 +104,7 @@ class Severity:
 
     def check_subtree(self, tree, mode, sev, segments):
         """Returns the max severity from the regex tree"""
-        if len(segments) == 0:
+        if not segments:
             first = ''
         else:
             first = segments[0]

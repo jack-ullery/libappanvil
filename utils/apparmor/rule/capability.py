@@ -49,14 +49,14 @@ class CapabilityRule(BaseRule):
         else:
             if type(cap_list) is str:
                 self.capability = {cap_list}
-            elif type(cap_list) == list and len(cap_list) > 0:
+            elif type(cap_list) == list and cap_list:
                 self.capability = set(cap_list)
             else:
                 raise AppArmorBug('Passed unknown object to CapabilityRule: %s' % str(cap_list))
             # make sure none of the cap_list arguments are blank, in
             # case we decide to return one cap per output line
             for cap in self.capability:
-                if len(cap.strip()) == 0:
+                if not cap.strip():
                     raise AppArmorBug('Passed empty capability to CapabilityRule: %s' % str(cap_list))
 
     @classmethod
