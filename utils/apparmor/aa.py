@@ -2032,7 +2032,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
             aaui.UI_Important(_('Ignoring no longer supported change hat declaration "^%(hat)s," found in file: %(file)s line: %(line)s')
                               % {'hat': matches[0], 'file': file, 'line': lineno + 1})
 
-        elif line[0] == '#':
+        elif line.startswith('#'):
             # Handle initial comments
             if not profile:
                 if line.startswith('# Last Modified:'):

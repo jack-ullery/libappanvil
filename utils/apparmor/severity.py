@@ -97,7 +97,7 @@ class Severity:
         """Returns the rank for the given path"""
         if '@' in path:    # path contains variable
             return self.handle_variable_rank(path, mode)
-        elif path[0] == '/':    # file resource
+        elif path.startswith('/'):    # file resource
             return self.handle_file(path, mode)
         else:
             raise AppArmorException("Unexpected path input: %s" % path)
@@ -175,9 +175,9 @@ class Severity:
             leading = True
         if resource.find(variable + "/") != -1 and resource.find(variable + "//") == -1:
             trailing = True
-        if replacement[0] == '/' and replacement[:2] != '//' and leading:  # finds if the replacement has leading / or not
+        if replacement.startswith('/') and not replacement.startswith('//') and leading:  # finds if the replacement has leading / or not
             replacement = replacement[1:]
-        if replacement[-1] == '/' and replacement[-2:] != '//' and trailing:
+        if replacement.endswith('/') and not replacement.endswith('//') and trailing:
             replacement = replacement[:-1]
         return resource.replace(variable, replacement)
 

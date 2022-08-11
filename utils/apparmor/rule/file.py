@@ -548,7 +548,7 @@ def split_perms(perm_string, deny):
         if perm_string[0] in file_permissions:
             perms.add(perm_string[0])
             perm_string = perm_string[1:]
-        elif perm_string[0] == 'x':
+        elif perm_string.startswith('x'):
             if not deny:
                 raise AppArmorException(_("'x' must be preceded by an exec qualifier (i, P, C or U)"))
             exec_mode = 'x'

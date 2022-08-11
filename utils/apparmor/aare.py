@@ -89,8 +89,8 @@ class AARE:
 
     def glob_path(self):
         """Glob the given file or directory path"""
-        if self.regex[-1] == '/':
-            if self.regex[-4:] == '/**/' or self.regex[-3:] == '/*/':
+        if self.regex.endswith('/'):
+            if self.regex.endswith(('/**/', '/*/')):
                 # /foo/**/ and /foo/*/ => /**/
                 newpath = re.sub('/[^/]+/\*{1,2}/$', '/**/', self.regex)  # re.sub('/[^/]+/\*{1,2}$/', '/\*\*/', self.regex)
             elif re.search('/[^/]+\*\*[^/]*/$', self.regex):
@@ -102,7 +102,7 @@ class AARE:
             else:
                 newpath = re.sub('/[^/]+/$', '/*/', self.regex)
         else:
-            if self.regex[-3:] == '/**' or self.regex[-2:] == '/*':
+            if self.regex.endswith(('/**', '/*')):
                 # /foo/** and /foo/* => /**
                 newpath = re.sub('/[^/]+/\*{1,2}$', '/**', self.regex)
             elif re.search('/[^/]*\*\*[^/]+$', self.regex):

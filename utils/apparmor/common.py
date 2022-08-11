@@ -182,7 +182,7 @@ def is_skippable_file(path):
 
     basename = os.path.basename(path)
 
-    if not basename or basename[0] == '.' or basename == 'README':
+    if not basename or basename.startswith('.') or basename == 'README':
         return True
 
     skippable_suffix = (
@@ -259,9 +259,9 @@ def convert_regexp(regexp):
     # ?< is the negative lookback operator
     new_reg = new_reg.replace('*', '(((?<=/)[^/\000]+)|((?<!/)[^/\000]*))')
     new_reg = new_reg.replace(multi_glob, '(((?<=/)[^\000]+)|((?<!/)[^\000]*))')
-    if regexp[0] != '^':
+    if not regexp.startswith('^'):
         new_reg = '^' + new_reg
-    if regexp[-1] != '$':
+    if not regexp.endswith('$'):
         new_reg = new_reg + '$'
     return new_reg
 

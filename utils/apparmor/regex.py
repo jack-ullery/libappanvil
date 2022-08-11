@@ -204,7 +204,7 @@ def re_match_include_parse(line, rule_name):
         path = matches.group('quotedpath')
         # LP: 1738880 - parser doesn't handle relative paths everywhere, and
         # neither do we (see aa.py)
-        if rule_name == 'include' and path and path[0] != '/':
+        if rule_name == 'include' and path and not path.startswith('/'):
             raise AppArmorException(_('Syntax error: %s must use quoted path or <...>') % rule_name)
 
     if not path:
@@ -236,14 +236,14 @@ def strip_parenthesis(data):
        The parenthesis must be the first and last char, otherwise they won't be removed.
        Even if no parenthesis get removed, the result will be strip()ped.
     """
-    if data[0] + data[-1] == '()':
+    if data.startswith('(') and data.endswith(')'):
         return data[1:-1].strip()
     else:
         return data.strip()
 
 
 def strip_quotes(data):
-    if len(data) > 1 and data[0] + data[-1] == '""':
+    if len(data) > 1 and data.startswith('"') and data.endswith('"'):
         return data[1:-1]
     else:
         return data
