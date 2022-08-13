@@ -156,11 +156,11 @@ class ReadLog:
             raise AppArmorBug('aamode is UNKNOWN - %s' % e['type'])  # should never happen
 
         if aamode in ('AUDIT', 'STATUS', 'ERROR'):
-            return None
+            return
 
         # Skip if AUDIT event was issued due to a change_hat in unconfined mode
         if not e.get('profile', False):
-            return None
+            return
 
         full_profile = e['profile']  # full, nested profile name
         self.init_hashlog(aamode, full_profile)
@@ -172,7 +172,7 @@ class ReadLog:
         profile, hat = split_name(e['profile'])
 
         if profile != 'null-complain-profile' and not self.profile_exists(profile):
-            return None
+            return
         if e['operation'] == 'exec':
             if not e['name']:
                 raise AppArmorException('exec without executed binary')
@@ -181,7 +181,7 @@ class ReadLog:
                 e['name2'] = ''  # exec events in enforce mode don't have target=...
 
             self.hashlog[aamode][full_profile]['exec'][e['name']][e['name2']] = True
-            return None
+            return
 
         elif self.op_type(e) == 'file':
             # Map c (create) and d (delete) to w (logging is more detailed than the profile language)
@@ -212,45 +212,45 @@ class ReadLog:
                 else:
                     raise AppArmorException(_('Log contains unknown mode %s') % dmask)
 
-            return None
+            return
 
         elif e['operation'] == 'capable':
             self.hashlog[aamode][full_profile]['capability'][e['name']] = True
-            return None
+            return
 
         elif self.op_type(e) == 'net':
             self.hashlog[aamode][full_profile]['network'][e['family']][e['sock_type']][e['protocol']] = True
-            return None
+            return
 
         elif e['operation'] == 'change_hat':
             if e['error_code'] == 1 and e['info'] == 'unconfined can not change_hat':
-                return None
+                return
 
             self.hashlog[aamode][full_profile]['change_hat'][e['name2']] = True
-            return None
+            return
 
         elif e['operation'] == 'change_profile':
             self.hashlog[aamode][full_profile]['change_profile'][e['name2']] = True
-            return None
+            return
 
         elif e['operation'] == 'ptrace':
             if not e['peer']:
                 self.debug_logger.debug('ignored garbage ptrace event with empty peer')
-                return None
+                return
             if not e['denied_mask']:
                 self.debug_logger.debug('ignored garbage ptrace event with empty denied_mask')
-                return None
+                return
 
             self.hashlog[aamode][full_profile]['ptrace'][e['peer']][e['denied_mask']] = True
-            return None
+            return
 
         elif e['operation'] == 'signal':
             self.hashlog[aamode][full_profile]['signal'][e['peer']][e['denied_mask']][e['signal']] = True
-            return None
+            return
 
         elif e['operation'].startswith('dbus_'):
             self.hashlog[aamode][full_profile]['dbus'][e['denied_mask']][e['bus']][e['path']][e['name']][e['interface']][e['member']][e['peer_profile']] = True
-            return None
+            return
 
         else:
             self.debug_logger.debug('UNHANDLED: %s' % e)

@@ -575,10 +575,10 @@ def autodep(bin_name, pname=''):
         # if not bin_full:
         #    bin_full = bin_name
         # if not bin_full.startswith('/'):
-        #     return None
+        #     return
         # Return if executable path not found
         if not bin_full:
-            return None
+            return
     else:
         bin_full = pname  # for named profiles
 
@@ -1773,7 +1773,7 @@ def read_inactive_profiles(skip_profiles=[]):
     read_inactive_profiles.already_read = True
 
     if not os.path.exists(extra_profile_dir):
-        return None
+        return
     try:
         os.listdir(profile_dir)
     except:
@@ -1799,7 +1799,7 @@ def read_profile(file, active_profile):
     except IOError as e:
         aaui.UI_Important('WARNING: Error reading file %s, skipping.\n    %s' % (file, e))
         debug_logger.debug("read_profile: can't read %s - skipping" % file)
-        return None
+        return
 
     profile_data = parse_profile_data(data, file, 0, True)
 
@@ -2404,7 +2404,7 @@ def propose_file_rules(profile_obj, rule_obj):
 
 def reload_base(bin_path):
     if not check_for_apparmor():
-        return None
+        return
 
     prof_filename = get_profile_filename_from_profile_name(bin_path, True)
 
@@ -2425,10 +2425,8 @@ def reload_profile(prof_filename, raise_exc=False):
 
 def reload(bin_path):
     bin_path = find_executable(bin_path)
-    if not bin_path:
-        return None
-
-    return reload_base(bin_path)
+    if bin_path:
+        reload_base(bin_path)
 
 
 def get_include_data(filename):
