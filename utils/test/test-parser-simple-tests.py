@@ -451,7 +451,7 @@ def parse_test_profiles(file_with_path):
         if line.startswith('#=EXRESULT '):
             exresult = line.split()[1]
             if exresult == 'PASS':
-                exresult == True
+                exresult = True
                 exresult_found = True
             elif exresult == 'FAIL':
                 exresult = False
