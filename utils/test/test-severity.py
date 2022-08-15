@@ -56,7 +56,7 @@ class SeverityTest(SeverityBaseTest):
     )
 
     def _run_test(self, params, expected):
-        self._simple_severity_w_perm(params[0], params[1], expected)  # filename containing @
+        self._simple_severity_w_perm(params[0], params[1], expected)
 
     def test_invalid_rank(self):
         with self.assertRaises(AppArmorException):
