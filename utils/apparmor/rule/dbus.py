@@ -29,7 +29,7 @@ access_keywords = ['bind', 'eavesdrop'] + message_keywords
 # XXX joint_access_keyword and RE_ACCESS_KEYWORDS exactly as in SignalRule - move to function?
 joint_access_keyword = '(' + '(\s|,)*' + '(' + '|'.join(access_keywords) + ')(\s|,)*' + ')'
 RE_ACCESS_KEYWORDS = (
-    joint_access_keyword  # one of the access_keyword or
+    joint_access_keyword  # one of the access_keyword
     + '|'  # or
     + '\(' + '(\s|,)*' + joint_access_keyword + '?' + '(' + '(\s|,)+' + joint_access_keyword + ')*' + '\)'  # one or more access_keyword in (...)
 )
