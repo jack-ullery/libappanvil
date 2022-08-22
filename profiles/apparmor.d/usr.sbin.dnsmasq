@@ -120,8 +120,8 @@ profile dnsmasq /usr/{bin,sbin}/dnsmasq flags=(attach_disconnected) {
 
     /etc/libnl-3/classid r,
 
-    /usr/lib{,64}/libvirt/libvirt_leaseshelper m,
-    /usr/libexec/libvirt_leaseshelper m,
+    /usr/lib{,64}/libvirt/libvirt_leaseshelper mr,
+    /usr/libexec/libvirt_leaseshelper mr,
 
     owner @{PROC}/@{pid}/net/psched r,
     owner @{PROC}/@{pid}/status r,
