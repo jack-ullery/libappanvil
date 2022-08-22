@@ -30,28 +30,29 @@
 
 import argparse
 import atexit
+import grp
 import os
+import pwd
 import re
 import sys
 import time
+
 import notify2
 import psutil
-import pwd
-import grp
 
 import apparmor.aa as aa
 import apparmor.ui as aaui
 import apparmor.config as aaconfig
+import LibAppArmor  # C-library to parse one log line
 from apparmor.common import DebugLogger, open_file_read
 from apparmor.fail import enable_aa_exception_handler
 from apparmor.notify import get_last_login_timestamp
 from apparmor.translations import init_translation
 
-import LibAppArmor  # C-library to parse one log line
 
 def get_user_login():
-    '''Portable function to get username. Should not trigger any
-    "OSError: [Errno 25] Inappropriate ioctl for device" errors in Giltab-CI'''
+    """Portable function to get username. Should not trigger any
+    "OSError: [Errno 25] Inappropriate ioctl for device" errors in Giltab-CI"""
     if os.name == "posix":
         username = pwd.getpwuid(os.geteuid()).pw_name
     else:
@@ -59,7 +60,6 @@ def get_user_login():
         if not username and hasattr(os, 'getlogin'):
             username = os.getlogin()
     return username
-
 
 
 def format_event(event, logsource):
@@ -143,7 +143,7 @@ def show_entries_since_last_login(logfile, username=get_user_login()):
 
     if args.verbose:
         print(_('Showing entries since {} logged in').format(username))
-        print() # Newline
+        print()  # Newline
     epoch_since = get_last_login_timestamp(username)
     if epoch_since == 0:
         print(_('ERROR: Could not find last login'), file=sys.stderr)
@@ -159,7 +159,7 @@ def show_entries_since_days(logfile, since_days):
 
 
 def follow_apparmor_events(logfile, wait=0):
-    '''Follow AppArmor events and yield relevant entries until process stops'''
+    """Follow AppArmor events and yield relevant entries until process stops"""
 
     # If wait was given as argument but was type None (from ArgumentParser)
     # ensure it's type int and zero
@@ -239,7 +239,7 @@ def reopen_logfile_if_needed(logfile, logdata, log_inode, log_size):
 
 
 def get_apparmor_events(logfile, since=0):
-    '''Read audit events from log source and yield all relevant events'''
+    """Read audit events from log source and yield all relevant events"""
 
     # Get logdata from file
     # @TODO Implement more log sources in addition to just the logfile
@@ -253,29 +253,29 @@ def get_apparmor_events(logfile, since=0):
 
 
 def parse_logdata(logsource):
-    '''Traverse any iterable log source and extract relevant AppArmor events'''
+    """Traverse any iterable log source and extract relevant AppArmor events"""
 
-    RE_audit_time_id = '(msg=)?audit\([\d\.\:]+\):\s+'  # 'audit(1282626827.320:411): '
-    RE_kernel_time = '\[[\d\.\s]+\]'    # '[ 1612.746129]'
-    RE_type_num = '1[45][0-9][0-9]'     # 1400..1599
-    RE_aa_or_op = '(apparmor=|operation=)'
+    re_audit_time_id = '(msg=)?audit\([\d\.\:]+\):\s+'  # 'audit(1282626827.320:411): '
+    re_kernel_time = '\[[\d\.\s]+\]'    # '[ 1612.746129]'
+    re_type_num = '1[45][0-9][0-9]'     # 1400..1599
+    re_aa_or_op = '(apparmor=|operation=)'
 
-    RE_log_parts = [
-        'kernel:\s+(' + RE_kernel_time + '\s+)?(audit:\s+)?type=' + RE_type_num + '\s+' + RE_audit_time_id + RE_aa_or_op,  # v2_6 syslog
-        'kernel:\s+(' + RE_kernel_time + '\s+)?' + RE_audit_time_id + 'type=' + RE_type_num + '\s+' + RE_aa_or_op,
-        'type=(AVC|APPARMOR[_A-Z]*|' + RE_type_num + ')\s+' + RE_audit_time_id + '(type=' + RE_type_num + '\s+)?' + RE_aa_or_op,  # v2_6 audit and dmesg
-        'type=USER_AVC\s+' + RE_audit_time_id + '.*apparmor=',  # dbus
-        'type=UNKNOWN\[' + RE_type_num + '\]\s+' + RE_audit_time_id + RE_aa_or_op,
+    re_log_parts = [
+        'kernel:\s+(' + re_kernel_time + '\s+)?(audit:\s+)?type=' + re_type_num + '\s+' + re_audit_time_id + re_aa_or_op,  # v2_6 syslog
+        'kernel:\s+(' + re_kernel_time + '\s+)?' + re_audit_time_id + 'type=' + re_type_num + '\s+' + re_aa_or_op,
+        'type=(AVC|APPARMOR[_A-Z]*|' + re_type_num + ')\s+' + re_audit_time_id + '(type=' + re_type_num + '\s+)?' + re_aa_or_op,  # v2_6 audit and dmesg
+        'type=USER_AVC\s+' + re_audit_time_id + '.*apparmor=',  # dbus
+        'type=UNKNOWN\[' + re_type_num + '\]\s+' + re_audit_time_id + re_aa_or_op,
         'dbus\[[0-9]+\]:\s+apparmor=',  # dbus
     ]
 
     # Pre-filter log lines so that we hand over only relevant lines to LibAppArmor parsing
-    RE_LOG_ALL = re.compile('(' + '|'.join(RE_log_parts) + ')')
+    re_log_all = re.compile('(' + '|'.join(re_log_parts) + ')')
 
     for entry in logsource:
 
         # Check the start of the log line and only process lines from AppArmor
-        apparmor_entry = RE_LOG_ALL.search(entry)
+        apparmor_entry = re_log_all.search(entry)
         if apparmor_entry:
             # Parse the line using LibAppArmor (C library)
             # See aalogparse.h for data structure
@@ -287,7 +287,7 @@ def parse_logdata(logsource):
 
 
 def drop_privileges():
-    '''If running as root, drop privileges to USER if known, or fall-back to nobody_user/group'''
+    """If running as root, drop privileges to USER if known, or fall-back to nobody_user/group"""
 
     if os.geteuid() == 0:
 
@@ -313,8 +313,9 @@ def drop_privileges():
         os.setegid(int(next_gid))
         os.seteuid(int(next_uid))
 
+
 def raise_privileges():
-    '''If was running as user with saved user ID 0, raise back to root privileges'''
+    """If was running as user with saved user ID 0, raise back to root privileges"""
 
     if os.geteuid() != 0 and original_effective_user == 0:
 
@@ -322,6 +323,7 @@ def raise_privileges():
 
         # os.setgid(int(next_gid))
         os.seteuid(original_effective_user)
+
 
 def read_notify_conf(path, shell_config):
     try:
@@ -332,11 +334,12 @@ def read_notify_conf(path, shell_config):
     except FileNotFoundError:
         return {}
 
+
 def main():
-    '''
+    """
     Main function of aa-notify that parses command line
     arguments and starts the requested operations.
-    '''
+    """
 
     global _, debug_logger, config, args
     global debug_docs_url, nobody_user, original_effective_user, timeformat

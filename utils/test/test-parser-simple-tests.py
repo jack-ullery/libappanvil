@@ -9,12 +9,12 @@
 #
 # ------------------------------------------------------------------
 
-import unittest
-from common_test import AATest, setup_all_loops, setup_aa
-import apparmor.aa as apparmor
-
 import os
-from apparmor.common import open_file_read, AppArmorException, is_skippable_file
+import unittest
+
+import apparmor.aa as apparmor
+from apparmor.common import AppArmorException, is_skippable_file, open_file_read
+from common_test import AATest, setup_aa, setup_all_loops
 
 # This testcase will parse all parser/tst/simple_tests with parse_profile_data(),
 # except the files listed in one of the arrays below.
@@ -406,6 +406,7 @@ syntax_failure = (
     'bare_include_tests/ok_2.sd',  # two #include<...> in one line
 )
 
+
 class TestParseParserTests(AATest):
     tests = []  # filled by parse_test_profiles()
 
@@ -434,8 +435,9 @@ class TestParseParserTests(AATest):
                 apparmor.parse_profile_data(data, params['file'], 0, True)
                 apparmor.active_profiles.get_all_merged_variables(params['file'], apparmor.include_list_recursive(apparmor.active_profiles.files[params['file']]))
 
+
 def parse_test_profiles(file_with_path):
-    '''parse the test-related headers of a profile (for example EXRESULT) and add the profile to the set of tests'''
+    """parse the test-related headers of a profile (for example EXRESULT) and add the profile to the set of tests"""
     exresult = None
     exresult_found = False
     description = None
@@ -504,11 +506,11 @@ def parse_test_profiles(file_with_path):
 
 
 def find_and_setup_test_profiles(profile_dir):
-    '''find all profiles in the given profile_dir, excluding
+    """find all profiles in the given profile_dir, excluding
     - skippable files
     - include directories
     - files in the main directory (readme, todo etc.)
-    '''
+    """
     skipped = 0
 
     profile_dir = os.path.abspath(profile_dir)

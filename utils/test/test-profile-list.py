@@ -9,13 +9,11 @@
 #
 # ------------------------------------------------------------------
 
-import unittest
-from common_test import AATest, setup_aa, setup_all_loops, write_file
-
-import apparmor.aa
 import os
 import shutil
+import unittest
 
+import apparmor.aa
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.profile_list import ProfileList
 from apparmor.profile_storage import ProfileStorage
@@ -24,6 +22,8 @@ from apparmor.rule.alias import AliasRule
 from apparmor.rule.boolean import BooleanRule
 from apparmor.rule.include import IncludeRule
 from apparmor.rule.variable import VariableRule
+from common_test import AATest, setup_aa, setup_all_loops, write_file
+
 
 class TestAdd_profile(AATest):
     def AASetup(self):
@@ -98,23 +98,29 @@ class TestAdd_profile(AATest):
         with self.assertRaises(AppArmorBug):
             self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo', 'wrong_type')
 
+
 class TestFilename_from_profile_name(AATest):
     tests = (
         ('foo',         '/etc/apparmor.d/bin.foo'),
         ('/bin/foo',    None),
         ('bar',         None),
-        ('/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}',   '/etc/apparmor.d/usr.bin.wine'),
-        ('/usr/lib/wine/bin/wine-preloader-staging-foo',                                            None),  # no AARE matching for profile names
+        ('/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}', '/etc/apparmor.d/usr.bin.wine'),
+        ('/usr/lib/wine/bin/wine-preloader-staging-foo',                                          None),  # no AARE matching for profile names
     )
 
     def AASetup(self):
         self.pl = ProfileList()
         self.dummy_profile = ProfileStorage('TEST DUMMY', 'AATest_no_file', 'TEST')
         self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo', self.dummy_profile)
-        self.pl.add_profile('/etc/apparmor.d/usr.bin.wine', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}', self.dummy_profile)
+        self.pl.add_profile(
+            '/etc/apparmor.d/usr.bin.wine',
+            '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}',
+            '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}',
+            self.dummy_profile)
 
     def _run_test(self, params, expected):
         self.assertEqual(self.pl.filename_from_profile_name(params), expected)
+
 
 class TestFilename_from_attachment(AATest):
     tests = (
@@ -123,8 +129,8 @@ class TestFilename_from_attachment(AATest):
         ('/bin/foobar', '/etc/apparmor.d/bin.foobar'),
         ('@{foo}',      None),  # XXX variables not supported yet (and @{foo} isn't defined in this test)
         ('/bin/404',    None),
-        ('/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}',   '/etc/apparmor.d/usr.bin.wine'),  # XXX should this really match, or should attachment matching only use AARE?
-        ('/usr/lib/wine/bin/wine-preloader-staging-foo',                                            '/etc/apparmor.d/usr.bin.wine'),  # AARE match
+        ('/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}', '/etc/apparmor.d/usr.bin.wine'),  # XXX should this really match, or should attachment matching only use AARE?
+        ('/usr/lib/wine/bin/wine-preloader-staging-foo',                                          '/etc/apparmor.d/usr.bin.wine'),  # AARE match
     )
 
     def AASetup(self):
@@ -133,7 +139,11 @@ class TestFilename_from_attachment(AATest):
         self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo', '/bin/foo', self.dummy_profile)
         self.pl.add_profile('/etc/apparmor.d/bin.baz', 'baz', '/bin/ba*', self.dummy_profile)
         self.pl.add_profile('/etc/apparmor.d/bin.foobar', 'foobar', '/bin/foo{bar,baz}', self.dummy_profile)
-        self.pl.add_profile('/etc/apparmor.d/usr.bin.wine', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}', '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}', self.dummy_profile)
+        self.pl.add_profile(
+            '/etc/apparmor.d/usr.bin.wine',
+            '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}',
+            '/usr{,{/lib,/lib32,/lib64}/wine}/bin/wine{,-preloader,server}{,-staging-*,-vanilla-*}',
+            self.dummy_profile)
 
     def _run_test(self, params, expected):
         self.assertEqual(self.pl.filename_from_attachment(params), expected)
@@ -141,6 +151,7 @@ class TestFilename_from_attachment(AATest):
     def test_non_path_attachment(self):
         with self.assertRaises(AppArmorBug):
             self.pl.filename_from_attachment('foo')
+
 
 class TestAdd_inc_ie(AATest):
     def AASetup(self):
@@ -161,7 +172,7 @@ class TestAdd_inc_ie(AATest):
 
     def testAdd_inc_ie_error_1(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', 'tunables/global')  # str insteadd of IncludeRule
+            self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', 'tunables/global')  # str instead of IncludeRule
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def test_dedup_inc_ie_1(self):
@@ -178,6 +189,7 @@ class TestAdd_inc_ie(AATest):
         with self.assertRaises(AppArmorBug):
             self.pl.delete_preamble_duplicates('/file/not/found')
         self.assertEqual(list(self.pl.files.keys()), [])
+
 
 class TestAdd_abi(AATest):
     def AASetup(self):
@@ -198,7 +210,7 @@ class TestAdd_abi(AATest):
 
     def testAdd_abi_error_1(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_abi('/etc/apparmor.d/bin.foo', 'abi/4.19')  # str insteadd of AbiRule
+            self.pl.add_abi('/etc/apparmor.d/bin.foo', 'abi/4.19')  # str instead of AbiRule
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def test_dedup_abi_1(self):
@@ -209,6 +221,7 @@ class TestAdd_abi(AATest):
         self.assertEqual(deleted, 1)
         self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['abi <abi/4.19>,', ''])
+
 
 class TestAdd_alias(AATest):
     def AASetup(self):
@@ -236,17 +249,17 @@ class TestAdd_alias(AATest):
 
     def testAdd_alias_error_1(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule(None, '/foo'))  # alias None insteadd of str
+            self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule(None, '/foo'))  # alias None instead of str
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def testAdd_alias_error_2(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/foo', None))  # target None insteadd of str
+            self.pl.add_alias('/etc/apparmor.d/bin.foo', AliasRule('/foo', None))  # target None instead of str
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def testAdd_alias_error_3(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_alias('/etc/apparmor.d/bin.foo', 'alias /foo -> /bar,')  # str insteadd of AliasRule
+            self.pl.add_alias('/etc/apparmor.d/bin.foo', 'alias /foo -> /bar,')  # str instead of AliasRule
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def test_dedup_alias_1(self):
@@ -258,6 +271,7 @@ class TestAdd_alias(AATest):
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
         self.assertEqual(self.pl.get_clean('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', 'alias /foo -> /another_target,', ''])
         self.assertEqual(self.pl.get_raw('/etc/apparmor.d/bin.foo'), ['alias /foo -> /bar,', 'alias /foo -> /another_target,', ''])
+
 
 class TestAdd_variable(AATest):
     def AASetup(self):
@@ -278,7 +292,7 @@ class TestAdd_variable(AATest):
 
     def testAdd_variable_error_1(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_variable('/etc/apparmor.d/bin.foo', '@{foo}')  # str insteadd of IncludeRule
+            self.pl.add_variable('/etc/apparmor.d/bin.foo', '@{foo}')  # str instead of IncludeRule
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def test_dedup_variable_1(self):
@@ -295,6 +309,7 @@ class TestAdd_variable(AATest):
         with self.assertRaises(AppArmorBug):
             self.pl.delete_preamble_duplicates('/file/not/found')
         self.assertEqual(list(self.pl.files.keys()), [])
+
 
 class TestAdd_boolean(AATest):
     def AASetup(self):
@@ -315,8 +330,9 @@ class TestAdd_boolean(AATest):
 
     def testAdd_variable_error_1(self):
         with self.assertRaises(AppArmorBug):
-            self.pl.add_boolean('/etc/apparmor.d/bin.foo', '$foo')  # str insteadd of IncludeRule
+            self.pl.add_boolean('/etc/apparmor.d/bin.foo', '$foo')  # str instead of IncludeRule
         self.assertEqual(list(self.pl.files.keys()), [])
+
 
 class TestGet(AATest):
     def AASetup(self):
@@ -329,6 +345,7 @@ class TestGet(AATest):
     def testGet_raw_error(self):
         with self.assertRaises(AppArmorBug):
             self.pl.get_raw('/etc/apparmor.d/not.found')
+
 
 class AaTest_get_all_merged_variables(AATest):
     tests = ()
@@ -352,7 +369,9 @@ class AaTest_get_all_merged_variables(AATest):
     def test_unchanged(self):
         self._load_profiles()
         prof_filename = os.path.join(self.profile_dir, 'usr.sbin.dnsmasq')
-        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename], True))
+        vars = apparmor.aa.active_profiles.get_all_merged_variables(
+            os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'),
+            apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename], True))
         self.assertEqual(vars['@{TFTP_DIR}'], {'/var/tftp', '/srv/tftp', '/srv/tftpboot'})
         self.assertEqual(vars['@{HOME}'], {'@{HOMEDIRS}/*/', '/root/'})
 
@@ -360,7 +379,9 @@ class AaTest_get_all_merged_variables(AATest):
         write_file(self.profile_dir, 'tunables/home.d/extend_home', '@{HOME} += /my/castle/')
         self._load_profiles()
         prof_filename = os.path.join(self.profile_dir, 'usr.sbin.dnsmasq')
-        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename], True))
+        vars = apparmor.aa.active_profiles.get_all_merged_variables(
+            os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'),
+            apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename], True))
         self.assertEqual(vars['@{TFTP_DIR}'], {'/var/tftp', '/srv/tftp', '/srv/tftpboot'})
         self.assertEqual(vars['@{HOME}'], {'@{HOMEDIRS}/*/', '/root/', '/my/castle/'})
 
@@ -369,7 +390,9 @@ class AaTest_get_all_merged_variables(AATest):
         write_file(self.profile_dir, 'tunables/home.d/moving_around', '@{HOME} += /on/the/road/')
         self._load_profiles()
         prof_filename = os.path.join(self.profile_dir, 'usr.sbin.dnsmasq')
-        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename], True))
+        vars = apparmor.aa.active_profiles.get_all_merged_variables(
+            os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'),
+            apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename], True))
         self.assertEqual(vars['@{TFTP_DIR}'], {'/var/tftp', '/srv/tftp', '/srv/tftpboot'})
         self.assertEqual(vars['@{HOME}'], {'@{HOMEDIRS}/*/', '/root/', '/my/castle/', '/on/the/road/'})
 
@@ -378,7 +401,9 @@ class AaTest_get_all_merged_variables(AATest):
         write_file(self.profile_dir, 'dummy_profile', 'include <tunables/global>\n@{HOME} += /in/the/profile/')
         self._load_profiles()
         prof_filename = os.path.join(self.profile_dir, 'dummy_profile')
-        vars = apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'dummy_profile'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename], True))
+        vars = apparmor.aa.active_profiles.get_all_merged_variables(
+            os.path.join(self.profile_dir, 'dummy_profile'),
+            apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename], True))
         self.assertEqual(vars.get('@{TFTP_DIR}', None), None)
         self.assertEqual(vars['@{HOME}'], {'@{HOMEDIRS}/*/', '/root/', '/my/castle/', '/in/the/profile/'})
 
@@ -387,18 +412,24 @@ class AaTest_get_all_merged_variables(AATest):
         self._load_profiles()
         prof_filename = os.path.join(self.profile_dir, 'usr.sbin.dnsmasq')
         with self.assertRaises(AppArmorException):
-            apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename], True))
+            apparmor.aa.active_profiles.get_all_merged_variables(
+                os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'),
+                apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename], True))
 
     def test_add_to_nonexisting(self):
         write_file(self.profile_dir, 'tunables/home.d/no_such_var', '@{NO_SUCH_HOME} += /my/castle/')  # add to non-existing variable
         self._load_profiles()
         prof_filename = os.path.join(self.profile_dir, 'usr.sbin.dnsmasq')
         with self.assertRaises(AppArmorException):
-            apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'), apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename], True))
+            apparmor.aa.active_profiles.get_all_merged_variables(
+                os.path.join(self.profile_dir, 'usr.sbin.dnsmasq'),
+                apparmor.aa.include_list_recursive(apparmor.aa.active_profiles.files[prof_filename], True))
 
     def test_vars_from_nonexisting_profile(self):
         with self.assertRaises(AppArmorBug):
-            apparmor.aa.active_profiles.get_all_merged_variables(os.path.join(self.profile_dir, 'file.not.found'), list())
+            apparmor.aa.active_profiles.get_all_merged_variables(
+                os.path.join(self.profile_dir, 'file.not.found'), list())
+
 
 class TestGet_profile_and_childs(AATest):
     def AASetup(self):
@@ -406,11 +437,11 @@ class TestGet_profile_and_childs(AATest):
         self.dummy_profile = ProfileStorage('TEST DUMMY', 'AATest_no_file', 'TEST')
 
     def testGet_profile_and_childs1(self):
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'bafoo',     '/bin/bafoo',       self.dummy_profile)
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo',       '/bin/foo',         self.dummy_profile)
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foobar',    '/bin/foobar',      self.dummy_profile)
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo//bar',  '/bin/foo//bar',    self.dummy_profile)
-        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo//xy',   '/bin/foo//xy',     self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'bafoo',    '/bin/bafoo',    self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo',      '/bin/foo',      self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foobar',   '/bin/foobar',   self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo//bar', '/bin/foo//bar', self.dummy_profile)
+        self.pl.add_profile('/etc/apparmor.d/bin.foo', 'foo//xy',  '/bin/foo//xy',  self.dummy_profile)
 
         expected = ['foo', 'foo//bar', 'foo//xy']
 

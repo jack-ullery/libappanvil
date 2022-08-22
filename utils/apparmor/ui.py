@@ -15,17 +15,16 @@
 # ----------------------------------------------------------------------
 
 import json
-import sys
+import os
 import re
 import readline
-import os
 import subprocess
+import sys
 from tempfile import NamedTemporaryFile
 
-from apparmor.common import readkey, AppArmorException, DebugLogger
-
-# setup module translations
+from apparmor.common import AppArmorException, DebugLogger, readkey
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 # Set up UI logger for separate messages from UI module
@@ -62,6 +61,7 @@ def set_text_mode():
     """Output plaintext"""
     global UI_mode
     UI_mode = 'text'
+
 
 # reads the response on command line for json and verifies the response
 # for the dialog type
@@ -284,6 +284,7 @@ def UI_Changes(oldprofile, newprofile, comments=False):
     with difftemp:
         UI_ShowFile(header, difftemp.name)
 
+
 def UI_ShowFile(header, filename):
     if UI_mode == 'json':
         jsonout = {'dialog': 'changes', 'header': header, 'filename': filename}
@@ -298,7 +299,7 @@ CMDS = {'CMD_ALLOW': _('(A)llow'),
         'CMD_AUDIT_NEW': _('Audi(t)'),
         'CMD_AUDIT_OFF': _('Audi(t) off'),
         'CMD_AUDIT_FULL': _('Audit (A)ll'),
-        #'CMD_OTHER': '(O)pts',
+        # 'CMD_OTHER': '(O)pts',
         'CMD_USER_ON': _('(O)wner permissions on'),
         'CMD_USER_OFF': _('(O)wner permissions off'),
         'CMD_DENY': _('(D)eny'),
@@ -403,7 +404,9 @@ class PromptQuestion:
             key = get_translated_hotkey(menutext).lower()
             # Duplicate hotkey
             if keys.get(key, False):
-                raise AppArmorException(_('PromptUser: Duplicate hotkey for %(command)s: %(menutext)s ') % { 'command': cmd, 'menutext': menutext })
+                raise AppArmorException(
+                    _('PromptUser: Duplicate hotkey for %(command)s: %(menutext)s ')
+                    % {'command': cmd, 'menutext': menutext})
 
             keys[key] = cmd
 

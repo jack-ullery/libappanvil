@@ -14,15 +14,17 @@
 # ----------------------------------------------------------------------
 
 import unittest
+
+import apparmor.severity as severity
+from apparmor.common import AppArmorBug, AppArmorException, hasher
+from apparmor.logparser import ReadLog
+from apparmor.rule import BaseRule
+from apparmor.rule.capability import CapabilityRule, CapabilityRuleset
+from apparmor.translations import init_translation
 from common_test import AATest, setup_all_loops
 
-from apparmor.rule.capability import CapabilityRule, CapabilityRuleset
-from apparmor.rule import BaseRule
-import apparmor.severity as severity
-from apparmor.common import AppArmorException, AppArmorBug, hasher
-from apparmor.logparser import ReadLog
-from apparmor.translations import init_translation
 _ = init_translation()
+
 
 # --- tests for single CapabilityRule --- #
 
@@ -46,54 +48,54 @@ class CapabilityTest(AATest):
 
     def test_cap_allow_all(self):
         self._compare_obj_with_rawrule("capability,", {
-            'allow_keyword':    False,
-            'deny':             False,
-            'audit':            False,
-            'capability':       set(),
-            'all_caps':         True,
-            'comment':          "",
+            'allow_keyword': False,
+            'deny': False,
+            'audit': False,
+            'capability': set(),
+            'all_caps': True,
+            'comment': "",
         })
 
     def test_cap_allow_sys_admin(self):
         self._compare_obj_with_rawrule("capability sys_admin,", {
-            'allow_keyword':    False,
-            'deny':             False,
-            'audit':            False,
-            'capability':       {'sys_admin'},
-            'all_caps':         False,
-            'comment':          "",
+            'allow_keyword': False,
+            'deny': False,
+            'audit': False,
+            'capability': {'sys_admin'},
+            'all_caps': False,
+            'comment': "",
         })
 
     def test_cap_deny_sys_admin(self):
         self._compare_obj_with_rawrule("     deny capability sys_admin,  # some comment", {
-            'allow_keyword':    False,
-            'deny':             True,
-            'audit':            False,
-            'capability':       {'sys_admin'},
-            'all_caps':         False,
-            'comment':          " # some comment",
+            'allow_keyword': False,
+            'deny': True,
+            'audit': False,
+            'capability': {'sys_admin'},
+            'all_caps': False,
+            'comment': " # some comment",
         })
 
     def test_cap_multi(self):
         self._compare_obj_with_rawrule("capability sys_admin dac_override,", {
-            'allow_keyword':    False,
-            'deny':             False,
-            'audit':            False,
-            'capability':       {'sys_admin', 'dac_override'},
-            'all_caps':         False,
-            'comment':          "",
+            'allow_keyword': False,
+            'deny': False,
+            'audit': False,
+            'capability': {'sys_admin', 'dac_override'},
+            'all_caps': False,
+            'comment': "",
         })
 
     # Template for test_cap_* functions
-    #    def test_cap_(self):
-    #        self._compare_obj_with_rawrule("capability,", {
-    #            'allow_keyword':    False,
-    #            'deny':             False,
-    #            'audit':            False,
-    #            'capability':       set(), # (or {'foo'} if not empty)
-    #            'all_caps':         False,
-    #            'comment':    "",
-    #        })
+    # def test_cap_(self):
+    #     self._compare_obj_with_rawrule("capability,", {
+    #         'allow_keyword': False,
+    #         'deny': False,
+    #         'audit': False,
+    #         'capability': set(),  # (or {'foo'} if not empty)
+    #         'all_caps': False,
+    #         'comment': "",
+    #     })
 
     def test_cap_from_log(self):
         parser = ReadLog('', '', '')
@@ -127,92 +129,92 @@ class CapabilityTest(AATest):
         obj = CapabilityRule(parsed_event['name'], log_event=parsed_event)
 
         self._compare_obj(obj, {
-            'allow_keyword':    False,
-            'deny':             False,
-            'audit':            False,
-            'capability':       {'net_raw'},
-            'all_caps':         False,
-            'comment':          "",
+            'allow_keyword': False,
+            'deny': False,
+            'audit': False,
+            'capability': {'net_raw'},
+            'all_caps': False,
+            'comment': "",
         })
 
         self.assertEqual(obj.get_raw(1), '  capability net_raw,')
 
-#    def test_cap_from_invalid_log(self):
-#        parser = ReadLog('', '', '')
-#        # invalid log entry, name= should contain the capability name
-#        event = 'type=AVC msg=audit(1415403814.628:662): apparmor="ALLOWED" operation="capable" profile="/bin/ping" pid=15454 comm="ping" capability=13  capname=""'
-#
-#        parsed_event = parser.parse_event(event)
-#
-#        obj = CapabilityRule()
-#
-#        with self.assertRaises(AppArmorBug):
-#            obj.set_log(parsed_event)
-#
-#        with self.assertRaises(AppArmorBug):
-#            obj.get_raw(1)
-#
-#    def test_cap_from_non_cap_log(self):
-#        parser = ReadLog('', '', '')
-#        # log entry for different rule type
-#        event = 'type=AVC msg=audit(1415403814.973:667): apparmor="ALLOWED" operation="setsockopt" profile="/home/sys-tmp/ping" pid=15454 comm="ping" lport=1 family="inet" sock_type="raw" protocol=1'
-#
-#        parsed_event = parser.parse_event(event)
-#
-#        obj = CapabilityRule()
-#
-#        with self.assertRaises(AppArmorBug):
-#            obj.set_log(parsed_event)
-#
-#        with self.assertRaises(AppArmorBug):
-#            obj.get_raw(1)
+    # def test_cap_from_invalid_log(self):
+    #     parser = ReadLog('', '', '')
+    #     # invalid log entry, name= should contain the capability name
+    #     event = 'type=AVC msg=audit(1415403814.628:662): apparmor="ALLOWED" operation="capable" profile="/bin/ping" pid=15454 comm="ping" capability=13  capname=""'
+    #
+    #     parsed_event = parser.parse_event(event)
+    #
+    #     obj = CapabilityRule()
+    #
+    #     with self.assertRaises(AppArmorBug):
+    #         obj.set_log(parsed_event)
+    #
+    #     with self.assertRaises(AppArmorBug):
+    #         obj.get_raw(1)
+    #
+    # def test_cap_from_non_cap_log(self):
+    #     parser = ReadLog('', '', '')
+    #     # log entry for different rule type
+    #     event = 'type=AVC msg=audit(1415403814.973:667): apparmor="ALLOWED" operation="setsockopt" profile="/home/sys-tmp/ping" pid=15454 comm="ping" lport=1 family="inet" sock_type="raw" protocol=1'
+    #
+    #     parsed_event = parser.parse_event(event)
+    #
+    #     obj = CapabilityRule()
+    #
+    #     with self.assertRaises(AppArmorBug):
+    #         obj.set_log(parsed_event)
+    #
+    #     with self.assertRaises(AppArmorBug):
+    #         obj.get_raw(1)
 
     def test_cap_from_init_01(self):
         obj = CapabilityRule('chown')
 
         self._compare_obj(obj, {
-            'allow_keyword':    False,
-            'deny':             False,
-            'audit':            False,
-            'capability':       {'chown'},
-            'all_caps':         False,
-            'comment':          "",
+            'allow_keyword': False,
+            'deny': False,
+            'audit': False,
+            'capability': {'chown'},
+            'all_caps': False,
+            'comment': "",
         })
 
     def test_cap_from_init_02(self):
         obj = CapabilityRule(['chown'])
 
         self._compare_obj(obj, {
-            'allow_keyword':    False,
-            'deny':             False,
-            'audit':            False,
-            'capability':       {'chown'},
-            'all_caps':         False,
-            'comment':          "",
+            'allow_keyword': False,
+            'deny': False,
+            'audit': False,
+            'capability': {'chown'},
+            'all_caps': False,
+            'comment': "",
         })
 
     def test_cap_from_init_03(self):
         obj = CapabilityRule('chown', audit=True, deny=True)
 
         self._compare_obj(obj, {
-            'allow_keyword':    False,
-            'deny':             True,
-            'audit':            True,
-            'capability':       {'chown'},
-            'all_caps':         False,
-            'comment':          "",
+            'allow_keyword': False,
+            'deny': True,
+            'audit': True,
+            'capability': {'chown'},
+            'all_caps': False,
+            'comment': "",
         })
 
     def test_cap_from_init_04(self):
         obj = CapabilityRule(['chown', 'fsetid'], deny=True)
 
         self._compare_obj(obj, {
-            'allow_keyword':    False,
-            'deny':             True,
-            'audit':            False,
-            'capability':       {'chown', 'fsetid'},
-            'all_caps':         False,
-            'comment':          "",
+            'allow_keyword': False,
+            'deny': True,
+            'audit': False,
+            'capability': {'chown', 'fsetid'},
+            'all_caps': False,
+            'comment': "",
         })
 
 
@@ -289,6 +291,7 @@ class WriteCapabilityTest(AATest):
 
         self.assertEqual(expected, obj.get_clean(2), 'unexpected clean rule')
         self.assertEqual(expected, obj.get_raw(2), 'unexpected raw rule')
+
 
 class CapabilityCoveredTest(AATest):
     def _is_covered(self, obj, rule_to_test):
@@ -425,6 +428,7 @@ class CapabilityCoveredTest(AATest):
         self.assertFalse(self._is_covered(obj2, 'capability sys_admin,'))
         self.assertTrue(self._is_covered(obj2, 'capability ptrace,'))
 
+
 class CapabiliySeverityTest(AATest):
     tests = (
         ('fsetid',                      9),
@@ -433,26 +437,29 @@ class CapabiliySeverityTest(AATest):
         (CapabilityRule.ALL,            10),
         ('foo',                         'unknown'),
     )
+
     def _run_test(self, params, expected):
         sev_db = severity.Severity('../severity.db', 'unknown')
         obj = CapabilityRule(params)
         rank = obj.severity(sev_db)
         self.assertEqual(rank, expected)
 
+
 class CapabilityLogprofHeaderTest(AATest):
     tests = (
-        ('capability,',                         [                               _('Capability'), _('ALL'),         ]),
-        ('capability chown,',                   [                               _('Capability'), 'chown',          ]),
-        ('capability chown fsetid,',            [                               _('Capability'), 'chown fsetid',   ]),
-        ('audit capability,',                   [_('Qualifier'), 'audit',       _('Capability'), _('ALL'),         ]),
-        ('deny capability chown,',              [_('Qualifier'), 'deny',        _('Capability'), 'chown',          ]),
-        ('allow capability chown fsetid,',      [_('Qualifier'), 'allow',       _('Capability'), 'chown fsetid',   ]),
-        ('audit deny capability,',              [_('Qualifier'), 'audit deny',  _('Capability'), _('ALL'),         ]),
+        ('capability,',                    [                              _('Capability'), _('ALL')]),
+        ('capability chown,',              [                              _('Capability'), 'chown']),
+        ('capability chown fsetid,',       [                              _('Capability'), 'chown fsetid']),
+        ('audit capability,',              [_('Qualifier'), 'audit',      _('Capability'), _('ALL')]),
+        ('deny capability chown,',         [_('Qualifier'), 'deny',       _('Capability'), 'chown']),
+        ('allow capability chown fsetid,', [_('Qualifier'), 'allow',      _('Capability'), 'chown fsetid']),
+        ('audit deny capability,',         [_('Qualifier'), 'audit deny', _('Capability'), _('ALL')]),
     )
 
     def _run_test(self, params, expected):
         obj = CapabilityRule.parse(params)
         self.assertEqual(obj.logprof_header(), expected)
+
 
 # --- tests for CapabilityRuleset --- #
 
@@ -630,6 +637,7 @@ class CapabilityRulesCoveredTest(AATest):
 #        parser = ReadLog('', '', '')
 #        self.assertEqual(True, self.ruleset.is_log_covered(parser.parse_event(event_base%'chgrp'), False))  # ignores allow/deny
 
+
 class CapabilityGlobTest(AATest):
     def AASetup(self):
         self.ruleset = CapabilityRuleset()
@@ -640,6 +648,7 @@ class CapabilityGlobTest(AATest):
     def test_glob_ext(self):
         with self.assertRaises(NotImplementedError):
             self.ruleset.get_glob_ext('capability net_raw,')
+
 
 class CapabilityDeleteTest(AATest):
     def AASetup(self):
@@ -812,9 +821,7 @@ class CapabilityDeleteTest(AATest):
 
     def test_delete_duplicates_4(self):
         inc = CapabilityRuleset()
-        rules = [
-            'capability,',
-        ]
+        rules = ['capability,']
 
         for rule in rules:
             inc.add(CapabilityRule.parse(rule))
@@ -873,7 +880,6 @@ class CapabilityDeleteTest(AATest):
         self.assertEqual(expected_raw, self.ruleset.get_raw(1))
         self.assertEqual(expected_clean, self.ruleset.get_clean(1))
 
-
     def _check_test_delete_duplicates_in_profile(self, rules, expected_raw, expected_clean, expected_deleted):
         obj = CapabilityRuleset()
 
@@ -885,7 +891,6 @@ class CapabilityDeleteTest(AATest):
         self.assertEqual(expected_raw, obj.get_raw(1))
         self.assertEqual(expected_clean, obj.get_clean(1))
         self.assertEqual(deleted, expected_deleted)
-
 
     def test_delete_duplicates_in_profile_01(self):
         rules = [

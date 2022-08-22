@@ -14,34 +14,33 @@
 
 import re
 
-from apparmor.regex import RE_PROFILE_PTRACE, RE_PROFILE_NAME, strip_quotes
 from apparmor.common import AppArmorBug, AppArmorException
-from apparmor.rule import BaseRule, BaseRuleset, check_and_split_list, logprof_value_or_all, parse_modifiers, quote_if_needed
-
-# setup module translations
+from apparmor.regex import RE_PROFILE_PTRACE, RE_PROFILE_NAME, strip_quotes
+from apparmor.rule import (
+    BaseRule, BaseRuleset, check_and_split_list, logprof_value_or_all,
+    parse_modifiers, quote_if_needed)
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
-
-access_keywords         = ['r', 'w', 'rw', 'wr', 'read', 'write', 'readby', 'trace', 'tracedby']  # XXX 'wr' and 'write' accepted by the parser, but not documented in apparmor.d.pod
+access_keywords = ['r', 'w', 'rw', 'wr', 'read', 'write', 'readby', 'trace', 'tracedby']  # XXX 'wr' and 'write' accepted by the parser, but not documented in apparmor.d.pod
 
 # XXX joint_access_keyword and RE_ACCESS_KEYWORDS exactly as in PtraceRule - move to function!
 joint_access_keyword = '\s*(' + '|'.join(access_keywords) + ')\s*'
-RE_ACCESS_KEYWORDS = ( joint_access_keyword +  # one of the access_keyword or
-                       '|' +                                           # or
-                       '\(' + joint_access_keyword + '(' + '(\s|,)+' + joint_access_keyword + ')*' + '\)'  # one or more access_keyword in (...)
-                     )
+RE_ACCESS_KEYWORDS = (joint_access_keyword  # one of the access_keyword
+                      + '|'  # or
+                      + '\(' + joint_access_keyword + '(' + '(\s|,)+' + joint_access_keyword + ')*' + '\)')  # one or more access_keyword in (...)
 
 
-RE_PTRACE_DETAILS  = re.compile(
-    '^' +
-    '(\s+(?P<access>' + RE_ACCESS_KEYWORDS + '))?' +  # optional access keyword(s)
-    '(\s+(peer=' + RE_PROFILE_NAME % 'peer' + '))?' +  # optional peer
-    '\s*$')
+RE_PTRACE_DETAILS = re.compile(
+    '^'
+    + '(\s+(?P<access>' + RE_ACCESS_KEYWORDS + '))?'  # optional access keyword(s)
+    + '(\s+(peer=' + RE_PROFILE_NAME % 'peer' + '))?'  # optional peer
+    + '\s*$')
 
 
 class PtraceRule(BaseRule):
-    '''Class to handle and store a single ptrace rule'''
+    """Class to handle and store a single ptrace rule"""
 
     # Nothing external should reference this class, all external users
     # should reference the class field PtraceRule.ALL
@@ -56,9 +55,10 @@ class PtraceRule(BaseRule):
                  comment='', log_event=None):
 
         super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
-                          comment=comment, log_event=log_event)
+                         comment=comment, log_event=log_event)
 
-        self.access, self.all_access, unknown_items = check_and_split_list(access, access_keywords, PtraceRule.ALL, 'PtraceRule', 'access')
+        self.access, self.all_access, unknown_items = check_and_split_list(
+            access, access_keywords, PtraceRule.ALL, 'PtraceRule', 'access')
         if unknown_items:
             raise AppArmorException(_('Passed unknown access keyword to PtraceRule: %s') % ' '.join(unknown_items))
 
@@ -70,7 +70,7 @@ class PtraceRule(BaseRule):
 
     @classmethod
     def _parse(cls, raw_rule):
-        '''parse raw_rule and return PtraceRule'''
+        """parse raw_rule and return PtraceRule"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -105,10 +105,10 @@ class PtraceRule(BaseRule):
             peer = PtraceRule.ALL
 
         return PtraceRule(access, peer,
-                           audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
+                          audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
-        '''return rule (in clean/default formatting)'''
+        """return rule (in clean/default formatting)"""
 
         space = '  ' * depth
 
@@ -128,10 +128,10 @@ class PtraceRule(BaseRule):
         else:
             raise AppArmorBug('Empty peer in ptrace rule')
 
-        return('%s%sptrace%s%s,%s' % (space, self.modifiers_str(), access, peer, self.comment))
+        return ('%s%sptrace%s%s,%s' % (space, self.modifiers_str(), access, peer, self.comment))
 
     def is_covered_localvars(self, other_rule):
-        '''check if other_rule is covered by this rule object'''
+        """check if other_rule is covered by this rule object"""
 
         if not self._is_covered_list(self.access, self.all_access, other_rule.access, other_rule.all_access, 'access'):
             return False
@@ -143,7 +143,7 @@ class PtraceRule(BaseRule):
         return True
 
     def is_equal_localvars(self, rule_obj, strict):
-        '''compare if rule-specific variables are equal'''
+        """compare if rule-specific variables are equal"""
 
         if not type(rule_obj) == PtraceRule:
             raise AppArmorBug('Passed non-ptrace rule: %s' % str(rule_obj))
@@ -158,19 +158,19 @@ class PtraceRule(BaseRule):
         return True
 
     def logprof_header_localvars(self):
-        access   = logprof_value_or_all(self.access,self.all_access)
-        peer     = logprof_value_or_all(self.peer,  self.all_peers)
+        access = logprof_value_or_all(self.access, self.all_access)
+        peer   = logprof_value_or_all(self.peer,   self.all_peers)  # noqa: E221
 
         return [
             _('Access mode'), access,
-            _('Peer'),        peer
+            _('Peer'), peer,
         ]
 
 
 class PtraceRuleset(BaseRuleset):
-    '''Class to handle and store a collection of ptrace rules'''
+    """Class to handle and store a collection of ptrace rules"""
 
     def get_glob(self, path_or_rule):
-        '''Return the next possible glob. For ptrace rules, that means removing access or removing/globbing peer'''
+        """Return the next possible glob. For ptrace rules, that means removing access or removing/globbing peer"""
         # XXX only remove one part, not all
         return 'ptrace,'

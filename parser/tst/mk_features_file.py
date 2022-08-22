@@ -10,12 +10,14 @@
 #
 # ------------------------------------------------------------------
 
-from testlib import read_features_dir
-from argparse import ArgumentParser
 import os
+from argparse import ArgumentParser
 from sys import stderr, exit
 
-DEFAULT_FEATURES_DIR='/sys/kernel/security/apparmor/features'
+from testlib import read_features_dir
+
+DEFAULT_FEATURES_DIR = '/sys/kernel/security/apparmor/features'
+
 
 def main():
     p = ArgumentParser()
@@ -32,6 +34,7 @@ def main():
     print(features)
 
     return 0
+
 
 if __name__ == "__main__":
     exit(main())

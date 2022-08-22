@@ -24,11 +24,12 @@ from apparmor.common import AppArmorException, open_file_read
 
 DEBUGGING = False
 
+
 #
 # TODO: move this out to a utilities library
 #
 def error(out, exit_code=1, do_exit=True):
-    '''Print error message and exit'''
+    """Print error message and exit"""
     try:
         sys.stderr.write("ERROR: %s\n" % (out))
     except IOError:
@@ -39,7 +40,7 @@ def error(out, exit_code=1, do_exit=True):
 
 
 def warn(out):
-    '''Print warning message'''
+    """Print warning message"""
     try:
         sys.stderr.write("WARN: %s\n" % (out))
     except IOError:
@@ -47,7 +48,7 @@ def warn(out):
 
 
 def msg(out, output=sys.stdout):
-    '''Print message'''
+    """Print message"""
     try:
         sys.stdout.write("%s\n" % (out))
     except IOError:
@@ -55,7 +56,7 @@ def msg(out, output=sys.stdout):
 
 
 def cmd(command):
-    '''Try to execute the given command.'''
+    """Try to execute the given command."""
     debug(command)
     try:
         sp = subprocess.Popen(command, stdout=subprocess.PIPE,
@@ -68,7 +69,7 @@ def cmd(command):
 
 
 def debug(out):
-    '''Print debug message'''
+    """Print debug message"""
     if DEBUGGING:
         try:
             sys.stderr.write("DEBUG: %s\n" % (out))
@@ -77,7 +78,7 @@ def debug(out):
 
 
 def valid_binary_path(path):
-    '''Validate name'''
+    """Validate name"""
     try:
         a_path = os.path.abspath(path)
     except Exception:
@@ -100,7 +101,7 @@ def valid_binary_path(path):
 
 
 def valid_variable(v):
-    '''Validate variable name'''
+    """Validate variable name"""
     debug("Checking '%s'" % v)
     try:
         (key, value) = v.split('=')
@@ -125,13 +126,13 @@ def valid_variable(v):
 
 
 def valid_path(path, relative_ok=False):
-    '''Valid path'''
+    """Valid path"""
     m = "Invalid path: %s" % (path)
     if not relative_ok and not path.startswith('/'):
         debug("%s (relative)" % (m))
         return False
 
-    if '"' in path: # We double quote elsewhere
+    if '"' in path:  # We double quote elsewhere
         debug("%s (quote)" % (m))
         return False
 
@@ -154,19 +155,19 @@ def valid_path(path, relative_ok=False):
 
 
 def _is_safe(s):
-    '''Known safe regex'''
+    """Known safe regex"""
     if re.search(r'^[a-zA-Z_0-9\-\.]+$', s):
         return True
     return False
 
 
 def valid_policy_vendor(s):
-    '''Verify the policy vendor'''
+    """Verify the policy vendor"""
     return _is_safe(s)
 
 
 def valid_policy_version(v):
-    '''Verify the policy version'''
+    """Verify the policy version"""
     try:
         float(v)
     except ValueError:
@@ -177,7 +178,7 @@ def valid_policy_version(v):
 
 
 def valid_template_name(s, strict=False):
-    '''Verify the template name'''
+    """Verify the template name"""
     if not strict and s.startswith('/'):
         if not valid_path(s):
             return False
@@ -186,12 +187,12 @@ def valid_template_name(s, strict=False):
 
 
 def valid_abstraction_name(s):
-    '''Verify the template name'''
+    """Verify the template name"""
     return _is_safe(s)
 
 
 def valid_profile_name(s):
-    '''Verify the profile name'''
+    """Verify the profile name"""
     # profile name specifies path
     if s.startswith('/'):
         if not valid_path(s):
@@ -206,12 +207,12 @@ def valid_profile_name(s):
 
 
 def valid_policy_group_name(s):
-    '''Verify policy group name'''
+    """Verify policy group name"""
     return _is_safe(s)
 
 
 def get_directory_contents(path):
-    '''Find contents of the given directory'''
+    """Find contents of the given directory"""
     if not valid_path(path):
         return None
 
@@ -224,7 +225,7 @@ def get_directory_contents(path):
 
 
 def verify_policy(policy, exe, base=None, include=None):
-    '''Verify policy compiles'''
+    """Verify policy compiles"""
     if not exe:
         warn("Could not find apparmor_parser. Skipping verify")
         return True
@@ -256,7 +257,7 @@ def verify_policy(policy, exe, base=None, include=None):
 
 
 class AppArmorEasyProfile:
-    '''Easy profile class'''
+    """Easy profile class"""
     def __init__(self, binary, opt):
         verify_options(opt)
         opt.ensure_value("conffile", "/etc/apparmor/easyprof.conf")
@@ -281,30 +282,28 @@ class AppArmorEasyProfile:
 
         if opt.templates_dir and os.path.isdir(opt.templates_dir):
             self.dirs['templates'] = os.path.abspath(opt.templates_dir)
-        elif not opt.templates_dir and \
-             opt.template and \
-             os.path.isfile(opt.template) and \
-             valid_path(opt.template):
-	    # If we specified the template and it is an absolute path, just set
-	    # the templates directory to the parent of the template so we don't
+        elif (not opt.templates_dir
+                and opt.template
+                and os.path.isfile(opt.template)
+                and valid_path(opt.template)):
+            # If we specified the template and it is an absolute path, just set
+            # the templates directory to the parent of the template so we don't
             # have to require --template-dir with absolute paths.
             self.dirs['templates'] = os.path.abspath(os.path.dirname(opt.template))
 
-        if opt.include_templates_dir and \
-           os.path.isdir(opt.include_templates_dir):
+        if opt.include_templates_dir and os.path.isdir(opt.include_templates_dir):
             self.dirs['templates_include'] = os.path.abspath(opt.include_templates_dir)
 
         if opt.policy_groups_dir and os.path.isdir(opt.policy_groups_dir):
             self.dirs['policygroups'] = os.path.abspath(opt.policy_groups_dir)
 
-        if opt.include_policy_groups_dir and \
-           os.path.isdir(opt.include_policy_groups_dir):
+        if opt.include_policy_groups_dir and os.path.isdir(opt.include_policy_groups_dir):
             self.dirs['policygroups_include'] = os.path.abspath(opt.include_policy_groups_dir)
 
         self.policy_version = None
         self.policy_vendor = None
-        if (opt.policy_version and not opt.policy_vendor) or \
-           (opt.policy_vendor and not opt.policy_version):
+        if ((opt.policy_version and not opt.policy_vendor)
+                or (opt.policy_vendor and not opt.policy_version)):
             raise AppArmorException("Must specify both policy version and vendor")
 
         # If specified --policy-version and --policy-vendor, use
@@ -322,9 +321,9 @@ class AppArmorEasyProfile:
                             "Could not find %s directory '%s'" % (i, d))
                 self.dirs[i] = d
 
-        if not 'templates' in self.dirs:
+        if 'templates' not in self.dirs:
             raise AppArmorException("Could not find templates directory")
-        if not 'policygroups' in self.dirs:
+        if 'policygroups' not in self.dirs:
             raise AppArmorException("Could not find policygroups directory")
 
         self.binary = binary
@@ -340,7 +339,7 @@ class AppArmorEasyProfile:
         self.set_policygroup(opt.policy_groups)
         if opt.name:
             self.set_name(opt.name)
-        elif self.binary != None:
+        elif self.binary is not None:
             self.set_name(self.binary)
 
         self.templates = []
@@ -364,7 +363,7 @@ class AppArmorEasyProfile:
                     self.policy_groups.append(f)
 
     def _get_defaults(self):
-        '''Read in defaults from configuration'''
+        """Read in defaults from configuration"""
         if not os.path.exists(self.conffile):
             raise AppArmorException("Could not find '%s'" % self.conffile)
 
@@ -392,16 +391,16 @@ class AppArmorEasyProfile:
                 raise AppArmorException("Could not find '%s'" % self.dirs[k])
 
     def set_name(self, name):
-        '''Set name of policy'''
+        """Set name of policy"""
         self.name = name
 
     def get_template(self):
-        '''Get contents of current template'''
+        """Get contents of current template"""
         with open(self.template) as f:
             return f.read()
 
     def set_template(self, template, allow_abs_path=True):
-        '''Set current template'''
+        """Set current template"""
         if "../" in template:
             raise AppArmorException('template "%s" contains "../" escape path' % (template))
         elif template.startswith('/') and not allow_abs_path:
@@ -428,11 +427,11 @@ class AppArmorEasyProfile:
             raise AppArmorException('%s does not exist' % (template))
 
     def get_templates(self):
-        '''Get list of all available templates by filename'''
+        """Get list of all available templates by filename"""
         return self.templates
 
     def get_policygroup(self, policygroup):
-        '''Get contents of specific policygroup'''
+        """Get contents of specific policygroup"""
         p = policygroup
         if not p.startswith('/'):
             sys_p = os.path.join(self.dirs['policygroups'], p)
@@ -445,15 +444,15 @@ class AppArmorEasyProfile:
             elif inc_p is not None and os.path.exists(inc_p):
                 p = inc_p
 
-        if self.policy_groups == None or not p in self.policy_groups:
+        if self.policy_groups is None or p not in self.policy_groups:
             raise AppArmorException("Policy group '%s' does not exist" % p)
         with open(p) as f:
             return f.read()
 
     def set_policygroup(self, policygroups):
-        '''Set policygroups'''
+        """Set policygroups"""
         self.policy_groups = []
-        if policygroups != None:
+        if policygroups is not None:
             for p in policygroups.split(','):
                 # If have abs path, just use it
                 if p.startswith('/'):
@@ -476,11 +475,11 @@ class AppArmorEasyProfile:
                     raise AppArmorException('%s does not exist' % (p))
 
     def get_policy_groups(self):
-        '''Get list of all policy groups by filename'''
+        """Get list of all policy groups by filename"""
         return self.policy_groups
 
     def gen_abstraction_rule(self, abstraction):
-        '''Generate an abstraction rule'''
+        """Generate an abstraction rule"""
         base = os.path.join(self.parser_base, "abstractions", abstraction)
         if not os.path.exists(base):
             if not self.parser_include:
@@ -493,7 +492,7 @@ class AppArmorEasyProfile:
         return "#include <abstractions/%s>" % abstraction
 
     def gen_variable_declaration(self, dec):
-        '''Generate a variable declaration'''
+        """Generate a variable declaration"""
         if not valid_variable(dec):
             raise AppArmorException("Invalid variable declaration '%s'" % dec)
         # Make sure we always quote
@@ -520,21 +519,22 @@ class AppArmorEasyProfile:
 
         return rule
 
-
-    def gen_policy(self, name,
-                         binary=None,
-                         profile_name=None,
-                         template_var=[],
-                         abstractions=None,
-                         policy_groups=None,
-                         read_path=[],
-                         write_path=[],
-                         author=None,
-                         comment=None,
-                         copyright=None,
-                         no_verify=False):
+    def gen_policy(
+            self,
+            name,
+            binary=None,
+            profile_name=None,
+            template_var=[],
+            abstractions=None,
+            policy_groups=None,
+            read_path=[],
+            write_path=[],
+            author=None,
+            comment=None,
+            copyright=None,
+            no_verify=False):
         def find_prefix(t, s):
-            '''Calculate whitespace prefix based on occurrence of s in t'''
+            """Calculate whitespace prefix based on occurrence of s in t"""
             pat = re.compile(r'^ *%s' % s)
             p = ""
             for line in t.splitlines():
@@ -558,8 +558,7 @@ class AppArmorEasyProfile:
         attachment = ""
         if binary:
             if not valid_binary_path(binary):
-                raise AppArmorException("Invalid path for binary: '%s'" % \
-                                        binary)
+                raise AppArmorException("Invalid path for binary: '%s'" % binary)
             if profile_name:
                 attachment = 'profile "%s" "%s"' % (profile_name, binary)
             else:
@@ -573,20 +572,20 @@ class AppArmorEasyProfile:
         policy = re.sub(r'###NAME###', name, policy)
 
         # Fill-in various comment fields
-        if comment != None:
+        if comment is not None:
             policy = re.sub(r'###COMMENT###', "Comment: %s" % comment, policy)
 
-        if author != None:
+        if author is not None:
             policy = re.sub(r'###AUTHOR###', "Author: %s" % author, policy)
 
-        if copyright != None:
+        if copyright is not None:
             policy = re.sub(r'###COPYRIGHT###', "Copyright: %s" % copyright, policy)
 
         # Fill-in rules and variables with proper indenting
         search = '###ABSTRACTIONS###'
         prefix = find_prefix(policy, search)
         s = "%s# No abstractions specified" % prefix
-        if abstractions != None:
+        if abstractions is not None:
             s = "%s# Specified abstractions" % (prefix)
             t = abstractions.split(',')
             t.sort()
@@ -597,7 +596,7 @@ class AppArmorEasyProfile:
         search = '###POLICYGROUPS###'
         prefix = find_prefix(policy, search)
         s = "%s# No policy groups specified" % prefix
-        if policy_groups != None:
+        if policy_groups is not None:
             s = "%s# Rules specified via policy groups" % (prefix)
             t = policy_groups.split(',')
             t.sort()
@@ -611,7 +610,7 @@ class AppArmorEasyProfile:
         search = '###VAR###'
         prefix = find_prefix(policy, search)
         s = "%s# No template variables specified" % prefix
-        if len(template_var) > 0:
+        if template_var:
             s = "%s# Specified profile variables" % (prefix)
             template_var.sort()
             for i in template_var:
@@ -621,7 +620,7 @@ class AppArmorEasyProfile:
         search = '###READS###'
         prefix = find_prefix(policy, search)
         s = "%s# No read paths specified" % prefix
-        if len(read_path) > 0:
+        if read_path:
             s = "%s# Specified read permissions" % (prefix)
             read_path.sort()
             for i in read_path:
@@ -632,7 +631,7 @@ class AppArmorEasyProfile:
         search = '###WRITES###'
         prefix = find_prefix(policy, search)
         s = "%s# No write paths specified" % prefix
-        if len(write_path) > 0:
+        if write_path:
             s = "%s# Specified write permissions" % (prefix)
             write_path.sort()
             for i in write_path:
@@ -649,7 +648,7 @@ class AppArmorEasyProfile:
         return policy
 
     def output_policy(self, params, count=0, dir=None):
-        '''Output policy'''
+        """Output policy"""
         policy = self.gen_policy(**params)
         if not dir:
             if count:
@@ -661,7 +660,7 @@ class AppArmorEasyProfile:
                 out_fn = params['profile_name']
             elif 'binary' in params:
                 out_fn = params['binary']
-            else: # should not ever reach this
+            else:  # should not ever reach this
                 raise AppArmorException("Could not determine output filename")
 
             # Generate an absolute path, converting any path delimiters to '.'
@@ -682,7 +681,7 @@ class AppArmorEasyProfile:
             os.rename(f.name, out_fn)
 
     def gen_manifest(self, params):
-        '''Take params list and output a JSON file'''
+        """Take params list and output a JSON file"""
         d = dict()
         d['security'] = dict()
         d['security']['profiles'] = dict()
@@ -711,11 +710,11 @@ class AppArmorEasyProfile:
             d['security']['profiles'][pkey]['policy_vendor'] = self.policy_vendor
 
         for key in params:
-            if key == 'profile_name' or \
-               (key == 'binary' and not 'profile_name' in params):
-                continue # don't re-add the pkey
+            if (key == 'profile_name'
+                    or (key == 'binary' and 'profile_name' not in params)):
+                continue  # don't re-add the pkey
             elif key == 'binary' and not params[key]:
-                continue # binary can by None when specifying --profile-name
+                continue  # binary can by None when specifying --profile-name
             elif key == 'template_var':
                 d['security']['profiles'][pkey]['template_variables'] = dict()
                 for tvar in params[key]:
@@ -729,24 +728,28 @@ class AppArmorEasyProfile:
                 d['security']['profiles'][pkey][key].sort()
             else:
                 d['security']['profiles'][pkey][key] = params[key]
-        json_str = json.dumps(d,
-                              sort_keys=True,
-                              indent=2,
-                              separators=(',', ': ')
-                             )
+        json_str = json.dumps(
+            d,
+            sort_keys=True,
+            indent=2,
+            separators=(',', ': ')
+        )
         return json_str
+
 
 def print_basefilenames(files):
     for i in files:
         sys.stdout.write("%s\n" % (os.path.basename(i)))
+
 
 def print_files(files):
     for i in files:
         with open(i) as f:
             sys.stdout.write(f.read()+"\n")
 
+
 def check_manifest_conflict_args(option, opt_str, value, parser):
-    '''Check for -m/--manifest with conflicting args'''
+    """Check for -m/--manifest with conflicting args"""
     conflict_args = ['abstractions',
                      'read_path',
                      'write_path',
@@ -763,26 +766,29 @@ def check_manifest_conflict_args(option, opt_str, value, parser):
                      'template_var']
     for conflict in conflict_args:
         if getattr(parser.values, conflict, False):
-            raise optparse.OptionValueError("can't use --%s with --manifest " \
-                                            "argument" % conflict)
+            raise optparse.OptionValueError(
+                "can't use --%s with --manifest argument" % conflict)
     setattr(parser.values, option.dest, value)
+
 
 def check_for_manifest_arg(option, opt_str, value, parser):
-    '''Check for -m/--manifest with conflicting args'''
+    """Check for -m/--manifest with conflicting args"""
     if parser.values.manifest:
-        raise optparse.OptionValueError("can't use --%s with --manifest " \
-                                        "argument" % opt_str.lstrip('-'))
+        raise optparse.OptionValueError(
+            "can't use --%s with --manifest argument" % opt_str.lstrip('-'))
     setattr(parser.values, option.dest, value)
 
+
 def check_for_manifest_arg_append(option, opt_str, value, parser):
-    '''Check for -m/--manifest with conflicting args (with append)'''
+    """Check for -m/--manifest with conflicting args (with append)"""
     if parser.values.manifest:
-        raise optparse.OptionValueError("can't use --%s with --manifest " \
-                                        "argument" % opt_str.lstrip('-'))
+        raise optparse.OptionValueError(
+            "can't use --%s with --manifest argument" % opt_str.lstrip('-'))
     parser.values.ensure_value(option.dest, []).append(value)
 
+
 def add_parser_policy_args(parser):
-    '''Add parser arguments'''
+    """Add parser arguments"""
     parser.add_option("--parser",
                       dest="parser_path",
                       help="The path to the profile parser used for verification",
@@ -865,11 +871,12 @@ def add_parser_policy_args(parser):
                       help="AppArmor profile name",
                       metavar="PROFILENAME")
 
+
 def parse_args(args=None, parser=None):
-    '''Parse arguments'''
+    """Parse arguments"""
     global DEBUGGING
 
-    if parser == None:
+    if parser is None:
         parser = optparse.OptionParser()
 
     parser.add_option("-c", "--config-file",
@@ -961,7 +968,6 @@ def parse_args(args=None, parser=None):
                       dest="verify_manifest",
                       help="Verify JSON manifest file")
 
-
     # add policy args now
     add_parser_policy_args(parser)
 
@@ -971,8 +977,9 @@ def parse_args(args=None, parser=None):
         DEBUGGING = True
     return (my_opt, my_args)
 
+
 def gen_policy_params(binary, opt):
-    '''Generate parameters for gen_policy'''
+    """Generate parameters for gen_policy"""
     params = dict(binary=binary)
 
     if not binary and not opt.profile_name:
@@ -989,7 +996,7 @@ def gen_policy_params(binary, opt):
         elif binary:
             params['name'] = os.path.basename(binary)
 
-    if opt.template_var: # What about specified multiple times?
+    if opt.template_var:  # What about specified multiple times?
         params['template_var'] = opt.template_var
     if opt.abstractions:
         params['abstractions'] = opt.abstractions
@@ -1012,9 +1019,10 @@ def gen_policy_params(binary, opt):
 
     return params
 
+
 def parse_manifest(manifest, opt_orig):
-    '''Take a JSON manifest as a string and updates options, returning an
-       updated binary. Note that a JSON file may contain multiple profiles.'''
+    """Take a JSON manifest as a string and updates options, returning an
+       updated binary. Note that a JSON file may contain multiple profiles."""
 
     try:
         m = json.loads(manifest)
@@ -1031,21 +1039,22 @@ def parse_manifest(manifest, opt_orig):
     table = top_table['profiles']
 
     # generally mirrors what is settable in gen_policy_params()
-    valid_keys = ['abstractions',
-                  'author',
-                  'binary',
-                  'comment',
-                  'copyright',
-                  'name',
-                  'policy_groups',
-                  'policy_version',
-                  'policy_vendor',
-                  'profile_name',
-                  'read_path',
-                  'template',
-                  'template_variables',
-                  'write_path',
-                 ]
+    valid_keys = [
+        'abstractions',
+        'author',
+        'binary',
+        'comment',
+        'copyright',
+        'name',
+        'policy_groups',
+        'policy_version',
+        'policy_vendor',
+        'profile_name',
+        'read_path',
+        'template',
+        'template_variables',
+        'write_path',
+    ]
 
     profiles = []
 
@@ -1080,7 +1089,7 @@ def parse_manifest(manifest, opt_orig):
                 raise AppArmorException("Invalid key '%s'" % key)
 
             if key == 'binary':
-                continue #  handled above
+                continue  # handled above
             elif key == 'abstractions' or key == 'policy_groups':
                 setattr(opt, key, ",".join(table[profile_name][key]))
             elif key == "template_variables":
@@ -1093,32 +1102,30 @@ def parse_manifest(manifest, opt_orig):
                 if hasattr(opt, key):
                     setattr(opt, key, table[profile_name][key])
 
-        profiles.append( (binary, opt) )
+        profiles.append((binary, opt))
 
     return profiles
 
 
 def verify_options(opt, strict=False):
-    '''Make sure our options are valid'''
+    """Make sure our options are valid"""
     if hasattr(opt, 'binary') and opt.binary and not valid_path(opt.binary):
         raise AppArmorException("Invalid binary '%s'" % opt.binary)
-    if hasattr(opt, 'profile_name') and opt.profile_name != None and \
-       not valid_profile_name(opt.profile_name):
+    if (hasattr(opt, 'profile_name') and opt.profile_name is not None
+            and not valid_profile_name(opt.profile_name)):
         raise AppArmorException("Invalid profile name '%s'" % opt.profile_name)
-    if hasattr(opt, 'binary') and opt.binary and \
-       hasattr(opt, 'profile_name') and opt.profile_name != None and \
-       opt.profile_name.startswith('/'):
+    if (hasattr(opt, 'binary') and opt.binary
+            and hasattr(opt, 'profile_name') and opt.profile_name is not None
+            and opt.profile_name.startswith('/')):
         raise AppArmorException("Profile name should not specify path with binary")
-    if hasattr(opt, 'policy_vendor') and opt.policy_vendor and \
-       not valid_policy_vendor(opt.policy_vendor):
-        raise AppArmorException("Invalid policy vendor '%s'" % \
-                                opt.policy_vendor)
-    if hasattr(opt, 'policy_version') and opt.policy_version and \
-       not valid_policy_version(opt.policy_version):
-        raise AppArmorException("Invalid policy version '%s'" % \
-                                opt.policy_version)
-    if hasattr(opt, 'template') and opt.template and \
-       not valid_template_name(opt.template, strict):
+    if (hasattr(opt, 'policy_vendor') and opt.policy_vendor
+            and not valid_policy_vendor(opt.policy_vendor)):
+        raise AppArmorException("Invalid policy vendor '%s'" % opt.policy_vendor)
+    if (hasattr(opt, 'policy_version') and opt.policy_version
+            and not valid_policy_version(opt.policy_version)):
+        raise AppArmorException("Invalid policy version '%s'" % opt.policy_version)
+    if (hasattr(opt, 'template') and opt.template
+            and not valid_template_name(opt.template, strict)):
         raise AppArmorException("Invalid template '%s'" % opt.template)
     if hasattr(opt, 'template_var') and opt.template_var:
         for i in opt.template_var:
@@ -1143,7 +1150,7 @@ def verify_options(opt, strict=False):
 
 
 def verify_manifest(params, args=None):
-    '''Verify manifest for safe and unsafe options'''
+    """Verify manifest for safe and unsafe options"""
     err_str = ""
     (opt, args) = parse_args(args)
     fake_easyp = AppArmorEasyProfile(None, opt)
@@ -1155,12 +1162,12 @@ def verify_manifest(params, args=None):
         if k in unsafe_keys:
             err_str += "\nfound %s key" % k
         elif k == 'profile_name':
-            if params['profile_name'].startswith('/') or \
-               '*' in params['profile_name']:
+            if (params['profile_name'].startswith('/')
+                    or '*' in params['profile_name']):
                 err_str += "\nprofile_name '%s'" % params['profile_name']
         elif k == 'abstractions':
             for a in params['abstractions'].split(','):
-                if not a in safe_abstractions:
+                if a not in safe_abstractions:
                     err_str += "\nfound '%s' abstraction" % a
         elif k == "template_var":
             pat = re.compile(r'[*/\{\}\[\]]')
@@ -1178,4 +1185,3 @@ def verify_manifest(params, args=None):
         return False
 
     return True
-

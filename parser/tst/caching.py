@@ -15,12 +15,11 @@
 # - check cache not used if parser in $PATH is newer
 # - check cache used for force-complain, disable symlink, etc.
 
-from argparse import ArgumentParser
 import os
 import shutil
-import time
 import tempfile
 import unittest
+from argparse import ArgumentParser
 
 import testlib
 
@@ -50,7 +49,7 @@ class AAParserCachingCommon(testlib.AATestTemplate):
     do_cleanup = True
 
     def setUp(self):
-        '''setup for each test'''
+        """setup for each test"""
         global config
 
         # REPORT ALL THE OUTPUT
@@ -88,7 +87,7 @@ class AAParserCachingCommon(testlib.AATestTemplate):
         self.cache_file = os.path.join(self.cache_dir, PROFILE)
 
     def tearDown(self):
-        '''teardown for each test'''
+        """teardown for each test"""
 
         if not self.do_cleanup:
             print("\n===> Skipping cleanup, leaving testfiles behind in '%s'" % (self.tmp_dir))
@@ -114,7 +113,7 @@ class AAParserCachingCommon(testlib.AATestTemplate):
         return cache_dir
 
     def assert_path_exists(self, path, expected=True):
-        if expected is True:
+        if expected:
             self.assertTrue(os.path.exists(path),
                             'test did not create file %s, when it was expected to do so' % path)
         else:
@@ -137,17 +136,19 @@ class AAParserCachingCommon(testlib.AATestTemplate):
         with open(features_path) as f:
             features = f.read()
         if expected:
-            self.assertEqual(expected_output, features,
-                              "features contents differ, expected:\n%s\nresult:\n%s" % (expected_output, features))
+            self.assertEqual(
+                expected_output, features,
+                "features contents differ, expected:\n%s\nresult:\n%s" % (expected_output, features))
         else:
-            self.assertNotEqual(expected_output, features,
-                                 "features contents equal, expected:\n%s\nresult:\n%s" % (expected_output, features))
+            self.assertNotEqual(
+                expected_output, features,
+                "features contents equal, expected:\n%s\nresult:\n%s" % (expected_output, features))
 
 
 class AAParserBasicCachingTests(AAParserCachingCommon):
 
     def test_no_cache_by_default(self):
-        '''test profiles are not cached by default'''
+        """test profiles are not cached by default"""
 
         cmd = list(self.cmd_prefix)
         cmd.extend(('-q', '-r', self.profile))
@@ -155,7 +156,7 @@ class AAParserBasicCachingTests(AAParserCachingCommon):
         self.assert_path_exists(os.path.join(self.cache_dir, PROFILE), expected=False)
 
     def test_no_cache_w_skip_cache(self):
-        '''test profiles are not cached with --skip-cache'''
+        """test profiles are not cached with --skip-cache"""
 
         cmd = list(self.cmd_prefix)
         cmd.extend(('-q', '--write-cache', '--skip-cache', '-r', self.profile))
@@ -163,7 +164,7 @@ class AAParserBasicCachingTests(AAParserCachingCommon):
         self.assert_path_exists(os.path.join(self.cache_dir, PROFILE), expected=False)
 
     def test_cache_when_requested(self):
-        '''test profiles are cached when requested'''
+        """test profiles are cached when requested"""
 
         cmd = list(self.cmd_prefix)
         cmd.extend(('-q', '--write-cache', '-r', self.profile))
@@ -171,7 +172,7 @@ class AAParserBasicCachingTests(AAParserCachingCommon):
         self.assert_path_exists(os.path.join(self.cache_dir, PROFILE))
 
     def test_write_features_when_caching(self):
-        '''test features file is written when caching'''
+        """test features file is written when caching"""
 
         cmd = list(self.cmd_prefix)
         cmd.extend(('-q', '--write-cache', '-r', self.profile))
@@ -180,7 +181,7 @@ class AAParserBasicCachingTests(AAParserCachingCommon):
         self.assert_path_exists(os.path.join(self.cache_dir, '.features'))
 
     def test_features_match_when_caching(self):
-        '''test features file is written when caching'''
+        """test features file is written when caching"""
 
         self.require_apparmorfs()
 
@@ -194,7 +195,7 @@ class AAParserBasicCachingTests(AAParserCachingCommon):
 
 
 class AAParserAltCacheBasicTests(AAParserBasicCachingTests):
-    '''Same tests as above, but with an alternate cache location specified on the command line'''
+    """Same tests as above, but with an alternate cache location specified on the command line"""
 
     def setUp(self):
         super().setUp()
@@ -207,13 +208,13 @@ class AAParserAltCacheBasicTests(AAParserBasicCachingTests):
         self.cache_dir = self.get_cache_dir()
 
     def tearDown(self):
-        if len(os.listdir(self.unused_cache_loc)) > 0:
-            self.fail('original cache dir \'%s\' not empty' % self.unused_cache_loc)
+        if os.listdir(self.unused_cache_loc):
+            self.fail("original cache dir '%s' not empty" % self.unused_cache_loc)
         super().tearDown()
 
 
 class AAParserCreateCacheBasicTestsCacheExists(AAParserBasicCachingTests):
-    '''Same tests as above, but with create cache option on the command line and the cache already exists'''
+    """Same tests as above, but with create cache option on the command line and the cache already exists"""
 
     def setUp(self):
         super().setUp()
@@ -221,7 +222,7 @@ class AAParserCreateCacheBasicTestsCacheExists(AAParserBasicCachingTests):
 
 
 class AAParserCreateCacheBasicTestsCacheNotExist(AAParserBasicCachingTests):
-    '''Same tests as above, but with create cache option on the command line and cache dir removed'''
+    """Same tests as above, but with create cache option on the command line and cache dir removed"""
 
     def setUp(self):
         super().setUp()
@@ -230,8 +231,8 @@ class AAParserCreateCacheBasicTestsCacheNotExist(AAParserBasicCachingTests):
 
 
 class AAParserCreateCacheAltCacheTestsCacheNotExist(AAParserBasicCachingTests):
-    '''Same tests as above, but with create cache option on the command line,
-       alt cache specified, and cache dir removed'''
+    """Same tests as above, but with create cache option on the command line,
+       alt cache specified, and cache dir removed"""
 
     def setUp(self):
         super().setUp()
@@ -260,7 +261,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.assertEqual(os.stat(path).st_mtime, mtime)
 
     def test_cache_loaded_when_exists(self):
-        '''test cache is loaded when it exists, is newer than profile,  and features match'''
+        """test cache is loaded when it exists, is newer than profile, and features match"""
 
         self._generate_cache_file()
 
@@ -269,7 +270,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.run_cmd_check(cmd, expected_string='Cached reload succeeded')
 
     def test_cache_not_loaded_when_skip_arg(self):
-        '''test cache is not loaded when --skip-cache is passed'''
+        """test cache is not loaded when --skip-cache is passed"""
 
         self._generate_cache_file()
 
@@ -278,7 +279,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
     def test_cache_not_loaded_when_skip_read_arg(self):
-        '''test cache is not loaded when --skip-read-cache is passed'''
+        """test cache is not loaded when --skip-read-cache is passed"""
 
         self._generate_cache_file()
 
@@ -287,7 +288,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
     def test_cache_not_loaded_when_features_differ(self):
-        '''test cache is not loaded when features file differs'''
+        """test cache is not loaded when features file differs"""
 
         self._generate_cache_file()
 
@@ -298,7 +299,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
     def test_cache_writing_does_not_overwrite_features_when_features_differ(self):
-        '''test cache writing does not overwrite the features files when it differs and --skip-bad-cache is given'''
+        """test cache writing does not overwrite the features files when it differs and --skip-bad-cache is given"""
 
         self.require_apparmorfs()
 
@@ -312,7 +313,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.compare_features_file(features_file, expected=False)
 
     def test_cache_writing_skipped_when_features_differ(self):
-        '''test cache writing is skipped when features file differs'''
+        """test cache writing is skipped when features file differs"""
 
         testlib.write_file(self.cache_dir, '.features', 'monkey\n')
 
@@ -322,14 +323,14 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.assert_path_exists(self.cache_file, expected=False)
 
     def test_cache_writing_collision_of_features(self):
-        '''test cache writing collision of features'''
+        """test cache writing collision of features"""
         # cache dir with different features causes a collision resulting
         # in a new cache dir
         self.require_apparmorfs()
 
         features_file = testlib.write_file(self.cache_dir, '.features', 'monkey\n')
         new_file = self.get_cache_dir()
-        new_features_file = new_file + '/.features';
+        new_features_file = new_file + '/.features'
 
         cmd = list(self.cmd_prefix)
         cmd.extend(('-v', '--write-cache', '-r', self.profile))
@@ -339,7 +340,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.compare_features_file(new_features_file)
 
     def test_cache_writing_updates_cache_file(self):
-        '''test cache writing updates cache file'''
+        """test cache writing updates cache file"""
 
         cache_file = testlib.write_file(self.cache_dir, PROFILE, 'monkey\n')
         orig_stat = os.stat(cache_file)
@@ -356,7 +357,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.assertEqual(os.stat(self.profile).st_mtime, stat.st_mtime)
 
     def test_cache_writing_clears_all_files(self):
-        '''test cache writing clears all cache files'''
+        """test cache writing clears all cache files"""
 
         check_file = testlib.write_file(self.cache_dir, 'monkey', 'monkey\n')
 
@@ -366,7 +367,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.assert_path_exists(check_file, expected=False)
 
     def test_profile_mtime_preserved(self):
-        '''test profile mtime is preserved when it is newest'''
+        """test profile mtime is preserved when it is newest"""
         expected = 1
         self._set_mtime(self.abstraction, 0)
         self._set_mtime(self.profile, expected)
@@ -374,7 +375,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.assertEqual(expected, os.stat(self.cache_file).st_mtime)
 
     def test_abstraction_mtime_preserved(self):
-        '''test abstraction mtime is preserved when it is newest'''
+        """test abstraction mtime is preserved when it is newest"""
         expected = 1000
         self._set_mtime(self.profile, 0)
         self._set_mtime(self.abstraction, expected)
@@ -382,7 +383,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.assertEqual(expected, os.stat(self.cache_file).st_mtime)
 
     def test_equal_mtimes_preserved(self):
-        '''test equal profile and abstraction mtimes are preserved'''
+        """test equal profile and abstraction mtimes are preserved"""
         expected = 10000 + self.mtime_res
         self._set_mtime(self.profile, expected)
         self._set_mtime(self.abstraction, expected)
@@ -390,7 +391,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.assertEqual(expected, os.stat(self.cache_file).st_mtime)
 
     def test_profile_newer_skips_cache(self):
-        '''test cache is skipped if profile is newer'''
+        """test cache is skipped if profile is newer"""
 
         self._generate_cache_file()
         profile_mtime = os.stat(self.cache_file).st_mtime + self.mtime_res
@@ -408,7 +409,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.assertEqual(orig_stat.st_mtime, stat.st_mtime)
 
     def test_abstraction_newer_skips_cache(self):
-        '''test cache is skipped if abstraction is newer'''
+        """test cache is skipped if abstraction is newer"""
 
         self._generate_cache_file()
         abstraction_mtime = os.stat(self.cache_file).st_mtime + self.mtime_res
@@ -426,7 +427,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.assertEqual(orig_stat.st_mtime, stat.st_mtime)
 
     def test_profile_newer_rewrites_cache(self):
-        '''test cache is rewritten if profile is newer'''
+        """test cache is rewritten if profile is newer"""
 
         self._generate_cache_file()
         profile_mtime = os.stat(self.cache_file).st_mtime + self.mtime_res
@@ -443,7 +444,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.assertEqual(profile_mtime, stat.st_mtime)
 
     def test_abstraction_newer_rewrites_cache(self):
-        '''test cache is rewritten if abstraction is newer'''
+        """test cache is rewritten if abstraction is newer"""
 
         self._generate_cache_file()
         abstraction_mtime = os.stat(self.cache_file).st_mtime + self.mtime_res
@@ -460,7 +461,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.assertEqual(abstraction_mtime, stat.st_mtime)
 
     def test_parser_newer_uses_cache(self):
-        '''test cache is not skipped if parser is newer'''
+        """test cache is not skipped if parser is newer"""
 
         self._generate_cache_file()
 
@@ -486,20 +487,20 @@ class AAParserCachingTests(AAParserCachingCommon):
         self.assert_path_exists(cache_file, expected=False)
 
     def test_cache_purge_removes_features_file(self):
-        '''test cache --purge-cache removes .features file'''
+        """test cache --purge-cache removes .features file"""
         self._purge_cache_test('.features')
 
     def test_cache_purge_removes_cache_file(self):
-        '''test cache --purge-cache removes profile cache file'''
+        """test cache --purge-cache removes profile cache file"""
         self._purge_cache_test(PROFILE)
 
     def test_cache_purge_removes_other_cache_files(self):
-        '''test cache --purge-cache removes other cache files'''
+        """test cache --purge-cache removes other cache files"""
         self._purge_cache_test('monkey')
 
 
 class AAParserAltCacheTests(AAParserCachingTests):
-    '''Same tests as above, but with an alternate cache location specified on the command line'''
+    """Same tests as above, but with an alternate cache location specified on the command line"""
     check_orig_cache = True
 
     def setUp(self):
@@ -514,12 +515,12 @@ class AAParserAltCacheTests(AAParserCachingTests):
         self.cache_file = os.path.join(self.cache_dir, PROFILE)
 
     def tearDown(self):
-        if self.check_orig_cache and len(os.listdir(self.orig_cache_dir)) > 0:
-            self.fail('original cache dir \'%s\' not empty' % self.orig_cache_dir)
+        if self.check_orig_cache and os.listdir(self.orig_cache_dir):
+            self.fail("original cache dir '%s' not empty" % self.orig_cache_dir)
         super().tearDown()
 
     def test_cache_purge_leaves_original_cache_alone(self):
-        '''test cache purging only touches alt cache'''
+        """test cache purging only touches alt cache"""
 
         # skip tearDown check to ensure non-alt cache is empty
         self.check_orig_cache = False
@@ -564,6 +565,7 @@ def main():
         rc = 1
 
     return rc
+
 
 if __name__ == "__main__":
     rc = main()

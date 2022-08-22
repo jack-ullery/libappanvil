@@ -19,10 +19,10 @@ from shutil import which
 import apparmor.aa as apparmor
 import apparmor.ui as aaui
 from apparmor.common import AppArmorException, cmd, is_skippable_file, user_perm
-
-# setup module translations
 from apparmor.translations import init_translation
+
 _ = init_translation()
+
 
 class aa_tools:
     def __init__(self, tool_name, args):
@@ -45,7 +45,7 @@ class aa_tools:
             self.silent = args.silent
 
     def get_next_to_profile(self):
-        '''Iterator function to walk the list of arguments passed'''
+        """Iterator function to walk the list of arguments passed"""
 
         for p in self.profiling:
             if not p:
@@ -71,7 +71,8 @@ class aa_tools:
                     profile = apparmor.get_full_path(os.path.join(apparmor.profile_dir, p)).strip()
                 else:
                     if '/' not in p:
-                        aaui.UI_Info(_("Can't find %(program)s in the system path list. If the name of the application\nis correct, please run 'which %(program)s' as a user with correct PATH\nenvironment set up in order to find the fully-qualified path and\nuse the full path as parameter.") % { 'program': p })
+                        aaui.UI_Info(_("Can't find %(program)s in the system path list. If the name of the application\nis correct, please run 'which %(program)s' as a user with correct PATH\nenvironment set up in order to find the fully-qualified path and\nuse the full path as parameter.")
+                                     % {'program': p})
                     else:
                         aaui.UI_Info(_("%s does not exist, please double-check the path.") % p)
                     continue
@@ -98,7 +99,8 @@ class aa_tools:
 
             else:
                 if '/' not in program:
-                    aaui.UI_Info(_("Can't find %(program)s in the system path list. If the name of the application\nis correct, please run 'which %(program)s' as a user with correct PATH\nenvironment set up in order to find the fully-qualified path and\nuse the full path as parameter.") % { 'program': program })
+                    aaui.UI_Info(_("Can't find %(program)s in the system path list. If the name of the application\nis correct, please run 'which %(program)s' as a user with correct PATH\nenvironment set up in order to find the fully-qualified path and\nuse the full path as parameter.")
+                                 % {'program': program})
                 else:
                     aaui.UI_Info(_("%s does not exist, please double-check the path.") % program)
                     sys.exit(1)
@@ -205,7 +207,7 @@ class aa_tools:
             if not self.silent:
                 q = aaui.PromptQuestion()
                 q.title = 'Changed Local Profiles'
-                q.explanation = _('The local profile for %(program)s in file %(file)s was changed. Would you like to save it?') % { 'program': program, 'file': filename }
+                q.explanation = _('The local profile for %(program)s in file %(file)s was changed. Would you like to save it?') % {'program': program, 'file': filename}
                 q.functions = ['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ABORT']
                 q.default = 'CMD_VIEW_CHANGES'
                 q.options = []
@@ -218,7 +220,7 @@ class aa_tools:
                         apparmor.write_profile_ui_feedback(program, True)
                         self.reload_profile(filename)
                     elif ans == 'CMD_VIEW_CHANGES':
-                        #oldprofile = apparmor.serialize_profile(apparmor.split_to_merged(apparmor.original_aa), program, {})
+                        # oldprofile = apparmor.serialize_profile(apparmor.split_to_merged(apparmor.original_aa), program, {})
                         newprofile = apparmor.serialize_profile(apparmor.split_to_merged(apparmor.aa), program, {'is_attachment': True})
                         aaui.UI_Changes(filename, newprofile, comments=True)
             else:

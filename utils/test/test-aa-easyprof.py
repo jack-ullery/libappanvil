@@ -24,8 +24,9 @@ from apparmor.common import AppArmorException
 topdir = None
 debugging = False
 
+
 def recursive_rm(dirPath, contents_only=False):
-    '''recursively remove directory'''
+    """recursively remove directory"""
     names = os.listdir(dirPath)
     for name in names:
         path = os.path.join(dirPath, name)
@@ -33,8 +34,9 @@ def recursive_rm(dirPath, contents_only=False):
             os.unlink(path)
         else:
             recursive_rm(path)
-    if contents_only == False:
+    if not contents_only:
         os.rmdir(dirPath)
+
 
 # From Lib/test/test_optparse.py from python 2.7.4
 class InterceptedError(Exception):
@@ -84,7 +86,7 @@ class Manifest:
         self.security['profiles'][self.profile_name]['template'] = template
 
     def add_template_variable(self, name, value):
-        if not 'template_variables' in self.security['profiles'][self.profile_name]:
+        if 'template_variables' not in self.security['profiles'][self.profile_name]:
             self.security['profiles'][self.profile_name]['template_variables'] = dict()
 
         self.security['profiles'][self.profile_name]['template_variables'][name] = value
@@ -99,6 +101,7 @@ class Manifest:
 
         return json.dumps(dumpee, indent=2)
 
+
 #
 # Our test class
 #
@@ -108,7 +111,7 @@ class T(unittest.TestCase):
     ls = os.path.realpath('/bin/ls')
 
     def setUp(self):
-        '''Setup for tests'''
+        """Setup for tests"""
         global topdir
 
         self.tmpdir = os.path.realpath(tempfile.mkdtemp(prefix='test-aa-easyprof'))
@@ -203,7 +206,7 @@ TEMPLATES_DIR="%s/templates"
                                             "inc_%s" % os.path.basename(f)))
 
     def tearDown(self):
-        '''Teardown for tests'''
+        """Teardown for tests"""
         if os.path.exists(self.tmpdir):
             if debugging:
                 sys.stdout.write("%s\n" % self.tmpdir)
@@ -214,7 +217,7 @@ TEMPLATES_DIR="%s/templates"
 # config file tests
 #
     def test_configuration_file_p_invalid(self):
-        '''Test config parsing (invalid POLICYGROUPS_DIR)'''
+        """Test config parsing (invalid POLICYGROUPS_DIR)"""
         contents = '''
 POLICYGROUPS_DIR=
 TEMPLATES_DIR="%s/templates"
@@ -229,10 +232,10 @@ TEMPLATES_DIR="%s/templates"
         except Exception:
             raise
 
-        raise Exception ("File should have been invalid")
+        raise Exception("File should have been invalid")
 
     def test_configuration_file_p_empty(self):
-        '''Test config parsing (empty POLICYGROUPS_DIR)'''
+        """Test config parsing (empty POLICYGROUPS_DIR)"""
         contents = '''
 POLICYGROUPS_DIR="%s"
 TEMPLATES_DIR="%s/templates"
@@ -247,10 +250,10 @@ TEMPLATES_DIR="%s/templates"
         except Exception:
             raise
 
-        raise Exception ("File should have been invalid")
+        raise Exception("File should have been invalid")
 
     def test_configuration_file_p_nonexistent(self):
-        '''Test config parsing (nonexistent POLICYGROUPS_DIR)'''
+        """Test config parsing (nonexistent POLICYGROUPS_DIR)"""
         contents = '''
 POLICYGROUPS_DIR="%s/policygroups"
 TEMPLATES_DIR="%s/templates"
@@ -265,10 +268,10 @@ TEMPLATES_DIR="%s/templates"
         except Exception:
             raise
 
-        raise Exception ("File should have been invalid")
+        raise Exception("File should have been invalid")
 
     def test_policygroups_dir_relative(self):
-        '''Test --policy-groups-dir (relative DIR)'''
+        """Test --policy-groups-dir (relative DIR)"""
         os.chdir(self.tmpdir)
         rel = os.path.join(self.tmpdir, 'relative')
         os.mkdir(rel)
@@ -280,12 +283,13 @@ TEMPLATES_DIR="%s/templates"
         easyp = easyprof.AppArmorEasyProfile(self.binary, self.options)
 
         # no fallback
-        self.assertTrue(easyp.dirs['policygroups'] == rel, "Not using specified --policy-groups-dir\n" +
-                                                           "Specified dir: %s\nActual dir: %s" % (rel, str(easyp.dirs['policygroups'])))
-        self.assertFalse(easyp.get_policy_groups() == None, "Could not find policy-groups")
+        self.assertTrue(easyp.dirs['policygroups'] == rel,
+                        "Not using specified --policy-groups-dir\n"
+                        "Specified dir: %s\nActual dir: %s" % (rel, str(easyp.dirs['policygroups'])))
+        self.assertFalse(easyp.get_policy_groups() is None, "Could not find policy-groups")
 
     def test_policygroups_dir_nonexistent(self):
-        '''Test --policy-groups-dir (nonexistent DIR)'''
+        """Test --policy-groups-dir (nonexistent DIR)"""
         os.chdir(self.tmpdir)
         rel = os.path.join(self.tmpdir, 'nonexistent')
 
@@ -298,10 +302,10 @@ TEMPLATES_DIR="%s/templates"
         self.assertFalse(easyp.dirs['policygroups'] == rel, "Using nonexistent --policy-groups-dir")
 
         # test fallback
-        self.assertTrue(easyp.get_policy_groups() != None, "Found policy-groups when shouldn't have")
+        self.assertTrue(easyp.get_policy_groups() is not None, "Found policy-groups when shouldn't have")
 
     def test_policygroups_dir_valid(self):
-        '''Test --policy-groups-dir (valid DIR)'''
+        """Test --policy-groups-dir (valid DIR)"""
         os.chdir(self.tmpdir)
         valid = os.path.join(self.tmpdir, 'valid')
         os.mkdir(valid)
@@ -314,14 +318,15 @@ TEMPLATES_DIR="%s/templates"
 
         # no fallback
         self.assertTrue(easyp.dirs['policygroups'] == valid, "Not using specified --policy-groups-dir")
-        self.assertFalse(easyp.get_policy_groups() == None, "Could not find policy-groups")
+        self.assertFalse(easyp.get_policy_groups() is None, "Could not find policy-groups")
 
     def test_policygroups_dir_valid_with_vendor(self):
-        '''Test --policy-groups-dir (valid DIR with vendor)'''
+        """Test --policy-groups-dir (valid DIR with vendor)"""
         os.chdir(self.tmpdir)
         valid = os.path.join(self.tmpdir, 'valid')
         os.mkdir(valid)
-        shutil.copy(os.path.join(self.tmpdir, 'policygroups', self.test_policygroup), os.path.join(valid, self.test_policygroup))
+        shutil.copy(os.path.join(self.tmpdir, 'policygroups', self.test_policygroup),
+                    os.path.join(valid, self.test_policygroup))
 
         vendor = "ubuntu"
         version = "1.0"
@@ -336,12 +341,12 @@ TEMPLATES_DIR="%s/templates"
         easyp = easyprof.AppArmorEasyProfile(self.binary, self.options)
 
         self.assertTrue(easyp.dirs['policygroups'] == valid, "Not using specified --policy-groups-dir")
-        self.assertFalse(easyp.get_policy_groups() == None, "Could not find policy-groups")
+        self.assertFalse(easyp.get_policy_groups() is None, "Could not find policy-groups")
         for f in easyp.get_policy_groups():
             self.assertFalse(os.path.basename(f) == vendor, "Found '%s' in %s" % (vendor, f))
 
     def test_configuration_file_t_invalid(self):
-        '''Test config parsing (invalid TEMPLATES_DIR)'''
+        """Test config parsing (invalid TEMPLATES_DIR)"""
         contents = '''
 TEMPLATES_DIR=
 POLICYGROUPS_DIR="%s/templates"
@@ -356,10 +361,10 @@ POLICYGROUPS_DIR="%s/templates"
         except Exception:
             raise
 
-        raise Exception ("File should have been invalid")
+        raise Exception("File should have been invalid")
 
     def test_configuration_file_t_empty(self):
-        '''Test config parsing (empty TEMPLATES_DIR)'''
+        """Test config parsing (empty TEMPLATES_DIR)"""
         contents = '''
 TEMPLATES_DIR="%s"
 POLICYGROUPS_DIR="%s/templates"
@@ -374,10 +379,10 @@ POLICYGROUPS_DIR="%s/templates"
         except Exception:
             raise
 
-        raise Exception ("File should have been invalid")
+        raise Exception("File should have been invalid")
 
     def test_configuration_file_t_nonexistent(self):
-        '''Test config parsing (nonexistent TEMPLATES_DIR)'''
+        """Test config parsing (nonexistent TEMPLATES_DIR)"""
         contents = '''
 TEMPLATES_DIR="%s/policygroups"
 POLICYGROUPS_DIR="%s/templates"
@@ -392,10 +397,10 @@ POLICYGROUPS_DIR="%s/templates"
         except Exception:
             raise
 
-        raise Exception ("File should have been invalid")
+        raise Exception("File should have been invalid")
 
     def test_templates_dir_relative(self):
-        '''Test --templates-dir (relative DIR)'''
+        """Test --templates-dir (relative DIR)"""
         os.chdir(self.tmpdir)
         rel = os.path.join(self.tmpdir, 'relative')
         os.mkdir(rel)
@@ -407,12 +412,13 @@ POLICYGROUPS_DIR="%s/templates"
         easyp = easyprof.AppArmorEasyProfile(self.binary, self.options)
 
         # no fallback
-        self.assertTrue(easyp.dirs['templates'] == rel, "Not using specified --template-dir\n" +
-                                                        "Specified dir: %s\nActual dir: %s" % (rel, str(easyp.dirs['templates'])))
-        self.assertFalse(easyp.get_templates() == None, "Could not find templates")
+        self.assertTrue(easyp.dirs['templates'] == rel,
+                        "Not using specified --template-dir\n"
+                        "Specified dir: %s\nActual dir: %s" % (rel, str(easyp.dirs['templates'])))
+        self.assertFalse(easyp.get_templates() is None, "Could not find templates")
 
     def test_templates_dir_nonexistent(self):
-        '''Test --templates-dir (nonexistent DIR)'''
+        """Test --templates-dir (nonexistent DIR)"""
         os.chdir(self.tmpdir)
         rel = os.path.join(self.tmpdir, 'nonexistent')
 
@@ -425,10 +431,10 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(easyp.dirs['templates'] == rel, "Using nonexistent --template-dir")
 
         # test fallback
-        self.assertTrue(easyp.get_templates() != None, "Found templates when shouldn't have")
+        self.assertTrue(easyp.get_templates() is not None, "Found templates when shouldn't have")
 
     def test_templates_dir_valid(self):
-        '''Test --templates-dir (valid DIR)'''
+        """Test --templates-dir (valid DIR)"""
         os.chdir(self.tmpdir)
         valid = os.path.join(self.tmpdir, 'valid')
         os.mkdir(valid)
@@ -441,10 +447,10 @@ POLICYGROUPS_DIR="%s/templates"
 
         # no fallback
         self.assertTrue(easyp.dirs['templates'] == valid, "Not using specified --template-dir")
-        self.assertFalse(easyp.get_templates() == None, "Could not find templates")
+        self.assertFalse(easyp.get_templates() is None, "Could not find templates")
 
     def test_templates_dir_valid_with_vendor(self):
-        '''Test --templates-dir (valid DIR with vendor)'''
+        """Test --templates-dir (valid DIR with vendor)"""
         os.chdir(self.tmpdir)
         valid = os.path.join(self.tmpdir, 'valid')
         os.mkdir(valid)
@@ -463,7 +469,7 @@ POLICYGROUPS_DIR="%s/templates"
         easyp = easyprof.AppArmorEasyProfile(self.binary, self.options)
 
         self.assertTrue(easyp.dirs['templates'] == valid, "Not using specified --template-dir")
-        self.assertFalse(easyp.get_templates() == None, "Could not find templates")
+        self.assertFalse(easyp.get_templates() is None, "Could not find templates")
         for f in easyp.get_templates():
             self.assertFalse(os.path.basename(f) == vendor, "Found '%s' in %s" % (vendor, f))
 
@@ -471,39 +477,39 @@ POLICYGROUPS_DIR="%s/templates"
 # Binary file tests
 #
     def test_binary_without_profile_name(self):
-        '''Test binary (<binary> { })'''
+        """Test binary (<binary> { })"""
         easyprof.AppArmorEasyProfile(self.ls, self.options)
 
     def test_binary_with_profile_name(self):
-        '''Test binary (profile <name> <binary> { })'''
+        """Test binary (profile <name> <binary> { })"""
         args = self.full_args
         args += ['--profile-name=some-profile-name']
         (self.options, self.args) = easyprof.parse_args(args)
         easyprof.AppArmorEasyProfile(self.ls, self.options)
 
     def test_binary_omitted_with_profile_name(self):
-        '''Test binary (profile <name> { })'''
+        """Test binary (profile <name> { })"""
         args = self.full_args
         args += ['--profile-name=some-profile-name']
         (self.options, self.args) = easyprof.parse_args(args)
         easyprof.AppArmorEasyProfile(None, self.options)
 
     def test_binary_nonexistent(self):
-        '''Test binary (nonexistent)'''
+        """Test binary (nonexistent)"""
         easyprof.AppArmorEasyProfile(os.path.join(self.tmpdir, 'nonexistent'), self.options)
 
     def test_binary_relative(self):
-        '''Test binary (relative)'''
+        """Test binary (relative)"""
         try:
             easyprof.AppArmorEasyProfile('./foo', self.options)
         except AppArmorException:
             return
         except Exception:
             raise
-        raise Exception ("Binary should have been invalid")
+        raise Exception("Binary should have been invalid")
 
     def test_binary_symlink(self):
-        '''Test binary (symlink)'''
+        """Test binary (symlink)"""
         exe = os.path.join(self.tmpdir, 'exe')
         open(exe, 'a').close()
         symlink = exe + ".lnk"
@@ -515,13 +521,13 @@ POLICYGROUPS_DIR="%s/templates"
             return
         except Exception:
             raise
-        raise Exception ("Binary should have been invalid")
+        raise Exception("Binary should have been invalid")
 
 #
 # Templates tests
 #
     def test_templates_list(self):
-        '''Test templates (list)'''
+        """Test templates (list)"""
         args = self.full_args
         args.append('--list-templates')
         (self.options, self.args) = easyprof.parse_args(args)
@@ -531,7 +537,7 @@ POLICYGROUPS_DIR="%s/templates"
             self.assertTrue(os.path.exists(i), "Could not find '%s'" % i)
 
     def test_templates_show(self):
-        '''Test templates (show)'''
+        """Test templates (show)"""
         files = glob.glob("%s/templates/*" % self.tmpdir)
         for f in files:
             args = self.full_args
@@ -545,7 +551,7 @@ POLICYGROUPS_DIR="%s/templates"
                 fd.read()
 
     def test_templates_list_include(self):
-        '''Test templates (list with --include-templates-dir)'''
+        """Test templates (list with --include-templates-dir)"""
         args = self.full_args
         args.append('--list-templates')
         (self.options, self.args) = easyprof.parse_args(args)
@@ -555,8 +561,8 @@ POLICYGROUPS_DIR="%s/templates"
 
         args = self.full_args
         args.append('--list-templates')
-        args.append('--include-templates-dir=%s' %
-                    os.path.join(self.test_include_dir, 'templates'))
+        args.append('--include-templates-dir=%s'
+                    % os.path.join(self.test_include_dir, 'templates'))
         (self.options, self.args) = easyprof.parse_args(args)
 
         easyp = easyprof.AppArmorEasyProfile(None, self.options)
@@ -568,14 +574,14 @@ POLICYGROUPS_DIR="%s/templates"
             self.assertTrue(os.path.exists(i), "Could not find '%s'" % i)
 
     def test_templates_show_include(self):
-        '''Test templates (show with --include-templates-dir)'''
+        """Test templates (show with --include-templates-dir)"""
         files = glob.glob("%s/templates/*" % self.test_include_dir)
         for f in files:
             args = self.full_args
             args += ['--show-template',
                      '--template', f,
-                     '--include-templates-dir=%s' %
-                     os.path.join(self.test_include_dir, 'templates')]
+                     '--include-templates-dir=%s'
+                     % os.path.join(self.test_include_dir, 'templates')]
             (self.options, self.args) = easyprof.parse_args(args)
             easyp = easyprof.AppArmorEasyProfile(None, self.options)
 
@@ -593,7 +599,7 @@ POLICYGROUPS_DIR="%s/templates"
 # Policygroups tests
 #
     def test_policygroups_list(self):
-        '''Test policygroups (list)'''
+        """Test policygroups (list)"""
         args = self.full_args
         args.append('--list-policy-groups')
         (self.options, self.args) = easyprof.parse_args(args)
@@ -603,7 +609,7 @@ POLICYGROUPS_DIR="%s/templates"
             self.assertTrue(os.path.exists(i), "Could not find '%s'" % i)
 
     def test_policygroups_show(self):
-        '''Test policygroups (show)'''
+        """Test policygroups (show)"""
         files = glob.glob("%s/policygroups/*" % self.tmpdir)
         for f in files:
             args = self.full_args
@@ -618,7 +624,7 @@ POLICYGROUPS_DIR="%s/templates"
                 fd.read()
 
     def test_policygroups_list_include(self):
-        '''Test policygroups (list with --include-policy-groups-dir)'''
+        """Test policygroups (list with --include-policy-groups-dir)"""
         args = self.full_args
         args.append('--list-policy-groups')
         (self.options, self.args) = easyprof.parse_args(args)
@@ -628,8 +634,8 @@ POLICYGROUPS_DIR="%s/templates"
 
         args = self.full_args
         args.append('--list-policy-groups')
-        args.append('--include-policy-groups-dir=%s' %
-                    os.path.join(self.test_include_dir, 'policygroups'))
+        args.append('--include-policy-groups-dir=%s'
+                    % os.path.join(self.test_include_dir, 'policygroups'))
         (self.options, self.args) = easyprof.parse_args(args)
 
         easyp = easyprof.AppArmorEasyProfile(None, self.options)
@@ -641,14 +647,14 @@ POLICYGROUPS_DIR="%s/templates"
             self.assertTrue(os.path.exists(i), "Could not find '%s'" % i)
 
     def test_policygroups_show_include(self):
-        '''Test policygroups (show with --include-policy-groups-dir)'''
+        """Test policygroups (show with --include-policy-groups-dir)"""
         files = glob.glob("%s/policygroups/*" % self.test_include_dir)
         for f in files:
             args = self.full_args
             args += ['--show-policy-group',
                      '--policy-groups', os.path.basename(f),
-                     '--include-policy-groups-dir=%s' %
-                     os.path.join(self.test_include_dir, 'policygroups')]
+                     '--include-policy-groups-dir=%s'
+                     % os.path.join(self.test_include_dir, 'policygroups')]
             (self.options, self.args) = easyprof.parse_args(args)
             easyp = easyprof.AppArmorEasyProfile(None, self.options)
 
@@ -666,7 +672,7 @@ POLICYGROUPS_DIR="%s/templates"
 # Manifest file argument tests
 #
     def test_manifest_argument(self):
-        '''Test manifest argument'''
+        """Test manifest argument"""
 
         # setup our manifest
         self.manifest = os.path.join(self.tmpdir, 'manifest.json')
@@ -681,7 +687,7 @@ POLICYGROUPS_DIR="%s/templates"
         easyprof.parse_args(args)
 
     def _manifest_conflicts(self, opt, value):
-        '''Helper for conflicts tests'''
+        """Helper for conflicts tests"""
         # setup our manifest
         self.manifest = os.path.join(self.tmpdir, 'manifest.json')
         contents = '''
@@ -699,7 +705,7 @@ POLICYGROUPS_DIR="%s/templates"
         except InterceptedError:
             raised = True
 
-        self.assertTrue(raised, msg="%s and manifest arguments did not " \
+        self.assertTrue(raised, msg="%s and manifest arguments did not "
                                     "raise a parse error" % opt)
 
         # manifest first
@@ -711,76 +717,74 @@ POLICYGROUPS_DIR="%s/templates"
         except InterceptedError:
             raised = True
 
-        self.assertTrue(raised, msg="%s and manifest arguments did not " \
+        self.assertTrue(raised, msg="%s and manifest arguments did not "
                                     "raise a parse error" % opt)
 
     def test_manifest_conflicts_profilename(self):
-        '''Test manifest arg conflicts with profile_name arg'''
+        """Test manifest arg conflicts with profile_name arg"""
         self._manifest_conflicts("--profile-name", "simple-app")
 
     def test_manifest_conflicts_copyright(self):
-        '''Test manifest arg conflicts with copyright arg'''
+        """Test manifest arg conflicts with copyright arg"""
         self._manifest_conflicts("--copyright", "2013-01-01")
 
     def test_manifest_conflicts_author(self):
-        '''Test manifest arg conflicts with author arg'''
+        """Test manifest arg conflicts with author arg"""
         self._manifest_conflicts("--author", "Foo Bar")
 
     def test_manifest_conflicts_comment(self):
-        '''Test manifest arg conflicts with comment arg'''
+        """Test manifest arg conflicts with comment arg"""
         self._manifest_conflicts("--comment", "some comment")
 
     def test_manifest_conflicts_abstractions(self):
-        '''Test manifest arg conflicts with abstractions arg'''
+        """Test manifest arg conflicts with abstractions arg"""
         self._manifest_conflicts("--abstractions", "base")
 
     def test_manifest_conflicts_read_path(self):
-        '''Test manifest arg conflicts with read-path arg'''
+        """Test manifest arg conflicts with read-path arg"""
         self._manifest_conflicts("--read-path", "/etc/passwd")
 
     def test_manifest_conflicts_write_path(self):
-        '''Test manifest arg conflicts with write-path arg'''
+        """Test manifest arg conflicts with write-path arg"""
         self._manifest_conflicts("--write-path", "/tmp/foo")
 
     def test_manifest_conflicts_policy_groups(self):
-        '''Test manifest arg conflicts with policy-groups arg'''
+        """Test manifest arg conflicts with policy-groups arg"""
         self._manifest_conflicts("--policy-groups", "opt-application")
 
     def test_manifest_conflicts_name(self):
-        '''Test manifest arg conflicts with name arg'''
+        """Test manifest arg conflicts with name arg"""
         self._manifest_conflicts("--name", "foo")
 
     def test_manifest_conflicts_template_var(self):
-        '''Test manifest arg conflicts with template-var arg'''
+        """Test manifest arg conflicts with template-var arg"""
         self._manifest_conflicts("--template-var", "foo")
 
     def test_manifest_conflicts_policy_version(self):
-        '''Test manifest arg conflicts with policy-version arg'''
+        """Test manifest arg conflicts with policy-version arg"""
         self._manifest_conflicts("--policy-version", "1.0")
 
     def test_manifest_conflicts_policy_vendor(self):
-        '''Test manifest arg conflicts with policy-vendor arg'''
+        """Test manifest arg conflicts with policy-vendor arg"""
         self._manifest_conflicts("--policy-vendor", "somevendor")
-
 
 #
 # Test genpolicy
 #
-
     def _gen_policy(self, name=None, template=None, extra_args=[]):
-        '''Generate a policy'''
+        """Generate a policy"""
         # Build up our args
         args = self.full_args
 
-        if template == None:
+        if template is None:
             args.append('--template=%s' % self.test_template)
         else:
             args.append('--template=%s' % template)
 
-        if name != None:
+        if name is not None:
             args.append('--name=%s' % name)
 
-        if len(extra_args) > 0:
+        if extra_args:
             args += extra_args
 
         args.append(self.binary)
@@ -793,10 +797,10 @@ POLICYGROUPS_DIR="%s/templates"
 
         # We always need to check for these
         search_terms = [self.binary]
-        if name != None:
+        if name is not None:
             search_terms.append(name)
 
-        if template == None:
+        if template is None:
             search_terms.append(self.test_template)
 
         for s in search_terms:
@@ -832,21 +836,21 @@ POLICYGROUPS_DIR="%s/templates"
         return p
 
     def test__is_safe(self):
-        '''Test _is_safe()'''
+        """Test _is_safe()"""
         bad = (
-               "/../../../../etc/passwd",
-               "abstraction with spaces",
-               "semicolon;bad",
-               "bad\x00baz",
-               "foo/bar",
-               "foo'bar",
-               'foo"bar',
-              )
+            "/../../../../etc/passwd",
+            "abstraction with spaces",
+            "semicolon;bad",
+            "bad\x00baz",
+            "foo/bar",
+            "foo'bar",
+            'foo"bar',
+        )
         for s in bad:
-            self.assertFalse(easyprof._is_safe(s), "'%s' should be bad" %s)
+            self.assertFalse(easyprof._is_safe(s), "'%s' should be bad" % s)
 
     def test_genpolicy_templates_abspath(self):
-        '''Test genpolicy (abspath to template)'''
+        """Test genpolicy (abspath to template)"""
         # create a new template
         template = os.path.join(self.tmpdir, "test-abspath-template")
         shutil.copy(os.path.join(self.tmpdir, 'templates', self.test_template), template)
@@ -862,25 +866,25 @@ POLICYGROUPS_DIR="%s/templates"
             self.assertTrue(s in p, "Could not find '%s' in:\n%s" % (s, p))
 
     def test_genpolicy_templates_system(self):
-        '''Test genpolicy (system template)'''
+        """Test genpolicy (system template)"""
         self._gen_policy()
 
     def test_genpolicy_templates_nonexistent(self):
-        '''Test genpolicy (nonexistent template)'''
+        """Test genpolicy (nonexistent template)"""
         try:
             self._gen_policy(template=os.path.join(self.tmpdir, "/nonexistent"))
         except AppArmorException:
             return
         except Exception:
             raise
-        raise Exception ("template should be invalid")
+        raise Exception("template should be invalid")
 
     def test_genpolicy_name(self):
-        '''Test genpolicy (name)'''
+        """Test genpolicy (name)"""
         self._gen_policy(name='test-foo')
 
     def test_genpolicy_comment(self):
-        '''Test genpolicy (comment)'''
+        """Test genpolicy (comment)"""
         s = "test comment"
         p = self._gen_policy(extra_args=['--comment=%s' % s])
         self.assertTrue(s in p, "Could not find '%s' in:\n%s" % (s, p))
@@ -888,7 +892,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_author(self):
-        '''Test genpolicy (author)'''
+        """Test genpolicy (author)"""
         s = "Archibald Poindexter"
         p = self._gen_policy(extra_args=['--author=%s' % s])
         self.assertTrue(s in p, "Could not find '%s' in:\n%s" % (s, p))
@@ -896,7 +900,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_copyright(self):
-        '''Test genpolicy (copyright)'''
+        """Test genpolicy (copyright)"""
         s = "2112/01/01"
         p = self._gen_policy(extra_args=['--copyright=%s' % s])
         self.assertTrue(s in p, "Could not find '%s' in:\n%s" % (s, p))
@@ -904,7 +908,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_abstractions(self):
-        '''Test genpolicy (single abstraction)'''
+        """Test genpolicy (single abstraction)"""
         s = "nameservice"
         p = self._gen_policy(extra_args=['--abstractions=%s' % s])
         search = "#include <abstractions/%s>" % s
@@ -913,7 +917,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_abstractions_multiple(self):
-        '''Test genpolicy (multiple abstractions)'''
+        """Test genpolicy (multiple abstractions)"""
         abstractions = "authentication,X,user-tmp"
         p = self._gen_policy(extra_args=['--abstractions=%s' % abstractions])
         for s in abstractions.split(','):
@@ -923,7 +927,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_abstractions_bad(self):
-        '''Test genpolicy (abstractions - bad values)'''
+        """Test genpolicy (abstractions - bad values)"""
         bad = (
                "nonexistent",
                "/../../../../etc/passwd",
@@ -936,10 +940,10 @@ POLICYGROUPS_DIR="%s/templates"
                 continue
             except Exception:
                 raise
-            raise Exception ("abstraction '%s' should be invalid" % s)
+            raise Exception("abstraction '%s' should be invalid" % s)
 
     def _create_tmp_base_dir(self, prefix='', abstractions=[], tunables=[]):
-        '''Create a temporary base dir layout'''
+        """Create a temporary base dir layout"""
         base_name = 'apparmor.d'
         if prefix:
             base_name = '%s-%s' % (prefix, base_name)
@@ -970,7 +974,7 @@ POLICYGROUPS_DIR="%s/templates"
         return base_dir
 
     def test_genpolicy_abstractions_custom_base(self):
-        '''Test genpolicy (custom base dir)'''
+        """Test genpolicy (custom base dir)"""
         abstraction = "custom-base-dir-test-abstraction"
         # The default template #includes the base abstraction and global
         # tunable so we need to create placeholders
@@ -984,9 +988,9 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_abstractions_custom_base_bad(self):
-        '''Test genpolicy (custom base dir - bad base dirs)'''
+        """Test genpolicy (custom base dir - bad base dirs)"""
         abstraction = "custom-base-dir-test-abstraction"
-        bad = [ None, '/etc/apparmor.d', '/' ]
+        bad = [None, '/etc/apparmor.d', '/']
         for base in bad:
             try:
                 args = ['--abstractions=%s' % abstraction]
@@ -997,10 +1001,10 @@ POLICYGROUPS_DIR="%s/templates"
                 continue
             except Exception:
                 raise
-            raise Exception ("abstraction '%s' should be invalid" % abstraction)
+            raise Exception("abstraction '%s' should be invalid" % abstraction)
 
     def test_genpolicy_abstractions_custom_include(self):
-        '''Test genpolicy (custom include dir)'''
+        """Test genpolicy (custom include dir)"""
         abstraction = "custom-include-dir-test-abstraction"
         # No need to create placeholders for the base abstraction or global
         # tunable since we're not adjusting the base directory
@@ -1013,9 +1017,9 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_abstractions_custom_include_bad(self):
-        '''Test genpolicy (custom include dir - bad include dirs)'''
+        """Test genpolicy (custom include dir - bad include dirs)"""
         abstraction = "custom-include-dir-test-abstraction"
-        bad = [ None, '/etc/apparmor.d', '/' ]
+        bad = [None, '/etc/apparmor.d', '/']
         for include in bad:
             try:
                 args = ['--abstractions=%s' % abstraction]
@@ -1026,15 +1030,15 @@ POLICYGROUPS_DIR="%s/templates"
                 continue
             except Exception:
                 raise
-            raise Exception ("abstraction '%s' should be invalid" % abstraction)
+            raise Exception("abstraction '%s' should be invalid" % abstraction)
 
     def test_genpolicy_profile_name_bad(self):
-        '''Test genpolicy (profile name - bad values)'''
+        """Test genpolicy (profile name - bad values)"""
         bad = [
-               "/../../../../etc/passwd",
-               "../../../../etc/passwd",
-               "profile name with spaces",
-              ]
+            "/../../../../etc/passwd",
+            "../../../../etc/passwd",
+            "profile name with spaces",
+        ]
         for s in bad:
             try:
                 self._gen_policy(extra_args=['--profile-name=%s' % s])
@@ -1042,15 +1046,15 @@ POLICYGROUPS_DIR="%s/templates"
                 continue
             except Exception:
                 raise
-            raise Exception ("profile_name '%s' should be invalid" % s)
+            raise Exception("profile_name '%s' should be invalid" % s)
 
     def test_genpolicy_policy_group_bad(self):
-        '''Test genpolicy (policy group - bad values)'''
+        """Test genpolicy (policy group - bad values)"""
         bad = [
-               "/../../../../etc/passwd",
-               "../../../../etc/passwd",
-               "profile name with spaces",
-              ]
+            "/../../../../etc/passwd",
+            "../../../../etc/passwd",
+            "profile name with spaces",
+        ]
         for s in bad:
             try:
                 self._gen_policy(extra_args=['--policy-groups=%s' % s])
@@ -1058,10 +1062,10 @@ POLICYGROUPS_DIR="%s/templates"
                 continue
             except Exception:
                 raise
-            raise Exception ("policy group '%s' should be invalid" % s)
+            raise Exception("policy group '%s' should be invalid" % s)
 
     def test_genpolicy_policygroups(self):
-        '''Test genpolicy (single policygroup)'''
+        """Test genpolicy (single policygroup)"""
         groups = self.test_policygroup
         p = self._gen_policy(extra_args=['--policy-groups=%s' % groups])
 
@@ -1071,7 +1075,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_policygroups_multiple(self):
-        '''Test genpolicy (multiple policygroups)'''
+        """Test genpolicy (multiple policygroups)"""
         test_policygroup2 = "test-policygroup2"
         contents = '''
   # %s
@@ -1093,17 +1097,17 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_policygroups_nonexistent(self):
-        '''Test genpolicy (nonexistent policygroup)'''
+        """Test genpolicy (nonexistent policygroup)"""
         try:
             self._gen_policy(extra_args=['--policy-groups=nonexistent'])
         except AppArmorException:
             return
         except Exception:
             raise
-        raise Exception ("policygroup should be invalid")
+        raise Exception("policygroup should be invalid")
 
     def test_genpolicy_readpath_file(self):
-        '''Test genpolicy (read-path file)'''
+        """Test genpolicy (read-path file)"""
         s = "/opt/test-foo"
         p = self._gen_policy(extra_args=['--read-path=%s' % s])
         search = "%s rk," % s
@@ -1112,7 +1116,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_readpath_home_file(self):
-        '''Test genpolicy (read-path file in /home)'''
+        """Test genpolicy (read-path file in /home)"""
         s = "/home/*/test-foo"
         p = self._gen_policy(extra_args=['--read-path=%s' % s])
         search = "owner %s rk," % s
@@ -1121,7 +1125,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_readpath_homevar_file(self):
-        '''Test genpolicy (read-path file in @{HOME})'''
+        """Test genpolicy (read-path file in @{HOME})"""
         s = "@{HOME}/test-foo"
         p = self._gen_policy(extra_args=['--read-path=%s' % s])
         search = "owner %s rk," % s
@@ -1130,7 +1134,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_readpath_homedirs_file(self):
-        '''Test genpolicy (read-path file in @{HOMEDIRS})'''
+        """Test genpolicy (read-path file in @{HOMEDIRS})"""
         s = "@{HOMEDIRS}/test-foo"
         p = self._gen_policy(extra_args=['--read-path=%s' % s])
         search = "owner %s rk," % s
@@ -1139,7 +1143,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_readpath_dir(self):
-        '''Test genpolicy (read-path directory/)'''
+        """Test genpolicy (read-path directory/)"""
         s = "/opt/test-foo-dir/"
         p = self._gen_policy(extra_args=['--read-path=%s' % s])
         search_terms = ["%s rk," % s, "%s** rk," % s]
@@ -1149,7 +1153,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_readpath_dir_glob(self):
-        '''Test genpolicy (read-path directory/*)'''
+        """Test genpolicy (read-path directory/*)"""
         s = "/opt/test-foo-dir/*"
         p = self._gen_policy(extra_args=['--read-path=%s' % s])
         search_terms = ["%s rk," % os.path.dirname(s), "%s rk," % s]
@@ -1159,7 +1163,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_readpath_dir_glob_all(self):
-        '''Test genpolicy (read-path directory/**)'''
+        """Test genpolicy (read-path directory/**)"""
         s = "/opt/test-foo-dir/**"
         p = self._gen_policy(extra_args=['--read-path=%s' % s])
         search_terms = ["%s rk," % os.path.dirname(s), "%s rk," % s]
@@ -1169,14 +1173,16 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_readpath_multiple(self):
-        '''Test genpolicy (read-path multiple)'''
-        paths = ["/opt/test-foo",
-                 "/home/*/test-foo",
-                 "@{HOME}/test-foo",
-                 "@{HOMEDIRS}/test-foo",
-                 "/opt/test-foo-dir/",
-                 "/opt/test-foo-dir/*",
-                 "/opt/test-foo-dir/**"]
+        """Test genpolicy (read-path multiple)"""
+        paths = [
+            "/opt/test-foo",
+            "/home/*/test-foo",
+            "@{HOME}/test-foo",
+            "@{HOMEDIRS}/test-foo",
+            "/opt/test-foo-dir/",
+            "/opt/test-foo-dir/*",
+            "/opt/test-foo-dir/**",
+        ]
         args = []
         search_terms = []
         for s in paths:
@@ -1201,7 +1207,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_readpath_bad(self):
-        '''Test genpolicy (read-path bad)'''
+        """Test genpolicy (read-path bad)"""
         s = "bar"
         try:
             self._gen_policy(extra_args=['--read-path=%s' % s])
@@ -1209,10 +1215,10 @@ POLICYGROUPS_DIR="%s/templates"
             return
         except Exception:
             raise
-        raise Exception ("read-path should be invalid")
+        raise Exception("read-path should be invalid")
 
     def test_genpolicy_writepath_file(self):
-        '''Test genpolicy (write-path file)'''
+        """Test genpolicy (write-path file)"""
         s = "/opt/test-foo"
         p = self._gen_policy(extra_args=['--write-path=%s' % s])
         search = "%s rwk," % s
@@ -1221,7 +1227,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_writepath_home_file(self):
-        '''Test genpolicy (write-path file in /home)'''
+        """Test genpolicy (write-path file in /home)"""
         s = "/home/*/test-foo"
         p = self._gen_policy(extra_args=['--write-path=%s' % s])
         search = "owner %s rwk," % s
@@ -1230,7 +1236,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_writepath_homevar_file(self):
-        '''Test genpolicy (write-path file in @{HOME})'''
+        """Test genpolicy (write-path file in @{HOME})"""
         s = "@{HOME}/test-foo"
         p = self._gen_policy(extra_args=['--write-path=%s' % s])
         search = "owner %s rwk," % s
@@ -1239,7 +1245,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_writepath_homedirs_file(self):
-        '''Test genpolicy (write-path file in @{HOMEDIRS})'''
+        """Test genpolicy (write-path file in @{HOMEDIRS})"""
         s = "@{HOMEDIRS}/test-foo"
         p = self._gen_policy(extra_args=['--write-path=%s' % s])
         search = "owner %s rwk," % s
@@ -1248,7 +1254,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_writepath_dir(self):
-        '''Test genpolicy (write-path directory/)'''
+        """Test genpolicy (write-path directory/)"""
         s = "/opt/test-foo-dir/"
         p = self._gen_policy(extra_args=['--write-path=%s' % s])
         search_terms = ["%s rwk," % s, "%s** rwk," % s]
@@ -1258,7 +1264,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_writepath_dir_glob(self):
-        '''Test genpolicy (write-path directory/*)'''
+        """Test genpolicy (write-path directory/*)"""
         s = "/opt/test-foo-dir/*"
         p = self._gen_policy(extra_args=['--write-path=%s' % s])
         search_terms = ["%s rwk," % os.path.dirname(s), "%s rwk," % s]
@@ -1268,7 +1274,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_writepath_dir_glob_all(self):
-        '''Test genpolicy (write-path directory/**)'''
+        """Test genpolicy (write-path directory/**)"""
         s = "/opt/test-foo-dir/**"
         p = self._gen_policy(extra_args=['--write-path=%s' % s])
         search_terms = ["%s rwk," % os.path.dirname(s), "%s rwk," % s]
@@ -1278,14 +1284,16 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_writepath_multiple(self):
-        '''Test genpolicy (write-path multiple)'''
-        paths = ["/opt/test-foo",
-                 "/home/*/test-foo",
-                 "@{HOME}/test-foo",
-                 "@{HOMEDIRS}/test-foo",
-                 "/opt/test-foo-dir/",
-                 "/opt/test-foo-dir/*",
-                 "/opt/test-foo-dir/**"]
+        """Test genpolicy (write-path multiple)"""
+        paths = [
+            "/opt/test-foo",
+            "/home/*/test-foo",
+            "@{HOME}/test-foo",
+            "@{HOMEDIRS}/test-foo",
+            "/opt/test-foo-dir/",
+            "/opt/test-foo-dir/*",
+            "/opt/test-foo-dir/**",
+        ]
         args = []
         search_terms = []
         for s in paths:
@@ -1310,7 +1318,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_writepath_bad(self):
-        '''Test genpolicy (write-path bad)'''
+        """Test genpolicy (write-path bad)"""
         s = "bar"
         try:
             self._gen_policy(extra_args=['--write-path=%s' % s])
@@ -1318,10 +1326,10 @@ POLICYGROUPS_DIR="%s/templates"
             return
         except Exception:
             raise
-        raise Exception ("write-path should be invalid")
+        raise Exception("write-path should be invalid")
 
     def test_genpolicy_templatevar(self):
-        '''Test genpolicy (template-var single)'''
+        """Test genpolicy (template-var single)"""
         s = "@{FOO}=bar"
         p = self._gen_policy(extra_args=['--template-var=%s' % s])
         k, v = s.split('=')
@@ -1331,7 +1339,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_templatevar_multiple(self):
-        '''Test genpolicy (template-var multiple)'''
+        """Test genpolicy (template-var multiple)"""
         variables = ['@{FOO}=bar', '@{BAR}=baz']
         args = []
         for s in variables:
@@ -1346,7 +1354,7 @@ POLICYGROUPS_DIR="%s/templates"
             self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_templatevar_bad(self):
-        '''Test genpolicy (template-var - bad values)'''
+        """Test genpolicy (template-var - bad values)"""
         bad = [
                "{FOO}=bar",
                "@FOO}=bar",
@@ -1365,10 +1373,10 @@ POLICYGROUPS_DIR="%s/templates"
                 continue
             except Exception:
                 raise
-            raise Exception ("template-var should be invalid")
+            raise Exception("template-var should be invalid")
 
     def test_genpolicy_invalid_template_policy(self):
-        '''Test genpolicy (invalid template policy)'''
+        """Test genpolicy (invalid template policy)"""
         # create a new template
         template = os.path.join(self.tmpdir, "test-invalid-template")
         shutil.copy(os.path.join(self.tmpdir, 'templates', self.test_template), template)
@@ -1390,20 +1398,20 @@ POLICYGROUPS_DIR="%s/templates"
             return
         except Exception:
             raise
-        raise Exception ("policy should be invalid")
+        raise Exception("policy should be invalid")
 
     def test_genpolicy_no_binary_without_profile_name(self):
-        '''Test genpolicy (no binary with no profile name)'''
+        """Test genpolicy (no binary with no profile name)"""
         try:
             easyprof.gen_policy_params(None, self.options)
         except AppArmorException:
             return
         except Exception:
             raise
-        raise Exception ("No binary or profile name should have been invalid")
+        raise Exception("No binary or profile name should have been invalid")
 
     def test_genpolicy_with_binary_with_profile_name(self):
-        '''Test genpolicy (binary with profile name)'''
+        """Test genpolicy (binary with profile name)"""
         profile_name = "some-profile-name"
         p = self._gen_policy(extra_args=['--profile-name=%s' % profile_name])
         s = 'profile "%s" "%s" {' % (profile_name, self.binary)
@@ -1412,7 +1420,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_with_binary_without_profile_name(self):
-        '''Test genpolicy (binary without profile name)'''
+        """Test genpolicy (binary without profile name)"""
         p = self._gen_policy()
         s = '"%s" {' % (self.binary)
         self.assertTrue(s in p, "Could not find '%s' in:\n%s" % (s, p))
@@ -1420,7 +1428,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_genpolicy_without_binary_with_profile_name(self):
-        '''Test genpolicy (no binary with profile name)'''
+        """Test genpolicy (no binary with profile name)"""
         profile_name = "some-profile-name"
         args = self.full_args
         args.append('--profile-name=%s' % profile_name)
@@ -1436,30 +1444,30 @@ POLICYGROUPS_DIR="%s/templates"
 # manifest tests
 
     def test_gen_manifest_policy_with_binary_with_profile_name(self):
-        '''Test gen_manifest_policy (binary with profile name)'''
+        """Test gen_manifest_policy (binary with profile name)"""
         m = Manifest("test_gen_manifest_policy")
         m.add_binary(self.ls)
         self._gen_manifest_policy(m)
 
     def test_gen_manifest_policy_without_binary_with_profile_name(self):
-        '''Test gen_manifest_policy (no binary with profile name)'''
+        """Test gen_manifest_policy (no binary with profile name)"""
         m = Manifest("test_gen_manifest_policy")
         self._gen_manifest_policy(m)
 
     def test_gen_manifest_policy_templates_system(self):
-        '''Test gen_manifest_policy (system template)'''
+        """Test gen_manifest_policy (system template)"""
         m = Manifest("test_gen_manifest_policy")
         m.add_template(self.test_template)
         self._gen_manifest_policy(m)
 
     def test_gen_manifest_policy_templates_system_noprefix(self):
-        '''Test gen_manifest_policy (system template, no security prefix)'''
+        """Test gen_manifest_policy (system template, no security prefix)"""
         m = Manifest("test_gen_manifest_policy")
         m.add_template(self.test_template)
         self._gen_manifest_policy(m, use_security_prefix=False)
 
     def test_gen_manifest_abs_path_template(self):
-        '''Test gen_manifest_policy (abs path template)'''
+        """Test gen_manifest_policy (abs path template)"""
         m = Manifest("test_gen_manifest_policy")
         m.add_template("/etc/shadow")
         try:
@@ -1468,10 +1476,10 @@ POLICYGROUPS_DIR="%s/templates"
             return
         except Exception:
             raise
-        raise Exception ("abs path template name should be invalid")
+        raise Exception("abs path template name should be invalid")
 
     def test_gen_manifest_escape_path_templates(self):
-        '''Test gen_manifest_policy (esc path template)'''
+        """Test gen_manifest_policy (esc path template)"""
         m = Manifest("test_gen_manifest_policy")
         m.add_template("../../../../../../../../etc/shadow")
         try:
@@ -1480,10 +1488,10 @@ POLICYGROUPS_DIR="%s/templates"
             return
         except Exception:
             raise
-        raise Exception ("../ template name should be invalid")
+        raise Exception("../ template name should be invalid")
 
     def test_gen_manifest_policy_templates_nonexistent(self):
-        '''Test gen manifest policy (nonexistent template)'''
+        """Test gen manifest policy (nonexistent template)"""
         m = Manifest("test_gen_manifest_policy")
         m.add_template("nonexistent")
         try:
@@ -1492,10 +1500,10 @@ POLICYGROUPS_DIR="%s/templates"
             return
         except Exception:
             raise
-        raise Exception ("template should be invalid")
+        raise Exception("template should be invalid")
 
     def test_gen_manifest_policy_comment(self):
-        '''Test gen manifest policy (comment)'''
+        """Test gen manifest policy (comment)"""
         s = "test comment"
         m = Manifest("test_gen_manifest_policy")
         m.add_comment(s)
@@ -1505,7 +1513,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_gen_manifest_policy_author(self):
-        '''Test gen manifest policy (author)'''
+        """Test gen manifest policy (author)"""
         s = "Archibald Poindexter"
         m = Manifest("test_gen_manifest_policy")
         m.add_author(s)
@@ -1515,7 +1523,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_gen_manifest_policy_copyright(self):
-        '''Test genpolicy (copyright)'''
+        """Test genpolicy (copyright)"""
         s = "2112/01/01"
         m = Manifest("test_gen_manifest_policy")
         m.add_copyright(s)
@@ -1525,7 +1533,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_gen_manifest_policy_policygroups(self):
-        '''Test gen manifest policy (single policygroup)'''
+        """Test gen manifest policy (single policygroup)"""
         groups = self.test_policygroup
         m = Manifest("test_gen_manifest_policy")
         m.add_policygroups(groups)
@@ -1537,7 +1545,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_gen_manifest_policy_policygroups_multiple(self):
-        '''Test genpolicy (multiple policygroups)'''
+        """Test genpolicy (multiple policygroups)"""
         test_policygroup2 = "test-policygroup2"
         contents = '''
   # %s
@@ -1561,7 +1569,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_gen_manifest_policy_policygroups_nonexistent(self):
-        '''Test gen manifest policy (nonexistent policygroup)'''
+        """Test gen manifest policy (nonexistent policygroup)"""
         groups = "nonexistent"
         m = Manifest("test_gen_manifest_policy")
         m.add_policygroups(groups)
@@ -1571,10 +1579,10 @@ POLICYGROUPS_DIR="%s/templates"
             return
         except Exception:
             raise
-        raise Exception ("policygroup should be invalid")
+        raise Exception("policygroup should be invalid")
 
     def test_gen_manifest_policy_templatevar(self):
-        '''Test gen manifest policy (template-var single)'''
+        """Test gen manifest policy (template-var single)"""
         m = Manifest("test_gen_manifest_policy")
         m.add_template_variable("FOO", "bar")
         p = self._gen_manifest_policy(m)
@@ -1584,7 +1592,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_gen_manifest_policy_templatevar_multiple(self):
-        '''Test gen manifest policy (template-var multiple)'''
+        """Test gen manifest policy (template-var multiple)"""
         variables = [["FOO", "bar"], ["BAR", "baz"]]
         m = Manifest("test_gen_manifest_policy")
         for s in variables:
@@ -1598,25 +1606,26 @@ POLICYGROUPS_DIR="%s/templates"
             self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
     def test_gen_manifest_policy_invalid_keys(self):
-        '''Test gen manifest policy (invalid keys)'''
-        keys = ['config_file',
-                'debug',
-                'help',
-                'list-templates',
-                'list_templates',
-                'show-template',
-                'show_template',
-                'list-policy-groups',
-                'list_policy_groups',
-                'show-policy-group',
-                'show_policy_group',
-                'templates-dir',
-                'templates_dir',
-                'policy-groups-dir',
-                'policy_groups_dir',
-                'nonexistent',
-                'no_verify',
-               ]
+        """Test gen manifest policy (invalid keys)"""
+        keys = [
+            'config_file',
+            'debug',
+            'help',
+            'list-templates',
+            'list_templates',
+            'show-template',
+            'show_template',
+            'list-policy-groups',
+            'list_policy_groups',
+            'show-policy-group',
+            'show_policy_group',
+            'templates-dir',
+            'templates_dir',
+            'policy-groups-dir',
+            'policy_groups_dir',
+            'nonexistent',
+            'no_verify',
+        ]
 
         args = self.full_args
         args.append("--manifest=/dev/null")
@@ -1630,10 +1639,10 @@ POLICYGROUPS_DIR="%s/templates"
                 easyprof.parse_manifest(j, self.options)
             except AppArmorException:
                 continue
-            raise Exception ("'%s' should be invalid" % k)
+            raise Exception("'%s' should be invalid" % k)
 
     def test_gen_manifest(self):
-        '''Test gen_manifest'''
+        """Test gen_manifest"""
         #  this should come from manpage
         m = '''{
   "security": {
@@ -1689,7 +1698,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertEqual(m, man_new)
 
     def test_gen_manifest_ubuntu(self):
-        '''Test gen_manifest (ubuntu)'''
+        """Test gen_manifest (ubuntu)"""
         # this should be based on the manpage (but use existing policy_groups
         # and template
         m = '''{
@@ -1729,7 +1738,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertEqual(m, man_new)
 
     def test_parse_manifest_no_version(self):
-        '''Test parse_manifest (vendor with no version)'''
+        """Test parse_manifest (vendor with no version)"""
         #  this should come from manpage
         m = '''{
   "security": {
@@ -1758,10 +1767,10 @@ POLICYGROUPS_DIR="%s/templates"
             easyprof.AppArmorEasyProfile(binary, self.options)
         except AppArmorException:
             return
-        raise Exception ("Should have failed on missing version")
+        raise Exception("Should have failed on missing version")
 
     def test_parse_manifest_no_vendor(self):
-        '''Test parse_manifest (version with no vendor)'''
+        """Test parse_manifest (version with no vendor)"""
         #  this should come from manpage
         m = '''{
   "security": {
@@ -1790,10 +1799,10 @@ POLICYGROUPS_DIR="%s/templates"
             easyprof.AppArmorEasyProfile(binary, self.options)
         except AppArmorException:
             return
-        raise Exception ("Should have failed on missing vendor")
+        raise Exception("Should have failed on missing vendor")
 
     def test_parse_manifest_multiple(self):
-        '''Test parse_manifest_multiple'''
+        """Test parse_manifest_multiple"""
         m = '''{
   "security": {
     "profiles": {
@@ -1856,7 +1865,6 @@ POLICYGROUPS_DIR="%s/templates"
             easyp.gen_manifest(params)
             easyp.gen_policy(**params)
 
-
 # verify manifest tests
     def _verify_manifest(self, m, expected, invalid=False):
         args = self.full_args
@@ -1870,12 +1878,12 @@ POLICYGROUPS_DIR="%s/templates"
             raise
         params = easyprof.gen_policy_params(binary, options)
         if expected:
-            self.assertTrue(easyprof.verify_manifest(params, args), "params=%s\nmanifest=%s" % (params,m))
+            self.assertTrue(easyprof.verify_manifest(params, args), "params=%s\nmanifest=%s" % (params, m))
         else:
-            self.assertFalse(easyprof.verify_manifest(params, args), "params=%s\nmanifest=%s" % (params,m))
+            self.assertFalse(easyprof.verify_manifest(params, args), "params=%s\nmanifest=%s" % (params, m))
 
     def test_verify_manifest_full(self):
-        '''Test verify_manifest (full)'''
+        """Test verify_manifest (full)"""
         m = '''{
   "security": {
     "profiles": {
@@ -1904,7 +1912,7 @@ POLICYGROUPS_DIR="%s/templates"
         self._verify_manifest(m, expected=True)
 
     def test_verify_manifest_full_bad(self):
-        '''Test verify_manifest (full bad)'''
+        """Test verify_manifest (full bad)"""
         m = '''{
   "security": {
     "profiles": {
@@ -1950,7 +1958,7 @@ POLICYGROUPS_DIR="%s/templates"
         self._verify_manifest(m, expected=False, invalid=True)
 
     def test_verify_manifest_binary(self):
-        '''Test verify_manifest (binary in /usr)'''
+        """Test verify_manifest (binary in /usr)"""
         m = '''{
   "security": {
    "profiles": {
@@ -1964,7 +1972,7 @@ POLICYGROUPS_DIR="%s/templates"
         self._verify_manifest(m, expected=True)
 
     def test_verify_manifest_profile_profile_name_bad(self):
-        '''Test verify_manifest (bad profile_name)'''
+        """Test verify_manifest (bad profile_name)"""
         m = '''{
   "security": {
    "profiles": {
@@ -1990,7 +1998,7 @@ POLICYGROUPS_DIR="%s/templates"
         self._verify_manifest(m, expected=False)
 
     def test_verify_manifest_profile_profile_name(self):
-        '''Test verify_manifest (profile_name)'''
+        """Test verify_manifest (profile_name)"""
         m = '''{
   "security": {
    "profiles": {
@@ -2004,7 +2012,7 @@ POLICYGROUPS_DIR="%s/templates"
         self._verify_manifest(m, expected=True)
 
     def test_verify_manifest_profile_abstractions(self):
-        '''Test verify_manifest (abstractions)'''
+        """Test verify_manifest (abstractions)"""
         m = '''{
   "security": {
    "profiles": {
@@ -2021,7 +2029,7 @@ POLICYGROUPS_DIR="%s/templates"
         self._verify_manifest(m, expected=True)
 
     def test_verify_manifest_profile_abstractions_bad(self):
-        '''Test verify_manifest (bad abstractions)'''
+        """Test verify_manifest (bad abstractions)"""
         m = '''{
   "security": {
    "profiles": {
@@ -2038,7 +2046,7 @@ POLICYGROUPS_DIR="%s/templates"
         self._verify_manifest(m, expected=False)
 
     def test_verify_manifest_profile_template_var(self):
-        '''Test verify_manifest (good template_var)'''
+        """Test verify_manifest (good template_var)"""
         m = '''{
   "security": {
    "profiles": {
@@ -2057,7 +2065,7 @@ POLICYGROUPS_DIR="%s/templates"
         self._verify_manifest(m, expected=True)
 
     def test_verify_manifest_profile_template_var_bad(self):
-        '''Test verify_manifest (bad template_var)'''
+        """Test verify_manifest (bad template_var)"""
         for v in ('"VAR1": "f*o"',
                   '"VAR2": "*foo"',
                   '"VAR3": "fo*"',
@@ -2066,7 +2074,7 @@ POLICYGROUPS_DIR="%s/templates"
                   '"VAR6": "b}ar"',
                   '"VAR7": "bar[0-9]"',
                   '"VAR8": "b{ar"',
-                  '"VAR9": "foo/bar"' # this is valid, but potentially unsafe
+                  '"VAR9": "foo/bar"'  # this is valid, but potentially unsafe
                   ):
             m = '''{
   "security": {
@@ -2084,7 +2092,7 @@ POLICYGROUPS_DIR="%s/templates"
             self._verify_manifest(m, expected=False)
 
     def test_manifest_invalid(self):
-        '''Test invalid manifest (parse error)'''
+        """Test invalid manifest (parse error)"""
         m = '''{
   "security": {
    "com.example.foo": {
@@ -2097,7 +2105,7 @@ POLICYGROUPS_DIR="%s/templates"
         self._verify_manifest(m, expected=False, invalid=True)
 
     def test_manifest_invalid2(self):
-        '''Test invalid manifest (profile_name is not key)'''
+        """Test invalid manifest (profile_name is not key)"""
         m = '''{
   "security": {
     "binary": "/opt/com.example/foo/**",
@@ -2110,7 +2118,7 @@ POLICYGROUPS_DIR="%s/templates"
         self._verify_manifest(m, expected=False, invalid=True)
 
     def test_manifest_invalid3(self):
-        '''Test invalid manifest (profile_name in dict)'''
+        """Test invalid manifest (profile_name in dict)"""
         m = '''{
   "security": {
     "binary": "/opt/com.example/foo/**",
@@ -2124,7 +2132,7 @@ POLICYGROUPS_DIR="%s/templates"
         self._verify_manifest(m, expected=False, invalid=True)
 
     def test_manifest_invalid4(self):
-        '''Test invalid manifest (bad path in template var)'''
+        """Test invalid manifest (bad path in template var)"""
         for v in ('"VAR1": "/tmp/../etc/passwd"',
                   '"VAR2": "./"',
                   '"VAR3": "foo\"bar"',
@@ -2153,12 +2161,11 @@ POLICYGROUPS_DIR="%s/templates"
             except AppArmorException:
                 return
 
-            raise Exception ("Should have failed with invalid variable declaration")
-
+            raise Exception("Should have failed with invalid variable declaration")
 
 # policy version tests
     def test_policy_vendor_manifest_nonexistent(self):
-        '''Test policy vendor via manifest (nonexistent)'''
+        """Test policy vendor via manifest (nonexistent)"""
         m = '''{
   "security": {
    "profiles": {
@@ -2182,10 +2189,10 @@ POLICYGROUPS_DIR="%s/templates"
         except AppArmorException:
             return
 
-        raise Exception ("Should have failed with non-existent directory")
+        raise Exception("Should have failed with non-existent directory")
 
     def test_policy_version_manifest(self):
-        '''Test policy version via manifest (good)'''
+        """Test policy version via manifest (good)"""
         policy_vendor = "somevendor"
         policy_version = "1.0"
         policy_subdir = "%s/%s" % (policy_vendor, policy_version)
@@ -2225,7 +2232,7 @@ POLICYGROUPS_DIR="%s/templates"
         easyp.gen_policy(**params)
 
     def test_policy_vendor_version_args(self):
-        '''Test policy vendor and version via command line args (good)'''
+        """Test policy vendor and version via command line args (good)"""
         policy_version = "1.0"
         policy_vendor = "somevendor"
         policy_subdir = "%s/%s" % (policy_vendor, policy_version)
@@ -2246,19 +2253,19 @@ POLICYGROUPS_DIR="%s/templates"
 
         tdir = os.path.join(self.tmpdir, 'templates', policy_subdir)
         for t in easyp.get_templates():
-            self.assertTrue(t.startswith(tdir), \
+            self.assertTrue(t.startswith(tdir),
                             "'%s' does not start with '%s'" % (t, tdir))
 
         pdir = os.path.join(self.tmpdir, 'policygroups', policy_subdir)
         for p in easyp.get_policy_groups():
-            self.assertTrue(p.startswith(pdir), \
+            self.assertTrue(p.startswith(pdir),
                             "'%s' does not start with '%s'" % (p, pdir))
 
         params = easyprof.gen_policy_params(self.binary, self.options)
         easyp.gen_policy(**params)
 
     def test_policy_vendor_args_nonexistent(self):
-        '''Test policy vendor via command line args (nonexistent)'''
+        """Test policy vendor via command line args (nonexistent)"""
         policy_vendor = "nonexistent"
         policy_version = "1.0"
         args = self.full_args
@@ -2272,16 +2279,16 @@ POLICYGROUPS_DIR="%s/templates"
         except AppArmorException:
             return
 
-        raise Exception ("Should have failed with non-existent directory")
+        raise Exception("Should have failed with non-existent directory")
 
     def test_policy_version_args_bad(self):
-        '''Test policy version via command line args (bad)'''
+        """Test policy version via command line args (bad)"""
         bad = [
-               "../../../../../../etc",
-               "notanumber",
-               "v1.0a",
-               "-1",
-              ]
+            "../../../../../../etc",
+            "notanumber",
+            "v1.0a",
+            "-1",
+        ]
         for policy_version in bad:
             args = self.full_args
             args.append("--policy-version=%s" % policy_version)
@@ -2294,15 +2301,15 @@ POLICYGROUPS_DIR="%s/templates"
             except AppArmorException:
                 continue
 
-            raise Exception ("Should have failed with bad version")
+            raise Exception("Should have failed with bad version")
 
     def test_policy_vendor_args_bad(self):
-        '''Test policy vendor via command line args (bad)'''
+        """Test policy vendor via command line args (bad)"""
         bad = [
-               "../../../../../../etc",
-               "vendor with space",
-               "semicolon;isbad",
-              ]
+            "../../../../../../etc",
+            "vendor with space",
+            "semicolon;isbad",
+        ]
         for policy_vendor in bad:
             args = self.full_args
             args.append("--policy-vendor=%s" % policy_vendor)
@@ -2315,11 +2322,11 @@ POLICYGROUPS_DIR="%s/templates"
             except AppArmorException:
                 continue
 
-            raise Exception ("Should have failed with bad vendor")
+            raise Exception("Should have failed with bad vendor")
 
 # output_directory tests
     def test_output_directory_multiple(self):
-        '''Test output_directory (multiple)'''
+        """Test output_directory (multiple)"""
         files = dict()
         files["com.example.foo"] = "com.example.foo"
         files["com.ubuntu.developer.myusername.MyCoolApp"] = "com.ubuntu.developer.myusername.MyCoolApp"
@@ -2400,7 +2407,7 @@ POLICYGROUPS_DIR="%s/templates"
             self.assertTrue(os.path.exists(f), "Could not find '%s'" % f)
 
     def test_output_directory_single(self):
-        '''Test output_directory (single)'''
+        """Test output_directory (single)"""
         files = dict()
         files["com.example.foo"] = "com.example.foo"
         m = '''{
@@ -2454,11 +2461,8 @@ POLICYGROUPS_DIR="%s/templates"
             f = os.path.join(out_dir, fn)
             self.assertTrue(os.path.exists(f), "Could not find '%s'" % f)
 
-
-
-
     def test_output_directory_invalid(self):
-        '''Test output_directory (output directory exists as file)'''
+        """Test output_directory (output directory exists as file)"""
         files = dict()
         files["usr.bin.baz"] = "/usr/bin/baz"
         m = '''{
@@ -2479,7 +2483,6 @@ POLICYGROUPS_DIR="%s/templates"
   }
 }''' % files["usr.bin.baz"]
 
-
         out_dir = os.path.join(self.tmpdir, "output")
         open(out_dir, 'w').close()
 
@@ -2493,10 +2496,10 @@ POLICYGROUPS_DIR="%s/templates"
             easyp.output_policy(params, dir=out_dir)
         except AppArmorException:
             return
-        raise Exception ("Should have failed with 'is not a directory'")
+        raise Exception("Should have failed with 'is not a directory'")
 
     def test_output_directory_invalid_params(self):
-        '''Test output_directory (no binary or profile_name)'''
+        """Test output_directory (no binary or profile_name)"""
         files = dict()
         files["usr.bin.baz"] = "/usr/bin/baz"
         m = '''{
@@ -2530,10 +2533,10 @@ POLICYGROUPS_DIR="%s/templates"
             easyp.output_policy(params, dir=out_dir)
         except AppArmorException:
             return
-        raise Exception ("Should have failed with 'Must specify binary and/or profile name'")
+        raise Exception("Should have failed with 'Must specify binary and/or profile name'")
 
     def test_output_directory_invalid2(self):
-        '''Test output_directory (profile exists)'''
+        """Test output_directory (profile exists)"""
         files = dict()
         files["usr.bin.baz"] = "/usr/bin/baz"
         m = '''{
@@ -2568,10 +2571,10 @@ POLICYGROUPS_DIR="%s/templates"
             easyp.output_policy(params, dir=out_dir)
         except AppArmorException:
             return
-        raise Exception ("Should have failed with 'already exists'")
+        raise Exception("Should have failed with 'already exists'")
 
     def test_output_directory_args(self):
-        '''Test output_directory (args)'''
+        """Test output_directory (args)"""
         files = dict()
         files["usr.bin.baz"] = "/usr/bin/baz"
 
@@ -2597,82 +2600,88 @@ POLICYGROUPS_DIR="%s/templates"
 # utility classes
 #
     def test_valid_profile_name(self):
-        '''Test valid_profile_name'''
-        names = ['foo',
-                 'com.example.foo',
-                 '/usr/bin/foo',
-                 'com.example.app_myapp_1:2.3+ab12~foo',
-                ]
+        """Test valid_profile_name"""
+        names = [
+            'foo',
+            'com.example.foo',
+            '/usr/bin/foo',
+            'com.example.app_myapp_1:2.3+ab12~foo',
+        ]
         for n in names:
             self.assertTrue(easyprof.valid_profile_name(n), "'%s' should be valid" % n)
 
     def test_valid_profile_name_invalid(self):
-        '''Test valid_profile_name (invalid)'''
-        names = ['fo/o',
-                 '/../../etc/passwd',
-                 '../../etc/passwd',
-                 './../etc/passwd',
-                 './etc/passwd',
-                 '/usr/bin//foo',
-                 '/usr/bin/./foo',
-                 'foo`',
-                 'foo!',
-                 'foo@',
-                 'foo$',
-                 'foo#',
-                 'foo%',
-                 'foo^',
-                 'foo&',
-                 'foo*',
-                 'foo(',
-                 'foo)',
-                 'foo=',
-                 'foo{',
-                 'foo}',
-                 'foo[',
-                 'foo]',
-                 'foo|',
-                 'foo/',
-                 'foo\\',
-                 'foo;',
-                 'foo\'',
-                 'foo"',
-                 'foo<',
-                 'foo>',
-                 'foo?',
-                 'foo\/',
-                 'foo,',
-                 '_foo',
-                ]
+        """Test valid_profile_name (invalid)"""
+        names = [
+            'fo/o',
+            '/../../etc/passwd',
+            '../../etc/passwd',
+            './../etc/passwd',
+            './etc/passwd',
+            '/usr/bin//foo',
+            '/usr/bin/./foo',
+            'foo`',
+            'foo!',
+            'foo@',
+            'foo$',
+            'foo#',
+            'foo%',
+            'foo^',
+            'foo&',
+            'foo*',
+            'foo(',
+            'foo)',
+            'foo=',
+            'foo{',
+            'foo}',
+            'foo[',
+            'foo]',
+            'foo|',
+            'foo/',
+            'foo\\',
+            'foo;',
+            "foo'",
+            'foo"',
+            'foo<',
+            'foo>',
+            'foo?',
+            'foo\/',
+            'foo,',
+            '_foo',
+        ]
         for n in names:
             self.assertFalse(easyprof.valid_profile_name(n), "'%s' should be invalid" % n)
 
     def test_valid_path(self):
-        '''Test valid_path'''
-        names = ['/bin/bar',
-                 '/etc/apparmor.d/com.example.app_myapp_1:2.3+ab12~foo',
-                ]
-        names_rel = ['bin/bar',
-                     'apparmor.d/com.example.app_myapp_1:2.3+ab12~foo',
-                     'com.example.app_myapp_1:2.3+ab12~foo',
-                    ]
+        """Test valid_path"""
+        names = [
+            '/bin/bar',
+            '/etc/apparmor.d/com.example.app_myapp_1:2.3+ab12~foo',
+        ]
+        names_rel = [
+            'bin/bar',
+            'apparmor.d/com.example.app_myapp_1:2.3+ab12~foo',
+            'com.example.app_myapp_1:2.3+ab12~foo',
+        ]
         for n in names:
             self.assertTrue(easyprof.valid_path(n), "'%s' should be valid" % n)
         for n in names_rel:
             self.assertTrue(easyprof.valid_path(n, relative_ok=True), "'%s' should be valid" % n)
 
     def test_zz_valid_path_invalid(self):
-        '''Test valid_path (invalid)'''
-        names = ['/bin//bar',
-                 'bin/bar',
-                 '/../etc/passwd',
-                 './bin/bar',
-                 './',
-                ]
-        names_rel = ['bin/../bar',
-                     'apparmor.d/../passwd',
-                     'com.example.app_"myapp_1:2.3+ab12~foo',
-                    ]
+        """Test valid_path (invalid)"""
+        names = [
+            '/bin//bar',
+            'bin/bar',
+            '/../etc/passwd',
+            './bin/bar',
+            './',
+        ]
+        names_rel = [
+            'bin/../bar',
+            'apparmor.d/../passwd',
+            'com.example.app_"myapp_1:2.3+ab12~foo',
+        ]
         for n in names:
             self.assertFalse(easyprof.valid_path(n, relative_ok=False), "'%s' should be invalid" % n)
         for n in names_rel:

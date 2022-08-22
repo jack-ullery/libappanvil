@@ -60,6 +60,7 @@ qualifiers = ("", "owner")
 
 count = 0
 
+
 def gen_list():
     output = []
     for trans in trans_types:
@@ -71,14 +72,16 @@ def gen_list():
 
     return output
 
+
 def test_gen_list():
-    ''' test if gen_list returns the expected output '''
+    """test if gen_list returns the expected output"""
 
     expected = "pix pux px Pix Pux Px cix cux cx Cix Cux Cx ux ix".split()
     actual = gen_list()
 
     if actual != expected:
         raise Exception("gen_list produced unexpected result, expected %s, got %s" % (expected, actual))
+
 
 def build_rule(leading, qual, name, perm, target):
     rule = ''
@@ -88,14 +91,15 @@ def build_rule(leading, qual, name, perm, target):
     else:
         rule += "\t%s %s %s" % (qual, name, perm)
 
-    if target != "":
+    if target:
         rule += " -> %s" % target
 
     rule += ",\n"
 
     return rule
 
-def gen_file (name, xres, leading1, qual1, rule1, perm1, target1, leading2, qual2, rule2, perm2, target2):
+
+def gen_file(name, xres, leading1, qual1, rule1, perm1, target1, leading2, qual2, rule2, perm2, target2):
     global count
     count += 1
 
@@ -144,15 +148,19 @@ def gen_files(name, rule1, rule2, default):
 
                             gen_file(file, xres, 0, q, rule1, i, t, 0, r, rule2, j, u)
 
+
 def gen_conflicting_x():
     gen_files("conflict", "/bin/cat", "/bin/cat", "FAIL")
+
 
 def gen_overlap_re_exact():
     gen_files("exact", "/bin/cat", "/bin/*", "PASS")
 
+
 # we currently don't support this, once supported change to "PASS"
 def gen_dominate_re_re():
     gen_files("dominate", "/bin/*", "/bin/**", "FAIL")
+
 
 def gen_ambiguous_re_re():
     gen_files("ambiguous", "/bin/a*", "/bin/*b", "FAIL")
@@ -160,7 +168,7 @@ def gen_ambiguous_re_re():
 
 # test that rules that lead with permissions don't conflict with
 # the same rule using trailing permissions.
-def gen_leading_perms (name, rule1, rule2):
+def gen_leading_perms(name, rule1, rule2):
     perms = gen_list()
 
     for i in perms:
@@ -170,6 +178,7 @@ def gen_leading_perms (name, rule1, rule2):
             for q in qualifiers:
                 file = prefix_leading + '/' + name + '-' + q + i + t + ".sd"
                 gen_file(file, "PASS", 0, q, rule1, i, t, 1, q, rule2, i, t)
+
 
 # test for rules with leading safe or unsafe keywords.
 # check they are equivalent to their counterpart,
@@ -216,4 +225,4 @@ gen_safe_perms("overlap", "PASS", "inv", "/*", "/bin/cat")
 gen_safe_perms("dominate", "FAIL", "inv", "/**", "/*")
 gen_safe_perms("ambiguous", "FAIL", "inv", "/a*", "/*b")
 
-print ("Generated %s xtransition interaction tests" % count)
+print("Generated %s xtransition interaction tests" % count)

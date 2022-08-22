@@ -9,28 +9,25 @@
 #
 # ------------------------------------------------------------------
 
-import unittest
-from common_test import AATest, setup_all_loops, setup_aa
-
-# Imports for test code
+import atexit
 import io
 import os
 import sys
+import unittest
 
-# Imports for AppArmor
-import atexit
 import apparmor.aa as aa
 import apparmor.ui as aaui
 from apparmor.common import DebugLogger
 from apparmor.fail import enable_aa_exception_handler
 from apparmor.translations import init_translation
+from common_test import AATest, setup_aa, setup_all_loops
 
 
 class AACliBootstrapTest(AATest):
-    '''
+    """
     Generic test of the core AppArmor Python libraries that all command
     line tools rely on.
-    '''
+    """
     def AASetup(self):
         # Redirect sys.stdout to a buffer
         sys.stdout = io.StringIO()
@@ -67,7 +64,9 @@ class AACliBootstrapTest(AATest):
         aaui.set_json_mode()
         sys.stdout.getvalue()
         aaui.UI_Info('Test string')
-        self.assertEqual(sys.stdout.getvalue(), '{"dialog": "apparmor-json-version","data": "2.12"}\n{"dialog": "info","data": "Test string"}\n')
+        self.assertEqual(
+            sys.stdout.getvalue(),
+            '{"dialog": "apparmor-json-version","data": "2.12"}\n{"dialog": "info","data": "Test string"}\n')
         aaui.set_text_mode()
 
 

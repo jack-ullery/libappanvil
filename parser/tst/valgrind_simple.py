@@ -13,12 +13,13 @@
 # TODO
 # - finish adding suppressions for valgrind false positives
 
-from argparse import ArgumentParser
 import os
 import sys
 import unittest
-import testlib
+from argparse import ArgumentParser
 from tempfile import NamedTemporaryFile
+
+import testlib
 
 DEFAULT_TESTDIR = "./simple_tests/vars"
 VALGRIND_ERROR_CODE = 151
@@ -50,12 +51,14 @@ class AAParserValgrindTests(testlib.AATestTemplate):
         command.extend(parser_args)
         command.append(testname)
         rc, output = self.run_cmd(command, timeout=120)
-        self.assertNotIn(rc, failure_rc,
-                    "valgrind returned error code %d, gave the following output\n%s\ncommand run: %s" % (rc, output, " ".join(command)))
+        self.assertNotIn(
+            rc, failure_rc,
+            "valgrind returned error code %d, gave the following output\n%s\ncommand run: %s"
+            % (rc, output, " ".join(command)))
 
 
 def find_testcases(testdir):
-    '''dig testcases out of passed directory'''
+    """dig testcases out of passed directory"""
 
     for (fdir, direntries, files) in os.walk(testdir):
         for f in files:
@@ -64,7 +67,7 @@ def find_testcases(testdir):
 
 
 def create_suppressions():
-    '''generate valgrind suppressions file'''
+    """generate valgrind suppressions file"""
     with NamedTemporaryFile("w+", suffix='.suppressions', prefix='aa-parser-valgrind', delete=False) as temp_file:
         temp_file.write(VALGRIND_SUPPRESSIONS)
     return temp_file.name
@@ -121,6 +124,7 @@ def main():
         os.remove(suppression_file)
 
     return rc
+
 
 if __name__ == "__main__":
     rc = main()

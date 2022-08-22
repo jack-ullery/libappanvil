@@ -12,17 +12,16 @@
 #
 # ----------------------------------------------------------------------
 
-from apparmor.regex import RE_PROFILE_ALIAS, strip_quotes
 from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.regex import RE_PROFILE_ALIAS, strip_quotes
 from apparmor.rule import BaseRule, BaseRuleset, parse_comment, quote_if_needed
-
-# setup module translations
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 
 class AliasRule(BaseRule):
-    '''Class to handle and store a single alias rule'''
+    """Class to handle and store a single alias rule"""
 
     rule_name = 'alias'
 
@@ -61,7 +60,7 @@ class AliasRule(BaseRule):
 
     @classmethod
     def _parse(cls, raw_rule):
-        '''parse raw_rule and return AliasRule'''
+        """parse raw_rule and return AliasRule"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -73,23 +72,23 @@ class AliasRule(BaseRule):
         target = strip_quotes(matches.group('target').strip())
 
         return AliasRule(orig_path, target,
-                           audit=False, deny=False, allow_keyword=False, comment=comment)
+                         audit=False, deny=False, allow_keyword=False, comment=comment)
 
     def get_clean(self, depth=0):
-        '''return rule (in clean/default formatting)'''
+        """return rule (in clean/default formatting)"""
 
         space = '  ' * depth
 
         return '%salias %s -> %s,' % (space, quote_if_needed(self.orig_path), quote_if_needed(self.target))
 
     def is_covered_localvars(self, other_rule):
-        '''check if other_rule is covered by this rule object'''
+        """check if other_rule is covered by this rule object"""
 
         # the only way aliases can be covered are exact duplicates
         return self.is_equal_localvars(other_rule, False)
 
     def is_equal_localvars(self, rule_obj, strict):
-        '''compare if rule-specific aliass are equal'''
+        """compare if rule-specific aliass are equal"""
 
         if not type(rule_obj) == AliasRule:
             raise AppArmorBug('Passed non-alias rule: %s' % str(rule_obj))
@@ -109,6 +108,6 @@ class AliasRule(BaseRule):
             _('Alias'), '%s -> %s' % (self.orig_path, self.target),
         ]
 
+
 class AliasRuleset(BaseRuleset):
-    '''Class to handle and store a collection of alias rules'''
-    pass
+    """Class to handle and store a collection of alias rules"""

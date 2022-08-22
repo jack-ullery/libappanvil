@@ -13,6 +13,7 @@
 import ctypes
 import os
 import unittest
+
 import LibAppArmor as libapparmor
 
 TESTDIR = "../../../testsuite/test_multi"
@@ -75,11 +76,11 @@ class AAPythonBindingsTests(unittest.TestCase):
 
         expected = self.parse_output_file(outfile)
         self.assertEqual(expected, record,
-                          "expected records did not match\n" +
-                          "expected = %s\nactual = %s" % (expected, record))
+                         "expected records did not match\n"
+                         "expected = %s\nactual = %s" % (expected, record))
 
     def parse_output_file(self, outfile):
-        '''parse testcase .out file and return dict'''
+        """parse testcase .out file and return dict"""
 
         output = dict()
         with open(os.path.join(TESTDIR, outfile), 'r') as f:
@@ -105,7 +106,7 @@ class AAPythonBindingsTests(unittest.TestCase):
         return output
 
     def create_record_dict(self, record):
-        '''parse the swig created record and construct a dict from it'''
+        """parse the swig created record and construct a dict from it"""
 
         new_record = dict()
         for key in [x for x in dir(record) if not (x.startswith('_') or x == 'this')]:
@@ -128,7 +129,7 @@ class AAPythonBindingsTests(unittest.TestCase):
 
 
 def find_testcases(testdir):
-    '''dig testcases out of passed directory'''
+    """dig testcases out of passed directory"""
 
     for f in os.listdir(testdir):
         if f.endswith(".in"):
@@ -142,6 +143,7 @@ def main():
         stub_test.__doc__ = "test %s" % (f)
         setattr(AAPythonBindingsTests, 'test_%s' % (f), stub_test)
     return unittest.main(verbosity=2)
+
 
 if __name__ == "__main__":
     main()

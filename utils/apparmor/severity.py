@@ -12,7 +12,9 @@
 #
 # ----------------------------------------------------------------------
 import re
-from apparmor.common import AppArmorException, open_file_read, warn, convert_regexp  # , msg, error, debug
+
+from apparmor.common import AppArmorException, convert_regexp, open_file_read, warn  # , debug, error, msg
+
 
 class Severity:
     def __init__(self, dbname=None, default_rank=10):
@@ -33,17 +35,21 @@ class Severity:
         with open_file_read(dbname) as database:  # open(dbname, 'r')
             for lineno, line in enumerate(database, start=1):
                 line = line.strip()  # or only rstrip and lstrip?
-                if line == '' or line.startswith('#'):
+                if not line or line.startswith('#'):
                     continue
                 if line.startswith('/'):
                     try:
                         path, read, write, execute = line.split()
                         read, write, execute = int(read), int(write), int(execute)
                     except ValueError:
-                        raise AppArmorException("Insufficient values for permissions in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
+                        raise AppArmorException(
+                            "Insufficient values for permissions in file: %s\n\t[Line %s]: %s"
+                            % (dbname, lineno, line))
                     else:
                         if read not in range(0, 11) or write not in range(0, 11) or execute not in range(0, 11):
-                            raise AppArmorException("Inappropriate values for permissions in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
+                            raise AppArmorException(
+                                "Inappropriate values for permissions in file: %s\n\t[Line %s]: %s"
+                                % (dbname, lineno, line))
                         path = path.lstrip('/')
                         if '*' not in path:
                             self.severity['FILES'][path] = {'r': read, 'w': write, 'x': execute}
@@ -65,11 +71,13 @@ class Severity:
                         severity = int(severity)
                     except ValueError:
                         error_message = 'No severity value present in file: %s\n\t[Line %s]: %s' % (dbname, lineno, line)
-                        #error(error_message)
+                        # error(error_message)
                         raise AppArmorException(error_message)  # from None
                     else:
                         if severity not in range(0, 11):
-                            raise AppArmorException("Inappropriate severity value present in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
+                            raise AppArmorException(
+                                "Inappropriate severity value present in file: %s\n\t[Line %s]: %s"
+                                % (dbname, lineno, line))
                         self.severity['CAPABILITIES'][resource] = severity
                 else:
                     raise AppArmorException("Unexpected line in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
@@ -89,14 +97,14 @@ class Severity:
         """Returns the rank for the given path"""
         if '@' in path:    # path contains variable
             return self.handle_variable_rank(path, mode)
-        elif path[0] == '/':    # file resource
+        elif path.startswith('/'):    # file resource
             return self.handle_file(path, mode)
         else:
             raise AppArmorException("Unexpected path input: %s" % path)
 
     def check_subtree(self, tree, mode, sev, segments):
         """Returns the max severity from the regex tree"""
-        if len(segments) == 0:
+        if not segments:
             first = ''
         else:
             first = segments[0]
@@ -146,7 +154,7 @@ class Severity:
         if matches:
             rank = self.severity['DEFAULT_RANK']
             variable = '@{%s}' % matches.groups()[0]
-            #variables = regex_variable.findall(resource)
+            # variables = regex_variable.findall(resource)
             for replacement in self.severity['VARIABLES'][variable]:
                 resource_replaced = self.variable_replace(variable, replacement, resource)
                 rank_new = self.handle_variable_rank(resource_replaced, mode)
@@ -167,12 +175,12 @@ class Severity:
             leading = True
         if resource.find(variable + "/") != -1 and resource.find(variable + "//") == -1:
             trailing = True
-        if replacement[0] == '/' and replacement[:2] != '//' and leading:  # finds if the replacement has leading / or not
+        if replacement.startswith('/') and not replacement.startswith('//') and leading:  # finds if the replacement has leading / or not
             replacement = replacement[1:]
-        if replacement[-1] == '/' and replacement[-2:] != '//' and trailing:
+        if replacement.endswith('/') and not replacement.endswith('//') and trailing:
             replacement = replacement[:-1]
         return resource.replace(variable, replacement)
 
     def set_variables(self, vars):
-        ''' Set the profile variables to use for rating the severity '''
+        """Set the profile variables to use for rating the severity"""
         self.severity['VARIABLES'] = vars

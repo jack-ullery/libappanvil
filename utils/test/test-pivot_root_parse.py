@@ -9,20 +9,23 @@
 #
 # ------------------------------------------------------------------
 
-import apparmor.aa as aa
 import unittest
-from common_test import AAParseTest, setup_regex_tests, setup_aa
+
+import apparmor.aa as aa
+from common_test import AAParseTest, setup_aa, setup_regex_tests
+
 
 class AAParsePivotRootTest(AAParseTest):
     def setUp(self):
         self.parse_function = aa.parse_pivot_root_rule
 
     tests = (
-        ('pivot_root,', 'pivot_root base keyword'),
-        ('pivot_root /old,', 'pivot_root oldroot rule'),
-        ('pivot_root /old /new,', 'pivot_root old and new root rule'),
+        ('pivot_root,',                             'pivot_root base keyword'),
+        ('pivot_root /old,',                        'pivot_root oldroot rule'),
+        ('pivot_root /old /new,',                   'pivot_root old and new root rule'),
         ('pivot_root /old /new -> /usr/bin/child,', 'pivot_root child rule'),
     )
+
 
 setup_aa(aa)
 if __name__ == '__main__':

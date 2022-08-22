@@ -14,10 +14,10 @@
 # ----------------------------------------------------------------------
 import unittest
 
-from apparmor.logparser import ReadLog
-
-from common_test import AATest, setup_all_loops # , setup_aa
 from apparmor.common import AppArmorException
+from apparmor.logparser import ReadLog
+from common_test import AATest, setup_all_loops  # , setup_aa
+
 
 class TestParseEvent(AATest):
     tests = ()
@@ -99,10 +99,11 @@ class TestParseEvent(AATest):
 
         self.assertIsNotNone(ReadLog.RE_LOG_ALL.search(event))
 
+
 class TestParseEventForTreeInvalid(AATest):
     tests = (
-        ('type=AVC msg=audit(1556742870.707:3614): apparmor="ALLOWED" operation="open" profile="/bin/hello" name="/dev/tty" pid=12856 comm="hello" requested_mask="wr" denied_mask="foo" fsuid=1000 ouid=0',    AppArmorException),  # invalid file permissions "foo"
-        ('type=AVC msg=audit(1556742870.707:3614): apparmor="ALLOWED" operation="open" profile="/bin/hello" name="/dev/tty" pid=12856 comm="hello" requested_mask="wr" denied_mask="wr::w" fsuid=1000 ouid=0',  AppArmorException),  # "wr::w" mixes owner and other
+        ('type=AVC msg=audit(1556742870.707:3614): apparmor="ALLOWED" operation="open" profile="/bin/hello" name="/dev/tty" pid=12856 comm="hello" requested_mask="wr" denied_mask="foo" fsuid=1000 ouid=0',   AppArmorException),  # invalid file permissions "foo"
+        ('type=AVC msg=audit(1556742870.707:3614): apparmor="ALLOWED" operation="open" profile="/bin/hello" name="/dev/tty" pid=12856 comm="hello" requested_mask="wr" denied_mask="wr::w" fsuid=1000 ouid=0', AppArmorException),  # "wr::w" mixes owner and other
     )
 
     def _fake_profile_exists(self, program):
@@ -114,6 +115,7 @@ class TestParseEventForTreeInvalid(AATest):
         parsed_event = self.parser.parse_event(params)
         with self.assertRaises(expected):
             self.parser.parse_event_for_tree(parsed_event)
+
 
 setup_all_loops(__name__)
 if __name__ == "__main__":

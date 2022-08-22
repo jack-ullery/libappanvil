@@ -3,6 +3,7 @@
 # https://github.com/pypa/setuptools/commit/1c23f5e1e4b18b50081cbabb2dea22bf345f5894
 import sys
 import sysconfig
+
 import setuptools
 
 

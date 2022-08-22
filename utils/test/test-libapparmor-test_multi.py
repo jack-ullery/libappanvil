@@ -9,20 +9,19 @@
 #
 # ------------------------------------------------------------------
 
-import unittest
-from common_test import AATest, setup_all_loops, setup_aa, read_file
-
 import os
 import sys
-from apparmor.common import hasher, open_file_read, split_name
+import unittest
 
 import apparmor.aa
+from apparmor.common import hasher, open_file_read, split_name
 from apparmor.logparser import ReadLog
 from apparmor.profile_list import ProfileList
+from common_test import AATest, read_file, setup_aa, setup_all_loops
 
 
 class TestLibapparmorTestMulti(AATest):
-    '''Parse all libraries/libapparmor/testsuite/test_multi tests and compare the result with the *.out files'''
+    """Parse all libraries/libapparmor/testsuite/test_multi tests and compare the result with the *.out files"""
 
     tests = 'invalid'  # filled by parse_test_profiles()
 
@@ -66,7 +65,7 @@ class TestLibapparmorTestMulti(AATest):
                         'src_name',  # pivotroot
                         'dbus_bus', 'dbus_interface', 'dbus_member', 'dbus_path',  # dbus
                         'peer_pid', 'peer_profile',  # dbus
-                        ):
+                ):
                     pass
                 elif parsed_items['operation'] == 'exec' and label in ('sock_type', 'family', 'protocol'):
                     pass  # XXX 'exec' + network? really?
@@ -92,29 +91,30 @@ class TestLibapparmorTestMulti(AATest):
     # list of labels that use a different name in logparser.py than in the test_multi *.out files
     # (additionally, .lower() is applied to all labels)
     label_map = {
-        'Mask':             'request_mask',
-        'Command':          'comm',
-        'Token':            'magic_token',
-        'ErrorCode':        'error_code',
-        'Network family':   'family',
-        'Socket type':      'sock_type',
-        'Local addr':       'net_local_addr',
-        'Foreign addr':     'net_foreign_addr',
-        'Local port':       'net_local_port',
-        'Foreign port':     'net_foreign_port',
-        'Audit subid':      'audit_sub_id',
-        'Attribute':        'attr',
-        'Epoch':            'time',
+        'Mask': 'request_mask',
+        'Command': 'comm',
+        'Token': 'magic_token',
+        'ErrorCode': 'error_code',
+        'Network family': 'family',
+        'Socket type': 'sock_type',
+        'Local addr': 'net_local_addr',
+        'Foreign addr': 'net_foreign_addr',
+        'Local port': 'net_local_port',
+        'Foreign port': 'net_foreign_port',
+        'Audit subid': 'audit_sub_id',
+        'Attribute': 'attr',
+        'Epoch': 'time',
     }
 
     def _parse_libapparmor_test_multi(self, file_with_path):
-        '''parse the libapparmor test_multi *.in tests and their expected result in *.out'''
+        """parse the libapparmor test_multi *.in tests and their expected result in *.out"""
 
         with open_file_read('%s.out' % file_with_path) as f_in:
             expected = f_in.readlines()
 
         if expected[0].rstrip('\n') != 'START':
-            raise Exception("%s.out doesn't have 'START' in its first line! (%s)" % ( file_with_path, expected[0]))
+            raise Exception("%s.out doesn't have 'START' in its first line! (%s)"
+                            % (file_with_path, expected[0]))
 
         expected.pop(0)
 
@@ -129,7 +129,8 @@ class TestLibapparmorTestMulti(AATest):
             exresult[label] = value.strip()
 
         if not exresult['event_type'].startswith('AA_RECORD_'):
-            raise Exception("event_type doesn't start with AA_RECORD_: %s in file %s" % (exresult['event_type'], file_with_path))
+            raise Exception("event_type doesn't start with AA_RECORD_: %s in file %s"
+                            % (exresult['event_type'], file_with_path))
 
         exresult['aamode'] = exresult['event_type'].replace('AA_RECORD_', '')
         if exresult['aamode'] == 'ALLOWED':
@@ -141,6 +142,7 @@ class TestLibapparmorTestMulti(AATest):
             exresult = None
 
         return exresult
+
 
 # tests that cause crashes or need user interaction (will be skipped)
 log_to_skip = [
@@ -180,8 +182,9 @@ log_to_profile_known_empty_log = [
     'unconfined-change_hat',  # unconfined trying to change_hat, which isn't allowed
 ]
 
+
 class TestLogToProfile(AATest):
-    '''Check if the libraries/libapparmor/testsuite/test_multi tests result in the expected profile'''
+    """Check if the libraries/libapparmor/testsuite/test_multi tests result in the expected profile"""
 
     tests = 'invalid'  # filled by parse_test_profiles()
 
@@ -215,7 +218,7 @@ def logfile_to_profile(logfile):
 
     aamode = parsed_event['aamode']
 
-    if aamode in ('AUDIT', 'STATUS', 'HINT'): # ignore some event types  # XXX maybe we shouldn't ignore AUDIT events?
+    if aamode in ('AUDIT', 'STATUS', 'HINT'):  # ignore some event types  # XXX maybe we shouldn't ignore AUDIT events?
         return None, aamode
 
     if aamode not in ('PERMITTING', 'REJECTING'):
@@ -268,18 +271,19 @@ def logfile_to_profile(logfile):
 
     if logfile.split('/')[-1][:-3] in log_to_profile_known_empty_log:
         # unfortunately this function might be called outside Unittest.TestCase, therefore we can't use assertEqual / assertNotEqual
-        if log_is_empty == False:
+        if not log_is_empty:
             raise Exception('got non-empty log for logfile in log_to_profile_known_empty_log: %s %s' % (logfile, hashlog))
     else:
-        if log_is_empty == True:
+        if log_is_empty:
             raise Exception('got empty log for logfile not in log_to_profile_known_empty_log: %s %s' % (logfile, hashlog))
 
     new_profile = apparmor.aa.serialize_profile(log_dict[aamode], profile, {})
 
     return profile, new_profile
 
+
 def find_test_multi(log_dir):
-    '''find all log sniplets in the given log_dir'''
+    """find all log sniplets in the given log_dir"""
 
     log_dir = os.path.abspath(log_dir)
 
@@ -296,6 +300,7 @@ def find_test_multi(log_dir):
                 raise Exception('Found unknown file %s in libapparmor test_multi' % file)
 
     return tests
+
 
 # if a logfile is given as parameter, print the resulting profile and exit (with $? = 42 to make sure tests break if the caller accidentally hands over a parameter)
 if __name__ == '__main__' and len(sys.argv) == 2:

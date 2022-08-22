@@ -25,8 +25,8 @@ danger_caps = ("audit_control",
 
 
 def cmd(command, input=None, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, stdin=None, timeout=None):
-    '''Try to execute given command (array) and return its stdout, or
-    return a textual error if it failed.'''
+    """Try to execute given command (array) and return its stdout, or
+    return a textual error if it failed."""
 
     try:
         sp = subprocess.Popen(command, stdin=stdin, stdout=stdout, stderr=stderr, close_fds=True, universal_newlines=True)
@@ -42,6 +42,7 @@ def cmd(command, input=None, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, s
     if outerr is None:
         outerr = ''
     return sp.returncode, out, outerr
+
 
 # get capabilities list
 (rc, output, outerr) = cmd(('../../common/list_capabilities.sh',))
@@ -66,7 +67,7 @@ af_pairs = re.sub('AF_', '', output.strip()).lower().split(",")
 for af_pair in af_pairs:
     af_name = af_pair.lstrip().split(" ")[0]
     # skip max af name definition
-    if len(af_name) > 0 and af_name != "max":
+    if af_name and af_name != "max":
         af_names.append(af_name)
 
 # TODO: does a "debug" flag exist? Listed in apparmor.vim.in sdFlagKey,
@@ -149,7 +150,7 @@ filerule = filerule + create_file_rule('sdEntryIX',  r'(r|m|k|ix)+',  'ix(mr) - 
 filerule = filerule + create_file_rule('sdEntryM',   r'(r|m|k)+',  'mr - mmap with PROT_EXEC')
 
 filerule = filerule + create_file_rule('sdEntryM',   r'(r|m|k|x)+',  'special case: deny x is allowed (does not need to be ix, px, ux or cx)', 1)
-#syn match  sdEntryM /@@DENYFILE@@(r|m|k|x)+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
+# syn match  sdEntryM /@@DENYFILE@@(r|m|k|x)+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
 
 
 filerule = filerule + create_file_rule('sdError',    r'\S*(w\S*a|a\S*w)\S*',  'write + append is an error')

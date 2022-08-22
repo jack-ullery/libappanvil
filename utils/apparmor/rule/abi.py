@@ -12,18 +12,18 @@
 #
 # ----------------------------------------------------------------------
 
-from apparmor.regex import RE_ABI
 from apparmor.common import AppArmorBug
+from apparmor.regex import RE_ABI
 from apparmor.rule.include import IncludeRule, IncludeRuleset
-
-# setup module translations
 from apparmor.translations import init_translation
+
 _ = init_translation()
+
 
 # abi and include rules have a very similar syntax
 # base AbiRule on IncludeRule to inherit most of its behaviour
 class AbiRule(IncludeRule):
-    '''Class to handle and store a single abi rule'''
+    """Class to handle and store a single abi rule"""
 
     rule_name = 'abi'
 
@@ -43,21 +43,18 @@ class AbiRule(IncludeRule):
         return RE_ABI.search(raw_rule)
 
     def get_clean(self, depth=0):
-        '''return rule (in clean/default formatting)'''
+        """return rule (in clean/default formatting)"""
 
         space = '  ' * depth
 
         if self.ismagic:
-            return('%s%s <%s>,%s' % (space, self.rule_name, self.path, self.comment))
+            return ('%s%s <%s>,%s' % (space, self.rule_name, self.path, self.comment))
         else:
-            return('%s%s "%s",%s' % (space, self.rule_name, self.path, self.comment))
+            return ('%s%s "%s",%s' % (space, self.rule_name, self.path, self.comment))
 
     def logprof_header_localvars(self):
-        return [
-            _('Abi'), self.get_clean(),
-        ]
+        return [_('Abi'), self.get_clean()]
 
 
 class AbiRuleset(IncludeRuleset):
-    '''Class to handle and store a collection of abi rules'''
-    pass
+    """Class to handle and store a collection of abi rules"""

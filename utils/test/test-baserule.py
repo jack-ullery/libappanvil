@@ -9,14 +9,14 @@
 #
 # ------------------------------------------------------------------
 
+import re
 import unittest
-from common_test import AATest, setup_all_loops
 
+import apparmor.severity as severity
 from apparmor.common import AppArmorBug
 from apparmor.rule import BaseRule, parse_modifiers
-import apparmor.severity as severity
+from common_test import AATest, setup_all_loops
 
-import re
 
 class TestBaserule(AATest):
     def test_abstract__parse(self):

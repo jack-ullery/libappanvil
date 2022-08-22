@@ -17,7 +17,7 @@ class _Raw_Rule:
 
     def serialize(self):
         return "%s%s%s" % ('audit ' if self.audit else '',
-                           'deny '  if self.deny else '',
+                           'deny ' if self.deny else '',
                            self.rule)
 
     def recursive_print(self, depth):
@@ -32,8 +32,10 @@ class _Raw_Rule:
 class Raw_Mount_Rule(_Raw_Rule):
     pass
 
+
 class Raw_Pivot_Root_Rule(_Raw_Rule):
     pass
+
 
 class Raw_Unix_Rule(_Raw_Rule):
     pass

@@ -13,19 +13,18 @@
 #
 # ----------------------------------------------------------------------
 
-from apparmor.regex import RE_PROFILE_VARIABLE, strip_quotes
-from apparmor.common import AppArmorBug, AppArmorException
-from apparmor.rule import BaseRule, BaseRuleset, parse_comment, quote_if_needed
-
 import re
 
-# setup module translations
+from apparmor.common import AppArmorBug, AppArmorException
+from apparmor.regex import RE_PROFILE_VARIABLE, strip_quotes
+from apparmor.rule import BaseRule, BaseRuleset, parse_comment, quote_if_needed
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 
 class VariableRule(BaseRule):
-    '''Class to handle and store a single variable rule'''
+    """Class to handle and store a single variable rule"""
 
     rule_name = 'variable'
 
@@ -68,7 +67,7 @@ class VariableRule(BaseRule):
 
     @classmethod
     def _parse(cls, raw_rule):
-        '''parse raw_rule and return VariableRule'''
+        """parse raw_rule and return VariableRule"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -81,10 +80,10 @@ class VariableRule(BaseRule):
         values = separate_vars(matches.group('values'))
 
         return VariableRule(varname, mode, values,
-                           audit=False, deny=False, allow_keyword=False, comment=comment)
+                            audit=False, deny=False, allow_keyword=False, comment=comment)
 
     def get_clean(self, depth=0):
-        '''return rule (in clean/default formatting)'''
+        """return rule (in clean/default formatting)"""
 
         space = '  ' * depth
 
@@ -97,7 +96,7 @@ class VariableRule(BaseRule):
         return '%s%s %s %s' % (space, self.varname, self.mode, ' '.join(data))
 
     def is_covered_localvars(self, other_rule):
-        '''check if other_rule is covered by this rule object'''
+        """check if other_rule is covered by this rule object"""
 
         if self.varname != other_rule.varname:
             return False
@@ -112,7 +111,7 @@ class VariableRule(BaseRule):
         return True
 
     def is_equal_localvars(self, rule_obj, strict):
-        '''compare if rule-specific variables are equal'''
+        """compare if rule-specific variables are equal"""
 
         if not type(rule_obj) == VariableRule:
             raise AppArmorBug('Passed non-variable rule: %s' % str(rule_obj))
@@ -135,27 +134,30 @@ class VariableRule(BaseRule):
             _('Variable'), self.get_clean(),
         ]
 
+
 class VariableRuleset(BaseRuleset):
-    '''Class to handle and store a collection of variable rules'''
+    """Class to handle and store a collection of variable rules"""
 
     def add(self, rule, cleanup=False):
-        ''' Add variable rule object
+        """Add variable rule object
 
-            If the variable name is already known, raise an exception because re-defining a variable isn't allowed.
-        '''
+           If the variable name is already known, raise an exception because re-defining a variable isn't allowed.
+        """
 
         if rule.mode == '=':
             for knownrule in self.rules:
                 if rule.varname == knownrule.varname:
-                    raise AppArmorException(_('Redefining existing variable %(variable)s: %(value)s') % { 'variable': rule.varname, 'value': rule.values })
+                    raise AppArmorException(
+                        _('Redefining existing variable %(variable)s: %(value)s')
+                        % {'variable': rule.varname, 'value': rule.values})
 
         super().add(rule, cleanup)
 
     def get_merged_variables(self):
-        ''' Get merged variables of this VariableRuleset.
+        """Get merged variables of this VariableRuleset.
 
-            Note that no error checking is done because variables can be defined in one file and extended in another.
-        '''
+           Note that no error checking is done because variables can be defined in one file and extended in another.
+        """
 
         var_set = {}
         var_add = {}
@@ -171,14 +173,15 @@ class VariableRuleset(BaseRuleset):
 
         return {'=': var_set, '+=': var_add}
 
+
 def separate_vars(vs):
     """Returns a list of all the values for a variable"""
     data = set()
     vs = vs.strip()
 
-    RE_VARS = re.compile('^(("[^"]*")|([^"\s]+))\s*(.*)$')
-    while RE_VARS.search(vs):
-        matches = RE_VARS.search(vs).groups()
+    re_vars = re.compile('^(("[^"]*")|([^"\s]+))\s*(.*)$')
+    while re_vars.search(vs):
+        matches = re_vars.search(vs).groups()
 
         if matches[0].endswith(','):
             raise AppArmorException(_('Variable declarations do not accept trailing commas'))

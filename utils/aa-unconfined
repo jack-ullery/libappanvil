@@ -21,15 +21,12 @@ import sys
 
 import apparmor.aa as aa
 import apparmor.ui as ui
-from  apparmor.common import AppArmorException, open_file_read
-
-# setup exception handling
+from apparmor.common import AppArmorException, open_file_read
 from apparmor.fail import enable_aa_exception_handler
-enable_aa_exception_handler()
-
-# setup module translations
 from apparmor.translations import init_translation
-_ = init_translation()
+
+enable_aa_exception_handler()  # setup exception handling
+_ = init_translation()  # setup module translations
 
 parser = argparse.ArgumentParser(description=_("Lists unconfined processes having tcp or udp ports"))
 parser.add_argument("--paranoid", action="store_true", help=_("scan all processes from /proc"))
@@ -49,12 +46,12 @@ if not aa_mountpoint:
 
 
 def get_all_pids():
-    '''Return a set of all pids via walking /proc'''
+    """Return a set of all pids via walking /proc"""
     return set(filter(lambda x: re.search(r"^\d+$", x), aa.get_subdirectories("/proc")))
 
 
 def get_pids_ss(ss='ss'):
-    '''Get a set of pids listening on network sockets via ss(8)'''
+    """Get a set of pids listening on network sockets via ss(8)"""
     regex_lines = re.compile(r"^(tcp|udp|raw|p_dgr)\s.+\s+users:(?P<users>\(\(.*\)\))$")
     regex_users_pids = re.compile(r'(\("[^"]+",(pid=)?(\d+),[^)]+\))')
 
@@ -80,7 +77,7 @@ def get_pids_ss(ss='ss'):
 
 
 def get_pids_netstat(netstat='netstat'):
-    '''Get a set of pids listening on network sockets via netstat(8)'''
+    """Get a set of pids listening on network sockets via netstat(8)"""
     regex_tcp_udp = re.compile(r"^(tcp|udp|raw)6?\s+\d+\s+\d+\s+\S+\:(\d+)\s+\S+\:(\*|\d+)\s+(LISTEN|\d+|\s+)\s+(?P<pid>\d+)\/(\S+)")
 
     cmd = [netstat, '-nlp', '--protocol', 'inet,inet6']

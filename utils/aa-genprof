@@ -23,14 +23,12 @@ import time
 import apparmor.aa as apparmor
 import apparmor.ui as aaui
 from apparmor.common import AppArmorException, warn
-
-# setup exception handling
 from apparmor.fail import enable_aa_exception_handler
-enable_aa_exception_handler()
-
-# setup module translations
 from apparmor.translations import init_translation
-_ = init_translation()
+
+enable_aa_exception_handler()  # setup exception handling
+_ = init_translation()  # setup module translations
+
 
 def sysctl_read(path):
     value = None
@@ -38,12 +36,14 @@ def sysctl_read(path):
         value = int(f_in.readline())
     return value
 
+
 def sysctl_write(path, value):
     if value is None:
-        warn('Not writing invalid value "None" to %s'%path)
+        warn('Not writing invalid value "None" to %s' % path)
         return
     with open(path, 'w') as f_out:
         f_out.write(str(value))
+
 
 def last_audit_entry_time():
     out = subprocess.check_output(['tail', '-1', apparmor.logfile])
@@ -55,12 +55,14 @@ def last_audit_entry_time():
         logmark = ''
     return logmark
 
+
 def restore_ratelimit():
     try:
         sysctl_write(ratelimit_sysctl, ratelimit_saved)
     except PermissionError:
         if ratelimit_saved != sysctl_read(ratelimit_sysctl):
             raise  # happens only if a) running under lxd and b) something changed the ratelimit since starting aa-genprof
+
 
 parser = argparse.ArgumentParser(description=_('Generate profile for the given program'))
 parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))
@@ -83,7 +85,7 @@ if not aa_mountpoint:
     raise AppArmorException(_('It seems AppArmor was not started. Please enable AppArmor and try again.'))
 
 program = None
-#if os.path.exists(apparmor.which(profiling.strip())):
+# if os.path.exists(apparmor.which(profiling.strip())):
 if os.path.exists(profiling):
     program = apparmor.get_full_path(profiling)
 else:
@@ -94,9 +96,14 @@ else:
 
 if not program or not os.path.exists(program):
     if '/' not in profiling:
-        raise AppArmorException(_("Can't find %(profiling)s in the system path list. If the name of the application\nis correct, please run 'which %(profiling)s' as a user with correct PATH\nenvironment set up in order to find the fully-qualified path and\nuse the full path as parameter.") % { 'profiling': profiling })
+        raise AppArmorException(
+            _("Can't find %(profiling)s in the system path list. If the name of the application\n"
+              "is correct, please run 'which %(profiling)s' as a user with correct PATH\n"
+              "environment set up in order to find the fully-qualified path and\n"
+              "use the full path as parameter.")
+            % {'profiling': profiling})
     else:
-        raise AppArmorException(_('%s does not exists, please double-check the path.') %profiling)
+        raise AppArmorException(_('%s does not exists, please double-check the path.') % profiling)
 
 # Check if the program has been marked as not allowed to have a profile
 apparmor.check_qualifiers(program)
@@ -130,7 +137,11 @@ except PermissionError:  # will fail in lxd
 
 atexit.register(restore_ratelimit)
 
-aaui.UI_Info(_('\nBefore you begin, you may wish to check if a\nprofile already exists for the application you\nwish to confine. See the following wiki page for\nmore information:')+'\nhttps://gitlab.com/apparmor/apparmor/wikis/Profiles')
+aaui.UI_Info(
+    _('\nBefore you begin, you may wish to check if a\n'
+      'profile already exists for the application you\n'
+      'wish to confine. See the following wiki page for\n'
+      'more information:') + '\nhttps://gitlab.com/apparmor/apparmor/wikis/Profiles')
 
 syslog = True
 logmark = ''
@@ -142,7 +153,7 @@ if os.path.exists('/var/log/audit/audit.log'):
 while not done_profiling:
     if syslog:
         logmark = 'logmark-%s' % str(int(time.time()))  # unix timestamp, seconds only
-        t=subprocess.call([apparmor.logger_path(), '-p', 'kern.warn', 'GenProf: %s'%logmark])
+        t = subprocess.call([apparmor.logger_path(), '-p', 'kern.warn', 'GenProf: %s' % logmark])
 
     else:
         logmark = last_audit_entry_time()
@@ -151,7 +162,14 @@ while not done_profiling:
     q.headers = [_('Profiling'), program]
     q.functions = ['CMD_SCAN', 'CMD_FINISHED']
     q.default = 'CMD_SCAN'
-    q.explanation = _('Please start the application to be profiled in\nanother window and exercise its functionality now.\n\nOnce completed, select the "Scan" option below in \norder to scan the system logs for AppArmor events. \n\nFor each AppArmor event, you will be given the \nopportunity to choose whether the access should be \nallowed or denied.')
+    q.explanation = \
+        _('Please start the application to be profiled in\n'
+          'another window and exercise its functionality now.\n\n'
+          'Once completed, select the "Scan" option below in \n'
+          'order to scan the system logs for AppArmor events. \n\n'
+          'For each AppArmor event, you will be given the \n'
+          'opportunity to choose whether the access should be \n'
+          'allowed or denied.')
     ans, arg = q.promptUser('noexit')
 
     if ans == 'CMD_SCAN':
@@ -165,6 +183,8 @@ for p in sorted(apparmor.helpers.keys()):
         apparmor.reload(p)
 
 aaui.UI_Info(_('\nReloaded AppArmor profiles in enforce mode.'))
-aaui.UI_Info(_('\nPlease consider contributing your new profile!\nSee the following wiki page for more information:')+'\nhttps://gitlab.com/apparmor/apparmor/wikis/Profiles\n')
-aaui.UI_Info(_('Finished generating profile for %s.')%program)
+aaui.UI_Info(_('\nPlease consider contributing your new profile!\n'
+             'See the following wiki page for more information:')
+             + '\nhttps://gitlab.com/apparmor/apparmor/wikis/Profiles\n')
+aaui.UI_Info(_('Finished generating profile for %s.') % program)
 sys.exit(0)

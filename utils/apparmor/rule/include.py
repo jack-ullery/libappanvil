@@ -11,19 +11,18 @@
 #    GNU General Public License for more details.
 #
 # ----------------------------------------------------------------------
-
-from apparmor.regex import RE_INCLUDE, re_match_include_parse
-from apparmor.common import AppArmorBug, AppArmorException, is_skippable_file
-from apparmor.rule import BaseRule, BaseRuleset, parse_comment
 import os
 
-# setup module translations
+from apparmor.common import AppArmorBug, AppArmorException, is_skippable_file
+from apparmor.regex import RE_INCLUDE, re_match_include_parse
+from apparmor.rule import BaseRule, BaseRuleset, parse_comment
 from apparmor.translations import init_translation
+
 _ = init_translation()
 
 
 class IncludeRule(BaseRule):
-    '''Class to handle and store a single include rule'''
+    """Class to handle and store a single include rule"""
 
     rule_name = 'include'
 
@@ -58,7 +57,7 @@ class IncludeRule(BaseRule):
 
     @classmethod
     def _parse(cls, raw_rule):
-        '''parse raw_rule and return IncludeRule'''
+        """parse raw_rule and return IncludeRule"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -70,10 +69,10 @@ class IncludeRule(BaseRule):
         path, ifexists, ismagic = re_match_include_parse(raw_rule, cls.rule_name)
 
         return cls(path, ifexists, ismagic,
-                           audit=False, deny=False, allow_keyword=False, comment=comment)
+                   audit=False, deny=False, allow_keyword=False, comment=comment)
 
     def get_clean(self, depth=0):
-        '''return rule (in clean/default formatting)'''
+        """return rule (in clean/default formatting)"""
 
         space = '  ' * depth
 
@@ -82,17 +81,17 @@ class IncludeRule(BaseRule):
             ifexists_txt = ' if exists'
 
         if self.ismagic:
-            return('%s%s%s <%s>%s' % (space, self.rule_name, ifexists_txt, self.path, self.comment))
+            return ('%s%s%s <%s>%s' % (space, self.rule_name, ifexists_txt, self.path, self.comment))
         else:
-            return('%s%s%s "%s"%s' % (space, self.rule_name, ifexists_txt, self.path, self.comment))
+            return ('%s%s%s "%s"%s' % (space, self.rule_name, ifexists_txt, self.path, self.comment))
 
     def is_covered_localvars(self, other_rule):
-        '''check if other_rule is covered by this rule object'''
+        """check if other_rule is covered by this rule object"""
 
         if (self.path != other_rule.path):
             return False
 
-        if (self.ifexists != other_rule.ifexists) and (self.ifexists == True):  # "if exists" is allowed to differ
+        if (self.ifexists != other_rule.ifexists) and self.ifexists:  # "if exists" is allowed to differ
             return False
 
         if (self.ismagic != other_rule.ismagic):
@@ -102,7 +101,7 @@ class IncludeRule(BaseRule):
         return True
 
     def is_equal_localvars(self, rule_obj, strict):
-        '''compare if rule-specific variables are equal'''
+        """compare if rule-specific variables are equal"""
 
         if not type(rule_obj) == type(self):
             raise AppArmorBug('Passed non-%s rule: %s' % (self.rule_name, str(rule_obj)))
@@ -119,12 +118,10 @@ class IncludeRule(BaseRule):
         return True
 
     def logprof_header_localvars(self):
-        return [
-            _('Include'), self.get_clean(),
-        ]
+        return [_('Include'), self.get_clean()]
 
     def get_full_paths(self, profile_dir):
-        ''' get list of full paths of an include (can contain multiple paths if self.path is a directory) '''
+        """get list of full paths of an include (can contain multiple paths if self.path is a directory)"""
 
         # TODO: improve/fix logic to honor magic vs. quoted include paths
         if self.path.startswith('/'):
@@ -146,16 +143,17 @@ class IncludeRule(BaseRule):
         elif os.path.exists(full_path):
             files.append(full_path)
 
-        elif self.ifexists == False:
+        elif not self.ifexists:
             files.append(full_path)  # add full_path even if it doesn't exist on disk. Might cause a 'file not found' error later.
 
         return files
 
+
 class IncludeRuleset(BaseRuleset):
-    '''Class to handle and store a collection of include rules'''
+    """Class to handle and store a collection of include rules"""
 
     def get_all_full_paths(self, profile_dir):
-        ''' get full path of all includes '''
+        """get full path of all includes"""
 
         paths = []
         for rule_obj in self.rules:
