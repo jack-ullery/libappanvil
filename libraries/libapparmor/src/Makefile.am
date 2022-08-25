@@ -16,7 +16,8 @@ INCLUDES = $(all_includes)
 #        problems in the unlikely event where an interface has to break.
 #    - set AA_LIB_REVISION to 0.
 # 4. If any interfaces have been added since the last public release, then
-#    - increment AA_LIB_AGE.
+#    - increment AA_LIB_AGE by the same amount that AA_LIB_CURRENT was
+#      incremented.
 # 5. If any interfaces have been removed or changed since the last public
 #    release, then
 #    - set AA_LIB_AGE to 0.
@@ -31,7 +32,7 @@ INCLUDES = $(all_includes)
 #
 AA_LIB_CURRENT = 13
 AA_LIB_REVISION = 0
-AA_LIB_AGE = 9
+AA_LIB_AGE = 12
 
 SUFFIXES = .pc.in .pc
 
