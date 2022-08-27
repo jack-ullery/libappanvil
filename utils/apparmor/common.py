@@ -144,9 +144,8 @@ def cmd_pipe(command1, command2):
 
 def valid_path(path):
     """Valid path"""
-    # No relative paths
     m = "Invalid path: %s" % (path)
-    if not path.startswith('/'):
+    if not path.startswith('/'):  # No relative paths
         debug("%s (relative)" % (m))
         return False
 
@@ -154,11 +153,6 @@ def valid_path(path):
         debug("%s (contains quote)" % (m))
         return False
 
-    try:
-        os.path.normpath(path)
-    except Exception:
-        debug("%s (could not normalize)" % (m))
-        return False
     return True
 
 
@@ -167,12 +161,7 @@ def get_directory_contents(path):
     if not valid_path(path):
         return None
 
-    files = []
-    for f in glob.glob(path + "/*"):
-        files.append(f)
-
-    files.sort()
-    return files
+    return sorted(glob.glob(path + "/*"))
 
 
 def is_skippable_file(path):
@@ -314,7 +303,7 @@ class DebugLogger:
             self.debugging = os.getenv('LOGPROF_DEBUG')
             try:
                 self.debugging = int(self.debugging)
-            except Exception:
+            except (TypeError, ValueError):
                 self.debugging = False
             if self.debugging not in range(0, 4):
                 sys.stdout.write('Environment Variable: LOGPROF_DEBUG contains invalid value: %s'

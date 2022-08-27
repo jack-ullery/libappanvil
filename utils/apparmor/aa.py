@@ -315,7 +315,7 @@ def create_symlink(subdir, filename):
     if not os.path.exists(link):
         try:
             os.symlink(filename, link)
-        except:
+        except OSError:
             raise AppArmorException(
                 _('Could not create %(link)s symlink to %(file)s.')
                 % {'link': link, 'file': filename})
@@ -323,13 +323,12 @@ def create_symlink(subdir, filename):
 
 def head(file):
     """Returns the first/head line of the file"""
-    first = ''
     if os.path.isfile(file):
         with open_file_read(file) as f_in:
             try:
                 first = f_in.readline().rstrip()
             except UnicodeDecodeError:
-                pass
+                first = ''
             return first
     else:
         raise AppArmorException(_('Unable to read first line from %s: File Not Found') % file)
@@ -1747,7 +1746,7 @@ def read_profiles(ui_msg=False, skip_profiles=[]):
 
     try:
         os.listdir(profile_dir)
-    except:
+    except (OSError, TypeError):
         fatal_error(_("Can't read AppArmor profiles in %s") % profile_dir)
 
     for file in os.listdir(profile_dir):
@@ -1776,7 +1775,7 @@ def read_inactive_profiles(skip_profiles=[]):
         return
     try:
         os.listdir(profile_dir)
-    except:
+    except (OSError, TypeError):
         fatal_error(_("Can't read AppArmor profiles in %s") % extra_profile_dir)
 
     for file in os.listdir(extra_profile_dir):

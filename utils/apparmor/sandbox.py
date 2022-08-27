@@ -715,9 +715,7 @@ def run_xsandbox(command, opt):
     # aa-exec
     try:
         rc, report = aa_exec(command, opt, x.new_environ, required_rules)
-    except Exception:
+    finally:
         x.cleanup()
-        raise
-    x.cleanup()
 
     return rc, report

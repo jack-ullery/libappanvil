@@ -537,5 +537,5 @@ def confirm_and_abort():
 def is_number(number):
     try:
         return int(number)
-    except:
+    except (TypeError, ValueError):
         return False

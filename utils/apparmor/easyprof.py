@@ -105,7 +105,7 @@ def valid_variable(v):
     debug("Checking '%s'" % v)
     try:
         (key, value) = v.split('=')
-    except Exception:
+    except ValueError:
         return False
 
     if not re.search(r'^@\{[a-zA-Z0-9_]+\}$', key):
@@ -169,12 +169,10 @@ def valid_policy_vendor(s):
 def valid_policy_version(v):
     """Verify the policy version"""
     try:
-        float(v)
+        f = float(v)
     except ValueError:
         return False
-    if float(v) < 0:
-        return False
-    return True
+    return f >= 0
 
 
 def valid_template_name(s, strict=False):
