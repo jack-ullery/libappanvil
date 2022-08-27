@@ -229,8 +229,6 @@ TEMPLATES_DIR="%s/templates"
             easyprof.AppArmorEasyProfile(self.binary, self.options)
         except AppArmorException:
             return
-        except Exception:
-            raise
 
         raise Exception("File should have been invalid")
 
@@ -247,8 +245,6 @@ TEMPLATES_DIR="%s/templates"
             easyprof.AppArmorEasyProfile(self.binary, self.options)
         except AppArmorException:
             return
-        except Exception:
-            raise
 
         raise Exception("File should have been invalid")
 
@@ -265,8 +261,6 @@ TEMPLATES_DIR="%s/templates"
             easyprof.AppArmorEasyProfile(self.binary, self.options)
         except AppArmorException:
             return
-        except Exception:
-            raise
 
         raise Exception("File should have been invalid")
 
@@ -358,8 +352,6 @@ POLICYGROUPS_DIR="%s/templates"
             easyprof.AppArmorEasyProfile(self.binary, self.options)
         except AppArmorException:
             return
-        except Exception:
-            raise
 
         raise Exception("File should have been invalid")
 
@@ -376,8 +368,6 @@ POLICYGROUPS_DIR="%s/templates"
             easyprof.AppArmorEasyProfile(self.binary, self.options)
         except AppArmorException:
             return
-        except Exception:
-            raise
 
         raise Exception("File should have been invalid")
 
@@ -394,8 +384,6 @@ POLICYGROUPS_DIR="%s/templates"
             easyprof.AppArmorEasyProfile(self.binary, self.options)
         except AppArmorException:
             return
-        except Exception:
-            raise
 
         raise Exception("File should have been invalid")
 
@@ -504,8 +492,6 @@ POLICYGROUPS_DIR="%s/templates"
             easyprof.AppArmorEasyProfile('./foo', self.options)
         except AppArmorException:
             return
-        except Exception:
-            raise
         raise Exception("Binary should have been invalid")
 
     def test_binary_symlink(self):
@@ -519,8 +505,6 @@ POLICYGROUPS_DIR="%s/templates"
             easyprof.AppArmorEasyProfile(symlink, self.options)
         except AppArmorException:
             return
-        except Exception:
-            raise
         raise Exception("Binary should have been invalid")
 
 #
@@ -875,8 +859,6 @@ POLICYGROUPS_DIR="%s/templates"
             self._gen_policy(template=os.path.join(self.tmpdir, "/nonexistent"))
         except AppArmorException:
             return
-        except Exception:
-            raise
         raise Exception("template should be invalid")
 
     def test_genpolicy_name(self):
@@ -938,8 +920,6 @@ POLICYGROUPS_DIR="%s/templates"
                 self._gen_policy(extra_args=['--abstractions=%s' % s])
             except AppArmorException:
                 continue
-            except Exception:
-                raise
             raise Exception("abstraction '%s' should be invalid" % s)
 
     def _create_tmp_base_dir(self, prefix='', abstractions=[], tunables=[]):
@@ -999,8 +979,6 @@ POLICYGROUPS_DIR="%s/templates"
                 self._gen_policy(extra_args=args)
             except AppArmorException:
                 continue
-            except Exception:
-                raise
             raise Exception("abstraction '%s' should be invalid" % abstraction)
 
     def test_genpolicy_abstractions_custom_include(self):
@@ -1028,8 +1006,6 @@ POLICYGROUPS_DIR="%s/templates"
                 self._gen_policy(extra_args=args)
             except AppArmorException:
                 continue
-            except Exception:
-                raise
             raise Exception("abstraction '%s' should be invalid" % abstraction)
 
     def test_genpolicy_profile_name_bad(self):
@@ -1044,8 +1020,6 @@ POLICYGROUPS_DIR="%s/templates"
                 self._gen_policy(extra_args=['--profile-name=%s' % s])
             except AppArmorException:
                 continue
-            except Exception:
-                raise
             raise Exception("profile_name '%s' should be invalid" % s)
 
     def test_genpolicy_policy_group_bad(self):
@@ -1060,8 +1034,6 @@ POLICYGROUPS_DIR="%s/templates"
                 self._gen_policy(extra_args=['--policy-groups=%s' % s])
             except AppArmorException:
                 continue
-            except Exception:
-                raise
             raise Exception("policy group '%s' should be invalid" % s)
 
     def test_genpolicy_policygroups(self):
@@ -1102,8 +1074,6 @@ POLICYGROUPS_DIR="%s/templates"
             self._gen_policy(extra_args=['--policy-groups=nonexistent'])
         except AppArmorException:
             return
-        except Exception:
-            raise
         raise Exception("policygroup should be invalid")
 
     def test_genpolicy_readpath_file(self):
@@ -1213,8 +1183,6 @@ POLICYGROUPS_DIR="%s/templates"
             self._gen_policy(extra_args=['--read-path=%s' % s])
         except AppArmorException:
             return
-        except Exception:
-            raise
         raise Exception("read-path should be invalid")
 
     def test_genpolicy_writepath_file(self):
@@ -1324,8 +1292,6 @@ POLICYGROUPS_DIR="%s/templates"
             self._gen_policy(extra_args=['--write-path=%s' % s])
         except AppArmorException:
             return
-        except Exception:
-            raise
         raise Exception("write-path should be invalid")
 
     def test_genpolicy_templatevar(self):
@@ -1371,8 +1337,6 @@ POLICYGROUPS_DIR="%s/templates"
                 self._gen_policy(extra_args=['--template-var=%s' % s])
             except AppArmorException:
                 continue
-            except Exception:
-                raise
             raise Exception("template-var should be invalid")
 
     def test_genpolicy_invalid_template_policy(self):
@@ -1396,8 +1360,6 @@ POLICYGROUPS_DIR="%s/templates"
             self._gen_policy(template=template)
         except AppArmorException:
             return
-        except Exception:
-            raise
         raise Exception("policy should be invalid")
 
     def test_genpolicy_no_binary_without_profile_name(self):
@@ -1406,8 +1368,6 @@ POLICYGROUPS_DIR="%s/templates"
             easyprof.gen_policy_params(None, self.options)
         except AppArmorException:
             return
-        except Exception:
-            raise
         raise Exception("No binary or profile name should have been invalid")
 
     def test_genpolicy_with_binary_with_profile_name(self):
@@ -1474,8 +1434,6 @@ POLICYGROUPS_DIR="%s/templates"
             self._gen_manifest_policy(m)
         except AppArmorException:
             return
-        except Exception:
-            raise
         raise Exception("abs path template name should be invalid")
 
     def test_gen_manifest_escape_path_templates(self):
@@ -1486,8 +1444,6 @@ POLICYGROUPS_DIR="%s/templates"
             self._gen_manifest_policy(m)
         except AppArmorException:
             return
-        except Exception:
-            raise
         raise Exception("../ template name should be invalid")
 
     def test_gen_manifest_policy_templates_nonexistent(self):
@@ -1498,8 +1454,6 @@ POLICYGROUPS_DIR="%s/templates"
             self._gen_manifest_policy(m)
         except AppArmorException:
             return
-        except Exception:
-            raise
         raise Exception("template should be invalid")
 
     def test_gen_manifest_policy_comment(self):
@@ -1577,8 +1531,6 @@ POLICYGROUPS_DIR="%s/templates"
             self._gen_manifest_policy(m)
         except AppArmorException:
             return
-        except Exception:
-            raise
         raise Exception("policygroup should be invalid")
 
     def test_gen_manifest_policy_templatevar(self):
