@@ -544,9 +544,7 @@ def main():
     p.add_argument('-d', '--debug', action="store_true", dest="debug")
     config = p.parse_args()
 
-    verbosity = 1
-    if config.verbose:
-        verbosity = 2
+    verbosity = 2 if config.verbose else 1
 
     test_suite = unittest.TestSuite()
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AAParserBasicCachingTests))
@@ -556,17 +554,14 @@ def main():
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AAParserCreateCacheAltCacheTestsCacheNotExist))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AAParserCachingTests))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AAParserAltCacheTests))
-    rc = 0
     try:
         result = unittest.TextTestRunner(verbosity=verbosity).run(test_suite)
-        if not result.wasSuccessful():
-            rc = 1
-    except:
+    except Exception:
         rc = 1
-
+    else:
+        rc = 0 if result.wasSuccessful() else 1
     return rc
 
 
 if __name__ == "__main__":
-    rc = main()
-    exit(rc)
+    exit(main())

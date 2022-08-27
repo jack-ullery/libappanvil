@@ -103,7 +103,7 @@ class AATestTemplate(unittest.TestCase, metaclass=AANoCleanupMetaClass):
         try:
             out, outerr = timeout_communicate(input)
             rc = sp.returncode
-        except TimeoutFunctionException as e:
+        except TimeoutFunctionException:
             sp.terminate()
             outerr = 'test timed out, killed'
             rc = TIMEOUT_ERROR_CODE
@@ -164,7 +164,7 @@ def filesystem_time_resolution():
 
             last_stamp = s.st_mtime
             time.sleep(default_diff)
-    except:
+    except Exception:
         pass
     finally:
         if os.path.exists(tmp_dir):

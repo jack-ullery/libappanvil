@@ -91,8 +91,6 @@ class AAErrorTests(testlib.AATestTemplate):
 
 
 def main():
-    rc = 0
-
     global config
     p = ArgumentParser()
     p.add_argument('-p', '--parser', default=testlib.DEFAULT_PARSER, action="store", dest='parser',
@@ -100,18 +98,16 @@ def main():
     p.add_argument('-v', '--verbose', action="store_true", dest="verbose")
     config = p.parse_args()
 
-    verbosity = 1
-    if config.verbose:
-        verbosity = 2
+    verbosity = 2 if config.verbose else 1
 
     test_suite = unittest.TestSuite()
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AAErrorTests))
     try:
         result = unittest.TextTestRunner(verbosity=verbosity).run(test_suite)
-        if not result.wasSuccessful():
-            rc = 1
-    except:
+    except Exception:
         rc = 1
+    else:
+        rc = 0 if result.wasSuccessful() else 1
 
     return rc
 

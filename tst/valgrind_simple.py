@@ -102,7 +102,9 @@ def main():
     if config.verbose:
         verbosity = 2
 
-    if not config.skip_suppressions:
+    if config.skip_suppressions:
+        suppression_file = None
+    else:
         suppression_file = create_suppressions()
         VALGRIND_ARGS.append('--suppressions=%s' % (suppression_file))
 
@@ -116,16 +118,17 @@ def main():
 
     try:
         result = unittest.TextTestRunner(verbosity=verbosity).run(test_suite)
+    except Exception:
+        rc = 1
+    else:
         if not result.wasSuccessful():
             rc = 1
-    except:
-        rc = 1
     finally:
-        os.remove(suppression_file)
+        if suppression_file:
+            os.remove(suppression_file)
 
     return rc
 
 
 if __name__ == "__main__":
-    rc = main()
-    exit(rc)
+    exit(main())
