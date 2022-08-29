@@ -11,8 +11,8 @@
 # ------------------------------------------------------------------
 
 import os
+import sys
 from argparse import ArgumentParser
-from sys import stderr, exit
 
 from testlib import read_features_dir
 
@@ -27,7 +27,7 @@ def main():
     config = p.parse_args()
 
     if not os.path.exists(config.fdir):
-        print('Unable to find apparmor features directory "%s"' % config.fdir, file=stderr)
+        print('Unable to find apparmor features directory "%s"' % config.fdir, file=sys.stderr)
         return 1
 
     features = read_features_dir(config.fdir)
@@ -37,4 +37,4 @@ def main():
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())

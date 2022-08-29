@@ -305,7 +305,7 @@ def find_test_multi(log_dir):
 # if a logfile is given as parameter, print the resulting profile and exit (with $? = 42 to make sure tests break if the caller accidentally hands over a parameter)
 if __name__ == '__main__' and len(sys.argv) == 2:
     print(logfile_to_profile(sys.argv[1])[1])
-    exit(42)
+    sys.exit(42)
 
 # still here? That means a normal test run
 print('Testing libapparmor test_multi tests...')

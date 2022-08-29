@@ -96,7 +96,7 @@ def main():
     if not os.path.exists(config.valgrind):
         print("Unable to find valgrind at '%s', ensure that it is installed" % (config.valgrind),
               file=sys.stderr)
-        exit(1)
+        sys.exit(1)
 
     verbosity = 1
     if config.verbose:
@@ -131,4 +131,4 @@ def main():
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())
