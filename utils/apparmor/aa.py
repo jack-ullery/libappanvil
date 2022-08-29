@@ -1118,7 +1118,7 @@ def ask_the_questions(log_dict):
             else:
                 sev_db.set_variables({})
 
-            if True:
+            if aa.get(profile):  # only continue/ask if the parent profile exists
                 if not aa[profile].get(hat, {}).get('file'):
                     if aamode != 'merge':
                         # Ignore log events for a non-existing profile or child profile. Such events can occur
