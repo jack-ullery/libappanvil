@@ -14,6 +14,7 @@
 # ------------------------------------------------------------------
 
 import subprocess
+import sys
 import unittest
 from argparse import ArgumentParser
 
@@ -113,4 +114,4 @@ def main():
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())

@@ -48,7 +48,7 @@ def cmd(command, input=None, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, s
 (rc, output, outerr) = cmd(('../../common/list_capabilities.sh',))
 if rc != 0:
     sys.stderr.write("make list_capabilities failed: " + output + outerr)
-    exit(rc)
+    sys.exit(rc)
 
 capabilities = re.sub('CAP_', '', output.strip()).lower().split('\n')
 benign_caps = []
@@ -60,7 +60,7 @@ for cap in capabilities:
 (rc, output, outerr) = cmd(('../../common/list_af_names.sh',))
 if rc != 0:
     sys.stderr.write("make list_af_names failed: " + output + outerr)
-    exit(rc)
+    sys.exit(rc)
 
 af_names = []
 af_pairs = re.sub('AF_', '', output.strip()).lower().split(",")
