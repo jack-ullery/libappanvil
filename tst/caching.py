@@ -17,6 +17,7 @@
 
 import os
 import shutil
+import sys
 import tempfile
 import unittest
 from argparse import ArgumentParser
@@ -564,4 +565,4 @@ def main():
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())
