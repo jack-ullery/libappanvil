@@ -69,7 +69,7 @@ class FileRule(BaseRule):
         self.can_glob_ext = not self.all_paths
         self.can_edit = not self.all_paths
 
-        if type(perms) is str:
+        if isinstance(perms, str):
             perms, tmp_exec_perms = split_perms(perms, deny)
             if tmp_exec_perms:
                 raise AppArmorBug('perms must not contain exec perms')
@@ -97,7 +97,7 @@ class FileRule(BaseRule):
             raise AppArmorBug("link rules can't have execute permissions")
         elif exec_perms == self.ANY_EXEC:
             self.exec_perms = exec_perms
-        elif type(exec_perms) is str:
+        elif isinstance(exec_perms, str):
             if deny:
                 if exec_perms != 'x':
                     raise AppArmorException(_("file deny rules only allow to use 'x' as execute mode, but not %s" % exec_perms))
@@ -110,16 +110,16 @@ class FileRule(BaseRule):
         else:
             raise AppArmorBug('Passed unknown perms object to FileRule: %s' % str(perms))
 
-        if type(owner) is not bool:
+        if not isinstance(owner, bool):
             raise AppArmorBug('non-boolean value passed to owner flag')
         self.owner = owner
         self.can_owner = owner  # offer '(O)wner permissions on/off' buttons only if the rule has the owner flag
 
-        if type(file_keyword) is not bool:
+        if not isinstance(file_keyword, bool):
             raise AppArmorBug('non-boolean value passed to file keyword flag')
         self.file_keyword = file_keyword
 
-        if type(leading_perms) is not bool:
+        if not isinstance(leading_perms, bool):
             raise AppArmorBug('non-boolean value passed to leading permissions flag')
         self.leading_perms = leading_perms
 
@@ -313,7 +313,7 @@ class FileRule(BaseRule):
     def is_equal_localvars(self, rule_obj, strict):
         """compare if rule-specific variables are equal"""
 
-        if not type(rule_obj) == FileRule:
+        if type(rule_obj) is not type(self):
             raise AppArmorBug('Passed non-file rule: %s' % str(rule_obj))
 
         if self.owner != rule_obj.owner:

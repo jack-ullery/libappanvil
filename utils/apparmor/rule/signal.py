@@ -200,7 +200,7 @@ class SignalRule(BaseRule):
     def is_equal_localvars(self, rule_obj, strict):
         """compare if rule-specific variables are equal"""
 
-        if not type(rule_obj) == SignalRule:
+        if type(rule_obj) is not type(self):
             raise AppArmorBug('Passed non-signal rule: %s' % str(rule_obj))
 
         if (self.access != rule_obj.access

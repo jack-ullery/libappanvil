@@ -56,7 +56,7 @@ class RlimitRule(BaseRule):
         if audit or deny or allow_keyword:
             raise AppArmorBug('The audit, allow or deny keywords are not allowed in rlimit rules.')
 
-        if type(rlimit) is str:
+        if isinstance(rlimit, str):
             if rlimit in rlimit_all:
                 self.rlimit = rlimit
             else:
@@ -69,7 +69,7 @@ class RlimitRule(BaseRule):
         self.all_values = False
         if value == RlimitRule.ALL:
             self.all_values = True
-        elif type(value) is str:
+        elif isinstance(value, str):
             if not value.strip():
                 raise AppArmorBug('Empty value in rlimit rule')
 
@@ -217,7 +217,7 @@ class RlimitRule(BaseRule):
     def is_equal_localvars(self, rule_obj, strict):
         """compare if rule-specific variables are equal"""
 
-        if not type(rule_obj) == RlimitRule:
+        if type(rule_obj) is not type(self):
             raise AppArmorBug('Passed non-rlimit rule: %s' % str(rule_obj))
 
         if (self.rlimit != rule_obj.rlimit):

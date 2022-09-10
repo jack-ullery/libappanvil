@@ -61,7 +61,7 @@ class AARE:
     def match(self, expression):
         """check if the given expression (string or AARE) matches the regex"""
 
-        if type(expression) == AARE:
+        if isinstance(expression, AARE):
             if expression.orig_regex:
                 expression = expression.orig_regex
             elif self.plain_path.match(expression.regex):
@@ -69,7 +69,7 @@ class AARE:
                 expression = expression.regex
             else:
                 return self.is_equal(expression)  # better safe than sorry
-        elif type(expression) is not str:
+        elif not isinstance(expression, str):
             raise AppArmorBug('AARE.match() called with unknown object: %s' % str(expression))
 
         if self._regex_compiled is None:
@@ -80,9 +80,9 @@ class AARE:
     def is_equal(self, expression):
         """check if the given expression is equal"""
 
-        if type(expression) == AARE:
+        if isinstance(expression, AARE):
             return self.regex == expression.regex
-        elif type(expression) is str:
+        elif isinstance(expression, str):
             return self.regex == expression
         else:
             raise AppArmorBug('AARE.is_equal() called with unknown object: %s' % str(expression))
