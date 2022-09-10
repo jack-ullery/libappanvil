@@ -277,12 +277,12 @@ def split_name(full_profile):
 def combine_profname(name_parts):
     """combine name_parts (main profile, child) into a joint main//child profile name"""
 
-    if not isinstance(name_parts, list):
-        raise AppArmorBug('combine_profname() called with parameter of type %s, must be a list' % type(name_parts))
+    if not isinstance(name_parts, (list, tuple)):
+        raise AppArmorBug('combine_profname() called with parameter of type %s, must be a list or tuple' % type(name_parts))
 
     # if last item is None, drop it (can happen when called with [profile, hat] when hat is None)
-    if name_parts[len(name_parts)-1] is None:
-        name_parts.pop(-1)
+    if name_parts[-1] is None:
+        name_parts = name_parts[:-1]
 
     return '//'.join(name_parts)
 
