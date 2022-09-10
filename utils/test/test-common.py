@@ -30,11 +30,11 @@ class AaTest_split_name(AATest):
 class AaTest_combine_profname(AATest):
     tests = (
         # name parts                  expected full profile name
-        (['foo'],                     'foo'),
-        (['foo', 'bar'],              'foo//bar'),
-        (['foo', 'bar', 'baz'],       'foo//bar//baz'),
-        (['foo', 'bar', None],        'foo//bar'),
-        (['foo', 'bar', 'baz', None], 'foo//bar//baz'),
+        (('foo',),                    'foo'),
+        (('foo', 'bar'),              'foo//bar'),
+        (('foo', 'bar', 'baz'),       'foo//bar//baz'),
+        (('foo', 'bar', None),        'foo//bar'),
+        (('foo', 'bar', 'baz', None), 'foo//bar//baz'),
     )
 
     def _run_test(self, params, expected):
