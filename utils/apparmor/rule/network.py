@@ -65,7 +65,7 @@ class NetworkRule(BaseRule):
         self.all_domains = False
         if domain == NetworkRule.ALL:
             self.all_domains = True
-        elif type(domain) is str:
+        elif isinstance(domain, str):
             if domain in network_domain_keywords:
                 self.domain = domain
             else:
@@ -77,7 +77,7 @@ class NetworkRule(BaseRule):
         self.all_type_or_protocols = False
         if type_or_protocol == NetworkRule.ALL:
             self.all_type_or_protocols = True
-        elif type(type_or_protocol) is str:
+        elif isinstance(type_or_protocol, str):
             if type_or_protocol in network_protocol_keywords:
                 self.type_or_protocol = type_or_protocol
             elif type_or_protocol in network_type_keywords:
@@ -162,7 +162,7 @@ class NetworkRule(BaseRule):
     def is_equal_localvars(self, rule_obj, strict):
         """compare if rule-specific variables are equal"""
 
-        if not type(rule_obj) == NetworkRule:
+        if type(rule_obj) is not type(self):
             raise AppArmorBug('Passed non-network rule: %s' % str(rule_obj))
 
         if (self.domain != rule_obj.domain

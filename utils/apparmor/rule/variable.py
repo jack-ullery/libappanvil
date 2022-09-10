@@ -40,19 +40,19 @@ class VariableRule(BaseRule):
         if deny:
             raise AppArmorBug('Attempt to initialize %s with deny flag' % self.__class__.__name__)
 
-        if type(varname) is not str:
+        if not isinstance(varname, str):
             raise AppArmorBug('Passed unknown type for varname to %s: %s' % (self.__class__.__name__, varname))
         if not varname.startswith('@{'):
             raise AppArmorException("Passed invalid varname to %s (doesn't start with '@{'): %s" % (self.__class__.__name__, varname))
         if not varname.endswith('}'):
             raise AppArmorException("Passed invalid varname to %s (doesn't end with '}'): %s" % (self.__class__.__name__, varname))
 
-        if type(mode) is not str:
+        if not isinstance(mode, str):
             raise AppArmorBug('Passed unknown type for variable assignment mode to %s: %s' % (self.__class__.__name__, mode))
         if mode not in ('=', '+='):
             raise AppArmorBug('Passed unknown variable assignment mode to %s: %s' % (self.__class__.__name__, mode))
 
-        if type(values) is not set:
+        if not isinstance(values, set):
             raise AppArmorBug('Passed unknown type for values to %s: %s' % (self.__class__.__name__, values))
         if not values:
             raise AppArmorException('Passed empty list of values to %s: %s' % (self.__class__.__name__, values))
@@ -113,7 +113,7 @@ class VariableRule(BaseRule):
     def is_equal_localvars(self, rule_obj, strict):
         """compare if rule-specific variables are equal"""
 
-        if not type(rule_obj) == VariableRule:
+        if type(rule_obj) is not type(self):
             raise AppArmorBug('Passed non-variable rule: %s' % str(rule_obj))
 
         if self.varname != rule_obj.varname:

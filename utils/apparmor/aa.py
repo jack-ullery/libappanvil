@@ -636,7 +636,7 @@ def change_profile_flags(prof_filename, program, flag, set_flag):
     found = False
     depth = -1
 
-    if not flag or (type(flag) is str and not flag.strip()):
+    if not flag or (isinstance(flag, str) and not flag.strip()):
         raise AppArmorBug('New flag for %s is empty' % prof_filename)
 
     with open_file_read(prof_filename) as f_in:
@@ -2220,7 +2220,7 @@ def serialize_profile(profile_data, name, options):
     string = ''
     data = []
 
-    if type(options) is not dict:
+    if not isinstance(options, dict):
         raise AppArmorBug('serialize_profile(): options is not a dict: %s' % options)
 
     include_metadata = options.get('METADATA', False)

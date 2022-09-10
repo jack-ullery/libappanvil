@@ -54,7 +54,7 @@ class ChangeProfileRule(BaseRule):
         self.all_execconds = False
         if execcond == ChangeProfileRule.ALL:
             self.all_execconds = True
-        elif type(execcond) is str:
+        elif isinstance(execcond, str):
             if not execcond.strip():
                 raise AppArmorBug('Empty exec condition in change_profile rule')
             elif execcond.startswith('/') or execcond.startswith('@'):
@@ -68,7 +68,7 @@ class ChangeProfileRule(BaseRule):
         self.all_targetprofiles = False
         if targetprofile == ChangeProfileRule.ALL:
             self.all_targetprofiles = True
-        elif type(targetprofile) is str:
+        elif isinstance(targetprofile, str):
             if targetprofile.strip():
                 self.targetprofile = targetprofile
             else:
@@ -152,7 +152,7 @@ class ChangeProfileRule(BaseRule):
     def is_equal_localvars(self, rule_obj, strict):
         """compare if rule-specific variables are equal"""
 
-        if not type(rule_obj) == ChangeProfileRule:
+        if type(rule_obj) is not type(self):
             raise AppArmorBug('Passed non-change_profile rule: %s' % str(rule_obj))
 
         if (self.execmode != rule_obj.execmode

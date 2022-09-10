@@ -77,7 +77,7 @@ class BaseRule:
 
         if rulepart == self.ALL:
             return None, True
-        elif type(rulepart) is str:
+        elif isinstance(rulepart, str):
             if not rulepart.strip():
                 raise AppArmorBug(
                     'Passed empty %(partname)s to %(classname)s: %(rulepart)s'
@@ -142,7 +142,7 @@ class BaseRule:
     def is_covered(self, other_rule, check_allow_deny=True, check_audit=False):
         """check if other_rule is covered by this rule object"""
 
-        if not type(other_rule) == type(self):
+        if type(other_rule) is not type(self):
             raise AppArmorBug('Passes %s instead of %s' % (str(other_rule), self.__class__.__name__))
 
         if check_allow_deny and self.deny != other_rule.deny:
@@ -501,9 +501,9 @@ def check_and_split_list(lst, allowed_keywords, all_obj, classname, keyword_name
 
     if lst == all_obj:
         return None, True, None
-    elif type(lst) is str:
+    elif isinstance(lst, str):
         result_list = {lst}
-    elif type(lst) in (list, tuple, set) and (lst or allow_empty_list):
+    elif isinstance(lst, (list, tuple, set)) and (lst or allow_empty_list):
         result_list = set(lst)
     else:
         raise AppArmorBug(
@@ -529,9 +529,9 @@ def logprof_value_or_all(value, all_values):
     if all_values:
         return _('ALL')
 
-    if type(value) == AARE:
+    if isinstance(value, AARE):
         return value.regex
-    elif type(value) == set or type(value) == list or type(value) == tuple:
+    elif isinstance(value, (set, list, tuple)):
         return ' '.join(sorted(value))
     else:
         return value

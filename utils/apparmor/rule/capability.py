@@ -47,9 +47,9 @@ class CapabilityRule(BaseRule):
             self.all_caps = True
             self.capability = set()
         else:
-            if type(cap_list) is str:
+            if isinstance(cap_list, str):
                 self.capability = {cap_list}
-            elif type(cap_list) == list and cap_list:
+            elif isinstance(cap_list, list) and cap_list:
                 self.capability = set(cap_list)
             else:
                 raise AppArmorBug('Passed unknown object to CapabilityRule: %s' % str(cap_list))
@@ -110,7 +110,7 @@ class CapabilityRule(BaseRule):
     def is_equal_localvars(self, rule_obj, strict):
         """compare if rule-specific variables are equal"""
 
-        if not type(rule_obj) == CapabilityRule:
+        if type(rule_obj) is not type(self):
             raise AppArmorBug('Passed non-capability rule: %s' % str(rule_obj))
 
         if (self.capability != rule_obj.capability

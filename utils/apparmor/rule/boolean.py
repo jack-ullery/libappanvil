@@ -38,12 +38,12 @@ class BooleanRule(BaseRule):
         if deny:
             raise AppArmorBug('Attempt to initialize %s with deny flag' % self.__class__.__name__)
 
-        if type(varname) is not str:
+        if not isinstance(varname, str):
             raise AppArmorBug('Passed unknown type for boolean variable to %s: %s' % (self.__class__.__name__, varname))
         if not varname.startswith('$'):
             raise AppArmorException("Passed invalid boolean to %s (doesn't start with '$'): %s" % (self.__class__.__name__, varname))
 
-        if type(value) is not str:
+        if not isinstance(value, str):
             raise AppArmorBug('Passed unknown type for value to %s: %s' % (self.__class__.__name__, value))
         if not value:
             raise AppArmorException('Passed empty value to %s: %s' % (self.__class__.__name__, value))
@@ -97,7 +97,7 @@ class BooleanRule(BaseRule):
     def is_equal_localvars(self, rule_obj, strict):
         """compare if rule-specific variables are equal"""
 
-        if not type(rule_obj) == BooleanRule:
+        if type(rule_obj) is not type(self):
             raise AppArmorBug('Passed non-boolean rule: %s' % str(rule_obj))
 
         if self.varname != rule_obj.varname:

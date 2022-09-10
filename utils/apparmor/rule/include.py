@@ -38,11 +38,11 @@ class IncludeRule(BaseRule):
         if deny:
             raise AppArmorBug('Attempt to initialize %s with deny flag' % self.__class__.__name__)
 
-        if type(ifexists) is not bool:
+        if not isinstance(ifexists, bool):
             raise AppArmorBug('Passed unknown type for ifexists to %s: %s' % (self.__class__.__name__, ifexists))
-        if type(ismagic) is not bool:
+        if not isinstance(ismagic, bool):
             raise AppArmorBug('Passed unknown type for ismagic to %s: %s' % (self.__class__.__name__, ismagic))
-        if type(path) is not str:
+        if not isinstance(path, str):
             raise AppArmorBug('Passed unknown type for path to %s: %s' % (self.__class__.__name__, path))
         if not path:
             raise AppArmorBug('Passed empty path to %s: %s' % (self.__class__.__name__, path))
@@ -103,7 +103,7 @@ class IncludeRule(BaseRule):
     def is_equal_localvars(self, rule_obj, strict):
         """compare if rule-specific variables are equal"""
 
-        if not type(rule_obj) == type(self):
+        if type(rule_obj) is not type(self):
             raise AppArmorBug('Passed non-%s rule: %s' % (self.rule_name, str(rule_obj)))
 
         if (self.path != rule_obj.path):

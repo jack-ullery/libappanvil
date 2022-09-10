@@ -97,22 +97,22 @@ class ProfileStorage:
             raise AppArmorBug('attempt to set unknown key %s' % key)
 
         # allow writing bool values
-        if type(self.data[key]) == bool:
-            if type(value) == bool:
+        if isinstance(self.data[key], bool):
+            if isinstance(value, bool):
                 self.data[key] = value
             else:
                 raise AppArmorBug('Attempt to change type of "%s" from %s to %s, value %s' % (key, type(self.data[key]), type(value), value))
 
         # allow writing str or None to some keys
         elif key in ('flags', 'filename'):
-            if type(value) is str or value is None:
+            if isinstance(value, str) or value is None:
                 self.data[key] = value
             else:
                 raise AppArmorBug('Attempt to change type of "%s" from %s to %s, value %s' % (key, type(self.data[key]), type(value), value))
 
         # allow writing str values
-        elif type(self.data[key]) is str:
-            if type(value) is str:
+        elif isinstance(self.data[key], str):
+            if isinstance(value, str):
                 self.data[key] = value
             else:
                 raise AppArmorBug('Attempt to change type of "%s" from %s to %s, value %s' % (key, type(self.data[key]), type(value), value))
@@ -270,10 +270,10 @@ def split_flags(flags):
 def add_or_remove_flag(flags, flags_to_change, set_flag):
     """add (if set_flag is True) or remove the given flags_to_change to flags"""
 
-    if type(flags) is str or flags is None:
+    if isinstance(flags, str) or flags is None:
         flags = split_flags(flags)
 
-    if type(flags_to_change) is str or flags_to_change is None:
+    if isinstance(flags_to_change, str) or flags_to_change is None:
         flags_to_change = split_flags(flags_to_change)
 
     if set_flag:

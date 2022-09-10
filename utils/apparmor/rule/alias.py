@@ -31,20 +31,20 @@ class AliasRule(BaseRule):
         super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
                          comment=comment, log_event=log_event)
 
-        # aliass don't support audit or deny
+        # aliases don't support audit or deny
         if audit:
             raise AppArmorBug('Attempt to initialize %s with audit flag' % self.__class__.__name__)
         if deny:
             raise AppArmorBug('Attempt to initialize %s with deny flag' % self.__class__.__name__)
 
-        if type(orig_path) is not str:
+        if not isinstance(orig_path, str):
             raise AppArmorBug('Passed unknown type for orig_path to %s: %s' % (self.__class__.__name__, orig_path))
         if not orig_path:
             raise AppArmorException('Passed empty orig_path to %s: %s' % (self.__class__.__name__, orig_path))
         if not orig_path.startswith('/'):
             raise AppArmorException("Alias path doesn't start with '/'")
 
-        if type(target) is not str:
+        if not isinstance(target, str):
             raise AppArmorBug('Passed unknown type for target to %s: %s' % (self.__class__.__name__, target))
         if not target:
             raise AppArmorException('Passed empty target to %s: %s' % (self.__class__.__name__, target))
@@ -88,9 +88,9 @@ class AliasRule(BaseRule):
         return self.is_equal_localvars(other_rule, False)
 
     def is_equal_localvars(self, rule_obj, strict):
-        """compare if rule-specific aliass are equal"""
+        """compare if rule-specific aliases are equal"""
 
-        if not type(rule_obj) == AliasRule:
+        if type(rule_obj) is not type(self):
             raise AppArmorBug('Passed non-alias rule: %s' % str(rule_obj))
 
         if self.orig_path != rule_obj.orig_path:
