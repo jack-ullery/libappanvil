@@ -19,9 +19,9 @@ from common_test import AATest, setup_all_loops
 
 
 class TestBaserule(AATest):
-    def test_abstract__parse(self):
+    def test_abstract__create_instance(self):
         with self.assertRaises(NotImplementedError):
-            BaseRule._parse('foo')
+            BaseRule._create_instance('foo')
 
     def test_abstract__create_instance_2(self):
         with self.assertRaises(NotImplementedError):

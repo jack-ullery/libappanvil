@@ -30,7 +30,7 @@ class BaseRule:
     #   __init__
     #   _match(cls, raw_rule) (as a class method)
     #     - parses a raw rule and returns a regex match object
-    #   _parse(cls, raw_rule) (as a class method)
+    #   _create_instance(cls, raw_rule) (as a class method)
     #     - parses a raw rule and returns an object of the Rule subclass
     #   get_clean(depth)
     #     - return rule in clean format
@@ -116,16 +116,16 @@ class BaseRule:
     @classmethod
     def create_instance(cls, raw_rule):
         """parse raw_rule and return a rule object"""
-        rule = cls._parse(raw_rule)
+        rule = cls._create_instance(raw_rule)
         rule.raw_rule = raw_rule.strip()
         return rule
 
     @classmethod
     @abstractmethod
-    def _parse(cls, raw_rule):
+    def _create_instance(cls, raw_rule):
         """returns a Rule object created from parsing the raw rule.
            required to be implemented by subclasses; raise exception if not"""
-        raise NotImplementedError("'%s' needs to implement _parse(), but didn't" % (str(cls)))
+        raise NotImplementedError("'%s' needs to implement _create_instance(), but didn't" % (str(cls)))
 
     @abstractmethod
     def get_clean(self, depth=0):
