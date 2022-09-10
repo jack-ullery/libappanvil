@@ -54,7 +54,7 @@ class BooleanTestParse(BooleanTest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(BooleanRule.match(rawrule))
-        obj = BooleanRule.parse(rawrule)
+        obj = BooleanRule.create_instance(rawrule)
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
 
@@ -74,7 +74,7 @@ class BooleanTestParseInvalid(BooleanTest):
     def _run_test(self, rawrule, expected):
         self.assertEqual(BooleanRule.match(rawrule), expected[0])
         with self.assertRaises(expected[1]):
-            BooleanRule.parse(rawrule)
+            BooleanRule.create_instance(rawrule)
 
 
 class BooleanFromInit(BooleanTest):
@@ -129,7 +129,7 @@ class InvalidBooleanTest(AATest):
         obj = None
         self.assertEqual(BooleanRule.match(rawrule), matches_regex)
         with self.assertRaises(AppArmorException):
-            obj = BooleanRule.parse(rawrule)
+            obj = BooleanRule.create_instance(rawrule)
 
         self.assertIsNone(obj, 'BooleanRule handed back an object unexpectedly')
 
@@ -151,7 +151,7 @@ class WriteBooleanTestAATest(AATest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(BooleanRule.match(rawrule))
-        obj = BooleanRule.parse(rawrule)
+        obj = BooleanRule.create_instance(rawrule)
         clean = obj.get_clean()
         raw = obj.get_raw()
 
@@ -177,8 +177,8 @@ class WriteBooleanTestAATest(AATest):
 
 class BooleanCoveredTest(AATest):
     def _run_test(self, param, expected):
-        obj = BooleanRule.parse(self.rule)
-        check_obj = BooleanRule.parse(param)
+        obj = BooleanRule.create_instance(self.rule)
+        check_obj = BooleanRule.create_instance(param)
 
         self.assertTrue(BooleanRule.match(param))
 
@@ -218,7 +218,7 @@ class BooleanCoveredTest_02(BooleanCoveredTest):
 
 class BooleanCoveredTest_Invalid(AATest):
     def test_borked_obj_is_covered_2(self):
-        obj = BooleanRule.parse('$foo = true')
+        obj = BooleanRule.create_instance('$foo = true')
 
         testobj = BooleanRule('$foo', 'true')
         testobj.value = ''
@@ -227,7 +227,7 @@ class BooleanCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_covered_3(self):
-        obj = BooleanRule.parse('$foo = true')
+        obj = BooleanRule.create_instance('$foo = true')
 
         testobj = BaseRule()  # different type
 
@@ -235,7 +235,7 @@ class BooleanCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = BooleanRule.parse('$foo = true')
+        obj = BooleanRule.create_instance('$foo = true')
 
         testobj = BaseRule()  # different type
 
@@ -249,7 +249,7 @@ class BooleanLogprofHeaderTest(AATest):
     )
 
     def _run_test(self, params, expected):
-        obj = BooleanRule.parse(params)
+        obj = BooleanRule.create_instance(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 
@@ -290,7 +290,7 @@ class BooleanRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(BooleanRule.parse(rule))
+            ruleset.add(BooleanRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())
@@ -299,9 +299,9 @@ class BooleanRulesTest(AATest):
     def test_ruleset_overwrite(self):
         ruleset = BooleanRuleset()
 
-        ruleset.add(BooleanRule.parse('$foo = true'))
+        ruleset.add(BooleanRule.create_instance('$foo = true'))
         with self.assertRaises(AppArmorException):
-            ruleset.add(BooleanRule.parse('$foo = false'))  # attempt to redefine @{foo}
+            ruleset.add(BooleanRule.create_instance('$foo = false'))  # attempt to redefine @{foo}
 
 
 class BooleanGlobTestAATest(AATest):

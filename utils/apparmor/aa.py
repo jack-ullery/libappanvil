@@ -1263,7 +1263,7 @@ def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
                     if inc:
                         deleted = delete_all_duplicates(the_profile, inc, r_types)
 
-                        the_profile['inc_ie'].add(IncludeRule.parse(selection))
+                        the_profile['inc_ie'].add(IncludeRule.create_instance(selection))
 
                         aaui.UI_Info(_('Adding %s to profile.') % selection)
                         if deleted:
@@ -1342,7 +1342,7 @@ def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
 
 def selection_to_rule_obj(rule_obj, selection):
     rule_type = type(rule_obj)
-    return rule_type.parse(selection)
+    return rule_type.create_instance(selection)
 
 
 def set_options_audit_mode(rule_obj, options):
@@ -2121,7 +2121,7 @@ def match_line_against_rule_classes(line, profile, file, lineno, in_preamble):
                     _('Syntax Error: Unexpected %(rule)s entry found in file: %(file)s line: %(line)s')
                     % {'file': file, 'line': lineno + 1, 'rule': rule_name})
 
-            rule_obj = rule_class.parse(line)
+            rule_obj = rule_class.create_instance(line)
             return (rule_name, rule_obj)
 
     return (None, None)

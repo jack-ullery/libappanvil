@@ -23,9 +23,9 @@ class TestBaserule(AATest):
         with self.assertRaises(NotImplementedError):
             BaseRule._parse('foo')
 
-    def test_abstract__parse_2(self):
+    def test_abstract__create_instance_2(self):
         with self.assertRaises(NotImplementedError):
-            BaseRule.parse('foo')
+            BaseRule.create_instance('foo')
 
     def test_abstract__match(self):
         with self.assertRaises(NotImplementedError):

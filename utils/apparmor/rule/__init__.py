@@ -114,7 +114,7 @@ class BaseRule:
         raise NotImplementedError("'%s' needs to implement _match(), but didn't" % (str(cls)))
 
     @classmethod
-    def parse(cls, raw_rule):
+    def create_instance(cls, raw_rule):
         """parse raw_rule and return a rule object"""
         rule = cls._parse(raw_rule)
         rule.raw_rule = raw_rule.strip()

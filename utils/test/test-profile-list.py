@@ -176,9 +176,9 @@ class TestAdd_inc_ie(AATest):
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def test_dedup_inc_ie_1(self):
-        self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', IncludeRule.parse('include <tunables/global>'))
-        self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', IncludeRule.parse('#include if exists <tunables/global>  # comment'))
-        self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', IncludeRule.parse('   #include         <tunables/global>    '))
+        self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', IncludeRule.create_instance('include <tunables/global>'))
+        self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', IncludeRule.create_instance('#include if exists <tunables/global>  # comment'))
+        self.pl.add_inc_ie('/etc/apparmor.d/bin.foo', IncludeRule.create_instance('   #include         <tunables/global>    '))
         deleted = self.pl.delete_preamble_duplicates('/etc/apparmor.d/bin.foo')
         self.assertEqual(deleted, 2)
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
@@ -214,8 +214,8 @@ class TestAdd_abi(AATest):
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def test_dedup_abi_1(self):
-        self.pl.add_abi('/etc/apparmor.d/bin.foo', AbiRule.parse('abi <abi/4.19>,'))
-        self.pl.add_abi('/etc/apparmor.d/bin.foo', AbiRule.parse('   abi     <abi/4.19>  ,  # comment'))
+        self.pl.add_abi('/etc/apparmor.d/bin.foo', AbiRule.create_instance('abi <abi/4.19>,'))
+        self.pl.add_abi('/etc/apparmor.d/bin.foo', AbiRule.create_instance('   abi     <abi/4.19>  ,  # comment'))
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])
         deleted = self.pl.delete_preamble_duplicates('/etc/apparmor.d/bin.foo')
         self.assertEqual(deleted, 1)
@@ -296,9 +296,9 @@ class TestAdd_variable(AATest):
         self.assertEqual(list(self.pl.files.keys()), [])
 
     def test_dedup_variable_1(self):
-        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule.parse('@{foo} = /foo'))
-        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule.parse('@{foo} += /bar  # comment'))
-        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule.parse('@{foo}    += /bar /baz'))
+        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule.create_instance('@{foo} = /foo'))
+        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule.create_instance('@{foo} += /bar  # comment'))
+        self.pl.add_variable('/etc/apparmor.d/bin.foo', VariableRule.create_instance('@{foo}    += /bar /baz'))
         deleted = self.pl.delete_preamble_duplicates('/etc/apparmor.d/bin.foo')
         self.assertEqual(deleted, 1)
         self.assertEqual(list(self.pl.files.keys()), ['/etc/apparmor.d/bin.foo'])

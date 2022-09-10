@@ -89,7 +89,7 @@ class IncludeTestParse(IncludeTest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(IncludeRule.match(rawrule))
-        obj = IncludeRule.parse(rawrule)
+        obj = IncludeRule.create_instance(rawrule)
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
 
@@ -105,7 +105,7 @@ class IncludeTestParseInvalid(IncludeTest):
     def _run_test(self, rawrule, expected):
         self.assertTrue(IncludeRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
-            IncludeRule.parse(rawrule)
+            IncludeRule.create_instance(rawrule)
 
 # class IncludeTestParseFromLog(IncludeTest):  # we'll never have log events for includes
 
@@ -167,7 +167,7 @@ class InvalidIncludeTest(AATest):
         obj = None
         self.assertEqual(IncludeRule.match(rawrule), matches_regex)
         with self.assertRaises(AppArmorException):
-            obj = IncludeRule.parse(rawrule)
+            obj = IncludeRule.create_instance(rawrule)
 
         self.assertIsNone(obj, 'IncludeRule handed back an object unexpectedly')
 
@@ -188,7 +188,7 @@ class InvalidIncludeTest(AATest):
 class WriteIncludeTestAATest(AATest):
     def _run_test(self, rawrule, expected):
         self.assertTrue(IncludeRule.match(rawrule))
-        obj = IncludeRule.parse(rawrule)
+        obj = IncludeRule.create_instance(rawrule)
         clean = obj.get_clean()
         raw = obj.get_raw()
 
@@ -246,8 +246,8 @@ class WriteIncludeTestAATest(AATest):
 
 class IncludeCoveredTest(AATest):
     def _run_test(self, param, expected):
-        obj = IncludeRule.parse(self.rule)
-        check_obj = IncludeRule.parse(param)
+        obj = IncludeRule.create_instance(self.rule)
+        check_obj = IncludeRule.create_instance(param)
 
         self.assertTrue(IncludeRule.match(param))
 
@@ -289,7 +289,7 @@ class IncludeCoveredTest_02(IncludeCoveredTest):
 
 class IncludeCoveredTest_Invalid(AATest):
     # def test_borked_obj_is_covered_1(self):
-    #     obj = IncludeRule.parse('include <foo>')
+    #     obj = IncludeRule.create_instance('include <foo>')
     #
     #     testobj = IncludeRule('foo', True, True)
     #     testobj.path = ''
@@ -298,7 +298,7 @@ class IncludeCoveredTest_Invalid(AATest):
     #         obj.is_covered(testobj)
 
     def test_invalid_is_covered(self):
-        obj = IncludeRule.parse('include <abstractions/base>')
+        obj = IncludeRule.create_instance('include <abstractions/base>')
 
         testobj = BaseRule()  # different type
 
@@ -306,7 +306,7 @@ class IncludeCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = IncludeRule.parse('include <abstractions/base>')
+        obj = IncludeRule.create_instance('include <abstractions/base>')
 
         testobj = BaseRule()  # different type
 
@@ -321,7 +321,7 @@ class IncludeLogprofHeaderTest(AATest):
     )
 
     def _run_test(self, params, expected):
-        obj = IncludeRule.parse(params)
+        obj = IncludeRule.create_instance(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 
@@ -361,7 +361,7 @@ class IncludeFullPathsTest(AATest):
         for path in expected:
             exp2.append(path.replace('@@', self.profile_dir))
 
-        obj = IncludeRule.parse(params)
+        obj = IncludeRule.create_instance(params)
         self.assertEqual(obj.get_full_paths(self.profile_dir), exp2)
 
 
@@ -418,7 +418,7 @@ class IncludeRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(IncludeRule.parse(rule))
+            ruleset.add(IncludeRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())
@@ -465,7 +465,7 @@ class IncludeRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(IncludeRule.parse(rule))
+            ruleset.add(IncludeRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())

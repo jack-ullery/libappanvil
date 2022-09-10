@@ -60,7 +60,7 @@ class AbiTestParse(AbiTest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(AbiRule.match(rawrule))
-        obj = AbiRule.parse(rawrule)
+        obj = AbiRule.create_instance(rawrule)
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
 
@@ -76,7 +76,7 @@ class AbiTestParseInvalid(AbiTest):
     def _run_test(self, rawrule, expected):
         self.assertTrue(AbiRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
-            AbiRule.parse(rawrule)
+            AbiRule.create_instance(rawrule)
 
 # class AbiTestParseFromLog(AbiTest):  # we'll never have log events for abi
 
@@ -142,7 +142,7 @@ class InvalidAbiTest(AATest):
         obj = None
         self.assertEqual(AbiRule.match(rawrule), matches_regex)
         with self.assertRaises(AppArmorException):
-            obj = AbiRule.parse(rawrule)
+            obj = AbiRule.create_instance(rawrule)
 
         self.assertIsNone(obj, 'AbiRule handed back an object unexpectedly')
 
@@ -163,7 +163,7 @@ class InvalidAbiTest(AATest):
 class WriteAbiTestAATest(AATest):
     def _run_test(self, rawrule, expected):
         self.assertTrue(AbiRule.match(rawrule))
-        obj = AbiRule.parse(rawrule)
+        obj = AbiRule.create_instance(rawrule)
         clean = obj.get_clean()
         raw = obj.get_raw()
 
@@ -196,8 +196,8 @@ class WriteAbiTestAATest(AATest):
 
 class AbiCoveredTest(AATest):
     def _run_test(self, param, expected):
-        obj = AbiRule.parse(self.rule)
-        check_obj = AbiRule.parse(param)
+        obj = AbiRule.create_instance(self.rule)
+        check_obj = AbiRule.create_instance(param)
 
         self.assertTrue(AbiRule.match(param))
 
@@ -234,7 +234,7 @@ class AbiCoveredTest_02(AbiCoveredTest):
 
 # class AbiCoveredTest_Invalid(AATest):
 #     def test_borked_obj_is_covered_1(self):
-#         obj = AbiRule.parse('abi <foo>')
+#         obj = AbiRule.create_instance('abi <foo>')
 #
 #         testobj = AbiRule('foo', True, True)
 #         testobj.path = ''
@@ -243,7 +243,7 @@ class AbiCoveredTest_02(AbiCoveredTest):
 #             obj.is_covered(testobj)
 #
 #     def test_borked_obj_is_covered_2(self):
-#         obj = AbiRule.parse('abi send set=quit peer=/foo,')
+#         obj = AbiRule.create_instance('abi send set=quit peer=/foo,')
 #
 #         testobj = AbiRule('send', 'quit', '/foo')
 #         testobj.abi = ''
@@ -252,7 +252,7 @@ class AbiCoveredTest_02(AbiCoveredTest):
 #             obj.is_covered(testobj)
 #
 #     def test_borked_obj_is_covered_3(self):
-#         obj = AbiRule.parse('abi send set=quit peer=/foo,')
+#         obj = AbiRule.create_instance('abi send set=quit peer=/foo,')
 #
 #         testobj = AbiRule('send', 'quit', '/foo')
 #         testobj.peer = ''
@@ -261,7 +261,7 @@ class AbiCoveredTest_02(AbiCoveredTest):
 #             obj.is_covered(testobj)
 #
 #     def test_invalid_is_covered(self):
-#         obj = AbiRule.parse('abi send,')
+#         obj = AbiRule.create_instance('abi send,')
 #
 #         testobj = BaseRule()  # different type
 #
@@ -269,7 +269,7 @@ class AbiCoveredTest_02(AbiCoveredTest):
 #             obj.is_covered(testobj)
 #
 #     def test_invalid_is_equal(self):
-#         obj = AbiRule.parse('abi send,')
+#         obj = AbiRule.create_instance('abi send,')
 #
 #         testobj = BaseRule()  # different type
 #
@@ -284,7 +284,7 @@ class AbiLogprofHeaderTest(AATest):
     )
 
     def _run_test(self, params, expected):
-        obj = AbiRule.parse(params)
+        obj = AbiRule.create_instance(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 
@@ -326,7 +326,7 @@ class AbiRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(AbiRule.parse(rule))
+            ruleset.add(AbiRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())

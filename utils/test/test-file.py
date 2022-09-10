@@ -105,7 +105,7 @@ class FileTestParse(FileTest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(FileRule.match(rawrule))
-        obj = FileRule.parse(rawrule)
+        obj = FileRule.create_instance(rawrule)
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
 
@@ -128,7 +128,7 @@ class FileTestParseInvalid(FileTest):
     def _run_test(self, rawrule, expected):
         self.assertTrue(FileRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
-            FileRule.parse(rawrule)
+            FileRule.create_instance(rawrule)
 
 
 class FileTestNonMatch(AATest):
@@ -305,7 +305,7 @@ class InvalidFileTest(AATest):
         obj = None
         self.assertFalse(FileRule.match(rawrule))
         with self.assertRaises(AppArmorException):
-            obj = FileRule.parse(rawrule)
+            obj = FileRule.create_instance(rawrule)
 
         self.assertIsNone(obj, 'FileRule handed back an object unexpectedly')
 
@@ -358,7 +358,7 @@ class FileGlobTest(AATest):
         exp_can_glob, exp_can_glob_ext, exp_rule_glob, exp_rule_glob_ext = expected
 
         # test glob()
-        rule_obj = FileRule.parse(params)
+        rule_obj = FileRule.create_instance(params)
         self.assertEqual(exp_can_glob, rule_obj.can_glob)
         self.assertEqual(exp_can_glob_ext, rule_obj.can_glob_ext)
 
@@ -366,7 +366,7 @@ class FileGlobTest(AATest):
         self.assertEqual(rule_obj.get_clean(), exp_rule_glob)
 
         # test glob_ext()
-        rule_obj = FileRule.parse(params)
+        rule_obj = FileRule.create_instance(params)
         self.assertEqual(exp_can_glob, rule_obj.can_glob)
         self.assertEqual(exp_can_glob_ext, rule_obj.can_glob_ext)
 
@@ -389,7 +389,7 @@ class FileGlobTest(AATest):
 class WriteFileTest(AATest):
     def _run_test(self, rawrule, expected):
         self.assertTrue(FileRule.match(rawrule), 'FileRule.match() failed')
-        obj = FileRule.parse(rawrule)
+        obj = FileRule.create_instance(rawrule)
         clean = obj.get_clean()
         raw = obj.get_raw()
 
@@ -459,8 +459,8 @@ class WriteFileTest(AATest):
 
 class FileCoveredTest(AATest):
     def _run_test(self, param, expected):
-        obj = FileRule.parse(self.rule)
-        check_obj = FileRule.parse(param)
+        obj = FileRule.create_instance(self.rule)
+        check_obj = FileRule.create_instance(param)
 
         self.assertTrue(FileRule.match(param))
 
@@ -790,7 +790,7 @@ class FileCoveredTest_ManualOrInvalid(AATest):
             self.obj.is_covered(self.testobj)
 
     def test_invalid_is_covered(self):
-        obj = FileRule.parse('file,')
+        obj = FileRule.create_instance('file,')
 
         testobj = BaseRule()  # different type
 
@@ -798,7 +798,7 @@ class FileCoveredTest_ManualOrInvalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = FileRule.parse('file,')
+        obj = FileRule.create_instance('file,')
 
         testobj = BaseRule()  # different type
 
@@ -824,7 +824,7 @@ class FileSeverityTest(AATest):
 
     def _run_test(self, params, expected):
         sev_db = severity.Severity('../severity.db', 'unknown')
-        obj = FileRule.parse(params)
+        obj = FileRule.create_instance(params)
         rank = obj.severity(sev_db)
         self.assertEqual(rank, expected)
 
@@ -850,20 +850,20 @@ class FileLogprofHeaderTest(AATest):
     )
 
     def _run_test(self, params, expected):
-        obj = FileRule.parse(params[0])
+        obj = FileRule.create_instance(params[0])
         if params[1] or params[2]:
             obj.original_perms = {'allow': {'all': params[1], 'owner': params[2]}}
         self.assertEqual(obj.logprof_header(), expected)
 
     def test_empty_original_perms(self):
-        obj = FileRule.parse('/foo rw,')
+        obj = FileRule.create_instance('/foo rw,')
         obj.original_perms = {'allow': {'all': set(), 'owner': set()}}
         self.assertEqual(obj.logprof_header(), [_('Path'), '/foo', _('New Mode'), _('rw')])
 
 
 class FileEditHeaderTest(AATest):
     def _run_test(self, params, expected):
-        rule_obj = FileRule.parse(params)
+        rule_obj = FileRule.create_instance(params)
         self.assertEqual(rule_obj.can_edit, True)
         prompt, path_to_edit = rule_obj.edit_header()
         self.assertEqual(path_to_edit, expected)
@@ -875,7 +875,7 @@ class FileEditHeaderTest(AATest):
     )
 
     def test_edit_header_bare_file(self):
-        rule_obj = FileRule.parse('file,')
+        rule_obj = FileRule.create_instance('file,')
         self.assertEqual(rule_obj.can_edit, False)
         with self.assertRaises(AppArmorBug):
             rule_obj.edit_header()
@@ -900,7 +900,7 @@ class FileValidateAndStoreEditTest(AATest):
     )
 
     def test_validate_not_a_path(self):
-        rule_obj = FileRule.parse('/foo/bar/baz r,')
+        rule_obj = FileRule.create_instance('/foo/bar/baz r,')
 
         with self.assertRaises(AppArmorException):
             rule_obj.validate_edit('foo/bar/baz')
@@ -909,7 +909,7 @@ class FileValidateAndStoreEditTest(AATest):
             rule_obj.store_edit('foo/bar/baz')
 
     def test_validate_edit_bare_file(self):
-        rule_obj = FileRule.parse('file,')
+        rule_obj = FileRule.create_instance('file,')
         self.assertEqual(rule_obj.can_edit, False)
 
         with self.assertRaises(AppArmorBug):
@@ -954,7 +954,7 @@ class FileRulesTest(AATest):
 
         deleted = 0
         for rule in rules:
-            deleted += ruleset.add(FileRule.parse(rule))
+            deleted += ruleset.add(FileRule.create_instance(rule))
 
         self.assertEqual(deleted, 0)
         self.assertEqual(expected_raw, ruleset.get_raw())
@@ -985,7 +985,7 @@ class FileRulesTest(AATest):
 
         deleted = 0
         for rule in rules:
-            deleted += ruleset.add(FileRule.parse(rule))
+            deleted += ruleset.add(FileRule.create_instance(rule))
 
         self.assertEqual(deleted, 0)
         self.assertEqual(expected_raw, ruleset.get_raw(1))
@@ -1019,12 +1019,12 @@ class FileRulesTest(AATest):
 
         deleted = 0
         for rule in rules:
-            deleted += ruleset.add(FileRule.parse(rule))
+            deleted += ruleset.add(FileRule.create_instance(rule))
 
         self.assertEqual(deleted, 0)  # rules[] are added without cleanup mode, so the superfluous '/foo/baz rw,' should be kept
 
         for rule in rules_with_cleanup:
-            deleted += ruleset.add(FileRule.parse(rule), cleanup=True)
+            deleted += ruleset.add(FileRule.create_instance(rule), cleanup=True)
 
         self.assertEqual(deleted, 1)  # rules_with_cleanup made '/foo/bar r,' superfluous
         self.assertEqual(expected_raw, ruleset.get_raw(1))
@@ -1062,7 +1062,7 @@ class FileGetRulesForPath(AATest):
 
         ruleset = FileRuleset()
         for rule in rules:
-            ruleset.add(FileRule.parse(rule))
+            ruleset.add(FileRule.create_instance(rule))
 
         matching = ruleset.get_rules_for_path(*params)
         self. assertEqual(matching.get_clean(), expected)
@@ -1095,7 +1095,7 @@ class FileGetPermsForPath_1(AATest):
 
         ruleset = FileRuleset()
         for rule in rules:
-            ruleset.add(FileRule.parse(rule))
+            ruleset.add(FileRule.create_instance(rule))
 
         perms = ruleset.get_perms_for_path(*params)
         self. assertEqual(perms, expected)
@@ -1132,7 +1132,7 @@ class FileGetPermsForPath_2(AATest):
 
         ruleset = FileRuleset()
         for rule in rules:
-            ruleset.add(FileRule.parse(rule))
+            ruleset.add(FileRule.create_instance(rule))
 
         perms = ruleset.get_perms_for_path(*params)
         self. assertEqual(perms, expected)
@@ -1155,7 +1155,7 @@ class FileGetExecRulesForPath_1(AATest):
 
         ruleset = FileRuleset()
         for rule in rules:
-            ruleset.add(FileRule.parse(rule))
+            ruleset.add(FileRule.create_instance(rule))
 
         perms = ruleset.get_exec_rules_for_path(params)
         matches = perms.get_clean()
@@ -1179,7 +1179,7 @@ class FileGetExecRulesForPath_2(AATest):
 
         ruleset = FileRuleset()
         for rule in rules:
-            ruleset.add(FileRule.parse(rule))
+            ruleset.add(FileRule.create_instance(rule))
 
         perms = ruleset.get_exec_rules_for_path(params, only_exact_matches=False)
         matches = perms.get_clean()
@@ -1206,9 +1206,9 @@ class FileGetExecConflictRules_1(AATest):
 
         ruleset = FileRuleset()
         for rule in rules:
-            ruleset.add(FileRule.parse(rule))
+            ruleset.add(FileRule.create_instance(rule))
 
-        rule_obj = FileRule.parse(params)
+        rule_obj = FileRule.create_instance(params)
         conflicts = ruleset.get_exec_conflict_rules(rule_obj)
         self. assertEqual(conflicts.get_clean(), expected)
 
