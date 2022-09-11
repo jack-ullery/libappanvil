@@ -85,7 +85,7 @@ class NetworkTestParse(NetworkTest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(NetworkRule.match(rawrule))
-        obj = NetworkRule.parse(rawrule)
+        obj = NetworkRule.create_instance(rawrule)
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
 
@@ -101,7 +101,7 @@ class NetworkTestParseInvalid(NetworkTest):
     def _run_test(self, rawrule, expected):
         self.assertTrue(NetworkRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
-            NetworkRule.parse(rawrule)
+            NetworkRule.create_instance(rawrule)
 
 
 class NetworkTestParseFromLog(NetworkTest):
@@ -192,7 +192,7 @@ class InvalidNetworkTest(AATest):
         obj = None
         self.assertFalse(NetworkRule.match(rawrule))
         with self.assertRaises(AppArmorException):
-            obj = NetworkRule.parse(rawrule)
+            obj = NetworkRule.create_instance(rawrule)
 
         self.assertIsNone(obj, 'NetworkRule handed back an object unexpectedly')
 
@@ -220,7 +220,7 @@ class InvalidNetworkTest(AATest):
 class WriteNetworkTestAATest(AATest):
     def _run_test(self, rawrule, expected):
         self.assertTrue(NetworkRule.match(rawrule))
-        obj = NetworkRule.parse(rawrule)
+        obj = NetworkRule.create_instance(rawrule)
         clean = obj.get_clean()
         raw = obj.get_raw()
 
@@ -247,8 +247,8 @@ class WriteNetworkTestAATest(AATest):
 
 class NetworkCoveredTest(AATest):
     def _run_test(self, param, expected):
-        obj = NetworkRule.parse(self.rule)
-        check_obj = NetworkRule.parse(param)
+        obj = NetworkRule.create_instance(self.rule)
+        check_obj = NetworkRule.create_instance(param)
 
         self.assertTrue(NetworkRule.match(param))
 
@@ -351,7 +351,7 @@ class NetworkCoveredTest_05(NetworkCoveredTest):
 
 class NetworkCoveredTest_Invalid(AATest):
     def test_borked_obj_is_covered_1(self):
-        obj = NetworkRule.parse('network inet,')
+        obj = NetworkRule.create_instance('network inet,')
 
         testobj = NetworkRule('inet', 'stream')
         testobj.domain = ''
@@ -360,7 +360,7 @@ class NetworkCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_borked_obj_is_covered_2(self):
-        obj = NetworkRule.parse('network inet,')
+        obj = NetworkRule.create_instance('network inet,')
 
         testobj = NetworkRule('inet', 'stream')
         testobj.type_or_protocol = ''
@@ -369,7 +369,7 @@ class NetworkCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_covered(self):
-        obj = NetworkRule.parse('network inet,')
+        obj = NetworkRule.create_instance('network inet,')
 
         testobj = BaseRule()  # different type
 
@@ -377,7 +377,7 @@ class NetworkCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = NetworkRule.parse('network inet,')
+        obj = NetworkRule.create_instance('network inet,')
 
         testobj = BaseRule()  # different type
 
@@ -397,14 +397,14 @@ class NetworkLogprofHeaderTest(AATest):
     )
 
     def _run_test(self, params, expected):
-        obj = NetworkRule.parse(params)
+        obj = NetworkRule.create_instance(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 
 class NetworkRuleReprTest(AATest):
     tests = (
-        (NetworkRule('inet', 'stream'),                             '<NetworkRule> network inet stream,'),
-        (NetworkRule.parse(' allow  network  inet  stream, # foo'), '<NetworkRule> allow  network  inet  stream, # foo'),
+        (NetworkRule('inet', 'stream'),                                       '<NetworkRule> network inet stream,'),
+        (NetworkRule.create_instance(' allow  network  inet  stream, # foo'), '<NetworkRule> allow  network  inet  stream, # foo'),
     )
 
     def _run_test(self, params, expected):
@@ -442,7 +442,7 @@ class NetworkRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(NetworkRule.parse(rule))
+            ruleset.add(NetworkRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())
@@ -471,7 +471,7 @@ class NetworkRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(NetworkRule.parse(rule))
+            ruleset.add(NetworkRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw(1))
         self.assertEqual(expected_clean, ruleset.get_clean(1))
@@ -503,7 +503,7 @@ class NetworkRulesetReprTest(AATest):
     def test_network_ruleset_repr(self):
         obj = NetworkRuleset()
         obj.add(NetworkRule('inet', 'stream'))
-        obj.add(NetworkRule.parse(' allow  network  inet  stream, # foo'))
+        obj.add(NetworkRule.create_instance(' allow  network  inet  stream, # foo'))
 
         expected = '<NetworkRuleset>\n  network inet stream,\n  allow  network  inet  stream, # foo\n</NetworkRuleset>'
         self.assertEqual(str(obj), expected)

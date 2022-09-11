@@ -87,7 +87,7 @@ class VariableTestParse(VariableTest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(VariableRule.match(rawrule))
-        obj = VariableRule.parse(rawrule)
+        obj = VariableRule.create_instance(rawrule)
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
 
@@ -108,7 +108,7 @@ class VariableTestParseInvalid(VariableTest):
     def _run_test(self, rawrule, expected):
         self.assertEqual(VariableRule.match(rawrule), expected[0])
         with self.assertRaises(expected[1]):
-            VariableRule.parse(rawrule)
+            VariableRule.create_instance(rawrule)
 
 
 class VariableFromInit(VariableTest):
@@ -173,7 +173,7 @@ class InvalidVariableTest(AATest):
         obj = None
         self.assertEqual(VariableRule.match(rawrule), matches_regex)
         with self.assertRaises(AppArmorException):
-            obj = VariableRule.parse(rawrule)
+            obj = VariableRule.create_instance(rawrule)
 
         self.assertIsNone(obj, 'VariableRule handed back an object unexpectedly')
 
@@ -200,7 +200,7 @@ class WriteVariableTestAATest(AATest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(VariableRule.match(rawrule))
-        obj = VariableRule.parse(rawrule)
+        obj = VariableRule.create_instance(rawrule)
         clean = obj.get_clean()
         raw = obj.get_raw()
 
@@ -226,8 +226,8 @@ class WriteVariableTestAATest(AATest):
 
 class VariableCoveredTest(AATest):
     def _run_test(self, param, expected):
-        obj = VariableRule.parse(self.rule)
-        check_obj = VariableRule.parse(param)
+        obj = VariableRule.create_instance(self.rule)
+        check_obj = VariableRule.create_instance(param)
 
         self.assertTrue(VariableRule.match(param))
 
@@ -280,7 +280,7 @@ class VariableCoveredTest_02(VariableCoveredTest):
 
 class VariableCoveredTest_Invalid(AATest):
     # def test_borked_obj_is_covered_1(self):
-    #     obj = VariableRule.parse('@{foo} = /bar')
+    #     obj = VariableRule.create_instance('@{foo} = /bar')
     #
     #     testobj = VariableRule('@{foo}', '=', '/bar')
     #     testobj.mode = ''
@@ -289,7 +289,7 @@ class VariableCoveredTest_Invalid(AATest):
     #         obj.is_covered(testobj)
 
     def test_borked_obj_is_covered_2(self):
-        obj = VariableRule.parse('@{foo} = /bar')
+        obj = VariableRule.create_instance('@{foo} = /bar')
 
         testobj = VariableRule('@{foo}', '=', {'/bar'})
         testobj.values = ''
@@ -298,7 +298,7 @@ class VariableCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_covered_3(self):
-        obj = VariableRule.parse('@{foo} = /bar')
+        obj = VariableRule.create_instance('@{foo} = /bar')
 
         testobj = BaseRule()  # different type
 
@@ -306,7 +306,7 @@ class VariableCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = VariableRule.parse('@{foo} = /bar')
+        obj = VariableRule.create_instance('@{foo} = /bar')
 
         testobj = BaseRule()  # different type
 
@@ -320,7 +320,7 @@ class VariableLogprofHeaderTest(AATest):
     )
 
     def _run_test(self, params, expected):
-        obj = VariableRule.parse(params)
+        obj = VariableRule.create_instance(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 # --- tests for VariableRuleset --- #
@@ -380,7 +380,7 @@ class VariableRulesTest(AATest):
         }
 
         for rule in rules:
-            ruleset.add(VariableRule.parse(rule))
+            ruleset.add(VariableRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())
@@ -390,9 +390,9 @@ class VariableRulesTest(AATest):
     def test_ruleset_overwrite(self):
         ruleset = VariableRuleset()
 
-        ruleset.add(VariableRule.parse('@{foo} = /bar'))
+        ruleset.add(VariableRule.create_instance('@{foo} = /bar'))
         with self.assertRaises(AppArmorException):
-            ruleset.add(VariableRule.parse('@{foo} = /asdf'))  # attempt to redefine @{foo}
+            ruleset.add(VariableRule.create_instance('@{foo} = /asdf'))  # attempt to redefine @{foo}
         self.assertEqual({'=': {'@{foo}': {'/bar'}}, '+=': {}}, ruleset.get_merged_variables())
 
 

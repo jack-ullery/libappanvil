@@ -411,11 +411,11 @@ class AaTest_change_profile_flags(AaTestWithTempdir):
 
 class AaTest_set_options_audit_mode(AATest):
     tests = (
-        ((FileRule.parse('audit /foo/bar r,'), ['/foo/bar r,', '/foo/* r,', '/** r,']),                       ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),
-        ((FileRule.parse('audit /foo/bar r,'), ['/foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),           ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),
-        ((FileRule.parse('/foo/bar r,'),       ['/foo/bar r,', '/foo/* r,', '/** r,']),                       ['/foo/bar r,', '/foo/* r,', '/** r,']),
-        ((FileRule.parse('/foo/bar r,'),       ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),     ['/foo/bar r,', '/foo/* r,', '/** r,']),
-        ((FileRule.parse('audit /foo/bar r,'), ['/foo/bar r,', '/foo/* r,', '#include <abstractions/base>']), ['audit /foo/bar r,', 'audit /foo/* r,', '#include <abstractions/base>']),
+        ((FileRule.create_instance('audit /foo/bar r,'), ['/foo/bar r,', '/foo/* r,', '/** r,']),                       ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),
+        ((FileRule.create_instance('audit /foo/bar r,'), ['/foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),           ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),
+        ((FileRule.create_instance('/foo/bar r,'),       ['/foo/bar r,', '/foo/* r,', '/** r,']),                       ['/foo/bar r,', '/foo/* r,', '/** r,']),
+        ((FileRule.create_instance('/foo/bar r,'),       ['audit /foo/bar r,', 'audit /foo/* r,', 'audit /** r,']),     ['/foo/bar r,', '/foo/* r,', '/** r,']),
+        ((FileRule.create_instance('audit /foo/bar r,'), ['/foo/bar r,', '/foo/* r,', '#include <abstractions/base>']), ['audit /foo/bar r,', 'audit /foo/* r,', '#include <abstractions/base>']),
     )
 
     def _run_test(self, params, expected):
@@ -426,11 +426,11 @@ class AaTest_set_options_audit_mode(AATest):
 
 class AaTest_set_options_owner_mode(AATest):
     tests = (
-        ((FileRule.parse('owner /foo/bar r,'),       ['/foo/bar r,', '/foo/* r,', '/** r,']),                                   ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),
-        ((FileRule.parse('owner /foo/bar r,'),       ['/foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),                       ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),
-        ((FileRule.parse('/foo/bar r,'),             ['/foo/bar r,', '/foo/* r,', '/** r,']),                                   ['/foo/bar r,', '/foo/* r,', '/** r,']),
-        ((FileRule.parse('/foo/bar r,'),             ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),                 ['/foo/bar r,', '/foo/* r,', '/** r,']),
-        ((FileRule.parse('audit owner /foo/bar r,'), ['audit /foo/bar r,', 'audit /foo/* r,', '#include <abstractions/base>']), ['audit owner /foo/bar r,', 'audit owner /foo/* r,', '#include <abstractions/base>']),
+        ((FileRule.create_instance('owner /foo/bar r,'),       ['/foo/bar r,', '/foo/* r,', '/** r,']),                                   ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),
+        ((FileRule.create_instance('owner /foo/bar r,'),       ['/foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),                       ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),
+        ((FileRule.create_instance('/foo/bar r,'),             ['/foo/bar r,', '/foo/* r,', '/** r,']),                                   ['/foo/bar r,', '/foo/* r,', '/** r,']),
+        ((FileRule.create_instance('/foo/bar r,'),             ['owner /foo/bar r,', 'owner /foo/* r,', 'owner /** r,']),                 ['/foo/bar r,', '/foo/* r,', '/** r,']),
+        ((FileRule.create_instance('audit owner /foo/bar r,'), ['audit /foo/bar r,', 'audit /foo/* r,', '#include <abstractions/base>']), ['audit owner /foo/bar r,', 'audit owner /foo/* r,', '#include <abstractions/base>']),
     )
 
     def _run_test(self, params, expected):
@@ -567,9 +567,9 @@ class AaTest_get_file_perms_1(AATest):
         profile = apparmor.aa.ProfileStorage('/test', '/test', 'test-aa.py')
 
         # simple profile without any includes
-        profile['file'].add(FileRule.parse('owner /usr/share/common-licenses/**  w,'))
-        profile['file'].add(FileRule.parse('/dev/null rwk,'))
-        profile['file'].add(FileRule.parse('/foo/bar rwix,'))
+        profile['file'].add(FileRule.create_instance('owner /usr/share/common-licenses/**  w,'))
+        profile['file'].add(FileRule.create_instance('/dev/null rwk,'))
+        profile['file'].add(FileRule.create_instance('/foo/bar rwix,'))
 
         perms = get_file_perms(profile, params, False, False)  # only testing with audit and deny = False
         self.assertEqual(perms, expected)
@@ -601,14 +601,14 @@ class AaTest_get_file_perms_2(AATest):
         apparmor.aa.load_include(os.path.join(self.profile_dir, 'abstractions/aspell'))
 
         profile = apparmor.aa.ProfileStorage('/test', '/test', 'test-aa.py')
-        profile['inc_ie'].add(IncludeRule.parse('include <abstractions/base>'))
-        profile['inc_ie'].add(IncludeRule.parse('include <abstractions/bash>'))
-        profile['inc_ie'].add(IncludeRule.parse('include <abstractions/enchant>'))
+        profile['inc_ie'].add(IncludeRule.create_instance('include <abstractions/base>'))
+        profile['inc_ie'].add(IncludeRule.create_instance('include <abstractions/bash>'))
+        profile['inc_ie'].add(IncludeRule.create_instance('include <abstractions/enchant>'))
 
-        profile['file'].add(FileRule.parse('owner /usr/share/common-licenses/**  w,'))
-        profile['file'].add(FileRule.parse('owner /usr/share/common-licenses/what/ever a,'))  # covered by the above 'w' rule, so 'a' should be ignored
-        profile['file'].add(FileRule.parse('/dev/null rwk,'))
-        profile['file'].add(FileRule.parse('/foo/bar rwix,'))
+        profile['file'].add(FileRule.create_instance('owner /usr/share/common-licenses/**  w,'))
+        profile['file'].add(FileRule.create_instance('owner /usr/share/common-licenses/what/ever a,'))  # covered by the above 'w' rule, so 'a' should be ignored
+        profile['file'].add(FileRule.create_instance('/dev/null rwk,'))
+        profile['file'].add(FileRule.create_instance('/foo/bar rwix,'))
 
         perms = get_file_perms(profile, params, False, False)  # only testing with audit and deny = False
         self.assertEqual(perms, expected)
@@ -644,14 +644,14 @@ class AaTest_propose_file_rules(AATest):
         apparmor.aa.user_globs['/no/thi*ng'] = AARE('/no/thi*ng', True)
 
         profile = apparmor.aa.ProfileStorage('/test', '/test', 'test-aa.py')
-        profile['inc_ie'].add(IncludeRule.parse('include <abstractions/base>'))
-        profile['inc_ie'].add(IncludeRule.parse('include <abstractions/bash>'))
-        profile['inc_ie'].add(IncludeRule.parse('include <abstractions/enchant>'))
+        profile['inc_ie'].add(IncludeRule.create_instance('include <abstractions/base>'))
+        profile['inc_ie'].add(IncludeRule.create_instance('include <abstractions/bash>'))
+        profile['inc_ie'].add(IncludeRule.create_instance('include <abstractions/enchant>'))
 
-        profile['file'].add(FileRule.parse('owner /usr/share/common-licenses/**  w,'))
-        profile['file'].add(FileRule.parse('/dev/null rwk,'))
-        profile['file'].add(FileRule.parse('/foo/bar rwix,'))
-        profile['file'].add(FileRule.parse('/foo/log a,'))  # will be replaced with '/foo/log w,' (not 'wa')
+        profile['file'].add(FileRule.create_instance('owner /usr/share/common-licenses/**  w,'))
+        profile['file'].add(FileRule.create_instance('/dev/null rwk,'))
+        profile['file'].add(FileRule.create_instance('/foo/bar rwix,'))
+        profile['file'].add(FileRule.create_instance('/foo/log a,'))  # will be replaced with '/foo/log w,' (not 'wa')
 
         rule_obj = FileRule(params[0], params[1], None, FileRule.ALL, owner=False, log_event=True)
         proposals = propose_file_rules(profile, rule_obj)
@@ -688,10 +688,10 @@ class AaTest_propose_file_rules_with_absolute_includes(AATest):
         apparmor.aa.load_include(abs_include3)
 
         profile = apparmor.aa.ProfileStorage('/test', '/test', 'test-aa.py')
-        profile['inc_ie'].add(IncludeRule.parse('include <abstractions/base>'))
-        profile['inc_ie'].add(IncludeRule.parse('include "%s"' % abs_include1))
-        profile['inc_ie'].add(IncludeRule.parse('include "%s"' % abs_include2))
-        profile['inc_ie'].add(IncludeRule.parse('include "%s"' % abs_include3))
+        profile['inc_ie'].add(IncludeRule.create_instance('include <abstractions/base>'))
+        profile['inc_ie'].add(IncludeRule.create_instance('include "%s"' % abs_include1))
+        profile['inc_ie'].add(IncludeRule.create_instance('include "%s"' % abs_include2))
+        profile['inc_ie'].add(IncludeRule.create_instance('include "%s"' % abs_include3))
 
         rule_obj = FileRule(params[0], params[1], None, FileRule.ALL, owner=False, log_event=True)
         proposals = propose_file_rules(profile, rule_obj)

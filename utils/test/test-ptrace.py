@@ -68,7 +68,7 @@ class PtraceTestParse(PtraceTest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(PtraceRule.match(rawrule))
-        obj = PtraceRule.parse(rawrule)
+        obj = PtraceRule.create_instance(rawrule)
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
 
@@ -86,7 +86,7 @@ class PtraceTestParseInvalid(PtraceTest):
     def _run_test(self, rawrule, expected):
         self.assertTrue(PtraceRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
-            PtraceRule.parse(rawrule)
+            PtraceRule.create_instance(rawrule)
 
 
 class PtraceTestParseFromLog(PtraceTest):
@@ -180,7 +180,7 @@ class InvalidPtraceTest(AATest):
         obj = None
         self.assertFalse(PtraceRule.match(rawrule))
         with self.assertRaises(AppArmorException):
-            obj = PtraceRule.parse(rawrule)
+            obj = PtraceRule.create_instance(rawrule)
 
         self.assertIsNone(obj, 'PtraceRule handed back an object unexpectedly')
 
@@ -208,7 +208,7 @@ class InvalidPtraceTest(AATest):
 class WritePtraceTestAATest(AATest):
     def _run_test(self, rawrule, expected):
         self.assertTrue(PtraceRule.match(rawrule))
-        obj = PtraceRule.parse(rawrule)
+        obj = PtraceRule.create_instance(rawrule)
         clean = obj.get_clean()
         raw = obj.get_raw()
 
@@ -256,8 +256,8 @@ class WritePtraceTestAATest(AATest):
 
 class PtraceCoveredTest(AATest):
     def _run_test(self, param, expected):
-        obj = PtraceRule.parse(self.rule)
-        check_obj = PtraceRule.parse(param)
+        obj = PtraceRule.create_instance(self.rule)
+        check_obj = PtraceRule.create_instance(param)
 
         self.assertTrue(PtraceRule.match(param))
 
@@ -436,7 +436,7 @@ class PtraceCoveredTest_08(PtraceCoveredTest):
 
 class PtraceCoveredTest_Invalid(AATest):
     def test_borked_obj_is_covered_1(self):
-        obj = PtraceRule.parse('ptrace read peer=/foo,')
+        obj = PtraceRule.create_instance('ptrace read peer=/foo,')
 
         testobj = PtraceRule('read', '/foo')
         testobj.access = ''
@@ -445,7 +445,7 @@ class PtraceCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_borked_obj_is_covered_2(self):
-        obj = PtraceRule.parse('ptrace read peer=/foo,')
+        obj = PtraceRule.create_instance('ptrace read peer=/foo,')
 
         testobj = PtraceRule('read', '/foo')
         testobj.peer = ''
@@ -454,7 +454,7 @@ class PtraceCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_covered(self):
-        obj = PtraceRule.parse('ptrace read,')
+        obj = PtraceRule.create_instance('ptrace read,')
 
         testobj = BaseRule()  # different type
 
@@ -462,7 +462,7 @@ class PtraceCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal_1(self):
-        obj = PtraceRule.parse('ptrace read,')
+        obj = PtraceRule.create_instance('ptrace read,')
 
         testobj = BaseRule()  # different type
 
@@ -470,9 +470,9 @@ class PtraceCoveredTest_Invalid(AATest):
             obj.is_equal(testobj)
 
     def test_invalid_is_equal_2(self):
-        obj = PtraceRule.parse('ptrace read,')
+        obj = PtraceRule.create_instance('ptrace read,')
 
-        testobj = PtraceRule.parse('ptrace read,')
+        testobj = PtraceRule.create_instance('ptrace read,')
         testobj.all_peers = False  # make testobj invalid (should trigger exception in _is_equal_aare())
 
         with self.assertRaises(AppArmorBug):
@@ -491,7 +491,7 @@ class PtraceLogprofHeaderTest(AATest):
     )
 
     def _run_test(self, params, expected):
-        obj = PtraceRule.parse(params)
+        obj = PtraceRule.create_instance(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 
@@ -530,7 +530,7 @@ class PtraceRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(PtraceRule.parse(rule))
+            ruleset.add(PtraceRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())
@@ -564,7 +564,7 @@ class PtraceRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(PtraceRule.parse(rule))
+            ruleset.add(PtraceRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw(1))
         self.assertEqual(expected_clean, ruleset.get_clean(1))

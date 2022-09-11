@@ -59,7 +59,7 @@ class AliasRule(BaseRule):
         return RE_PROFILE_ALIAS.search(raw_rule)
 
     @classmethod
-    def _parse(cls, raw_rule):
+    def _create_instance(cls, raw_rule):
         """parse raw_rule and return AliasRule"""
 
         matches = cls._match(raw_rule)

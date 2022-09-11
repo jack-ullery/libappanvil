@@ -78,7 +78,7 @@ class ChangeProfileTestParse(ChangeProfileTest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(ChangeProfileRule.match(rawrule))
-        obj = ChangeProfileRule.parse(rawrule)
+        obj = ChangeProfileRule.create_instance(rawrule)
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
 
@@ -94,7 +94,7 @@ class ChangeProfileTestParseInvalid(ChangeProfileTest):
     def _run_test(self, rawrule, expected):
         self.assertFalse(ChangeProfileRule.match(rawrule))
         with self.assertRaises(expected):
-            ChangeProfileRule.parse(rawrule)
+            ChangeProfileRule.create_instance(rawrule)
 
 
 class ChangeProfileTestParseFromLog(ChangeProfileTest):
@@ -190,7 +190,7 @@ class InvalidChangeProfileTest(AATest):
         obj = None
         self.assertFalse(ChangeProfileRule.match(rawrule))
         with self.assertRaises(AppArmorException):
-            obj = ChangeProfileRule.parse(rawrule)
+            obj = ChangeProfileRule.create_instance(rawrule)
 
         self.assertIsNone(obj, 'ChangeProfileRule handed back an object unexpectedly')
 
@@ -229,7 +229,7 @@ class WriteChangeProfileTestAATest(AATest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(ChangeProfileRule.match(rawrule))
-        obj = ChangeProfileRule.parse(rawrule)
+        obj = ChangeProfileRule.create_instance(rawrule)
         clean = obj.get_clean()
         raw = obj.get_raw()
 
@@ -247,8 +247,8 @@ class WriteChangeProfileTestAATest(AATest):
 
 class ChangeProfileCoveredTest(AATest):
     def _run_test(self, param, expected):
-        obj = ChangeProfileRule.parse(self.rule)
-        check_obj = ChangeProfileRule.parse(param)
+        obj = ChangeProfileRule.create_instance(self.rule)
+        check_obj = ChangeProfileRule.create_instance(param)
 
         self.assertTrue(ChangeProfileRule.match(param))
 
@@ -359,7 +359,7 @@ class ChangeProfileCoveredTest_06(ChangeProfileCoveredTest):
 
 class ChangeProfileCoveredTest_Invalid(AATest):
     def test_borked_obj_is_covered_1(self):
-        obj = ChangeProfileRule.parse('change_profile /foo,')
+        obj = ChangeProfileRule.create_instance('change_profile /foo,')
 
         testobj = ChangeProfileRule(None, '/foo', '/bar')
         testobj.execcond = ''
@@ -368,7 +368,7 @@ class ChangeProfileCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_borked_obj_is_covered_2(self):
-        obj = ChangeProfileRule.parse('change_profile /foo,')
+        obj = ChangeProfileRule.create_instance('change_profile /foo,')
 
         testobj = ChangeProfileRule(None, '/foo', '/bar')
         testobj.targetprofile = ''
@@ -377,7 +377,7 @@ class ChangeProfileCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_covered(self):
-        obj = ChangeProfileRule.parse('change_profile /foo,')
+        obj = ChangeProfileRule.create_instance('change_profile /foo,')
 
         testobj = BaseRule()  # different type
 
@@ -385,7 +385,7 @@ class ChangeProfileCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = ChangeProfileRule.parse('change_profile -> /bar,')
+        obj = ChangeProfileRule.create_instance('change_profile -> /bar,')
 
         testobj = BaseRule()  # different type
 
@@ -406,7 +406,7 @@ class ChangeProfileLogprofHeaderTest(AATest):
     )
 
     def _run_test(self, params, expected):
-        obj = ChangeProfileRule.parse(params)
+        obj = ChangeProfileRule.create_instance(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 
@@ -441,7 +441,7 @@ class ChangeProfileRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(ChangeProfileRule.parse(rule))
+            ruleset.add(ChangeProfileRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())
@@ -470,7 +470,7 @@ class ChangeProfileRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(ChangeProfileRule.parse(rule))
+            ruleset.add(ChangeProfileRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw(1))
         self.assertEqual(expected_clean, ruleset.get_clean(1))

@@ -69,7 +69,7 @@ class PtraceRule(BaseRule):
         return RE_PROFILE_PTRACE.search(raw_rule)
 
     @classmethod
-    def _parse(cls, raw_rule):
+    def _create_instance(cls, raw_rule):
         """parse raw_rule and return PtraceRule"""
 
         matches = cls._match(raw_rule)

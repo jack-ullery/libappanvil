@@ -69,7 +69,7 @@ class SignalTestParse(SignalTest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(SignalRule.match(rawrule))
-        obj = SignalRule.parse(rawrule)
+        obj = SignalRule.create_instance(rawrule)
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
 
@@ -90,7 +90,7 @@ class SignalTestParseInvalid(SignalTest):
     def _run_test(self, rawrule, expected):
         self.assertTrue(SignalRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
-            SignalRule.parse(rawrule)
+            SignalRule.create_instance(rawrule)
 
 
 class SignalTestParseFromLog(SignalTest):
@@ -192,7 +192,7 @@ class InvalidSignalTest(AATest):
         obj = None
         self.assertFalse(SignalRule.match(rawrule))
         with self.assertRaises(AppArmorException):
-            obj = SignalRule.parse(rawrule)
+            obj = SignalRule.create_instance(rawrule)
 
         self.assertIsNone(obj, 'SignalRule handed back an object unexpectedly')
 
@@ -227,7 +227,7 @@ class InvalidSignalTest(AATest):
 class WriteSignalTestAATest(AATest):
     def _run_test(self, rawrule, expected):
         self.assertTrue(SignalRule.match(rawrule))
-        obj = SignalRule.parse(rawrule)
+        obj = SignalRule.create_instance(rawrule)
         clean = obj.get_clean()
         raw = obj.get_raw()
 
@@ -272,8 +272,8 @@ class WriteSignalTestAATest(AATest):
 
 class SignalCoveredTest(AATest):
     def _run_test(self, param, expected):
-        obj = SignalRule.parse(self.rule)
-        check_obj = SignalRule.parse(param)
+        obj = SignalRule.create_instance(self.rule)
+        check_obj = SignalRule.create_instance(param)
 
         self.assertTrue(SignalRule.match(param))
 
@@ -498,7 +498,7 @@ class SignalCoveredTest_09(SignalCoveredTest):
 
 class SignalCoveredTest_Invalid(AATest):
     def test_borked_obj_is_covered_1(self):
-        obj = SignalRule.parse('signal send peer=/foo,')
+        obj = SignalRule.create_instance('signal send peer=/foo,')
 
         testobj = SignalRule('send', 'quit', '/foo')
         testobj.access = ''
@@ -507,7 +507,7 @@ class SignalCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_borked_obj_is_covered_2(self):
-        obj = SignalRule.parse('signal send set=quit peer=/foo,')
+        obj = SignalRule.create_instance('signal send set=quit peer=/foo,')
 
         testobj = SignalRule('send', 'quit', '/foo')
         testobj.signal = ''
@@ -516,7 +516,7 @@ class SignalCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_borked_obj_is_covered_3(self):
-        obj = SignalRule.parse('signal send set=quit peer=/foo,')
+        obj = SignalRule.create_instance('signal send set=quit peer=/foo,')
 
         testobj = SignalRule('send', 'quit', '/foo')
         testobj.peer = ''
@@ -525,7 +525,7 @@ class SignalCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_covered(self):
-        obj = SignalRule.parse('signal send,')
+        obj = SignalRule.create_instance('signal send,')
 
         testobj = BaseRule()  # different type
 
@@ -533,7 +533,7 @@ class SignalCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = SignalRule.parse('signal send,')
+        obj = SignalRule.create_instance('signal send,')
 
         testobj = BaseRule()  # different type
 
@@ -556,7 +556,7 @@ class SignalLogprofHeaderTest(AATest):
     )
 
     def _run_test(self, params, expected):
-        obj = SignalRule.parse(params)
+        obj = SignalRule.create_instance(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 
@@ -591,7 +591,7 @@ class SignalRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(SignalRule.parse(rule))
+            ruleset.add(SignalRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())
@@ -620,7 +620,7 @@ class SignalRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(SignalRule.parse(rule))
+            ruleset.add(SignalRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw(1))
         self.assertEqual(expected_clean, ruleset.get_clean(1))

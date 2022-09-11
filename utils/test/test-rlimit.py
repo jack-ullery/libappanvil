@@ -71,7 +71,7 @@ class RlimitTestParse(RlimitTest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(RlimitRule.match(rawrule))
-        obj = RlimitRule.parse(rawrule)
+        obj = RlimitRule.create_instance(rawrule)
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
 
@@ -95,7 +95,7 @@ class RlimitTestParseInvalid(RlimitTest):
     def _run_test(self, rawrule, expected):
         # self.assertFalse(RlimitRule.match(rawrule))  # the main regex isn't very strict
         with self.assertRaises(expected):
-            RlimitRule.parse(rawrule)
+            RlimitRule.create_instance(rawrule)
 
 
 class RlimitTestParseFromLog(RlimitTest):
@@ -181,7 +181,7 @@ class InvalidRlimitTest(AATest):
         obj = None
         self.assertFalse(RlimitRule.match(rawrule))
         with self.assertRaises(AppArmorException):
-            obj = RlimitRule.parse(rawrule)
+            obj = RlimitRule.create_instance(rawrule)
 
         self.assertIsNone(obj, 'RlimitRule handed back an object unexpectedly')
 
@@ -220,7 +220,7 @@ class WriteRlimitTest(AATest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(RlimitRule.match(rawrule))
-        obj = RlimitRule.parse(rawrule)
+        obj = RlimitRule.create_instance(rawrule)
         clean = obj.get_clean()
         raw = obj.get_raw()
 
@@ -238,8 +238,8 @@ class WriteRlimitTest(AATest):
 
 class RlimitCoveredTest(AATest):
     def _run_test(self, param, expected):
-        obj = RlimitRule.parse(self.rule)
-        check_obj = RlimitRule.parse(param)
+        obj = RlimitRule.create_instance(self.rule)
+        check_obj = RlimitRule.create_instance(param)
 
         self.assertTrue(RlimitRule.match(param))
 
@@ -336,7 +336,7 @@ class RlimitCoveredTest_05(RlimitCoveredTest):
 
 class RlimitCoveredTest_Invalid(AATest):
     def test_borked_obj_is_covered_1(self):
-        obj = RlimitRule.parse('set rlimit cpu <= 1024,')
+        obj = RlimitRule.create_instance('set rlimit cpu <= 1024,')
 
         testobj = RlimitRule('cpu', '1024')
         testobj.rlimit = ''
@@ -345,7 +345,7 @@ class RlimitCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_borked_obj_is_covered_2(self):
-        obj = RlimitRule.parse('set rlimit cpu <= 1024,')
+        obj = RlimitRule.create_instance('set rlimit cpu <= 1024,')
 
         testobj = RlimitRule('cpu', '1024')
         testobj.value = ''
@@ -354,7 +354,7 @@ class RlimitCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_covered(self):
-        obj = RlimitRule.parse('set rlimit cpu <= 1024,')
+        obj = RlimitRule.create_instance('set rlimit cpu <= 1024,')
 
         testobj = BaseRule()  # different type
 
@@ -362,7 +362,7 @@ class RlimitCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = RlimitRule.parse('set rlimit cpu <= 1024,')
+        obj = RlimitRule.create_instance('set rlimit cpu <= 1024,')
 
         testobj = BaseRule()  # different type
 
@@ -379,7 +379,7 @@ class RlimitLogprofHeaderTest(AATest):
     )
 
     def _run_test(self, params, expected):
-        obj = RlimitRule.parse(params)
+        obj = RlimitRule.create_instance(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 
@@ -414,7 +414,7 @@ class RlimitRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(RlimitRule.parse(rule))
+            ruleset.add(RlimitRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())

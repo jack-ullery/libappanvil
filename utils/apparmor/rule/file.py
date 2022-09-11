@@ -137,7 +137,7 @@ class FileRule(BaseRule):
         return RE_PROFILE_FILE_ENTRY.search(raw_rule)
 
     @classmethod
-    def _parse(cls, raw_rule):
+    def _create_instance(cls, raw_rule):
         """parse raw_rule and return FileRule"""
 
         matches = cls._match(raw_rule)

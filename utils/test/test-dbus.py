@@ -103,7 +103,7 @@ class DbusTestParse(DbusTest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(DbusRule.match(rawrule))
-        obj = DbusRule.parse(rawrule)
+        obj = DbusRule.create_instance(rawrule)
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
 
@@ -126,7 +126,7 @@ class DbusTestParseInvalid(DbusTest):
     def _run_test(self, rawrule, expected):
         self.assertTrue(DbusRule.match(rawrule))  # the above invalid rules still match the main regex!
         with self.assertRaises(expected):
-            DbusRule.parse(rawrule)
+            DbusRule.create_instance(rawrule)
 
 
 class DbusTestParseFromLog(DbusTest):
@@ -309,7 +309,7 @@ class InvalidDbusTest(AATest):
         obj = None
         self.assertFalse(DbusRule.match(rawrule))
         with self.assertRaises(AppArmorException):
-            obj = DbusRule.parse(rawrule)
+            obj = DbusRule.create_instance(rawrule)
 
         self.assertIsNone(obj, 'DbusRule handed back an object unexpectedly')
 
@@ -380,7 +380,7 @@ class InvalidDbusTest(AATest):
 class WriteDbusTest(AATest):
     def _run_test(self, rawrule, expected):
         self.assertTrue(DbusRule.match(rawrule), 'DbusRule.match() failed')
-        obj = DbusRule.parse(rawrule)
+        obj = DbusRule.create_instance(rawrule)
         clean = obj.get_clean()
         raw = obj.get_raw()
 
@@ -436,8 +436,8 @@ class WriteDbusTest(AATest):
 
 class DbusCoveredTest(AATest):
     def _run_test(self, param, expected):
-        obj = DbusRule.parse(self.rule)
-        check_obj = DbusRule.parse(param)
+        obj = DbusRule.create_instance(self.rule)
+        check_obj = DbusRule.create_instance(param)
 
         self.assertTrue(DbusRule.match(param))
 
@@ -766,7 +766,7 @@ class DbusCoveredTest_Invalid(AATest):
             self.obj.is_covered(self.testobj)
 
     def test_invalid_is_covered(self):
-        obj = DbusRule.parse('dbus send,')
+        obj = DbusRule.create_instance('dbus send,')
 
         testobj = BaseRule()  # different type
 
@@ -774,7 +774,7 @@ class DbusCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = DbusRule.parse('dbus send,')
+        obj = DbusRule.create_instance('dbus send,')
 
         testobj = BaseRule()  # different type
 
@@ -798,7 +798,7 @@ class DbusLogprofHeaderTest(AATest):
     )
 
     def _run_test(self, params, expected):
-        obj = DbusRule.parse(params)
+        obj = DbusRule.create_instance(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 
@@ -833,7 +833,7 @@ class DbusRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(DbusRule.parse(rule))
+            ruleset.add(DbusRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())
@@ -862,7 +862,7 @@ class DbusRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(DbusRule.parse(rule))
+            ruleset.add(DbusRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw(1))
         self.assertEqual(expected_clean, ruleset.get_clean(1))

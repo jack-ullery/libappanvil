@@ -64,7 +64,7 @@ class CapabilityRule(BaseRule):
         return RE_PROFILE_CAP.search(raw_rule)
 
     @classmethod
-    def _parse(cls, raw_rule):
+    def _create_instance(cls, raw_rule):
         """parse raw_rule and return CapabilityRule"""
 
         matches = cls._match(raw_rule)

@@ -51,7 +51,7 @@ class AliasTestParse(AliasTest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(AliasRule.match(rawrule))
-        obj = AliasRule.parse(rawrule)
+        obj = AliasRule.create_instance(rawrule)
         self.assertEqual(rawrule.strip(), obj.raw_rule)
         self._compare_obj(obj, expected)
 
@@ -69,7 +69,7 @@ class AliasTestParseInvalid(AliasTest):
     def _run_test(self, rawrule, expected):
         self.assertEqual(AliasRule.match(rawrule), expected[0])
         with self.assertRaises(expected[1]):
-            AliasRule.parse(rawrule)
+            AliasRule.create_instance(rawrule)
 
 
 class AliasFromInit(AliasTest):
@@ -121,7 +121,7 @@ class InvalidAliasTest(AATest):
         obj = None
         self.assertEqual(AliasRule.match(rawrule), matches_regex)
         with self.assertRaises(AppArmorException):
-            obj = AliasRule.parse(rawrule)
+            obj = AliasRule.create_instance(rawrule)
 
         self.assertIsNone(obj, 'AliasRule handed back an object unexpectedly')
 
@@ -146,7 +146,7 @@ class WriteAliasTestAATest(AATest):
 
     def _run_test(self, rawrule, expected):
         self.assertTrue(AliasRule.match(rawrule))
-        obj = AliasRule.parse(rawrule)
+        obj = AliasRule.create_instance(rawrule)
         clean = obj.get_clean()
         raw = obj.get_raw()
 
@@ -172,8 +172,8 @@ class WriteAliasTestAATest(AATest):
 
 class AliasCoveredTest(AATest):
     def _run_test(self, param, expected):
-        obj = AliasRule.parse(self.rule)
-        check_obj = AliasRule.parse(param)
+        obj = AliasRule.create_instance(self.rule)
+        check_obj = AliasRule.create_instance(param)
 
         self.assertTrue(AliasRule.match(param))
 
@@ -201,7 +201,7 @@ class AliasCoveredTest_01(AliasCoveredTest):
 
 class AliasCoveredTest_Invalid(AATest):
     # def test_borked_obj_is_covered_1(self):
-    #     obj = AliasRule.parse('alias /foo -> /bar,')
+    #     obj = AliasRule.create_instance('alias /foo -> /bar,')
     #
     #     testobj = AliasRule('/foo', '/bar')
     #
@@ -209,7 +209,7 @@ class AliasCoveredTest_Invalid(AATest):
     #         obj.is_covered(testobj)
     #
     # def test_borked_obj_is_covered_2(self):
-    #     obj = AliasRule.parse('alias /foo -> /bar,')
+    #     obj = AliasRule.create_instance('alias /foo -> /bar,')
     #
     #     testobj = AliasRule('/foo', '/bar')
     #     testobj.target = ''
@@ -218,7 +218,7 @@ class AliasCoveredTest_Invalid(AATest):
     #         obj.is_covered(testobj)
 
     def test_invalid_is_covered_3(self):
-        obj = AliasRule.parse('alias /foo -> /bar,')
+        obj = AliasRule.create_instance('alias /foo -> /bar,')
 
         testobj = BaseRule()  # different type
 
@@ -226,7 +226,7 @@ class AliasCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = AliasRule.parse('alias /foo -> /bar,')
+        obj = AliasRule.create_instance('alias /foo -> /bar,')
 
         testobj = BaseRule()  # different type
 
@@ -240,7 +240,7 @@ class AliasLogprofHeaderTest(AATest):
     )
 
     def _run_test(self, params, expected):
-        obj = AliasRule.parse(params)
+        obj = AliasRule.create_instance(params)
         self.assertEqual(obj.logprof_header(), expected)
 
 
@@ -289,7 +289,7 @@ class AliasRulesTest(AATest):
         ]
 
         for rule in rules:
-            ruleset.add(AliasRule.parse(rule))
+            ruleset.add(AliasRule.create_instance(rule))
 
         self.assertEqual(expected_raw, ruleset.get_raw())
         self.assertEqual(expected_clean, ruleset.get_clean())
