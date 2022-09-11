@@ -849,179 +849,178 @@ def ask_exec(hashlog):
                     exec_mode = False
                     file_perm = None
 
-                    if True:
-                        options = cfg['qualifiers'].get(exec_target, 'ipcnu')
+                    options = cfg['qualifiers'].get(exec_target, 'ipcnu')
 
-                        # If profiled program executes itself only 'ix' option
-                        # if exec_target == profile:
-                        #     options = 'i'
+                    # If profiled program executes itself only 'ix' option
+                    # if exec_target == profile:
+                    #     options = 'i'
 
-                        # Don't allow hats to cx?
-                        options.replace('c', '')
-                        # Add deny to options
-                        options += 'd'
-                        # Define the default option
-                        default = None
-                        if 'p' in options and os.path.exists(get_profile_filename_from_attachment(exec_target, True)):
-                            default = 'CMD_px'
-                            sys.stdout.write(_('Target profile exists: %s\n') % get_profile_filename_from_attachment(exec_target, True))
-                        elif 'i' in options:
-                            default = 'CMD_ix'
-                        elif 'c' in options:
-                            default = 'CMD_cx'
-                        elif 'n' in options:
-                            default = 'CMD_nx'
-                        else:
-                            default = 'DENY'
+                    # Don't allow hats to cx?
+                    options.replace('c', '')
+                    # Add deny to options
+                    options += 'd'
+                    # Define the default option
+                    default = None
+                    if 'p' in options and os.path.exists(get_profile_filename_from_attachment(exec_target, True)):
+                        default = 'CMD_px'
+                        sys.stdout.write(_('Target profile exists: %s\n') % get_profile_filename_from_attachment(exec_target, True))
+                    elif 'i' in options:
+                        default = 'CMD_ix'
+                    elif 'c' in options:
+                        default = 'CMD_cx'
+                    elif 'n' in options:
+                        default = 'CMD_nx'
+                    else:
+                        default = 'DENY'
 
-                        #
-                        parent_uses_ld_xxx = check_for_LD_XXX(profile)
+                    #
+                    parent_uses_ld_xxx = check_for_LD_XXX(profile)
 
-                        prof_filename = get_profile_filename_from_profile_name(profile)
-                        if prof_filename and active_profiles.files.get(prof_filename):
-                            sev_db.set_variables(active_profiles.get_all_merged_variables(
-                                                 prof_filename,
-                                                 include_list_recursive(active_profiles.files[prof_filename], True)))
-                        else:
-                            sev_db.set_variables({})
+                    prof_filename = get_profile_filename_from_profile_name(profile)
+                    if prof_filename and active_profiles.files.get(prof_filename):
+                        sev_db.set_variables(active_profiles.get_all_merged_variables(
+                                             prof_filename,
+                                             include_list_recursive(active_profiles.files[prof_filename], True)))
+                    else:
+                        sev_db.set_variables({})
 
-                        severity = sev_db.rank_path(exec_target, 'x')
+                    severity = sev_db.rank_path(exec_target, 'x')
 
-                        # Prompt portion starts
-                        q = aaui.PromptQuestion()
+                    # Prompt portion starts
+                    q = aaui.PromptQuestion()
 
-                        q.headers.extend((
-                            _('Profile'), combine_name(profile, hat),
+                    q.headers.extend((
+                        _('Profile'), combine_name(profile, hat),
 
-                            # to_name should not exist here since, transitioning is already handled
-                            _('Execute'), exec_target,
-                            _('Severity'), severity,
-                        ))
+                        # to_name should not exist here since, transitioning is already handled
+                        _('Execute'), exec_target,
+                        _('Severity'), severity,
+                    ))
 
-                        exec_toggle = False
-                        q.functions.extend(build_x_functions(default, options, exec_toggle))
+                    exec_toggle = False
+                    q.functions.extend(build_x_functions(default, options, exec_toggle))
 
-                        # ask user about the exec mode to use
-                        ans = ''
-                        while ans not in ('CMD_ix', 'CMD_px', 'CMD_cx', 'CMD_nx', 'CMD_pix', 'CMD_cix', 'CMD_nix', 'CMD_ux', 'CMD_DENY'):  # add '(I)gnore'? (hotkey conflict with '(i)x'!)
-                            ans = q.promptUser()[0]
+                    # ask user about the exec mode to use
+                    ans = ''
+                    while ans not in ('CMD_ix', 'CMD_px', 'CMD_cx', 'CMD_nx', 'CMD_pix', 'CMD_cix', 'CMD_nix', 'CMD_ux', 'CMD_DENY'):  # add '(I)gnore'? (hotkey conflict with '(i)x'!)
+                        ans = q.promptUser()[0]
 
-                            if ans.startswith('CMD_EXEC_IX_'):
-                                exec_toggle = not exec_toggle
-                                q.functions = build_x_functions(default, options, exec_toggle)
-                                ans = ''
-                                continue
+                        if ans.startswith('CMD_EXEC_IX_'):
+                            exec_toggle = not exec_toggle
+                            q.functions = build_x_functions(default, options, exec_toggle)
+                            ans = ''
+                            continue
 
-                            if ans == 'CMD_FINISHED':
-                                save_profiles()
-                                return
+                        if ans == 'CMD_FINISHED':
+                            save_profiles()
+                            return
 
-                            if ans == 'CMD_nx' or ans == 'CMD_nix':
-                                arg = exec_target
-                                ynans = 'n'
-                                if profile == hat:
-                                    ynans = aaui.UI_YesNo(_('Are you specifying a transition to a local profile?'), 'n')
-                                if ynans == 'y':
-                                    if ans == 'CMD_nx':
-                                        ans = 'CMD_cx'
-                                    else:
-                                        ans = 'CMD_cix'
+                        if ans == 'CMD_nx' or ans == 'CMD_nix':
+                            arg = exec_target
+                            ynans = 'n'
+                            if profile == hat:
+                                ynans = aaui.UI_YesNo(_('Are you specifying a transition to a local profile?'), 'n')
+                            if ynans == 'y':
+                                if ans == 'CMD_nx':
+                                    ans = 'CMD_cx'
                                 else:
-                                    if ans == 'CMD_nx':
-                                        ans = 'CMD_px'
-                                    else:
-                                        ans = 'CMD_pix'
+                                    ans = 'CMD_cix'
+                            else:
+                                if ans == 'CMD_nx':
+                                    ans = 'CMD_px'
+                                else:
+                                    ans = 'CMD_pix'
 
-                                to_name = aaui.UI_GetString(_('Enter profile name to transition to: '), arg)
+                            to_name = aaui.UI_GetString(_('Enter profile name to transition to: '), arg)
 
-                            if ans == 'CMD_ix':
-                                exec_mode = 'ix'
-                            elif ans in ('CMD_px', 'CMD_cx', 'CMD_pix', 'CMD_cix'):
-                                exec_mode = ans.replace('CMD_', '')
+                        if ans == 'CMD_ix':
+                            exec_mode = 'ix'
+                        elif ans in ('CMD_px', 'CMD_cx', 'CMD_pix', 'CMD_cix'):
+                            exec_mode = ans.replace('CMD_', '')
+                            px_msg = _(
+                                "Should AppArmor sanitise the environment when\n"
+                                "switching profiles?\n"
+                                "\n"
+                                "Sanitising environment is more secure,\n"
+                                "but some applications depend on the presence\n"
+                                "of LD_PRELOAD or LD_LIBRARY_PATH.")
+                            if parent_uses_ld_xxx:
                                 px_msg = _(
                                     "Should AppArmor sanitise the environment when\n"
                                     "switching profiles?\n"
                                     "\n"
                                     "Sanitising environment is more secure,\n"
-                                    "but some applications depend on the presence\n"
-                                    "of LD_PRELOAD or LD_LIBRARY_PATH.")
-                                if parent_uses_ld_xxx:
-                                    px_msg = _(
-                                        "Should AppArmor sanitise the environment when\n"
-                                        "switching profiles?\n"
-                                        "\n"
-                                        "Sanitising environment is more secure,\n"
-                                        "but this application appears to be using LD_PRELOAD\n"
-                                        "or LD_LIBRARY_PATH and sanitising the environment\n"
-                                        "could cause functionality problems.")
+                                    "but this application appears to be using LD_PRELOAD\n"
+                                    "or LD_LIBRARY_PATH and sanitising the environment\n"
+                                    "could cause functionality problems.")
 
-                                ynans = aaui.UI_YesNo(px_msg, 'y')
+                            ynans = aaui.UI_YesNo(px_msg, 'y')
+                            if ynans == 'y':
+                                # Disable the unsafe mode
+                                exec_mode = exec_mode.capitalize()
+                        elif ans == 'CMD_ux':
+                            exec_mode = 'ux'
+                            ynans = aaui.UI_YesNo(_(
+                                "Launching processes in an unconfined state is a very\n"
+                                "dangerous operation and can cause serious security holes.\n"
+                                "\n"
+                                "Are you absolutely certain you wish to remove all\n"
+                                "AppArmor protection when executing %s ?") % exec_target, 'n')
+                            if ynans == 'y':
+                                ynans = aaui.UI_YesNo(_(
+                                    "Should AppArmor sanitise the environment when\n"
+                                    "running this program unconfined?\n"
+                                    "\n"
+                                    "Not sanitising the environment when unconfining\n"
+                                    "a program opens up significant security holes\n"
+                                    "and should be avoided if at all possible."), 'y')
                                 if ynans == 'y':
                                     # Disable the unsafe mode
                                     exec_mode = exec_mode.capitalize()
-                            elif ans == 'CMD_ux':
-                                exec_mode = 'ux'
-                                ynans = aaui.UI_YesNo(_(
-                                    "Launching processes in an unconfined state is a very\n"
-                                    "dangerous operation and can cause serious security holes.\n"
-                                    "\n"
-                                    "Are you absolutely certain you wish to remove all\n"
-                                    "AppArmor protection when executing %s ?") % exec_target, 'n')
-                                if ynans == 'y':
-                                    ynans = aaui.UI_YesNo(_(
-                                        "Should AppArmor sanitise the environment when\n"
-                                        "running this program unconfined?\n"
-                                        "\n"
-                                        "Not sanitising the environment when unconfining\n"
-                                        "a program opens up significant security holes\n"
-                                        "and should be avoided if at all possible."), 'y')
-                                    if ynans == 'y':
-                                        # Disable the unsafe mode
-                                        exec_mode = exec_mode.capitalize()
-                                else:
-                                    ans = 'INVALID'
-
-                        if exec_mode and 'i' in exec_mode:
-                            # For inherit we need mr
-                            file_perm = 'mr'
-                        else:
-                            if ans == 'CMD_DENY':
-                                aa[profile][hat]['file'].add(FileRule(exec_target, None, 'x', FileRule.ALL, owner=False, log_event=True, deny=True))
-                                changed[profile] = True
-                                if target_profile and hashlog[aamode].get(target_profile):
-                                    hashlog[aamode][target_profile]['final_name'] = ''
-                                # Skip remaining events if they ask to deny exec
-                                continue
-
-                        if ans != 'CMD_DENY':
-                            if to_name:
-                                rule_to_name = to_name
                             else:
-                                rule_to_name = FileRule.ALL
+                                ans = 'INVALID'
 
-                            aa[profile][hat]['file'].add(FileRule(exec_target, file_perm, exec_mode, rule_to_name, owner=False, log_event=True))
-
+                    if exec_mode and 'i' in exec_mode:
+                        # For inherit we need mr
+                        file_perm = 'mr'
+                    else:
+                        if ans == 'CMD_DENY':
+                            aa[profile][hat]['file'].add(FileRule(exec_target, None, 'x', FileRule.ALL, owner=False, log_event=True, deny=True))
                             changed[profile] = True
+                            if target_profile and hashlog[aamode].get(target_profile):
+                                hashlog[aamode][target_profile]['final_name'] = ''
+                            # Skip remaining events if they ask to deny exec
+                            continue
 
-                            if 'i' in exec_mode:
-                                interpreter_path, abstraction = get_interpreter_and_abstraction(exec_target)
+                    if ans != 'CMD_DENY':
+                        if to_name:
+                            rule_to_name = to_name
+                        else:
+                            rule_to_name = FileRule.ALL
 
-                                if interpreter_path:
-                                    exec_target_rule = FileRule(exec_target,      'r',  None, FileRule.ALL, owner=False)
-                                    interpreter_rule = FileRule(interpreter_path, None, 'ix', FileRule.ALL, owner=False)
+                        aa[profile][hat]['file'].add(FileRule(exec_target, file_perm, exec_mode, rule_to_name, owner=False, log_event=True))
 
-                                    if not is_known_rule(aa[profile][hat], 'file', exec_target_rule):
-                                        aa[profile][hat]['file'].add(exec_target_rule)
-                                    if not is_known_rule(aa[profile][hat], 'file', interpreter_rule):
-                                        aa[profile][hat]['file'].add(interpreter_rule)
+                        changed[profile] = True
 
-                                    if abstraction:
-                                        abstraction_rule = IncludeRule(abstraction, False, True)
+                        if 'i' in exec_mode:
+                            interpreter_path, abstraction = get_interpreter_and_abstraction(exec_target)
 
-                                        if not aa[profile][hat]['inc_ie'].is_covered(abstraction_rule):
-                                            aa[profile][hat]['inc_ie'].add(abstraction_rule)
+                            if interpreter_path:
+                                exec_target_rule = FileRule(exec_target,      'r',  None, FileRule.ALL, owner=False)
+                                interpreter_rule = FileRule(interpreter_path, None, 'ix', FileRule.ALL, owner=False)
 
-                                    handle_binfmt(aa[profile][hat], interpreter_path)
+                                if not is_known_rule(aa[profile][hat], 'file', exec_target_rule):
+                                    aa[profile][hat]['file'].add(exec_target_rule)
+                                if not is_known_rule(aa[profile][hat], 'file', interpreter_rule):
+                                    aa[profile][hat]['file'].add(interpreter_rule)
+
+                                if abstraction:
+                                    abstraction_rule = IncludeRule(abstraction, False, True)
+
+                                    if not aa[profile][hat]['inc_ie'].is_covered(abstraction_rule):
+                                        aa[profile][hat]['inc_ie'].add(abstraction_rule)
+
+                                handle_binfmt(aa[profile][hat], interpreter_path)
 
                     # Update tracking info based on kind of change
 
@@ -1654,79 +1653,78 @@ def collapse_log(hashlog, ignore_null_profiles=True):
             if aa.get(profile) and aa[profile].get(hat):
                 hat_exists = True
 
-            if True:
-                if not log_dict[aamode].get(full_profile):
-                    # with execs in ix mode, we already have ProfileStorage initialized and should keep the content it already has
-                    log_dict[aamode][full_profile] = ProfileStorage(profile, hat, 'collapse_log()')
+            if not log_dict[aamode].get(full_profile):
+                # with execs in ix mode, we already have ProfileStorage initialized and should keep the content it already has
+                log_dict[aamode][full_profile] = ProfileStorage(profile, hat, 'collapse_log()')
 
-                for path in hashlog[aamode][full_profile]['path'].keys():
-                    for owner in hashlog[aamode][full_profile]['path'][path]:
-                        mode = set(hashlog[aamode][full_profile]['path'][path][owner].keys())
+            for path in hashlog[aamode][full_profile]['path'].keys():
+                for owner in hashlog[aamode][full_profile]['path'][path]:
+                    mode = set(hashlog[aamode][full_profile]['path'][path][owner].keys())
 
-                        # logparser sums up multiple log events, so both 'a' and 'w' can be present
-                        if 'a' in mode and 'w' in mode:
-                            mode.remove('a')
+                    # logparser sums up multiple log events, so both 'a' and 'w' can be present
+                    if 'a' in mode and 'w' in mode:
+                        mode.remove('a')
 
-                        file_event = FileRule(path, mode, None, FileRule.ALL, owner=owner, log_event=True)
+                    file_event = FileRule(path, mode, None, FileRule.ALL, owner=owner, log_event=True)
 
-                        if not hat_exists or not is_known_rule(aa[profile][hat], 'file', file_event):
-                            log_dict[aamode][full_profile]['file'].add(file_event)
-                            # TODO: check for existing rules with this path, and merge them into one rule
+                    if not hat_exists or not is_known_rule(aa[profile][hat], 'file', file_event):
+                        log_dict[aamode][full_profile]['file'].add(file_event)
+                        # TODO: check for existing rules with this path, and merge them into one rule
 
-                for cap in hashlog[aamode][full_profile]['capability'].keys():
-                    cap_event = CapabilityRule(cap, log_event=True)
-                    if not hat_exists or not is_known_rule(aa[profile][hat], 'capability', cap_event):
-                        log_dict[aamode][full_profile]['capability'].add(cap_event)
+            for cap in hashlog[aamode][full_profile]['capability'].keys():
+                cap_event = CapabilityRule(cap, log_event=True)
+                if not hat_exists or not is_known_rule(aa[profile][hat], 'capability', cap_event):
+                    log_dict[aamode][full_profile]['capability'].add(cap_event)
 
-                for cp in hashlog[aamode][full_profile]['change_profile'].keys():
-                    cp_event = ChangeProfileRule(None, ChangeProfileRule.ALL, cp, log_event=True)
-                    if not hat_exists or not is_known_rule(aa[profile][hat], 'change_profile', cp_event):
-                        log_dict[aamode][full_profile]['change_profile'].add(cp_event)
+            for cp in hashlog[aamode][full_profile]['change_profile'].keys():
+                cp_event = ChangeProfileRule(None, ChangeProfileRule.ALL, cp, log_event=True)
+                if not hat_exists or not is_known_rule(aa[profile][hat], 'change_profile', cp_event):
+                    log_dict[aamode][full_profile]['change_profile'].add(cp_event)
 
-                dbus = hashlog[aamode][full_profile]['dbus']
-                for access in                               dbus:                                      # noqa: E271
-                    for bus in                              dbus[access]:                              # noqa: E271
-                        for path in                         dbus[access][bus]:                         # noqa: E271
-                            for name in                     dbus[access][bus][path]:                   # noqa: E271
-                                for interface in            dbus[access][bus][path][name]:             # noqa: E271
-                                    for member in           dbus[access][bus][path][name][interface]:  # noqa: E271
-                                        for peer_profile in dbus[access][bus][path][name][interface][member]:
-                                            # Depending on the access type, not all parameters are allowed.
-                                            # Ignore them, even if some of them appear in the log.
-                                            # Also, the log doesn't provide a peer name, therefore always use ALL.
-                                            if access in ('send', 'receive'):
-                                                dbus_event = DbusRule(access, bus, path,         DbusRule.ALL, interface,    member,       DbusRule.ALL, peer_profile, log_event=True)
-                                            elif access == 'bind':
-                                                dbus_event = DbusRule(access, bus, DbusRule.ALL, name,         DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, log_event=True)
-                                            elif access == 'eavesdrop':
-                                                dbus_event = DbusRule(access, bus, DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, log_event=True)
-                                            else:
-                                                raise AppArmorBug('unexpected dbus access: %s')
+            dbus = hashlog[aamode][full_profile]['dbus']
+            for access in                               dbus:                                      # noqa: E271
+                for bus in                              dbus[access]:                              # noqa: E271
+                    for path in                         dbus[access][bus]:                         # noqa: E271
+                        for name in                     dbus[access][bus][path]:                   # noqa: E271
+                            for interface in            dbus[access][bus][path][name]:             # noqa: E271
+                                for member in           dbus[access][bus][path][name][interface]:  # noqa: E271
+                                    for peer_profile in dbus[access][bus][path][name][interface][member]:
+                                        # Depending on the access type, not all parameters are allowed.
+                                        # Ignore them, even if some of them appear in the log.
+                                        # Also, the log doesn't provide a peer name, therefore always use ALL.
+                                        if access in ('send', 'receive'):
+                                            dbus_event = DbusRule(access, bus, path,         DbusRule.ALL, interface,    member,       DbusRule.ALL, peer_profile, log_event=True)
+                                        elif access == 'bind':
+                                            dbus_event = DbusRule(access, bus, DbusRule.ALL, name,         DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, log_event=True)
+                                        elif access == 'eavesdrop':
+                                            dbus_event = DbusRule(access, bus, DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, DbusRule.ALL, log_event=True)
+                                        else:
+                                            raise AppArmorBug('unexpected dbus access: %s')
 
-                                            if not hat_exists or not is_known_rule(aa[profile][hat], 'dbus', dbus_event):
-                                                log_dict[aamode][full_profile]['dbus'].add(dbus_event)
+                                        if not hat_exists or not is_known_rule(aa[profile][hat], 'dbus', dbus_event):
+                                            log_dict[aamode][full_profile]['dbus'].add(dbus_event)
 
-                nd = hashlog[aamode][full_profile]['network']
-                for family in nd.keys():
-                    for sock_type in nd[family].keys():
-                        net_event = NetworkRule(family, sock_type, log_event=True)
-                        if not hat_exists or not is_known_rule(aa[profile][hat], 'network', net_event):
-                            log_dict[aamode][full_profile]['network'].add(net_event)
+            nd = hashlog[aamode][full_profile]['network']
+            for family in nd.keys():
+                for sock_type in nd[family].keys():
+                    net_event = NetworkRule(family, sock_type, log_event=True)
+                    if not hat_exists or not is_known_rule(aa[profile][hat], 'network', net_event):
+                        log_dict[aamode][full_profile]['network'].add(net_event)
 
-                ptrace = hashlog[aamode][full_profile]['ptrace']
-                for peer in ptrace.keys():
-                    for access in ptrace[peer].keys():
-                        ptrace_event = PtraceRule(access, peer, log_event=True)
-                        if not hat_exists or not is_known_rule(aa[profile][hat], 'ptrace', ptrace_event):
-                            log_dict[aamode][full_profile]['ptrace'].add(ptrace_event)
+            ptrace = hashlog[aamode][full_profile]['ptrace']
+            for peer in ptrace.keys():
+                for access in ptrace[peer].keys():
+                    ptrace_event = PtraceRule(access, peer, log_event=True)
+                    if not hat_exists or not is_known_rule(aa[profile][hat], 'ptrace', ptrace_event):
+                        log_dict[aamode][full_profile]['ptrace'].add(ptrace_event)
 
-                sig = hashlog[aamode][full_profile]['signal']
-                for peer in sig.keys():
-                    for access in sig[peer].keys():
-                        for signal in sig[peer][access].keys():
-                            signal_event = SignalRule(access, signal, peer, log_event=True)
-                            if not hat_exists or not is_known_rule(aa[profile][hat], 'signal', signal_event):
-                                log_dict[aamode][full_profile]['signal'].add(signal_event)
+            sig = hashlog[aamode][full_profile]['signal']
+            for peer in sig.keys():
+                for access in sig[peer].keys():
+                    for signal in sig[peer][access].keys():
+                        signal_event = SignalRule(access, signal, peer, log_event=True)
+                        if not hat_exists or not is_known_rule(aa[profile][hat], 'signal', signal_event):
+                            log_dict[aamode][full_profile]['signal'].add(signal_event)
 
     return log_dict
 
