@@ -1270,7 +1270,7 @@ def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
                             aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                     else:
-                        rule_obj = selection_to_rule_obj(rule_obj, selection)
+                        rule_obj = rule_obj.create_instance(selection)
                         deleted = the_profile[ruletype].add(rule_obj, cleanup=True)
 
                         aaui.UI_Info(_('Adding %s to profile.') % rule_obj.get_clean())
@@ -1285,7 +1285,7 @@ def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
                         done = True
                         changed = True
 
-                        rule_obj = selection_to_rule_obj(rule_obj, selection)
+                        rule_obj = rule_obj.create_instance(selection)
                         rule_obj.deny = True
                         rule_obj.raw_rule = None  # reset raw rule after manually modifying rule_obj
                         deleted = the_profile[ruletype].add(rule_obj, cleanup=True)
@@ -1295,19 +1295,19 @@ def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
 
                 elif ans == 'CMD_GLOB':
                     if not re_match_include(selection):
-                        globbed_rule_obj = selection_to_rule_obj(rule_obj, selection)
+                        globbed_rule_obj = rule_obj.create_instance(selection)
                         globbed_rule_obj.glob()
                         options, default_option = add_to_options(options, globbed_rule_obj.get_raw())
 
                 elif ans == 'CMD_GLOBEXT':
                     if not re_match_include(selection):
-                        globbed_rule_obj = selection_to_rule_obj(rule_obj, selection)
+                        globbed_rule_obj = rule_obj.create_instance(selection)
                         globbed_rule_obj.glob_ext()
                         options, default_option = add_to_options(options, globbed_rule_obj.get_raw())
 
                 elif ans == 'CMD_NEW':
                     if not re_match_include(selection):
-                        edit_rule_obj = selection_to_rule_obj(rule_obj, selection)
+                        edit_rule_obj = rule_obj.create_instance(selection)
                         prompt, oldpath = edit_rule_obj.edit_header()
 
                         newpath = aaui.UI_GetString(prompt, oldpath)
@@ -1340,11 +1340,6 @@ def ask_rule_questions(prof_events, profile_name, the_profile, r_types):
     return changed, False
 
 
-def selection_to_rule_obj(rule_obj, selection):
-    rule_type = type(rule_obj)
-    return rule_type.create_instance(selection)
-
-
 def set_options_audit_mode(rule_obj, options):
     """change audit state in options (proposed rules) to audit state in rule_obj.
        #include options will be kept unchanged
@@ -1367,7 +1362,7 @@ def set_options_mode(rule_obj, options, what):
         if re_match_include(rule):
             new_options.append(rule)
         else:
-            parsed_rule = selection_to_rule_obj(rule_obj, rule)
+            parsed_rule = rule_obj.create_instance(rule)
             if what == 'audit':
                 parsed_rule.audit = rule_obj.audit
             elif what == 'owner':
