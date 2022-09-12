@@ -480,7 +480,7 @@ def create_new_profile(localfile, is_stub=False):
     for hatglob in cfg['required_hats'].keys():
         if re.search(hatglob, localfile):
             for hat in sorted(cfg['required_hats'][hatglob].split()):
-                full_hat = combine_profname([localfile, hat])
+                full_hat = combine_profname((localfile, hat))
                 if not local_profile.get(full_hat, False):
                     local_profile[full_hat] = ProfileStorage('NEW', hat, 'create_new_profile() required_hats')
                     local_profile[full_hat]['is_hat'] = True
@@ -1855,7 +1855,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
     if do_include:
         profile = file
         hat = None
-        profname = combine_profname([profile, hat])
+        profname = combine_profname((profile, hat))
         profile_data[profname] = ProfileStorage(profile, hat, 'parse_profile_data() do_include')
         profile_data[profname]['filename'] = file
 
@@ -1899,7 +1899,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
 
             if profile == hat:
                 hat = None
-            profname = combine_profname([profile, hat])
+            profname = combine_profname((profile, hat))
 
             if profile_data.get(profname, False):
                 raise AppArmorException(
@@ -1924,7 +1924,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
             if in_contained_hat:
                 hat = None
                 in_contained_hat = False
-                profname = combine_profname([profile, hat])
+                profname = combine_profname((profile, hat))
             else:
                 parsed_profiles.append(profile)
                 profile = None
@@ -2065,7 +2065,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
             for parsed_prof in sorted(parsed_profiles):
                 if re.search(hatglob, parsed_prof):
                     for hat in cfg['required_hats'][hatglob].split():
-                        profname = combine_profname([parsed_prof, hat])
+                        profname = combine_profname((parsed_prof, hat))
                         if not profile_data.get(profname, False):
                             profile_data[profname] = ProfileStorage(parsed_prof, hat, 'parse_profile_data() required_hats')
                             profile_data[profname]['is_hat'] = True
@@ -2140,7 +2140,7 @@ def split_to_merged(profile_data):
             if profile == hat:
                 merged_name = profile
             else:
-                merged_name = combine_profname([profile, hat])
+                merged_name = combine_profname((profile, hat))
 
             merged[merged_name] = profile_data[profile][hat]
 
