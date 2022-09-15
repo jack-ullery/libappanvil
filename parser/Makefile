@@ -386,11 +386,11 @@ DISTRO=$(shell if [ -f /etc/slackware-version ] ; then \
 	       elif [ -f /etc/debian_version ] ; then \
 	         echo debian ;\
 	       elif which rpm > /dev/null ; then \
-	         if [ "$(rpm --eval '0%{?suse_version}')" != "0" ] ; then \
+	         if [ "$$(rpm --eval '0%{?suse_version}')" != "0" ] ; then \
 	             echo suse ;\
-	         elif [ "$(rpm --eval '%{_host_vendor}')" = redhat ] ; then \
+	         elif [ "$$(rpm --eval '%{_host_vendor}')" = redhat ] ; then \
 	            echo rhel4 ;\
-	         elif [ "$(rpm --eval '0%{?fedora}')" != "0" ] ; then \
+	         elif [ "$$(rpm --eval '0%{?fedora}')" != "0" ] ; then \
 	            echo rhel4 ;\
 	         else \
 	            echo unknown ;\
