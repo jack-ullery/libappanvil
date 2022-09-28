@@ -18,7 +18,6 @@ from collections import namedtuple
 from common_test import AATest, setup_all_loops
 
 from apparmor.common import AppArmorBug, AppArmorException
-from apparmor.rule import BaseRule
 from apparmor.rule.variable import VariableRule, VariableRuleset, separate_vars
 from apparmor.translations import init_translation
 
@@ -298,18 +297,22 @@ class VariableCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_covered_3(self):
-        obj = VariableRule.create_instance('@{foo} = /bar')
+        raw_rule = '@{foo} = /bar'
+        class SomeOtherClass(VariableRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = VariableRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = VariableRule.create_instance('@{foo} = /bar')
+        raw_rule = '@{foo} = /bar'
+        class SomeOtherClass(VariableRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = VariableRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_equal(testobj)
 

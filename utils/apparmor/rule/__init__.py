@@ -13,7 +13,7 @@
 #
 # ----------------------------------------------------------------------
 
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 
 from apparmor.aare import AARE
 from apparmor.common import AppArmorBug
@@ -22,7 +22,7 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 
-class BaseRule:
+class BaseRule(metaclass=ABCMeta):
     """Base class to handle and store a single rule"""
 
     # type specific rules should inherit from this class.
@@ -89,12 +89,7 @@ class BaseRule:
                 % {'partname': partname, 'classname': self.__class__.__name__, 'rulepart': str(rulepart)})
 
     def __repr__(self):
-        classname = self.__class__.__name__
-        try:
-            raw_content = self.get_raw()  # will fail for BaseRule
-            return '<%s> %s' % (classname, raw_content)
-        except NotImplementedError:
-            return '<%s (NotImplementedError - get_clean() not implemented?)>' % classname
+        return '<%s> %s' % (self.__class__.__name__, self.get_raw())
 
     @classmethod
     def match(cls, raw_rule):
@@ -282,18 +277,16 @@ class BaseRule:
            returns {'label1': 'value1', 'label2': 'value2'}"""
         raise NotImplementedError("'%s' needs to implement logprof_header(), but didn't" % (str(self)))
 
-    @abstractmethod
+    # NOTE: edit_header, validate_edit, and store_edit are not implemented by every subclass.
     def edit_header(self):
         """return the prompt for, and the path to edit when using '(N)ew'"""
         raise NotImplementedError("'%s' needs to implement edit_header(), but didn't" % (str(self)))
 
-    @abstractmethod
     def validate_edit(self, newpath):
         """validate the new path.
            Returns True if it covers the previous path, False if it doesn't."""
         raise NotImplementedError("'%s' needs to implement validate_edit(), but didn't" % (str(self)))
 
-    @abstractmethod
     def store_edit(self, newpath):
         """store the changed path.
            This is done even if the new path doesn't match the original one."""

@@ -18,8 +18,6 @@ from collections import namedtuple
 from common_test import AATest, setup_all_loops
 
 from apparmor.common import AppArmorBug, AppArmorException
-# from apparmor.logparser import ReadLog
-# from apparmor.rule import BaseRule
 from apparmor.rule.abi import AbiRule, AbiRuleset
 from apparmor.translations import init_translation
 
@@ -261,18 +259,22 @@ class AbiCoveredTest_02(AbiCoveredTest):
 #             obj.is_covered(testobj)
 #
 #     def test_invalid_is_covered(self):
-#         obj = AbiRule.create_instance('abi send,')
+#         raw_rule = 'abi send,'
+#         class SomeOtherClass(AbiRule):
+#             pass
 #
-#         testobj = BaseRule()  # different type
-#
+#         obj = AbiRule.create_instance(raw_rule)
+#         testobj = SomeOtherClass.create_instance(raw_rule)  # different type
 #         with self.assertRaises(AppArmorBug):
 #             obj.is_covered(testobj)
 #
 #     def test_invalid_is_equal(self):
-#         obj = AbiRule.create_instance('abi send,')
+#         raw_rule = 'abi send,'
+#         class SomeOtherClass(AbiRule):
+#             pass
 #
-#         testobj = BaseRule()  # different type
-#
+#         obj = AbiRule.create_instance(raw_rule)
+#         testobj = SomeOtherClass.create_instance(raw_rule)  # different type
 #         with self.assertRaises(AppArmorBug):
 #             obj.is_equal(testobj)
 

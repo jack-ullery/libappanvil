@@ -18,7 +18,6 @@ import unittest
 import apparmor.severity as severity
 from apparmor.common import AppArmorBug, AppArmorException, hasher
 from apparmor.logparser import ReadLog
-from apparmor.rule import BaseRule
 from apparmor.rule.capability import CapabilityRule, CapabilityRuleset
 from apparmor.translations import init_translation
 from common_test import AATest, setup_all_loops
@@ -393,10 +392,12 @@ class CapabilityCoveredTest(AATest):
         self.assertFalse(self._is_covered(obj, 'deny capability,'))
 
     def test_invalid_is_covered(self):
-        obj = CapabilityRule.create_instance('capability sys_admin,')
+        raw_rule = 'capability sys_admin,'
+        class SomeOtherClass(CapabilityRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = CapabilityRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_covered(testobj)
 
@@ -410,10 +411,12 @@ class CapabilityCoveredTest(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = CapabilityRule.create_instance('capability sys_admin,')
+        raw_rule = 'capability sys_admin,'
+        class SomeOtherClass(CapabilityRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = CapabilityRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_equal(testobj)
 

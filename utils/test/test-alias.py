@@ -17,7 +17,6 @@ import unittest
 from collections import namedtuple
 
 from apparmor.common import AppArmorBug, AppArmorException
-from apparmor.rule import BaseRule
 from apparmor.rule.alias import AliasRule, AliasRuleset
 from apparmor.translations import init_translation
 from common_test import AATest, setup_all_loops
@@ -218,18 +217,22 @@ class AliasCoveredTest_Invalid(AATest):
     #         obj.is_covered(testobj)
 
     def test_invalid_is_covered_3(self):
-        obj = AliasRule.create_instance('alias /foo -> /bar,')
+        raw_rule = 'alias /foo -> /bar,'
+        class SomeOtherClass(AliasRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = AliasRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = AliasRule.create_instance('alias /foo -> /bar,')
+        raw_rule = 'alias /foo -> /bar,'
+        class SomeOtherClass(AliasRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = AliasRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_equal(testobj)
 
