@@ -25,9 +25,9 @@
   /var/log/samba/cores/** rw,
   /var/log/samba/* w,
   @{run}/{,lock/}samba/ w,
-  @{run}/{,lock/}samba/*.tdb rw,
-  @{run}/{,lock/}samba/msg.lock/ rwk,
-  @{run}/{,lock/}samba/msg.lock/[0-9]* rwk,
+  @{run}/{,lock/}samba/*.tdb rwk,
+  @{run}/{,lock/}samba/msg.{lock,sock}/ rwk,
+  @{run}/{,lock/}samba/msg.{lock,sock}/[0-9]* rwk,
   /var/cache/samba/msg.lock/ rwk,
   /var/cache/samba/msg.lock/[0-9]* rwk,
 
