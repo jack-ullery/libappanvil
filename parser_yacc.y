@@ -142,6 +142,7 @@ void add_local_entry(Profile *prof);
 %token TOK_TRACEDBY
 %token TOK_READBY
 %token TOK_ABI
+%token TOK_USERNS
 
  /* rlimits */
 %token TOK_RLIMIT
@@ -177,6 +178,7 @@ void add_local_entry(Profile *prof);
 	#include "signal.h"
 	#include "ptrace.h"
 	#include "af_unix.h"
+	#include "userns.h"
 }
 
 %union {
@@ -193,6 +195,7 @@ void add_local_entry(Profile *prof);
 	signal_rule *signal_entry;
 	ptrace_rule *ptrace_entry;
 	unix_rule *unix_entry;
+	userns_rule *userns_entry;
 
 	flagvals flags;
 	int fmode;
@@ -272,6 +275,10 @@ void add_local_entry(Profile *prof);
 %type <id>	opt_named_transition
 %type <boolean> opt_exec_mode
 %type <boolean> opt_file
+%type <fmode>  	userns_perm
+%type <fmode>  	userns_perms
+%type <fmode>	opt_userns_perm
+%type <userns_entry>	userns_rule
 %%
 
 
@@ -846,6 +853,22 @@ rules:  rules opt_prefix unix_rule
 	{
 		if ($2.owner)
 			yyerror(_("owner prefix not allowed on unix rules"));
+		if ($2.deny && $2.audit) {
+			$3->deny = 1;
+		} else if ($2.deny) {
+			$3->deny = 1;
+			$3->audit = $3->mode;
+		} else if ($2.audit) {
+			$3->audit = $3->mode;
+		}
+		$1->rule_ents.push_back($3);
+		$$ = $1;
+	}
+
+rules:  rules opt_prefix userns_rule
+	{
+		if ($2.owner)
+			yyerror(_("owner prefix not allowed on userns rules"));
 		if ($2.deny && $2.audit) {
 			$3->deny = 1;
 		} else if ($2.deny) {
@@ -1539,6 +1562,32 @@ opt_ptrace_perm: { /* nothing */ $$ = 0; }
 ptrace_rule: TOK_PTRACE opt_ptrace_perm opt_conds TOK_END_OF_RULE
 	{
 		ptrace_rule *ent = new ptrace_rule($2, $3);
+		$$ = ent;
+	}
+
+userns_perm: TOK_VALUE
+	{
+		if (strcmp($1, "create") == 0)
+			$$ = AA_USERNS_CREATE;
+		else
+			$$ = 0;
+
+		if ($1)
+			free($1);
+	}
+	| TOK_CREATE { $$ = AA_USERNS_CREATE; }
+
+userns_perms: { /* nothing */ $$ = 0; }
+	| userns_perms userns_perm { $$ = $1 | $2; }
+	| userns_perms TOK_COMMA userns_perm { $$ = $1 | $3; }
+
+opt_userns_perm: { /* nothing */ $$ = 0; }
+	| userns_perm { $$ = $1; }
+	| TOK_OPENPAREN userns_perms TOK_CLOSEPAREN { $$ = $2; }
+
+userns_rule: TOK_USERNS opt_userns_perm opt_conds TOK_END_OF_RULE
+	{
+		userns_rule *ent = new userns_rule($2, $3);
 		$$ = ent;
 	}
 
