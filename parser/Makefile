@@ -101,10 +101,10 @@ SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
        parser_yacc.c parser_regex.c parser_variable.c parser_policy.c \
        parser_alias.c common_optarg.c lib.c network.c \
        mount.cc dbus.cc profile.cc rule.cc signal.cc ptrace.cc \
-       af_rule.cc af_unix.cc policy_cache.c default_features.c
+       af_rule.cc af_unix.cc policy_cache.c default_features.c userns.cc
 HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h \
        rule.h common_optarg.h signal.h ptrace.h network.h af_rule.h af_unix.h \
-       policy_cache.h file_cache.h
+       policy_cache.h file_cache.h userns.h
 TOOLS = apparmor_parser
 
 OBJECTS = $(patsubst %.cc, %.o, $(SRCS:.c=.o))
@@ -299,6 +299,9 @@ profile.o: profile.cc profile.h parser.h network.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 rule.o: rule.cc rule.h policydb.h
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
+
+userns.o: userns.cc userns.h parser.h parser_yacc.h rule.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_version.h: Makefile

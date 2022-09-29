@@ -935,6 +935,7 @@ static const char *mediates_ptrace =  CLASS_STR(AA_CLASS_PTRACE);
 static const char *mediates_extended_net = CLASS_STR(AA_CLASS_NET);
 static const char *mediates_netv8 = CLASS_STR(AA_CLASS_NETV8);
 static const char *mediates_net_unix = CLASS_SUB_STR(AA_CLASS_NET, AF_UNIX);
+static const char *mediates_ns = CLASS_STR(AA_CLASS_NS);
 
 int process_profile_policydb(Profile *prof)
 {
@@ -976,6 +977,9 @@ int process_profile_policydb(Profile *prof)
 	if (features_supports_unix &&
 	    (!prof->policy.rules->add_rule(mediates_extended_net, 0, AA_MAY_READ, 0, dfaflags) ||
 	     !prof->policy.rules->add_rule(mediates_net_unix, 0, AA_MAY_READ, 0, dfaflags)))
+		goto out;
+	if (features_supports_userns &&
+	    !prof->policy.rules->add_rule(mediates_ns, 0, AA_MAY_READ, 0, dfaflags))
 		goto out;
 
 	if (prof->policy.rules->rule_count > 0) {
