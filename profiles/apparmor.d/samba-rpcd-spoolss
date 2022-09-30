@@ -16,8 +16,15 @@ include <tunables/global>
 profile samba-rpcd-spoolss /usr/lib*/samba/{,samba/}rpcd_spoolss {
   include <abstractions/samba-rpcd>
 
-  /usr/lib*/samba/{,samba/}rpcd_spoolss m,
+  /usr/lib*/samba/{,samba/}rpcd_spoolss mr,
   /usr/lib*/samba/{,samba/}samba-bgqd Px -> samba-bgqd,
+  /var/cache/samba/printing/*.tdb rwk,
+  @{run}/samba/samba-bgqd.pid rk,
+
+  /dev/urandom rw,
+
+  @{run}/samba/ncalrpc/ rw,
+  @{run}/samba/ncalrpc/** rw,
 
   # Site-specific additions and overrides. See local/README for details.
   include if exists <local/samba-rpcd-spoolss>

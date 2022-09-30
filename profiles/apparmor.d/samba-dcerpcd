@@ -18,8 +18,9 @@ profile samba-dcerpcd /usr/lib*/samba/{,samba/}samba-dcerpcd {
 
   @{run}/samba/samba-dcerpcd.pid wk,
 
-  /usr/lib*/samba/{,samba/}samba-dcerpcd m,
+  /usr/lib*/samba/{,samba/}samba-dcerpcd mr,
 
+  /usr/lib*/samba/ r,
   /usr/lib*/samba/{,samba/}rpcd_{mdssvc,epmapper,rpcecho,fsrvp,lsad,winreg} Px -> samba-rpcd,
   /usr/lib*/samba/{,samba/}rpcd_classic Px -> samba-rpcd-classic,
   /usr/lib*/samba/{,samba/}rpcd_spoolss Px -> samba-rpcd-spoolss,
