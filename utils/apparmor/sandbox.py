@@ -694,10 +694,8 @@ def run_xsandbox(command, opt):
     x.verify_host_setup()
 
     # Debug: show old environment
-    keys = x.old_environ.keys()
-    keys.sort()
-    for k in keys:
-        debug("Old: %s=%s" % (k, x.old_environ[k]))
+    for k, v in sorted(x.old_environ.items()):
+        debug("Old: %s=%s" % (k, v))
 
     try:
         x.start()
