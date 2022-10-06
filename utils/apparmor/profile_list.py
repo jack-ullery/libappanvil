@@ -50,7 +50,8 @@ class ProfileList:
         self.profiles = {}          # profile_name -> ProfileStorage
 
     def __repr__(self):
-        return ('\n<ProfileList>\n%s\n</ProfileList>\n' % '\n'.join(self.files))
+        name = type(self).__name__
+        return '\n<%s>\n%s\n</%s>\n' % (name, '\n'.join(self.files), name)
 
     def init_file(self, filename):
         if self.files.get(filename):
@@ -67,7 +68,7 @@ class ProfileList:
         """Add the given profile and attachment to the list"""
 
         if not filename:
-            raise AppArmorBug('Empty filename given to ProfileList')
+            raise AppArmorBug('Empty filename given to ' + type(self).__name__)
 
         if not profile_name and not attachment:
             raise AppArmorBug('Neither profile name or attachment given')
@@ -112,7 +113,7 @@ class ProfileList:
         """Store the given abi rule for the given profile filename preamble"""
 
         if type(abi_rule) is not AbiRule:
-            raise AppArmorBug('Wrong type given to ProfileList: %s' % abi_rule)
+            raise AppArmorBug('Wrong type given to %s: %s' % (type(self).__name__, abi_rule))
 
         self.init_file(filename)
 
@@ -122,7 +123,7 @@ class ProfileList:
         """Store the given alias rule for the given profile filename preamble"""
 
         if type(alias_rule) is not AliasRule:
-            raise AppArmorBug('Wrong type given to ProfileList: %s' % alias_rule)
+            raise AppArmorBug('Wrong type given to %s: %s' % (type(self).__name__, alias_rule))
 
         self.init_file(filename)
 
@@ -131,7 +132,7 @@ class ProfileList:
     def add_inc_ie(self, filename, inc_rule):
         """Store the given include / include if exists rule for the given profile filename preamble"""
         if type(inc_rule) is not IncludeRule:
-            raise AppArmorBug('Wrong type given to ProfileList: %s' % inc_rule)
+            raise AppArmorBug('Wrong type given to %s: %s' % (type(self).__name__, inc_rule))
 
         self.init_file(filename)
 
@@ -140,7 +141,7 @@ class ProfileList:
     def add_variable(self, filename, var_rule):
         """Store the given variable rule for the given profile filename preamble"""
         if type(var_rule) is not VariableRule:
-            raise AppArmorBug('Wrong type given to ProfileList: %s' % var_rule)
+            raise AppArmorBug('Wrong type given to %s: %s' % (type(self).__name__, var_rule))
 
         self.init_file(filename)
 
@@ -149,7 +150,7 @@ class ProfileList:
     def add_boolean(self, filename, bool_rule):
         """Store the given boolean variable rule for the given profile filename preamble"""
         if type(bool_rule) is not BooleanRule:
-            raise AppArmorBug('Wrong type given to ProfileList: %s' % bool_rule)
+            raise AppArmorBug('Wrong type given to %s: %s' % (type(self).__name__, bool_rule))
 
         self.init_file(filename)
 
@@ -159,7 +160,7 @@ class ProfileList:
         """Delete duplicates in the preamble of the given profile file"""
 
         if not self.files.get(filename):
-            raise AppArmorBug('%s not listed in ProfileList files' % filename)
+            raise AppArmorBug('%s not listed in %s files' % (filename, type(self).__name__))
 
         deleted = 0
 
@@ -179,7 +180,7 @@ class ProfileList:
     def get_raw(self, filename, depth=0):
         """Get the preamble for the given profile filename (in original formatting)"""
         if not self.files.get(filename):
-            raise AppArmorBug('%s not listed in ProfileList files' % filename)
+            raise AppArmorBug('%s not listed in %s files' % (filename, type(self).__name__))
 
         data = []
         for rule_type in header_rule_write_order:
@@ -189,7 +190,7 @@ class ProfileList:
     def get_clean(self, filename, depth=0):
         """Get the preamble for the given profile filename (in clean formatting)"""
         if not self.files.get(filename):
-            raise AppArmorBug('%s not listed in ProfileList files' % filename)
+            raise AppArmorBug('%s not listed in %s files' % (filename, type(self).__name__))
 
         data = []
         for rule_type in header_rule_write_order:
@@ -228,7 +229,7 @@ class ProfileList:
         """
 
         if not self.files.get(filename):
-            raise AppArmorBug('%s not listed in ProfileList files' % filename)
+            raise AppArmorBug('%s not listed in %s files' % (filename, type(self).__name__))
 
         merged_variables = {}
 
@@ -276,6 +277,6 @@ class ProfileList:
     def profiles_in_file(self, filename):
         """Return list of profiles in the given file"""
         if not self.files.get(filename):
-            raise AppArmorBug('%s not listed in ProfileList files' % filename)
+            raise AppArmorBug('%s not listed in %s files' % (filename, type(self).__name__))
 
         return self.files[filename]['profiles']

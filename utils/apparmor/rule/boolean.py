@@ -61,7 +61,7 @@ class BooleanRule(BaseRule):
 
     @classmethod
     def _create_instance(cls, raw_rule):
-        """parse raw_rule and return BooleanRule"""
+        """parse raw_rule and return instance of this class"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -72,8 +72,8 @@ class BooleanRule(BaseRule):
         varname = matches.group('varname')
         value = matches.group('value')
 
-        return BooleanRule(varname, value,
-                           audit=False, deny=False, allow_keyword=False, comment=comment)
+        return cls(varname, value,
+                   audit=False, deny=False, allow_keyword=False, comment=comment)
 
     def get_clean(self, depth=0):
         """return rule (in clean/default formatting)"""

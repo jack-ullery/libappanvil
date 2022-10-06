@@ -45,14 +45,14 @@ class UserNamespaceRule(BaseRule):
     def __init__(self, access, audit=False, deny=False,
                  allow_keyword=False, comment='', log_event=None):
 
-        super(UserNamespaceRule, self).__init__(audit=audit, deny=deny,
-                                               allow_keyword=allow_keyword,
-                                               comment=comment,
-                                               log_event=log_event)
+        super().__init__(audit=audit, deny=deny,
+                         allow_keyword=allow_keyword,
+                         comment=comment,
+                         log_event=log_event)
 
-        self.access, self.all_access, unknown_items = check_and_split_list(access, access_keyword, UserNamespaceRule.ALL, 'UserNamespaceRule', 'access')
+        self.access, self.all_access, unknown_items = check_and_split_list(access, access_keyword, self.ALL, type(self).__name__, 'access')
         if unknown_items:
-            raise AppArmorException(_('Passed unknown access keyword to UserNamespaceRule: %s') % ' '.join(unknown_items))
+            raise AppArmorException(_('Passed unknown access keyword to %s: %s') % (type(self).__name__, ' '.join(unknown_items)))
 
     @classmethod
     def _match(cls, raw_rule):
@@ -60,7 +60,7 @@ class UserNamespaceRule(BaseRule):
 
     @classmethod
     def _create_instance(cls, raw_rule):
-        '''parse raw_rule and return UserNamespaceRule'''
+        '''parse raw_rule and return instance of this class'''
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -79,10 +79,10 @@ class UserNamespaceRule(BaseRule):
 
             access = details.group('access')
         else:
-            access = UserNamespaceRule.ALL
+            access = cls.ALL
 
-        return UserNamespaceRule(access, audit=audit, deny=deny,
-                                 allow_keyword=allow_keyword, comment=comment)
+        return cls(access, audit=audit, deny=deny,
+                   allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
         '''return rule (in clean/default formatting)'''
@@ -110,7 +110,7 @@ class UserNamespaceRule(BaseRule):
     def is_equal_localvars(self, rule_obj, strict):
         '''compare if rule-specific variables are equal'''
 
-        if not type(rule_obj) == UserNamespaceRule:
+        if type(rule_obj) is not type(self):
             raise AppArmorBug('Passed non-userns rule: %s' % str(rule_obj))
 
         if (self.access != rule_obj.access or

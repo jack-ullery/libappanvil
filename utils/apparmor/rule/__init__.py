@@ -110,7 +110,7 @@ class BaseRule(metaclass=ABCMeta):
 
     @classmethod
     def create_instance(cls, raw_rule):
-        """parse raw_rule and return a rule object"""
+        """parse raw_rule and return instance of this class"""
         rule = cls._create_instance(raw_rule)
         rule.raw_rule = raw_rule.strip()
         return rule

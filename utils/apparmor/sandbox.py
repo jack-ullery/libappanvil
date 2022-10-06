@@ -314,7 +314,7 @@ class SandboxXephyr(SandboxXserver):
                 raise AppArmorException("Could not find '%s'" % e)
 
         # Run any setup code
-        SandboxXserver.start(self)
+        super().start()
 
         # Start a Xephyr server
         listener_x = os.fork()
@@ -388,7 +388,7 @@ class SandboxXpra(SandboxXserver):
             if '-for-Xpra-%s' % self.display in line:
                 self.pids.append(int(line.split()[1]))
 
-        SandboxXserver.cleanup(self)
+        super().cleanup()
 
     def _get_xvfb_args(self):
         """Setup xvfb arguments"""
@@ -579,7 +579,7 @@ EndSection
                 raise AppArmorException("Could not find '%s'" % drv)
 
         # Run any setup code
-        SandboxXserver.start(self)
+        super().start()
 
         xvfb_args = self._get_xvfb_args()
         listener_x = os.fork()

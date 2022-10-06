@@ -67,7 +67,7 @@ class VariableRule(BaseRule):
 
     @classmethod
     def _create_instance(cls, raw_rule):
-        """parse raw_rule and return VariableRule"""
+        """parse raw_rule and return instance of this class"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -79,8 +79,8 @@ class VariableRule(BaseRule):
         mode = matches.group('mode')
         values = separate_vars(matches.group('values'))
 
-        return VariableRule(varname, mode, values,
-                            audit=False, deny=False, allow_keyword=False, comment=comment)
+        return cls(varname, mode, values,
+                   audit=False, deny=False, allow_keyword=False, comment=comment)
 
     def get_clean(self, depth=0):
         """return rule (in clean/default formatting)"""
@@ -154,7 +154,7 @@ class VariableRuleset(BaseRuleset):
         super().add(rule, cleanup)
 
     def get_merged_variables(self):
-        """Get merged variables of this VariableRuleset.
+        """Get merged variables of this object.
 
            Note that no error checking is done because variables can be defined in one file and extended in another.
         """
