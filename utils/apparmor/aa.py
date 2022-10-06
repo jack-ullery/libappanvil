@@ -1887,7 +1887,7 @@ def parse_profile_data(data, file, do_include, in_preamble):
                 for incname in rule_obj.get_full_paths(profile_dir):
                     if incname == file:
                         # warn about endless loop, and don't call load_include() (again) for this file
-                        aaui.UI_Important(_('WARNING: endless loop detected: file %s includes itsself' % incname))
+                        aaui.UI_Important(_('WARNING: endless loop detected: file %s includes itself' % incname))
                     else:
                         load_include(incname, in_preamble)
 
