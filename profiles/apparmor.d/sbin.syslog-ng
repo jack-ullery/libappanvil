@@ -61,6 +61,7 @@ profile syslog-ng /{usr/,}{bin,sbin}/syslog-ng {
   /{var,var/run,run}/log/journal/ r,
   /{var,var/run,run}/log/journal/*/ r,
   /{var,var/run,run}/log/journal/*/*.journal r,
+  /{var,var/run,run}/log/journal/*.journal r,
   @{run}/syslog-ng.ctl a,
   @{run}/syslog-ng/additional-log-sockets.conf r,
 
