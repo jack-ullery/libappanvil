@@ -44,6 +44,7 @@
   @{run}/{resolvconf,NetworkManager,systemd/resolve,connman,netconfig}/resolv.conf r,
   @{etc_ro}/resolvconf/run/resolv.conf  r,
   @{run}/systemd/resolve/stub-resolv.conf r,
+  /mnt/wsl/resolv.conf r,
 
   @{etc_ro}/samba/lmhosts  r,
   @{etc_ro}/services       r,
