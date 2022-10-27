@@ -941,6 +941,9 @@ void set_supported_features()
 	features_supports_domain_xattr = features_intersect(kernel_features,
 							    policy_features,
 							    "domain/attach_conditions/xattr");
+	features_supports_userns = features_intersect(kernel_features,
+						      policy_features,
+						      "namespaces/mask/userns_create");
 }
 
 static bool do_print_cache_dir(aa_features *features, int dirfd, const char *path)

@@ -1,0 +1,9 @@
+#
+#=Description basic userns bad conditionals
+#=EXRESULT FAIL
+#
+/usr/bin/userns-test {
+  userns peer=foo,
+
+}
+

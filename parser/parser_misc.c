@@ -120,6 +120,7 @@ static struct keyword_table keyword_table[] = {
 	{"tracedby",		TOK_TRACEDBY},
 	{"readby",		TOK_READBY},
 	{"abi",			TOK_ABI},
+	{"userns",		TOK_USERNS},
 
 	/* terminate */
 	{NULL, 0}

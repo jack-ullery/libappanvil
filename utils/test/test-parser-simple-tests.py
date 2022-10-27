@@ -298,6 +298,14 @@ unknown_line = (
     'bare_include_tests/ok_84.sd',
     'bare_include_tests/ok_85.sd',
     'bare_include_tests/ok_86.sd',
+
+    'namespaces/ok_userns_01.sd',
+    'namespaces/ok_userns_02.sd',
+    'namespaces/ok_userns_03.sd',
+    'namespaces/ok_userns_04.sd',
+    'namespaces/ok_userns_05.sd',
+    'namespaces/ok_userns_06.sd',
+    'namespaces/ok_userns_07.sd',
 )
 
 # testcases with various unexpected failures

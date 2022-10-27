@@ -78,6 +78,7 @@ int features_supports_signal = 0;	/* kernel supports signal rules */
 int features_supports_ptrace = 0;	/* kernel supports ptrace rules */
 int features_supports_stacking = 0;	/* kernel supports stacking */
 int features_supports_domain_xattr = 0;	/* x attachment cond */
+int features_supports_userns = 0;	/* kernel supports user namespace */
 int kernel_supports_oob = 0;		/* out of band transitions */
 int conf_verbose = 0;
 int conf_quiet = 0;

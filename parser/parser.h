@@ -344,6 +344,7 @@ extern int features_supports_ptrace;
 extern int features_supports_unix;
 extern int features_supports_stacking;
 extern int features_supports_domain_xattr;
+extern int features_supports_userns;
 extern int kernel_supports_oob;
 extern int conf_verbose;
 extern int conf_quiet;
