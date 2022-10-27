@@ -159,7 +159,9 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_NAMESPACE
 %token TOK_KEY_ERROR
 %token TOK_KEY_FSUID
+%token TOK_KEY_FSUID_UPPER
 %token TOK_KEY_OUID
+%token TOK_KEY_OUID_UPPER
 %token TOK_KEY_UID
 %token TOK_KEY_AUID
 %token TOK_KEY_SAUID
@@ -351,6 +353,10 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->fsuid = $3;}
 	| TOK_KEY_OUID TOK_EQUALS TOK_DIGITS
 	{ ret_record->ouid = $3;}
+	| TOK_KEY_FSUID_UPPER TOK_EQUALS TOK_QUOTED_STRING
+	{ free($3);} /* Ignore - fsuid username */
+	| TOK_KEY_OUID_UPPER TOK_EQUALS TOK_QUOTED_STRING
+	{ free($3);} /* Ignore - ouid username */
 	| TOK_KEY_SAUID TOK_EQUALS TOK_DIGITS
 	{ /* Ignore - Source audit ID from user AVC messages */ }
 	| TOK_KEY_HOSTNAME TOK_EQUALS safe_string
