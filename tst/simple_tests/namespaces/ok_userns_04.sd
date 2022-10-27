@@ -1,0 +1,9 @@
+#
+#=Description basic audit userns all rule
+#=EXRESULT PASS
+#
+/usr/bin/userns-test {
+  audit userns,
+
+}
+
