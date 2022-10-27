@@ -1,0 +1,9 @@
+#
+#=Description basic deny userns all rule
+#=EXRESULT PASS
+#
+/usr/bin/userns-rule {
+  deny userns,
+
+}
+

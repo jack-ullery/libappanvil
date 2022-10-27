@@ -1,0 +1,10 @@
+#
+#=Description basic allow userns all rule
+#=EXRESULT PASS
+#
+/usr/bin/userns-rule {
+  allow userns,
+
+}
+
+
