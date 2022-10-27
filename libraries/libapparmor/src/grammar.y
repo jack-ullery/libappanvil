@@ -246,7 +246,7 @@ syslog_type:
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($3); }
 	| syslog_date syslog_id TOK_DMESG_STAMP key_type audit_id key_list
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($3); }
-	/* needs update: hard newline in handling mutiline log messages */
+	/* needs update: hard newline in handling multiline log messages */
 	| syslog_date syslog_id TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id audit_user_msg_partial_tail
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($3); }
 	| syslog_date syslog_id TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id audit_user_msg_tail
