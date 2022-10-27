@@ -18,6 +18,7 @@ profile samba-rpcd-spoolss /usr/lib*/samba/{,samba/}rpcd_spoolss {
 
   /usr/lib*/samba/{,samba/}rpcd_spoolss mr,
   /usr/lib*/samba/{,samba/}samba-bgqd Px -> samba-bgqd,
+  /var/cache/samba/printing/ w,
   /var/cache/samba/printing/*.tdb rwk,
   @{run}/samba/samba-bgqd.pid rk,
 
