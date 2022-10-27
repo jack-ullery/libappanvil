@@ -170,6 +170,8 @@ log_to_profile_skip = [
 
     'testcase_changehat_01',  # interactive, asks to add a hat
     'testcase_dbus_09',  # multiline log not currently supported
+
+    'testcase_userns_01',  # userns currently not supported
 ]
 
 # tests that cause an empty log
