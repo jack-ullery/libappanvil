@@ -1,0 +1,15 @@
+START
+File: 0x1d-uppercase-FSUID-OUID.in
+Event type: AA_RECORD_ALLOWED
+Audit ID: 1661734785.992:270
+Operation: open
+Mask: r
+Denied Mask: r
+fsuid: 1000
+ouid: 0
+Profile: /usr/bin/dolphin
+Name: /home/otis/.config/kdedefaults/kdeglobals
+Command: dolphin
+PID: 3483
+Epoch: 1661734785
+Audit subid: 270

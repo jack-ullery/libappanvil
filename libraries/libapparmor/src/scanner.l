@@ -72,7 +72,7 @@ void string_buf_append(unsigned int length, char *text)
 
 %}
 
-ws		[ \t\r\n]
+ws		[ \t\r\n\x1d]
 
 equals		"="
 digit		[[:digit:]]
@@ -138,7 +138,9 @@ key_sock_type		"sock_type"
 key_protocol		"protocol"
 key_error		"error"
 key_fsuid		"fsuid"
+key_fsuid_upper		"FSUID"
 key_ouid		"ouid"
+key_ouid_upper		"OUID"
 key_uid			"uid"
 key_auid		"auid"
 key_sauid		"sauid"
@@ -324,7 +326,9 @@ yy_flex_debug = 0;
 {key_protocol}		{ return(TOK_KEY_PROTOCOL); }
 {key_error}		{ return(TOK_KEY_ERROR); }
 {key_fsuid}		{ return(TOK_KEY_FSUID); }
+{key_fsuid_upper}	{ return(TOK_KEY_FSUID_UPPER); }
 {key_ouid}		{ return(TOK_KEY_OUID); }
+{key_ouid_upper}	{ return(TOK_KEY_OUID_UPPER); }
 {key_uid}		{ return(TOK_KEY_UID); }
 {key_auid}		{ return(TOK_KEY_AUID); }
 {key_sauid}		{ return(TOK_KEY_SAUID); }

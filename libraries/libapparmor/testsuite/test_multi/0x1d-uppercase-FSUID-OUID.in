@@ -1,0 +1,1 @@
+type=AVC msg=audit(1661734785.992:270): apparmor="ALLOWED" operation="open" profile="/usr/bin/dolphin" name="/home/otis/.config/kdedefaults/kdeglobals" pid=3483 comm="dolphin" requested_mask="r" denied_mask="r" fsuid=1000 ouid=0FSUID="otis" OUID="root"
