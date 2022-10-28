@@ -214,6 +214,7 @@ TESTS=aa_exec \
       clone \
       coredump \
       deleted \
+      e2e \
       environ \
       exec \
       exec_qual \
