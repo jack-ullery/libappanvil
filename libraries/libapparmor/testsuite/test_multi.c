@@ -134,6 +134,8 @@ int print_results(aa_log_record *record)
 		print_string("Flags", record->flags);
 		print_string("Src name", record->src_name);
 
+		print_string("Class", record->class);
+
 		print_long("Epoch", record->epoch, 0);
 		print_long("Audit subid", (long) record->audit_sub_id, 0);
 	return(0);

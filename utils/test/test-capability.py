@@ -124,6 +124,7 @@ class CapabilityTest(AATest):
             'family': None,
             'protocol': None,
             'sock_type': None,
+            'class': None,
         })
 
         obj = CapabilityRule(parsed_event['name'], log_event=parsed_event)

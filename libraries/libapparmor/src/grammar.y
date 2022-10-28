@@ -187,6 +187,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_FSTYPE
 %token TOK_KEY_FLAGS
 %token TOK_KEY_SRCNAME
+%token TOK_KEY_CLASS
 
 %token TOK_SOCKLOGD_KERNEL
 %token TOK_SYSLOG_KERNEL
@@ -431,6 +432,8 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 		ret_record->event = AA_RECORD_INVALID;
 		ret_record->info = $1;
 	}
+	| TOK_KEY_CLASS TOK_EQUALS TOK_QUOTED_STRING
+	{ ret_record->class = $3; }
 	;
 
 apparmor_event:

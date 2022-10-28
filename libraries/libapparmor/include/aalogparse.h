@@ -159,6 +159,8 @@ typedef struct
 	char *fs_type;
 	char *flags;
 	char *src_name;
+
+	char *class;
 } aa_log_record;
 
 /**
