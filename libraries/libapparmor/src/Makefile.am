@@ -30,9 +30,12 @@ INCLUDES = $(all_includes)
 # For more information, see:
 # http://www.gnu.org/software/libtool/manual/html_node/Libtool-versioning.html
 #
+# After changing the AA_LIB_* variables, also update EXPECTED_SO_NAME.
+
 AA_LIB_CURRENT = 13
 AA_LIB_REVISION = 0
 AA_LIB_AGE = 12
+EXPECTED_SO_NAME = libapparmor.so.1.12.0
 
 SUFFIXES = .pc.in .pc
 
@@ -80,5 +83,9 @@ tst_kernel_LDFLAGS = -pthread
 
 check_PROGRAMS = tst_aalogmisc tst_features tst_kernel
 TESTS = $(check_PROGRAMS)
+
+.PHONY: check-local
+check-local:
+	test -f ./.libs/$(EXPECTED_SO_NAME) || { echo '*** unexpected .so name/number for libapparmor (expected $(EXPECTED_SO_NAME), the actual filename is shown below) ***' ; ls -l ./.libs/libapparmor.so.*.* ; exit 1; }
 
 EXTRA_DIST = grammar.y scanner.l libapparmor.map libapparmor.pc
