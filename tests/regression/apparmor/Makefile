@@ -256,7 +256,8 @@ TESTS=aa_exec \
       unlink\
       xattrs\
       xattrs_profile\
-      longpath
+      longpath \
+      nfs
 
 #only do dbus if proper libs are installl
 ifneq (,$(shell pkg-config --exists dbus-1 && echo TRUE))
