@@ -127,6 +127,7 @@ profile dnsmasq /usr/{bin,sbin}/dnsmasq flags=(attach_disconnected) {
     owner @{PROC}/@{pid}/status r,
 
     @{sys}/devices/system/cpu/ r,
+    @{sys}/devices/system/cpu/possible r,
     @{sys}/devices/system/node/ r,
     @{sys}/devices/system/node/*/meminfo r,
 
