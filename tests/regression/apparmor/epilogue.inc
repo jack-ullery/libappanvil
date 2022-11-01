@@ -15,6 +15,11 @@ else
 	rm -rf $tmpdir
 fi
 
+# Remove temporary users that were created
+for testuser in $testusers; do
+    deluser $testuser >/dev/null
+done
+
 if [ -n "$_fatal" ] ; then
 	exit 127
 else

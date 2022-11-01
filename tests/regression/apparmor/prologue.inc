@@ -569,6 +569,18 @@ settest()
 	#  will run the test. In this case 'settest <testname> "wrapper {}'
 	#  will result in testexec invoking wrapper. {} will be replaced with 
 	#  $test 
+	#settest can run the test as a different user with:
+	#  settest -u <username> <testname>
+	#  settest -u <username> <testname> "wrapper {}"
+
+	username=''
+	if [ $# -gt 2 -a "$1" == "-u" -a ! -z "$2" ]
+	then
+		username="$2"
+		addtestuser "$username"
+		shift
+		shift
+	fi
 
 	testname=$1
 
@@ -584,12 +596,34 @@ settest()
 		fatalerror "settest, illegal usage"
 	fi
 
+	if [ ! -z "$username" ]
+	then
+		testexec="sudo -u $username $testexec"
+	fi
+
 	outfile=$tmpdir/output.$1
 
 	# Remove any current profile if loaded
 	if [ $profileloaded -eq 1 ]
 	then
 		removeprofile
+	fi
+}
+
+# Add a temporary user with name=$1 that will be deleted on exit
+addtestuser()
+{
+	#global testusers
+
+	if ! echo "$testusers" | grep -q "$1"
+	then
+		if adduser --gecos "First Last,RoomNumber,WorkPhone,HomePhone" \
+			--no-create-home --disabled-password "$1" >/dev/null
+		then
+			testusers="$testusers $1"
+		else
+			fatalerror "Unable to add user '$1'"
+		fi
 	fi
 }
 
