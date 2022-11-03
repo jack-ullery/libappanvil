@@ -351,29 +351,16 @@ build-dep:
 		exit 1;\
 	fi
 
-tests: all
-	@if [ `whoami` = "root" ] ;\
-	then \
-		rc=0; \
-		for i in $(TESTS) ;\
-		do \
-			echo ;\
-			echo "running $$i" ;\
-			bash $$i.sh ;\
-			if [ $$? -ne 0 ] ; then \
-				rc=1;\
-			fi;\
-		done ;\
-		exit $$rc;\
-	else \
-		echo "must be root to run tests" ;\
-		exit 1;\
-	fi
+# RISKY_TESTS may crash the kernel, so clear it for the normal test target
+tests: RISKY_TESTS=
+tests: alltests
 
 alltests: all
 	@if [ `whoami` = "root" ] ;\
 	then \
 		rc=0; \
+		pass="PASSED:";\
+		fail="FAILED:";\
 		for i in $(TESTS) $(RISKY_TESTS) ;\
 		do \
 			echo ;\
@@ -381,8 +368,14 @@ alltests: all
 			bash $$i.sh ;\
 			if [ $$? -ne 0 ] ; then \
 				rc=1;\
+				fail="$$fail $$i";\
+			else\
+				pass="$$pass $$i";\
 			fi;\
 		done ;\
+		echo ;\
+		echo "$$pass";\
+		echo "$$fail";\
 		exit $$rc;\
 	else \
 		echo "must be root to run tests" ;\
