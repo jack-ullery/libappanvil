@@ -142,6 +142,7 @@ SRC=access.c \
     unix_socket.c \
     unix_socket_client.c \
     unlink.c \
+    userns.c \
     xattrs.c \
     xattrs_profile.c
 
@@ -255,6 +256,7 @@ TESTS=aa_exec \
       unix_socket_unnamed \
       unix_socket_autobind \
       unlink\
+      userns\
       xattrs\
       xattrs_profile\
       longpath \

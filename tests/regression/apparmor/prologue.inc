@@ -59,15 +59,21 @@ kernel_features_istrue()
 #          2 and error message if path does not exist
 kernel_features()
 {
-	if [ ! -e "/sys/kernel/security/apparmor/features/" ] ; then
+	features_dir="/sys/kernel/security/apparmor/features/"
+	if [ ! -e "$features_dir" ] ; then
 		echo "Kernel feature masks not supported."
 		return 1;
 	fi
 
 	for f in $@ ; do
-		if [ ! -e "/sys/kernel/security/apparmor/features/$f" ] ; then
-			echo "Required feature '$f' not available."
-			return 2;
+		if [ ! -e "$features_dir/$f" ] ; then
+			# check if feature is in file
+			feature=$(basename "$features_dir/$f")
+			file=$(dirname "$features_dir/$f")
+			if ! grep -q $feature $file; then
+				echo "Required feature '$f' not available."
+				return 2;
+			fi
 		fi
 	done
 
