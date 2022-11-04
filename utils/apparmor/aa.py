@@ -50,6 +50,7 @@ from apparmor.rule.include import IncludeRule
 from apparmor.rule.network import NetworkRule
 from apparmor.rule.ptrace import PtraceRule
 from apparmor.rule.signal import SignalRule
+from apparmor.rule.userns import UserNamespaceRule
 from apparmor.translations import init_translation
 
 _ = init_translation()
@@ -1721,6 +1722,12 @@ def collapse_log(hashlog, ignore_null_profiles=True):
                         if not hat_exists or not is_known_rule(aa[profile][hat], 'signal', signal_event):
                             log_dict[aamode][full_profile]['signal'].add(signal_event)
 
+            userns = hashlog[aamode][full_profile]['userns']
+            for access in userns.keys():
+                userns_event = UserNamespaceRule(access)
+                if not hat_exists or not is_known_rule(aa[profile][hat], 'userns', userns_event):
+                    log_dict[aamode][full_profile]['userns'].add(userns_event)
+
     return log_dict
 
 
@@ -2096,6 +2103,7 @@ def match_line_against_rule_classes(line, profile, file, lineno, in_preamble):
             'ptrace',
             'rlimit',
             'signal',
+            'userns',
     ):
 
         if rule_name in ruletypes:

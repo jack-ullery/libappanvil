@@ -27,6 +27,7 @@ from apparmor.rule.network import NetworkRule, NetworkRuleset
 from apparmor.rule.ptrace import PtraceRule, PtraceRuleset
 from apparmor.rule.rlimit import RlimitRule, RlimitRuleset
 from apparmor.rule.signal import SignalRule, SignalRuleset
+from apparmor.rule.userns import UserNamespaceRule, UserNamespaceRuleset
 from apparmor.translations import init_translation
 
 _ = init_translation()
@@ -42,6 +43,7 @@ ruletypes = {
     'ptrace':         {'rule': PtraceRule,        'ruleset': PtraceRuleset},
     'rlimit':         {'rule': RlimitRule,        'ruleset': RlimitRuleset},
     'signal':         {'rule': SignalRule,        'ruleset': SignalRuleset},
+    'userns':         {'rule': UserNamespaceRule, 'ruleset': UserNamespaceRuleset},
 }
 
 
@@ -191,6 +193,7 @@ class ProfileStorage:
             'unix',
             'file',
             'change_profile',
+            'userns',
         ]
 
         data = []
