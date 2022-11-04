@@ -156,75 +156,75 @@ cap=sys_chroot
 settest syscall_chroot
 
 # test deny keyword works
-genprofile cap:${cap}:deny ${syscall_chroot_extra_entries}
+genprofile qual=deny:cap:${cap} ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, deny keyword" fail ${syscall_chroot_args}
 
 # test allow keyword works
-genprofile cap:${cap}:allow ${syscall_chroot_extra_entries}
+genprofile qual=allow:cap:${cap} ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, allow keyword" pass ${syscall_chroot_args}
 
 ### allow/deny overlap tests ###
 
 # test allow & deny keyword behavior, allow first
-genprofile cap:${cap}:allow cap:${cap}:deny ${syscall_chroot_extra_entries}
+genprofile qual=allow:cap:${cap} qual=deny:cap:${cap} ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, allow & deny keyword, allow first" fail ${syscall_chroot_args}
 
 # test implicit allow & deny keyword behavior, allow first
-genprofile cap:${cap} cap:${cap}:deny ${syscall_chroot_extra_entries}
+genprofile cap:${cap} qual=deny:cap:${cap} ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, implicit allow & deny keyword, allow first" fail ${syscall_chroot_args}
 
 # test allow & deny keyword behavior, deny first
-genprofile cap:${cap}:deny cap:${cap}:allow ${syscall_chroot_extra_entries}
+genprofile qual=deny:cap:${cap} qual=allow:cap:${cap} ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, allow & deny keyword, deny first" fail ${syscall_chroot_args}
 
 # test implicit allow & deny keyword behavior, deny first
-genprofile cap:${cap}:deny cap:${cap} ${syscall_chroot_extra_entries}
+genprofile qual=deny:cap:${cap} cap:${cap} ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, implicit allow & deny keyword, deny first" fail ${syscall_chroot_args}
 
 # test allow all & deny all capability keyword behavior, allow first
-genprofile cap:ALL:allow cap:ALL:deny ${syscall_chroot_extra_entries}
+genprofile qual=allow:cap:ALL qual=deny:cap:ALL ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, allow & deny all caps keyword, allow first" fail ${syscall_chroot_args}
 
 # test implicit allow all & deny all capability keyword behavior, allow first
-genprofile cap:ALL cap:ALL:deny ${syscall_chroot_extra_entries}
+genprofile cap:ALL qual=deny:cap:ALL ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, implicit allow all & deny all caps keyword, allow first" fail ${syscall_chroot_args}
 
 # test allow all & deny all capability keyword behavior, deny first
-genprofile cap:ALL:deny cap:ALL:allow ${syscall_chroot_extra_entries}
+genprofile qual=deny:cap:ALL qual=allow:cap:ALL ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, allow & deny all caps keyword, deny first" fail ${syscall_chroot_args}
 
 # test implicit allow all & deny all capability keyword behavior, deny first
-genprofile cap:ALL:deny cap:ALL ${syscall_chroot_extra_entries}
+genprofile qual=deny:cap:ALL cap:ALL ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, implicit allow & deny all caps keyword, deny first" fail ${syscall_chroot_args}
 
 # test allow all & deny keywords behavior, allow first
-genprofile cap:ALL:allow cap:${cap}:deny ${syscall_chroot_extra_entries}
+genprofile qual=allow:cap:ALL qual=deny:cap:${cap} ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, allow all & deny keyword, allow first" fail ${syscall_chroot_args}
 
 # test implicit allow all & deny keywords behavior, allow first
-genprofile cap:ALL cap:${cap}:deny ${syscall_chroot_extra_entries}
+genprofile cap:ALL qual=deny:cap:${cap} ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, implicit allow all & deny keyword, allow first" fail ${syscall_chroot_args}
 
 # test allow all & deny keywords behavior, deny first
-genprofile cap:${cap}:deny cap:ALL:allow ${syscall_chroot_extra_entries}
+genprofile qual=deny:cap:${cap} qual=allow:cap:ALL ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, allow all & deny keyword, deny first" fail ${syscall_chroot_args}
 
 # test implicit allow all & deny keywords behavior, deny first
-genprofile cap:${cap}:deny cap:ALL ${syscall_chroot_extra_entries}
+genprofile qual=deny:cap:${cap} cap:ALL ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, implicit allow all & deny keyword, deny first" fail ${syscall_chroot_args}
 
 # test allow & deny all keywords behavior, allow first
-genprofile cap:${cap}:allow cap:ALL:deny ${syscall_chroot_extra_entries}
+genprofile qual=allow:cap:${cap} qual=deny:cap:ALL ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, allow & deny all keyword, allow first" fail ${syscall_chroot_args}
 
 # test implicit allow & deny all keywords behavior, allow first
-genprofile cap:${cap} cap:ALL:deny ${syscall_chroot_extra_entries}
+genprofile cap:${cap} qual=deny:cap:ALL ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, implicit allow & deny all keyword, allow first" fail ${syscall_chroot_args}
 
 # test allow & deny all keywords behavior, deny first
-genprofile cap:ALL:deny cap:${cap}:allow ${syscall_chroot_extra_entries}
+genprofile qual=deny:cap:ALL qual=allow:cap:${cap} ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, allow & deny all keyword, deny first" fail ${syscall_chroot_args}
 
 # test implicit allow & deny all keywords behavior, deny first
-genprofile cap:ALL:deny cap:${cap} ${syscall_chroot_extra_entries}
+genprofile qual=deny:cap:ALL cap:${cap} ${syscall_chroot_extra_entries}
 runchecktest "syscall_chroot -- capability ${cap}, implicit allow & deny all keyword, deny first" fail ${syscall_chroot_args}

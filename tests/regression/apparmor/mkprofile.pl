@@ -37,10 +37,17 @@ sub usage {
   print STDERR "Usage $0 [--nowarn|--escape] execname [rules]\n";
   print STDERR "      $0 --help\n";
   print STDERR "      $0 --stdin\n";
+  print STDERR "Options:\n";
   print STDERR "  nowarn:      don't warn if execname does not exist\n";
   print STDERR "  nodefault:   don't include default rules/ldd output\n";
   print STDERR "  escape:      escape stuff that would be treated as regexs\n";
   print STDERR "  help:        print this message\n";
+  print STDERR "Rule Qualifiers:\n";
+  print STDERR "  qualifiers can optionally be added to a rule with 'qual='\n";
+  print STDERR "  Examples:\n";
+  print STDERR "    /path/to/file:rw\n";
+  print STDERR "    qual=audit:/path/to/file:rw\n";
+  print STDERR "    qual=audit,deny:/path/to/file:rw\n";
 }
 
 # genprofile passes in $bin:w as default rule atm
@@ -146,199 +153,197 @@ sub gen_binary($) {
   }
 }
 
-sub gen_netdomain($) {
-  my $rule = shift;
+sub gen_netdomain($@) {
+  my ($rule, $qualifier) = @_;
   # only split on single ':'s
   my @rules = split (/(?<!:):(?!:)/, $rule);
   # convert '::' to ':' -- for port designations
   foreach (@rules) { s/::/:/g; }
-  push (@{$output_rules{$hat}}, "  @rules,\n");
+  push (@{$output_rules{$hat}}, "  ${qualifier}@rules,\n");
 }
 
-sub gen_network($) {
-  my $rule = shift;
+sub gen_network($@) {
+  my ($rule, $qualifier) = @_;
   my @rules = split (/:/, $rule);
-  push (@{$output_rules{$hat}}, "  @rules,\n");
+  push (@{$output_rules{$hat}}, "  ${qualifier}@rules,\n");
 }
 
-sub gen_unix($) {
-  my $rule = shift;
+sub gen_unix($@) {
+  my ($rule, $qualifier) = @_;
   if ($rule =~ /^unix:ALL$/) {
     push (@{$output_rules{$hat}}, "  unix,\n");
   } else {
     $rule =~ s/:/ /g;
-    push(@{$output_rules{$hat}}, "  " . $rule . ",\n");
+    push(@{$output_rules{$hat}}, "  " . $qualifier . $rule . ",\n");
   }
 }
 
-sub gen_cap($) {
-  my $rule = shift;
+sub gen_cap($@) {
+  my ($rule, $qualifier) = @_;
   my @rules = split (/:/, $rule);
   if (@rules == 2) {
     if ($rules[1] =~ /^ALL$/) {
-      push (@{$output_rules{$hat}}, "  capability,\n");
+      push (@{$output_rules{$hat}}, "  ${qualifier}capability,\n");
     } else {
-      push (@{$output_rules{$hat}}, "  capability $rules[1],\n");
-    }
-  } elsif (@rules == 3) {
-    if ($rules[1] =~ /^ALL$/) {
-      push (@{$output_rules{$hat}}, "  $rules[2] capability,\n");
-    } else {
-      push (@{$output_rules{$hat}}, "  $rules[2] capability $rules[1],\n");
+      push (@{$output_rules{$hat}}, "  ${qualifier}capability $rules[1],\n");
     }
   } else {
     (!$nowarn) && print STDERR "Warning: invalid capability description '$rule', ignored\n";
   }
 }
 
-sub gen_ptrace($) {
-    my $rule = shift;
+sub gen_ptrace($@) {
+    my ($rule, $qualifier) = @_;
     my @rules = split (/:/, $rule);
     if (@rules == 2) {
 	if ($rules[1] =~ /^ALL$/) {
-	    push (@{$output_rules{$hat}}, "  ptrace,\n");
+	    push (@{$output_rules{$hat}}, "  ${qualifier}ptrace,\n");
 	} else {
-	    push (@{$output_rules{$hat}}, "  ptrace $rules[1],\n");
+	    push (@{$output_rules{$hat}}, "  ${qualifier}ptrace $rules[1],\n");
 	}
     } elsif (@rules == 3) {
-	push (@{$output_rules{$hat}}, "  ptrace $rules[1] $rules[2],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}ptrace $rules[1] $rules[2],\n");
     } else {
 	(!$nowarn) && print STDERR "Warning: invalid ptrace description '$rule', ignored\n";
     }
 }
 
-sub gen_signal($) {
-    my $rule = shift;
+sub gen_signal($@) {
+    my ($rule, $qualifier) = @_;
     my @rules = split (/:/, $rule);
     if (@rules == 2) {
 	if ($rules[1] =~ /^ALL$/) {
-	    push (@{$output_rules{$hat}}, "  signal,\n");
+	    push (@{$output_rules{$hat}}, "  ${qualifier}signal,\n");
 	} else {
-	    push (@{$output_rules{$hat}}, "  signal $rules[1],\n");
+	    push (@{$output_rules{$hat}}, "  ${qualifier}signal $rules[1],\n");
 	}
     } elsif (@rules == 3) {
-	push (@{$output_rules{$hat}}, "  signal $rules[1] $rules[2],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}signal $rules[1] $rules[2],\n");
     } else {
 	(!$nowarn) && print STDERR "Warning: invalid signal description '$rule', ignored\n";
     }
 }
 
-sub gen_mount($) {
-    my $rule = shift;
+sub gen_mount($@) {
+    my ($rule, $qualifier) = @_;
     my @rules = split (/:/, $rule);
     if (@rules == 2) {
 	if ($rules[1] =~ /^ALL$/) {
-	    push (@{$output_rules{$hat}}, "  mount,\n");
+	    push (@{$output_rules{$hat}}, "  ${qualifier}mount,\n");
 	} else {
-	    push (@{$output_rules{$hat}}, "  mount $rules[1],\n");
+	    push (@{$output_rules{$hat}}, "  ${qualifier}mount $rules[1],\n");
 	}
     } elsif (@rules == 3) {
-	push (@{$output_rules{$hat}}, "  mount $rules[1] $rules[2],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}mount $rules[1] $rules[2],\n");
     } elsif (@rules == 4) {
-	push (@{$output_rules{$hat}}, "  mount $rules[1] $rules[2] $rules[3],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}mount $rules[1] $rules[2] $rules[3],\n");
     } elsif (@rules == 5) {
-	push (@{$output_rules{$hat}}, "  mount $rules[1] $rules[2] $rules[3] $rules[4],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}mount $rules[1] $rules[2] $rules[3] $rules[4],\n");
     } elsif (@rules == 6) {
-	push (@{$output_rules{$hat}}, "  mount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}mount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5],\n");
     } elsif (@rules == 7) {
-	push (@{$output_rules{$hat}}, "  mount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5] $rules[6],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}mount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5] $rules[6],\n");
     } else {
 	(!$nowarn) && print STDERR "Warning: invalid mount description '$rule', ignored\n";
     }
 }
 
-sub gen_remount($) {
-    my $rule = shift;
+sub gen_remount($@) {
+    my ($rule, $qualifier) = @_;
     my @rules = split (/:/, $rule);
     if (@rules == 2) {
 	if ($rules[1] =~ /^ALL$/) {
-	    push (@{$output_rules{$hat}}, "  remount,\n");
+	    push (@{$output_rules{$hat}}, "  ${qualifier}remount,\n");
 	} else {
-	    push (@{$output_rules{$hat}}, "  remount $rules[1],\n");
+	    push (@{$output_rules{$hat}}, "  ${qualifier}remount $rules[1],\n");
 	}
     } elsif (@rules == 3) {
-	push (@{$output_rules{$hat}}, "  remount $rules[1] $rules[2],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}remount $rules[1] $rules[2],\n");
     } elsif (@rules == 4) {
-	push (@{$output_rules{$hat}}, "  remount $rules[1] $rules[2] $rules[3],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}remount $rules[1] $rules[2] $rules[3],\n");
     } elsif (@rules == 5) {
-	push (@{$output_rules{$hat}}, "  remount $rules[1] $rules[2] $rules[3] $rules[4],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}remount $rules[1] $rules[2] $rules[3] $rules[4],\n");
     } elsif (@rules == 6) {
-	push (@{$output_rules{$hat}}, "  remount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}remount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5],\n");
     } elsif (@rules == 7) {
-	push (@{$output_rules{$hat}}, "  remount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5] $rules[6],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}remount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5] $rules[6],\n");
     } else {
 	(!$nowarn) && print STDERR "Warning: invalid remount description '$rule', ignored\n";
     }
 }
 
-sub gen_umount($) {
-    my $rule = shift;
+sub gen_umount($@) {
+    my ($rule, $qualifier) = @_;
     my @rules = split (/:/, $rule);
     if (@rules == 2) {
 	if ($rules[1] =~ /^ALL$/) {
-	    push (@{$output_rules{$hat}}, "  umount,\n");
+	    push (@{$output_rules{$hat}}, "  ${qualifier}umount,\n");
 	} else {
-	    push (@{$output_rules{$hat}}, "  umount $rules[1],\n");
+	    push (@{$output_rules{$hat}}, "  ${qualifier}umount $rules[1],\n");
 	}
     } elsif (@rules == 3) {
-	push (@{$output_rules{$hat}}, "  umount $rules[1] $rules[2],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}umount $rules[1] $rules[2],\n");
     } elsif (@rules == 4) {
-	push (@{$output_rules{$hat}}, "  umount $rules[1] $rules[2] $rules[3],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}umount $rules[1] $rules[2] $rules[3],\n");
     } elsif (@rules == 5) {
-	push (@{$output_rules{$hat}}, "  umount $rules[1] $rules[2] $rules[3] $rules[4],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}umount $rules[1] $rules[2] $rules[3] $rules[4],\n");
     } elsif (@rules == 6) {
-	push (@{$output_rules{$hat}}, "  umount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}umount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5],\n");
     } elsif (@rules == 7) {
-	push (@{$output_rules{$hat}}, "  umount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5] $rules[6],\n");
+	push (@{$output_rules{$hat}}, "  ${qualifier}umount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5] $rules[6],\n");
     } else {
 	(!$nowarn) && print STDERR "Warning: invalid umount description '$rule', ignored\n";
     }
 }
 
-sub gen_pivot_root($) {
-    my $rule = shift;
+sub gen_pivot_root($@) {
+    my ($rule, $qualifier) = @_;
     my @rules = split (/:/, $rule);
     if (@rules == 2) {
 	if ($rules[1] =~ /^ALL$/) {
-	    push (@{$output_rules{$hat}}, "  pivot_root,\n");
+	    push (@{$output_rules{$hat}}, "  ${qualifier}pivot_root,\n");
 	} else {
-	    push (@{$output_rules{$hat}}, "  pivot_root $rules[1],\n");
+	    push (@{$output_rules{$hat}}, "  ${qualifier}pivot_root $rules[1],\n");
 	}
     } else {
 	(!$nowarn) && print STDERR "Warning: invalid pivot_root description '$rule', ignored\n";
     }
 }
 
-sub gen_userns($) {
-    my $rule = shift;
+sub gen_userns($@) {
+    my ($rule, $qualifier) = @_;
     my @rules = split (/:/, $rule);
     if (@rules == 2) {
 	if ($rules[1] =~ /^ALL$/) {
-	    push (@{$output_rules{$hat}}, "  userns,\n");
+	    push (@{$output_rules{$hat}}, "  ${qualifier}userns,\n");
 	} else {
-	    push (@{$output_rules{$hat}}, "  userns $rules[1],\n");
+	    push (@{$output_rules{$hat}}, "  ${qualifier}userns $rules[1],\n");
 	}
     } else {
 	(!$nowarn) && print STDERR "Warning: invalid userns description '$rule', ignored\n";
     }
 }
 
-sub gen_file($) {
-  my $rule = shift;
+sub gen_file($@) {
+  my ($rule, $qualifier) = @_;
+  if (!$qualifier) {
+    $qualifier = "";
+  }
+
   my @rules = split (/:/, $rule);
   # default: file rules
   if (@rules == 1) {
       # support raw rules
-      push (@{$output_rules{$hat}}, "  $rules[0],\n");
+      push (@{$output_rules{$hat}}, "  ${qualifier}$rules[0],\n");
   } elsif (@rules == 2) {
     if ($escape) {
       $rules[0]=~ s/(["[\]{}\:])/\\$1/g;
       $rules[0]=~ s/(\#)/\\043/g;
     }
     if ($rules[0]=~ /[\s\!\"\^]/) {
-      push (@{$output_rules{$hat}}, "  \"$rules[0]\" $rules[1],\n");
+      push (@{$output_rules{$hat}}, "  ${qualifier}\"$rules[0]\" $rules[1],\n");
     } else {
-      push (@{$output_rules{$hat}}, "  $rules[0] $rules[1],\n");
+      push (@{$output_rules{$hat}}, "  ${qualifier}$rules[0] $rules[1],\n");
     }
   } else {
     (!$nowarn) && print STDERR "Warning: invalid file access '$rule', ignored\n";
@@ -355,34 +360,34 @@ sub gen_flag($) {
   }
 }
 
-sub gen_change_profile($) {
-    my $rule = shift;
+sub gen_change_profile($@) {
+    my ($rule, $qualifier) = @_;
     my @rules = split (/:/, $rule);
     if (@rules == 2) {
 	if ($rules[1] =~ /^ALL$/) {
-            push (@{$output_rules{$hat}}, "  change_profile,\n",);
+            push (@{$output_rules{$hat}}, "  ${qualifier}change_profile,\n",);
 	} else {
-            push (@{$output_rules{$hat}}, "  change_profile -> $rules[1],\n",);
+            push (@{$output_rules{$hat}}, "  ${qualifier}change_profile -> $rules[1],\n",);
 	}
     } elsif (@rules == 3) {
-        push (@{$output_rules{$hat}}, "  change_profile $rules[1] -> $rules[2],\n",);
+        push (@{$output_rules{$hat}}, "  ${qualifier}change_profile $rules[1] -> $rules[2],\n",);
     } elsif (@rules == 4) {
-        push (@{$output_rules{$hat}}, "  change_profile $rules[1] $rules[2] -> $rules[3],\n",);
+        push (@{$output_rules{$hat}}, "  ${qualifier}change_profile $rules[1] $rules[2] -> $rules[3],\n",);
     } else {
         (!$nowarn) && print STDERR "Warning: invalid change_profile description '$rule', ignored\n";
     }
 }
 
-sub gen_hat($) {
-  my $rule = shift;
+sub gen_hat($@) {
+  my ($rule, $qualifier) = @_;
   my @rules = split (/:/, $rule);
   if (@rules != 2) {
     (!$nowarn) && print STDERR "Warning: invalid hat description '$rule', ignored\n";
   } else {
     $hat = $rules[1];
     # give every profile/hat access to change_hat
-    @{$output_rules{$hat}} = ( "  /proc/*/attr/current w,\n",);
-    push(@{$output_rules{$hat}}, "  /proc/*/attr/apparmor/current w,\n");
+    @{$output_rules{$hat}} = ( "  ${qualifier}/proc/*/attr/current w,\n",);
+    push(@{$output_rules{$hat}}, "  ${qualifier}/proc/*/attr/apparmor/current w,\n");
   }
 }
 
@@ -442,36 +447,44 @@ sub gen_from_args() {
   }
 
   for my $rule (@ARGV) {
+    my $qualifier = "";
+    if ($rule =~ /^qual=([^:]*):(.*)/) {
+      # Strip qualifiers from rule to pass as separate argument
+      $qualifier = "$1 ";
+      $qualifier =~ s/,/ /g;
+      $rule = $2;
+    }
+
     #($fn, @rules) = split (/:/, $rule);
     if ($rule =~ /^(tcp|udp)/) {
       # netdomain rules
-      gen_netdomain($rule);
+      gen_netdomain($rule, $qualifier);
     } elsif ($rule =~ /^network:/) {
-      gen_network($rule);
+      gen_network($rule, $qualifier);
     } elsif ($rule =~ /^unix:/) {
-      gen_unix($rule);
+      gen_unix($rule, $qualifier);
     } elsif ($rule =~ /^cap:/) {
-      gen_cap($rule);
+      gen_cap($rule, $qualifier);
     } elsif ($rule =~ /^ptrace:/) {
-      gen_ptrace($rule);
+      gen_ptrace($rule, $qualifier);
     } elsif ($rule =~ /^signal:/) {
-      gen_signal($rule);
+      gen_signal($rule, $qualifier);
     } elsif ($rule =~ /^mount:/) {
-      gen_mount($rule);
+      gen_mount($rule, $qualifier);
     } elsif ($rule =~ /^remount:/) {
-      gen_remount($rule);
+      gen_remount($rule, $qualifier);
     } elsif ($rule =~ /^umount:/) {
-      gen_umount($rule);
+      gen_umount($rule, $qualifier);
     } elsif ($rule =~ /^pivot_root:/) {
-      gen_pivot_root($rule);
+      gen_pivot_root($rule, $qualifier);
     } elsif ($rule =~ /^userns:/) {
-      gen_userns($rule)
+      gen_userns($rule, $qualifier)
     } elsif ($rule =~ /^flag:/) {
       gen_flag($rule);
     } elsif ($rule =~ /^hat:/) {
-      gen_hat($rule);
+      gen_hat($rule, $qualifier);
     } elsif ($rule =~ /^change_profile:/) {
-      gen_change_profile($rule);
+      gen_change_profile($rule, $qualifier);
     } elsif ($rule =~ /^addimage:/) {
       gen_addimage($rule);
       $addimage = 1;
@@ -480,7 +493,7 @@ sub gen_from_args() {
     } elsif ($rule =~ /^path:/) {
       gen_path($rule);
     } else {
-      gen_file($rule);
+      gen_file($rule, $qualifier);
     }
   }
 
