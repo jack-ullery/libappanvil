@@ -57,6 +57,7 @@ class ReadLog:
             'path':         hasher(),
             'ptrace':       hasher(),
             'signal':       hasher(),
+            'userns':       hasher(),
         }
 
     def prefetch_next_log_entry(self):
@@ -183,6 +184,11 @@ class ReadLog:
 
             self.hashlog[aamode][full_profile]['exec'][e['name']][e['name2']] = True
             return
+
+        elif e['class'] and e['class'] == 'namespace':
+            if e['denied_mask'].startswith('userns'):
+                self.hashlog[aamode][full_profile]['userns'][e['denied_mask'].removeprefix('userns_')] = True
+            return None
 
         elif self.op_type(e) == 'file':
             # Map c (create) and d (delete) to w (logging is more detailed than the profile language)
