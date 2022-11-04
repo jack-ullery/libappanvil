@@ -309,6 +309,20 @@ sub gen_pivot_root($) {
     }
 }
 
+sub gen_userns($) {
+    my $rule = shift;
+    my @rules = split (/:/, $rule);
+    if (@rules == 2) {
+	if ($rules[1] =~ /^ALL$/) {
+	    push (@{$output_rules{$hat}}, "  userns,\n");
+	} else {
+	    push (@{$output_rules{$hat}}, "  userns $rules[1],\n");
+	}
+    } else {
+	(!$nowarn) && print STDERR "Warning: invalid userns description '$rule', ignored\n";
+    }
+}
+
 sub gen_file($) {
   my $rule = shift;
   my @rules = split (/:/, $rule);
@@ -450,6 +464,8 @@ sub gen_from_args() {
       gen_umount($rule);
     } elsif ($rule =~ /^pivot_root:/) {
       gen_pivot_root($rule);
+    } elsif ($rule =~ /^userns:/) {
+      gen_userns($rule)
     } elsif ($rule =~ /^flag:/) {
       gen_flag($rule);
     } elsif ($rule =~ /^hat:/) {
