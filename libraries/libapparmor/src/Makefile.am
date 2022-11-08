@@ -33,9 +33,9 @@ INCLUDES = $(all_includes)
 # After changing the AA_LIB_* variables, also update EXPECTED_SO_NAME.
 
 AA_LIB_CURRENT = 13
-AA_LIB_REVISION = 0
+AA_LIB_REVISION = 1
 AA_LIB_AGE = 12
-EXPECTED_SO_NAME = libapparmor.so.1.12.0
+EXPECTED_SO_NAME = libapparmor.so.1.12.1
 
 SUFFIXES = .pc.in .pc
 
