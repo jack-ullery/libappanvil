@@ -125,7 +125,6 @@ class BaseRule(metaclass=ABCMeta):
     @abstractmethod
     def get_clean(self, depth=0):
         """return clean rule (with default formatting, and leading whitespace as specified in the depth parameter)"""
-        raise NotImplementedError("'%s' needs to implement get_clean(), but didn't" % (str(self.__class__)))
 
     def get_raw(self, depth=0):
         """return raw rule (with original formatting, and leading whitespace in the depth parameter)"""
@@ -158,7 +157,6 @@ class BaseRule(metaclass=ABCMeta):
     @abstractmethod
     def is_covered_localvars(self, other_rule):
         """check if the rule-specific parts of other_rule is covered by this rule object"""
-        raise NotImplementedError("'%s' needs to implement is_covered_localvars(), but didn't" % (str(self)))
 
     def _is_covered_plain(self, self_value, self_all, other_value, other_all, cond_name):
         """check if other_* is covered by self_* - for plain str, int etc."""
@@ -239,7 +237,6 @@ class BaseRule(metaclass=ABCMeta):
     @abstractmethod
     def is_equal_localvars(self, other_rule, strict):
         """compare if rule-specific variables are equal"""
-        raise NotImplementedError("'%s' needs to implement is_equal_localvars(), but didn't" % (str(self)))
 
     def severity(self, sev_db):
         """return severity of this rule, which can be:
@@ -275,7 +272,6 @@ class BaseRule(metaclass=ABCMeta):
     def logprof_header_localvars(self):
         """return the headers (human-readable version of the rule) to display in aa-logprof for this rule object
            returns {'label1': 'value1', 'label2': 'value2'}"""
-        raise NotImplementedError("'%s' needs to implement logprof_header(), but didn't" % (str(self)))
 
     # NOTE: edit_header, validate_edit, and store_edit are not implemented by every subclass.
     def edit_header(self):
