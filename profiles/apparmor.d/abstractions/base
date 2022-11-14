@@ -101,6 +101,7 @@
   @{PROC}/cpuinfo                r,
   @{sys}/devices/system/cpu/       r,
   @{sys}/devices/system/cpu/online r,
+  @{sys}/devices/system/cpu/possible r,
 
   # glibc's *printf protections read the maps file
   @{PROC}/@{pid}/{maps,auxv,status} r,
