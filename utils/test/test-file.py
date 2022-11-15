@@ -19,7 +19,6 @@ from collections import namedtuple
 import apparmor.severity as severity
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.logparser import ReadLog
-from apparmor.rule import BaseRule
 from apparmor.rule.file import FileRule, FileRuleset
 from apparmor.translations import init_translation
 from common_test import AATest, setup_all_loops
@@ -791,18 +790,22 @@ class FileCoveredTest_ManualOrInvalid(AATest):
             self.obj.is_covered(self.testobj)
 
     def test_invalid_is_covered(self):
-        obj = FileRule.create_instance('file,')
+        raw_rule = 'file,'
+        class SomeOtherClass(FileRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = FileRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = FileRule.create_instance('file,')
+        raw_rule = 'file,'
+        class SomeOtherClass(FileRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = FileRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_equal(testobj)
 

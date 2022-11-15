@@ -34,7 +34,7 @@ class ReadLog:
         self.profile_dir = profile_dir
         self.active_profiles = active_profiles
         self.hashlog = {'PERMITTING': {}, 'REJECTING': {}}  # structure inside {}: {'profilename': init_hashlog(aamode, profilename), 'profilename2': init_hashlog(...), ...}
-        self.debug_logger = DebugLogger('ReadLog')
+        self.debug_logger = DebugLogger(type(self).__name__)
         self.LOG = None
         self.logmark = ''
         self.seenmark = None

@@ -21,7 +21,7 @@ class AARE:
     """AARE (AppArmor Regular Expression) wrapper class"""
 
     def __init__(self, regex, is_path, log_event=None):
-        """create an AARE instance for the given AppArmor regex
+        """Initialize instance for the given AppArmor regex.
         If is_path is true, the regex is expected to be a path and therefore must start with / or a variable."""
         # using the specified variables when matching.
 
@@ -44,24 +44,24 @@ class AARE:
         # self.variables = variables  # XXX
 
     def __repr__(self):
-        """returns a "printable" representation of AARE"""
-        return "AARE('%s')" % self.regex
+        """returns a "printable" representation of object"""
+        return type(self).__name__ + "('%s')" % self.regex
 
     def __deepcopy__(self, memo):
         # thanks to http://bugs.python.org/issue10076, we need to implement this ourself
         if self.orig_regex:
-            return AARE(self.orig_regex, is_path=False, log_event=True)
+            return type(self)(self.orig_regex, is_path=False, log_event=True)
         else:
-            return AARE(self.regex, is_path=False)
+            return type(self)(self.regex, is_path=False)
 
     # check if a regex is a plain path (not containing variables, alternations or wildcards)
     # some special characters are probably not covered by the plain_path regex (if in doubt, better error out on the safe side)
     plain_path = re.compile('^[0-9a-zA-Z/._-]+$')
 
     def match(self, expression):
-        """check if the given expression (string or AARE) matches the regex"""
+        """check if the given expression (string or instance of this class) matches the regex"""
 
-        if isinstance(expression, AARE):
+        if isinstance(expression, type(self)):
             if expression.orig_regex:
                 expression = expression.orig_regex
             elif self.plain_path.match(expression.regex):
@@ -70,7 +70,7 @@ class AARE:
             else:
                 return self.is_equal(expression)  # better safe than sorry
         elif not isinstance(expression, str):
-            raise AppArmorBug('AARE.match() called with unknown object: %s' % str(expression))
+            raise AppArmorBug('match() called with unknown object: %s' % str(expression))
 
         if self._regex_compiled is None:
             self._regex_compiled = re.compile(convert_regexp(self.regex))
@@ -80,12 +80,12 @@ class AARE:
     def is_equal(self, expression):
         """check if the given expression is equal"""
 
-        if isinstance(expression, AARE):
+        if isinstance(expression, type(self)):
             return self.regex == expression.regex
         elif isinstance(expression, str):
             return self.regex == expression
         else:
-            raise AppArmorBug('AARE.is_equal() called with unknown object: %s' % str(expression))
+            raise AppArmorBug('is_equal() called with unknown object: %s' % str(expression))
 
     def glob_path(self):
         """Glob the given file or directory path"""
@@ -113,7 +113,7 @@ class AARE:
                 newpath = re.sub('/[^/]+\*\*$', '/**', self.regex)
             else:
                 newpath = re.sub('/[^/]+$', '/*', self.regex)
-        return AARE(newpath, False)
+        return type(self)(newpath, False)
 
     def glob_path_withext(self):
         """Glob given file path with extension
@@ -136,7 +136,7 @@ class AARE:
             match = re.search('(\.[^/]+)$', self.regex)
             if match:
                 newpath = re.sub('/[^/]+(\.[^/]+)$', '/*' + match.groups()[0], self.regex)
-        return AARE(newpath, False)
+        return type(self)(newpath, False)
 
 
 def convert_expression_to_aare(expression):

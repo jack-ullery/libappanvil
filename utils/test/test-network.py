@@ -18,7 +18,6 @@ from collections import namedtuple
 
 from apparmor.common import AppArmorBug, AppArmorException, cmd
 from apparmor.logparser import ReadLog
-from apparmor.rule import BaseRule
 from apparmor.rule.network import NetworkRule, NetworkRuleset, network_domain_keywords
 from apparmor.translations import init_translation
 from common_test import AATest, setup_all_loops
@@ -370,18 +369,22 @@ class NetworkCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_covered(self):
-        obj = NetworkRule.create_instance('network inet,')
+        raw_rule = 'network inet,'
+        class SomeOtherClass(NetworkRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = NetworkRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = NetworkRule.create_instance('network inet,')
+        raw_rule = 'network inet,'
+        class SomeOtherClass(NetworkRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = NetworkRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_equal(testobj)
 

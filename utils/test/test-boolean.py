@@ -17,7 +17,6 @@ import unittest
 from collections import namedtuple
 
 from apparmor.common import AppArmorBug, AppArmorException
-from apparmor.rule import BaseRule
 from apparmor.rule.boolean import BooleanRule, BooleanRuleset
 from apparmor.translations import init_translation
 from common_test import AATest, setup_all_loops
@@ -227,18 +226,22 @@ class BooleanCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_covered_3(self):
-        obj = BooleanRule.create_instance('$foo = true')
+        raw_rule = '$foo = true'
+        class SomeOtherClass(BooleanRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = BooleanRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = BooleanRule.create_instance('$foo = true')
+        raw_rule = '$foo = true'
+        class SomeOtherClass(BooleanRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = BooleanRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_equal(testobj)
 

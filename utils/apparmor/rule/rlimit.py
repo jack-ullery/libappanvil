@@ -62,12 +62,12 @@ class RlimitRule(BaseRule):
             else:
                 raise AppArmorException('Unknown rlimit keyword in rlimit rule: %s' % rlimit)
         else:
-            raise AppArmorBug('Passed unknown object to RlimitRule: %s' % str(rlimit))
+            raise AppArmorBug('Passed unknown object to %s: %s' % (type(self).__name__, str(rlimit)))
 
         self.value = None
         self.value_as_int = None
         self.all_values = False
-        if value == RlimitRule.ALL:
+        if value == self.ALL:
             self.all_values = True
         elif isinstance(value, str):
             if not value.strip():
@@ -101,7 +101,7 @@ class RlimitRule(BaseRule):
             # still here? fine :-)
             self.value = value
         else:
-            raise AppArmorBug('Passed unknown object to RlimitRule: %s' % str(value))
+            raise AppArmorBug('Passed unknown object to %s: %s' % (type(self).__name__, str(value)))
 
     @classmethod
     def _match(cls, raw_rule):
@@ -109,7 +109,7 @@ class RlimitRule(BaseRule):
 
     @classmethod
     def _create_instance(cls, raw_rule):
-        """parse raw_rule and return RlimitRule"""
+        """parse raw_rule and return instance of this class"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -124,13 +124,13 @@ class RlimitRule(BaseRule):
 
         if matches.group('value'):
             if matches.group('value') == 'infinity':
-                value = RlimitRule.ALL
+                value = cls.ALL
             else:
                 value = strip_quotes(matches.group('value'))
         else:
             raise AppArmorException(_("Invalid rlimit rule '%s' - value missing") % raw_rule)  # pragma: no cover - would need breaking the regex
 
-        return RlimitRule(rlimit, value, comment=comment)
+        return cls(rlimit, value, comment=comment)
 
     def get_clean(self, depth=0):
         """return rule (in clean/default formatting)"""

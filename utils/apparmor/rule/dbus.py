@@ -84,9 +84,9 @@ class DbusRule(BaseRule):
         super().__init__(audit=audit, deny=deny, allow_keyword=allow_keyword,
                          comment=comment, log_event=log_event)
 
-        self.access, self.all_access, unknown_items = check_and_split_list(access, access_keywords, DbusRule.ALL, 'DbusRule', 'access')
+        self.access, self.all_access, unknown_items = check_and_split_list(access, access_keywords, self.ALL, type(self).__name__, 'access')
         if unknown_items:
-            raise AppArmorException(_('Passed unknown access keyword to DbusRule: %s') % ' '.join(unknown_items))
+            raise AppArmorException(_('Passed unknown access keyword to %s: %s') % (type(self).__name__, ' '.join(unknown_items)))
 
         #                                                       rulepart   partname    is_path  log_event
         self.bus, self.all_buses            = self._aare_or_all(bus,       'bus',        False, log_event)
@@ -113,7 +113,7 @@ class DbusRule(BaseRule):
 
     @classmethod
     def _create_instance(cls, raw_rule):
-        """parse raw_rule and return DbusRule"""
+        """parse raw_rule and return instance of this class"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -135,34 +135,34 @@ class DbusRule(BaseRule):
                 access = strip_parenthesis(details.group('access'))
                 access = access.replace(',', ' ').split()  # split by ',' or whitespace
                 if not access:  # XXX that happens for "dbus ( )," rules - correct behaviour? (also: same for signal rules?)
-                    access = DbusRule.ALL
+                    access = cls.ALL
             else:
-                access = DbusRule.ALL
+                access = cls.ALL
 
             if details.group('bus'):
                 bus = strip_parenthesis(strip_quotes(details.group('bus')))
             else:
-                bus = DbusRule.ALL
+                bus = cls.ALL
 
             if details.group('path'):
                 path = strip_parenthesis(strip_quotes(details.group('path')))
             else:
-                path = DbusRule.ALL
+                path = cls.ALL
 
             if details.group('name'):
                 name = strip_parenthesis(strip_quotes(details.group('name')))
             else:
-                name = DbusRule.ALL
+                name = cls.ALL
 
             if details.group('interface'):
                 interface = strip_parenthesis(strip_quotes(details.group('interface')))
             else:
-                interface = DbusRule.ALL
+                interface = cls.ALL
 
             if details.group('member'):
                 member = strip_parenthesis(strip_quotes(details.group('member')))
             else:
-                member = DbusRule.ALL
+                member = cls.ALL
 
             if details.group('peername1'):
                 peername = strip_parenthesis(strip_quotes(details.group('peername1')))
@@ -171,7 +171,7 @@ class DbusRule(BaseRule):
             elif details.group('peername3'):
                 peername = strip_parenthesis(strip_quotes(details.group('peername3')))
             else:
-                peername = DbusRule.ALL
+                peername = cls.ALL
 
             if details.group('peerlabel1'):
                 peerlabel = strip_parenthesis(strip_quotes(details.group('peerlabel1')))
@@ -180,20 +180,20 @@ class DbusRule(BaseRule):
             elif details.group('peerlabel3'):
                 peerlabel = strip_parenthesis(strip_quotes(details.group('peerlabel3')))
             else:
-                peerlabel = DbusRule.ALL
+                peerlabel = cls.ALL
 
         else:
-            access = DbusRule.ALL
-            bus = DbusRule.ALL
-            path = DbusRule.ALL
-            name = DbusRule.ALL
-            interface = DbusRule.ALL
-            member = DbusRule.ALL
-            peername = DbusRule.ALL
-            peerlabel = DbusRule.ALL
+            access = cls.ALL
+            bus = cls.ALL
+            path = cls.ALL
+            name = cls.ALL
+            interface = cls.ALL
+            member = cls.ALL
+            peername = cls.ALL
+            peerlabel = cls.ALL
 
-        return DbusRule(access, bus, path, name, interface, member, peername, peerlabel,
-                        audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
+        return cls(access, bus, path, name, interface, member, peername, peerlabel,
+                   audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
         """return rule (in clean/default formatting)"""

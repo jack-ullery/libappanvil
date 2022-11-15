@@ -46,13 +46,13 @@ class ChangeProfileRule(BaseRule):
         if execmode:
             if execmode != 'safe' and execmode != 'unsafe':
                 raise AppArmorBug('Unknown exec mode (%s) in change_profile rule' % execmode)
-            elif not execcond or execcond == ChangeProfileRule.ALL:
+            elif not execcond or execcond == self.ALL:
                 raise AppArmorException('Exec condition is required when unsafe or safe keywords are present')
         self.execmode = execmode
 
         self.execcond = None
         self.all_execconds = False
-        if execcond == ChangeProfileRule.ALL:
+        if execcond == self.ALL:
             self.all_execconds = True
         elif isinstance(execcond, str):
             if not execcond.strip():
@@ -62,11 +62,11 @@ class ChangeProfileRule(BaseRule):
             else:
                 raise AppArmorException('Exec condition in change_profile rule does not start with /: %s' % str(execcond))
         else:
-            raise AppArmorBug('Passed unknown object to ChangeProfileRule: %s' % str(execcond))
+            raise AppArmorBug('Passed unknown object to %s: %s' % (type(self).__name__, str(execcond)))
 
         self.targetprofile = None
         self.all_targetprofiles = False
-        if targetprofile == ChangeProfileRule.ALL:
+        if targetprofile == self.ALL:
             self.all_targetprofiles = True
         elif isinstance(targetprofile, str):
             if targetprofile.strip():
@@ -74,7 +74,7 @@ class ChangeProfileRule(BaseRule):
             else:
                 raise AppArmorBug('Empty target profile in change_profile rule')
         else:
-            raise AppArmorBug('Passed unknown object to ChangeProfileRule: %s' % str(targetprofile))
+            raise AppArmorBug('Passed unknown object to %s: %s' % (type(self).__name__, str(targetprofile)))
 
     @classmethod
     def _match(cls, raw_rule):
@@ -82,7 +82,7 @@ class ChangeProfileRule(BaseRule):
 
     @classmethod
     def _create_instance(cls, raw_rule):
-        """parse raw_rule and return ChangeProfileRule"""
+        """parse raw_rule and return instance of this class"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -95,15 +95,15 @@ class ChangeProfileRule(BaseRule):
         if matches.group('execcond'):
             execcond = strip_quotes(matches.group('execcond'))
         else:
-            execcond = ChangeProfileRule.ALL
+            execcond = cls.ALL
 
         if matches.group('targetprofile'):
             targetprofile = strip_quotes(matches.group('targetprofile'))
         else:
-            targetprofile = ChangeProfileRule.ALL
+            targetprofile = cls.ALL
 
-        return ChangeProfileRule(execmode, execcond, targetprofile,
-                                 audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
+        return cls(execmode, execcond, targetprofile,
+                   audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
         """return rule (in clean/default formatting)"""
@@ -135,8 +135,8 @@ class ChangeProfileRule(BaseRule):
         """check if other_rule is covered by this rule object"""
 
         if (self.execmode != other_rule.execmode
-                and (self.execmode not in ChangeProfileRule.equiv_execmodes
-                     or other_rule.execmode not in ChangeProfileRule.equiv_execmodes)):
+                and (self.execmode not in self.equiv_execmodes
+                     or other_rule.execmode not in self.equiv_execmodes)):
             return False
 
         if not self._is_covered_plain(self.execcond, self.all_execconds, other_rule.execcond, other_rule.all_execconds, 'exec condition'):
@@ -156,8 +156,8 @@ class ChangeProfileRule(BaseRule):
             raise AppArmorBug('Passed non-change_profile rule: %s' % str(rule_obj))
 
         if (self.execmode != rule_obj.execmode
-                and (self.execmode not in ChangeProfileRule.equiv_execmodes
-                     or rule_obj.execmode not in ChangeProfileRule.equiv_execmodes)):
+                and (self.execmode not in self.equiv_execmodes
+                     or rule_obj.execmode not in self.equiv_execmodes)):
             return False
 
         if (self.execcond != rule_obj.execcond

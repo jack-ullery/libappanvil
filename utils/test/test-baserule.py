@@ -19,6 +19,35 @@ from common_test import AATest, setup_all_loops
 
 
 class TestBaserule(AATest):
+
+    class ValidSubclass(BaseRule):
+        @classmethod
+        def _match(cls, raw_rule): pass
+
+        @classmethod
+        def _create_instance(cls, raw_rule): pass
+
+        def get_clean(self, depth=0): pass
+
+        def is_covered_localvars(self, other_rule): pass
+
+        def is_equal_localvars(self, other_rule, strict): pass
+
+        def logprof_header_localvars(self): pass
+
+    def test_implemented_abstract_methods(self):
+        self.ValidSubclass()
+
+    def test_unimplemented_abstract_methods(self):
+        with self.assertRaises(TypeError):
+            BaseRule()
+
+        class InvalidSubclass(BaseRule):
+            pass
+
+        with self.assertRaises(TypeError):
+            InvalidSubclass()
+
     def test_abstract__create_instance(self):
         with self.assertRaises(NotImplementedError):
             BaseRule._create_instance('foo')
@@ -35,21 +64,6 @@ class TestBaserule(AATest):
         with self.assertRaises(NotImplementedError):
             BaseRule.match('foo')
 
-    def test_abstract_get_clean(self):
-        obj = BaseRule()
-        with self.assertRaises(NotImplementedError):
-            obj.get_clean()
-
-    def test_is_equal_localvars(self):
-        obj = BaseRule()
-        with self.assertRaises(NotImplementedError):
-            obj.is_equal_localvars(BaseRule(), False)
-
-    def test_is_covered_localvars(self):
-        obj = BaseRule()
-        with self.assertRaises(NotImplementedError):
-            obj.is_covered_localvars(None)
-
     def test_parse_modifiers_invalid(self):
         regex = re.compile('^\s*(?P<audit>audit\s+)?(?P<allow>allow\s+|deny\s+|invalid\s+)?')
         matches = regex.search('audit invalid ')
@@ -59,27 +73,22 @@ class TestBaserule(AATest):
 
     def test_default_severity(self):
         sev_db = severity.Severity('../severity.db', 'unknown')
-        obj = BaseRule()
+        obj = self.ValidSubclass()
         rank = obj.severity(sev_db)
         self.assertEqual(rank, sev_db.NOT_IMPLEMENTED)
 
-    def test_logprof_header_localvars(self):
-        obj = BaseRule()
-        with self.assertRaises(NotImplementedError):
-            obj.logprof_header_localvars()
-
     def test_edit_header_localvars(self):
-        obj = BaseRule()
+        obj = self.ValidSubclass()
         with self.assertRaises(NotImplementedError):
             obj.edit_header()
 
     def test_validate_edit_localvars(self):
-        obj = BaseRule()
+        obj = self.ValidSubclass()
         with self.assertRaises(NotImplementedError):
             obj.validate_edit('/foo')
 
     def test_store_edit_localvars(self):
-        obj = BaseRule()
+        obj = self.ValidSubclass()
         with self.assertRaises(NotImplementedError):
             obj.store_edit('/foo')
 

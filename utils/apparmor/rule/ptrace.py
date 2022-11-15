@@ -58,9 +58,9 @@ class PtraceRule(BaseRule):
                          comment=comment, log_event=log_event)
 
         self.access, self.all_access, unknown_items = check_and_split_list(
-            access, access_keywords, PtraceRule.ALL, 'PtraceRule', 'access')
+            access, access_keywords, self.ALL, type(self).__name__, 'access')
         if unknown_items:
-            raise AppArmorException(_('Passed unknown access keyword to PtraceRule: %s') % ' '.join(unknown_items))
+            raise AppArmorException(_('Passed unknown access keyword to %s: %s') % (type(self).__name__, ' '.join(unknown_items)))
 
         self.peer, self.all_peers = self._aare_or_all(peer, 'peer', is_path=False, log_event=log_event)
 
@@ -70,7 +70,7 @@ class PtraceRule(BaseRule):
 
     @classmethod
     def _create_instance(cls, raw_rule):
-        """parse raw_rule and return PtraceRule"""
+        """parse raw_rule and return instance of this class"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -94,18 +94,18 @@ class PtraceRule(BaseRule):
                     access = access[1:-1]
                 access = access.replace(',', ' ').split()  # split by ',' or whitespace
             else:
-                access = PtraceRule.ALL
+                access = cls.ALL
 
             if details.group('peer'):
                 peer = strip_quotes(details.group('peer'))
             else:
-                peer = PtraceRule.ALL
+                peer = cls.ALL
         else:
-            access = PtraceRule.ALL
-            peer = PtraceRule.ALL
+            access = cls.ALL
+            peer = cls.ALL
 
-        return PtraceRule(access, peer,
-                          audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
+        return cls(access, peer,
+                   audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
         """return rule (in clean/default formatting)"""

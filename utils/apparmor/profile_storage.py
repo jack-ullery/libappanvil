@@ -124,7 +124,8 @@ class ProfileStorage:
             raise AppArmorBug('Attempt to overwrite "%s" with %s, type %s' % (key, value, type(value)))
 
     def __repr__(self):
-        return ('\n<ProfileStorage>\n%s\n</ProfileStorage>\n' % '\n'.join(self.get_rules_clean(1)))
+        name = type(self).__name__
+        return '\n<%s>\n%s\n</%s>\n' % (name, '\n'.join(self.get_rules_clean(1)), name)
 
     def get(self, key, fallback=None):
         if key in self.data:
@@ -208,7 +209,7 @@ class ProfileStorage:
 
     @classmethod
     def parse(cls, line, file, lineno, profile, hat):
-        """parse a profile start line (using parse_profile_startline()) and convert it to a ProfileStorage"""
+        """parse a profile start line (using parse_profile_startline()) and convert it to an instance of this class"""
 
         matches = parse_profile_start_line(line, file)
 
@@ -239,7 +240,7 @@ class ProfileStorage:
                 hat = profile
                 pps_set_hat_external = False
 
-        prof_storage = ProfileStorage(profile, hat, 'ProfileStorage.parse()')
+        prof_storage = cls(profile, hat, cls.__name__ + '.parse()')
 
         prof_storage['name'] = profile
         prof_storage['filename'] = file

@@ -63,19 +63,19 @@ class NetworkRule(BaseRule):
 
         self.domain = None
         self.all_domains = False
-        if domain == NetworkRule.ALL:
+        if domain == self.ALL:
             self.all_domains = True
         elif isinstance(domain, str):
             if domain in network_domain_keywords:
                 self.domain = domain
             else:
-                raise AppArmorBug('Passed unknown domain to NetworkRule: %s' % domain)
+                raise AppArmorBug('Passed unknown domain to %s: %s' % (type(self).__name__, domain))
         else:
-            raise AppArmorBug('Passed unknown object to NetworkRule: %s' % str(domain))
+            raise AppArmorBug('Passed unknown object to %s: %s' % (type(self).__name__, str(domain)))
 
         self.type_or_protocol = None
         self.all_type_or_protocols = False
-        if type_or_protocol == NetworkRule.ALL:
+        if type_or_protocol == self.ALL:
             self.all_type_or_protocols = True
         elif isinstance(type_or_protocol, str):
             if type_or_protocol in network_protocol_keywords:
@@ -83,9 +83,9 @@ class NetworkRule(BaseRule):
             elif type_or_protocol in network_type_keywords:
                 self.type_or_protocol = type_or_protocol
             else:
-                raise AppArmorBug('Passed unknown type_or_protocol to NetworkRule: %s' % type_or_protocol)
+                raise AppArmorBug('Passed unknown type_or_protocol to %s: %s' % (type(self).__name__, type_or_protocol))
         else:
-            raise AppArmorBug('Passed unknown object to NetworkRule: %s' % str(type_or_protocol))
+            raise AppArmorBug('Passed unknown object to %s: %s' % (type(self).__name__, str(type_or_protocol)))
 
     @classmethod
     def _match(cls, raw_rule):
@@ -93,7 +93,7 @@ class NetworkRule(BaseRule):
 
     @classmethod
     def _create_instance(cls, raw_rule):
-        """parse raw_rule and return NetworkRule"""
+        """parse raw_rule and return instance of this class"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -113,18 +113,18 @@ class NetworkRule(BaseRule):
             if details.group('domain'):
                 domain = details.group('domain')
             else:
-                domain = NetworkRule.ALL
+                domain = cls.ALL
 
             if details.group('type_or_protocol'):
                 type_or_protocol = details.group('type_or_protocol')
             else:
-                type_or_protocol = NetworkRule.ALL
+                type_or_protocol = cls.ALL
         else:
-            domain = NetworkRule.ALL
-            type_or_protocol = NetworkRule.ALL
+            domain = cls.ALL
+            type_or_protocol = cls.ALL
 
-        return NetworkRule(domain, type_or_protocol,
-                           audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
+        return cls(domain, type_or_protocol,
+                   audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
         """return rule (in clean/default formatting)"""

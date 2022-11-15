@@ -60,7 +60,7 @@ class AliasRule(BaseRule):
 
     @classmethod
     def _create_instance(cls, raw_rule):
-        """parse raw_rule and return AliasRule"""
+        """parse raw_rule and return instance of this class"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -71,8 +71,8 @@ class AliasRule(BaseRule):
         orig_path = strip_quotes(matches.group('orig_path').strip())
         target = strip_quotes(matches.group('target').strip())
 
-        return AliasRule(orig_path, target,
-                         audit=False, deny=False, allow_keyword=False, comment=comment)
+        return cls(orig_path, target,
+                   audit=False, deny=False, allow_keyword=False, comment=comment)
 
     def get_clean(self, depth=0):
         """return rule (in clean/default formatting)"""

@@ -18,7 +18,6 @@ from collections import namedtuple
 
 from apparmor.common import AppArmorBug, AppArmorException
 from apparmor.logparser import ReadLog
-from apparmor.rule import BaseRule
 from apparmor.rule.change_profile import ChangeProfileRule, ChangeProfileRuleset
 from apparmor.translations import init_translation
 from common_test import AATest, setup_all_loops
@@ -378,18 +377,22 @@ class ChangeProfileCoveredTest_Invalid(AATest):
             obj.is_covered(testobj)
 
     def test_invalid_is_covered(self):
-        obj = ChangeProfileRule.create_instance('change_profile /foo,')
+        raw_rule = 'change_profile /foo,'
+        class SomeOtherClass(ChangeProfileRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = ChangeProfileRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = ChangeProfileRule.create_instance('change_profile -> /bar,')
+        raw_rule = 'change_profile -> /bar,'
+        class SomeOtherClass(ChangeProfileRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = ChangeProfileRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_equal(testobj)
 

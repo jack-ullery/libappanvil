@@ -43,7 +43,7 @@ class CapabilityRule(BaseRule):
         # Because we support having multiple caps in one rule,
         # initializer needs to accept a list of caps.
         self.all_caps = False
-        if cap_list == CapabilityRule.ALL:
+        if cap_list == self.ALL:
             self.all_caps = True
             self.capability = set()
         else:
@@ -52,12 +52,12 @@ class CapabilityRule(BaseRule):
             elif isinstance(cap_list, list) and cap_list:
                 self.capability = set(cap_list)
             else:
-                raise AppArmorBug('Passed unknown object to CapabilityRule: %s' % str(cap_list))
+                raise AppArmorBug('Passed unknown object to %s: %s' % (type(self).__name__, str(cap_list)))
             # make sure none of the cap_list arguments are blank, in
             # case we decide to return one cap per output line
             for cap in self.capability:
                 if not cap.strip():
-                    raise AppArmorBug('Passed empty capability to CapabilityRule: %s' % str(cap_list))
+                    raise AppArmorBug('Passed empty capability to %s: %s' % (type(self).__name__, str(cap_list)))
 
     @classmethod
     def _match(cls, raw_rule):
@@ -65,7 +65,7 @@ class CapabilityRule(BaseRule):
 
     @classmethod
     def _create_instance(cls, raw_rule):
-        """parse raw_rule and return CapabilityRule"""
+        """parse raw_rule and return instance of this class"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -79,11 +79,11 @@ class CapabilityRule(BaseRule):
             capability = matches.group('capability').strip()
             capability = re.split("[ \t]+", capability)
         else:
-            capability = CapabilityRule.ALL
+            capability = cls.ALL
 
-        return CapabilityRule(capability, audit=audit, deny=deny,
-                              allow_keyword=allow_keyword,
-                              comment=comment)
+        return cls(capability, audit=audit, deny=deny,
+                   allow_keyword=allow_keyword,
+                   comment=comment)
 
     def get_clean(self, depth=0):
         """return rule (in clean/default formatting)"""

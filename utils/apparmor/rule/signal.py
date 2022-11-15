@@ -83,18 +83,18 @@ class SignalRule(BaseRule):
                          comment=comment, log_event=log_event)
 
         self.access, self.all_access, unknown_items = check_and_split_list(
-            access, access_keywords, SignalRule.ALL, 'SignalRule', 'access')
+            access, access_keywords, self.ALL, type(self).__name__, 'access')
         if unknown_items:
-            raise AppArmorException(_('Passed unknown access keyword to SignalRule: %s') % ' '.join(unknown_items))
+            raise AppArmorException(_('Passed unknown access keyword to %s: %s') % (type(self).__name__, ' '.join(unknown_items)))
 
         self.signal, self.all_signals, unknown_items = check_and_split_list(
-            signal, signal_keywords, SignalRule.ALL, 'SignalRule', 'signal')
+            signal, signal_keywords, self.ALL, type(self).__name__, 'signal')
         if unknown_items:
             for item in unknown_items:
                 if RE_SIGNAL_REALTIME.match(item):
                     self.signal.add(item)
                 else:
-                    raise AppArmorException(_('Passed unknown signal keyword to SignalRule: %s') % item)
+                    raise AppArmorException(_('Passed unknown signal keyword to %s: %s') % (type(self).__name__, item))
 
         self.peer, self.all_peers = self._aare_or_all(peer, 'peer', is_path=False, log_event=log_event)
 
@@ -104,7 +104,7 @@ class SignalRule(BaseRule):
 
     @classmethod
     def _create_instance(cls, raw_rule):
-        """parse raw_rule and return SignalRule"""
+        """parse raw_rule and return instance of this class"""
 
         matches = cls._match(raw_rule)
         if not matches:
@@ -127,7 +127,7 @@ class SignalRule(BaseRule):
                     access = access[1:-1]
                 access = access.replace(',', ' ').split()  # split by ',' or whitespace
             else:
-                access = SignalRule.ALL
+                access = cls.ALL
 
             if details.group('signal'):
                 signal = details.group('signal')
@@ -136,19 +136,19 @@ class SignalRule(BaseRule):
                 signal = RE_FILTER_QUOTES.sub(r' \1 ', signal)  # filter out quote pairs
                 signal = signal.replace(',', ' ').split()  # split at ',' or whitespace
             else:
-                signal = SignalRule.ALL
+                signal = cls.ALL
 
             if details.group('peer'):
                 peer = details.group('peer')
             else:
-                peer = SignalRule.ALL
+                peer = cls.ALL
         else:
-            access = SignalRule.ALL
-            signal = SignalRule.ALL
-            peer = SignalRule.ALL
+            access = cls.ALL
+            signal = cls.ALL
+            peer = cls.ALL
 
-        return SignalRule(access, signal, peer,
-                          audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
+        return cls(access, signal, peer,
+                   audit=audit, deny=deny, allow_keyword=allow_keyword, comment=comment)
 
     def get_clean(self, depth=0):
         """return rule (in clean/default formatting)"""

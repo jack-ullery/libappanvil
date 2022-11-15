@@ -19,8 +19,6 @@ import unittest
 from collections import namedtuple
 
 from apparmor.common import AppArmorBug, AppArmorException
-# from apparmor.logparser import ReadLog
-from apparmor.rule import BaseRule
 from apparmor.rule.include import IncludeRule, IncludeRuleset
 from apparmor.translations import init_translation
 from common_test import AATest, setup_all_loops, write_file
@@ -298,18 +296,22 @@ class IncludeCoveredTest_Invalid(AATest):
     #         obj.is_covered(testobj)
 
     def test_invalid_is_covered(self):
-        obj = IncludeRule.create_instance('include <abstractions/base>')
+        raw_rule = 'include <abstractions/base>'
+        class SomeOtherClass(IncludeRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = IncludeRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_covered(testobj)
 
     def test_invalid_is_equal(self):
-        obj = IncludeRule.create_instance('include <abstractions/base>')
+        raw_rule = 'include <abstractions/base>'
+        class SomeOtherClass(IncludeRule):
+            pass
 
-        testobj = BaseRule()  # different type
-
+        obj = IncludeRule.create_instance(raw_rule)
+        testobj = SomeOtherClass.create_instance(raw_rule)  # different type
         with self.assertRaises(AppArmorBug):
             obj.is_equal(testobj)
 

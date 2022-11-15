@@ -13,7 +13,7 @@
 #
 # ----------------------------------------------------------------------
 
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 
 from apparmor.aare import AARE
 from apparmor.common import AppArmorBug
@@ -22,7 +22,7 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 
-class BaseRule:
+class BaseRule(metaclass=ABCMeta):
     """Base class to handle and store a single rule"""
 
     # type specific rules should inherit from this class.
@@ -89,12 +89,7 @@ class BaseRule:
                 % {'partname': partname, 'classname': self.__class__.__name__, 'rulepart': str(rulepart)})
 
     def __repr__(self):
-        classname = self.__class__.__name__
-        try:
-            raw_content = self.get_raw()  # will fail for BaseRule
-            return '<%s> %s' % (classname, raw_content)
-        except NotImplementedError:
-            return '<%s (NotImplementedError - get_clean() not implemented?)>' % classname
+        return '<%s> %s' % (self.__class__.__name__, self.get_raw())
 
     @classmethod
     def match(cls, raw_rule):
@@ -115,7 +110,7 @@ class BaseRule:
 
     @classmethod
     def create_instance(cls, raw_rule):
-        """parse raw_rule and return a rule object"""
+        """parse raw_rule and return instance of this class"""
         rule = cls._create_instance(raw_rule)
         rule.raw_rule = raw_rule.strip()
         return rule
@@ -130,7 +125,6 @@ class BaseRule:
     @abstractmethod
     def get_clean(self, depth=0):
         """return clean rule (with default formatting, and leading whitespace as specified in the depth parameter)"""
-        raise NotImplementedError("'%s' needs to implement get_clean(), but didn't" % (str(self.__class__)))
 
     def get_raw(self, depth=0):
         """return raw rule (with original formatting, and leading whitespace in the depth parameter)"""
@@ -163,7 +157,6 @@ class BaseRule:
     @abstractmethod
     def is_covered_localvars(self, other_rule):
         """check if the rule-specific parts of other_rule is covered by this rule object"""
-        raise NotImplementedError("'%s' needs to implement is_covered_localvars(), but didn't" % (str(self)))
 
     def _is_covered_plain(self, self_value, self_all, other_value, other_all, cond_name):
         """check if other_* is covered by self_* - for plain str, int etc."""
@@ -244,7 +237,6 @@ class BaseRule:
     @abstractmethod
     def is_equal_localvars(self, other_rule, strict):
         """compare if rule-specific variables are equal"""
-        raise NotImplementedError("'%s' needs to implement is_equal_localvars(), but didn't" % (str(self)))
 
     def severity(self, sev_db):
         """return severity of this rule, which can be:
@@ -280,20 +272,17 @@ class BaseRule:
     def logprof_header_localvars(self):
         """return the headers (human-readable version of the rule) to display in aa-logprof for this rule object
            returns {'label1': 'value1', 'label2': 'value2'}"""
-        raise NotImplementedError("'%s' needs to implement logprof_header(), but didn't" % (str(self)))
 
-    @abstractmethod
+    # NOTE: edit_header, validate_edit, and store_edit are not implemented by every subclass.
     def edit_header(self):
         """return the prompt for, and the path to edit when using '(N)ew'"""
         raise NotImplementedError("'%s' needs to implement edit_header(), but didn't" % (str(self)))
 
-    @abstractmethod
     def validate_edit(self, newpath):
         """validate the new path.
            Returns True if it covers the previous path, False if it doesn't."""
         raise NotImplementedError("'%s' needs to implement validate_edit(), but didn't" % (str(self)))
 
-    @abstractmethod
     def store_edit(self, newpath):
         """store the changed path.
            This is done even if the new path doesn't match the original one."""
