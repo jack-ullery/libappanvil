@@ -1,1 +1,0 @@
-[  176.385388] audit: type=1400 audit(1666891380.570:78): apparmor="DENIED" operation="userns_create" class="namespace" profile="/usr/bin/userns_child_exec" pid=1785 comm="userns_child_ex" requested="userns_create" denied="userns_create"
