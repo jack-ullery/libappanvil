@@ -16,28 +16,18 @@
  *   Ltd.
  */
 
+#include <ctype.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <cstdint>
-
 #include <sys/apparmor_private.h>
 
 #include "lib.h"
 #include "parser.h"
-
-int dirat_for_each(int dirfd, const char *name, void *data,
-		   int (* cb)(int, const char *, struct stat *, void *))
-{
-	int retval = _aa_dirat_for_each(dirfd, name, data, cb);
-
-	if (retval)
-		PDEBUG("dirat_for_each failed: %m\n");
-
-	return retval;
-}
 
 /**
  * isodigit - test if a character is an octal digit
@@ -111,6 +101,10 @@ long strntol(const char *str, const char **endptr, int base, long maxval,
 
 	return val;
 }
+
+size_t min(size_t a, size_t b) {
+	return (a <= b)? a : b;
+} 
 
 /**
  * strn_escseq -

@@ -9,40 +9,20 @@ set(AUTOGEN_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/dist)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/dist)
 
+set(LIBRARY_NAME lib${PROJECT_NAME}-dev)
+
 # Create the directory, so that it exists for FLEX/BISON to use 
 file(MAKE_DIRECTORY ${AUTOGEN_SOURCE_DIR})
 
 ### Sources that need to be built ###
 set(SOURCES
-  ${PROJECT_SOURCE_DIR}/af_rule.cc
-  ${PROJECT_SOURCE_DIR}/af_unix.cc
-  ${PROJECT_SOURCE_DIR}/common_optarg.c
-  ${PROJECT_SOURCE_DIR}/dbus.cc
-  ${PROJECT_SOURCE_DIR}/default_features.c
   ${PROJECT_SOURCE_DIR}/lib.c
-  ${PROJECT_SOURCE_DIR}/libapparmor_re/aare_rules.cc
-  ${PROJECT_SOURCE_DIR}/libapparmor_re/chfa.cc
-  ${PROJECT_SOURCE_DIR}/libapparmor_re/expr-tree.cc
-  ${PROJECT_SOURCE_DIR}/libapparmor_re/hfa.cc
-  ${PROJECT_SOURCE_DIR}/mount.cc
-  ${PROJECT_SOURCE_DIR}/network.c
-  ${PROJECT_SOURCE_DIR}/parser_alias.c
-  ${PROJECT_SOURCE_DIR}/parser_common.c
   ${PROJECT_SOURCE_DIR}/parser_include.c
-  ${PROJECT_SOURCE_DIR}/parser_interface.c
-  ${PROJECT_SOURCE_DIR}/parser_main.c
-  ${PROJECT_SOURCE_DIR}/parser_merge.c
   ${PROJECT_SOURCE_DIR}/parser_misc.c
-  ${PROJECT_SOURCE_DIR}/parser_policy.c
-  ${PROJECT_SOURCE_DIR}/parser_regex.c
-  ${PROJECT_SOURCE_DIR}/parser_symtab.c
-  ${PROJECT_SOURCE_DIR}/parser_variable.c
-  ${PROJECT_SOURCE_DIR}/policy_cache.c
-  ${PROJECT_SOURCE_DIR}/profile.cc
-  ${PROJECT_SOURCE_DIR}/ptrace.cc
-  ${PROJECT_SOURCE_DIR}/rule.cc
-  ${PROJECT_SOURCE_DIR}/signal.cc
-  ${PROJECT_SOURCE_DIR}/userns.cc
+)
+
+set(MAIN_SOURCE
+  ${PROJECT_SOURCE_DIR}/parser_main.cc
 )
 
 set(PARSE_INPUT ${PROJECT_SOURCE_DIR}/parser_yacc.y)
@@ -53,7 +33,7 @@ find_package(BISON REQUIRED)
 
 BISON_TARGET(PARSER 
               ${PARSE_INPUT} 
-              ${AUTOGEN_SOURCE_DIR}/parser_yacc.cc
+              ${AUTOGEN_SOURCE_DIR}/parser_yacc.c
               DEFINES_FILE ${AUTOGEN_SOURCE_DIR}/parser_yacc.h)
 
 #### Flex stuff ####
@@ -67,17 +47,21 @@ FLEX_TARGET(LEXER
 ADD_FLEX_BISON_DEPENDENCY(LEXER PARSER)
 
 #### Set Compiler Options ####
-set(CMAKE_CXX_FLAGS "-c -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_STANDARD 14)
 
-set(CMAKE_C_FLAGS "-c -g -O2 -pipe")
+set(CMAKE_C_FLAGS "-g -O2 -pipe")
 
-## set_source_files_properties(${SOURCES} PROPERTIES LANGUAGE CXX)
+## set_source_files_properties(${CXX_SOURCES} PROPERTIES LANGUAGE CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 #### Create the library ####
-add_executable(${PROJECT_NAME} ${SOURCES} ${BISON_PARSER_OUTPUT_SOURCE} ${FLEX_LEXER_OUTPUTS})
+add_library(${LIBRARY_NAME} ${SOURCES} ${FLEX_LEXER_OUTPUTS} ${BISON_PARSER_OUTPUT_SOURCE})
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${AUTOGEN_SOURCE_DIR})
+target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
+target_include_directories(${LIBRARY_NAME} PUBLIC ${AUTOGEN_SOURCE_DIR})
+
+#### Create the final executable ####
+add_executable(${PROJECT_NAME} ${MAIN_SOURCE})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARY_NAME})

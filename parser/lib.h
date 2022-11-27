@@ -9,9 +9,6 @@
 
 #define asprintf _aa_asprintf
 
-int dirat_for_each(int dirfd, const char *name, void *data,
-		   int (* cb)(int, const char *, struct stat *, void *));
-
 int isodigit(char c);
 long strntol(const char *str, const char **endptr, int base, long maxval,
 	     size_t n);

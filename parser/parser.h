@@ -30,21 +30,6 @@
 #include <libintl.h>
 #define _(s) gettext(s)
 
-#include <sys/apparmor.h>
-
-#include "file_cache.h"
-#include "immunix.h"
-#include "libapparmor_re/apparmor_re.h"
-#include "libapparmor_re/aare_rules.h"
-
-#include <string>
-
-using namespace std;
-
-#include <set>
-class Profile;
-class rule_t;
-
 #define MODULE_NAME "apparmor"
 
 /* Global variable to pass token to lexer.  Will be replaced by parameter
@@ -82,17 +67,18 @@ extern int parser_token;
 		  WARN_UNEXPECTED | WARN_FORMAT | WARN_MISSING | \
 		  WARN_OVERRIDE | WARN_INCLUDE)
 
+typedef int dfaflags_t;
 extern dfaflags_t warnflags;
 extern dfaflags_t werrflags;
-
-
-typedef enum pattern_t pattern_t;
-
-struct prefixes {
-	int audit;
-	int deny;
-	int owner;
-};
+// 
+// 
+// typedef enum pattern_t pattern_t;
+// 
+// struct prefixes {
+// 	int audit;
+// 	int deny;
+// 	int owner;
+// };
 
 struct cod_pattern {
 	char *regex;		// posix regex
@@ -118,28 +104,28 @@ struct cond_entry_list {
 	struct cond_entry *list;
 };
 
-struct cod_entry {
-	char *name;
-	union {
-		char *link_name;
-		char *onexec;
-	};
-	char *nt_name;
-	Profile *prof;		 	/* Special profile defined
-					 * just for this executable */
-	int mode;			/* mode is 'or' of AA_* bits */
-	int audit;			/* audit flags for mode */
-	int deny;			/* TRUE or FALSE */
-
-	int alias_ignore;		/* ignore for alias processing */
-
-	int subset;
-
-	pattern_t pattern_type;
-	struct cod_pattern pat;
-
-	struct cod_entry *next;
-};
+// struct cod_entry {
+// 	char *name;
+// 	union {
+// 		char *link_name;
+// 		char *onexec;
+// 	};
+// 	char *nt_name;
+// 	Profile *prof;		 	/* Special profile defined
+// 					 * just for this executable */
+// 	int mode;			/* mode is 'or' of AA_* bits */
+// 	int audit;			/* audit flags for mode */
+// 	int deny;			/* TRUE or FALSE */
+// 
+// 	int alias_ignore;		/* ignore for alias processing */
+// 
+// 	int subset;
+// 
+// 	pattern_t pattern_type;
+// 	struct cod_pattern pat;
+// 
+// 	struct cod_entry *next;
+// };
 
 struct aa_rlimits {
 	unsigned int specified;			/* limits that are set */
@@ -319,14 +305,14 @@ do {								\
 #define PROFILE_NAME_VARIABLE "profile_name"
 
 /* from parser_common.c */
-extern uint32_t policy_version;
-extern uint32_t parser_abi_version;
-extern uint32_t kernel_abi_version;
-
-extern aa_features *pinned_features;
-extern aa_features *policy_features;
-extern aa_features *override_features;
-extern aa_features *kernel_features;
+// extern uint32_t policy_version;
+// extern uint32_t parser_abi_version;
+// extern uint32_t kernel_abi_version;
+// 
+// extern aa_features *pinned_features;
+// extern aa_features *policy_features;
+// extern aa_features *override_features;
+// extern aa_features *kernel_features;
 
 extern int force_complain;
 extern int perms_create;
@@ -351,16 +337,16 @@ extern int conf_quiet;
 extern int names_only;
 extern int option;
 extern int current_lineno;
-extern dfaflags_t dfaflags;
+// extern dfaflags_t dfaflags;
 extern const char *progname;
 extern char *profilename;
 extern char *profile_ns;
 extern char *current_filename;
-extern FILE *ofile;
+// extern FILE *ofile;
 extern int read_implies_exec;
-extern IncludeCache_t *g_includecache;
+// extern IncludeCache_t *g_includecache;
 
-extern void pwarnf(bool werr, const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
+extern void pwarnf(int werr, const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
 extern void common_warn_once(const char *name, const char *msg, const char **warned_name);
 
 #define pwarn(F, args...) do { if (warnflags & (F)) pwarnf((werrflags & (F)), ## args); } while (0)
@@ -382,8 +368,8 @@ extern int skip_bad_cache_rebuild;
 extern int mru_skip_cache;
 
 /* provided by parser_lex.l (cannot be used in tst builds) */
-extern FILE *yyin;
-extern void yyrestart(FILE *fp);
+//extern FILE *yyin;
+//extern void yyrestart(FILE *fp);
 extern int yyparse(void);
 extern void yyerror(const char *msg, ...);
 extern int yylex(void);
@@ -397,128 +383,129 @@ extern const char *basedir;
 
 #define glob_default	0
 #define glob_null	1
-extern pattern_t convert_aaregex_to_pcre(const char *aare, int anchor, int glob,
-					 std::string& pcre, int *first_re_pos);
-extern int build_list_val_expr(std::string& buffer, struct value_list *list);
-extern int convert_entry(std::string& buffer, char *entry);
-extern int clear_and_convert_entry(std::string& buffer, char *entry);
-extern int process_regex(Profile *prof);
-extern int post_process_entry(struct cod_entry *entry);
-
-extern int process_policydb(Profile *prof);
-
-extern int process_policy_ents(Profile *prof);
-extern void filter_slashes(char *path);
-
-/* parser_variable.c */
-int expand_entry_variables(char **name);
-extern int process_variables(Profile *prof);
-extern struct var_string *split_out_var(const char *string);
-extern void free_var_string(struct var_string *var);
+// extern pattern_t convert_aaregex_to_pcre(const char *aare, int anchor, int glob,
+// 					 std::string& pcre, int *first_re_pos);
+// extern int build_list_val_expr(std::string& buffer, struct value_list *list);
+// extern int convert_entry(std::string& buffer, char *entry);
+// extern int clear_and_convert_entry(std::string& buffer, char *entry);
+// extern int process_regex(Profile *prof);
+// extern int post_process_entry(struct cod_entry *entry);
+// 
+// extern int process_policydb(Profile *prof);
+// 
+// extern int process_policy_ents(Profile *prof);
+// extern void filter_slashes(char *path);
+// 
+// /* parser_variable.c */
+// int expand_entry_variables(char **name);
+// extern int process_variables(Profile *prof);
+// extern struct var_string *split_out_var(const char *string);
+// extern void free_var_string(struct var_string *var);
 
 /* parser_misc.c */
-extern void warn_uppercase(void);
-extern int is_blacklisted(const char *name, const char *path);
-extern struct value_list *new_value_list(char *value);
-extern struct value_list *dup_value_list(struct value_list *list);
-extern void free_value_list(struct value_list *list);
-extern void print_value_list(struct value_list *list);
-extern struct cond_entry *new_cond_entry(char *name, int eq, struct value_list *list);
-extern void move_conditional_value(const char *rulename, char **dst_ptr,
-				   struct cond_entry *cond_ent);
-extern void free_cond_entry(struct cond_entry *ent);
-extern void free_cond_list(struct cond_entry *ents);
-extern void free_cond_entry_list(struct cond_entry_list &cond);
-extern void print_cond_entry(struct cond_entry *ent);
+// extern void warn_uppercase(void);
+// extern int is_blacklisted(const char *name, const char *path);
+// extern struct value_list *new_value_list(char *value);
+// extern struct value_list *dup_value_list(struct value_list *list);
+// extern void free_value_list(struct value_list *list);
+// extern void print_value_list(struct value_list *list);
+// extern struct cond_entry *new_cond_entry(char *name, int eq, struct value_list *list);
+// extern void move_conditional_value(const char *rulename, char **dst_ptr,
+// 				   struct cond_entry *cond_ent);
+// extern void free_cond_entry(struct cond_entry *ent);
+// extern void free_cond_list(struct cond_entry *ents);
+// extern void free_cond_entry_list(struct cond_entry_list &cond);
+// extern void print_cond_entry(struct cond_entry *ent);
 extern char *processid(const char *string, int len);
 extern char *processquoted(const char *string, int len);
 extern char *processunquoted(const char *string, int len);
 extern int get_keyword_token(const char *keyword);
-extern int get_rlimit(const char *name);
-extern char *process_var(const char *var);
-extern int parse_mode(const char *mode);
-extern int parse_X_mode(const char *X, int valid, const char *str_mode, int *mode, int fail);
-bool label_contains_ns(const char *label);
-bool parse_label(bool *_stack, char **_ns, char **_name,
-		 const char *label, bool yyerr);
-extern struct cod_entry *new_entry(char *id, int mode, char *link_id);
 
-/* returns -1 if value != true or false, otherwise 0 == false, 1 == true */
-extern int str_to_boolean(const char* str);
-extern struct cod_entry *copy_cod_entry(struct cod_entry *cod);
-extern void free_cod_entries(struct cod_entry *list);
-void debug_cod_entries(struct cod_entry *list);
-
-#define SECONDS_P_MS (1000LL * 1000LL)
-long long convert_time_units(long long value, long long base, const char *units);
-
-
-/* parser_symtab.c */
-struct set_value {
-	char *val;
-	struct set_value *next;
-};
-extern int add_boolean_var(const char *var, int boolean);
-extern int get_boolean_var(const char *var);
-extern int new_set_var(const char *var, const char *value);
-extern int add_set_value(const char *var, const char *value);
-extern struct set_value *get_set_var(const char *var);
-extern char *get_next_set_value(struct set_value **context);
-extern int delete_set_var(const char *var_name);
-extern void dump_symtab(void);
-extern void dump_expanded_symtab(void);
-void free_symtabs(void);
-
-/* parser_alias.c */
-extern int new_alias(const char *from, const char *to);
-extern int replace_profile_aliases(Profile *prof);
-extern void free_aliases(void);
-
-/* parser_merge.c */
-extern int profile_merge_rules(Profile *prof);
-
-/* parser_interface.c */
-extern int load_profile(int option, aa_kernel_interface *kernel_interface,
-			Profile *prof, int cache_fd);
-extern void sd_serialize_profile(std::ostringstream &buf, Profile *prof,
-				int flatten);
-extern int sd_load_buffer(int option, char *buffer, int size);
-extern int cache_fd;
-
-
-/* parser_policy.c */
-extern void add_to_list(Profile *profile);
-extern void add_hat_to_policy(Profile *policy, Profile *hat);
-extern int add_entry_to_x_table(Profile *prof, char *name);
-extern void add_entry_to_policy(Profile *policy, struct cod_entry *entry);
-extern void post_process_file_entries(Profile *prof);
-extern void post_process_rule_entries(Profile *prof);
-extern int post_process_policy(int debug_only);
-extern int process_profile_regex(Profile *prof);
-extern int process_profile_variables(Profile *prof);
-extern int process_profile_policydb(Profile *prof);
-extern int post_merge_rules(void);
-extern int merge_hat_rules(Profile *prof);
-extern Profile *merge_policy(Profile *a, Profile *b);
-extern int load_policy(int option, aa_kernel_interface *kernel_interface,
-		       int cache_fd);
-extern int load_hats(std::ostringstream &buf, Profile *prof);
-extern int load_flattened_hats(Profile *prof, int option,
-			       aa_kernel_interface *kernel_interface,
-			       int cache_fd);
-extern void dump_policy_hats(Profile *prof);
-extern void dump_policy_names(void);
-void dump_policy(void);
-
-void free_policies(void);
-
-/* parser_main.c */
-extern void set_supported_features();
-
-/* default_features.c */
-extern const char *match_n_abi;
-extern const char *match_c_abi;
-extern const char *match_cn_abi;
-extern const char *default_features_abi;
+// extern int get_rlimit(const char *name);
+// extern char *process_var(const char *var);
+// extern int parse_mode(const char *mode);
+// extern int parse_X_mode(const char *X, int valid, const char *str_mode, int *mode, int fail);
+// bool label_contains_ns(const char *label);
+// bool parse_label(bool *_stack, char **_ns, char **_name,
+// 		 const char *label, bool yyerr);
+// extern struct cod_entry *new_entry(char *id, int mode, char *link_id);
+// 
+// /* returns -1 if value != true or false, otherwise 0 == false, 1 == true */
+// extern int str_to_boolean(const char* str);
+// extern struct cod_entry *copy_cod_entry(struct cod_entry *cod);
+// extern void free_cod_entries(struct cod_entry *list);
+// void debug_cod_entries(struct cod_entry *list);
+// 
+// #define SECONDS_P_MS (1000LL * 1000LL)
+// long long convert_time_units(long long value, long long base, const char *units);
+// 
+// 
+// /* parser_symtab.c */
+// struct set_value {
+// 	char *val;
+// 	struct set_value *next;
+// };
+// extern int add_boolean_var(const char *var, int boolean);
+// extern int get_boolean_var(const char *var);
+// extern int new_set_var(const char *var, const char *value);
+// extern int add_set_value(const char *var, const char *value);
+// extern struct set_value *get_set_var(const char *var);
+// extern char *get_next_set_value(struct set_value **context);
+// extern int delete_set_var(const char *var_name);
+// extern void dump_symtab(void);
+// extern void dump_expanded_symtab(void);
+// void free_symtabs(void);
+// 
+// /* parser_alias.c */
+// extern int new_alias(const char *from, const char *to);
+// extern int replace_profile_aliases(Profile *prof);
+// extern void free_aliases(void);
+// 
+// /* parser_merge.c */
+// extern int profile_merge_rules(Profile *prof);
+// 
+// /* parser_interface.c */
+// extern int load_profile(int option, aa_kernel_interface *kernel_interface,
+// 			Profile *prof, int cache_fd);
+// extern void sd_serialize_profile(std::ostringstream &buf, Profile *prof,
+// 				int flatten);
+// extern int sd_load_buffer(int option, char *buffer, int size);
+// extern int cache_fd;
+// 
+// 
+// /* parser_policy.c */
+// extern void add_to_list(Profile *profile);
+// extern void add_hat_to_policy(Profile *policy, Profile *hat);
+// extern int add_entry_to_x_table(Profile *prof, char *name);
+// extern void add_entry_to_policy(Profile *policy, struct cod_entry *entry);
+// extern void post_process_file_entries(Profile *prof);
+// extern void post_process_rule_entries(Profile *prof);
+// extern int post_process_policy(int debug_only);
+// extern int process_profile_regex(Profile *prof);
+// extern int process_profile_variables(Profile *prof);
+// extern int process_profile_policydb(Profile *prof);
+// extern int post_merge_rules(void);
+// extern int merge_hat_rules(Profile *prof);
+// extern Profile *merge_policy(Profile *a, Profile *b);
+// extern int load_policy(int option, aa_kernel_interface *kernel_interface,
+// 		       int cache_fd);
+// extern int load_hats(std::ostringstream &buf, Profile *prof);
+// extern int load_flattened_hats(Profile *prof, int option,
+// 			       aa_kernel_interface *kernel_interface,
+// 			       int cache_fd);
+// extern void dump_policy_hats(Profile *prof);
+// extern void dump_policy_names(void);
+// void dump_policy(void);
+// 
+// void free_policies(void);
+// 
+// /* parser_main.c */
+// extern void set_supported_features();
+// 
+// /* default_features.c */
+// extern const char *match_n_abi;
+// extern const char *match_c_abi;
+// extern const char *match_cn_abi;
+// extern const char *default_features_abi;
 
 #endif /** __AA_PARSER_H */

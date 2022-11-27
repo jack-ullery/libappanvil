@@ -39,12 +39,7 @@
 #include <string>
 
 #include "parser.h"
-#include "profile.h"
 #include "parser_include.h"
-#include "parser_yacc.h"
-#include "lib.h"
-#include "policy_cache.h"
-#include "file_cache.h"
 
 #ifdef PDEBUG
 #undef PDEBUG
@@ -115,111 +110,12 @@ do { \
 #define YY_NO_INPUT
 
 #define STATE_TABLE_ENT(X) {X, #X }
-extern unordered_map<int, string> state_names;
+extern std::unordered_map<int, std::string> state_names;
 
 struct cb_struct {
 	const char *fullpath;
 	const char *filename;
 };
-
-static int include_dir_cb(int dirfd unused, const char *name, struct stat *st,
-			  void *data)
-{
-	struct cb_struct *d = (struct cb_struct *) data;
-
-	autofree char *path = NULL;
-
-	if (asprintf(&path, "%s/%s", d->fullpath, name) < 0)
-		yyerror("Out of memory");
-
-	if (is_blacklisted(name, path))
-		return 0;
-
-	if (g_includecache->find(path)) {
-		PDEBUG("skipping reinclude of \'%s\' in \'%s\'\n", path,
-			d->filename);
-		return 0;
-	}
-
-	/* Handle symlink here. See _aa_dirat_for_each in private.c */
-
-	if (S_ISREG(st->st_mode)) {
-		if (!(yyin = fopen(path,"r")))
-			yyerror(_("Could not open '%s' in '%s'"), path, d->filename);
-		PDEBUG("Opened include \"%s\" in \"%s\"\n", path, d->filename);
-		(void) g_includecache->insert(path);
-		update_mru_tstamp(yyin, path);
-		push_include_stack(path);
-		yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
-	}
-
-	return 0;
-}
-
-void include_filename(char *filename, int search, bool if_exists)
-{
-	FILE *include_file = NULL;
-	struct stat my_stat;
-	autofree char *fullpath = NULL;
-	bool cached;
-
-	if (search) {
-		include_file = search_path(filename, &fullpath, &cached);
-		if (!include_file && cached) {
-			goto skip;
-		} else if (preprocess_only) {
-			fprintf(yyout, "\n\n##included <%s>\n", filename);
-		} else if (!include_file && preprocess_only) {
-			fprintf(yyout, "\n\n##failed include <%s>\n", filename);
-		}
-
-	} else if (g_includecache->find(filename)) {
-		/* duplicate entry skip */
-		goto skip;
-	} else {
-		if (preprocess_only)
-			fprintf(yyout, "\n\n##included \"%s\"\n", filename);
-		fullpath = strdup(filename);
-		include_file = fopen(fullpath, "r");
-		if (include_file)
-			/* ignore failure to insert into cache */
-			(void) g_includecache->insert(filename);
-	}
-
-	if (!include_file) {
-		if (if_exists)
-			return;
-		yyerror(_("Could not open '%s'"),
-                        fullpath ? fullpath: filename);
-	}
-
-	if (fstat(fileno(include_file), &my_stat))
-		yyerror(_("fstat failed for '%s'"), fullpath);
-
-        if (S_ISREG(my_stat.st_mode)) {
-		yyin = include_file;
-		update_mru_tstamp(include_file, fullpath);
-		PDEBUG("Opened include \"%s\"\n", fullpath);
-		push_include_stack(fullpath);
-		yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
-        } else if (S_ISDIR(my_stat.st_mode)) {
-		struct cb_struct data = { fullpath, filename };
-		update_mru_tstamp(include_file, fullpath);
-		fclose(include_file);
-		include_file = NULL;
-		if (dirat_for_each(AT_FDCWD, fullpath, &data, include_dir_cb)) {
-			yyerror(_("Could not process include directory"
-				  " '%s' in '%s'"), fullpath, filename);;
-		}
-	}
-
-	return;
-
-skip:
-	if (preprocess_only)
-		fprintf(yyout, "\n\n##skipped duplicate include <%s>\n", filename);
-	return;
-}
 
 static char *lsntrim(char *s, int l)
 {
@@ -362,7 +258,7 @@ GT		>
 			else
 				RETURN_TOKEN(TOK_VALUE);
 		}
-		include_filename(filename, lt, exists);
+
 		free(filename);
 		POP_NODUMP();
 	}
@@ -764,7 +660,7 @@ include/{WS}	{
 /* Create a table mapping lexer state number to the name used in the
  * in the code.  This allows for better debug output
  */
-unordered_map<int, string> state_names = {
+std::unordered_map<int, std::string> state_names = {
 	STATE_TABLE_ENT(INITIAL),
 	STATE_TABLE_ENT(SUB_ID),
 	STATE_TABLE_ENT(SUB_ID_WS),

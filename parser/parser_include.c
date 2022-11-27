@@ -151,39 +151,39 @@ void parse_default_paths(void)
 	add_search_dir(basedir);
 }
 
-FILE *search_path(char *filename, char **fullpath, bool *skip)
-{
-	FILE *newf = NULL;
-	char *buf = NULL;
-	int i;
-	for (i = 0; i < npath; i++) {
-		if (asprintf(&buf, "%s/%s", path[i], filename) < 0) {
-			perror("asprintf");
-			exit(1);
-		}
-
-		if (g_includecache->find(buf)) {
-			/* hit do not want to re-include */
-			*skip = true;
-			return NULL;
-		}
-
-		newf = fopen(buf, "r");
-		if (newf) {
-			/* ignore failing to insert into cache */
-			(void) g_includecache->insert(buf);
-			if (fullpath)
-				*fullpath = buf;
-			else
-				free(buf);
-			break;
-		}
-		free(buf);
-		buf = NULL;
-	}
-	*skip = false;
-	return newf;
-}
+// FILE *search_path(char *filename, char **fullpath, bool *skip)
+// {
+// 	FILE *newf = NULL;
+// 	char *buf = NULL;
+// 	int i;
+// 	for (i = 0; i < npath; i++) {
+// 		if (asprintf(&buf, "%s/%s", path[i], filename) < 0) {
+// 			perror("asprintf");
+// 			exit(1);
+// 		}
+// 
+// 		if (g_includecache->find(buf)) {
+// 			/* hit do not want to re-include */
+// 			*skip = true;
+// 			return NULL;
+// 		}
+// 
+// 		newf = fopen(buf, "r");
+// 		if (newf) {
+// 			/* ignore failing to insert into cache */
+// 			(void) g_includecache->insert(buf);
+// 			if (fullpath)
+// 				*fullpath = buf;
+// 			else
+// 				free(buf);
+// 			break;
+// 		}
+// 		free(buf);
+// 		buf = NULL;
+// 	}
+// 	*skip = false;
+// 	return newf;
+// }
 
 struct include_stack_t {
 	char *filename;
