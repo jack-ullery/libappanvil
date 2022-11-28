@@ -1,0 +1,3 @@
+[submodule "modules/apparmor"]
+	path = modules/apparmor
+	url = https://gitlab.com/apparmor/apparmor.git
