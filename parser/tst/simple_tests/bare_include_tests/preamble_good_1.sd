@@ -1,8 +1,0 @@
-#=DESCRIPTION old includes - keyword include in preamble
-#=EXRESULT PASS
-
-include <includes-preamble/vars>
-
-/bin/foo {
-  @{FOO}/some/other/thing r,
-}

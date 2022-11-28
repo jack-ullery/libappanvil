@@ -1,5 +1,0 @@
-#=DESCRIPTION test re-assignment of boolean
-#=EXRESULT FAIL
-
-$FOO = true
-$FOO = true

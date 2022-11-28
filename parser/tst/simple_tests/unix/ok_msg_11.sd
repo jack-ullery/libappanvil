@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION simple unix rule
-#=EXRESULT PASS
-
-profile a_profile {
-  unix,
-}

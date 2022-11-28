@@ -1,8 +1,0 @@
-#
-#=Description signal w/bad regex expansion
-#=EXRESULT FAIL
-#
-/usr/bin/signal-test {
-  signal peer={/bin/true,
-
-}

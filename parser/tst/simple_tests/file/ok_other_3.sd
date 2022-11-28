@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION simple other flag test
-#=EXRESULT PASS
-
-profile test {
-  audit other /tmp/** rw,
-}

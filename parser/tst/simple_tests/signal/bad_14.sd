@@ -1,8 +1,0 @@
-#
-#=DESCRIPTION simple bad rtmin value test
-#=EXRESULT FAIL
-#
-
-/usr/bin/signal-test {
-  signal set=rtmin+-99,
-}

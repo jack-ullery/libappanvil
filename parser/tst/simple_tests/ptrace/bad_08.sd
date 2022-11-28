@@ -1,8 +1,0 @@
-#
-#=Description ptrace w/non ptrace modifier
-#=EXRESULT FAIL
-#
-/usr/bin/foo {
-  ptrace bus=session,
-
-}

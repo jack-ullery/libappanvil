@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION network rule outside of a profile
-#=EXRESULT FAIL
-#
-
-network,
-

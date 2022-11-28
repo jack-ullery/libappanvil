@@ -1,8 +1,0 @@
-#
-#=DESCRIPTION regex with empty character class (brace)
-#=EXRESULT FAIL
-#
-/usr/bin/foo {
-  /alpha/[]beta rw,
-}
-

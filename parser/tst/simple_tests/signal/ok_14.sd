@@ -1,9 +1,0 @@
-#
-#=Description basic signal w/peer rule
-#=EXRESULT PASS
-#
-/usr/bin/signal-test {
-  signal peer=/bin/init,
-
-}
-

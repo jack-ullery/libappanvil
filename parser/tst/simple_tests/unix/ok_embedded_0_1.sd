@@ -1,8 +1,0 @@
-#
-#=DESCRIPTION unix rule with embedded \000
-#=EXRESULT PASS
-#
-
-profile foo {
-  unix addr=@foo\000bar,
-}

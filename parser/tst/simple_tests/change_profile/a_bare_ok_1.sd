@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION audit change_profile
-#=EXRESULT PASS
-#
-/usr/bin/foo {
-   audit change_profile,
-}

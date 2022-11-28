@@ -1,8 +1,0 @@
-#
-#=Description basic ptrace bad peer rule
-#=EXRESULT FAIL
-#
-/usr/bin/foo {
-  ptrace read peer=/sbin/init /bin/bash,
-
-  }

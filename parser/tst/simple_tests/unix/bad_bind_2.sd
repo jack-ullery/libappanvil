@@ -1,8 +1,0 @@
-#
-#=DESCRIPTION unix bind with non-bind interface modifier
-#=EXRESULT FAIL
-#
-
-profile foo {
-  unix bind label=foo addr=@bar,
-}

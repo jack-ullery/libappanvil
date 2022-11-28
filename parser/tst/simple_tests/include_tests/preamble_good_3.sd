@@ -1,8 +1,0 @@
-#=DESCRIPTION old includes - include if exists in preamble
-#=EXRESULT PASS
-
-#include if exists <includes-preamble/vars>
-
-/bin/foo {
-  @{FOO}/some/other/thing r,
-}

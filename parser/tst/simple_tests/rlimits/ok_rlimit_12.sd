@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION simple memlock rlimit test
-#=EXRESULT PASS
-
-profile rlimit {
-  set rlimit memlock <= 10240,
-}

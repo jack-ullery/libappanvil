@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION owner not allowed in change_profile
-#=EXRESULT FAIL
-#
-/usr/bin/foo {
-   audit owner change_profile -> /bin/foo,
-}

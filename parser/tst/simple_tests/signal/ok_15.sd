@@ -1,9 +1,0 @@
-#
-#=Description basic signal w/implicit profile name rule
-#=EXRESULT PASS
-#
-/usr/bin/signal-test {
-  signal peer=@{profile_name},
-
-}
-

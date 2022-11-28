@@ -1,8 +1,0 @@
-#
-#=DESCRIPTION deny audit in wrong order
-#=EXRESULT FAIL
-#
-@{var}=/test
-/usr/bin/foo {
-   deny audit change_profile @{var},
-}

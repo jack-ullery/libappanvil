@@ -1,8 +1,0 @@
-#
-#=DESCRIPTION w and a conflict
-#=EXRESULT FAIL
-#
-/usr/bin/foo {
-  /a wa,
-}
-

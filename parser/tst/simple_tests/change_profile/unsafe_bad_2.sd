@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION change_profile w/ unsafe modifier but no exec condition
-#=EXRESULT FAIL
-#
-/usr/bin/foo {
-   change_profile unsafe -> baz,
-}

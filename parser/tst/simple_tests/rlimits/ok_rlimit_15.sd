@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION simple sigpending rlimit test
-#=EXRESULT PASS
-
-profile rlimit {
-  set rlimit sigpending <= 42,
-}

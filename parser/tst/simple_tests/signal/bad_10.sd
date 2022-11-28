@@ -1,9 +1,0 @@
-#
-#=Description basic signal bad signal
-#=EXRESULT FAIL
-#
-/usr/bin/signal-test {
-  signal send set=(nohup),
-
-}
-

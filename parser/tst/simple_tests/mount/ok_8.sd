@@ -1,9 +1,0 @@
-#
-#=Description basic mount rule
-#=EXRESULT PASS
-#
-@{dev}=/one /two /three /four
-
-/usr/bin/foo {
-  mount @{dev} -> /foo,
-}

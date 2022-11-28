@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION simple data segment rlimit test
-#=EXRESULT PASS
-
-profile rlimit {
-  set rlimit data <= 4095KB,
-}

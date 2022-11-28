@@ -1,2 +1,0 @@
-# variable declarations for inclusion
-@{FOO} = /foo /bar /baz /biff /lib /tmp

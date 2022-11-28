@@ -1,9 +1,0 @@
-#
-#=Description basic deny signal all rule
-#=EXRESULT PASS
-#
-/usr/bin/signal-test {
-  deny signal,
-
-}
-

@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION owner not allowed in change_profile rule
-#=EXRESULT FAIL
-#
-/usr/bin/foo {
-   audit allow owner change_profile /onexec -> /bin/foo//bar,
-}

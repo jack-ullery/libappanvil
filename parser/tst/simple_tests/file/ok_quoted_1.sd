@@ -1,9 +1,0 @@
-#
-#=DESCRIPTION simple quoted tab expansion
-#=EXRESULT PASS
-#
-
-profile test {
-  "/bin/alpha\tbeta" rix,
-}
-

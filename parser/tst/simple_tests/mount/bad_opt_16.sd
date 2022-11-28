@@ -1,6 +1,0 @@
-#
-#=Description basic rule to test the valid "rshared" mount opt and an invalid src
-#=EXRESULT FAIL
-/usr/bin/foo {
-  mount options=(rshared) /a -> /1,
-  }

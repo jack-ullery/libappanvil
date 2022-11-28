@@ -1,8 +1,0 @@
-#
-#=Description named profile
-#=EXRESULT PASS
-#
-
-profile xattrs-test /usr/bin/hi xattrs=(user.foo=* user.bar=*) {
-  /foo r,
-}

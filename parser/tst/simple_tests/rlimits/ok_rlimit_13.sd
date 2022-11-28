@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION simple rttime rlimit allows default units
-#=EXRESULT PASS
-
-profile rlimit {
-  set rlimit rttime <= 12,
-}

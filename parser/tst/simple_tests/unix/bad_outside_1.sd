@@ -1,5 +1,0 @@
-#
-#=DESCRIPTION unix accept rule outside of a profile
-#=EXRESULT FAIL
-
-  unix accept,

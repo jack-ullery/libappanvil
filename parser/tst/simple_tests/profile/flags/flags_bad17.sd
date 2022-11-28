@@ -1,9 +1,0 @@
-#
-#=DESCRIPTION Ensure empty (whitespace-only) flags fail
-#=EXRESULT FAIL
-# vim:syntax=apparmor
-#
-/does/not/exist (      ) {
-
-  /does/not/exist r,
-}

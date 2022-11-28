@@ -1,8 +1,0 @@
-#
-#=Description dbus rule with bad 'peer'
-#=EXRESULT FAIL
-#
-
-profile foo {
-  dbus send peer(label=wat),
-}

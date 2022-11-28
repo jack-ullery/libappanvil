@@ -1,8 +1,0 @@
-#
-#=DESCRIPTION simple bare peer keyword
-#=EXRESULT FAIL
-#
-
-/usr/bin/signal-test {
-  signal peer,
-}

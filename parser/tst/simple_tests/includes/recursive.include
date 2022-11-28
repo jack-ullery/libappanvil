@@ -1,6 +1,0 @@
-
-# helper for include_tests/recursive_2.sd
-
-  /foo rw,
-  #include <includes/recursive.include>
-  /no/such/path r,

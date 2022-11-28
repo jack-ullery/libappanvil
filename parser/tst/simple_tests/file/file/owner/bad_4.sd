@@ -1,8 +1,0 @@
-#
-#=DESCRIPTION owner cannot follow permission
-#=EXRESULT FAIL
-#
-/usr/bin/foo {
-  file /foo rw owner,
-
-}

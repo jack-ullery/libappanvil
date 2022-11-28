@@ -1,9 +1,0 @@
-#
-#=Description basic userns invalid access
-#=EXRESULT FAIL
-#
-/usr/bin/userns-test {
-  userns read,
-
-}
-

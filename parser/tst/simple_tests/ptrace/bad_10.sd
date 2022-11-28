@@ -1,8 +1,0 @@
-#
-#=Description ptrace w/bad regex expansion
-#=EXRESULT FAIL
-#
-/usr/bin/foo {
-  ptrace peer={/bin/true,
-
-}

@@ -1,8 +1,0 @@
-#
-#=Description bare file rule
-#=EXRESULT PASS
-#=TODO https://launchpad.net/bugs/1215637
-#
-/usr/bin/foo {
-  deny file,
-}

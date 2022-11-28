@@ -1,7 +1,0 @@
-#
-#
-#include <failure>
-#
-/does/not/exist {
-  #include <includes/base>
-}

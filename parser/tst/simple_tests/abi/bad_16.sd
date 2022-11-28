@@ -1,8 +1,0 @@
-#
-#=DESCRIPTION abi testing - empty/cut-off rule
-#=EXRESULT FAIL
-
-abi "",
-
-/does/not/exist {
-}

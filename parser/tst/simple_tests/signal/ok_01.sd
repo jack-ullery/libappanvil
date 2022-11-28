@@ -1,9 +1,0 @@
-#
-#=Description basic signal all rule
-#=EXRESULT PASS
-#
-/usr/bin/signal-test {
-  signal,
-
-}
-

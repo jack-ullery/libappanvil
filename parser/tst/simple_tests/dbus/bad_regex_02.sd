@@ -1,8 +1,0 @@
-#
-#=DESCRIPTION dbus rule with a bad expansion
-#=EXRESULT FAIL
-#
-
-profile foo {
-  dbus bind name=abcd]efg,
-}

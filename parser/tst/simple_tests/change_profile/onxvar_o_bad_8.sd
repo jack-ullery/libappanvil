@@ -1,8 +1,0 @@
-#
-#=DESCRIPTION owner not allowed in change_profile rule
-#=EXRESULT FAIL
-#
-@{var}=/test
-/usr/bin/foo {
-   owner change_profile @{var} -> ":foo:/bin/foo",
-}

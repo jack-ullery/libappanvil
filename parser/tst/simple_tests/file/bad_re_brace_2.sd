@@ -1,8 +1,0 @@
-#
-#=DESCRIPTION empty alternation braces '{}' should be an error
-#=EXRESULT FAIL
-#
-
-profile failure {
-  /usr/bin/{}snort rw,
-}

@@ -1,6 +1,0 @@
-#
-#=Description basic rule to test the invalid "load" mount option
-#=EXRESULT FAIL
-/usr/bin/foo {
-  mount options=(load) /a -> /1,
-}

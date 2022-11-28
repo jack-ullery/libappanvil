@@ -1,8 +1,0 @@
-#
-#=DESCRIPTION unnecessary slash quotes are okay (should emit warning)
-#=EXRESULT PASS
-#
-
-profile blart {
-  /bingo/bang\o/bongo rw,
-}

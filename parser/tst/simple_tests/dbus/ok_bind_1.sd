@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION simple dbus implicit bind acceptance test
-#=EXRESULT PASS
-
-profile a_profile {
-  dbus name=(SomeService),
-}

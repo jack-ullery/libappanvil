@@ -1,9 +1,0 @@
-#
-#=Description basic userns all rule
-#=EXRESULT PASS
-#
-/usr/bin/userns-rule {
-  userns,
-
-}
-

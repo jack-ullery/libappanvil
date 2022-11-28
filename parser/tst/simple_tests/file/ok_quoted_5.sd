@@ -1,9 +1,0 @@
-#
-#=DESCRIPTION simple quoted backslash expansion
-#=EXRESULT PASS
-#
-
-profile test {
-  "/bin/alpha\\beta" rix,
-}
-

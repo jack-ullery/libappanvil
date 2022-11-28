@@ -1,8 +1,0 @@
-#
-#=Description capability + ptrace merged rule
-#=EXRESULT FAIL
-#
-/usr/bin/foo {
-  capability ptrace trace,
-
-}

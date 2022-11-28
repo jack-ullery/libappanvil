@@ -1,8 +1,0 @@
-#
-#=Description basic userns create rule
-#=EXRESULT PASS
-#
-/usr/bin/userns-test {
-  userns create,
-
-}

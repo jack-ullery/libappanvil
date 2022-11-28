@@ -1,5 +1,0 @@
-#
-#=DESCRIPTION dbus rule outside of a profile
-#=EXRESULT FAIL
-
-dbus name=(SomeService),

@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION dbus eavesdrop cannot contain non bus modifiers
-#=EXRESULT FAIL
-
-profile dbus_fail {
-  dbus eavesdrop interface=wat,
-}

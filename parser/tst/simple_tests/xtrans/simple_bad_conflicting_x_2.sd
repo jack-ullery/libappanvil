@@ -1,9 +1,0 @@
-#
-#=DESCRIPTION px and ix conflict, different identical rules
-#=EXRESULT FAIL
-#
-/usr/bin/foo {
-  /bin/cat px,
-  /lib/lib*.so* rix,
-  /bin/cat ix,
-}

@@ -1,7 +1,0 @@
-#
-#=Description userns rule outside of a profile
-#=EXRESULT FAIL
-#
-
-  userns,
-

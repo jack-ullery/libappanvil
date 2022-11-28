@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION capability rule outside of a profile
-#=EXRESULT FAIL
-#
-
-capability,
-

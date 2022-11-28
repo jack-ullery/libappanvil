@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION carat in pathname
-#=EXRESULT PASS
-#
-/usr/bin/foo {
-   /foo^bar r,
-}

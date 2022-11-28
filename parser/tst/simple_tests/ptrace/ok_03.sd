@@ -1,8 +1,0 @@
-#
-#=Description basic allow ptrace all rule
-#=EXRESULT PASS
-#
-/usr/bin/foo {
-  allow ptrace,
-
-  }

@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION simple deny other flag test
-#=EXRESULT PASS
-
-profile test {
-  deny other /tmp/** rw,
-}

@@ -1,8 +1,0 @@
-#
-#=DESCRIPTION deny change_profile @{var}
-#=EXRESULT PASS
-#
-@{var}=/test
-/usr/bin/foo {
-   deny change_profile @{var} -> /bin/foo,
-}

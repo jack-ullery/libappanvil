@@ -1,7 +1,0 @@
-#
-#=Description xattrs with quoted value
-#=EXRESULT PASS
-#
-/usr/bin/xattrs-test xattrs=(myvalue="foo.bar") {
-  /foo r,
-}
