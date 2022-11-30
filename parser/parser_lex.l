@@ -39,8 +39,7 @@
 #include <string>
 
 #include "parser.h"
-#include "parser_include.h"
-#include "parser_yacc.h"
+#include "parser_yacc.hpp"
 
 #ifdef PDEBUG
 #undef PDEBUG
@@ -267,7 +266,7 @@ GT		>
 
 <<EOF>> {
 	fclose(yyin);
-	pop_include_stack();
+	//pop_include_stack();
 	yypop_buffer_state();
 	if ( !YY_CURRENT_BUFFER )
 		yyterminate();
@@ -514,7 +513,7 @@ GT		>
 	/* Don't use PUSH() macro here as we don't want #include echoed out.
 	 * It needs to be handled specially
 	 */
-	pwarn(WARN_INCLUDE, _("deprecated use of '#include'\n"));
+	// pwarn(WARN_INCLUDE, _("deprecated use of '#include'\n"));
 	yy_push_state(INCLUDE_EXISTS);
 }
 
@@ -529,7 +528,7 @@ include{WS}+if{WS}+exists/{WS}	{
 	/* Don't use PUSH() macro here as we don't want #include echoed out.
 	 * It needs to be handled specially
 	 */
-	pwarn(WARN_INCLUDE, _("deprecated use of '#include'\n"));
+	// pwarnf(WARN_INCLUDE, _("deprecated use of '#include'\n"));
 	yy_push_state(INCLUDE);
 }
 
@@ -657,6 +656,10 @@ include/{WS}	{
 	}
 }
 %%
+
+// (TODO fix-grossness) THIS IS BAD - should find a way to fix 
+#include "parser.c"
+#include "lib.c"
 
 /* Create a table mapping lexer state number to the name used in the
  * in the code.  This allows for better debug output

@@ -9,7 +9,7 @@ set(AUTOGEN_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/dist)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/dist)
 
-set(LIBRARY_NAME lib${PROJECT_NAME}-dev)
+set(LIBRARY_NAME ${PROJECT_NAME}-dev)
 
 # Create the directory, so that it exists for FLEX/BISON to use 
 file(MAKE_DIRECTORY ${AUTOGEN_SOURCE_DIR})
@@ -17,8 +17,8 @@ file(MAKE_DIRECTORY ${AUTOGEN_SOURCE_DIR})
 ### Sources that need to be built ###
 set(SOURCES
   ${PROJECT_SOURCE_DIR}/lib.c
+  ${PROJECT_SOURCE_DIR}/parser.c
   ${PROJECT_SOURCE_DIR}/parser_include.c
-  ${PROJECT_SOURCE_DIR}/parser_misc.c
 )
 
 set(MAIN_SOURCE
@@ -34,7 +34,7 @@ find_package(BISON REQUIRED)
 BISON_TARGET(PARSER 
               ${PARSE_INPUT} 
               ${AUTOGEN_SOURCE_DIR}/parser_yacc.cc
-              DEFINES_FILE ${AUTOGEN_SOURCE_DIR}/parser_yacc.hh)
+              DEFINES_FILE ${AUTOGEN_SOURCE_DIR}/parser_yacc.hpp)
 
 #### Flex stuff ####
 find_package(FLEX 2.5.5 REQUIRED)
@@ -42,14 +42,14 @@ find_package(FLEX 2.5.5 REQUIRED)
 FLEX_TARGET(LEXER 
               ${LEXER_INPUT} 
               ${AUTOGEN_SOURCE_DIR}/parser_lex.cc
-              DEFINES_FILE ${AUTOGEN_SOURCE_DIR}/parser_lex.hh)
+              DEFINES_FILE ${AUTOGEN_SOURCE_DIR}/parser_lex.hpp)
 
 ADD_FLEX_BISON_DEPENDENCY(LEXER PARSER)
 
 #### Set Compiler Options ####
-set(CMAKE_C_FLAGS "-C -g -O2 -pipe")
+set(CMAKE_C_FLAGS "-g -O2 -pipe")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-g -Wall -Wextra")
 set(CMAKE_CXX_STANDARD 14)
 
 ## set_source_files_properties(${CXX_SOURCES} PROPERTIES LANGUAGE CXX)

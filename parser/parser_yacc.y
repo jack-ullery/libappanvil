@@ -28,13 +28,7 @@
 #include <fcntl.h>
 #include <sys/apparmor.h>
 
-/* #define DEBUG */
-
-#include <unistd.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
-#include "parser_lex.h"
+#include "parser.h"
 
 #define CIDR_32 htonl(0xffffffff)
 #define CIDR_24 htonl(0xffffff00)
