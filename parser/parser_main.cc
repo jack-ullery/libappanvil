@@ -1,18 +1,18 @@
-#include <cstddef>
-#include <cstdio>
-#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "parser.h"
 #include "parser_lex.hpp"
 #include "parser_yacc.hpp"
 
-int main() {
-	std::cout << "Starting parsing" << std::endl;
+int main(int argc, char** argv) {
+	if(argc == 2) {
+		yyin = fopen(argv[1], "r");
 
-	yyparse();
-	std::cout << std::endl << "Number of lines: " << current_lineno << std::endl;
+		yyparse();
 
-	std::cout << "end." << std::endl;
+		return 0;
+	}
 
-	return 0;
+	return 1;
 }
