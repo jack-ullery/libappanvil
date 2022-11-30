@@ -40,6 +40,7 @@
 
 #include "parser.h"
 #include "parser_include.h"
+#include "parser_yacc.h"
 
 #ifdef PDEBUG
 #undef PDEBUG
@@ -258,7 +259,7 @@ GT		>
 			else
 				RETURN_TOKEN(TOK_VALUE);
 		}
-
+		// include_filename(filename, lt, exists);
 		free(filename);
 		POP_NODUMP();
 	}

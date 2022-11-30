@@ -33,8 +33,8 @@ find_package(BISON REQUIRED)
 
 BISON_TARGET(PARSER 
               ${PARSE_INPUT} 
-              ${AUTOGEN_SOURCE_DIR}/parser_yacc.c
-              DEFINES_FILE ${AUTOGEN_SOURCE_DIR}/parser_yacc.h)
+              ${AUTOGEN_SOURCE_DIR}/parser_yacc.cc
+              DEFINES_FILE ${AUTOGEN_SOURCE_DIR}/parser_yacc.hh)
 
 #### Flex stuff ####
 find_package(FLEX 2.5.5 REQUIRED)
@@ -42,15 +42,15 @@ find_package(FLEX 2.5.5 REQUIRED)
 FLEX_TARGET(LEXER 
               ${LEXER_INPUT} 
               ${AUTOGEN_SOURCE_DIR}/parser_lex.cc
-              DEFINES_FILE ${AUTOGEN_SOURCE_DIR}/parser_lex.h)
+              DEFINES_FILE ${AUTOGEN_SOURCE_DIR}/parser_lex.hh)
 
 ADD_FLEX_BISON_DEPENDENCY(LEXER PARSER)
 
 #### Set Compiler Options ####
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_C_FLAGS "-C -g -O2 -pipe")
 
-set(CMAKE_C_FLAGS "-g -O2 -pipe")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
+set(CMAKE_CXX_STANDARD 14)
 
 ## set_source_files_properties(${CXX_SOURCES} PROPERTIES LANGUAGE CXX)
 

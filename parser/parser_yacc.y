@@ -34,7 +34,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include <parser_lex.h>
+#include "parser_lex.h"
 
 #define CIDR_32 htonl(0xffffffff)
 #define CIDR_24 htonl(0xffffff00)
