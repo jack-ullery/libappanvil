@@ -41,6 +41,8 @@
 #include "parser.h"
 #include "parser_yacc.hpp"
 
+int current_lineno = 0;
+
 #ifdef PDEBUG
 #undef PDEBUG
 #endif
@@ -53,7 +55,7 @@ static int yy_top_state(void);
 #endif
 #define NPDEBUG(fmt, args...)	/* Do nothing */
 
-#define DUMP_PREPROCESS do { if (preprocess_only) ECHO; } while (0)
+#define DUMP_PREPROCESS do { /*ECHO;*/ } while (0)
 
 #define DUMP_AND_DEBUG(X...) \
 do { \

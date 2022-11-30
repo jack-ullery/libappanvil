@@ -168,8 +168,6 @@ struct var_string {
 
 #define BOOL int
 
-extern int preprocess_only;
-
 #define PATH_CHROOT_REL 0x1
 #define PATH_NS_REL 0x2
 #define PATH_CHROOT_NSATTACH 0x4

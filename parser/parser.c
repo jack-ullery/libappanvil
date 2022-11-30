@@ -38,9 +38,6 @@
 #include "parser.h"
 #include "parser_yacc.hpp"
 
-int preprocess_only = 0;
-int current_lineno  = 0;
-
 /* #define DEBUG */
 #ifdef DEBUG
 #undef PDEBUG

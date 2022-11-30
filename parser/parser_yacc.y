@@ -241,361 +241,251 @@ void yyerror(const char *msg, ...);
 %%
 
 
-list:	 preamble
-	{
-	}
-	profilelist;
+list: preamble profilelist;
 
-profilelist:	{};
-
-profilelist:	profilelist profile
-	{
-	};
+profilelist:
+		   | profilelist profile
 
 opt_profile_flag:
-	| TOK_PROFILE
-	| hat_start
+				| TOK_PROFILE
+				| hat_start
 
-opt_id: {}
-	| TOK_ID {}
+opt_id:
+	  | TOK_ID
 
-opt_id_or_var: {}
-	| id_or_var {}
+opt_id_or_var:
+			 | id_or_var
 
-profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN
-	{
-	}
-    rules TOK_CLOSE
-	{
-	};
+profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE
 
 profile:  opt_profile_flag profile_base
-	{
-	};
 
-local_profile:   TOK_PROFILE profile_base
-	{
-	};
+local_profile: TOK_PROFILE profile_base
 
 hat: hat_start profile_base
-	{
-	};
 
-preamble: {}
-	| preamble alias {};
-	| preamble varassign {};
-	| preamble abi_rule {};
+preamble:
+		| preamble alias
+		| preamble varassign
+		| preamble abi_rule
 
 alias: TOK_ALIAS TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
-	{
-	};
 
-varassign:	TOK_SET_VAR TOK_EQUALS valuelist
-	{
-	}
+varassign: TOK_SET_VAR TOK_EQUALS valuelist
+		 | TOK_SET_VAR TOK_ADD_ASSIGN valuelist
+		 | TOK_BOOL_VAR TOK_EQUALS TOK_VALUE
 
-varassign:	TOK_SET_VAR TOK_ADD_ASSIGN valuelist
-	{
-	}
+valuelist: TOK_VALUE
+		 | valuelist TOK_VALUE
 
-varassign:	TOK_BOOL_VAR TOK_EQUALS TOK_VALUE
-	{
-	}
-
-valuelist:	TOK_VALUE
-	{
-	}
-
-valuelist:	valuelist TOK_VALUE
-	{
-	}
-
-flags:	{};
-
-opt_flags: {}
+opt_flags:
 	| TOK_CONDID TOK_EQUALS
-	{
-	}
 
-flags:	opt_flags TOK_OPENPAREN flagvals TOK_CLOSEPAREN
-	{
-	};
+flags:
+	 | opt_flags TOK_OPENPAREN flagvals TOK_CLOSEPAREN
 
-flagvals:	flagvals flagval
-	{
-	};
-
-flagvals:	flagval
-	{
-	};
+flagvals: flagvals flagval
+		| flagval
 
 flagval:	TOK_VALUE
-	{
-	};
 
-opt_subset_flag: {}
-	| TOK_SUBSET {}
-	| TOK_LE {}
+opt_subset_flag:
+			   | TOK_SUBSET
+			   | TOK_LE
 
-opt_audit_flag: {}
-	| TOK_AUDIT {};
+opt_audit_flag:
+			  | TOK_AUDIT
 
-opt_owner_flag: {}
-	| TOK_OWNER {};
-	| TOK_OTHER {};
+opt_owner_flag:
+			  | TOK_OWNER
+			  | TOK_OTHER
 
-opt_perm_mode: {}
-	| TOK_ALLOW {}
-	| TOK_DENY {}
+opt_perm_mode:
+			 | TOK_ALLOW
+			 | TOK_DENY
 
 opt_prefix: opt_audit_flag opt_perm_mode opt_owner_flag
-	{
-	}
 
-rules:	{ /* nothing */ 
-	};
-
-rules: rules abi_rule {}
-
-rules:  rules opt_prefix rule
-	{
-	};
-
-
-rules: rules opt_prefix TOK_OPEN rules TOK_CLOSE
-	{
-	};
-
-rules: rules opt_prefix network_rule
-	{
-	}
-
-rules:  rules opt_prefix mnt_rule
-	{
-	}
-
-rules:  rules opt_prefix dbus_rule
-	{
-	}
-
-rules:  rules opt_prefix signal_rule
-	{
-	}
-
-rules:  rules opt_prefix ptrace_rule
-	{
-	}
-
-rules:  rules opt_prefix unix_rule
-	{
-	}
-
-rules:  rules opt_prefix userns_rule
-	{
-	}
-
-rules:	rules opt_prefix change_profile
-	{
-	};
-
-rules:  rules opt_prefix capability
-	{
-	};
-
-rules:	rules hat
-	{
-	};
-
-rules:	rules local_profile
-	{
-	};
-
-rules:	rules cond_rule
-	{
-	}
-
-rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE opt_id TOK_END_OF_RULE
+rules:
+	 | rules abi_rule
+	 | rules opt_prefix rule
+	 | rules opt_prefix TOK_OPEN rules TOK_CLOSE
+	 | rules opt_prefix network_rule
+	 | rules opt_prefix mnt_rule
+	 | rules opt_prefix dbus_rule
+	 | rules opt_prefix signal_rule
+	 | rules opt_prefix ptrace_rule
+	 | rules opt_prefix unix_rule
+	 | rules opt_prefix userns_rule
+	 | rules opt_prefix change_profile
+	 | rules opt_prefix capability
+	 | rules hat
+	 | rules local_profile
+	 | rules cond_rule
+	 | rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE opt_id TOK_END_OF_RULE
 
 cond_rule: TOK_IF expr TOK_OPEN rules TOK_CLOSE
-
-cond_rule: TOK_IF expr TOK_OPEN rules TOK_CLOSE TOK_ELSE TOK_OPEN rules TOK_CLOSE
-
-cond_rule: TOK_IF expr TOK_OPEN rules TOK_CLOSE TOK_ELSE cond_rule
+		 | TOK_IF expr TOK_OPEN rules TOK_CLOSE TOK_ELSE TOK_OPEN rules TOK_CLOSE
+		 | TOK_IF expr TOK_OPEN rules TOK_CLOSE TOK_ELSE cond_rule
 
 expr:	TOK_NOT expr
+	|	TOK_BOOL_VAR
+	|	TOK_DEFINED TOK_SET_VAR
+	|	TOK_DEFINED TOK_BOOL_VAR
 
-expr:	TOK_BOOL_VAR
+id_or_var: TOK_ID
+		 | TOK_SET_VAR
 
-expr:	TOK_DEFINED TOK_SET_VAR
+opt_target: /* nothing */
+		  | TOK_ARROW id_or_var
 
-expr:	TOK_DEFINED TOK_BOOL_VAR
+opt_named_transition:
+					| TOK_ARROW id_or_var
 
-id_or_var: TOK_ID {}
-id_or_var: TOK_SET_VAR {};
 
-opt_target: /* nothing */ {}
-opt_target: TOK_ARROW id_or_var {};
-
-opt_named_transition: {}
-	| TOK_ARROW id_or_var
-	{
-	};
-
-rule: file_rule {}
-	| link_rule {}
+rule: file_rule
+	| link_rule
 
 abi_rule: TOK_ABI TOK_ID TOK_END_OF_RULE
-	| TOK_ABI TOK_VALUE TOK_END_OF_RULE
+		| TOK_ABI TOK_VALUE TOK_END_OF_RULE
 
-opt_exec_mode: {}
-	| TOK_UNSAFE {};
-	| TOK_SAFE {};
+opt_exec_mode:
+			 | TOK_UNSAFE
+			 | TOK_SAFE
 
-opt_file: {}
-	| TOK_FILE {}
+opt_file:
+		| TOK_FILE
 
-frule:	id_or_var file_mode opt_named_transition TOK_END_OF_RULE
-
-frule:	file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE
+frule: id_or_var file_mode opt_named_transition TOK_END_OF_RULE
+	 | file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE
 
 file_rule: TOK_FILE TOK_END_OF_RULE
-	| opt_file file_rule_tail {}
-
+		 | opt_file file_rule_tail
 
 file_rule_tail: opt_exec_mode frule
-
-file_rule_tail: opt_exec_mode id_or_var file_mode id_or_var
+			  | opt_exec_mode id_or_var file_mode id_or_var
 
 link_rule: TOK_LINK opt_subset_flag id_or_var TOK_ARROW id_or_var TOK_END_OF_RULE
 
 network_rule: TOK_NETWORK TOK_END_OF_RULE
-
-network_rule: TOK_NETWORK TOK_ID TOK_END_OF_RULE
-
-network_rule: TOK_NETWORK TOK_ID TOK_ID TOK_END_OF_RULE
+			| TOK_NETWORK TOK_ID TOK_END_OF_RULE
+			| TOK_NETWORK TOK_ID TOK_ID TOK_END_OF_RULE
 
 cond: TOK_CONDID
+	| TOK_CONDID TOK_EQUALS TOK_VALUE
+	| TOK_CONDID TOK_EQUALS TOK_OPENPAREN valuelist TOK_CLOSEPAREN
+	| TOK_CONDID TOK_IN TOK_OPENPAREN valuelist TOK_CLOSEPAREN
 
-cond: TOK_CONDID TOK_EQUALS TOK_VALUE
-
-cond: TOK_CONDID TOK_EQUALS TOK_OPENPAREN valuelist TOK_CLOSEPAREN
-
-cond: TOK_CONDID TOK_IN TOK_OPENPAREN valuelist TOK_CLOSEPAREN
-
-opt_conds: {}
-	| opt_conds cond
+opt_conds:
+		 | opt_conds cond
 
 cond_list: TOK_CONDLISTID TOK_EQUALS TOK_OPENPAREN opt_conds TOK_CLOSEPAREN
 
-opt_cond_list: {}
-	| cond_list {}
+opt_cond_list:
+			 | cond_list
 
 mnt_rule: TOK_MOUNT opt_conds opt_id TOK_END_OF_RULE
-
-mnt_rule: TOK_MOUNT opt_conds opt_id TOK_ARROW opt_conds TOK_ID TOK_END_OF_RULE
-
-mnt_rule: TOK_REMOUNT opt_conds opt_id TOK_END_OF_RULE
-
-mnt_rule: TOK_UMOUNT opt_conds opt_id TOK_END_OF_RULE
-
-mnt_rule: TOK_PIVOTROOT opt_conds opt_id opt_target TOK_END_OF_RULE
+		| TOK_MOUNT opt_conds opt_id TOK_ARROW opt_conds TOK_ID TOK_END_OF_RULE
+		| TOK_REMOUNT opt_conds opt_id TOK_END_OF_RULE
+		| TOK_UMOUNT opt_conds opt_id TOK_END_OF_RULE
+		| TOK_PIVOTROOT opt_conds opt_id opt_target TOK_END_OF_RULE
 
 dbus_perm: TOK_VALUE
-	| TOK_BIND {}
-	| TOK_SEND {}
-	| TOK_RECEIVE {}
-	| TOK_READ {}
-	| TOK_WRITE {}
-	| TOK_EAVESDROP {}
+	| TOK_BIND
+	| TOK_SEND
+	| TOK_RECEIVE
+	| TOK_READ
+	| TOK_WRITE
+	| TOK_EAVESDROP
 	| TOK_MODE
 
-dbus_perms: {}
-	| dbus_perms dbus_perm {}
-	| dbus_perms TOK_COMMA dbus_perm {}
+dbus_perms:
+		  | dbus_perms dbus_perm
+		  | dbus_perms TOK_COMMA dbus_perm
 
-opt_dbus_perm: {}
-	| dbus_perm  {}
-	| TOK_OPENPAREN dbus_perms TOK_CLOSEPAREN {}
+opt_dbus_perm:
+			 | dbus_perm
+			 | TOK_OPENPAREN dbus_perms TOK_CLOSEPAREN
 
 dbus_rule: TOK_DBUS opt_dbus_perm opt_conds opt_cond_list TOK_END_OF_RULE
 
 net_perm: TOK_VALUE
-	| TOK_CREATE {}
-	| TOK_BIND {}
-	| TOK_LISTEN {}
-	| TOK_ACCEPT {}
-	| TOK_CONNECT {}
-	| TOK_SHUTDOWN {}
-	| TOK_GETATTR {}
-	| TOK_SETATTR {}
-	| TOK_GETOPT {}
-	| TOK_SETOPT {}
-	| TOK_SEND {}
-	| TOK_RECEIVE {}
-	| TOK_READ {}
-	| TOK_WRITE {}
-	| TOK_MODE
+		| TOK_CREATE
+		| TOK_BIND
+		| TOK_LISTEN
+		| TOK_ACCEPT
+		| TOK_CONNECT
+		| TOK_SHUTDOWN
+		| TOK_GETATTR
+		| TOK_SETATTR
+		| TOK_GETOPT
+		| TOK_SETOPT
+		| TOK_SEND
+		| TOK_RECEIVE
+		| TOK_READ
+		| TOK_WRITE
+		| TOK_MODE
 
-net_perms: {}
-	| net_perms net_perm {}
-	| net_perms TOK_COMMA net_perm {}
+net_perms:
+		 | net_perms net_perm
+		 | net_perms TOK_COMMA net_perm
 
-opt_net_perm: {}
-	| net_perm  {}
-	| TOK_OPENPAREN net_perms TOK_CLOSEPAREN {}
+opt_net_perm:
+	 		| net_perm
+	 		| TOK_OPENPAREN net_perms TOK_CLOSEPAREN
 
 unix_rule: TOK_UNIX opt_net_perm opt_conds opt_cond_list TOK_END_OF_RULE
 
 signal_perm: TOK_VALUE
-	| TOK_SEND {}
-	| TOK_RECEIVE {}
-	| TOK_READ {}
-	| TOK_WRITE {}
-	| TOK_MODE
+		   | TOK_SEND
+		   | TOK_RECEIVE
+		   | TOK_READ
+		   | TOK_WRITE
+		   | TOK_MODE
 
-signal_perms: {}
-	| signal_perms signal_perm {}
-	| signal_perms TOK_COMMA signal_perm {}
+signal_perms:
+			| signal_perms signal_perm
+			| signal_perms TOK_COMMA signal_perm
 
-opt_signal_perm: {}
-	| signal_perm {}
-	| TOK_OPENPAREN signal_perms TOK_CLOSEPAREN {}
+opt_signal_perm:
+			   | signal_perm
+			   | TOK_OPENPAREN signal_perms TOK_CLOSEPAREN
 
 signal_rule: TOK_SIGNAL opt_signal_perm opt_conds TOK_END_OF_RULE
 
 ptrace_perm: TOK_VALUE
-	| TOK_TRACE {}
-	| TOK_TRACEDBY {}
-	| TOK_READ {}
-	| TOK_WRITE {}
-	| TOK_READBY {}
-	| TOK_MODE
+		   | TOK_TRACE
+		   | TOK_TRACEDBY
+		   | TOK_READ
+		   | TOK_WRITE
+		   | TOK_READBY
+		   | TOK_MODE
 
-ptrace_perms: {}
-	| ptrace_perms ptrace_perm {}
-	| ptrace_perms TOK_COMMA ptrace_perm {}
+ptrace_perms:
+			| ptrace_perms ptrace_perm
+			| ptrace_perms TOK_COMMA ptrace_perm
 
-opt_ptrace_perm: {}
-	| ptrace_perm {}
-	| TOK_OPENPAREN ptrace_perms TOK_CLOSEPAREN {}
+opt_ptrace_perm:
+			   | ptrace_perm
+			   | TOK_OPENPAREN ptrace_perms TOK_CLOSEPAREN
 
 ptrace_rule: TOK_PTRACE opt_ptrace_perm opt_conds TOK_END_OF_RULE
 
 userns_perm: TOK_VALUE
-	| TOK_CREATE {}
+		   | TOK_CREATE
 
-userns_perms: {}
-	| userns_perms userns_perm {}
-	| userns_perms TOK_COMMA userns_perm {}
+userns_perms:
+			| userns_perms userns_perm
+			| userns_perms TOK_COMMA userns_perm
 
-opt_userns_perm: {}
-	| userns_perm {}
-	| TOK_OPENPAREN userns_perms TOK_CLOSEPAREN {}
+opt_userns_perm:
+			   | userns_perm
+			   | TOK_OPENPAREN userns_perms TOK_CLOSEPAREN
 
 userns_rule: TOK_USERNS opt_userns_perm opt_conds TOK_END_OF_RULE
 
-hat_start: TOK_CARET {}
-	| TOK_HAT {}
+hat_start: TOK_CARET
+		 | TOK_HAT
 
 file_mode: TOK_MODE
 
@@ -603,8 +493,8 @@ change_profile: TOK_CHANGE_PROFILE opt_exec_mode opt_id opt_named_transition TOK
 
 capability:	TOK_CAPABILITY caps TOK_END_OF_RULE
 
-caps: {}
-	| caps TOK_ID {}
+caps:
+	| caps TOK_ID
 %%
 
 #define MAXBUFSIZE 4096
