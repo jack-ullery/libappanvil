@@ -22,7 +22,7 @@
 
 /* options set to noXXX eliminates need to link with libfl */
 %option noyywrap
-/* set %option noyy_top_state in Makefile, so can be used when DEBUG=1 */
+%option noyy_top_state
 %option nounput
 %option stack
 %option nodefault
@@ -39,28 +39,15 @@
 #include <string>
 
 #include "parser.h"
-#include "parser_yacc.hpp"
+#include "parser_yacc.h"
 
 int current_lineno = 0;
-
-#ifdef PDEBUG
-#undef PDEBUG
-#endif
-/* #define DEBUG */
-#ifdef DEBUG
-static int yy_top_state(void);
-#define PDEBUG(fmt, args...) fprintf(stderr, "Lexer (Line %d) (state %s): " fmt, current_lineno, state_names[YY_START].c_str(), ## args)
-#else
-#define PDEBUG(fmt, args...)	/* Do nothing */
-#endif
-#define NPDEBUG(fmt, args...)	/* Do nothing */
 
 #define DUMP_PREPROCESS do { /*ECHO;*/ } while (0)
 
 #define DUMP_AND_DEBUG(X...) \
 do { \
 	DUMP_PREPROCESS; \
-	PDEBUG(X); \
 } while (0)
 
 #define EAT_TOKEN(X...) DUMP_AND_DEBUG(X)
@@ -79,7 +66,6 @@ do { \
 
 #define POP_NODUMP() \
 do { \
-	PDEBUG(" (pop_to(%s)): Matched: %s\n", state_names[yy_top_state()].c_str(), yytext); \
 	yy_pop_state(); \
 } while (0)
 
@@ -248,7 +234,7 @@ GT		>
 		int len = yyleng - lt*2;
 		char *s = yytext + lt;
 		char * filename = lsntrim(s, yyleng);
-		bool exists = YYSTATE == INCLUDE_EXISTS;
+		// bool exists = YYSTATE == INCLUDE_EXISTS;
 
 		filename = processid(filename, rsntrim(filename, len - (filename - s)));
 		if (!filename)
@@ -660,7 +646,7 @@ include/{WS}	{
 %%
 
 // (TODO fix-grossness) THIS IS BAD - should find a way to fix 
-#include "parser.c"
+#include "parser.cc"
 #include "lib.c"
 
 /* Create a table mapping lexer state number to the name used in the

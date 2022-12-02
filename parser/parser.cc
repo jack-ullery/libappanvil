@@ -36,7 +36,7 @@
 
 #include "lib.h"
 #include "parser.h"
-#include "parser_yacc.hpp"
+#include "parser_yacc.h"
 
 /* #define DEBUG */
 #ifdef DEBUG
@@ -62,51 +62,51 @@ struct keyword_table {
 
 static struct keyword_table keyword_table[] = {
 	/* network */
-	{"network",		TOK_NETWORK},
-	{"unix",		TOK_UNIX},
+	{"network",			TOK_NETWORK},
+	{"unix",			TOK_UNIX},
 	/* misc keywords */
 	{"capability",		TOK_CAPABILITY},
-	{"if",			TOK_IF},
-	{"else",		TOK_ELSE},
-	{"not",			TOK_NOT},
-	{"defined",		TOK_DEFINED},
+	{"if",				TOK_IF},
+	{"else",			TOK_ELSE},
+	{"not",				TOK_NOT},
+	{"defined",			TOK_DEFINED},
 	{"change_profile",	TOK_CHANGE_PROFILE},
-	{"unsafe",		TOK_UNSAFE},
-	{"safe",		TOK_SAFE},
-	{"link",		TOK_LINK},
-	{"owner",		TOK_OWNER},
-	{"user",		TOK_OWNER},
-	{"other",		TOK_OTHER},
-	{"subset",		TOK_SUBSET},
-	{"audit",		TOK_AUDIT},
-	{"deny",		TOK_DENY},
-	{"allow",		TOK_ALLOW},
-	{"set",			TOK_SET},
-	{"rlimit",		TOK_RLIMIT},
-	{"alias",		TOK_ALIAS},
-	{"rewrite",		TOK_ALIAS},
-	{"ptrace",		TOK_PTRACE},
-	{"file",		TOK_FILE},
-	{"mount",		TOK_MOUNT},
-	{"remount",		TOK_REMOUNT},
-	{"umount",		TOK_UMOUNT},
-	{"unmount",		TOK_UMOUNT},
+	{"unsafe",			TOK_UNSAFE},
+	{"safe",			TOK_SAFE},
+	{"link",			TOK_LINK},
+	{"owner",			TOK_OWNER},
+	{"user",			TOK_OWNER},
+	{"other",			TOK_OTHER},
+	{"subset",			TOK_SUBSET},
+	{"audit",			TOK_AUDIT},
+	{"deny",			TOK_DENY},
+	{"allow",			TOK_ALLOW},
+	{"set",				TOK_SET},
+	{"rlimit",			TOK_RLIMIT},
+	{"alias",			TOK_ALIAS},
+	{"rewrite",			TOK_ALIAS},
+	{"ptrace",			TOK_PTRACE},
+	{"file",			TOK_FILE},
+	{"mount",			TOK_MOUNT},
+	{"remount",			TOK_REMOUNT},
+	{"umount",			TOK_UMOUNT},
+	{"unmount",			TOK_UMOUNT},
 	{"pivot_root",		TOK_PIVOTROOT},
-	{"in",			TOK_IN},
-	{"dbus",		TOK_DBUS},
-	{"signal",		TOK_SIGNAL},
-	{"send",                TOK_SEND},
-	{"receive",             TOK_RECEIVE},
-	{"bind",                TOK_BIND},
-	{"read",                TOK_READ},
-	{"write",               TOK_WRITE},
+	{"in",				TOK_IN},
+	{"dbus",			TOK_DBUS},
+	{"signal",			TOK_SIGNAL},
+	{"send",            TOK_SEND},
+	{"receive",         TOK_RECEIVE},
+	{"bind",            TOK_BIND},
+	{"read",            TOK_READ},
+	{"write",           TOK_WRITE},
 	{"eavesdrop",		TOK_EAVESDROP},
-	{"peer",		TOK_PEER},
-	{"trace",		TOK_TRACE},
+	{"peer",			TOK_PEER},
+	{"trace",			TOK_TRACE},
 	{"tracedby",		TOK_TRACEDBY},
-	{"readby",		TOK_READBY},
-	{"abi",			TOK_ABI},
-	{"userns",		TOK_USERNS},
+	{"readby",			TOK_READBY},
+	{"abi",				TOK_ABI},
+	{"userns",			TOK_USERNS},
 
 	/* terminate */
 	{NULL, 0}
@@ -281,8 +281,8 @@ int str_to_boolean(const char *value)
 	return retval;
 }
 
-static int warned_uppercase = 0;
-
+//static int warned_uppercase = 0;
+//
 //void warn_uppercase(void)
 //{
 //	if (!warned_uppercase) {

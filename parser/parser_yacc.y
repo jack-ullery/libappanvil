@@ -23,34 +23,16 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
-#include <getopt.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <sys/apparmor.h>
 
 #include "parser.h"
-
-#define CIDR_32 htonl(0xffffffff)
-#define CIDR_24 htonl(0xffffff00)
-#define CIDR_16 htonl(0xffff0000)
-#define CIDR_8  htonl(0xff000000)
-
-/* undefine linux/capability.h CAP_TO_MASK */
-#ifdef CAP_TO_MASK
-#undef CAP_TO_MASK
-#endif
-
-#define CAP_TO_MASK(x) (1ull << (x))
-
-#define EXEC_MODE_EMPTY		0
-#define EXEC_MODE_UNSAFE	1
-#define EXEC_MODE_SAFE		2
 
 int parser_token = 0;
 
 void yyerror(const char *msg, ...);
 
 %}
+
+%require "3.2"
 
 %token TOK_ID
 %token TOK_CONDID
@@ -148,15 +130,16 @@ void yyerror(const char *msg, ...);
 /* debug flag values */
 %token TOK_FLAGS
 
-/*
 %code requires {
+	#include <memory>
+	#include "tree/ParseTree.h"
+	#include "tree/TreeNode.h"
 }
-*/ 
-
-// %language "c++"
 
 %union {
 	#include <stdint.h>
+
+	TreeNode *node;
 
 	char *id;
 	char *flag_id;
@@ -164,24 +147,24 @@ void yyerror(const char *msg, ...);
 
 	int fmode;
 	uint64_t cap;
-	unsigned int allowed_protocol;
 	char *set_var;
 	char *bool_var;
 	char *var_val;
 	int boolean;
 };
 
+%type <node> list
 %type <id> 	TOK_ID
 %type <id>	TOK_CONDID
 %type <id>	TOK_CONDLISTID
 %type <mode> 	TOK_MODE
 %type <fmode>   file_mode
-%type <prof>	profile_base
-%type <prof> 	profile
-%type <prof>	rules
-%type <prof>	hat
-%type <prof>	local_profile
-%type <prof>	cond_rule
+%type <node>	profile_base
+%type <node> 	profile
+%type <node>	rules
+%type <node>	hat
+%type <node>	local_profile
+%type <node>	cond_rule
 %type <network_entry> network_rule
 %type <user_entry> rule
 %type <user_entry> file_rule
@@ -241,7 +224,7 @@ void yyerror(const char *msg, ...);
 %%
 
 
-list: preamble profilelist;
+list: preamble profilelist { $$ = new TreeNode("test"); };
 
 profilelist:
 		   | profilelist profile

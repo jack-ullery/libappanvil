@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 #include "parser.h"
-#include "parser_lex.hpp"
-#include "parser_yacc.hpp"
+#include "parser_lex.h"
+#include "parser_yacc.h"
 
 int main(int argc, char** argv) {
 	if(argc == 2) {
