@@ -133,7 +133,11 @@ void yyerror(const char *msg, ...);
 
 %code requires {
 	#include <memory>
+	#include <sstream>
+
+	#include "tree/AliasNode.h"
 	#include "tree/ParseTree.h"
+	#include "tree/ProfileNode.h"
 	#include "tree/TreeNode.h"
 }
 
@@ -158,14 +162,20 @@ void yyerror(const char *msg, ...);
 %type <node> profilelist
 %type <node> profile_base
 %type <node> profile
+%type <node> preamble
 %type <node> rules
 %type <node> hat
 %type <node> local_profile
 %type <node> cond_rule
+%type <node> alias
 
 %type <id> 	TOK_ID
 %type <id>	TOK_CONDID
 %type <id>	TOK_CONDLISTID
+%type <id>	TOK_ALIAS
+%type <id>	TOK_ARROW
+%type <id>	TOK_END_OF_RULE
+
 %type <mode> 	TOK_MODE
 %type <fmode>   file_mode
 %type <network_entry> network_rule
@@ -228,8 +238,7 @@ void yyerror(const char *msg, ...);
 
 
 list: preamble profilelist { 
-								auto fake_preamble = new TreeNode("preamble");
-								$$ = new ParseTree(fake_preamble, $2); 
+								$$ = new ParseTree($1, $2);
 								std::cout << (std::string)((TreeNode)*$$) << std::endl;
 						   };
 
@@ -247,20 +256,28 @@ opt_id:
 opt_id_or_var:
 			 | id_or_var
 
-profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE
+// Should eventually add optional stuff into 
+profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE {
+		std::string profile_name($1);
 
-profile:  opt_profile_flag profile_base { $$ = new TreeNode("profile"); }
+		auto fake_rules = new TreeNode("rules");
+		$$ = new ProfileNode(profile_name, fake_rules);
+	}
+
+profile: opt_profile_flag profile_base { $$ = $2; }
 
 local_profile: TOK_PROFILE profile_base
 
 hat: hat_start profile_base
 
-preamble:
-		| preamble alias
-		| preamble varassign
-		| preamble abi_rule
+preamble:					 { $$ = new TreeNode(); }
+		| preamble alias	 { $$ = $1; $$->appendChild($2); }
+		| preamble varassign { $$ = $1; /*$$->appendChild($2);*/ }
+		| preamble abi_rule	 { $$ = $1; /*$$->appendChild($2);*/ }
 
-alias: TOK_ALIAS TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
+alias: TOK_ALIAS TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE {
+		$$ = new AliasNode($2, $4);
+	}
 
 varassign: TOK_SET_VAR TOK_EQUALS valuelist
 		 | TOK_SET_VAR TOK_ADD_ASSIGN valuelist

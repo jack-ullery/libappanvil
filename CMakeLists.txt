@@ -21,6 +21,8 @@ set(SOURCES
   ${PROJECT_SOURCE_DIR}/parser_include.c
   ${PROJECT_SOURCE_DIR}/tree/TreeNode.cc
   ${PROJECT_SOURCE_DIR}/tree/ParseTree.cc
+  ${PROJECT_SOURCE_DIR}/tree/ProfileNode.cc
+  ${PROJECT_SOURCE_DIR}/tree/AliasNode.cc
 )
 
 set(MAIN_SOURCE
