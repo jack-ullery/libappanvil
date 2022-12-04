@@ -19,6 +19,7 @@
  */
 
 #define YYERROR_VERBOSE 1
+#include <iostream>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -154,17 +155,19 @@ void yyerror(const char *msg, ...);
 };
 
 %type <node> list
+%type <node> profilelist
+%type <node> profile_base
+%type <node> profile
+%type <node> rules
+%type <node> hat
+%type <node> local_profile
+%type <node> cond_rule
+
 %type <id> 	TOK_ID
 %type <id>	TOK_CONDID
 %type <id>	TOK_CONDLISTID
 %type <mode> 	TOK_MODE
 %type <fmode>   file_mode
-%type <node>	profile_base
-%type <node> 	profile
-%type <node>	rules
-%type <node>	hat
-%type <node>	local_profile
-%type <node>	cond_rule
 %type <network_entry> network_rule
 %type <user_entry> rule
 %type <user_entry> file_rule
@@ -224,10 +227,15 @@ void yyerror(const char *msg, ...);
 %%
 
 
-list: preamble profilelist { $$ = new TreeNode("test"); };
+list: preamble profilelist { 
+								auto fake_preamble = new TreeNode("preamble");
+								$$ = new ParseTree(fake_preamble, $2); 
+								std::cout << (std::string)((TreeNode)*$$) << std::endl;
+						   };
 
-profilelist:
-		   | profilelist profile
+profilelist:					 { $$ = new TreeNode(); }
+		   | profilelist profile { $1->appendChild($2);
+								   $$ = $1; }
 
 opt_profile_flag:
 				| TOK_PROFILE
@@ -241,7 +249,7 @@ opt_id_or_var:
 
 profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE
 
-profile:  opt_profile_flag profile_base
+profile:  opt_profile_flag profile_base { $$ = new TreeNode("profile"); }
 
 local_profile: TOK_PROFILE profile_base
 

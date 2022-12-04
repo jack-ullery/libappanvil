@@ -1,5 +1,6 @@
 #include "TreeNode.h"
 
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -7,24 +8,22 @@ TreeNode::TreeNode(const std::string &text)
   : text{text}
 {   }
 
-TreeNode::TreeNode(const std::string &text, std::list<TreeNode> &children)
-  : text{text},
-    children{children}
-{   }
-
 TreeNode::TreeNode(const TreeNode &node)
   : text{node.text},
     children{node.children}
 {   }
 
-void TreeNode::appendChildren(std::list<TreeNode> &nextChildren)
-{
-    children.splice(children.end(), nextChildren);
-}
+// void TreeNode::appendChildren(std::list<TreeNode> &nextChildren)
+// {
+//     children.splice(children.end(), nextChildren);
+// }
 
-void TreeNode::appendChild(const TreeNode &child)
+void TreeNode::appendChild(TreeNode *child)
 {
-    children.push_back(child);
+  if(child != nullptr) {
+    std::shared_ptr<TreeNode> shared_child{child};
+    children.push_back(shared_child);
+  }
 }
 
 TreeNode::operator std::string() const
@@ -33,7 +32,8 @@ TreeNode::operator std::string() const
 
     for(auto child : children)
     {
-        // stream << child.to_string();
+      // Use this operator on all the children
+      stream << std::string(*child) << std::endl;
     }
 
     return stream.str();

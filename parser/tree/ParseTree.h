@@ -5,7 +5,8 @@
 
 // The root node of the abstract syntax tree
 class ParseTree : public TreeNode {
-    ParseTree(TreeNode &preamble, TreeNode &profilelist);
+  public:
+    ParseTree(TreeNode *preamble, TreeNode *profilelist);
 };
 
 #endif // PARSE_TREE_H

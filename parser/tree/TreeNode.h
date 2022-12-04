@@ -2,6 +2,7 @@
 #define TREE_NODE_H
 
 #include <list>
+#include <memory>
 #include <string>
 
 class TreeNode {
@@ -9,21 +10,20 @@ class TreeNode {
     // Constructors
     TreeNode() = default;
     TreeNode(const std::string &text);
-    TreeNode(const std::string &text, std::list<TreeNode> &children);
 
     // Copy constructor
     TreeNode(const TreeNode &children);
 
     // Append all nodes into the internal list of children
-    void appendChildren(std::list<TreeNode> &nextChildren);
-    void appendChild(const TreeNode &child);
+    // void appendChildren(std::list<TreeNode> &nextChildren);
+    void appendChild(TreeNode *child);
 
     // Operator to recursively convert Tree to string
     virtual operator std::string() const;
 
   protected:
     const std::string text;
-    std::list<TreeNode> children;
+    std::list<std::shared_ptr<TreeNode>> children;
 };
 
 #endif // TREE_NODE_H
