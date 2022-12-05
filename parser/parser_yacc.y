@@ -138,6 +138,7 @@ void yyerror(const char *msg, ...);
 	#include "tree/AliasNode.h"
 	#include "tree/ParseTree.h"
 	#include "tree/ProfileNode.h"
+	#include "tree/PrefixNode.h"
 	#include "tree/TreeNode.h"
 }
 
@@ -155,7 +156,7 @@ void yyerror(const char *msg, ...);
 	char *set_var;
 	char *bool_var;
 	char *var_val;
-	int boolean;
+	bool boolean;
 };
 
 %type <node> list
@@ -164,10 +165,23 @@ void yyerror(const char *msg, ...);
 %type <node> profile
 %type <node> preamble
 %type <node> rules
+%type <node> alias
+%type <node> opt_prefix
+
+%type <node> abi_rule
+%type <node> rule
+%type <node> network_rule
+%type <node> mnt_rule
+%type <node> dbus_rule
+%type <node> signal_rule
+%type <node> ptrace_rule
+%type <node> unix_rule
+%type <node> userns_rule
+%type <node> change_profile
+%type <node> capability
 %type <node> hat
 %type <node> local_profile
 %type <node> cond_rule
-%type <node> alias
 
 %type <id> 	TOK_ID
 %type <id>	TOK_CONDID
@@ -176,25 +190,21 @@ void yyerror(const char *msg, ...);
 %type <id>	TOK_ARROW
 %type <id>	TOK_END_OF_RULE
 
+%type <boolean> opt_subset_flag
+%type <boolean> opt_audit_flag
+%type <boolean> opt_owner_flag
+%type <boolean> opt_profile_flag
+%type <boolean> opt_flags
+%type <boolean> opt_perm_mode
+%type <boolean> opt_exec_mode
+%type <boolean> opt_file
+
 %type <mode> 	TOK_MODE
 %type <fmode>   file_mode
-%type <network_entry> network_rule
-%type <user_entry> rule
-%type <user_entry> file_rule
-%type <user_entry> file_rule_tail
-%type <user_entry> link_rule
-%type <user_entry> frule
-%type <mnt_entry> mnt_rule
-%type <cond_entry> opt_conds
-%type <cond_entry> cond
-%type <cond_entry_list> cond_list
-%type <cond_entry_list> opt_cond_list
 %type <flags>	flags
 %type <flags>	flagvals
 %type <flags>	flagval
 %type <cap>	caps
-%type <cap>	capability
-%type <user_entry> change_profile
 %type <set_var> TOK_SET_VAR
 %type <bool_var> TOK_BOOL_VAR
 %type <var_val>	TOK_VALUE
@@ -202,38 +212,24 @@ void yyerror(const char *msg, ...);
 %type <boolean> expr
 %type <id>	id_or_var
 %type <id>	opt_id_or_var
-%type <boolean> opt_subset_flag
-%type <boolean> opt_audit_flag
-%type <boolean> opt_owner_flag
-%type <boolean> opt_profile_flag
-%type <boolean> opt_flags
-%type <boolean> opt_perm_mode
 %type <id>	opt_id
-%type <prefix>  opt_prefix
 %type <fmode>	dbus_perm
 %type <fmode>	dbus_perms
 %type <fmode>	opt_dbus_perm
-%type <dbus_entry>	dbus_rule
 %type <fmode>	signal_perm
 %type <fmode>	signal_perms
 %type <fmode>	opt_signal_perm
-%type <signal_entry>	signal_rule
 %type <fmode>	ptrace_perm
 %type <fmode>	ptrace_perms
 %type <fmode>	opt_ptrace_perm
-%type <ptrace_entry>	ptrace_rule
 %type <fmode>	net_perm
 %type <fmode>	net_perms
 %type <fmode>	opt_net_perm
-%type <unix_entry>	unix_rule
 %type <id>	opt_target
 %type <id>	opt_named_transition
-%type <boolean> opt_exec_mode
-%type <boolean> opt_file
 %type <fmode>  	userns_perm
 %type <fmode>  	userns_perms
 %type <fmode>	opt_userns_perm
-%type <userns_entry>	userns_rule
 %%
 
 
@@ -259,9 +255,7 @@ opt_id_or_var:
 // Should eventually add optional stuff into 
 profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE {
 		std::string profile_name($1);
-
-		auto fake_rules = new TreeNode("rules");
-		$$ = new ProfileNode(profile_name, fake_rules);
+		$$ = new ProfileNode(profile_name, $6);
 	}
 
 profile: opt_profile_flag profile_base { $$ = $2; }
@@ -297,40 +291,41 @@ flagvals: flagvals flagval
 
 flagval:	TOK_VALUE
 
-opt_subset_flag:
-			   | TOK_SUBSET
-			   | TOK_LE
+opt_subset_flag:			{$$ = false;}
+			   | TOK_SUBSET	{$$ = true;}
+			   | TOK_LE		{$$ = true;}
 
-opt_audit_flag:
-			  | TOK_AUDIT
+opt_audit_flag:				{$$ = false;}
+			  | TOK_AUDIT	{$$ = true;}
 
-opt_owner_flag:
-			  | TOK_OWNER
-			  | TOK_OTHER
+// Should change: ideally 'owner' != 'other'
+opt_owner_flag:				{$$ = false;}
+			  | TOK_OWNER	{$$ = true;}
+			  | TOK_OTHER	{$$ = true;}
 
-opt_perm_mode:
-			 | TOK_ALLOW
-			 | TOK_DENY
+opt_perm_mode:				{$$ = false;}
+			 | TOK_ALLOW	{$$ = false;}
+			 | TOK_DENY		{$$ = true;}
 
-opt_prefix: opt_audit_flag opt_perm_mode opt_owner_flag
+opt_prefix: opt_audit_flag opt_perm_mode opt_owner_flag {$$ = new PrefixNode($1, $2, $3);}
 
-rules:
-	 | rules abi_rule
-	 | rules opt_prefix rule
-	 | rules opt_prefix TOK_OPEN rules TOK_CLOSE
-	 | rules opt_prefix network_rule
-	 | rules opt_prefix mnt_rule
-	 | rules opt_prefix dbus_rule
-	 | rules opt_prefix signal_rule
-	 | rules opt_prefix ptrace_rule
-	 | rules opt_prefix unix_rule
-	 | rules opt_prefix userns_rule
-	 | rules opt_prefix change_profile
-	 | rules opt_prefix capability
-	 | rules hat
-	 | rules local_profile
-	 | rules cond_rule
-	 | rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE opt_id TOK_END_OF_RULE
+rules:												{$$ = new TreeNode();}
+	 | rules abi_rule								{$$ = $1; $1->appendChild($2);}
+	 | rules opt_prefix rule						{$$ = $1; /* $1->appendChildren({$2, $3}); */}
+	 | rules opt_prefix TOK_OPEN rules TOK_CLOSE	{$$ = $1; $1->appendChildren({$2, $4});}
+	 | rules opt_prefix network_rule				{$$ = $1; /* $1->appendChildren({$2, $3}); */}
+	 | rules opt_prefix mnt_rule					{$$ = $1; /* $1->appendChildren({$2, $3}); */}
+	 | rules opt_prefix dbus_rule					{$$ = $1; /* $1->appendChildren({$2, $3}); */}
+	 | rules opt_prefix signal_rule					{$$ = $1; /* $1->appendChildren({$2, $3}); */}
+	 | rules opt_prefix ptrace_rule					{$$ = $1; /* $1->appendChildren({$2, $3}); */}
+	 | rules opt_prefix unix_rule					{$$ = $1; /* $1->appendChildren({$2, $3}); */}
+	 | rules opt_prefix userns_rule					{$$ = $1; /* $1->appendChildren({$2, $3}); */}
+	 | rules opt_prefix change_profile				{$$ = $1; /* $1->appendChildren({$2, $3}); */}
+	 | rules opt_prefix capability					{$$ = $1; /* $1->appendChildren({$2, $3}); */}
+	 | rules hat									{$$ = $1; /* $1->appendChild($2); */}
+	 | rules local_profile							{$$ = $1; /* $1->appendChild($2); */}
+	 | rules cond_rule								{$$ = $1; /* $1->appendChild($2); */}
+	 | rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE opt_id TOK_END_OF_RULE	{$$ = $1;}
 
 cond_rule: TOK_IF expr TOK_OPEN rules TOK_CLOSE
 		 | TOK_IF expr TOK_OPEN rules TOK_CLOSE TOK_ELSE TOK_OPEN rules TOK_CLOSE
@@ -354,8 +349,8 @@ opt_named_transition:
 rule: file_rule
 	| link_rule
 
-abi_rule: TOK_ABI TOK_ID TOK_END_OF_RULE
-		| TOK_ABI TOK_VALUE TOK_END_OF_RULE
+abi_rule: TOK_ABI TOK_ID 	TOK_END_OF_RULE	{$$ = new TreeNode($2);}
+		| TOK_ABI TOK_VALUE TOK_END_OF_RULE	{$$ = new TreeNode($2);}
 
 opt_exec_mode:
 			 | TOK_UNSAFE

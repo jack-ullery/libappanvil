@@ -1,6 +1,7 @@
 #ifndef TREE_NODE_H
 #define TREE_NODE_H
 
+#include <cstdarg>
 #include <list>
 #include <memory>
 #include <string>
@@ -10,12 +11,13 @@ class TreeNode {
     // Constructors
     TreeNode() = default;
     TreeNode(const std::string &text);
+    TreeNode(std::initializer_list<TreeNode*> children);
 
     // Copy constructor
     TreeNode(const TreeNode &children);
 
-    // Append all nodes into the internal list of children
-    // void appendChildren(std::list<TreeNode> &nextChildren);
+    // Append nodes into the internal list of children
+    void appendChildren(std::initializer_list<TreeNode*> children);
     void appendChild(TreeNode *child);
 
     // Operator to recursively convert Tree to string

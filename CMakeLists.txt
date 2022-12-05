@@ -22,6 +22,7 @@ set(SOURCES
   ${PROJECT_SOURCE_DIR}/tree/TreeNode.cc
   ${PROJECT_SOURCE_DIR}/tree/ParseTree.cc
   ${PROJECT_SOURCE_DIR}/tree/ProfileNode.cc
+  ${PROJECT_SOURCE_DIR}/tree/PrefixNode.cc
   ${PROJECT_SOURCE_DIR}/tree/AliasNode.cc
 )
 
