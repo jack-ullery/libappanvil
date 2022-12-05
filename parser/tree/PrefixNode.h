@@ -1,5 +1,5 @@
-#ifndef FILE_NODE_H
-#define FILE_NODE_H
+#ifndef PREFIX_NODE_H
+#define PREFIX_NODE_H
 
 #include "TreeNode.h"
 #include <string>
@@ -15,4 +15,4 @@ class PrefixNode : public TreeNode {
     bool owner;
 };
 
-#endif // FILE_NODE_H
+#endif // PREFIX_NODE_H

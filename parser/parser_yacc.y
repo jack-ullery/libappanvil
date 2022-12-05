@@ -136,6 +136,8 @@ void yyerror(const char *msg, ...);
 	#include <sstream>
 
 	#include "tree/AliasNode.h"
+	#include "tree/FileNode.h"
+	#include "tree/LinkNode.h"
 	#include "tree/ParseTree.h"
 	#include "tree/ProfileNode.h"
 	#include "tree/PrefixNode.h"
@@ -182,6 +184,10 @@ void yyerror(const char *msg, ...);
 %type <node> hat
 %type <node> local_profile
 %type <node> cond_rule
+%type <node> link_rule
+%type <node> file_rule
+%type <node> frule
+%type <node> file_rule_tail
 
 %type <id> 	TOK_ID
 %type <id>	TOK_CONDID
@@ -200,7 +206,7 @@ void yyerror(const char *msg, ...);
 %type <boolean> opt_file
 
 %type <mode> 	TOK_MODE
-%type <fmode>   file_mode
+%type <id>   file_mode
 %type <flags>	flags
 %type <flags>	flagvals
 %type <flags>	flagval
@@ -267,7 +273,7 @@ hat: hat_start profile_base
 preamble:					 { $$ = new TreeNode(); }
 		| preamble alias	 { $$ = $1; $$->appendChild($2); }
 		| preamble varassign { $$ = $1; /*$$->appendChild($2);*/ }
-		| preamble abi_rule	 { $$ = $1; /*$$->appendChild($2);*/ }
+		| preamble abi_rule	 { $$ = $1; $$->appendChild($2); }
 
 alias: TOK_ALIAS TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE {
 		$$ = new AliasNode($2, $4);
@@ -311,7 +317,7 @@ opt_prefix: opt_audit_flag opt_perm_mode opt_owner_flag {$$ = new PrefixNode($1,
 
 rules:												{$$ = new TreeNode();}
 	 | rules abi_rule								{$$ = $1; $1->appendChild($2);}
-	 | rules opt_prefix rule						{$$ = $1; /* $1->appendChildren({$2, $3}); */}
+	 | rules opt_prefix rule						{$$ = $1; $1->appendChildren({$2, $3});}
 	 | rules opt_prefix TOK_OPEN rules TOK_CLOSE	{$$ = $1; $1->appendChildren({$2, $4});}
 	 | rules opt_prefix network_rule				{$$ = $1; /* $1->appendChildren({$2, $3}); */}
 	 | rules opt_prefix mnt_rule					{$$ = $1; /* $1->appendChildren({$2, $3}); */}
@@ -336,15 +342,14 @@ expr:	TOK_NOT expr
 	|	TOK_DEFINED TOK_SET_VAR
 	|	TOK_DEFINED TOK_BOOL_VAR
 
-id_or_var: TOK_ID
-		 | TOK_SET_VAR
+id_or_var: TOK_ID		{$$ = $1;}
+		 | TOK_SET_VAR	{$$ = $1;}
 
 opt_target: /* nothing */
 		  | TOK_ARROW id_or_var
 
-opt_named_transition:
-					| TOK_ARROW id_or_var
-
+opt_named_transition:						{$$ = "";}
+					| TOK_ARROW id_or_var	{$$ = $2;}
 
 rule: file_rule
 	| link_rule
@@ -359,16 +364,17 @@ opt_exec_mode:
 opt_file:
 		| TOK_FILE
 
-frule: id_or_var file_mode opt_named_transition TOK_END_OF_RULE
-	 | file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE
+// Should utilize the deleted get_mode() from parser.h instead of yylval mode
+frule: id_or_var file_mode opt_named_transition TOK_END_OF_RULE					{$$ = new FileNode($1, yylval.mode, $3);}
+	 | file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE	{$$ = new FileNode($3, yylval.mode, $4, $2);}
 
-file_rule: TOK_FILE TOK_END_OF_RULE
-		 | opt_file file_rule_tail
+file_rule: TOK_FILE TOK_END_OF_RULE	{$$ = new FileNode();}
+		 | opt_file file_rule_tail	{$$ = $2;}
 
-file_rule_tail: opt_exec_mode frule
-			  | opt_exec_mode id_or_var file_mode id_or_var
+file_rule_tail: opt_exec_mode frule							{$$ = $2;}
+			  | opt_exec_mode id_or_var file_mode id_or_var	{$$ = new FileNode($2, yylval.mode, $4);}
 
-link_rule: TOK_LINK opt_subset_flag id_or_var TOK_ARROW id_or_var TOK_END_OF_RULE
+link_rule: TOK_LINK opt_subset_flag id_or_var TOK_ARROW id_or_var TOK_END_OF_RULE	{$$ = new LinkNode($2, $3, $5);}
 
 network_rule: TOK_NETWORK TOK_END_OF_RULE
 			| TOK_NETWORK TOK_ID TOK_END_OF_RULE
@@ -490,7 +496,7 @@ userns_rule: TOK_USERNS opt_userns_perm opt_conds TOK_END_OF_RULE
 hat_start: TOK_CARET
 		 | TOK_HAT
 
-file_mode: TOK_MODE
+file_mode: TOK_MODE	{$$ = yylval.mode;}
 
 change_profile: TOK_CHANGE_PROFILE opt_exec_mode opt_id opt_named_transition TOK_END_OF_RULE
 

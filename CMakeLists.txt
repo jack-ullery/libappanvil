@@ -24,6 +24,8 @@ set(SOURCES
   ${PROJECT_SOURCE_DIR}/tree/ProfileNode.cc
   ${PROJECT_SOURCE_DIR}/tree/PrefixNode.cc
   ${PROJECT_SOURCE_DIR}/tree/AliasNode.cc
+  ${PROJECT_SOURCE_DIR}/tree/FileNode.cc
+  ${PROJECT_SOURCE_DIR}/tree/LinkNode.cc
 )
 
 set(MAIN_SOURCE
