@@ -1,28 +1,32 @@
 #include "FileNode.h"
-#include "tree/TreeNode.h"
 
 #include <sstream>
 
-FileNode::FileNode() 
-  : TreeNode("file"),
+FileNode::FileNode(uint64_t startPos, uint64_t stopPos) 
+  : RuleNode("file", startPos, stopPos),
     isSubset{false}
 {   }
 
-FileNode::FileNode(const std::string &from, const std::string &fileMode, const std::string &to, bool isSubset)
-  : TreeNode("file"),
+FileNode::FileNode(uint64_t startPos, 
+                   uint64_t stopPos, 
+                   const std::string &fromFile, 
+                   const std::string &fileMode, 
+                   const std::string &toFile, 
+                   bool isSubset)
+  : RuleNode("file", startPos, stopPos),
     isSubset{isSubset},
-    from{from},
-    to{to},
+    fromFile{fromFile},
+    toFile{toFile},
     fileMode{fileMode}
 {   }
 
 FileNode::operator std::string() const
 {
   std::stringstream stream;
-  stream << "file " << (isSubset? "subset " : "") << from << " " << fileMode; 
+  stream << "file " << (isSubset? "subset " : "") << fromFile << " " << fileMode; 
   
-  if(to != "") {
-    stream << " -> " << to;
+  if(toFile != "") {
+    stream << " -> " << toFile;
   }
 
   stream << ",\n";

@@ -22,9 +22,9 @@
 #ifndef __AA_PARSER_H
 #define __AA_PARSER_H
 
-
 #include <endian.h>
 #include <string.h>
+#include <stdint.h>
 #include <sys/resource.h>
 
 #include <libintl.h>
@@ -331,7 +331,8 @@ extern int conf_verbose;
 extern int conf_quiet;
 extern int names_only;
 extern int option;
-extern int current_lineno;
+extern uint64_t current_lineno;
+extern uint64_t current_pos;
 // extern dfaflags_t dfaflags;
 extern const char *progname;
 extern char *profilename;
@@ -370,5 +371,11 @@ extern char *processid(const char *string, int len);
 extern char *processquoted(const char *string, int len);
 extern char *processunquoted(const char *string, int len);
 extern int get_keyword_token(const char *keyword);
+
+typedef struct YYLTYPE
+{
+  uint64_t first_pos;
+  uint64_t last_pos;
+} YYLTYPE;
 
 #endif /** __AA_PARSER_H */

@@ -41,7 +41,14 @@
 #include "parser.h"
 #include "parser_yacc.h"
 
-int current_lineno = 0;
+uint64_t current_lineno = 0;
+//uint64_t current_pos = 0;
+//
+//#define YY_USER_ACTION current_pos += yyleng;
+
+#define YY_USER_ACTION               	\
+  yylloc.first_pos = yylloc.last_pos;	\
+  yylloc.last_pos += yyleng;
 
 #define DUMP_PREPROCESS do { /*ECHO;*/ } while (0)
 
@@ -128,7 +135,7 @@ static int rsntrim(const char *s, int l)
 
 CARET		"^"
 OPEN_BRACE 	\{
-CLOSE_BRACE 	\}
+CLOSE_BRACE \}
 SLASH		\/
 COLON		:
 AMPERSAND	&
@@ -552,7 +559,9 @@ include/{WS}	{
 
 {OPEN_BRACE}	{ RETURN_TOKEN(TOK_OPEN); }
 
-{CLOSE_BRACE}	{ RETURN_TOKEN(TOK_CLOSE); }
+{CLOSE_BRACE}	{
+	RETURN_TOKEN(TOK_CLOSE);
+}
 
 ({LABEL}|{QUOTED_LABEL}) {
 	yylval.id = processid(yytext, yyleng);

@@ -31,9 +31,27 @@ int parser_token = 0;
 
 void yyerror(const char *msg, ...);
 
+// For tracking location
+# define YYLLOC_DEFAULT(Cur, Rhs, N)                \
+do                                                  \
+  if (N)                                            \
+    {                                               \
+      (Cur).first_pos = YYRHSLOC(Rhs, 1).first_pos; \
+      (Cur).last_pos  = YYRHSLOC(Rhs, N).last_pos;  \
+    }                                               \
+  else                                              \
+    {                                               \
+      (Cur).first_pos = (Cur).last_pos =            \
+        YYRHSLOC(Rhs, 0).last_pos;                  \
+    }                                               \
+while (0)
+
 %}
 
 %require "3.2"
+
+// To keep track of character positions
+%define api.location.type {YYLTYPE};
 
 %token TOK_ID
 %token TOK_CONDID
@@ -260,6 +278,10 @@ opt_id_or_var:
 
 // Should eventually add optional stuff into 
 profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE {
+		// auto first = @1.first_pos;
+		// auto last  = @7.last_pos;
+		// std::cout << first << " - " << last << std::endl;
+
 		std::string profile_name($1);
 		$$ = new ProfileNode(profile_name, $6);
 	}
@@ -365,16 +387,16 @@ opt_file:
 		| TOK_FILE
 
 // Should utilize the deleted get_mode() from parser.h instead of yylval mode
-frule: id_or_var file_mode opt_named_transition TOK_END_OF_RULE					{$$ = new FileNode($1, yylval.mode, $3);}
-	 | file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE	{$$ = new FileNode($3, yylval.mode, $4, $2);}
+frule: id_or_var file_mode opt_named_transition TOK_END_OF_RULE					{$$ = new FileNode(@1.first_pos, @4.last_pos, $1, yylval.mode, $3);}
+	 | file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE	{$$ = new FileNode(@1.first_pos, @5.last_pos, $3, yylval.mode, $4, $2);}
 
-file_rule: TOK_FILE TOK_END_OF_RULE	{$$ = new FileNode();}
+file_rule: TOK_FILE TOK_END_OF_RULE	{$$ = new FileNode(@1.first_pos, @2.last_pos);}
 		 | opt_file file_rule_tail	{$$ = $2;}
 
 file_rule_tail: opt_exec_mode frule							{$$ = $2;}
-			  | opt_exec_mode id_or_var file_mode id_or_var	{$$ = new FileNode($2, yylval.mode, $4);}
+			  | opt_exec_mode id_or_var file_mode id_or_var	{$$ = new FileNode(@1.first_pos, @4.last_pos, $2, yylval.mode, $4);}
 
-link_rule: TOK_LINK opt_subset_flag id_or_var TOK_ARROW id_or_var TOK_END_OF_RULE	{$$ = new LinkNode($2, $3, $5);}
+link_rule: TOK_LINK opt_subset_flag id_or_var TOK_ARROW id_or_var TOK_END_OF_RULE	{$$ = new LinkNode(@1.first_pos, @6.last_pos, $2, $3, $5);}
 
 network_rule: TOK_NETWORK TOK_END_OF_RULE
 			| TOK_NETWORK TOK_ID TOK_END_OF_RULE

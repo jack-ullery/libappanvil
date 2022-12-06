@@ -1,10 +1,11 @@
 #include "LinkNode.h"
+#include "tree/RuleNode.h"
 #include "tree/TreeNode.h"
 
 #include <sstream>
 
-LinkNode::LinkNode(bool isSubset, const std::string &from, const std::string &to)
-  : TreeNode("link"),
+LinkNode::LinkNode(uint64_t startPos, uint64_t stopPos, bool isSubset, const std::string &from, const std::string &to)
+  : RuleNode("link", startPos, stopPos),
     isSubset{isSubset},
     from{from},
     to{to}
@@ -13,6 +14,7 @@ LinkNode::LinkNode(bool isSubset, const std::string &from, const std::string &to
 LinkNode::operator std::string() const
 {
   std::stringstream stream;
-  stream << "link " << (isSubset? "subset " : "") << from << " -> " << to << ",\n";
+  stream << "(" << getStartPosition() << ", " << getStopPosition() << "): ";
+  stream << "link " << (isSubset? "subset " : "") << from << " -> " << to << "," << std::endl;;
   return stream.str();
 };

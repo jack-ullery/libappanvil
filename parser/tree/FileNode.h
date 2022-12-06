@@ -1,20 +1,25 @@
 #ifndef FILE_NODE_H
 #define FILE_NODE_H
 
-#include "TreeNode.h"
+#include "RuleNode.h"
 #include <string>
 
 // The root node of the abstract syntax tree
-class FileNode : public TreeNode {
+class FileNode : public RuleNode {
   public:
-    FileNode();
-    FileNode(const std::string &from, const std::string &fileMode, const std::string &to = "", bool isSubset = false);
+    FileNode(uint64_t startPos, uint64_t stopPos);
+    FileNode(uint64_t startPos, 
+             uint64_t stopPos, 
+             const std::string &fromFile, 
+             const std::string &fileMode, 
+             const std::string &toFile = "", 
+             bool isSubset = false);
 
   private:
     virtual operator std::string() const;
     bool isSubset;
-    std::string from;
-    std::string to;
+    std::string fromFile;
+    std::string toFile;
     std::string fileMode;
 };
 
