@@ -155,6 +155,7 @@ while (0)
 	#include <memory>
 	#include <sstream>
 
+	#include "parser.h"
 	#include "tree/AbstractionNode.h"
 	#include "tree/AliasNode.h"
 	#include "tree/FileNode.h"
