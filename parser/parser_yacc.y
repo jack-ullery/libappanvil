@@ -122,6 +122,8 @@ while (0)
 %token TOK_READBY
 %token TOK_ABI
 %token TOK_USERNS
+%token TOK_INCLUDE
+%token TOK_INCLUDE_IF_EXISTS
 
  /* rlimits */
 %token TOK_RLIMIT
@@ -153,6 +155,7 @@ while (0)
 	#include <memory>
 	#include <sstream>
 
+	#include "tree/AbstractionNode.h"
 	#include "tree/AliasNode.h"
 	#include "tree/FileNode.h"
 	#include "tree/LinkNode.h"
@@ -188,6 +191,7 @@ while (0)
 %type <node> alias
 %type <node> opt_prefix
 
+%type <node> abstraction
 %type <node> abi_rule
 %type <node> rule
 %type <node> network_rule
@@ -208,6 +212,8 @@ while (0)
 %type <node> file_rule_tail
 
 %type <id> 	TOK_ID
+%type <id> 	TOK_INCLUDE
+%type <id> 	TOK_INCLUDE_IF_EXISTS
 %type <id>	TOK_CONDID
 %type <id>	TOK_CONDLISTID
 %type <id>	TOK_ALIAS
@@ -292,10 +298,11 @@ local_profile: TOK_PROFILE profile_base
 
 hat: hat_start profile_base
 
-preamble:					 { $$ = new TreeNode(); }
-		| preamble alias	 { $$ = $1; $$->appendChild($2); }
-		| preamble varassign { $$ = $1; /*$$->appendChild($2);*/ }
-		| preamble abi_rule	 { $$ = $1; $$->appendChild($2); }
+preamble:					 	{ $$ = new TreeNode(); }
+		| preamble alias	 	{ $$ = $1; $$->appendChild($2); }
+		| preamble varassign 	{ $$ = $1; /*$$->appendChild($2);*/ }
+		| preamble abi_rule	 	{ $$ = $1; $$->appendChild($2); }
+		| preamble abstraction	{ $$ = $1; $$->appendChild($2); }
 
 alias: TOK_ALIAS TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE {
 		$$ = new AliasNode($2, $4);
@@ -353,6 +360,7 @@ rules:												{$$ = new TreeNode();}
 	 | rules hat									{$$ = $1; /* $1->appendChild($2); */}
 	 | rules local_profile							{$$ = $1; /* $1->appendChild($2); */}
 	 | rules cond_rule								{$$ = $1; /* $1->appendChild($2); */}
+	 | rules abstraction							{$$ = $1; $1->appendChild($2);}
 	 | rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE opt_id TOK_END_OF_RULE	{$$ = $1;}
 
 cond_rule: TOK_IF expr TOK_OPEN rules TOK_CLOSE
@@ -378,6 +386,11 @@ rule: file_rule
 
 abi_rule: TOK_ABI TOK_ID 	TOK_END_OF_RULE	{$$ = new TreeNode($2);}
 		| TOK_ABI TOK_VALUE TOK_END_OF_RULE	{$$ = new TreeNode($2);}
+
+abstraction: TOK_INCLUDE		   TOK_ID 	 {$$ = new AbstractionNode(std::string(yylval.id), false);}
+		   | TOK_INCLUDE		   TOK_VALUE {$$ = new AbstractionNode(std::string(yylval.id), false);}
+		   | TOK_INCLUDE_IF_EXISTS TOK_ID 	 {$$ = new AbstractionNode(std::string(yylval.id), true);}
+		   | TOK_INCLUDE_IF_EXISTS TOK_VALUE {$$ = new AbstractionNode(std::string(yylval.id), true);}
 
 opt_exec_mode:
 			 | TOK_UNSAFE

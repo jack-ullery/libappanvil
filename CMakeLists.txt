@@ -27,6 +27,7 @@ set(SOURCES
   ${PROJECT_SOURCE_DIR}/tree/RuleNode.cc
   ${PROJECT_SOURCE_DIR}/tree/FileNode.cc
   ${PROJECT_SOURCE_DIR}/tree/LinkNode.cc
+  ${PROJECT_SOURCE_DIR}/tree/AbstractionNode.cc
 )
 
 set(MAIN_SOURCE

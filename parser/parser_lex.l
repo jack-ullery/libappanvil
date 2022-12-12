@@ -241,21 +241,22 @@ GT		>
 		int len = yyleng - lt*2;
 		char *s = yytext + lt;
 		char * filename = lsntrim(s, yyleng);
-		// bool exists = YYSTATE == INCLUDE_EXISTS;
+		yylval.id = filename;
 
 		filename = processid(filename, rsntrim(filename, len - (filename - s)));
 		if (!filename)
 			yyerror(_("Failed to process filename\n"));
 		if (YYSTATE == ABI_MODE) {
-			yylval.id = filename;
 			if (lt)
 				RETURN_TOKEN(TOK_ID);
 			else
 				RETURN_TOKEN(TOK_VALUE);
 		}
-		// include_filename(filename, lt, exists);
-		free(filename);
-		POP_NODUMP();
+
+		if (lt)
+			POP_AND_RETURN(TOK_ID);
+		else
+			POP_AND_RETURN(TOK_VALUE);
 	}
 }
 
@@ -505,33 +506,21 @@ GT		>
 }
 
 #include{WS}+if{WS}+exists/{WS}.*\r?\n	{
-	/* Don't use PUSH() macro here as we don't want #include echoed out.
-	 * It needs to be handled specially
-	 */
 	// pwarn(WARN_INCLUDE, _("deprecated use of '#include'\n"));
-	yy_push_state(INCLUDE_EXISTS);
+	PUSH_AND_RETURN(INCLUDE_EXISTS, TOK_INCLUDE_IF_EXISTS);
 }
 
 include{WS}+if{WS}+exists/{WS}	{
-	/* Don't use PUSH() macro here as we don't want #include echoed out.
-	 * It needs to be handled specially
-	 */
-	yy_push_state(INCLUDE_EXISTS);
+	PUSH_AND_RETURN(INCLUDE_EXISTS, TOK_INCLUDE_IF_EXISTS);
 }
 
 #include/.*\r?\n	{
-	/* Don't use PUSH() macro here as we don't want #include echoed out.
-	 * It needs to be handled specially
-	 */
 	// pwarnf(WARN_INCLUDE, _("deprecated use of '#include'\n"));
-	yy_push_state(INCLUDE);
+	PUSH_AND_RETURN(INCLUDE, TOK_INCLUDE);
 }
 
 include/{WS}	{
-	/* Don't use PUSH() macro here as we don't want #include echoed out.
-	 * It needs to be handled specially
-	 */
-	yy_push_state(INCLUDE);
+	PUSH_AND_RETURN(INCLUDE, TOK_INCLUDE);
 }
 
 #.*\r?\n	{ /* normal comment */
