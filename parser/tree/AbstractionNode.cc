@@ -2,8 +2,8 @@
 
 #include <sstream>
 
-AbstractionNode::AbstractionNode(const std::string &path, bool is_if_exists)
-  : TreeNode("abstraction"),
+AbstractionNode::AbstractionNode(uint64_t startPos, uint64_t stopPos, const std::string &path, bool is_if_exists)
+  : RuleNode("abstraction", startPos, stopPos),
     path{path},
     is_if_exists{is_if_exists}
 {   }
@@ -11,6 +11,6 @@ AbstractionNode::AbstractionNode(const std::string &path, bool is_if_exists)
 AbstractionNode::operator std::string() const
 {
   std::stringstream stream;
-  stream << "include " << path << ",\n";
+  stream << "include (" << getStartPosition() << ", " << getStopPosition() << ") " << path << ",\n";
   return stream.str();
 };

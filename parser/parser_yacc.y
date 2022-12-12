@@ -387,10 +387,10 @@ rule: file_rule
 abi_rule: TOK_ABI TOK_ID 	TOK_END_OF_RULE	{$$ = new TreeNode($2);}
 		| TOK_ABI TOK_VALUE TOK_END_OF_RULE	{$$ = new TreeNode($2);}
 
-abstraction: TOK_INCLUDE		   TOK_ID 	 {$$ = new AbstractionNode(std::string(yylval.id), false);}
-		   | TOK_INCLUDE		   TOK_VALUE {$$ = new AbstractionNode(std::string(yylval.id), false);}
-		   | TOK_INCLUDE_IF_EXISTS TOK_ID 	 {$$ = new AbstractionNode(std::string(yylval.id), true);}
-		   | TOK_INCLUDE_IF_EXISTS TOK_VALUE {$$ = new AbstractionNode(std::string(yylval.id), true);}
+abstraction: TOK_INCLUDE		   TOK_ID 	 {$$ = new AbstractionNode(@1.first_pos, @2.last_pos, std::string(yylval.id), false);}
+		   | TOK_INCLUDE		   TOK_VALUE {$$ = new AbstractionNode(@1.first_pos, @2.last_pos, std::string(yylval.id), false);}
+		   | TOK_INCLUDE_IF_EXISTS TOK_ID 	 {$$ = new AbstractionNode(@1.first_pos, @2.last_pos, std::string(yylval.id), true);}
+		   | TOK_INCLUDE_IF_EXISTS TOK_VALUE {$$ = new AbstractionNode(@1.first_pos, @2.last_pos, std::string(yylval.id), true);}
 
 opt_exec_mode:
 			 | TOK_UNSAFE
