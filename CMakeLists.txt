@@ -30,10 +30,6 @@ set(SOURCES
   ${PROJECT_SOURCE_DIR}/tree/AbstractionNode.cc
 )
 
-set(MAIN_SOURCE
-  ${PROJECT_SOURCE_DIR}/parser_main.cc
-)
-
 set(PARSE_INPUT ${PROJECT_SOURCE_DIR}/parser_yacc.y)
 set(LEXER_INPUT ${PROJECT_SOURCE_DIR}/parser_lex.l)
 
@@ -69,13 +65,12 @@ add_library(${LIBRARY_NAME} ${SOURCES} ${FLEX_LEXER_OUTPUTS} ${BISON_PARSER_OUTP
 target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${AUTOGEN_SOURCE_DIR})
 
-#### Create the final executable ####
-add_executable(${PROJECT_NAME} ${MAIN_SOURCE})
-target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARY_NAME})
+#### Create the test executable ####
+add_subdirectory(test)
 
 #### Add tests ####
 enable_testing()
-set(PROFILE_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/test/simple_tests)
+set(PROFILE_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/simple_tests)
 
 file(GLOB_RECURSE 
      TEST_PROFILES 
@@ -94,7 +89,7 @@ foreach(PROFILE ${TEST_PROFILES})
 
   # Create the test, if it is not marked as disabled
   if(${TEST_DISABLED} EQUAL -1)
-    add_test(${PROFILE_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME} ${PROFILE})
+    add_test(${PROFILE_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_PROJECT_NAME} ${PROFILE})
 
     # If the test should fail, set "WILL_FAIL" property
     if(NOT ${TEST_SHOULD_PASS} EQUAL -1)

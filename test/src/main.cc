@@ -1,9 +1,8 @@
 #include <stdio.h>
+#include <parser.h>
+#include <parser_lex.h>
+#include <parser_yacc.h>
 #include <stdlib.h>
-
-#include "parser.h"
-#include "parser_lex.h"
-#include "parser_yacc.h"
 
 int main(int argc, char** argv) {
 	if(argc == 2) {
