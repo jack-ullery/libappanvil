@@ -156,14 +156,14 @@ while (0)
 	#include <sstream>
 
 	#include "parser.h"
-	#include "tree/AbstractionNode.h"
-	#include "tree/AliasNode.h"
-	#include "tree/FileNode.h"
-	#include "tree/LinkNode.h"
-	#include "tree/ParseTree.h"
-	#include "tree/ProfileNode.h"
-	#include "tree/PrefixNode.h"
-	#include "tree/TreeNode.h"
+	#include "tree/AbstractionNode.hh"
+	#include "tree/AliasNode.hh"
+	#include "tree/FileNode.hh"
+	#include "tree/LinkNode.hh"
+	#include "tree/ParseTree.hh"
+	#include "tree/ProfileNode.hh"
+	#include "tree/PrefixNode.hh"
+	#include "tree/TreeNode.hh"
 }
 
 %union {

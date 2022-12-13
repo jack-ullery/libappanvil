@@ -1,7 +1,7 @@
-#ifndef ABSTRACTION_NODE_H
-#define ABSTRACTION_NODE_H
+#ifndef ABSTRACTION_NODE_HH
+#define ABSTRACTION_NODE_HH
 
-#include "RuleNode.h"
+#include "RuleNode.hh"
 #include <string>
 
 // The root node of the abstract syntax tree
@@ -16,4 +16,4 @@ class AbstractionNode : public RuleNode {
     bool is_if_exists;
 };
 
-#endif // ABSTRACTION_NODE_H
+#endif // ABSTRACTION_NODE_HH

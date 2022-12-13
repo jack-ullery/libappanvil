@@ -1,5 +1,5 @@
-#include "PrefixNode.h"
-#include "tree/TreeNode.h"
+#include "PrefixNode.hh"
+#include "tree/TreeNode.hh"
 
 PrefixNode::PrefixNode(bool audit, bool should_deny, bool owner)
   : TreeNode(),

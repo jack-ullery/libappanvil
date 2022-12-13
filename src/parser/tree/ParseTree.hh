@@ -1,7 +1,7 @@
-#ifndef PARSE_TREE_H
-#define PARSE_TREE_H
+#ifndef PARSE_TREE_HH
+#define PARSE_TREE_HH
 
-#include "TreeNode.h"
+#include "TreeNode.hh"
 
 // The root node of the abstract syntax tree
 class ParseTree : public TreeNode {
@@ -9,4 +9,4 @@ class ParseTree : public TreeNode {
     ParseTree(TreeNode *preamble, TreeNode *profilelist);
 };
 
-#endif // PARSE_TREE_H
+#endif // PARSE_TREE_HH

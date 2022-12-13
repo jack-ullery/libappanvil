@@ -1,6 +1,6 @@
-#include "LinkNode.h"
-#include "tree/RuleNode.h"
-#include "tree/TreeNode.h"
+#include "LinkNode.hh"
+#include "tree/RuleNode.hh"
+#include "tree/TreeNode.hh"
 
 #include <sstream>
 

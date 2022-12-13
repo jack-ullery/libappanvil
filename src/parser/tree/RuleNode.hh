@@ -1,7 +1,7 @@
-#ifndef RULE_NODE_H
-#define RULE_NODE_H
+#ifndef RULE_NODE_HH
+#define RULE_NODE_HH
 
-#include "TreeNode.h"
+#include "TreeNode.hh"
 #include <cstdint>
 #include <string>
 
@@ -19,4 +19,4 @@ class RuleNode : public TreeNode {
     uint64_t stopPos;
 };
 
-#endif // RULE_NODE_H
+#endif // RULE_NODE_HH

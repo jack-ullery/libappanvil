@@ -1,4 +1,4 @@
-#include "TreeNode.h"
+#include "TreeNode.hh"
 
 #include <initializer_list>
 #include <memory>

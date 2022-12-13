@@ -1,13 +1,12 @@
-#include <stdio.h>
-#include <parser_lex.h>
-#include <parser_yacc.h>
 #include <stdlib.h>
+
+#include "ProfileParser.hh"
 
 int main(int argc, char** argv) {
 	if(argc == 2) {
-		yyin = fopen(argv[1], "r");
+		FILE *file = fopen(argv[1], "r");
 
-		yyparse();
+		ProfileParser parser(file);
 
 		return 0;
 	}

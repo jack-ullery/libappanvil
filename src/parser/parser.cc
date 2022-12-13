@@ -36,7 +36,7 @@
 
 #include "lib.h"
 #include "parser.h"
-#include "parser_yacc.h"
+#include "parser_yacc.hh"
 
 /* #define DEBUG */
 #ifdef DEBUG

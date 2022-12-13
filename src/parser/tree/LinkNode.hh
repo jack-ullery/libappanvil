@@ -1,7 +1,7 @@
-#ifndef LINK_NODE_H
-#define LINK_NODE_H
+#ifndef LINK_NODE_HH
+#define LINK_NODE_HH
 
-#include "RuleNode.h"
+#include "RuleNode.hh"
 #include <string>
 
 // The root node of the abstract syntax tree
@@ -16,4 +16,4 @@ class LinkNode : public RuleNode {
     std::string to;
 };
 
-#endif // LINK_NODE_H
+#endif // LINK_NODE_HH

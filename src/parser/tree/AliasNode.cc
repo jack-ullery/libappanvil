@@ -1,5 +1,5 @@
-#include "AliasNode.h"
-#include "tree/TreeNode.h"
+#include "AliasNode.hh"
+#include "tree/TreeNode.hh"
 
 #include <sstream>
 

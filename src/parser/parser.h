@@ -359,11 +359,11 @@ extern int skip_bad_cache_rebuild;
 extern int mru_skip_cache;
 
 /* provided by parser_lex.l (cannot be used in tst builds) */
-//extern FILE *yyin;
-//extern void yyrestart(FILE *fp);
+// //extern FILE *yyin;
+// //extern void yyrestart(FILE *fp);
 extern int yyparse(void);
 extern void yyerror(const char *msg, ...);
-extern int yylex(void);
+extern int yylex();
 
 extern const char *basedir;
 

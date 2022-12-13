@@ -39,12 +39,9 @@
 #include <string>
 
 #include "parser.h"
-#include "parser_yacc.h"
+#include "parser_yacc.hh"
 
 uint64_t current_lineno = 0;
-//uint64_t current_pos = 0;
-//
-//#define YY_USER_ACTION current_pos += yyleng;
 
 #define YY_USER_ACTION               	\
   yylloc.first_pos = yylloc.last_pos;	\

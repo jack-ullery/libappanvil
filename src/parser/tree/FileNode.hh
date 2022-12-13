@@ -1,7 +1,7 @@
-#ifndef FILE_NODE_H
-#define FILE_NODE_H
+#ifndef FILE_NODE_HH
+#define FILE_NODE_HH
 
-#include "RuleNode.h"
+#include "RuleNode.hh"
 #include <string>
 
 // The root node of the abstract syntax tree
@@ -23,4 +23,4 @@ class FileNode : public RuleNode {
     std::string fileMode;
 };
 
-#endif // FILE_NODE_H
+#endif // FILE_NODE_HH

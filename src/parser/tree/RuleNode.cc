@@ -1,5 +1,5 @@
-#include "RuleNode.h"
-#include "tree/TreeNode.h"
+#include "RuleNode.hh"
+#include "tree/TreeNode.hh"
 
 RuleNode::RuleNode(uint64_t startPos, uint64_t stopPos)
   : TreeNode(),

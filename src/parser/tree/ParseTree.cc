@@ -1,5 +1,5 @@
-#include "ParseTree.h"
-#include "tree/TreeNode.h"
+#include "ParseTree.hh"
+#include "tree/TreeNode.hh"
 
 ParseTree::ParseTree(TreeNode *preamble, TreeNode *profilelist)
   : TreeNode()

@@ -1,5 +1,5 @@
-#ifndef TREE_NODE_H
-#define TREE_NODE_H
+#ifndef TREE_NODE_HH
+#define TREE_NODE_HH
 
 #include <cstdarg>
 #include <list>
@@ -28,4 +28,4 @@ class TreeNode {
     std::list<std::shared_ptr<TreeNode>> children;
 };
 
-#endif // TREE_NODE_H
+#endif // TREE_NODE_HH

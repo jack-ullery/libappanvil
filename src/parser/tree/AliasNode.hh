@@ -1,7 +1,7 @@
-#ifndef ALIAS_NODE_H
-#define ALIAS_NODE_H
+#ifndef ALIAS_NODE_HH
+#define ALIAS_NODE_HH
 
-#include "TreeNode.h"
+#include "TreeNode.hh"
 #include <string>
 
 // The root node of the abstract syntax tree
@@ -15,4 +15,4 @@ class AliasNode : public TreeNode {
     std::string to;
 };
 
-#endif // ALIAS_NODE_H
+#endif // ALIAS_NODE_HH

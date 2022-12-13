@@ -1,7 +1,7 @@
-#ifndef PREFIX_NODE_H
-#define PREFIX_NODE_H
+#ifndef PREFIX_NODE_HH
+#define PREFIX_NODE_HH
 
-#include "TreeNode.h"
+#include "TreeNode.hh"
 #include <string>
 
 // The root node of the abstract syntax tree
@@ -15,4 +15,4 @@ class PrefixNode : public TreeNode {
     bool owner;
 };
 
-#endif // PREFIX_NODE_H
+#endif // PREFIX_NODE_HH
