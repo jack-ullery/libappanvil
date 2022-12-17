@@ -14,26 +14,23 @@ TreeNode::TreeNode(const TreeNode &node)
     children{node.children}
 {   }
 
-TreeNode::TreeNode(std::initializer_list<TreeNode*> children)
+TreeNode::TreeNode(std::initializer_list<TreeNode> children)
   : TreeNode()
 {
   appendChildren(children);
 }
 
 
-void TreeNode::appendChildren(std::initializer_list<TreeNode*> children)
+void TreeNode::appendChildren(std::initializer_list<TreeNode> children)
 {
   for(auto child : children) {
     appendChild(child);
   }
 }
 
-void TreeNode::appendChild(TreeNode *child)
+void TreeNode::appendChild(TreeNode child)
 {
-  if(child != nullptr) {
-    std::shared_ptr<TreeNode> shared_child{child};
-    children.push_back(shared_child);
-  }
+  children.push_back(child);
 }
 
 TreeNode::operator std::string() const
@@ -46,7 +43,7 @@ TreeNode::operator std::string() const
   for(auto child : children)
   {
     // Use this operator on all the children
-    stream << std::string(*child);
+    stream << std::string(child);
   }
 
   return stream.str();

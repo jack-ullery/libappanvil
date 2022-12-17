@@ -8,6 +8,7 @@ class ProfileParser {
   public:
     // Not implemented yet
     ProfileParser(std::fstream stream);
+    ProfileParser(std::string filename);
 
     // Would like to move away from using C types
     // Need to make the parser a C++ parser

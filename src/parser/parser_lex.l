@@ -39,9 +39,10 @@
 #include <string>
 
 #include "parser.h"
-#include "parser_yacc.hh"
+#include "lexer.hh"
 
 uint64_t current_lineno = 0;
+YYLTYPE yylloc = {.first_pos = 0, .last_pos = 0};
 
 #define YY_USER_ACTION               	\
   yylloc.first_pos = yylloc.last_pos;	\
@@ -56,11 +57,11 @@ do { \
 
 #define EAT_TOKEN(X...) DUMP_AND_DEBUG(X)
 
-#define RETURN_TOKEN(X) \
-do { \
-	DUMP_AND_DEBUG("Matched: '%s'	Returning(%s)\n", yytext, #X); \
-	return (X); \
-} while (0)
+// #define RETURN_TOKEN(X) \
+// do { \
+// 	DUMP_AND_DEBUG("Matched: '%s'	Returning(%s)\n", yytext, #X); \
+// 	return make_symbol((X), yylloc); \
+// } while (0)
 
 #define POP() \
 do { \
@@ -78,26 +79,6 @@ do { \
 	DUMP_AND_DEBUG(" (push(%s)): Matched: %s\n", state_names[(X)].c_str(), yytext); \
 	yy_push_state(X); \
 } while (0)
-
-#define POP_AND_RETURN(X) \
-do { \
-	POP(); \
-	return (X); \
-} while (0)
-
-#define PUSH_AND_RETURN(X, Y) \
-do { \
-	PUSH(X); \
-	return (Y); \
-} while (0)
-
-#define BEGIN_AND_RETURN(X, Y) \
-do { \
-	DUMP_AND_DEBUG(" (begin(%s)): Matched: %s\n", state_names[(X)].c_str(), yytext); \
-	BEGIN(X); \
-	return (Y); \
-} while (0)
-
 
 #define YY_NO_INPUT
 
@@ -126,7 +107,6 @@ static int rsntrim(const char *s, int l)
 		l--;
 	return l;
 }
-
 
 %}
 
@@ -224,7 +204,7 @@ GT		>
 	if (parser_token) {
 		int t = parser_token;
 		parser_token = 0;
-		return t;
+		return symbol_type (t, std::move(yylloc));
 	}
 %}
 
@@ -238,22 +218,27 @@ GT		>
 		int len = yyleng - lt*2;
 		char *s = yytext + lt;
 		char * filename = lsntrim(s, yyleng);
-		yylval.id = filename;
+		// yylval.id = filename;
 
 		filename = processid(filename, rsntrim(filename, len - (filename - s)));
-		if (!filename)
+		if (!filename) {
 			yyerror(_("Failed to process filename\n"));
-		if (YYSTATE == ABI_MODE) {
-			if (lt)
-				RETURN_TOKEN(TOK_ID);
-			else
-				RETURN_TOKEN(TOK_VALUE);
 		}
 
-		if (lt)
-			POP_AND_RETURN(TOK_ID);
-		else
-			POP_AND_RETURN(TOK_VALUE);
+		if (YYSTATE == ABI_MODE) {
+			if (lt)
+				return yy::parser::make_TOK_ID(filename, yylloc);
+			else
+				return yy::parser::make_TOK_VALUE(filename, yylloc);
+		}
+
+		POP();
+		if (lt) {
+			return yy::parser::make_TOK_ID(filename, yylloc);
+		}
+		else {
+			return yy::parser::make_TOK_VALUE(filename, yylloc);
+		}
 	}
 }
 
@@ -271,16 +256,18 @@ GT		>
 		 * state.  By the time the parser see the = it may be too late
 		 * as bison may have requested the next token from the scanner
 		 */
-		yylval.id = processid(yytext, yyleng);
-		PUSH_AND_RETURN(EXTCONDLIST_MODE, TOK_CONDLISTID);
+		std::string pid = processid(yytext, yyleng);
+		PUSH(EXTCONDLIST_MODE);
+		return yy::parser::make_TOK_CONDLISTID(pid, yylloc);
 	}
 	{VARIABLE_NAME}/{WS}*=	{
 		/* we match to the = in the lexer so that we can switch scanner
 		 * state.  By the time the parser see the = it may be too late
 		 * as bison may have requested the next token from the scanner
 		 */
-		yylval.id = processid(yytext, yyleng);
-		PUSH_AND_RETURN(EXTCOND_MODE, TOK_CONDID);
+		std::string pid = processid(yytext, yyleng);
+		PUSH(EXTCOND_MODE);
+		return yy::parser::make_TOK_CONDID(pid, yylloc);
 	}
 	{VARIABLE_NAME}/{WS}+in{WS}*\(	{
 		/* we match to 'in' in the lexer so that we can switch scanner
@@ -288,56 +275,69 @@ GT		>
 		 * late as bison may have requested the next token from the
 		 * scanner
 		 */
-		yylval.id = processid(yytext, yyleng);
-		PUSH_AND_RETURN(EXTCOND_MODE, TOK_CONDID);
+		std::string pid = processid(yytext, yyleng);
+		PUSH(EXTCOND_MODE);
+		return yy::parser::make_TOK_CONDID(pid, yylloc);
 	}
 }
 
 <SUB_ID,SUB_ID_WS>{
 	({IDS}|{QUOTED_ID}) {
 		/* Go into separate state to match generic ID strings */
-		yylval.id =  processid(yytext, yyleng);
-		POP_AND_RETURN(TOK_ID);
+		std::string pid = processid(yytext, yyleng);
+		POP();
+		return yy::parser::make_TOK_ID(pid, yylloc);
 	}
 }
 
 <SUB_VALUE>{
 	({IDS}|{QUOTED_ID}) {
 		/* Go into separate state to match generic VALUE strings */
-		yylval.id =  processid(yytext, yyleng);
-		POP_AND_RETURN(TOK_VALUE);
+		std::string pid = processid(yytext, yyleng);
+		POP();
+		return yy::parser::make_TOK_VALUE(pid, yylloc);
 	}
 }
 
 <LIST_VAL_MODE>{
-	{CLOSE_PAREN} { POP_AND_RETURN(TOK_CLOSEPAREN); }
+	{CLOSE_PAREN} { 
+		POP();
+		return yy::parser::make_TOK_CLOSEPAREN(yylloc);
+	}
 
 	{COMMA}	{ EAT_TOKEN("listval: ,\n"); }
 
 	({LIST_VALUE_ID}|{QUOTED_ID}) {
-		yylval.id = processid(yytext, yyleng);
-		RETURN_TOKEN(TOK_VALUE);
+		std::string pid = processid(yytext, yyleng);
+		return yy::parser::make_TOK_VALUE(pid, yylloc);
 	}
 }
 
 <EXTCOND_MODE>{
-	{EQUALS}{WS}*/[^(\n]{-}{WS} { BEGIN_AND_RETURN(SUB_VALUE, TOK_EQUALS);}
+	{EQUALS}{WS}*/[^(\n]{-}{WS} {
+		BEGIN(SUB_VALUE); 
+		return yy::parser::make_TOK_EQUALS(yylloc);
+	}
 
-	{EQUALS} { RETURN_TOKEN(TOK_EQUALS); }
+	{EQUALS} { return yy::parser::make_TOK_EQUALS(yylloc); }
 
 	/* Don't push state here as this is a transition start condition and
 	 * we want to return to the start condition that invoked <EXTCOND_MODE>
 	 * when LIST_VAL_ID is done
 	 */
-	{OPEN_PAREN} { BEGIN_AND_RETURN(LIST_VAL_MODE, TOK_OPENPAREN); }
+	{OPEN_PAREN} {
+		BEGIN(LIST_VAL_MODE); 
+		yy::parser::make_TOK_OPENPAREN(yylloc);
+	}
 
-	in { RETURN_TOKEN(TOK_IN); }
+	in { return yy::parser::make_TOK_IN(yylloc); }
 }
 
 <LIST_COND_VAL>{
 	({LIST_VALUE_ID}|{QUOTED_LIST_VALUE_ID}) {
-		yylval.id = processid(yytext, yyleng);
-		POP_AND_RETURN(TOK_VALUE);
+		std::string pid = processid(yytext, yyleng);
+		POP();
+		return yy::parser::make_TOK_VALUE(pid, yylloc);
 	}
 }
 
@@ -345,32 +345,37 @@ GT		>
 	{CLOSE_PAREN}	{ POP(); }
 
 	({LIST_VALUE_ID}|{QUOTED_LIST_VALUE_ID}) {
-		yylval.id = processid(yytext, yyleng);
-		RETURN_TOKEN(TOK_VALUE);
+		std::string pid = processid(yytext, yyleng);
+		return yy::parser::make_TOK_VALUE(pid, yylloc);
 	}
 }
 
 <LIST_COND_MODE>{
-	{CLOSE_PAREN}	{ POP_AND_RETURN(TOK_CLOSEPAREN); }
+	{CLOSE_PAREN}	{ 
+		POP();
+		return yy::parser::make_TOK_CLOSEPAREN(yylloc);
+	}
 
 	{COMMA}		{ EAT_TOKEN("listcond: , \n"); }
 
 	{ID_CHARS_NOEQ}+	{
-		yylval.id = processid(yytext, yyleng);
-		RETURN_TOKEN(TOK_CONDID);
+		std::string pid = processid(yytext, yyleng);
+		return yy::parser::make_TOK_CONDID(pid, yylloc);
 	}
 
 	{EQUALS}{WS}*{OPEN_PAREN}	{
-		PUSH_AND_RETURN(LIST_COND_PAREN_VAL, TOK_EQUALS);
+		PUSH(LIST_COND_PAREN_VAL);
+		return yy::parser::make_TOK_EQUALS(yylloc);
 	}
 
 	{EQUALS}	{
-		PUSH_AND_RETURN(LIST_COND_VAL, TOK_EQUALS);
+		PUSH(LIST_COND_VAL);
+		return yy::parser::make_TOK_EQUALS(yylloc);
 	}
 }
 
 <EXTCONDLIST_MODE>{
-	{EQUALS}	{ RETURN_TOKEN(TOK_EQUALS); }
+	{EQUALS}	{ return yy::parser::make_TOK_EQUALS(yylloc); }
 
 	{OPEN_PAREN}	{
 		/* Don't push state here as this is a transition
@@ -378,18 +383,19 @@ GT		>
 		 * condition that invoked <EXTCONDLIST_MODE> when
 		 * LIST_VAL_ID is done
 		 */
-		BEGIN_AND_RETURN(LIST_COND_MODE, TOK_OPENPAREN);
+		BEGIN(LIST_COND_MODE);
+		return yy::parser::make_TOK_OPENPAREN(yylloc);
 	}
 }
 
 <ASSIGN_MODE>{
 	({IDS}|{QUOTED_ID}) {
-		yylval.var_val = processid(yytext, yyleng);
-		RETURN_TOKEN(TOK_VALUE);
+		std::string pid = processid(yytext, yyleng);
+		return yy::parser::make_TOK_VALUE(pid, yylloc);
 	}
 
 	{END_OF_RULE} {
-		yylval.id = strdup(yytext);
+		// yylval.id = strdup(yytext);
 		DUMP_PREPROCESS;
 		yyerror(_("Variable declarations do not accept trailing commas"));
 	}
@@ -406,118 +412,122 @@ GT		>
 
 <NETWORK_MODE>{
 	{IDS} {
-		yylval.id = strdup(yytext);
-		RETURN_TOKEN(TOK_ID);
+		return yy::parser::make_TOK_ID(yytext, yylloc);
 	}
 }
 
 <CHANGE_PROFILE_MODE>{
-	safe		{ RETURN_TOKEN(TOK_SAFE); }
-	unsafe		{ RETURN_TOKEN(TOK_UNSAFE); }
+	safe		{ return yy::parser::make_TOK_SAFE(yylloc); }
+	unsafe		{ return yy::parser::make_TOK_UNSAFE(yylloc); }
 
 	{ARROW} {
 		/**
-		 * Push state so that we can return TOK_ID even when the
+		 * Push state so that we can return token::TOK_ID even when the
 		 * change_profile target is 'safe' or 'unsafe'.
 		 */
-		PUSH_AND_RETURN(SUB_ID_WS, TOK_ARROW);
+		PUSH(SUB_ID_WS);
+		return yy::parser::make_TOK_ARROW(yylloc);
 	}
 
 	({IDS}|{QUOTED_ID}) {
-		yylval.id = processid(yytext, yyleng);
-		RETURN_TOKEN(TOK_ID);
+		std::string pid = processid(yytext, yyleng);
+		return yy::parser::make_TOK_ID(pid, yylloc);
 	}
 }
 
 <RLIMIT_MODE>{
 	-?{NUMBER} {
-	        yylval.var_val = strdup(yytext);
-		RETURN_TOKEN(TOK_VALUE);
+		return yy::parser::make_TOK_VALUE(yytext, yylloc);
 	}
 
 	{KEYWORD}	{
-	        yylval.id = strdup(yytext);
-		if (strcmp(yytext, "infinity") == 0)
-			RETURN_TOKEN(TOK_VALUE);
-		RETURN_TOKEN(TOK_ID);
+		if (strcmp(yytext, "infinity") == 0) {
+			return yy::parser::make_TOK_VALUE(yytext, yylloc);
+		}
+
+		return yy::parser::make_TOK_ID(yytext, yylloc);
 	}
 
-	{LT_EQUAL}	{ RETURN_TOKEN(TOK_LE); }
+	{LT_EQUAL}	{ return yy::parser::make_TOK_LE(yylloc); }
 }
 
 <UNIX_MODE>{
-	listen	{ RETURN_TOKEN(TOK_LISTEN); }
-	accept	{ RETURN_TOKEN(TOK_ACCEPT); }
-	connect	{ RETURN_TOKEN(TOK_CONNECT); }
-	getattr	{ RETURN_TOKEN(TOK_GETATTR); }
-	setattr	{ RETURN_TOKEN(TOK_SETATTR); }
-	getopt	{ RETURN_TOKEN(TOK_GETOPT); }
-	setopt	{ RETURN_TOKEN(TOK_SETOPT); }
-	shutdown	{ RETURN_TOKEN(TOK_SHUTDOWN); }
+	listen	{ return yy::parser::make_TOK_LISTEN(yylloc); }
+	accept	{ return yy::parser::make_TOK_ACCEPT(yylloc); }
+	connect	{ return yy::parser::make_TOK_CONNECT(yylloc); }
+	getattr	{ return yy::parser::make_TOK_GETATTR(yylloc); }
+	setattr	{ return yy::parser::make_TOK_SETATTR(yylloc); }
+	getopt	{ return yy::parser::make_TOK_GETOPT(yylloc); }
+	setopt	{ return yy::parser::make_TOK_SETOPT(yylloc); }
+	shutdown	{ return yy::parser::make_TOK_SHUTDOWN(yylloc); }
 }
 
 <UNIX_MODE,USERNS_MODE>{
-	create	{ RETURN_TOKEN(TOK_CREATE); }
+	create	{ return yy::parser::make_TOK_CREATE(yylloc); }
 }
 
 <DBUS_MODE,UNIX_MODE>{
-	bind		{ RETURN_TOKEN(TOK_BIND); }
+	bind		{ return yy::parser::make_TOK_BIND(yylloc); }
 }
 
 <DBUS_MODE>{
-	eavesdrop	{ RETURN_TOKEN(TOK_EAVESDROP); }
+	eavesdrop	{ return yy::parser::make_TOK_EAVESDROP(yylloc); }
 }
 
 <DBUS_MODE,SIGNAL_MODE,UNIX_MODE>{
-	send		{ RETURN_TOKEN(TOK_SEND); }
-	receive		{ RETURN_TOKEN(TOK_RECEIVE); }
+	send		{ return yy::parser::make_TOK_SEND(yylloc); }
+	receive		{ return yy::parser::make_TOK_RECEIVE(yylloc); }
 }
 
 <PTRACE_MODE>{
-	trace		{ RETURN_TOKEN(TOK_TRACE); }
-	readby		{ RETURN_TOKEN(TOK_READBY); }
-	tracedby	{ RETURN_TOKEN(TOK_TRACEDBY); }
+	trace		{ return yy::parser::make_TOK_TRACE(yylloc); }
+	readby		{ return yy::parser::make_TOK_READBY(yylloc); }
+	tracedby	{ return yy::parser::make_TOK_TRACEDBY(yylloc); }
 }
 
 <DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE>{
-	read		{ RETURN_TOKEN(TOK_READ); }
-	write		{ RETURN_TOKEN(TOK_WRITE); }
+	read		{ return yy::parser::make_TOK_READ(yylloc); }
+	write		{ return yy::parser::make_TOK_WRITE(yylloc); }
 	{OPEN_PAREN}	{
-			PUSH_AND_RETURN(LIST_VAL_MODE, TOK_OPENPAREN);
+				PUSH(LIST_VAL_MODE);
+				return yy::parser::make_TOK_OPENPAREN(yylloc);
 			}
 	(r|w|rw|wr)/([[:space:],])	{
-			yylval.mode = strdup(yytext);
-			RETURN_TOKEN(TOK_MODE);
+				return yy::parser::make_TOK_MODE(yytext, yylloc);
 			}
 }
 
 <MOUNT_MODE>{
-	{ARROW}		{ RETURN_TOKEN(TOK_ARROW); }
+	{ARROW}		{ return yy::parser::make_TOK_ARROW(yylloc); }
 }
 
 <MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE>{
 	({IDS_NOEQ}|{LABEL}|{QUOTED_ID}) {
-		yylval.id = processid(yytext, yyleng);
-		RETURN_TOKEN(TOK_ID);
+		std::string pid = processid(yytext, yyleng);
+		return yy::parser::make_TOK_ID(pid, yylloc);
 	}
 }
 
 #include{WS}+if{WS}+exists/{WS}.*\r?\n	{
 	// pwarn(WARN_INCLUDE, _("deprecated use of '#include'\n"));
-	PUSH_AND_RETURN(INCLUDE_EXISTS, TOK_INCLUDE_IF_EXISTS);
+	PUSH(INCLUDE_EXISTS);
+	return yy::parser::make_TOK_INCLUDE_IF_EXISTS(yylloc);
 }
 
 include{WS}+if{WS}+exists/{WS}	{
-	PUSH_AND_RETURN(INCLUDE_EXISTS, TOK_INCLUDE_IF_EXISTS);
+	PUSH(INCLUDE_EXISTS);
+	return yy::parser::make_TOK_INCLUDE_IF_EXISTS(yylloc);
 }
 
 #include/.*\r?\n	{
 	// pwarnf(WARN_INCLUDE, _("deprecated use of '#include'\n"));
-	PUSH_AND_RETURN(INCLUDE, TOK_INCLUDE);
+	PUSH(INCLUDE);
+	return yy::parser::make_TOK_INCLUDE(yylloc);
 }
 
 include/{WS}	{
-	PUSH_AND_RETURN(INCLUDE, TOK_INCLUDE);
+	PUSH(INCLUDE);
+	return yy::parser::make_TOK_INCLUDE(yylloc);
 }
 
 #.*\r?\n	{ /* normal comment */
@@ -525,47 +535,68 @@ include/{WS}	{
 	current_lineno++;
 }
 
-{CARET}		{ PUSH_AND_RETURN(SUB_ID, TOK_CARET); }
+{CARET}	{
+	PUSH(SUB_ID);
+	return yy::parser::make_TOK_CARET(yylloc);
+}
 
-{ARROW}		{ PUSH_AND_RETURN(SUB_ID_WS, TOK_ARROW); }
+{ARROW} { 
+	PUSH(SUB_ID_WS); 
+	return yy::parser::make_TOK_ARROW(yylloc);
+}
 
-{EQUALS}	{ PUSH_AND_RETURN(ASSIGN_MODE, TOK_EQUALS); }
+{EQUALS} {
+	PUSH(ASSIGN_MODE); 
+	return yy::parser::make_TOK_EQUALS(yylloc);
+}
 
-{ADD_ASSIGN}	{ PUSH_AND_RETURN(ASSIGN_MODE, TOK_ADD_ASSIGN); }
+{ADD_ASSIGN} {
+	PUSH(ASSIGN_MODE);
+	return yy::parser::make_TOK_ADD_ASSIGN(yylloc);
+}
 
-{SET_VARIABLE}	{
-	yylval.set_var = strdup(yytext);
-	RETURN_TOKEN(TOK_SET_VAR);
+{SET_VARIABLE} {
+	std::string text(yytext);
+	return yy::parser::make_TOK_SET_VAR(text, yylloc);
 }
 
 {BOOL_VARIABLE}	{
-	yylval.bool_var = strdup(yytext);
-	RETURN_TOKEN(TOK_BOOL_VAR);
+	std::string text(yytext);
+	return yy::parser::make_TOK_BOOL_VAR(text, yylloc);
 }
 
-{OPEN_BRACE}	{ RETURN_TOKEN(TOK_OPEN); }
+{OPEN_BRACE}	{ return yy::parser::make_TOK_OPEN(yylloc); }
 
 {CLOSE_BRACE}	{
-	RETURN_TOKEN(TOK_CLOSE);
+	return yy::parser::make_TOK_CLOSE(yylloc);
 }
 
 ({LABEL}|{QUOTED_LABEL}) {
-	yylval.id = processid(yytext, yyleng);
-	RETURN_TOKEN(TOK_ID);
+	std::string pid = processid(yytext, yyleng);
+	return yy::parser::make_TOK_ID(pid, yylloc);
 }
 
 ({MODES})/([[:space:],]) {
-	yylval.mode = strdup(yytext);
-	RETURN_TOKEN(TOK_MODE);
+	std::string mode(yytext);
+	return yy::parser::make_TOK_MODE(mode, yylloc);
 }
 
-{HAT}		{ PUSH_AND_RETURN(SUB_ID, TOK_HAT); }
+{HAT} {
+	PUSH(SUB_ID);
+	return yy::parser::make_TOK_HAT(yylloc);
+}
 
-{PROFILE}	{ PUSH_AND_RETURN(SUB_ID, TOK_PROFILE); }
+{PROFILE} {
+	PUSH(SUB_ID);
+	return yy::parser::make_TOK_PROFILE(yylloc);
+}
 
-{COLON}		{ RETURN_TOKEN(TOK_COLON); }
+{COLON}	{ return yy::parser::make_TOK_COLON(yylloc); }
 
-{OPEN_PAREN}	{ PUSH_AND_RETURN(LIST_VAL_MODE, TOK_OPENPAREN); }
+{OPEN_PAREN} {
+	PUSH(LIST_VAL_MODE);
+	return yy::parser::make_TOK_OPENPAREN(yylloc);
+}
 
 {VARIABLE_NAME}	{
 	int token = get_keyword_token(yytext);
@@ -574,53 +605,57 @@ include/{WS}	{
 	/* special cases */
 	switch (token) {
 	case -1:
+	{
 		/* no token found */
-		yylval.id = processunquoted(yytext, yyleng);
-		RETURN_TOKEN(TOK_ID);
-		break;
-	case TOK_RLIMIT:
+		std::string proc = processunquoted(yytext, yyleng);
+		return yy::parser::make_TOK_ID(proc, yylloc);
+	}
+	case token::TOK_RLIMIT:
 		state = RLIMIT_MODE;
 		break;
-	case TOK_NETWORK:
+	case token::TOK_NETWORK:
 		state = NETWORK_MODE;
 		break;
-	case TOK_CHANGE_PROFILE:
+	case token::TOK_CHANGE_PROFILE:
 		state = CHANGE_PROFILE_MODE;
 		break;
-	case TOK_MOUNT:
-	case TOK_REMOUNT:
-	case TOK_UMOUNT:
+	case token::TOK_MOUNT:
+	case token::TOK_REMOUNT:
+	case token::TOK_UMOUNT:
 		state = MOUNT_MODE;
 		break;
-	case TOK_DBUS:
+	case token::TOK_DBUS:
 		state = DBUS_MODE;
 		break;
-	case TOK_SIGNAL:
+	case token::TOK_SIGNAL:
 		state = SIGNAL_MODE;
 		break;
-	case TOK_PTRACE:
+	case token::TOK_PTRACE:
 		state = PTRACE_MODE;
 		break;
-	case TOK_UNIX:
+	case token::TOK_UNIX:
 		state = UNIX_MODE;
 		break;
-	case TOK_ABI:
+	case token::TOK_ABI:
 		state = ABI_MODE;
 		break;
-	case TOK_USERNS:
+	case token::TOK_USERNS:
 		state = USERNS_MODE;
 		break;
 	default: /* nothing */
 		break;
 	}
-	PUSH_AND_RETURN(state, token);
+
+	PUSH(state);
+	return yy::parser::symbol_type(token, yylloc);
 }
 
 <INITIAL,NETWORK_MODE,RLIMIT_MODE,CHANGE_PROFILE_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE,ABI_MODE,USERNS_MODE>{
 	{END_OF_RULE}	{
 		if (YY_START != INITIAL)
 			POP_NODUMP();
-		RETURN_TOKEN(TOK_END_OF_RULE);
+
+		return yy::parser::make_TOK_END_OF_RULE(yylloc);
 	}
 }
 

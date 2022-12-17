@@ -26,10 +26,9 @@
 #include <stdlib.h>
 
 #include "parser.h"
+#include "lexer.hh"
 
 int parser_token = 0;
-
-void yyerror(const char *msg, ...);
 
 // For tracking location
 # define YYLLOC_DEFAULT(Cur, Rhs, N)                \
@@ -49,9 +48,14 @@ while (0)
 %}
 
 %require "3.2"
+%language "c++"
 
 // To keep track of character positions
 %define api.location.type {YYLTYPE};
+
+%define api.value.type variant
+%define api.token.constructor
+%define api.token.raw
 
 %token TOK_ID
 %token TOK_CONDID
@@ -166,111 +170,69 @@ while (0)
 	#include "tree/TreeNode.hh"
 }
 
-%union {
-	#include <stdint.h>
+%type <TreeNode> list
+%type <TreeNode> profilelist
+%type <TreeNode> profile_base
+%type <TreeNode> profile
+%type <TreeNode> preamble
+%type <TreeNode> rules
+%type <TreeNode> alias
+%type <TreeNode> opt_prefix
 
-	TreeNode *node;
+%type <TreeNode> abstraction
+%type <TreeNode> abi_rule
+%type <TreeNode> rule
+%type <TreeNode> network_rule
+%type <TreeNode> mnt_rule
+%type <TreeNode> dbus_rule
+%type <TreeNode> signal_rule
+%type <TreeNode> ptrace_rule
+%type <TreeNode> unix_rule
+%type <TreeNode> userns_rule
+%type <TreeNode> change_profile
+%type <TreeNode> capability
+%type <TreeNode> hat
+%type <TreeNode> local_profile
+%type <TreeNode> cond_rule
+%type <TreeNode> link_rule
+%type <TreeNode> file_rule
+%type <TreeNode> frule
+%type <TreeNode> file_rule_tail
 
-	char *id;
-	char *flag_id;
-	char *mode;
+%type <std::string> TOK_ID
+%type <std::string>	TOK_CONDID
+%type <std::string>	TOK_CONDLISTID
+%type <std::string>	TOK_ALIAS
+%type <std::string> TOK_MODE
+%type <std::string> TOK_SET_VAR
+%type <std::string> TOK_BOOL_VAR
+%type <std::string>	TOK_VALUE
 
-	int fmode;
-	uint64_t cap;
-	char *set_var;
-	char *bool_var;
-	char *var_val;
-	bool boolean;
-};
+%type <bool> opt_subset_flag
+%type <bool> opt_audit_flag
+%type <bool> opt_owner_flag
+%type <bool> opt_profile_flag
+%type <bool> opt_flags
+%type <bool> opt_perm_mode
+%type <bool> opt_exec_mode
+%type <bool> opt_file
 
-%type <node> list
-%type <node> profilelist
-%type <node> profile_base
-%type <node> profile
-%type <node> preamble
-%type <node> rules
-%type <node> alias
-%type <node> opt_prefix
-
-%type <node> abstraction
-%type <node> abi_rule
-%type <node> rule
-%type <node> network_rule
-%type <node> mnt_rule
-%type <node> dbus_rule
-%type <node> signal_rule
-%type <node> ptrace_rule
-%type <node> unix_rule
-%type <node> userns_rule
-%type <node> change_profile
-%type <node> capability
-%type <node> hat
-%type <node> local_profile
-%type <node> cond_rule
-%type <node> link_rule
-%type <node> file_rule
-%type <node> frule
-%type <node> file_rule_tail
-
-%type <id> 	TOK_ID
-%type <id> 	TOK_INCLUDE
-%type <id> 	TOK_INCLUDE_IF_EXISTS
-%type <id>	TOK_CONDID
-%type <id>	TOK_CONDLISTID
-%type <id>	TOK_ALIAS
-%type <id>	TOK_ARROW
-%type <id>	TOK_END_OF_RULE
-
-%type <boolean> opt_subset_flag
-%type <boolean> opt_audit_flag
-%type <boolean> opt_owner_flag
-%type <boolean> opt_profile_flag
-%type <boolean> opt_flags
-%type <boolean> opt_perm_mode
-%type <boolean> opt_exec_mode
-%type <boolean> opt_file
-
-%type <mode> 	TOK_MODE
-%type <id>   file_mode
-%type <flags>	flags
-%type <flags>	flagvals
-%type <flags>	flagval
-%type <cap>	caps
-%type <set_var> TOK_SET_VAR
-%type <bool_var> TOK_BOOL_VAR
-%type <var_val>	TOK_VALUE
-%type <val_list> valuelist
-%type <boolean> expr
-%type <id>	id_or_var
-%type <id>	opt_id_or_var
-%type <id>	opt_id
-%type <fmode>	dbus_perm
-%type <fmode>	dbus_perms
-%type <fmode>	opt_dbus_perm
-%type <fmode>	signal_perm
-%type <fmode>	signal_perms
-%type <fmode>	opt_signal_perm
-%type <fmode>	ptrace_perm
-%type <fmode>	ptrace_perms
-%type <fmode>	opt_ptrace_perm
-%type <fmode>	net_perm
-%type <fmode>	net_perms
-%type <fmode>	opt_net_perm
-%type <id>	opt_target
-%type <id>	opt_named_transition
-%type <fmode>  	userns_perm
-%type <fmode>  	userns_perms
-%type <fmode>	opt_userns_perm
+%type <std::string> file_mode
+%type <std::string>	id_or_var
+%type <std::string>	opt_id_or_var
+%type <std::string>	opt_id
+%type <std::string>	opt_target
+%type <std::string>	opt_named_transition
 %%
 
 
 list: preamble profilelist { 
-								$$ = new ParseTree($1, $2);
-								std::cout << (std::string)((TreeNode)*$$) << std::endl;
+								$$ = ParseTree($1, $2);
+								std::cout << (std::string) $$ << std::endl;
 						   };
 
-profilelist:					 { $$ = new TreeNode(); }
-		   | profilelist profile { $1->appendChild($2);
+profilelist:					 { $$ = TreeNode(); }
+		   | profilelist profile { $1.appendChild($2);
 								   $$ = $1; }
 
 opt_profile_flag:
@@ -289,8 +251,7 @@ profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE 
 		// auto last  = @7.last_pos;
 		// std::cout << first << " - " << last << std::endl;
 
-		std::string profile_name($1);
-		$$ = new ProfileNode(profile_name, $6);
+		$$ = ProfileNode($1, $6);
 	}
 
 profile: opt_profile_flag profile_base { $$ = $2; }
@@ -299,14 +260,14 @@ local_profile: TOK_PROFILE profile_base
 
 hat: hat_start profile_base
 
-preamble:					 	{ $$ = new TreeNode(); }
-		| preamble alias	 	{ $$ = $1; $$->appendChild($2); }
-		| preamble varassign 	{ $$ = $1; /*$$->appendChild($2);*/ }
-		| preamble abi_rule	 	{ $$ = $1; $$->appendChild($2); }
-		| preamble abstraction	{ $$ = $1; $$->appendChild($2); }
+preamble:					 	{ $$ = TreeNode(); }
+		| preamble alias	 	{ $$ = $1; $$.appendChild($2); }
+		| preamble varassign 	{ $$ = $1; /*$$.appendChild($2);*/ }
+		| preamble abi_rule	 	{ $$ = $1; $$.appendChild($2); }
+		| preamble abstraction	{ $$ = $1; $$.appendChild($2); }
 
 alias: TOK_ALIAS TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE {
-		$$ = new AliasNode($2, $4);
+		$$ = AliasNode($2, $4);
 	}
 
 varassign: TOK_SET_VAR TOK_EQUALS valuelist
@@ -343,25 +304,25 @@ opt_perm_mode:				{$$ = false;}
 			 | TOK_ALLOW	{$$ = false;}
 			 | TOK_DENY		{$$ = true;}
 
-opt_prefix: opt_audit_flag opt_perm_mode opt_owner_flag {$$ = new PrefixNode($1, $2, $3);}
+opt_prefix: opt_audit_flag opt_perm_mode opt_owner_flag {$$ = PrefixNode($1, $2, $3);}
 
-rules:												{$$ = new TreeNode();}
-	 | rules abi_rule								{$$ = $1; $1->appendChild($2);}
-	 | rules opt_prefix rule						{$$ = $1; $1->appendChildren({$2, $3});}
-	 | rules opt_prefix TOK_OPEN rules TOK_CLOSE	{$$ = $1; $1->appendChildren({$2, $4});}
-	 | rules opt_prefix network_rule				{$$ = $1; /* $1->appendChildren({$2, $3}); */}
-	 | rules opt_prefix mnt_rule					{$$ = $1; /* $1->appendChildren({$2, $3}); */}
-	 | rules opt_prefix dbus_rule					{$$ = $1; /* $1->appendChildren({$2, $3}); */}
-	 | rules opt_prefix signal_rule					{$$ = $1; /* $1->appendChildren({$2, $3}); */}
-	 | rules opt_prefix ptrace_rule					{$$ = $1; /* $1->appendChildren({$2, $3}); */}
-	 | rules opt_prefix unix_rule					{$$ = $1; /* $1->appendChildren({$2, $3}); */}
-	 | rules opt_prefix userns_rule					{$$ = $1; /* $1->appendChildren({$2, $3}); */}
-	 | rules opt_prefix change_profile				{$$ = $1; /* $1->appendChildren({$2, $3}); */}
-	 | rules opt_prefix capability					{$$ = $1; /* $1->appendChildren({$2, $3}); */}
-	 | rules hat									{$$ = $1; /* $1->appendChild($2); */}
-	 | rules local_profile							{$$ = $1; /* $1->appendChild($2); */}
-	 | rules cond_rule								{$$ = $1; /* $1->appendChild($2); */}
-	 | rules abstraction							{$$ = $1; $1->appendChild($2);}
+rules:												{$$ = TreeNode();}
+	 | rules abi_rule								{$$ = $1; $1.appendChild($2);}
+	 | rules opt_prefix rule						{$$ = $1; $1.appendChildren({$2, $3});}
+	 | rules opt_prefix TOK_OPEN rules TOK_CLOSE	{$$ = $1; $1.appendChildren({$2, $4});}
+	 | rules opt_prefix network_rule				{$$ = $1; /* $1.appendChildren({$2, $3}); */}
+	 | rules opt_prefix mnt_rule					{$$ = $1; /* $1.appendChildren({$2, $3}); */}
+	 | rules opt_prefix dbus_rule					{$$ = $1; /* $1.appendChildren({$2, $3}); */}
+	 | rules opt_prefix signal_rule					{$$ = $1; /* $1.appendChildren({$2, $3}); */}
+	 | rules opt_prefix ptrace_rule					{$$ = $1; /* $1.appendChildren({$2, $3}); */}
+	 | rules opt_prefix unix_rule					{$$ = $1; /* $1.appendChildren({$2, $3}); */}
+	 | rules opt_prefix userns_rule					{$$ = $1; /* $1.appendChildren({$2, $3}); */}
+	 | rules opt_prefix change_profile				{$$ = $1; /* $1.appendChildren({$2, $3}); */}
+	 | rules opt_prefix capability					{$$ = $1; /* $1.appendChildren({$2, $3}); */}
+	 | rules hat									{$$ = $1; /* $1.appendChild($2); */}
+	 | rules local_profile							{$$ = $1; /* $1.appendChild($2); */}
+	 | rules cond_rule								{$$ = $1; /* $1.appendChild($2); */}
+	 | rules abstraction							{$$ = $1; $1.appendChild($2);}
 	 | rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE opt_id TOK_END_OF_RULE	{$$ = $1;}
 
 cond_rule: TOK_IF expr TOK_OPEN rules TOK_CLOSE
@@ -385,13 +346,13 @@ opt_named_transition:						{$$ = "";}
 rule: file_rule
 	| link_rule
 
-abi_rule: TOK_ABI TOK_ID 	TOK_END_OF_RULE	{$$ = new TreeNode($2);}
-		| TOK_ABI TOK_VALUE TOK_END_OF_RULE	{$$ = new TreeNode($2);}
+abi_rule: TOK_ABI TOK_ID 	TOK_END_OF_RULE	{$$ = TreeNode($2);}
+		| TOK_ABI TOK_VALUE TOK_END_OF_RULE	{$$ = TreeNode($2);}
 
-abstraction: TOK_INCLUDE		   TOK_ID 	 {$$ = new AbstractionNode(@1.first_pos, @2.last_pos, std::string(yylval.id), false);}
-		   | TOK_INCLUDE		   TOK_VALUE {$$ = new AbstractionNode(@1.first_pos, @2.last_pos, std::string(yylval.id), false);}
-		   | TOK_INCLUDE_IF_EXISTS TOK_ID 	 {$$ = new AbstractionNode(@1.first_pos, @2.last_pos, std::string(yylval.id), true);}
-		   | TOK_INCLUDE_IF_EXISTS TOK_VALUE {$$ = new AbstractionNode(@1.first_pos, @2.last_pos, std::string(yylval.id), true);}
+abstraction: TOK_INCLUDE		   TOK_ID 	 {$$ = AbstractionNode(@1.first_pos, @2.last_pos, $2, false);}
+		   | TOK_INCLUDE		   TOK_VALUE {$$ = AbstractionNode(@1.first_pos, @2.last_pos, $2, false);}
+		   | TOK_INCLUDE_IF_EXISTS TOK_ID 	 {$$ = AbstractionNode(@1.first_pos, @2.last_pos, $2, true);}
+		   | TOK_INCLUDE_IF_EXISTS TOK_VALUE {$$ = AbstractionNode(@1.first_pos, @2.last_pos, $2, true);}
 
 opt_exec_mode:
 			 | TOK_UNSAFE
@@ -401,16 +362,16 @@ opt_file:
 		| TOK_FILE
 
 // Should utilize the deleted get_mode() from parser.h instead of yylval mode
-frule: id_or_var file_mode opt_named_transition TOK_END_OF_RULE					{$$ = new FileNode(@1.first_pos, @4.last_pos, $1, yylval.mode, $3);}
-	 | file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE	{$$ = new FileNode(@1.first_pos, @5.last_pos, $3, yylval.mode, $4, $2);}
+frule: id_or_var file_mode opt_named_transition TOK_END_OF_RULE					{$$ = FileNode(@1.first_pos, @4.last_pos, $1, $2, $3);}
+	 | file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE	{$$ = FileNode(@1.first_pos, @5.last_pos, $3, $1, $4, $2);}
 
-file_rule: TOK_FILE TOK_END_OF_RULE	{$$ = new FileNode(@1.first_pos, @2.last_pos);}
+file_rule: TOK_FILE TOK_END_OF_RULE	{$$ = FileNode(@1.first_pos, @2.last_pos);}
 		 | opt_file file_rule_tail	{$$ = $2;}
 
 file_rule_tail: opt_exec_mode frule							{$$ = $2;}
-			  | opt_exec_mode id_or_var file_mode id_or_var	{$$ = new FileNode(@1.first_pos, @4.last_pos, $2, yylval.mode, $4);}
+			  | opt_exec_mode id_or_var file_mode id_or_var	{$$ = FileNode(@1.first_pos, @4.last_pos, $2, $3, $4);}
 
-link_rule: TOK_LINK opt_subset_flag id_or_var TOK_ARROW id_or_var TOK_END_OF_RULE	{$$ = new LinkNode(@1.first_pos, @6.last_pos, $2, $3, $5);}
+link_rule: TOK_LINK opt_subset_flag id_or_var TOK_ARROW id_or_var TOK_END_OF_RULE	{$$ = LinkNode(@1.first_pos, @6.last_pos, $2, $3, $5);}
 
 network_rule: TOK_NETWORK TOK_END_OF_RULE
 			| TOK_NETWORK TOK_ID TOK_END_OF_RULE
@@ -532,7 +493,7 @@ userns_rule: TOK_USERNS opt_userns_perm opt_conds TOK_END_OF_RULE
 hat_start: TOK_CARET
 		 | TOK_HAT
 
-file_mode: TOK_MODE	{$$ = yylval.mode;}
+file_mode: TOK_MODE
 
 change_profile: TOK_CHANGE_PROFILE opt_exec_mode opt_id opt_named_transition TOK_END_OF_RULE
 
@@ -569,4 +530,10 @@ void yyerror(const char *msg, ...)
 	va_end(arg);
 
 	exit(1);
+}
+
+void yy::parser::error(YYLTYPE const& location, 
+					   std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const& str)
+{
+	yyerror(str.c_str());
 }

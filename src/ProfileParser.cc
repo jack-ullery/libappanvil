@@ -1,10 +1,17 @@
 #include "ProfileParser.hh"
+#include "parser/lexer.hh"
 
 #include <parser_lex.hh>
 #include <parser_yacc.hh>
 
-ProfileParser::ProfileParser(FILE *file)
+// ProfileParser::ProfileParser(FILE *file)
+// {
+//     yyin = file;
+// 	yyparse();
+// }
+
+ProfileParser::ProfileParser(std::string filename)
 {
-    yyin = file;
-	yyparse();
+    yy::parser parser;
+    parser.parse();
 }
