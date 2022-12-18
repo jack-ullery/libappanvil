@@ -38,15 +38,13 @@
 #include <unordered_map>
 #include <string>
 
+#include "driver.hh"
 #include "parser.h"
 #include "lexer.hh"
 
-uint64_t current_lineno = 0;
-YYLTYPE yylloc = {.first_pos = 0, .last_pos = 0};
-
 #define YY_USER_ACTION               	\
-  yylloc.first_pos = yylloc.last_pos;	\
-  yylloc.last_pos += yyleng;
+  driver.yylloc.first_pos = driver.yylloc.last_pos;	\
+  driver.yylloc.last_pos += yyleng;
 
 #define DUMP_PREPROCESS do { /*ECHO;*/ } while (0)
 
@@ -56,12 +54,6 @@ do { \
 } while (0)
 
 #define EAT_TOKEN(X...) DUMP_AND_DEBUG(X)
-
-// #define RETURN_TOKEN(X) \
-// do { \
-// 	DUMP_AND_DEBUG("Matched: '%s'	Returning(%s)\n", yytext, #X); \
-// 	return make_symbol((X), yylloc); \
-// } while (0)
 
 #define POP() \
 do { \
@@ -84,11 +76,6 @@ do { \
 
 #define STATE_TABLE_ENT(X) {X, #X }
 extern std::unordered_map<int, std::string> state_names;
-
-struct cb_struct {
-	const char *fullpath;
-	const char *filename;
-};
 
 static char *lsntrim(char *s, int l)
 {
@@ -204,7 +191,7 @@ GT		>
 	if (parser_token) {
 		int t = parser_token;
 		parser_token = 0;
-		return symbol_type (t, std::move(yylloc));
+		return symbol_type (t, std::move(driver.yylloc));
 	}
 %}
 
@@ -227,24 +214,23 @@ GT		>
 
 		if (YYSTATE == ABI_MODE) {
 			if (lt)
-				return yy::parser::make_TOK_ID(filename, yylloc);
+				return yy::parser::make_TOK_ID(filename, driver.yylloc);
 			else
-				return yy::parser::make_TOK_VALUE(filename, yylloc);
+				return yy::parser::make_TOK_VALUE(filename, driver.yylloc);
 		}
 
 		POP();
 		if (lt) {
-			return yy::parser::make_TOK_ID(filename, yylloc);
+			return yy::parser::make_TOK_ID(filename, driver.yylloc);
 		}
 		else {
-			return yy::parser::make_TOK_VALUE(filename, yylloc);
+			return yy::parser::make_TOK_VALUE(filename, driver.yylloc);
 		}
 	}
 }
 
 <<EOF>> {
 	fclose(yyin);
-	//pop_include_stack();
 	yypop_buffer_state();
 	if ( !YY_CURRENT_BUFFER )
 		yyterminate();
@@ -258,7 +244,7 @@ GT		>
 		 */
 		std::string pid = processid(yytext, yyleng);
 		PUSH(EXTCONDLIST_MODE);
-		return yy::parser::make_TOK_CONDLISTID(pid, yylloc);
+		return yy::parser::make_TOK_CONDLISTID(pid, driver.yylloc);
 	}
 	{VARIABLE_NAME}/{WS}*=	{
 		/* we match to the = in the lexer so that we can switch scanner
@@ -267,7 +253,7 @@ GT		>
 		 */
 		std::string pid = processid(yytext, yyleng);
 		PUSH(EXTCOND_MODE);
-		return yy::parser::make_TOK_CONDID(pid, yylloc);
+		return yy::parser::make_TOK_CONDID(pid, driver.yylloc);
 	}
 	{VARIABLE_NAME}/{WS}+in{WS}*\(	{
 		/* we match to 'in' in the lexer so that we can switch scanner
@@ -277,7 +263,7 @@ GT		>
 		 */
 		std::string pid = processid(yytext, yyleng);
 		PUSH(EXTCOND_MODE);
-		return yy::parser::make_TOK_CONDID(pid, yylloc);
+		return yy::parser::make_TOK_CONDID(pid, driver.yylloc);
 	}
 }
 
@@ -286,7 +272,7 @@ GT		>
 		/* Go into separate state to match generic ID strings */
 		std::string pid = processid(yytext, yyleng);
 		POP();
-		return yy::parser::make_TOK_ID(pid, yylloc);
+		return yy::parser::make_TOK_ID(pid, driver.yylloc);
 	}
 }
 
@@ -295,31 +281,31 @@ GT		>
 		/* Go into separate state to match generic VALUE strings */
 		std::string pid = processid(yytext, yyleng);
 		POP();
-		return yy::parser::make_TOK_VALUE(pid, yylloc);
+		return yy::parser::make_TOK_VALUE(pid, driver.yylloc);
 	}
 }
 
 <LIST_VAL_MODE>{
 	{CLOSE_PAREN} { 
 		POP();
-		return yy::parser::make_TOK_CLOSEPAREN(yylloc);
+		return yy::parser::make_TOK_CLOSEPAREN(driver.yylloc);
 	}
 
 	{COMMA}	{ EAT_TOKEN("listval: ,\n"); }
 
 	({LIST_VALUE_ID}|{QUOTED_ID}) {
 		std::string pid = processid(yytext, yyleng);
-		return yy::parser::make_TOK_VALUE(pid, yylloc);
+		return yy::parser::make_TOK_VALUE(pid, driver.yylloc);
 	}
 }
 
 <EXTCOND_MODE>{
 	{EQUALS}{WS}*/[^(\n]{-}{WS} {
 		BEGIN(SUB_VALUE); 
-		return yy::parser::make_TOK_EQUALS(yylloc);
+		return yy::parser::make_TOK_EQUALS(driver.yylloc);
 	}
 
-	{EQUALS} { return yy::parser::make_TOK_EQUALS(yylloc); }
+	{EQUALS} { return yy::parser::make_TOK_EQUALS(driver.yylloc); }
 
 	/* Don't push state here as this is a transition start condition and
 	 * we want to return to the start condition that invoked <EXTCOND_MODE>
@@ -327,17 +313,17 @@ GT		>
 	 */
 	{OPEN_PAREN} {
 		BEGIN(LIST_VAL_MODE); 
-		yy::parser::make_TOK_OPENPAREN(yylloc);
+		yy::parser::make_TOK_OPENPAREN(driver.yylloc);
 	}
 
-	in { return yy::parser::make_TOK_IN(yylloc); }
+	in { return yy::parser::make_TOK_IN(driver.yylloc); }
 }
 
 <LIST_COND_VAL>{
 	({LIST_VALUE_ID}|{QUOTED_LIST_VALUE_ID}) {
 		std::string pid = processid(yytext, yyleng);
 		POP();
-		return yy::parser::make_TOK_VALUE(pid, yylloc);
+		return yy::parser::make_TOK_VALUE(pid, driver.yylloc);
 	}
 }
 
@@ -346,36 +332,36 @@ GT		>
 
 	({LIST_VALUE_ID}|{QUOTED_LIST_VALUE_ID}) {
 		std::string pid = processid(yytext, yyleng);
-		return yy::parser::make_TOK_VALUE(pid, yylloc);
+		return yy::parser::make_TOK_VALUE(pid, driver.yylloc);
 	}
 }
 
 <LIST_COND_MODE>{
 	{CLOSE_PAREN}	{ 
 		POP();
-		return yy::parser::make_TOK_CLOSEPAREN(yylloc);
+		return yy::parser::make_TOK_CLOSEPAREN(driver.yylloc);
 	}
 
 	{COMMA}		{ EAT_TOKEN("listcond: , \n"); }
 
 	{ID_CHARS_NOEQ}+	{
 		std::string pid = processid(yytext, yyleng);
-		return yy::parser::make_TOK_CONDID(pid, yylloc);
+		return yy::parser::make_TOK_CONDID(pid, driver.yylloc);
 	}
 
 	{EQUALS}{WS}*{OPEN_PAREN}	{
 		PUSH(LIST_COND_PAREN_VAL);
-		return yy::parser::make_TOK_EQUALS(yylloc);
+		return yy::parser::make_TOK_EQUALS(driver.yylloc);
 	}
 
 	{EQUALS}	{
 		PUSH(LIST_COND_VAL);
-		return yy::parser::make_TOK_EQUALS(yylloc);
+		return yy::parser::make_TOK_EQUALS(driver.yylloc);
 	}
 }
 
 <EXTCONDLIST_MODE>{
-	{EQUALS}	{ return yy::parser::make_TOK_EQUALS(yylloc); }
+	{EQUALS}	{ return yy::parser::make_TOK_EQUALS(driver.yylloc); }
 
 	{OPEN_PAREN}	{
 		/* Don't push state here as this is a transition
@@ -384,14 +370,14 @@ GT		>
 		 * LIST_VAL_ID is done
 		 */
 		BEGIN(LIST_COND_MODE);
-		return yy::parser::make_TOK_OPENPAREN(yylloc);
+		return yy::parser::make_TOK_OPENPAREN(driver.yylloc);
 	}
 }
 
 <ASSIGN_MODE>{
 	({IDS}|{QUOTED_ID}) {
 		std::string pid = processid(yytext, yyleng);
-		return yy::parser::make_TOK_VALUE(pid, yylloc);
+		return yy::parser::make_TOK_VALUE(pid, driver.yylloc);
 	}
 
 	{END_OF_RULE} {
@@ -400,25 +386,25 @@ GT		>
 		yyerror(_("Variable declarations do not accept trailing commas"));
 	}
 
-	\\\n	{ DUMP_PREPROCESS; current_lineno++ ; }
+	\\\n	{ DUMP_PREPROCESS; driver.current_lineno++ ; }
 
 	\r?\n	{
 		/* don't use shared rule because we need POP() here */
 		DUMP_PREPROCESS;
-		current_lineno++;
+		driver.current_lineno++;
 		POP();
 	}
 }
 
 <NETWORK_MODE>{
 	{IDS} {
-		return yy::parser::make_TOK_ID(yytext, yylloc);
+		return yy::parser::make_TOK_ID(yytext, driver.yylloc);
 	}
 }
 
 <CHANGE_PROFILE_MODE>{
-	safe		{ return yy::parser::make_TOK_SAFE(yylloc); }
-	unsafe		{ return yy::parser::make_TOK_UNSAFE(yylloc); }
+	safe		{ return yy::parser::make_TOK_SAFE(driver.yylloc); }
+	unsafe		{ return yy::parser::make_TOK_UNSAFE(driver.yylloc); }
 
 	{ARROW} {
 		/**
@@ -426,176 +412,176 @@ GT		>
 		 * change_profile target is 'safe' or 'unsafe'.
 		 */
 		PUSH(SUB_ID_WS);
-		return yy::parser::make_TOK_ARROW(yylloc);
+		return yy::parser::make_TOK_ARROW(driver.yylloc);
 	}
 
 	({IDS}|{QUOTED_ID}) {
 		std::string pid = processid(yytext, yyleng);
-		return yy::parser::make_TOK_ID(pid, yylloc);
+		return yy::parser::make_TOK_ID(pid, driver.yylloc);
 	}
 }
 
 <RLIMIT_MODE>{
 	-?{NUMBER} {
-		return yy::parser::make_TOK_VALUE(yytext, yylloc);
+		return yy::parser::make_TOK_VALUE(yytext, driver.yylloc);
 	}
 
 	{KEYWORD}	{
 		if (strcmp(yytext, "infinity") == 0) {
-			return yy::parser::make_TOK_VALUE(yytext, yylloc);
+			return yy::parser::make_TOK_VALUE(yytext, driver.yylloc);
 		}
 
-		return yy::parser::make_TOK_ID(yytext, yylloc);
+		return yy::parser::make_TOK_ID(yytext, driver.yylloc);
 	}
 
-	{LT_EQUAL}	{ return yy::parser::make_TOK_LE(yylloc); }
+	{LT_EQUAL}	{ return yy::parser::make_TOK_LE(driver.yylloc); }
 }
 
 <UNIX_MODE>{
-	listen	{ return yy::parser::make_TOK_LISTEN(yylloc); }
-	accept	{ return yy::parser::make_TOK_ACCEPT(yylloc); }
-	connect	{ return yy::parser::make_TOK_CONNECT(yylloc); }
-	getattr	{ return yy::parser::make_TOK_GETATTR(yylloc); }
-	setattr	{ return yy::parser::make_TOK_SETATTR(yylloc); }
-	getopt	{ return yy::parser::make_TOK_GETOPT(yylloc); }
-	setopt	{ return yy::parser::make_TOK_SETOPT(yylloc); }
-	shutdown	{ return yy::parser::make_TOK_SHUTDOWN(yylloc); }
+	listen	{ return yy::parser::make_TOK_LISTEN(driver.yylloc); }
+	accept	{ return yy::parser::make_TOK_ACCEPT(driver.yylloc); }
+	connect	{ return yy::parser::make_TOK_CONNECT(driver.yylloc); }
+	getattr	{ return yy::parser::make_TOK_GETATTR(driver.yylloc); }
+	setattr	{ return yy::parser::make_TOK_SETATTR(driver.yylloc); }
+	getopt	{ return yy::parser::make_TOK_GETOPT(driver.yylloc); }
+	setopt	{ return yy::parser::make_TOK_SETOPT(driver.yylloc); }
+	shutdown	{ return yy::parser::make_TOK_SHUTDOWN(driver.yylloc); }
 }
 
 <UNIX_MODE,USERNS_MODE>{
-	create	{ return yy::parser::make_TOK_CREATE(yylloc); }
+	create	{ return yy::parser::make_TOK_CREATE(driver.yylloc); }
 }
 
 <DBUS_MODE,UNIX_MODE>{
-	bind		{ return yy::parser::make_TOK_BIND(yylloc); }
+	bind		{ return yy::parser::make_TOK_BIND(driver.yylloc); }
 }
 
 <DBUS_MODE>{
-	eavesdrop	{ return yy::parser::make_TOK_EAVESDROP(yylloc); }
+	eavesdrop	{ return yy::parser::make_TOK_EAVESDROP(driver.yylloc); }
 }
 
 <DBUS_MODE,SIGNAL_MODE,UNIX_MODE>{
-	send		{ return yy::parser::make_TOK_SEND(yylloc); }
-	receive		{ return yy::parser::make_TOK_RECEIVE(yylloc); }
+	send		{ return yy::parser::make_TOK_SEND(driver.yylloc); }
+	receive		{ return yy::parser::make_TOK_RECEIVE(driver.yylloc); }
 }
 
 <PTRACE_MODE>{
-	trace		{ return yy::parser::make_TOK_TRACE(yylloc); }
-	readby		{ return yy::parser::make_TOK_READBY(yylloc); }
-	tracedby	{ return yy::parser::make_TOK_TRACEDBY(yylloc); }
+	trace		{ return yy::parser::make_TOK_TRACE(driver.yylloc); }
+	readby		{ return yy::parser::make_TOK_READBY(driver.yylloc); }
+	tracedby	{ return yy::parser::make_TOK_TRACEDBY(driver.yylloc); }
 }
 
 <DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE>{
-	read		{ return yy::parser::make_TOK_READ(yylloc); }
-	write		{ return yy::parser::make_TOK_WRITE(yylloc); }
+	read		{ return yy::parser::make_TOK_READ(driver.yylloc); }
+	write		{ return yy::parser::make_TOK_WRITE(driver.yylloc); }
 	{OPEN_PAREN}	{
 				PUSH(LIST_VAL_MODE);
-				return yy::parser::make_TOK_OPENPAREN(yylloc);
+				return yy::parser::make_TOK_OPENPAREN(driver.yylloc);
 			}
 	(r|w|rw|wr)/([[:space:],])	{
-				return yy::parser::make_TOK_MODE(yytext, yylloc);
+				return yy::parser::make_TOK_MODE(yytext, driver.yylloc);
 			}
 }
 
 <MOUNT_MODE>{
-	{ARROW}		{ return yy::parser::make_TOK_ARROW(yylloc); }
+	{ARROW}		{ return yy::parser::make_TOK_ARROW(driver.yylloc); }
 }
 
 <MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE>{
 	({IDS_NOEQ}|{LABEL}|{QUOTED_ID}) {
 		std::string pid = processid(yytext, yyleng);
-		return yy::parser::make_TOK_ID(pid, yylloc);
+		return yy::parser::make_TOK_ID(pid, driver.yylloc);
 	}
 }
 
 #include{WS}+if{WS}+exists/{WS}.*\r?\n	{
 	// pwarn(WARN_INCLUDE, _("deprecated use of '#include'\n"));
 	PUSH(INCLUDE_EXISTS);
-	return yy::parser::make_TOK_INCLUDE_IF_EXISTS(yylloc);
+	return yy::parser::make_TOK_INCLUDE_IF_EXISTS(driver.yylloc);
 }
 
 include{WS}+if{WS}+exists/{WS}	{
 	PUSH(INCLUDE_EXISTS);
-	return yy::parser::make_TOK_INCLUDE_IF_EXISTS(yylloc);
+	return yy::parser::make_TOK_INCLUDE_IF_EXISTS(driver.yylloc);
 }
 
 #include/.*\r?\n	{
 	// pwarnf(WARN_INCLUDE, _("deprecated use of '#include'\n"));
 	PUSH(INCLUDE);
-	return yy::parser::make_TOK_INCLUDE(yylloc);
+	return yy::parser::make_TOK_INCLUDE(driver.yylloc);
 }
 
 include/{WS}	{
 	PUSH(INCLUDE);
-	return yy::parser::make_TOK_INCLUDE(yylloc);
+	return yy::parser::make_TOK_INCLUDE(driver.yylloc);
 }
 
 #.*\r?\n	{ /* normal comment */
-	DUMP_AND_DEBUG("comment(%d): %s\n", current_lineno, yytext);
-	current_lineno++;
+	DUMP_AND_DEBUG("comment(%d): %s\n", driver.current_lineno, yytext);
+	driver.current_lineno++;
 }
 
 {CARET}	{
 	PUSH(SUB_ID);
-	return yy::parser::make_TOK_CARET(yylloc);
+	return yy::parser::make_TOK_CARET(driver.yylloc);
 }
 
 {ARROW} { 
 	PUSH(SUB_ID_WS); 
-	return yy::parser::make_TOK_ARROW(yylloc);
+	return yy::parser::make_TOK_ARROW(driver.yylloc);
 }
 
 {EQUALS} {
 	PUSH(ASSIGN_MODE); 
-	return yy::parser::make_TOK_EQUALS(yylloc);
+	return yy::parser::make_TOK_EQUALS(driver.yylloc);
 }
 
 {ADD_ASSIGN} {
 	PUSH(ASSIGN_MODE);
-	return yy::parser::make_TOK_ADD_ASSIGN(yylloc);
+	return yy::parser::make_TOK_ADD_ASSIGN(driver.yylloc);
 }
 
 {SET_VARIABLE} {
 	std::string text(yytext);
-	return yy::parser::make_TOK_SET_VAR(text, yylloc);
+	return yy::parser::make_TOK_SET_VAR(text, driver.yylloc);
 }
 
 {BOOL_VARIABLE}	{
 	std::string text(yytext);
-	return yy::parser::make_TOK_BOOL_VAR(text, yylloc);
+	return yy::parser::make_TOK_BOOL_VAR(text, driver.yylloc);
 }
 
-{OPEN_BRACE}	{ return yy::parser::make_TOK_OPEN(yylloc); }
+{OPEN_BRACE}	{ return yy::parser::make_TOK_OPEN(driver.yylloc); }
 
 {CLOSE_BRACE}	{
-	return yy::parser::make_TOK_CLOSE(yylloc);
+	return yy::parser::make_TOK_CLOSE(driver.yylloc);
 }
 
 ({LABEL}|{QUOTED_LABEL}) {
 	std::string pid = processid(yytext, yyleng);
-	return yy::parser::make_TOK_ID(pid, yylloc);
+	return yy::parser::make_TOK_ID(pid, driver.yylloc);
 }
 
 ({MODES})/([[:space:],]) {
 	std::string mode(yytext);
-	return yy::parser::make_TOK_MODE(mode, yylloc);
+	return yy::parser::make_TOK_MODE(mode, driver.yylloc);
 }
 
 {HAT} {
 	PUSH(SUB_ID);
-	return yy::parser::make_TOK_HAT(yylloc);
+	return yy::parser::make_TOK_HAT(driver.yylloc);
 }
 
 {PROFILE} {
 	PUSH(SUB_ID);
-	return yy::parser::make_TOK_PROFILE(yylloc);
+	return yy::parser::make_TOK_PROFILE(driver.yylloc);
 }
 
-{COLON}	{ return yy::parser::make_TOK_COLON(yylloc); }
+{COLON}	{ return yy::parser::make_TOK_COLON(driver.yylloc); }
 
 {OPEN_PAREN} {
 	PUSH(LIST_VAL_MODE);
-	return yy::parser::make_TOK_OPENPAREN(yylloc);
+	return yy::parser::make_TOK_OPENPAREN(driver.yylloc);
 }
 
 {VARIABLE_NAME}	{
@@ -608,7 +594,7 @@ include/{WS}	{
 	{
 		/* no token found */
 		std::string proc = processunquoted(yytext, yyleng);
-		return yy::parser::make_TOK_ID(proc, yylloc);
+		return yy::parser::make_TOK_ID(proc, driver.yylloc);
 	}
 	case token::TOK_RLIMIT:
 		state = RLIMIT_MODE;
@@ -647,7 +633,7 @@ include/{WS}	{
 	}
 
 	PUSH(state);
-	return yy::parser::symbol_type(token, yylloc);
+	return yy::parser::symbol_type(token, driver.yylloc);
 }
 
 <INITIAL,NETWORK_MODE,RLIMIT_MODE,CHANGE_PROFILE_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE,ABI_MODE,USERNS_MODE>{
@@ -655,14 +641,14 @@ include/{WS}	{
 		if (YY_START != INITIAL)
 			POP_NODUMP();
 
-		return yy::parser::make_TOK_END_OF_RULE(yylloc);
+		return yy::parser::make_TOK_END_OF_RULE(driver.yylloc);
 	}
 }
 
 <INITIAL,SUB_ID_WS,INCLUDE,INCLUDE_EXISTS,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE,ABI_MODE,USERNS_MODE>{
 	\r?\n	{
 		DUMP_PREPROCESS;
-		current_lineno++;
+		driver.current_lineno++;
 	}
 }
 

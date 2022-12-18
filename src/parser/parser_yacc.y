@@ -168,7 +168,12 @@ while (0)
 	#include "tree/ProfileNode.hh"
 	#include "tree/PrefixNode.hh"
 	#include "tree/TreeNode.hh"
+
+	class Driver;
 }
+
+// The parsing context.
+%param { Driver& drv }
 
 %type <TreeNode> list
 %type <TreeNode> profilelist
