@@ -41,6 +41,7 @@
 #include "driver.hh"
 #include "parser.h"
 #include "lexer.hh"
+#include "lib.h"
 
 #define YY_USER_ACTION               	\
   driver.yylloc.first_pos = driver.yylloc.last_pos;	\
@@ -660,10 +661,6 @@ include/{WS}	{
 	}
 }
 %%
-
-// (TODO fix-grossness) THIS IS BAD - should find a way to fix 
-#include "parser.cc"
-#include "lib.c"
 
 /* Create a table mapping lexer state number to the name used in the
  * in the code.  This allows for better debug output

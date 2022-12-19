@@ -16,6 +16,9 @@
  *   Ltd.
  */
 
+#include "lib.h"
+#include "parser.h"
+
 #include <ctype.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -25,9 +28,6 @@
 #include <sys/types.h>
 
 #include <sys/apparmor_private.h>
-
-#include "lib.h"
-#include "parser.h"
 
 /**
  * isodigit - test if a character is an octal digit
