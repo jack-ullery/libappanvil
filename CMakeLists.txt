@@ -19,7 +19,6 @@ set(SOURCES
   ${PROJECT_SOURCE_DIR}/ProfileParser.cc
   ${PROJECT_SOURCE_DIR}/parser/lib.c
   ${PROJECT_SOURCE_DIR}/parser/parser.cc
-  ${PROJECT_SOURCE_DIR}/parser/parser_include.c
   ${PROJECT_SOURCE_DIR}/parser/tree/TreeNode.cc
   ${PROJECT_SOURCE_DIR}/parser/tree/ParseTree.cc
   ${PROJECT_SOURCE_DIR}/parser/tree/ProfileNode.cc
