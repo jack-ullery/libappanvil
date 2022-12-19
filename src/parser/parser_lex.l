@@ -313,7 +313,7 @@ GT		>
 	 */
 	{OPEN_PAREN} {
 		BEGIN(LIST_VAL_MODE); 
-		yy::parser::make_TOK_OPENPAREN(driver.yylloc);
+		return yy::parser::make_TOK_OPENPAREN(driver.yylloc);
 	}
 
 	in { return yy::parser::make_TOK_IN(driver.yylloc); }
