@@ -28,8 +28,6 @@
 #include "parser.h"
 #include "lexer.hh"
 
-int parser_token = 0;
-
 // For tracking location
 # define YYLLOC_DEFAULT(Cur, Rhs, N)                \
 do                                                  \
@@ -170,10 +168,17 @@ while (0)
 	#include "tree/TreeNode.hh"
 
 	class Driver;
+	class Lexer;
 }
 
 // The parsing context.
+%parse-param {Lexer& scanner}
 %param { Driver& drv }
+
+%code{
+  #undef yylex
+  #define yylex scanner.yylex
+}
 
 %type <TreeNode> list
 %type <TreeNode> profilelist

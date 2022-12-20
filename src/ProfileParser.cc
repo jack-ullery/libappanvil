@@ -2,19 +2,13 @@
 #include "parser/driver.hh"
 #include "parser/lexer.hh"
 
-#include <parser_lex.hh>
 #include <parser_yacc.hh>
 
-ProfileParser::ProfileParser(std::string filename)
+ProfileParser::ProfileParser(std::fstream &stream)
 {
-   Driver driver;
+    Driver driver;
+    Lexer lexer(stream);
 
-    if (!(yyin = fopen(filename.c_str(), "r")))
-    {
-        std::cerr << "cannot open " << filename << ": " << strerror(errno) << '\n';
-        exit(EXIT_FAILURE);
-    }
-
-    yy::parser parse(driver);
+    yy::parser parse(lexer, driver);
     driver.success = parse();
 }

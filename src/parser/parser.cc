@@ -35,7 +35,7 @@
 #include <sys/apparmor_private.h>
 
 #include "lib.h"
-#include "parser.h"
+#include "common.hh"
 #include "lexer.hh"
 
 /* #define DEBUG */

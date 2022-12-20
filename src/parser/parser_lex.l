@@ -19,6 +19,9 @@
 
 /* Definitions section */
 /* %option main */
+%option c++
+%option interactive
+%option noyylineno
 
 /* options set to noXXX eliminates need to link with libfl */
 %option noyywrap
@@ -26,6 +29,8 @@
 %option nounput
 %option stack
 %option nodefault
+
+%option yyclass="Lexer"
 
 %{
 #include <stdio.h>
@@ -38,6 +43,7 @@
 #include <unordered_map>
 #include <string>
 
+#include "common.hh"
 #include "driver.hh"
 #include "parser.h"
 #include "lexer.hh"
@@ -188,12 +194,6 @@ GT		>
 %%
 
 %{
-/* Copied directly into yylex function */
-	if (parser_token) {
-		int t = parser_token;
-		parser_token = 0;
-		return symbol_type (t, std::move(driver.yylloc));
-	}
 %}
 
 <INITIAL,SUB_ID_WS,INCLUDE,INCLUDE_EXISTS,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE,UNIX_MODE,ABI_MODE,USERNS_MODE>{
@@ -231,7 +231,6 @@ GT		>
 }
 
 <<EOF>> {
-	fclose(yyin);
 	yypop_buffer_state();
 	if ( !YY_CURRENT_BUFFER )
 		yyterminate();

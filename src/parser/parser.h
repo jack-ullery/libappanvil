@@ -35,7 +35,7 @@
 /* Global variable to pass token to lexer.  Will be replaced by parameter
  * when lexer and parser are made reentrant
  */
-extern int parser_token;
+// extern int parser_token;
 
 
 #define WARN_RULE_NOT_ENFORCED	0x1

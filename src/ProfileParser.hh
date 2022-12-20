@@ -6,8 +6,7 @@
 
 class ProfileParser {
   public:
-    ProfileParser(std::fstream stream);   // Not implemented yet
-    ProfileParser(std::string filename);
+    ProfileParser(std::fstream &stream);
 };
 
 #endif // PROFILE_PARSER_H
