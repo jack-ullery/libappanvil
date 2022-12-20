@@ -12,6 +12,7 @@ using symbol_type = yy::parser::symbol_type;
 #define YY_DECL symbol_type yylex(Driver& driver)
 YY_DECL;
 
+#undef YY_NULL
 #define YY_NULL yy::parser::symbol_type(0, driver.yylloc);
 
 #endif // LEXER_HH

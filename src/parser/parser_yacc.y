@@ -540,5 +540,5 @@ void yyerror(const char *msg, ...)
 void yy::parser::error(YYLTYPE const& location, 
 					   std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const& str)
 {
-	yyerror(str.c_str());
+	yyerror("(%lu, %lu): %s", location.first_pos, location.last_pos, str.c_str());
 }
