@@ -49,9 +49,9 @@
 #include "lexer.hh"
 #include "lib.h"
 
-#define YY_USER_ACTION               	\
+#define YY_USER_ACTION 								\
   driver.yylloc.first_pos = driver.yylloc.last_pos;	\
-  driver.yylloc.last_pos += yyleng;
+  driver.yylloc.last_pos  = yyin.tellg();
 
 #define DUMP_PREPROCESS do { /*ECHO;*/ } while (0)
 
