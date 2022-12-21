@@ -4,9 +4,9 @@
 #include "RuleNode.hh"
 #include <string>
 
-// The root node of the abstract syntax tree
 class FileNode : public RuleNode {
   public:
+    FileNode() = default;
     FileNode(uint64_t startPos, uint64_t stopPos);
     FileNode(uint64_t startPos, 
              uint64_t stopPos, 
@@ -15,8 +15,9 @@ class FileNode : public RuleNode {
              const std::string &toFile = "", 
              bool isSubset = false);
 
+    virtual operator std::string() const override;
+
   private:
-    virtual operator std::string() const;
     bool isSubset;
     std::string fromFile;
     std::string toFile;

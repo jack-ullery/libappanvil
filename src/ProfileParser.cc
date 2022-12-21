@@ -7,7 +7,7 @@
 ProfileParser::ProfileParser(std::fstream &stream)
 {
     Driver driver;
-    Lexer lexer(stream);
+    Lexer lexer(stream, std::cout);
 
     yy::parser parse(lexer, driver);
     driver.success = parse();

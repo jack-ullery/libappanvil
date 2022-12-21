@@ -16,8 +16,7 @@ class TreeNode {
     // Copy constructor
     TreeNode(const TreeNode &children);
 
-    // Append nodes into the internal list of children
-    void appendChildren(std::initializer_list<TreeNode> children);
+    // Append node into the internal list of children
     void appendChild(TreeNode child);
 
     // Operator to recursively convert Tree to string
@@ -30,6 +29,8 @@ class TreeNode {
   protected:
     std::string text;
     std::list<TreeNode> children;
+
+    void appendChildren(std::initializer_list<TreeNode> children);
 };
 
 #endif // TREE_NODE_HH

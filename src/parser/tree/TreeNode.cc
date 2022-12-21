@@ -20,7 +20,6 @@ TreeNode::TreeNode(std::initializer_list<TreeNode> children)
   appendChildren(children);
 }
 
-
 void TreeNode::appendChildren(std::initializer_list<TreeNode> children)
 {
   for(auto child : children) {

@@ -4,7 +4,6 @@
 #include "TreeNode.hh"
 #include <string>
 
-// The root node of the abstract syntax tree
 class AliasNode : public TreeNode {
   public:
     AliasNode(const std::string &from, const std::string &to);

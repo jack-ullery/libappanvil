@@ -4,10 +4,13 @@
 #include "TreeNode.hh"
 #include <string>
 
-// The root node of the abstract syntax tree
 class PrefixNode : public TreeNode {
   public:
-    PrefixNode(bool audit, bool should_deny, bool owner);
+    PrefixNode(bool audit = DEFAULT_AUDIT, bool should_deny = DEFAULT_PERM_MODE, bool owner = DEFAULT_OWNER);
+
+    static constexpr bool DEFAULT_AUDIT       = false; 
+    static constexpr bool DEFAULT_PERM_MODE   = false;
+    static constexpr bool DEFAULT_OWNER       = false;
 
   private:
     bool audit; 

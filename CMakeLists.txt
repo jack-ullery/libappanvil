@@ -16,9 +16,6 @@ file(MAKE_DIRECTORY ${AUTOGEN_SOURCE_DIR})
 
 ### Sources that need to be built ###
 set(SOURCES
-  ${PROJECT_SOURCE_DIR}/ProfileParser.cc
-  ${PROJECT_SOURCE_DIR}/parser/lib.c
-  ${PROJECT_SOURCE_DIR}/parser/parser.cc
   ${PROJECT_SOURCE_DIR}/parser/tree/TreeNode.cc
   ${PROJECT_SOURCE_DIR}/parser/tree/ParseTree.cc
   ${PROJECT_SOURCE_DIR}/parser/tree/ProfileNode.cc
@@ -28,6 +25,10 @@ set(SOURCES
   ${PROJECT_SOURCE_DIR}/parser/tree/FileNode.cc
   ${PROJECT_SOURCE_DIR}/parser/tree/LinkNode.cc
   ${PROJECT_SOURCE_DIR}/parser/tree/AbstractionNode.cc
+  ${PROJECT_SOURCE_DIR}/parser/tree/RuleList.cc
+  ${PROJECT_SOURCE_DIR}/parser/lib.c
+  ${PROJECT_SOURCE_DIR}/parser/parser.cc
+  ${PROJECT_SOURCE_DIR}/ProfileParser.cc
 )
 
 set(PARSE_INPUT ${PROJECT_SOURCE_DIR}/parser/parser_yacc.y)

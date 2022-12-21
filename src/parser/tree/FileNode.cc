@@ -1,4 +1,5 @@
 #include "FileNode.hh"
+#include "RuleNode.hh"
 
 #include <sstream>
 
@@ -23,7 +24,9 @@ FileNode::FileNode(uint64_t startPos,
 FileNode::operator std::string() const
 {
   std::stringstream stream;
-  stream << "file " << (isSubset? "subset " : "") << fromFile << " " << fileMode; 
+  stream << "file (" << startPos << ", " << stopPos << ")" 
+         << (isSubset? "subset " : "") 
+         << fromFile << " " << fileMode; 
   
   if(toFile != "") {
     stream << " -> " << toFile;

@@ -4,10 +4,10 @@
 #include "TreeNode.hh"
 #include <string>
 
-// The root node of the abstract syntax tree
 class ProfileNode : public TreeNode {
   public:
     ProfileNode(const std::string &profile_name, TreeNode rules);
+    ProfileNode() = default;
 };
 
 #endif // PROFILE_NODE_HH

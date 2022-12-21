@@ -165,6 +165,8 @@ while (0)
 	#include "tree/ParseTree.hh"
 	#include "tree/ProfileNode.hh"
 	#include "tree/PrefixNode.hh"
+	#include "tree/RuleList.hh"
+	#include "tree/RuleNode.hh"
 	#include "tree/TreeNode.hh"
 
 	class Driver;
@@ -173,41 +175,40 @@ while (0)
 
 // The parsing context.
 %parse-param {Lexer& scanner}
-%param { Driver& drv }
+%param { Driver& driver }
 
 %code{
   #undef yylex
   #define yylex scanner.yylex
 }
 
-%type <TreeNode> list
-%type <TreeNode> profilelist
-%type <TreeNode> profile_base
-%type <TreeNode> profile
-%type <TreeNode> preamble
-%type <TreeNode> rules
-%type <TreeNode> alias
-%type <TreeNode> opt_prefix
+%type <std::shared_ptr<ParseTree>> 				tree
+%type <std::shared_ptr<std::list<ProfileNode>>> profilelist
+%type <ProfileNode> profile_base
+%type <ProfileNode> profile
+%type <TreeNode> 	preamble
+%type <RuleList> 	rules
+%type <TreeNode> 	alias
+%type <PrefixNode> 	opt_prefix
 
-%type <TreeNode> abstraction
+%type <RuleNode> abstraction
 %type <TreeNode> abi_rule
-%type <TreeNode> rule
-%type <TreeNode> network_rule
-%type <TreeNode> mnt_rule
-%type <TreeNode> dbus_rule
-%type <TreeNode> signal_rule
-%type <TreeNode> ptrace_rule
-%type <TreeNode> unix_rule
-%type <TreeNode> userns_rule
-%type <TreeNode> change_profile
-%type <TreeNode> capability
-%type <TreeNode> hat
-%type <TreeNode> local_profile
-%type <TreeNode> cond_rule
-%type <TreeNode> link_rule
-%type <TreeNode> file_rule
-%type <TreeNode> frule
-%type <TreeNode> file_rule_tail
+%type <RuleNode> network_rule
+%type <RuleNode> mnt_rule
+%type <RuleNode> dbus_rule
+%type <RuleNode> signal_rule
+%type <RuleNode> ptrace_rule
+%type <RuleNode> unix_rule
+%type <RuleNode> userns_rule
+%type <RuleNode> change_profile
+%type <RuleNode> capability
+%type <RuleNode> hat
+%type <RuleNode> local_profile
+%type <RuleNode> cond_rule
+%type <LinkNode> link_rule
+%type <FileNode> file_rule
+%type <FileNode> frule
+%type <FileNode> file_rule_tail
 
 %type <std::string> TOK_ID
 %type <std::string>	TOK_CONDID
@@ -236,14 +237,13 @@ while (0)
 %%
 
 
-list: preamble profilelist { 
-								$$ = ParseTree($1, $2);
-								std::cout << (std::string) $$ << std::endl;
+tree: preamble profilelist { 
+								$$ = std::make_shared<ParseTree>($1, $2);
+								driver.ast = $$;
 						   };
 
-profilelist:					 { $$ = TreeNode(); }
-		   | profilelist profile { $1.appendChild($2);
-								   $$ = $1; }
+profilelist:					 { $$ = std::make_shared<std::list<ProfileNode>>(); }
+		   | profilelist profile { $$ = $1; $$->push_back($2); }
 
 opt_profile_flag:
 				| TOK_PROFILE
@@ -257,9 +257,8 @@ opt_id_or_var:
 
 // Should eventually add optional stuff into 
 profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE {
-		// auto first = @1.first_pos;
-		// auto last  = @7.last_pos;
-		// std::cout << first << " - " << last << std::endl;
+		$6.setStartPosition(@6.first_pos);
+		$6.setStopPosition(@6.last_pos);
 
 		$$ = ProfileNode($1, $6);
 	}
@@ -316,10 +315,11 @@ opt_perm_mode:				{$$ = false;}
 
 opt_prefix: opt_audit_flag opt_perm_mode opt_owner_flag {$$ = PrefixNode($1, $2, $3);}
 
-rules:												{$$ = TreeNode();}
-	 | rules abi_rule								{$$ = $1; $1.appendChild($2);}
-	 | rules opt_prefix rule						{$$ = $1; $1.appendChildren({$2, $3});}
-	 | rules opt_prefix TOK_OPEN rules TOK_CLOSE	{$$ = $1; $1.appendChildren({$2, $4});}
+rules:												{$$ = RuleList(@0.last_pos);}
+	 | rules abi_rule								{$$ = $1; ((TreeNode) $1).appendChild($2);}
+	 | rules opt_prefix file_rule					{$$ = $1; $3.setPrefix($2); $1.appendChild($3);}
+	 | rules opt_prefix link_rule					{$$ = $1; $3.setPrefix($2); $1.appendChild($3);}
+	 | rules opt_prefix TOK_OPEN rules TOK_CLOSE	{$$ = $1; $4.setPrefix($2); $1.appendChild($4);}
 	 | rules opt_prefix network_rule				{$$ = $1; /* $1.appendChildren({$2, $3}); */}
 	 | rules opt_prefix mnt_rule					{$$ = $1; /* $1.appendChildren({$2, $3}); */}
 	 | rules opt_prefix dbus_rule					{$$ = $1; /* $1.appendChildren({$2, $3}); */}
@@ -352,9 +352,6 @@ opt_target: /* nothing */
 
 opt_named_transition:						{$$ = "";}
 					| TOK_ARROW id_or_var	{$$ = $2;}
-
-rule: file_rule
-	| link_rule
 
 abi_rule: TOK_ABI TOK_ID 	TOK_END_OF_RULE	{$$ = TreeNode($2);}
 		| TOK_ABI TOK_VALUE TOK_END_OF_RULE	{$$ = TreeNode($2);}

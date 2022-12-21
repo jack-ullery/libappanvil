@@ -1,9 +1,7 @@
 #include "ParseTree.hh"
-#include "tree/TreeNode.hh"
+#include "TreeNode.hh"
 
-ParseTree::ParseTree(TreeNode preamble, TreeNode profilelist)
-  : TreeNode()
-{
-  this->appendChild(preamble);
-  this->appendChild(profilelist);
-}
+ParseTree::ParseTree(TreeNode preamble, std::shared_ptr<std::list<ProfileNode>> profileList)
+  : preamble{preamble}, 
+    profileList{profileList}
+{   }
