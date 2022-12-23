@@ -31,19 +31,3 @@ void TreeNode::appendChild(TreeNode child)
 {
   children.push_back(child);
 }
-
-TreeNode::operator std::string() const
-{
-  std::stringstream stream;
-  if(text != "") {
-    stream << text << std::endl;
-  }
-
-  for(auto child : children)
-  {
-    // Use this operator on all the children
-    stream << std::string(child);
-  }
-
-  return stream.str();
-};

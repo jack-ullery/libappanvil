@@ -15,8 +15,6 @@ class FileNode : public RuleNode {
              const std::string &toFile = "", 
              bool isSubset = false);
 
-    virtual operator std::string() const override;
-
   private:
     bool isSubset;
     std::string fromFile;

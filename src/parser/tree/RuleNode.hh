@@ -2,11 +2,11 @@
 #define RULE_NODE_HH
 
 #include "TreeNode.hh"
-#include "tree/PrefixNode.hh"
+#include "PrefixNode.hh"
 #include <cstdint>
 #include <string>
 
-class RuleNode : public TreeNode {
+class RuleNode : protected TreeNode {
   public:
     RuleNode();
     RuleNode(uint64_t startPos, uint64_t stopPos);
@@ -15,7 +15,7 @@ class RuleNode : public TreeNode {
     uint64_t getStartPosition() const;
     uint64_t getStopPosition()  const;
 
-    void setPrefix(PrefixNode &prefix);
+    void setPrefix(const PrefixNode &prefix);
 
   protected:
     PrefixNode prefix;

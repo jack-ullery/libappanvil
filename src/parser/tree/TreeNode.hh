@@ -19,9 +19,6 @@ class TreeNode {
     // Append node into the internal list of children
     void appendChild(TreeNode child);
 
-    // Operator to recursively convert Tree to string
-    virtual operator std::string() const;
-
     // Copy/Move assignment operator
     TreeNode& operator=(const TreeNode &) = default;
     TreeNode& operator=(TreeNode &&) = default;

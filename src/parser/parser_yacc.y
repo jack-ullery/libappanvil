@@ -191,7 +191,7 @@ while (0)
 %type <TreeNode> 	alias
 %type <PrefixNode> 	opt_prefix
 
-%type <RuleNode> abstraction
+%type <AbstractionNode> abstraction
 %type <TreeNode> abi_rule
 %type <RuleNode> network_rule
 %type <RuleNode> mnt_rule
@@ -273,7 +273,7 @@ preamble:					 	{ $$ = TreeNode(); }
 		| preamble alias	 	{ $$ = $1; $$.appendChild($2); }
 		| preamble varassign 	{ $$ = $1; /*$$.appendChild($2);*/ }
 		| preamble abi_rule	 	{ $$ = $1; $$.appendChild($2); }
-		| preamble abstraction	{ $$ = $1; $$.appendChild($2); }
+		| preamble abstraction	{ $$ = $1; /*$$.appendChild($2);*/ }
 
 alias: TOK_ALIAS TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE {
 		$$ = AliasNode($2, $4);
@@ -316,10 +316,10 @@ opt_perm_mode:				{$$ = false;}
 opt_prefix: opt_audit_flag opt_perm_mode opt_owner_flag {$$ = PrefixNode($1, $2, $3);}
 
 rules:												{$$ = RuleList(@0.last_pos);}
-	 | rules abi_rule								{$$ = $1; ((TreeNode) $1).appendChild($2);}
-	 | rules opt_prefix file_rule					{$$ = $1; $3.setPrefix($2); $1.appendChild($3);}
-	 | rules opt_prefix link_rule					{$$ = $1; $3.setPrefix($2); $1.appendChild($3);}
-	 | rules opt_prefix TOK_OPEN rules TOK_CLOSE	{$$ = $1; $4.setPrefix($2); $1.appendChild($4);}
+	 | rules abi_rule								{$$ = $1;}
+	 | rules opt_prefix file_rule					{$$ = $1; $1.appendFileNode($2, $3);}
+	 | rules opt_prefix link_rule					{$$ = $1; $1.appendLinkNode($2, $3);}
+	 | rules opt_prefix TOK_OPEN rules TOK_CLOSE	{$$ = $1; $1.appendRuleList($2, $4);}
 	 | rules opt_prefix network_rule				{$$ = $1; /* $1.appendChildren({$2, $3}); */}
 	 | rules opt_prefix mnt_rule					{$$ = $1; /* $1.appendChildren({$2, $3}); */}
 	 | rules opt_prefix dbus_rule					{$$ = $1; /* $1.appendChildren({$2, $3}); */}
@@ -332,7 +332,7 @@ rules:												{$$ = RuleList(@0.last_pos);}
 	 | rules hat									{$$ = $1; /* $1.appendChild($2); */}
 	 | rules local_profile							{$$ = $1; /* $1.appendChild($2); */}
 	 | rules cond_rule								{$$ = $1; /* $1.appendChild($2); */}
-	 | rules abstraction							{$$ = $1; $1.appendChild($2);}
+	 | rules abstraction							{$$ = $1; $1.appendAbstraction($2);}
 	 | rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE opt_id TOK_END_OF_RULE	{$$ = $1;}
 
 cond_rule: TOK_IF expr TOK_OPEN rules TOK_CLOSE

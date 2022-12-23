@@ -6,6 +6,7 @@
 
 class AbstractionNode : public RuleNode {
   public:
+    AbstractionNode() = default;
     AbstractionNode(uint64_t startPos, uint64_t stopPos, const std::string &path, bool is_if_exists = false);
 
   private:

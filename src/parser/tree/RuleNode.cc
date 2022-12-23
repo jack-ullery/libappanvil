@@ -30,7 +30,7 @@ RuleNode::RuleNode(const std::string &text, uint64_t startPos, uint64_t stopPos)
   assert_things;
 }
 
-void RuleNode::setPrefix(PrefixNode &prefix)
+void RuleNode::setPrefix(const PrefixNode &prefix)
 {
   assert_things;
   this->prefix = prefix;

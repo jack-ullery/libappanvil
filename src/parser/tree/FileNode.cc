@@ -20,18 +20,3 @@ FileNode::FileNode(uint64_t startPos,
     toFile{toFile},
     fileMode{fileMode}
 {   }
-
-FileNode::operator std::string() const
-{
-  std::stringstream stream;
-  stream << "file (" << startPos << ", " << stopPos << ")" 
-         << (isSubset? "subset " : "") 
-         << fromFile << " " << fileMode; 
-  
-  if(toFile != "") {
-    stream << " -> " << toFile;
-  }
-
-  stream << ",\n";
-  return stream.str();
-};
