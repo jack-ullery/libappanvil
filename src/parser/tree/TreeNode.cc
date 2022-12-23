@@ -31,3 +31,8 @@ void TreeNode::appendChild(TreeNode child)
 {
   children.push_back(child);
 }
+
+std::string TreeNode::getText() const
+{
+  return text;
+}

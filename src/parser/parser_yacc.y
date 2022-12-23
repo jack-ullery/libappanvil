@@ -240,6 +240,7 @@ while (0)
 tree: preamble profilelist { 
 								$$ = std::make_shared<ParseTree>($1, $2);
 								driver.ast = $$;
+								driver.success = true;
 						   };
 
 profilelist:					 { $$ = std::make_shared<std::list<ProfileNode>>(); }

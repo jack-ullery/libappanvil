@@ -19,6 +19,8 @@ class TreeNode {
     // Append node into the internal list of children
     void appendChild(TreeNode child);
 
+    std::string getText() const;
+
     // Copy/Move assignment operator
     TreeNode& operator=(const TreeNode &) = default;
     TreeNode& operator=(TreeNode &&) = default;

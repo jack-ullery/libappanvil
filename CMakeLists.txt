@@ -28,6 +28,7 @@ set(SOURCES
   ${PROJECT_SOURCE_DIR}/parser/tree/RuleList.cc
   ${PROJECT_SOURCE_DIR}/parser/lib.c
   ${PROJECT_SOURCE_DIR}/parser/parser.cc
+  ${PROJECT_SOURCE_DIR}/Profile.cc
   ${PROJECT_SOURCE_DIR}/ProfileParser.cc
 )
 

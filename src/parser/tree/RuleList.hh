@@ -24,6 +24,11 @@ class RuleList : public RuleNode {
     void appendRuleList(const PrefixNode &prefix, RuleList &node);
     void appendAbstraction(AbstractionNode &node);
 
+    std::list<FileNode>        getFileList();
+    std::list<LinkNode>        getLinkList();
+    std::list<RuleList>        getRuleList();
+    std::list<AbstractionNode> getAbstractionList();
+
   private:
     std::list<FileNode>         files;
     std::list<LinkNode>         links;

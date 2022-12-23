@@ -11,6 +11,8 @@ class ProfileNode : public TreeNode {
     ProfileNode(const std::string &profile_name, const RuleList &rules);
     ProfileNode() = default;
 
+    RuleList getRules();
+
   protected:
     RuleList rules;
 };

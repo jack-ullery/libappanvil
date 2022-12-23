@@ -14,3 +14,8 @@ AbstractionNode::operator std::string() const
   stream << "include (" << getStartPosition() << ", " << getStopPosition() << ") " << path << ",\n";
   return stream.str();
 };
+
+std::string AbstractionNode::getPath()
+{
+  return path;
+}
