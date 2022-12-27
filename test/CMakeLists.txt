@@ -9,3 +9,4 @@ file(GLOB_RECURSE
 )
 
 add_subdirectory(src/simple)
+add_subdirectory(src/e2e)

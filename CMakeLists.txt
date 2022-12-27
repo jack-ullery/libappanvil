@@ -55,7 +55,7 @@ ADD_FLEX_BISON_DEPENDENCY(LEXER PARSER)
 
 #### Set Compiler Options ####
 set(CMAKE_CXX_FLAGS "-g -Wall -Wextra")
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 ## set_source_files_properties(${CXX_SOURCES} PROPERTIES LANGUAGE CXX)
 
