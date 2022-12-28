@@ -1,18 +1,18 @@
-#include "Profile.hh"
 #include "parser/tree/AbstractionNode.hh"
+#include "apparmor_profile.hh"
 
 #include <iostream>
 
-Profile::Profile(ProfileNode& profile_model)
+AppArmor::Profile::Profile(ProfileNode& profile_model)
   : profile_model{profile_model}
 {   }
 
-std::string Profile::getName()
+std::string AppArmor::Profile::getName()
 {
     return profile_model.getText();
 }
 
-std::unordered_set<std::string> Profile::getAbstractions()
+std::unordered_set<std::string> AppArmor::Profile::getAbstractions()
 {
   std::unordered_set<std::string> set;
 

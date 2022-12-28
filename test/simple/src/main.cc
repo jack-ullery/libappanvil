@@ -1,12 +1,12 @@
 #include <fstream>
 #include <stdlib.h>
 
-#include "ProfileParser.hh"
+#include "apparmor_parser.hh"
 
 int main(int argc, char** argv) {
 	if(argc == 2) {
 		std::fstream stream(argv[1]);
-		ProfileParser parser(stream);
+		AppArmor::Parser parser(stream);
 		return 0;
 	}
 

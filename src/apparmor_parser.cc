@@ -1,11 +1,11 @@
-#include "ProfileParser.hh"
+#include "apparmor_parser.hh"
 #include "parser/driver.hh"
 #include "parser/lexer.hh"
 
 #include <memory>
 #include <parser_yacc.hh>
 
-ProfileParser::ProfileParser(std::fstream &stream)
+AppArmor::Parser::Parser(std::fstream &stream)
 {
     Driver driver;
     Lexer lexer(stream, std::cout);
@@ -20,7 +20,7 @@ ProfileParser::ProfileParser(std::fstream &stream)
     initializeProfileList(driver.ast);
 }
 
-void ProfileParser::initializeProfileList(std::shared_ptr<ParseTree> ast)
+void AppArmor::Parser::initializeProfileList(std::shared_ptr<ParseTree> ast)
 {
     profile_list = std::list<Profile>();
     
@@ -31,7 +31,7 @@ void ProfileParser::initializeProfileList(std::shared_ptr<ParseTree> ast)
     }
 }
 
-std::list<Profile> ProfileParser::getProfileList()
+std::list<AppArmor::Profile> AppArmor::Parser::getProfileList()
 {
     return profile_list;
 }

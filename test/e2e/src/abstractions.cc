@@ -5,12 +5,12 @@
 #include <iostream>
 #include <unordered_set>
 
-#include "ProfileParser.hh"
+#include "apparmor_parser.hh"
 
-std::list<Profile> getProfileList(std::string filename)
+std::list<AppArmor::Profile> getProfileList(std::string filename)
 {
 	std::fstream stream(filename);
-	ProfileParser parser(stream);
+	AppArmor::Parser parser(stream);
 	return parser.getProfileList();
 }
 

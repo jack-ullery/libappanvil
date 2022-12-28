@@ -28,8 +28,8 @@ set(SOURCES
   ${PROJECT_SOURCE_DIR}/parser/tree/RuleList.cc
   ${PROJECT_SOURCE_DIR}/parser/lib.c
   ${PROJECT_SOURCE_DIR}/parser/parser.cc
-  ${PROJECT_SOURCE_DIR}/Profile.cc
-  ${PROJECT_SOURCE_DIR}/ProfileParser.cc
+  ${PROJECT_SOURCE_DIR}/apparmor_profile.cc
+  ${PROJECT_SOURCE_DIR}/apparmor_parser.cc
 )
 
 set(PARSE_INPUT ${PROJECT_SOURCE_DIR}/parser/parser_yacc.y)
