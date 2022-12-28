@@ -8,5 +8,5 @@ file(GLOB_RECURSE
      ${PROFILE_SOURCE_DIR}/*/*.sd
 )
 
-add_subdirectory(src/simple)
-add_subdirectory(src/e2e)
+add_subdirectory(simple)
+add_subdirectory(e2e)

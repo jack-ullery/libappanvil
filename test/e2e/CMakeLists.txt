@@ -3,8 +3,8 @@ cmake_minimum_required (VERSION 3.16.3)
 project(end-to-end-test C CXX)
 
 set(TEST_SOURCES
-  ./main.cc
-  ./abstractions.cc
+  ./src/main.cc
+  ./src/abstractions.cc
 )
 
 #### Check that gtest is installed ####
@@ -23,13 +23,26 @@ if(${GTEST_FOUND})
   target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARY_NAME})
   target_link_libraries(${PROJECT_NAME} PUBLIC gtest)
 
+  #### Create fixture for tests ####
+  add_test(e2e_test_build
+    "${CMAKE_COMMAND}"
+    --build "${CMAKE_BINARY_DIR}"
+    --config "$<CONFIG>"
+    --target "${PROJECT_NAME}"
+  )
+  set_tests_properties(e2e_test_build PROPERTIES FIXTURES_SETUP e2e_test_fixture)
+
   # Set the location of profiles as a global variable for the tests
   target_compile_definitions(${PROJECT_NAME} PUBLIC -DPROFILE_SOURCE_DIR="${PROFILE_SOURCE_DIR}")
 
   # Add the tests to ctest
-  gtest_discover_tests(
-    ${PROJECT_NAME} 
+  gtest_add_tests(
+    TARGET ${PROJECT_NAME}
+    SOURCES ${TEST_SOURCES}
     TEST_PREFIX "[end-to-end] e2e."
-    PROPERTIES DEPENDS ${PROJECT_NAME}
+    TEST_LIST ADDED_TESTS
   )
+
+  set_tests_properties(${ADDED_TESTS} PROPERTIES FIXTURES_REQUIRED test_fixture)
+
 endif()
