@@ -64,11 +64,24 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #### Create the library ####
 add_library(${LIBRARY_NAME} ${SOURCES} ${FLEX_LEXER_OUTPUTS} ${BISON_PARSER_OUTPUT_SOURCE})
 
-target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
+target_include_directories(${LIBRARY_NAME} PUBLIC  ${PROJECT_SOURCE_DIR})
 target_include_directories(${LIBRARY_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/parser)
 target_include_directories(${LIBRARY_NAME} PRIVATE ${AUTOGEN_SOURCE_DIR})
 
-## target_include_directories(${LIBRARY_NAME} PRIVATE SYSTEM ${AUTOGEN_SOURCE_DIR})
+# Create target to install library
+install(TARGETS ${LIBRARY_NAME} DESTINATION lib)
+
+# Create uninstall target
+# Copied from: https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake
+if(NOT TARGET uninstall)
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+  add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+endif()
 
 #### Create the test executable ####
 enable_testing()
