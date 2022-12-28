@@ -1,18 +1,25 @@
-#include "RuleList.hh"
-#include "tree/RuleNode.hh"
+#include "AbstractionNode.hh"
+#include "FileNode.hh"
+#include "LinkNode.hh"
+#include "PrefixNode.hh"
+#include "ProfileNode.hh"
+#include "TreeNode.hh"
 
 #include <iostream>
 
-RuleList::RuleList(uint64_t startPos)
+template<class ProfileNode>
+RuleList<ProfileNode>::RuleList(uint64_t startPos)
   : RuleNode(startPos, startPos)
 {   }
 
-void RuleList::setStartPosition(uint64_t startPos)
+template<class ProfileNode>
+void RuleList<ProfileNode>::setStartPosition(uint64_t startPos)
 {
   this->startPos = startPos;
 }
 
-void RuleList::setStopPosition(uint64_t stopPos)
+template<class ProfileNode>
+void RuleList<ProfileNode>::setStopPosition(uint64_t stopPos)
 {
   this->stopPos = stopPos;
 }
@@ -25,43 +32,66 @@ inline void appendPrefixedNode(const PrefixNode &prefix, T &node, std::list<T> l
   list.push_back(node);
 }
 
-void RuleList::appendFileNode(const PrefixNode &prefix, FileNode &node)
+template<class ProfileNode>
+void RuleList<ProfileNode>::appendFileNode(const PrefixNode &prefix, FileNode &node)
 {
   appendPrefixedNode(prefix, node, files);
 }
 
-void RuleList::appendLinkNode(const PrefixNode &prefix, LinkNode &node)
+template<class ProfileNode>
+void RuleList<ProfileNode>::appendLinkNode(const PrefixNode &prefix, LinkNode &node)
 {
   appendPrefixedNode(prefix, node, links);
 }
 
-void RuleList::appendRuleList(const PrefixNode &prefix, RuleList &node)
+template<class ProfileNode>
+void RuleList<ProfileNode>::appendRuleList(const PrefixNode &prefix, RuleList<ProfileNode> &node)
 {
   appendPrefixedNode(prefix, node, rules);
 }
 
-void RuleList::appendAbstraction(AbstractionNode &node)
+template<class ProfileNode>
+void RuleList<ProfileNode>::appendAbstraction(AbstractionNode &node)
 {
   abstractions.push_back(node);
 }
 
+template<class ProfileNode>
+void RuleList<ProfileNode>::appendSubprofile(ProfileNode &node)
+{
+  subprofiles.push_back(node);
+}
+
 /** Get methods **/
-std::list<FileNode> RuleList::getFileList()
+template<class ProfileNode>
+std::list<FileNode> RuleList<ProfileNode>::getFileList()
 {
   return files;
 }
 
-std::list<LinkNode> RuleList::getLinkList()
+template<class ProfileNode>
+std::list<LinkNode> RuleList<ProfileNode>::getLinkList()
 {
   return links;
 }
 
-std::list<RuleList> RuleList::getRuleList()
+template<class ProfileNode>
+std::list<RuleList<ProfileNode>> RuleList<ProfileNode>::getRuleList()
 {
   return rules;
 }
 
-std::list<AbstractionNode> RuleList::getAbstractionList()
+template<class ProfileNode>
+std::list<AbstractionNode> RuleList<ProfileNode>::getAbstractionList()
 {
   return abstractions;
 }
+
+template<class ProfileNode>
+std::list<ProfileNode> RuleList<ProfileNode>::getSubprofiles()
+{
+  return subprofiles;
+}
+
+// Helpful for the linker
+template class RuleList<ProfileNode>;

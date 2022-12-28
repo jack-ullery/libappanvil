@@ -184,12 +184,13 @@ while (0)
 
 %type <std::shared_ptr<ParseTree>> 				tree
 %type <std::shared_ptr<std::list<ProfileNode>>> profilelist
-%type <ProfileNode> profile_base
-%type <ProfileNode> profile
-%type <TreeNode> 	preamble
-%type <RuleList> 	rules
-%type <TreeNode> 	alias
-%type <PrefixNode> 	opt_prefix
+%type <ProfileNode> 							profile_base
+%type <ProfileNode> 							profile
+%type <ProfileNode> 							local_profile
+%type <TreeNode> 								preamble
+%type <RuleList<ProfileNode>> 					rules
+%type <TreeNode> 								alias
+%type <PrefixNode> 								opt_prefix
 
 %type <AbstractionNode> abstraction
 %type <TreeNode> abi_rule
@@ -203,7 +204,6 @@ while (0)
 %type <RuleNode> change_profile
 %type <RuleNode> capability
 %type <RuleNode> hat
-%type <RuleNode> local_profile
 %type <RuleNode> cond_rule
 %type <LinkNode> link_rule
 %type <FileNode> file_rule
@@ -266,7 +266,7 @@ profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE 
 
 profile: opt_profile_flag profile_base { $$ = $2; }
 
-local_profile: TOK_PROFILE profile_base
+local_profile: TOK_PROFILE profile_base { $$ = $2; }
 
 hat: hat_start profile_base
 
@@ -316,7 +316,7 @@ opt_perm_mode:				{$$ = false;}
 
 opt_prefix: opt_audit_flag opt_perm_mode opt_owner_flag {$$ = PrefixNode($1, $2, $3);}
 
-rules:												{$$ = RuleList(@0.last_pos);}
+rules:												{$$ = RuleList<ProfileNode>(@0.last_pos);}
 	 | rules abi_rule								{$$ = $1;}
 	 | rules opt_prefix file_rule					{$$ = $1; $$.appendFileNode($2, $3);}
 	 | rules opt_prefix link_rule					{$$ = $1; $$.appendLinkNode($2, $3);}
@@ -331,7 +331,7 @@ rules:												{$$ = RuleList(@0.last_pos);}
 	 | rules opt_prefix change_profile				{$$ = $1; /* $$.appendChildren({$2, $3}); */}
 	 | rules opt_prefix capability					{$$ = $1; /* $$.appendChildren({$2, $3}); */}
 	 | rules hat									{$$ = $1; /* $$.appendChild($2); */}
-	 | rules local_profile							{$$ = $1; /* $$.appendChild($2); */}
+	 | rules local_profile							{$$ = $1; $$.appendSubprofile($2);}
 	 | rules cond_rule								{$$ = $1; /* $$.appendChild($2); */}
 	 | rules abstraction							{$$ = $1; $$.appendAbstraction($2);}
 	 | rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE opt_id TOK_END_OF_RULE	{$$ = $1;}
