@@ -1,11 +1,12 @@
 #ifndef APPARMOR_PARSER_HH
 #define APPARMOR_PARSER_HH
 
-#include "parser/tree/ParseTree.hh"
 #include "apparmor_profile.hh"
 
 #include <fstream>
 #include <list>
+
+class ParseTree;
 
 namespace AppArmor {
   class Parser {

@@ -1,6 +1,7 @@
 #include "apparmor_parser.hh"
 #include "parser/driver.hh"
 #include "parser/lexer.hh"
+#include "parser/tree/ParseTree.hh"
 
 #include <memory>
 #include <parser_yacc.hh>
@@ -26,7 +27,8 @@ void AppArmor::Parser::initializeProfileList(std::shared_ptr<ParseTree> ast)
     
     auto astList = ast->profileList;
     for (auto prof_iter = astList->begin(); prof_iter != astList->end(); prof_iter++){
-        Profile profile(*prof_iter);
+        std::shared_ptr<ProfileNode> node = std::make_shared<ProfileNode>(*prof_iter);
+        Profile profile(node);
         profile_list.push_back(profile);
     }
 }

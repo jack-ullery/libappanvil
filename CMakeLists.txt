@@ -35,6 +35,12 @@ set(SOURCES
 set(PARSE_INPUT ${PROJECT_SOURCE_DIR}/parser/parser_yacc.y)
 set(LEXER_INPUT ${PROJECT_SOURCE_DIR}/parser/parser_lex.l)
 
+# Public headers that will be used by the client
+set(OUTPUT_HEADERS
+  ${PROJECT_SOURCE_DIR}/apparmor_profile.hh
+  ${PROJECT_SOURCE_DIR}/apparmor_parser.hh
+)
+
 #### Bison stuff ####
 find_package(BISON REQUIRED)
 
@@ -70,6 +76,7 @@ target_include_directories(${LIBRARY_NAME} PRIVATE ${AUTOGEN_SOURCE_DIR})
 
 # Create target to install library
 install(TARGETS ${LIBRARY_NAME} DESTINATION lib)
+install(FILES ${OUTPUT_HEADERS} DESTINATION include)
 
 # Create uninstall target
 # Copied from: https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake

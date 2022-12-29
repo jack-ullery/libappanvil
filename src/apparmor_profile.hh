@@ -1,14 +1,15 @@
 #ifndef APPARMOR_PROFILE_HH
 #define APPARMOR_PROFILE_HH
 
-#include "parser/tree/ProfileNode.hh"
-
+#include <memory>
 #include <unordered_set>
+
+class ProfileNode;
 
 namespace AppArmor {
   class Profile {
     public:
-      Profile(ProfileNode &profile_model);
+      Profile(std::shared_ptr<ProfileNode> profile_model);
 
       // Returns the name of this profile
       std::string getName();
@@ -17,7 +18,7 @@ namespace AppArmor {
       std::unordered_set<std::string> getAbstractions();
 
     private:
-      ProfileNode profile_model;
+      std::shared_ptr<ProfileNode> profile_model;
   };
 }
 
