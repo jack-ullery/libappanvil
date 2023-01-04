@@ -8,12 +8,12 @@ AppArmor::Profile::Profile(std::shared_ptr<ProfileNode> profile_model)
   : profile_model{profile_model}
 {   }
 
-std::string AppArmor::Profile::getName()
+std::string AppArmor::Profile::getName() const
 {
     return profile_model->getText();
 }
 
-std::unordered_set<std::string> AppArmor::Profile::getAbstractions()
+std::unordered_set<std::string> AppArmor::Profile::getAbstractions() const
 {
   std::unordered_set<std::string> set;
 

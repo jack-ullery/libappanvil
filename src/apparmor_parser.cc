@@ -33,7 +33,7 @@ void AppArmor::Parser::initializeProfileList(std::shared_ptr<ParseTree> ast)
     }
 }
 
-std::list<AppArmor::Profile> AppArmor::Parser::getProfileList()
+std::list<AppArmor::Profile> AppArmor::Parser::getProfileList() const
 {
     return profile_list;
 }

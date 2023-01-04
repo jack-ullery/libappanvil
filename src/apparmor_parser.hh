@@ -13,7 +13,7 @@ namespace AppArmor {
     public:
       Parser(std::fstream &stream);
 
-      std::list<Profile> getProfileList();
+      std::list<Profile> getProfileList() const;
 
     private:
       void initializeProfileList(std::shared_ptr<ParseTree> ast);
