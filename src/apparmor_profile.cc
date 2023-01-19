@@ -1,6 +1,7 @@
 #include "apparmor_profile.hh"
 #include "parser/tree/AbstractionNode.hh"
 #include "parser/tree/ProfileNode.hh"
+#include "parser/tree/FileNode.hh"
 
 #include <iostream>
 
@@ -22,6 +23,22 @@ std::unordered_set<std::string> AppArmor::Profile::getAbstractions() const
 
   for(AbstractionNode node : abstractionList) {
     set.insert(node.getPath());
+  }
+
+  return set;
+}
+
+// Returns a list of file rules included in the profile
+std::list<AppArmor::FileRule> AppArmor::Profile::getFileRules() const
+{
+  std::list<AppArmor::FileRule> set;
+
+  auto ruleList = profile_model->getRules();
+  auto fileRuleList = ruleList.getFileList();
+
+  for(FileNode node : fileRuleList) {
+    auto ptr = std::make_shared<FileNode>(node);
+    set.emplace_back(ptr);
   }
 
   return set;

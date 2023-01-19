@@ -1,8 +1,11 @@
 #ifndef APPARMOR_PROFILE_HH
 #define APPARMOR_PROFILE_HH
 
+#include <list>
 #include <memory>
 #include <unordered_set>
+
+#include "apparmor_file_rule.hh"
 
 class ProfileNode;
 
@@ -14,8 +17,11 @@ namespace AppArmor {
       // Returns the name of this profile
       std::string getName() const;
 
-      // Returns a list of abstractions included in the profile
+      // Returns a set of abstractions included in the profile
       std::unordered_set<std::string> getAbstractions() const;
+
+      // Returns a list of file rules included in the profile
+      std::list<AppArmor::FileRule> getFileRules() const;
 
     private:
       std::shared_ptr<ProfileNode> profile_model;

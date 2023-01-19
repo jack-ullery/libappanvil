@@ -10,13 +10,23 @@ FileNode::FileNode(uint64_t startPos, uint64_t stopPos)
 
 FileNode::FileNode(uint64_t startPos, 
                    uint64_t stopPos, 
-                   const std::string &fromFile, 
+                   const std::string &filename, 
                    const std::string &fileMode, 
-                   const std::string &toFile, 
+                   const std::string &exec_target, 
                    bool isSubset)
   : RuleNode("file", startPos, stopPos),
     isSubset{isSubset},
-    fromFile{fromFile},
-    toFile{toFile},
+    filename{filename},
+    exec_target{exec_target},
     fileMode{fileMode}
 {   }
+
+std::string FileNode::getFilename() const
+{
+  return filename;
+}
+
+std::string FileNode::getFilemode() const
+{
+  return fileMode;
+}
