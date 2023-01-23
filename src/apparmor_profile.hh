@@ -15,7 +15,7 @@ namespace AppArmor {
       Profile(std::shared_ptr<ProfileNode> profile_model);
 
       // Returns the name of this profile
-      std::string getName() const;
+      std::string name() const;
 
       // Returns a set of abstractions included in the profile
       std::unordered_set<std::string> getAbstractions() const;

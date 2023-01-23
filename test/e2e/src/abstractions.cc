@@ -21,7 +21,7 @@ void check_abstractions_for_single_profile(std::string filename, std::unordered_
     EXPECT_EQ(profile_list.size(), 1) << "There should only be one profile";
 
     auto first_profile = profile_list.begin();
-    EXPECT_EQ(first_profile->getName(), profile_name);
+    EXPECT_EQ(first_profile->name(), profile_name);
 
     auto abstractions = first_profile->getAbstractions();
     EXPECT_EQ(abstractions, expected_abstractions);

@@ -9,7 +9,7 @@ AppArmor::Profile::Profile(std::shared_ptr<ProfileNode> profile_model)
   : profile_model{profile_model}
 {   }
 
-std::string AppArmor::Profile::getName() const
+std::string AppArmor::Profile::name() const
 {
     return profile_model->getText();
 }
