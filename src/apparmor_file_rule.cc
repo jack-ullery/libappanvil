@@ -14,3 +14,9 @@ std::string AppArmor::FileRule::getFilemode() const
 {
   return model->getFilemode();
 }
+
+bool AppArmor::FileRule::operator==(const AppArmor::FileRule& that) const
+{
+  return (that.getFilename() == this->getFilename()) && 
+         (that.getFilemode() == this->getFilemode());
+}

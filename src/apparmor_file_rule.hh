@@ -15,6 +15,9 @@ namespace AppArmor {
       std::string getFilename() const;
       std::string getFilemode() const;
 
+      // Whether or not two FileRule objects are equal
+      bool operator==(const AppArmor::FileRule& that) const;
+
     private:
       std::shared_ptr<FileNode> model;
   };

@@ -5,6 +5,7 @@ project(end-to-end-test C CXX)
 set(TEST_SOURCES
   ./src/main.cc
   ./src/abstractions.cc
+  ./src/file_rules.cc
 )
 
 #### Check that gtest is installed ####
