@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv) {
 	if(argc == 2) {
-		std::fstream stream(argv[1]);
+		std::ifstream stream(argv[1]);
 		AppArmor::Parser parser(stream);
 		return 0;
 	}

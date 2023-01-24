@@ -6,7 +6,7 @@
 #include <memory>
 #include <parser_yacc.hh>
 
-AppArmor::Parser::Parser(std::fstream &stream)
+AppArmor::Parser::Parser(std::ifstream &stream)
 {
     Driver driver;
     Lexer lexer(stream, std::cout);

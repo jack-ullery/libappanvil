@@ -9,7 +9,7 @@
 
 std::list<AppArmor::Profile> getProfileList(std::string filename)
 {
-	std::fstream stream(filename);
+	std::ifstream stream(filename);
 	AppArmor::Parser parser(stream);
 	return parser.getProfileList();
 }

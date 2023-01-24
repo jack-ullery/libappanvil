@@ -11,7 +11,7 @@ class ParseTree;
 namespace AppArmor {
   class Parser {
     public:
-      Parser(std::fstream &stream);
+      Parser(std::ifstream &stream);
 
       std::list<Profile> getProfileList() const;
 
