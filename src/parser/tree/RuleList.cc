@@ -26,7 +26,7 @@ void RuleList<ProfileNode>::setStopPosition(uint64_t stopPos)
 
 /** Append methods **/
 template <typename T, typename = typename std::enable_if<std::is_base_of<RuleNode, T>::value, T>::type>
-inline void appendPrefixedNode(const PrefixNode &prefix, T &node, std::list<T> list)
+inline void appendPrefixedNode(const PrefixNode &prefix, T &node, std::list<T> &list)
 {
   node.setPrefix(prefix);
   list.push_back(node);
