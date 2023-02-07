@@ -27,8 +27,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <sys/apparmor_private.h>
-
 /**
  * isodigit - test if a character is an octal digit
  * @c: character to test

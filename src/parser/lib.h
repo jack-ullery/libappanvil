@@ -1,7 +1,7 @@
 #ifndef __AA_LIB_H_
 #define __AA_LIB_H_
 
-#include <sys/apparmor_private.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {

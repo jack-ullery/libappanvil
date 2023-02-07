@@ -31,8 +31,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <sys/apparmor.h>
-#include <sys/apparmor_private.h>
 
 #include "lib.h"
 #include "common.hh"
