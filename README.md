@@ -12,7 +12,7 @@ Packages needed to compile the library:
 
 #### Install commands (Ubuntu)
 ```
-sudo apt install pkg-config cmake clang bison flex
+sudo apt install pkg-config cmake clang bison flex libfl-dev
 ```
 
 ### Testing
