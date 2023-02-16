@@ -23,8 +23,8 @@
 #define __AA_PARSER_H
 
 #include <endian.h>
-#include <string.h>
 #include <stdint.h>
+#include <string.h>
 #include <sys/resource.h>
 
 #include <libintl.h>

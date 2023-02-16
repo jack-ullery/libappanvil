@@ -9,10 +9,10 @@ class LinkNode : public RuleNode {
     LinkNode() = default;
     LinkNode(uint64_t startPos, uint64_t stopPos, bool isSubset, const std::string &linkFrom, const std::string &linkTo);
 
-    virtual operator std::string() const;
+    virtual explicit operator std::string() const;
 
   private:
-    bool isSubset;
+    bool isSubset = false;
     std::string from;
     std::string to;
 };

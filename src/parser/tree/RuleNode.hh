@@ -12,12 +12,15 @@ class RuleNode : protected TreeNode {
     RuleNode(uint64_t startPos, uint64_t stopPos);
     RuleNode(const std::string &text, uint64_t startPos, uint64_t stopPos);
 
+    void setStartPosition(const uint64_t &startPos);
+    void setStopPosition(const uint64_t &stopPos);
+
     uint64_t getStartPosition() const;
     uint64_t getStopPosition()  const;
 
     void setPrefix(const PrefixNode &prefix);
 
-  protected:
+  private:
     PrefixNode prefix;
 
     uint64_t startPos;
