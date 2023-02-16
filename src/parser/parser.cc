@@ -36,6 +36,7 @@
 #include "common.hh"
 #include "lexer.hh"
 
+// NOLINTBEGIN
 /* #define DEBUG */
 #ifdef DEBUG
 #undef PDEBUG
@@ -230,3 +231,4 @@ char *processid(const char *string, int len)
 		return processquoted(string, len);
 	return processunquoted(string, len);
 }
+// NOLINTEND
