@@ -26,6 +26,6 @@ namespace AppArmor {
 
       std::list<Profile> profile_list; 
   };
-}
+} // namespace AppArmor
 
 #endif // APPARMOR_PARSER_HH
