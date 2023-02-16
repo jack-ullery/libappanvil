@@ -21,6 +21,6 @@ namespace AppArmor {
     private:
       std::shared_ptr<FileNode> model;
   };
-}
+} // namespace AppArmor
 
 #endif // APPARMOR_FILE_RULE_HH
