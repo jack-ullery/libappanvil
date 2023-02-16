@@ -15,12 +15,13 @@
 
 class Lexer : public yyFlexLexer {
   public:
-    Lexer(std::istream& arg_yyin)
+    explicit Lexer(std::istream& arg_yyin)
       : yyFlexLexer(arg_yyin, std::cout) {}
-  
+
     Lexer(std::istream& arg_yyin, std::ostream& arg_yyout)
       : yyFlexLexer(arg_yyin, arg_yyout) {}
-  
+
+    // NOLINTNEXTLINE
     virtual symbol_type yylex(Driver& driver);
 };
 

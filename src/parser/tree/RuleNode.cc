@@ -1,10 +1,10 @@
 #include "RuleNode.hh"
 #include "TreeNode.hh"
 
-#include <assert.h>
+#include <cassert>
 #include <cstdint>
 
-#define assert_things assert(startPos <= stopPos)
+#define assert_things assert(startPos <= stopPos) //NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 // Used by Bison to create as a default value
 // Objects using this constructor should be overwritten, not used! 
@@ -34,6 +34,16 @@ void RuleNode::setPrefix(const PrefixNode &prefix)
 {
   assert_things;
   this->prefix = prefix;
+}
+
+void RuleNode::setStartPosition(const uint64_t &startPos)
+{
+  this->startPos = startPos;
+}
+
+void RuleNode::setStopPosition(const uint64_t &stopPos)
+{
+  this->stopPos = stopPos;
 }
 
 uint64_t RuleNode::getStartPosition() const

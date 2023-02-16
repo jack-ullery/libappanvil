@@ -6,7 +6,7 @@
 
 class PrefixNode : public TreeNode {
   public:
-    PrefixNode(bool audit = DEFAULT_AUDIT, bool should_deny = DEFAULT_PERM_MODE, bool owner = DEFAULT_OWNER);
+    explicit PrefixNode(bool audit = DEFAULT_AUDIT, bool should_deny = DEFAULT_PERM_MODE, bool owner = DEFAULT_OWNER);
 
     static constexpr bool DEFAULT_AUDIT       = false; 
     static constexpr bool DEFAULT_PERM_MODE   = false;

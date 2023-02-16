@@ -4,8 +4,7 @@
 #include <sstream>
 
 AliasNode::AliasNode(const std::string &from, const std::string &to)
-  : TreeNode(),
-    from{from},
+  : from{from},
     to{to}
 {   }
 
