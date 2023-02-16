@@ -9,11 +9,6 @@ TreeNode::TreeNode(const std::string &text)
   : text{text}
 {   }
 
-TreeNode::TreeNode(const TreeNode &node)
-  : text{node.text},
-    children{node.children}
-{   }
-
 TreeNode::TreeNode(std::initializer_list<TreeNode> children)
   : TreeNode()
 {
@@ -22,12 +17,12 @@ TreeNode::TreeNode(std::initializer_list<TreeNode> children)
 
 void TreeNode::appendChildren(std::initializer_list<TreeNode> children)
 {
-  for(auto child : children) {
+  for(const auto &child : children) {
     appendChild(child);
   }
 }
 
-void TreeNode::appendChild(TreeNode child)
+void TreeNode::appendChild(const TreeNode &child)
 {
   children.push_back(child);
 }

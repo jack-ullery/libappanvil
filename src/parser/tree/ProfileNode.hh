@@ -13,7 +13,7 @@ class ProfileNode : public TreeNode {
 
     RuleList<ProfileNode> getRules();
 
-  protected:
+  private:
     RuleList<ProfileNode> rules;
 };
 

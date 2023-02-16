@@ -14,7 +14,7 @@ class ParseTree;
 namespace AppArmor {
   class Parser {
     public:
-      Parser(std::ifstream &stream);
+      explicit Parser(std::ifstream &stream);
 
       std::list<Profile> getProfileList() const;
       AppArmor::Parser removeRule(std::string path, AppArmor::Profile profile, AppArmor::FileRule fileRule);
