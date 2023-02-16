@@ -20,13 +20,14 @@
 #include "parser.h"
 
 #include <ctype.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
 
+//NOLINTBEGIN
 /**
  * isodigit - test if a character is an octal digit
  * @c: character to test
@@ -179,3 +180,4 @@ int strn_escseq(const char **pos, const char *chrs, size_t n)
 	pos--;
 	return -1;
 }
+//NOLINTEND
