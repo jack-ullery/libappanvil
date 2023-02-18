@@ -22,7 +22,7 @@ Checks: 'clang-diagnostic-*,
          -misc-const-correctness,
          -misc-no-recursion'
 WarningsAsErrors: ''
-HeaderFilterRegex: './src/.*'
+HeaderFilterRegex: './src/.*hh'
 AnalyzeTemporaryDtors: false
 FormatStyle:     none
 CheckOptions:
