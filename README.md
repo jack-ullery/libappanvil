@@ -37,6 +37,11 @@ Before you build the library, you should first generate the makefile by running:
 cmake .
 ```
 
+Optionally, if you want to run linters and static analysis checks:
+```
+cmake -DANALYZE=TRUE .
+```
+
 ### Build
 After the makefile is generated, you can build the library:
 ```
