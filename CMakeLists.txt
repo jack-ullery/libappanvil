@@ -61,6 +61,52 @@ FLEX_TARGET(LEXER
 
 ADD_FLEX_BISON_DEPENDENCY(LEXER PARSER)
 
+#### Linter and Static Analysis ####
+find_program(CLANG_TIDY NAMES clang-tidy)
+find_program(CPPCHECK NAMES cppcheck)
+
+# If cmake was compiled with DANALYZE=TRUE
+string(TOLOWER "${ANALYZE}" ANALYZE)
+if("${ANALYZE}" STREQUAL "true")
+  message(STATUS "Adding static-analysis tools to build:")
+  set(USE_CLANG_TIDY TRUE)
+  set(USE_CPPCHECK TRUE)
+  unset(ANALYZE CACHE)
+endif()
+
+# If we want to use clang-tidy
+if(${USE_CLANG_TIDY})
+  if(${CLANG_TIDY} STREQUAL "CLANG_TIDY-NOTFOUND")
+    message(WARNING "Could not find clang-tidy installation. Please install clang-tidy if you want to use it for static analysis.")
+  else()
+    message(STATUS "Adding clang-tidy to build")
+    set(CMAKE_CXX_CLANG_TIDY clang-tidy; --config-file ${CMAKE_CURRENT_BINARY_DIR}/.clang-tidy)
+  endif()
+  unset(USE_CLANG_TIDY CACHE)
+endif()
+
+add_custom_target(echo
+  COMMAND echo test["$<$<CONFIG:Release>:yes>"]
+  COMMAND_EXPAND_LISTS
+)
+
+# If we want to use cppcheck
+if(${USE_CPPCHECK})
+  if(${CPPCHECK} STREQUAL "CPPCHECK-NOTFOUND")
+    message(WARNING "Could not find cppcheck installation. Please install cppcheck if you want to use it for static analysis.")
+  else()
+    message(STATUS "Adding cppcheck to build")
+    set(CMAKE_CXX_CPPCHECK cppcheck
+      --enable=warning,performance,portability,information 
+      --suppress=missingInclude --suppress=unmatchedSuppression --suppress=internalAstError 
+      --quiet
+      --inline-suppr
+      ${SOURCES}
+    )
+  endif()
+  unset(USE_CPPCHECK CACHE)
+endif()
+
 #### Set Compiler Options ####
 set(CMAKE_CXX_FLAGS "-g -Wall -Wextra")
 set(CMAKE_CXX_STANDARD 17)
