@@ -5,6 +5,7 @@
 
 #include <fstream>
 #include <list>
+#include <string>
 
 class ParseTree;
 
@@ -15,8 +16,11 @@ namespace AppArmor {
 
       std::list<Profile> getProfileList() const;
 
+      bool removeRule(std::string path, std::string profileName, std::string ruleName, std::string ruleMode);
+
     private:
       void initializeProfileList(std::shared_ptr<ParseTree> ast);
+      std::string path;
 
       std::list<Profile> profile_list; 
   };
