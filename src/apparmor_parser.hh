@@ -7,6 +7,9 @@
 #include <list>
 #include <string>
 
+
+std::string trim(const std::string& str);
+
 class ParseTree;
 
 namespace AppArmor {
@@ -20,6 +23,7 @@ namespace AppArmor {
 
     private:
       void initializeProfileList(std::shared_ptr<ParseTree> ast);
+      void removeRuleFromFile(const std::string& path, const std::string& profile, const std::string& remove);
       std::string path;
 
       std::list<Profile> profile_list; 

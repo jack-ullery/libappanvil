@@ -9,6 +9,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <cstdio>
 
 std::string trim(const std::string& str);
 
@@ -57,12 +58,12 @@ std::string ruleMode)
     bool foundProfile = false;
 
     while(std::getline(file, line)){
-        // Find the matching profile
-        if (line.compare(profileName + " {") == 0 || line.compare("profile " + profileName + " {") == 0) {
+        // Find the matching profile. Do not need to search if we found the profile.
+        if (!foundProfile && (line.compare(profileName + " {") == 0 || line.compare("profile " + profileName + " {") == 0)) {
             std::cout << "Found profile at: " << line << "\n";
             foundProfile = true;
-        } else if(line.compare("}") == 0){
-            foundProfile = false;
+        } else if(foundProfile && line.compare("}") == 0){
+            return false;
         }
 
         // Trim the leading whitespace and trailing whitespace for inside the profile braces.
@@ -76,11 +77,45 @@ std::string ruleMode)
                      that line to a new file. We can then rename the file so that the old one will be replaced.*/
 
             //line.replace(0, ruleName.length() + ruleMode.length() + 2, "");
+
+            removeRuleFromFile(path, profileName, line);
+
             return true;
         }
     }
 
     return false;
+}
+
+void AppArmor::Parser::removeRuleFromFile(const std::string& path, const std::string& profile, const std::string& remove){
+    std::string line;
+    std::ifstream file;
+    std::ofstream temp;
+    bool foundProfile = false, removed = false;
+    
+    // Open the file we are working with and create a new temp file to write to.
+    file.open(path);
+    temp.open("temp.txt");
+
+    // Write each line except the one we are replacing.
+    // Mark once removed to avoid same rule for different profiles being deleted.
+    while (getline(file, line)) {
+        if(!foundProfile && !removed && (line == (profile + " {") || line == ("profile " + profile + " {")))
+            foundProfile = true;
+        
+        if (foundProfile && !removed && trim(line) == remove){
+            removed = true;
+            continue;
+        }else{
+            temp << line << std::endl;
+        }
+    }
+
+    temp.close();
+    file.close();
+
+    std::remove(path.c_str());
+    std::rename("temp.txt", path.c_str());
 }
 
 // Trims leading and trailing whitespace
