@@ -15,10 +15,7 @@ template <class ProfileNode>
 class RuleList : public RuleNode {
   public:
     RuleList() = default;
-    RuleList(uint64_t startPos);
-
-    void setStartPosition(uint64_t start_pos);
-    void setStopPosition(uint64_t stop_pos);
+    explicit RuleList(uint64_t startPos);
 
     void appendFileNode(const PrefixNode &prefix, FileNode &node);
     void appendLinkNode(const PrefixNode &prefix, LinkNode &node);

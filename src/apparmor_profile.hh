@@ -12,7 +12,7 @@ class ProfileNode;
 namespace AppArmor {
   class Profile {
     public:
-      Profile(std::shared_ptr<ProfileNode> profile_model);
+      explicit Profile(std::shared_ptr<ProfileNode> profile_model);
 
       // Returns the name of this profile
       std::string name() const;
@@ -26,6 +26,6 @@ namespace AppArmor {
     private:
       std::shared_ptr<ProfileNode> profile_model;
   };
-}
+} // namespace AppArmor
 
 #endif // APPARMOR_PROFILE_HH

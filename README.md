@@ -15,7 +15,7 @@ Packages needed to compile the library:
 sudo apt install pkg-config cmake clang bison flex libfl-dev
 ```
 
-### Testing
+### Testing (Optional)
 Additional packages needed to run the tests:
 * GoogleTest
 * GoogleMock
@@ -23,6 +23,16 @@ Additional packages needed to run the tests:
 #### Install commands (Ubuntu)
 ```
 sudo apt install libgtest-dev libgmock-dev
+```
+
+### Linters and Static Analysis (Optional)
+Optional packages needed to run linters and static analysis checks:
+* clang-tidy
+* cppcheck
+
+#### Install commands (Ubuntu)
+```
+sudo apt install clang-tidy-15 cppcheck
 ```
 
 ## Compilation Instructions
@@ -35,6 +45,11 @@ git submodule update --init --recursive
 Before you build the library, you should first generate the makefile by running:
 ```
 cmake .
+```
+
+Optionally, if you want to run linters and static analysis checks:
+```
+cmake -DANALYZE=TRUE .
 ```
 
 ### Build

@@ -12,10 +12,10 @@ class AbstractionNode : public RuleNode {
     std::string getPath();
 
   private:
-    virtual operator std::string() const;
+    virtual explicit operator std::string() const;
 
     std::string path;
-    bool is_if_exists;
+    bool is_if_exists = false;
 };
 
 #endif // ABSTRACTION_NODE_HH

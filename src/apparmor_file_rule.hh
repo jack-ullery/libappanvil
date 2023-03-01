@@ -10,7 +10,7 @@ namespace AppArmor {
   class FileRule {
     public:
       FileRule() = default;
-      FileRule(std::shared_ptr<FileNode> model);
+      explicit FileRule(std::shared_ptr<FileNode> model);
 
       std::string getFilename() const;
       std::string getFilemode() const;
@@ -21,6 +21,6 @@ namespace AppArmor {
     private:
       std::shared_ptr<FileNode> model;
   };
-}
+} // namespace AppArmor
 
 #endif // APPARMOR_FILE_RULE_HH
