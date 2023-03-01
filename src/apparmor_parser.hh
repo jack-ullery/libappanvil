@@ -11,7 +11,7 @@ class ParseTree;
 namespace AppArmor {
   class Parser {
     public:
-      Parser(std::ifstream &stream);
+      explicit Parser(std::ifstream &stream);
 
       std::list<Profile> getProfileList() const;
 
@@ -20,6 +20,6 @@ namespace AppArmor {
 
       std::list<Profile> profile_list; 
   };
-}
+} // namespace AppArmor
 
 #endif // APPARMOR_PARSER_HH

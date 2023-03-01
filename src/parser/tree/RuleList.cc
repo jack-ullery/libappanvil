@@ -12,18 +12,6 @@ RuleList<ProfileNode>::RuleList(uint64_t startPos)
   : RuleNode(startPos, startPos)
 {   }
 
-template<class ProfileNode>
-void RuleList<ProfileNode>::setStartPosition(uint64_t startPos)
-{
-  this->startPos = startPos;
-}
-
-template<class ProfileNode>
-void RuleList<ProfileNode>::setStopPosition(uint64_t stopPos)
-{
-  this->stopPos = stopPos;
-}
-
 /** Append methods **/
 template <typename T, typename = typename std::enable_if<std::is_base_of<RuleNode, T>::value, T>::type>
 inline void appendPrefixedNode(const PrefixNode &prefix, T &node, std::list<T> &list)

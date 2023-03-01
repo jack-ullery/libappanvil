@@ -2,8 +2,7 @@
 #include "tree/TreeNode.hh"
 
 PrefixNode::PrefixNode(bool audit, bool should_deny, bool owner)
-  : TreeNode(),
-    audit{audit},
+  : audit{audit},
     should_deny{should_deny},
     owner{owner}
 {   }

@@ -19,7 +19,7 @@ class FileNode : public RuleNode {
     std::string getFilemode() const;
 
   private:
-    bool isSubset;
+    bool isSubset = false;
     std::string filename;
     std::string exec_target;
     std::string fileMode;

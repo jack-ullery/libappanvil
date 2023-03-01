@@ -9,15 +9,15 @@
 class TreeNode {
   public:
     // Constructors
-    TreeNode() = default;
-    TreeNode(const std::string &text);
+    explicit TreeNode(const std::string &text);
     TreeNode(std::initializer_list<TreeNode> children);
 
-    // Copy constructor
-    TreeNode(const TreeNode &children);
+    // Default constructors and destructor
+    TreeNode() = default;
+    virtual ~TreeNode() = default;
 
     // Append node into the internal list of children
-    void appendChild(TreeNode child);
+    void appendChild(const TreeNode &child);
 
     std::string getText() const;
 
@@ -25,7 +25,11 @@ class TreeNode {
     TreeNode& operator=(const TreeNode &) = default;
     TreeNode& operator=(TreeNode &&) = default;
 
-  protected:
+    // Delete move and copy constructor
+    TreeNode(const TreeNode &children) = default;
+    TreeNode(TreeNode &&) = default;
+
+  private:
     std::string text;
     std::list<TreeNode> children;
 

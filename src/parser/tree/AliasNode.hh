@@ -9,7 +9,7 @@ class AliasNode : public TreeNode {
     AliasNode(const std::string &from, const std::string &to);
 
   private:
-    virtual operator std::string() const;
+    virtual explicit operator std::string() const;
     std::string from;
     std::string to;
 };
