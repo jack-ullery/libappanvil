@@ -50,17 +50,19 @@ std::list<AppArmor::Profile> AppArmor::Parser::getProfileList() const
     return profile_list;
 }
 
-bool AppArmor::Parser::removeRule(std::string path, std::string profileName, std::string ruleName, 
-std::string ruleMode) 
+bool removeRule(std::string path, AppArmor::Profile profile, AppArmor::FileRule fileRule) 
 {
     std::string line {};
-    std::fstream file(path, std::ios::in);
+    std::string profileName = profile.name();
+    std::string ruleName = fileRule.getFilename();
+    std::string ruleNode = fileRule.getFilemode();
+
+    std::ifstream file(path, std::ios::in);
     bool foundProfile = false;
 
     while(std::getline(file, line)){
         // Find the matching profile. Do not need to search if we found the profile.
         if (!foundProfile && (line.compare(profileName + " {") == 0 || line.compare("profile " + profileName + " {") == 0)) {
-            std::cout << "Found profile at: " << line << "\n";
             foundProfile = true;
         } else if(foundProfile && line.compare("}") == 0){
             return false;
@@ -69,17 +71,8 @@ std::string ruleMode)
         // Trim the leading whitespace and trailing whitespace for inside the profile braces.
         line = trim(line);
 
-        if (foundProfile && line.compare(ruleName + " " + ruleMode + ",") == 0) {
-            std::cout << "REMOVING RULE! Found rule at: " << line << "\n";
-            
-            /* Note: We will most likely need to rewrite the file. Unfortuantely, C++ doesn't provide an easy way to replace strings in a file.
-                     Due to this, it is recommended to read the file, find the text we want to replace, and write back everything except for
-                     that line to a new file. We can then rename the file so that the old one will be replaced.*/
-
-            //line.replace(0, ruleName.length() + ruleMode.length() + 2, "");
-
+        if (foundProfile && line.compare(ruleName + " " + ruleNode + ",") == 0) {
             removeRuleFromFile(path, profileName, line);
-
             return true;
         }
     }
@@ -87,7 +80,8 @@ std::string ruleMode)
     return false;
 }
 
-void AppArmor::Parser::removeRuleFromFile(const std::string& path, const std::string& profile, const std::string& remove){
+// Helper function for removeRule
+void removeRuleFromFile(const std::string& path, const std::string& profile, const std::string& remove){
     std::string line;
     std::ifstream file;
     std::ofstream temp;
@@ -98,7 +92,7 @@ void AppArmor::Parser::removeRuleFromFile(const std::string& path, const std::st
     temp.open("temp.txt");
 
     // Write each line except the one we are replacing.
-    // Mark once removed to avoid same rule for different profiles being deleted.
+    // Flags used to make sure we don't delete multiple similar rules in different profiles.
     while (getline(file, line)) {
         if(!foundProfile && !removed && (line == (profile + " {") || line == ("profile " + profile + " {")))
             foundProfile = true;
@@ -114,6 +108,7 @@ void AppArmor::Parser::removeRuleFromFile(const std::string& path, const std::st
     temp.close();
     file.close();
 
+    // Delete original file and rename new file to old one.
     std::remove(path.c_str());
     std::rename("temp.txt", path.c_str());
 }
