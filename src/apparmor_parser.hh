@@ -8,7 +8,6 @@
 #include <string>
 
 
-bool removeRule(std::string path, AppArmor::Profile profile, AppArmor::FileRule fileRule);
 void removeRuleFromFile(const std::string& path, const std::string& profile, const std::string& remove);
 std::string trim(const std::string& str);
 
@@ -28,5 +27,7 @@ namespace AppArmor {
       std::list<Profile> profile_list; 
   };
 }
+
+AppArmor::Parser removeRule(std::string path, AppArmor::Profile profile, AppArmor::FileRule fileRule);
 
 #endif // APPARMOR_PARSER_HH

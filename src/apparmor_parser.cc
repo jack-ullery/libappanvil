@@ -11,8 +11,6 @@
 #include <fstream>
 #include <cstdio>
 
-std::string trim(const std::string& str);
-
 /**
  * Idea: change constructor to take a file path as an argument rather than ifstream.
  * Create ifstream within constructor
@@ -50,7 +48,7 @@ std::list<AppArmor::Profile> AppArmor::Parser::getProfileList() const
     return profile_list;
 }
 
-bool removeRule(std::string path, AppArmor::Profile profile, AppArmor::FileRule fileRule) 
+AppArmor::Parser removeRule(std::string path, AppArmor::Profile profile, AppArmor::FileRule fileRule) 
 {
     std::string line {};
     std::string profileName = profile.name();
@@ -65,7 +63,7 @@ bool removeRule(std::string path, AppArmor::Profile profile, AppArmor::FileRule 
         if (!foundProfile && (line.compare(profileName + " {") == 0 || line.compare("profile " + profileName + " {") == 0)) {
             foundProfile = true;
         } else if(foundProfile && line.compare("}") == 0){
-            return false;
+            throw "Rule not found in profile!";
         }
 
         // Trim the leading whitespace and trailing whitespace for inside the profile braces.
@@ -73,11 +71,13 @@ bool removeRule(std::string path, AppArmor::Profile profile, AppArmor::FileRule 
 
         if (foundProfile && line.compare(ruleName + " " + ruleNode + ",") == 0) {
             removeRuleFromFile(path, profileName, line);
-            return true;
+            std::ifstream stream(path, std::ios::in);
+            AppArmor::Parser parser(stream);
+            return parser;
         }
     }
 
-    return false;
+    throw "Profile not found!";
 }
 
 // Helper function for removeRule
