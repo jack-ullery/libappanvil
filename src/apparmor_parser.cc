@@ -57,6 +57,7 @@ std::string ruleMode)
         // Find the matching profile
         if (line.compare(profileName + " {") == 0 || line.compare("profile " + profileName + " {") == 0) {
             foundProfile = true;
+            std::cout << "Found desired profile";
         } else if(line.compare("}")){
             foundProfile = false;
         }
@@ -65,6 +66,7 @@ std::string ruleMode)
         if (line.compare(ruleName + " " + ruleMode + ",") == 0 && foundProfile) {
             // the bastardline
             line.replace(0, ruleName.length() + ruleMode.length() + 2, "");
+            std::cout << "Found the desired line";
             return true;
         }
     }
