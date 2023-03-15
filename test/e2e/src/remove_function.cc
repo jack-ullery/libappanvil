@@ -45,6 +45,10 @@ namespace RemoveFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules;
 
         //remove rule /usr/X11R6/lib/lib*so* rrr,
+        AppArmor::Parser removeParser(std::ifstream stream(filename));
+        AppArmor::Profile prof = removeParser.getProfileList().front();
+        AppArmor::FileRule frule = prof.getFileRules.front();
+        removeParser.remove("/remove-untouched/test1.sd", prof, frule);
 
         check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
     }
@@ -59,6 +63,10 @@ namespace RemoveFunctionCheck {
         emplace_back(expected_file_rules, /var/log/messages, www);
 
         //remove rule /usr/X11R6/lib/lib*so* rrr,
+        AppArmor::Parser removeParser(std::ifstream stream(filename));
+        AppArmor::Profile prof = removeParser.getProfileList().front();
+        AppArmor::FileRule frule = prof.getFileRules.front();
+        removeParser.remove("/remove-untouched/test1.sd", prof, frule);
 
         check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
     }
@@ -73,6 +81,10 @@ namespace RemoveFunctionCheck {
         emplace_back(expected_file_rules2, /usr/X11R6/lib/lib*so*, rrr);
 
         //remove rule /usr/X11R6/lib/lib*so* rrr, from profile /**
+        AppArmor::Parser removeParser(std::ifstream stream(filename));
+        AppArmor::Profile prof = removeParser.getProfileList().front();
+        AppArmor::FileRule frule = prof.getFileRules.front();
+        removeParser.remove("/remove-untouched/test1.sd", prof, frule);
 
         check_file_rules_for_single_profile(filename, expected_file_rules1, "/**");
         check_file_rules_for_single_profile(filename, expected_file_rules2, "/*");
@@ -93,6 +105,10 @@ namespace RemoveFunctionCheck {
         emplace_back(expected_file_rules2, /var/log/messages, www);
 
         //remove rule /usr/X11R6/lib/lib*so* rrr, from profile /**
+        AppArmor::Parser removeParser(std::ifstream stream(filename));
+        AppArmor::Profile prof = removeParser.getProfileList().front();
+        AppArmor::FileRule frule = prof.getFileRules.front();
+        removeParser.remove("/remove-untouched/test1.sd", prof, frule);
 
         check_file_rules_for_single_profile(filename, expected_file_rules1, "/**");
         check_file_rules_for_single_profile(filename, expected_file_rules2, "/*");
