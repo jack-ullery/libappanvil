@@ -5,8 +5,8 @@
 
 int main(int argc, char** argv) {
 	if(argc == 2) {
-		std::ifstream stream(argv[1]);
-		AppArmor::Parser parser(stream);
+		std::string path = argv[1];
+		AppArmor::Parser parser(path);
 		return 0;
 	}
 
