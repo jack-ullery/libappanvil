@@ -91,6 +91,7 @@ void AppArmor::Parser::removeRule(AppArmor::Profile profile, AppArmor::FileRule 
                 std::throw_with_nested(std::runtime_error("error occured when parsing profile"));
             }
             initializeProfileList(driver.ast);
+            return;
         }
     }
 
