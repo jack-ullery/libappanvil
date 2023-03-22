@@ -70,8 +70,6 @@ void AppArmor::Parser::removeRule(AppArmor::Profile profile, AppArmor::FileRule 
     while(std::getline(file, line)){
         // Find the matching profile. Do not need to search if we found the profile.
         if (!foundProfile && (line.compare(profileName + " {") == 0 || line.compare("profile " + profileName + " {") == 0)) {
-        // Find the matching profile. Do not need to search if we found the profile.
-        if (!foundProfile && (line.compare(profileName + " {") == 0 || line.compare("profile " + profileName + " {") == 0)) {
             foundProfile = true;
         } else if(foundProfile && line.compare("}") == 0){
             throw "Rule not found in profile!";
@@ -157,12 +155,6 @@ std::string trim(const std::string& str)
     const auto strRange = strEnd - strBegin + 1;
 
     return str.substr(strBegin, strRange);
-    temp.close();
-    file.close();
-
-    // Delete original file and rename new file to old one.
-    std::remove(path.c_str());
-    std::rename("temp.txt", path.c_str());
 }
 
 // Trims leading and trailing whitespace
