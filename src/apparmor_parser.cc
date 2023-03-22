@@ -60,11 +60,6 @@ void AppArmor::Parser::removeRule(AppArmor::Profile profile, AppArmor::FileRule 
     std::string ruleNode = fileRule.getFilemode();
 
     std::ifstream file(path, std::ios::in);
-    std::string profileName = profile.name();
-    std::string ruleName = fileRule.getFilename();
-    std::string ruleNode = fileRule.getFilemode();
-
-    std::ifstream file(path, std::ios::in);
     bool foundProfile = false;
 
     while(std::getline(file, line)){
@@ -133,28 +128,6 @@ void AppArmor::Parser::removeRuleFromFile(const std::string& profile, const std:
     // Delete original file and rename new file to old one.
     std::remove(path.c_str());
     std::rename("temp.txt", path.c_str());
-}
-
-// Trims leading and trailing whitespace
-std::string trim(const std::string& str)
-{
-
-    const std::string& whitespace = " \t";
-
-    // Find the character that isn't whitespace.
-    const auto strBegin = str.find_first_not_of(whitespace);
-
-    // If it cannot find it, then return an empty string.
-    if (strBegin == std::string::npos)
-        return ""; // no content
-
-    // Find the last character that isn't whitespace.
-    const auto strEnd = str.find_last_not_of(whitespace);
-
-    // Remove the white space.
-    const auto strRange = strEnd - strBegin + 1;
-
-    return str.substr(strBegin, strRange);
 }
 
 // Trims leading and trailing whitespace
