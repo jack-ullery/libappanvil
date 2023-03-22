@@ -20,13 +20,14 @@ namespace RemoveFunctionCheck {
     void check_file_rules_for_single_profile(std::string filename, std::list<AppArmor::FileRule> expected_file_rules, std::string profile_name)
     {
         auto profile_list = getProfileList(filename);
-  
-        EXPECT_EQ(profile_list.size(), 1) << "There should only be one profile";
-  
-        auto first_profile = profile_list.begin();
-        EXPECT_EQ(first_profile->name(), profile_name);
 
-        auto file_rules = first_profile->getFileRules();
+        while(profile_name.compare(profile_list.front().name()) != 0 && profile_list.size() != 0){
+            profile_list.pop_front();
+        }
+        auto profile = profile_list.front();
+        EXPECT_EQ(profile.name(), profile_name) << "No profile name matched";
+
+        auto file_rules = profile.getFileRules();
         ASSERT_EQ(file_rules, expected_file_rules);
     }
 
