@@ -4,11 +4,13 @@
 #include "parser/tree/ParseTree.hh"
 
 #include <iostream>
+#include <iostream>
 #include <memory>
 #include <parser_yacc.hh>
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <cstdio>
 #include <cstdio>
 
 /**
@@ -16,9 +18,11 @@
  * Create ifstream within constructor
  * Create ofstream within remove function
 */
-AppArmor::Parser::Parser(std::ifstream &stream)
+AppArmor::Parser::Parser(std::string path)
 {
     Driver driver;
+    std::ifstream stream;
+    stream.open(path);
     Lexer lexer(stream, std::cout);
 
     yy::parser parse(lexer, driver);
@@ -48,9 +52,14 @@ std::list<AppArmor::Profile> AppArmor::Parser::getProfileList() const
     return profile_list;
 }
 
-AppArmor::Parser removeRule(std::string path, AppArmor::Profile profile, AppArmor::FileRule fileRule) 
+void AppArmor::Parser::removeRule(AppArmor::Profile profile, AppArmor::FileRule fileRule) 
 {
     std::string line {};
+    std::string profileName = profile.name();
+    std::string ruleName = fileRule.getFilename();
+    std::string ruleNode = fileRule.getFilemode();
+
+    std::ifstream file(path, std::ios::in);
     std::string profileName = profile.name();
     std::string ruleName = fileRule.getFilename();
     std::string ruleNode = fileRule.getFilemode();
@@ -61,7 +70,11 @@ AppArmor::Parser removeRule(std::string path, AppArmor::Profile profile, AppArmo
     while(std::getline(file, line)){
         // Find the matching profile. Do not need to search if we found the profile.
         if (!foundProfile && (line.compare(profileName + " {") == 0 || line.compare("profile " + profileName + " {") == 0)) {
+        // Find the matching profile. Do not need to search if we found the profile.
+        if (!foundProfile && (line.compare(profileName + " {") == 0 || line.compare("profile " + profileName + " {") == 0)) {
             foundProfile = true;
+        } else if(foundProfile && line.compare("}") == 0){
+            throw "Rule not found in profile!";
         } else if(foundProfile && line.compare("}") == 0){
             throw "Rule not found in profile!";
         }
@@ -70,10 +83,21 @@ AppArmor::Parser removeRule(std::string path, AppArmor::Profile profile, AppArmo
         line = trim(line);
 
         if (foundProfile && line.compare(ruleName + " " + ruleNode + ",") == 0) {
-            removeRuleFromFile(path, profileName, line);
-            std::ifstream stream(path, std::ios::in);
-            AppArmor::Parser parser(stream);
-            return parser;
+            removeRuleFromFile(profileName, line);
+
+            // Reinitialize profile list
+            Driver driver;
+            std::ifstream stream;
+            stream.open(path);
+            Lexer lexer(stream, std::cout);
+
+            yy::parser parse(lexer, driver);
+            parse();
+
+            if(!driver.success) {
+                std::throw_with_nested(std::runtime_error("error occured when parsing profile"));
+            }
+            initializeProfileList(driver.ast);
         }
     }
 
@@ -81,7 +105,7 @@ AppArmor::Parser removeRule(std::string path, AppArmor::Profile profile, AppArmo
 }
 
 // Helper function for removeRule
-void removeRuleFromFile(const std::string& path, const std::string& profile, const std::string& remove){
+void AppArmor::Parser::removeRuleFromFile(const std::string& profile, const std::string& remove){
     std::string line;
     std::ifstream file;
     std::ofstream temp;
@@ -105,6 +129,34 @@ void removeRuleFromFile(const std::string& path, const std::string& profile, con
         }
     }
 
+    temp.close();
+    file.close();
+
+    // Delete original file and rename new file to old one.
+    std::remove(path.c_str());
+    std::rename("temp.txt", path.c_str());
+}
+
+// Trims leading and trailing whitespace
+std::string trim(const std::string& str)
+{
+
+    const std::string& whitespace = " \t";
+
+    // Find the character that isn't whitespace.
+    const auto strBegin = str.find_first_not_of(whitespace);
+
+    // If it cannot find it, then return an empty string.
+    if (strBegin == std::string::npos)
+        return ""; // no content
+
+    // Find the last character that isn't whitespace.
+    const auto strEnd = str.find_last_not_of(whitespace);
+
+    // Remove the white space.
+    const auto strRange = strEnd - strBegin + 1;
+
+    return str.substr(strBegin, strRange);
     temp.close();
     file.close();
 
