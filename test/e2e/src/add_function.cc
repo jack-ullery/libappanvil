@@ -44,9 +44,9 @@ namespace AddFunctionCheck {
     //          /var/log/messages www,
 
     //Test to add a rule to a file with 1 profile and 0 rules
-    TEST(AddFunctionCheck, test1-add)
+    TEST(AddFunctionCheck, test1_add)
     {
-        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test1-add.sd";
+        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test1_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
 
         /*
@@ -57,9 +57,9 @@ namespace AddFunctionCheck {
     }
 
     //Test to add a rule to a file with 1 profile and 1 rule
-    TEST(AddFunctionCheck, test2-add)
+    TEST(AddFunctionCheck, test2_add)
     {
-        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test2-add.sd";
+        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test2_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
         emplace_back(expected_file_rules, "/usr/X11R6/lib/lib*so*", "rrr");
 
@@ -71,9 +71,9 @@ namespace AddFunctionCheck {
     }
 
     //Test to add 2 rules to a file with 1 profile and 0 rules
-    TEST(AddFunctionCheck, test3-add)
+    TEST(AddFunctionCheck, test3_add)
     {
-        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test3-add.sd";
+        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test3_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
 
         /*
@@ -86,9 +86,9 @@ namespace AddFunctionCheck {
     }
 
     //Test to add 2 rules to a file with 1 profile and 1 rule
-    TEST(AddFunctionCheck, test4-add)
+    TEST(AddFunctionCheck, test4_add)
     {
-        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test4-add.sd";
+        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test4_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
         emplace_back(expected_file_rules, "/usr/X11R6/lib/lib*so*", "rrr");
 
@@ -102,9 +102,9 @@ namespace AddFunctionCheck {
     }
 
     //Test to add 1 rule to a file with 2 profiles and 0 rules each
-    TEST(AddFunctionCheck, test5-add)
+    TEST(AddFunctionCheck, test5_add)
     {
-        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test5-add.sd";
+        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test5_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
@@ -116,9 +116,9 @@ namespace AddFunctionCheck {
     }
 
     //Test to add 1 rule to a file with 2 profiles and 1 rule each
-    TEST(AddFunctionCheck, test6-add)
+    TEST(AddFunctionCheck, test6_add)
     {
-        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test6-add.sd";
+        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test6_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
         emplace_back(expected_file_rules1, "/usr/X11R6/lib/lib*so*", "rrr");
@@ -132,9 +132,9 @@ namespace AddFunctionCheck {
     }
 
     //Test to add 2 rules to a file with 2 profiles and 0 rules each
-    TEST(AddFunctionCheck, test7-add)
+    TEST(AddFunctionCheck, test7_add)
     {
-        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test7-add.sd";
+        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test7_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
@@ -148,9 +148,9 @@ namespace AddFunctionCheck {
     }
 
     //Test to add 2 rules to a file with 2 profiles and 1 rule each
-    TEST(AddFunctionCheck, test8-add)
+    TEST(AddFunctionCheck, test8_add)
     {
-        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test8-add.sd";
+        auto filename = PROFILE_SOURCE_DIR "/add-untouched/test8_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
         emplace_back(expected_file_rules1, "/usr/X11R6/lib/lib*so*", "rrr");

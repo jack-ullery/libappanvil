@@ -40,9 +40,10 @@ namespace RemoveFunctionCheck {
     }
 
     //Test to remove a rule from a file with 1 profile and 1 rule
-    TEST(RemoveFunctionCheck, test1-remove)
+    TEST(RemoveFunctionCheck, test1_remove)
     {
-        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/remove-test1.sd";
+        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/test1_remove.sd";
+        std::cout << "Got profile";
         
         std::list<AppArmor::FileRule> expected_file_rules;
 
@@ -54,15 +55,17 @@ namespace RemoveFunctionCheck {
         AppArmor::Profile prof = removeParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
         
-        removeParser = removeRule(filename, prof, frule);
+        removeParser = removeParser.removeRule(filename, prof, frule);
+        std::cout << "Removed rule";
 
         check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
+        std::cout << "Checked for assertions";
     }
 
     //Test to remove a rule from a file with 1 profile and more than 1 rule
-    TEST(RemoveFunctionCheck, test2-remove)
+    TEST(RemoveFunctionCheck, test2_remove)
     {
-        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/remove-test2.sd";
+        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/test2_remove.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
 
         emplace_back(expected_file_rules, "/does/not/exist", "r");
@@ -75,15 +78,15 @@ namespace RemoveFunctionCheck {
         AppArmor::Profile prof = removeParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
-        removeParser = removeRule(filename, prof, frule);
+        removeParser = removeParser.removeRule(filename, prof, frule);
 
         check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
     }
 
     //Test to remove a rule from a file with 2 profiles and 1 rule each
-    TEST(RemoveFunctionCheck, test3-remove)
+    TEST(RemoveFunctionCheck, test3_remove)
     {
-        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/remove-test3.sd";
+        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/test3_remove.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
@@ -96,16 +99,16 @@ namespace RemoveFunctionCheck {
         AppArmor::Profile prof = removeParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
-        removeParser = removeRule(filename, prof, frule);
+        removeParser = removeParser.removeRule(filename, prof, frule);
 
         check_file_rules_for_single_profile(filename, expected_file_rules1, "/**");
         check_file_rules_for_single_profile(filename, expected_file_rules2, "/*");
     }
 
     //Test to remove a rule from a file with 2 profiles and more than 1 rule each
-    TEST(RemoveFunctionCheck, test4-remove)
+    TEST(RemoveFunctionCheck, test4_remove)
     {
-        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/remove-test4.sd";
+        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/test4_remove.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
@@ -123,7 +126,7 @@ namespace RemoveFunctionCheck {
         AppArmor::Profile prof = removeParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
-        removeParser = removeRule(filename, prof, frule);
+        removeParser = removeParser.removeRule(filename, prof, frule);
 
         check_file_rules_for_single_profile(filename, expected_file_rules1, "/**");
         check_file_rules_for_single_profile(filename, expected_file_rules2, "/*");
