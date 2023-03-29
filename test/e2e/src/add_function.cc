@@ -49,11 +49,19 @@ namespace AddFunctionCheck {
         auto filename = PROFILE_SOURCE_DIR "/add-untouched/test1_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
 
-        /*
-        Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        */
+        //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
+        std::ifstream stream(filename);
+        AppArmor::Parser addParser(stream);
 
-       emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
+        AppArmor::Profile prof = addParser.getProfileList().front();
+
+        std::string filemode = "uxuxuxuxux";
+        //Idk why I needed to, but the compiler didn't like it if I used the filemode string without it being declared first
+        addParser = addParser.addRule(filename, prof, "/bin/echo", filemode);
+
+        emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
+
+        check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
     }
 
     //Test to add a rule to a file with 1 profile and 1 rule
@@ -63,11 +71,18 @@ namespace AddFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules;
         emplace_back(expected_file_rules, "/usr/X11R6/lib/lib*so*", "rrr");
 
-        /*
-        Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        */
+        //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
+        std::ifstream stream(filename);
+        AppArmor::Parser addParser(stream);
 
+        AppArmor::Profile prof = addParser.getProfileList().front();
+
+        std::string filemode = "uxuxuxuxux";
+        addParser = addParser.addRule(filename, prof, "/bin/echo", filemode);
+        
        emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
+
+       check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
     }
 
     //Test to add 2 rules to a file with 1 profile and 0 rules
@@ -76,13 +91,28 @@ namespace AddFunctionCheck {
         auto filename = PROFILE_SOURCE_DIR "/add-untouched/test3_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
 
-        /*
-        Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        Call add-rule function for rule "/var/log/messages www," on profile "/**"
-        */
+        //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
+        std::ifstream stream(filename);
+        AppArmor::Parser addParser(stream);
+
+        AppArmor::Profile prof = addParser.getProfileList().front();
+
+        std::string filemode1 = "uxuxuxuxux";
+        addParser = addParser.addRule(filename, prof, "/bin/echo", filemode1);
+        //Call add-rule function for rule "/var/log/messages www," on profile "/**"
+        std::ifstream stream(filename);
+        AppArmor::Parser addParser(stream);
+
+        AppArmor::Profile prof = addParser.getProfileList().front();
+
+        std::string filemode2 = "www";
+        addParser = addParser.addRule(filename, prof, "/var/log/messages", filemode2);
+
 
        emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
        emplace_back(expected_file_rules, "/var/log/messages", "www");
+
+       check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
     }
 
     //Test to add 2 rules to a file with 1 profile and 1 rule
@@ -92,10 +122,8 @@ namespace AddFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules;
         emplace_back(expected_file_rules, "/usr/X11R6/lib/lib*so*", "rrr");
 
-        /*
-        Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        Call add-rule function for rule "/var/log/messages www," on profile "/**"
-        */
+        //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
+        //Call add-rule function for rule "/var/log/messages www," on profile "/**"
 
        emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
        emplace_back(expected_file_rules, "/var/log/messages", "www");
@@ -108,9 +136,7 @@ namespace AddFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
-        /*
-        Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        */
+        //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
 
        emplace_back(expected_file_rules1, "/bin/echo", "uxuxuxuxux");
     }
@@ -124,9 +150,7 @@ namespace AddFunctionCheck {
         emplace_back(expected_file_rules1, "/usr/X11R6/lib/lib*so*", "rrr");
         emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
 
-        /*
-        Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        */
+        //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
 
        emplace_back(expected_file_rules1, "/bin/echo", "uxuxuxuxux");
     }
@@ -138,10 +162,8 @@ namespace AddFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
-        /*
-        Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        Call add-rule function for rule "/var/log/messages www," on profile "/*"
-        */
+        //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
+        //Call add-rule function for rule "/var/log/messages www," on profile "/*"
 
        emplace_back(expected_file_rules1, "/bin/echo", "uxuxuxuxux");
        emplace_back(expected_file_rules2, "/var/log/messages", "www");
@@ -156,10 +178,8 @@ namespace AddFunctionCheck {
         emplace_back(expected_file_rules1, "/usr/X11R6/lib/lib*so*", "rrr");
         emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
 
-        /*
-        Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        Call add-rule function for rule "/var/log/messages www," on profile "/*"
-        */
+        //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
+        //Call add-rule function for rule "/var/log/messages www," on profile "/*"
 
        emplace_back(expected_file_rules1, "/bin/echo", "uxuxuxuxux");
        emplace_back(expected_file_rules2, "/var/log/messages", "www");
