@@ -15,6 +15,16 @@ std::string AppArmor::FileRule::getFilemode() const
   return model->getFilemode();
 }
 
+uint64_t AppArmor::FileRule::getStartPosition() const
+{
+  return model->getStartPosition();
+}
+
+uint64_t AppArmor::FileRule::getEndPosition() const
+{
+  return model->getStopPosition();
+}
+
 bool AppArmor::FileRule::operator==(const AppArmor::FileRule& that) const
 {
   return (that.getFilename() == this->getFilename()) && 
