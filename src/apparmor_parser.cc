@@ -85,8 +85,7 @@ AppArmor::Parser AppArmor::Parser::removeRule(AppArmor::Profile profile, AppArmo
     std::remove(path.c_str());
     std::rename("temp.txt", path.c_str());
 
-    std::ifstream stream(path, std::ios::in);
-    AppArmor::Parser parser(stream);
+    AppArmor::Parser parser(path);
     return parser;
 }
 
@@ -124,8 +123,7 @@ AppArmor::Parser AppArmor::Parser::addRule(AppArmor::Profile profile, const std:
     std::remove(path.c_str());
     std::rename("temp.txt", path.c_str());
 
-    std::ifstream stream(path, std::ios::in);
-    AppArmor::Parser parser(stream);
+    AppArmor::Parser parser(path);
     return parser;
 }
 
