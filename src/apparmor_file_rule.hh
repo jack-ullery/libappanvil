@@ -14,6 +14,8 @@ namespace AppArmor {
 
       std::string getFilename() const;
       std::string getFilemode() const;
+      uint64_t getStartPosition() const;
+      uint64_t getEndPosition() const;
 
       // Whether or not two FileRule objects are equal
       bool operator==(const AppArmor::FileRule& that) const;
