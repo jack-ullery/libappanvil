@@ -43,7 +43,6 @@ namespace RemoveFunctionCheck {
     TEST(RemoveFunctionCheck, test1_remove)
     {
         auto filename = PROFILE_SOURCE_DIR "/remove-untouched/test1_remove.sd";
-        std::cout << "Got profile";
         
         std::list<AppArmor::FileRule> expected_file_rules;
 
@@ -56,10 +55,8 @@ namespace RemoveFunctionCheck {
         AppArmor::FileRule frule = prof.getFileRules().front();
         
         removeParser = removeParser.removeRule(filename, prof, frule);
-        std::cout << "Removed rule";
 
         check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
-        std::cout << "Checked for assertions";
     }
 
     //Test to remove a rule from a file with 1 profile and more than 1 rule
