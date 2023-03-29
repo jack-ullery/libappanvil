@@ -9,7 +9,7 @@
 #include "apparmor_parser.hh"
 #include "parser/tree/FileNode.hh"
 
-namespace RemoveFunctionCheck {
+namespace AddFunctionCheck {
     std::list<AppArmor::Profile> getProfileList(std::string filename)
     {
         std::ifstream stream(filename);
@@ -44,7 +44,7 @@ namespace RemoveFunctionCheck {
     //          /var/log/messages www,
 
     //Test to add a rule to a file with 1 profile and 0 rules
-    TEST(RemoveFunctionCheck, test1)
+    TEST(AddFunctionCheck, test1-add)
     {
         auto filename = PROFILE_SOURCE_DIR "/add-untouched/test1-add.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
@@ -57,7 +57,7 @@ namespace RemoveFunctionCheck {
     }
 
     //Test to add a rule to a file with 1 profile and 1 rule
-    TEST(RemoveFunctionCheck, test2)
+    TEST(AddFunctionCheck, test2-add)
     {
         auto filename = PROFILE_SOURCE_DIR "/add-untouched/test2-add.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
@@ -71,7 +71,7 @@ namespace RemoveFunctionCheck {
     }
 
     //Test to add 2 rules to a file with 1 profile and 0 rules
-    TEST(RemoveFunctionCheck, test3)
+    TEST(AddFunctionCheck, test3-add)
     {
         auto filename = PROFILE_SOURCE_DIR "/add-untouched/test3-add.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
@@ -86,7 +86,7 @@ namespace RemoveFunctionCheck {
     }
 
     //Test to add 2 rules to a file with 1 profile and 1 rule
-    TEST(RemoveFunctionCheck, test4)
+    TEST(AddFunctionCheck, test4-add)
     {
         auto filename = PROFILE_SOURCE_DIR "/add-untouched/test4-add.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
@@ -102,7 +102,7 @@ namespace RemoveFunctionCheck {
     }
 
     //Test to add 1 rule to a file with 2 profiles and 0 rules each
-    TEST(RemoveFunctionCheck, test5)
+    TEST(AddFunctionCheck, test5-add)
     {
         auto filename = PROFILE_SOURCE_DIR "/add-untouched/test5-add.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
@@ -116,7 +116,7 @@ namespace RemoveFunctionCheck {
     }
 
     //Test to add 1 rule to a file with 2 profiles and 1 rule each
-    TEST(RemoveFunctionCheck, test6)
+    TEST(AddFunctionCheck, test6-add)
     {
         auto filename = PROFILE_SOURCE_DIR "/add-untouched/test6-add.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
@@ -132,7 +132,7 @@ namespace RemoveFunctionCheck {
     }
 
     //Test to add 2 rules to a file with 2 profiles and 0 rules each
-    TEST(RemoveFunctionCheck, test7)
+    TEST(AddFunctionCheck, test7-add)
     {
         auto filename = PROFILE_SOURCE_DIR "/add-untouched/test7-add.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
@@ -148,7 +148,7 @@ namespace RemoveFunctionCheck {
     }
 
     //Test to add 2 rules to a file with 2 profiles and 1 rule each
-    TEST(RemoveFunctionCheck, test8)
+    TEST(AddFunctionCheck, test8-add)
     {
         auto filename = PROFILE_SOURCE_DIR "/add-untouched/test8-add.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
