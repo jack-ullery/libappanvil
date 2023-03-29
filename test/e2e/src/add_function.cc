@@ -80,9 +80,9 @@ namespace AddFunctionCheck {
         std::string filemode = "uxuxuxuxux";
         addParser = addParser.addRule(filename, prof, "/bin/echo", filemode);
         
-       emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
+        emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
 
-       check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
+        check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
     }
 
     //Test to add 2 rules to a file with 1 profile and 0 rules
@@ -99,12 +99,8 @@ namespace AddFunctionCheck {
 
         std::string filemode1 = "uxuxuxuxux";
         addParser = addParser.addRule(filename, prof, "/bin/echo", filemode1);
+
         //Call add-rule function for rule "/var/log/messages www," on profile "/**"
-        std::ifstream stream(filename);
-        AppArmor::Parser addParser(stream);
-
-        AppArmor::Profile prof = addParser.getProfileList().front();
-
         std::string filemode2 = "www";
         addParser = addParser.addRule(filename, prof, "/var/log/messages", filemode2);
 
@@ -123,10 +119,20 @@ namespace AddFunctionCheck {
         emplace_back(expected_file_rules, "/usr/X11R6/lib/lib*so*", "rrr");
 
         //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        //Call add-rule function for rule "/var/log/messages www," on profile "/**"
+        std::ifstream stream(filename);
+        AppArmor::Parser addParser(stream);
 
-       emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
-       emplace_back(expected_file_rules, "/var/log/messages", "www");
+        AppArmor::Profile prof = addParser.getProfileList().front();
+
+        std::string filemode1 = "uxuxuxuxux";
+        addParser = addParser.addRule(filename, prof, "/bin/echo", filemode1);
+
+        //Call add-rule function for rule "/var/log/messages www," on profile "/**"
+        std::string filemode2 = "www";
+        addParser = addParser.addRule(filename, prof, "/var/log/messages", filemode2);
+
+        emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
+        emplace_back(expected_file_rules, "/var/log/messages", "www");
     }
 
     //Test to add 1 rule to a file with 2 profiles and 0 rules each
