@@ -7,8 +7,6 @@
 #include <list>
 #include <string>
 
-
-void removeRuleFromFile(const std::string& path, const std::string& profile, const std::string& remove);
 std::string trim(const std::string& str);
 
 class ParseTree;
@@ -19,6 +17,8 @@ namespace AppArmor {
       Parser(std::ifstream &stream);
 
       std::list<Profile> getProfileList() const;
+      AppArmor::Parser removeRule(std::string path, AppArmor::Profile profile, AppArmor::FileRule fileRule);
+      AppArmor::Parser addRule(std::string path, AppArmor::Profile profile, const std::string& fileRule, std::string& fileMode);
 
     private:
       void initializeProfileList(std::shared_ptr<ParseTree> ast);
@@ -27,7 +27,5 @@ namespace AppArmor {
       std::list<Profile> profile_list; 
   };
 }
-
-AppArmor::Parser removeRule(std::string path, AppArmor::Profile profile, AppArmor::FileRule fileRule);
 
 #endif // APPARMOR_PARSER_HH
