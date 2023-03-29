@@ -15,18 +15,16 @@ namespace AppArmor {
   class Parser {
     public:
       Parser(std::string path);
+
       std::list<Profile> getProfileList() const;
-      void removeRule(AppArmor::Profile profile, AppArmor::FileRule fileRule);
+      AppArmor::Parser removeRule(AppArmor::Profile profile, AppArmor::FileRule fileRule);
+      AppArmor::Parser addRule(AppArmor::Profile profile, const std::string& fileRule, std::string& fileMode);
 
     private:
       void initializeProfileList(std::shared_ptr<ParseTree> ast);
       std::string path;
       std::list<Profile> profile_list; 
-      void removeRuleFromFile(const std::string& profile, const std::string& remove);
   };
 }
 
-AppArmor::Parser removeRule(std::string path, AppArmor::Profile profile, AppArmor::FileRule fileRule);
-
 #endif // APPARMOR_PARSER_HH
-
