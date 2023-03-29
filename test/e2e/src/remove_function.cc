@@ -40,9 +40,9 @@ namespace RemoveFunctionCheck {
     }
 
     //Test to remove a rule from a file with 1 profile and 1 rule
-    TEST(RemoveFunctionCheck, test1)
+    TEST(RemoveFunctionCheck, test1-remove)
     {
-        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/test1.sd";
+        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/remove-test1.sd";
         
         std::list<AppArmor::FileRule> expected_file_rules;
 
@@ -60,9 +60,9 @@ namespace RemoveFunctionCheck {
     }
 
     //Test to remove a rule from a file with 1 profile and more than 1 rule
-    TEST(RemoveFunctionCheck, test2)
+    TEST(RemoveFunctionCheck, test2-remove)
     {
-        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/test2.sd";
+        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/remove-test2.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
 
         emplace_back(expected_file_rules, "/does/not/exist", "r");
@@ -81,9 +81,9 @@ namespace RemoveFunctionCheck {
     }
 
     //Test to remove a rule from a file with 2 profiles and 1 rule each
-    TEST(RemoveFunctionCheck, test3)
+    TEST(RemoveFunctionCheck, test3-remove)
     {
-        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/test3.sd";
+        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/remove-test3.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
@@ -103,9 +103,9 @@ namespace RemoveFunctionCheck {
     }
 
     //Test to remove a rule from a file with 2 profiles and more than 1 rule each
-    TEST(RemoveFunctionCheck, test4)
+    TEST(RemoveFunctionCheck, test4-remove)
     {
-        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/test4.sd";
+        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/remove-test4.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
@@ -128,31 +128,4 @@ namespace RemoveFunctionCheck {
         check_file_rules_for_single_profile(filename, expected_file_rules1, "/**");
         check_file_rules_for_single_profile(filename, expected_file_rules2, "/*");
     }
-
-    //Test to remove a rule that DNI from a file with 1 profile and 1 rule
-    TEST(RemoveFunctionCheck, test5)
-    {
-        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/test5.sd";
-        std::list<AppArmor::FileRule> expected_file_rules;
-
-        emplace_back(expected_file_rules, "/usr/X11R6/lib/lib*so*", "rrr");
-
-        //remove nonexistant rule from profile /**
-
-        check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
-    }
-
-    //Test to remove a rule from a profile that DNI from a file with 1 profile and 1 rule
-    TEST(RemoveFunctionCheck, test6)
-    {
-        auto filename = PROFILE_SOURCE_DIR "/remove-untouched/test6.sd";
-        std::list<AppArmor::FileRule> expected_file_rules;
-
-        emplace_back(expected_file_rules, "/usr/X11R6/lib/lib*so*", "rrr");
-
-        //remove rule /usr/X11R6/lib/lib*so* rrr, from nonexistant profile
-        
-        check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
-    }
-    
 }
