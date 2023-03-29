@@ -4,13 +4,11 @@
 #include "parser/tree/ParseTree.hh"
 
 #include <iostream>
-#include <iostream>
 #include <memory>
 #include <parser_yacc.hh>
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <cstdio>
 #include <cstdio>
 
 /**
@@ -52,55 +50,12 @@ std::list<AppArmor::Profile> AppArmor::Parser::getProfileList() const
     return profile_list;
 }
 
-void AppArmor::Parser::removeRule(AppArmor::Profile profile, AppArmor::FileRule fileRule) 
+AppArmor::Parser AppArmor::Parser::removeRule(AppArmor::Profile profile, AppArmor::FileRule fileRule) 
 {
     std::string line {};
     std::string profileName = profile.name();
-    std::string ruleName = fileRule.getFilename();
-    std::string ruleNode = fileRule.getFilemode();
+    std::string removeRule = fileRule.getFilename() + " " + fileRule.getFilemode() + ",";
 
-    std::ifstream file(path, std::ios::in);
-    bool foundProfile = false;
-
-    while(std::getline(file, line)){
-        // Find the matching profile. Do not need to search if we found the profile.
-        if (!foundProfile && (line.compare(profileName + " {") == 0 || line.compare("profile " + profileName + " {") == 0)) {
-            foundProfile = true;
-        } else if(foundProfile && line.compare("}") == 0){
-            throw "Rule not found in profile!";
-        } else if(foundProfile && line.compare("}") == 0){
-            throw "Rule not found in profile!";
-        }
-
-        // Trim the leading whitespace and trailing whitespace for inside the profile braces.
-        line = trim(line);
-
-        if (foundProfile && line.compare(ruleName + " " + ruleNode + ",") == 0) {
-            removeRuleFromFile(profileName, line);
-
-            // Reinitialize profile list
-            Driver driver;
-            std::ifstream stream;
-            stream.open(path);
-            Lexer lexer(stream, std::cout);
-
-            yy::parser parse(lexer, driver);
-            parse();
-
-            if(!driver.success) {
-                std::throw_with_nested(std::runtime_error("error occured when parsing profile"));
-            }
-            initializeProfileList(driver.ast);
-            return;
-        }
-    }
-
-    throw "Profile not found!";
-}
-
-// Helper function for removeRule
-void AppArmor::Parser::removeRuleFromFile(const std::string& profile, const std::string& remove){
-    std::string line;
     std::ifstream file;
     std::ofstream temp;
     bool foundProfile = false, removed = false;
@@ -112,10 +67,10 @@ void AppArmor::Parser::removeRuleFromFile(const std::string& profile, const std:
     // Write each line except the one we are replacing.
     // Flags used to make sure we don't delete multiple similar rules in different profiles.
     while (getline(file, line)) {
-        if(!foundProfile && !removed && (line == (profile + " {") || line == ("profile " + profile + " {")))
+        if(!foundProfile && !removed && (line == (profileName + " {") || line == ("profile " + profileName + " {")))
             foundProfile = true;
         
-        if (foundProfile && !removed && trim(line) == remove){
+        if (foundProfile && !removed && trim(line) == removeRule){
             removed = true;
             continue;
         }else{
@@ -129,6 +84,49 @@ void AppArmor::Parser::removeRuleFromFile(const std::string& profile, const std:
     // Delete original file and rename new file to old one.
     std::remove(path.c_str());
     std::rename("temp.txt", path.c_str());
+
+    std::ifstream stream(path, std::ios::in);
+    AppArmor::Parser parser(stream);
+    return parser;
+}
+
+AppArmor::Parser AppArmor::Parser::addRule(AppArmor::Profile profile, const std::string& fileRule, std::string& fileMode)
+{
+    std::string line {};
+    std::string profileName = profile.name();
+    std::string addRule = "  " + fileRule + " " + fileMode + ",";
+
+    std::ifstream file;
+    std::ofstream temp;
+    bool foundProfile = false, added = false;
+
+    file.open(path);
+    temp.open("temp.txt");
+
+    while(getline(file, line)){
+        if(!foundProfile && !added && (line == (profileName + " {") || line == ("profile " + profileName + " {")))
+            foundProfile = true;
+        
+        if (foundProfile && !added && (line == "}")){
+            added = true;
+            temp << addRule << std::endl;
+            temp << "}" << std::endl;
+            continue;
+        }else{
+            temp << line << std::endl;
+        }
+    }
+
+    temp.close();
+    file.close();
+
+    // Delete original file and rename new file to old one.
+    std::remove(path.c_str());
+    std::rename("temp.txt", path.c_str());
+
+    std::ifstream stream(path, std::ios::in);
+    AppArmor::Parser parser(stream);
+    return parser;
 }
 
 // Trims leading and trailing whitespace
