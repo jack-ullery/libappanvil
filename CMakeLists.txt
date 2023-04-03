@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.16.3)
 
-project (apparmor-parser C CXX)
+project (appanvil C CXX)
 
 #### Set some variables #####
 set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/src)

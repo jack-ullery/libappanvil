@@ -1,5 +1,7 @@
-# libapparmor-parser-dev (working title)
+# libappanvil
 A community-built C++ library to parse, read, and modify AppArmor profiles.
+
+This library is used by the [AppAnvil](https://github.com/jack-ullery/AppAnvil) project.
 
 ## Dependencies
 ### Compile Time
