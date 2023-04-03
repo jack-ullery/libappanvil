@@ -136,8 +136,8 @@ target_include_directories(${LIBRARY_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/parser)
 target_include_directories(${LIBRARY_NAME} SYSTEM PRIVATE ${AUTOGEN_SOURCE_DIR})
 
 # Create target to install library
-install(TARGETS ${LIBRARY_NAME} DESTINATION lib)
-install(FILES ${OUTPUT_HEADERS} DESTINATION include)
+install(TARGETS ${LIBRARY_NAME} DESTINATION lib/${PROJECT_NAME})
+install(FILES ${OUTPUT_HEADERS} DESTINATION include/${PROJECT_NAME})
 
 # Create uninstall target
 # Copied from: https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake
