@@ -17,11 +17,11 @@ namespace AppArmor {
       explicit Parser(std::ifstream &stream);
 
       std::list<Profile> getProfileList() const;
-      AppArmor::Parser removeRule(std::string path, AppArmor::Profile profile, AppArmor::FileRule fileRule);
-      AppArmor::Parser addRule(std::string path, AppArmor::Profile profile, const std::string& fileRule, std::string& fileMode);
+      AppArmor::Parser removeRule(const std::string &path, const AppArmor::Profile &profile, const AppArmor::FileRule &fileRule);
+      AppArmor::Parser addRule(const std::string &path, const AppArmor::Profile &profile, const std::string& fileRule, const std::string& fileMode);
 
     private:
-      void initializeProfileList(std::shared_ptr<ParseTree> ast);
+      void initializeProfileList(const std::shared_ptr<ParseTree> &ast);
       std::string path;
 
       std::list<Profile> profile_list; 
