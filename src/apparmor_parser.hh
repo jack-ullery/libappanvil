@@ -19,6 +19,8 @@ namespace AppArmor {
       std::list<Profile> getProfileList() const;
       AppArmor::Parser removeRule(AppArmor::Profile profile, AppArmor::FileRule fileRule);
       AppArmor::Parser addRule(AppArmor::Profile profile, const std::string& fileRule, std::string& fileMode);
+      AppArmor::Parser AppArmor::Parser::editRule(AppArmor::Profile profile, AppArmor::FileRule oldFileRule,
+                                                  const std::string& newFileRule, const std::string& newFileMode);
 
     private:
       void initializeProfileList(std::shared_ptr<ParseTree> ast);
