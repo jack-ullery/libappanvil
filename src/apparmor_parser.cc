@@ -3,9 +3,19 @@
 #include "parser/lexer.hh"
 #include "parser/tree/ParseTree.hh"
 
+#include <iostream>
 #include <memory>
 #include <parser_yacc.hh>
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <cstdio>
 
+/**
+ * Idea: change constructor to take a file path as an argument rather than ifstream.
+ * Create ifstream within constructor
+ * Create ofstream within remove function
+*/
 AppArmor::Parser::Parser(std::ifstream &stream)
 {
     Driver driver;
@@ -36,4 +46,105 @@ void AppArmor::Parser::initializeProfileList(std::shared_ptr<ParseTree> ast)
 std::list<AppArmor::Profile> AppArmor::Parser::getProfileList() const
 {
     return profile_list;
+}
+
+AppArmor::Parser AppArmor::Parser::removeRule(std::string path, AppArmor::Profile profile, AppArmor::FileRule fileRule) 
+{
+    std::string line {};
+    std::string profileName = profile.name();
+    std::string removeRule = fileRule.getFilename() + " " + fileRule.getFilemode() + ",";
+
+    std::ifstream file;
+    std::ofstream temp;
+    bool foundProfile = false, removed = false;
+    
+    // Open the file we are working with and create a new temp file to write to.
+    file.open(path);
+    temp.open("temp.txt");
+
+    // Write each line except the one we are replacing.
+    // Flags used to make sure we don't delete multiple similar rules in different profiles.
+    while (getline(file, line)) {
+        if(!foundProfile && !removed && (line == (profileName + " {") || line == ("profile " + profileName + " {")))
+            foundProfile = true;
+        
+        if (foundProfile && !removed && trim(line) == removeRule){
+            removed = true;
+            continue;
+        }else{
+            temp << line << std::endl;
+        }
+    }
+
+    temp.close();
+    file.close();
+
+    // Delete original file and rename new file to old one.
+    std::remove(path.c_str());
+    std::rename("temp.txt", path.c_str());
+
+    std::ifstream stream(path, std::ios::in);
+    AppArmor::Parser parser(stream);
+    return parser;
+}
+
+AppArmor::Parser AppArmor::Parser::addRule(std::string path, AppArmor::Profile profile, const std::string& fileRule, std::string& fileMode)
+{
+    std::string line {};
+    std::string profileName = profile.name();
+    std::string addRule = "  " + fileRule + " " + fileMode + ",";
+
+    std::ifstream file;
+    std::ofstream temp;
+    bool foundProfile = false, added = false;
+
+    file.open(path);
+    temp.open("temp.txt");
+
+    while(getline(file, line)){
+        if(!foundProfile && !added && (line == (profileName + " {") || line == ("profile " + profileName + " {")))
+            foundProfile = true;
+        
+        if (foundProfile && !added && (line == "}")){
+            added = true;
+            temp << addRule << std::endl;
+            temp << "}" << std::endl;
+            continue;
+        }else{
+            temp << line << std::endl;
+        }
+    }
+
+    temp.close();
+    file.close();
+
+    // Delete original file and rename new file to old one.
+    std::remove(path.c_str());
+    std::rename("temp.txt", path.c_str());
+
+    std::ifstream stream(path, std::ios::in);
+    AppArmor::Parser parser(stream);
+    return parser;
+}
+
+// Trims leading and trailing whitespace
+std::string trim(const std::string& str)
+{
+
+    const std::string& whitespace = " \t";
+
+    // Find the character that isn't whitespace.
+    const auto strBegin = str.find_first_not_of(whitespace);
+
+    // If it cannot find it, then return an empty string.
+    if (strBegin == std::string::npos)
+        return ""; // no content
+
+    // Find the last character that isn't whitespace.
+    const auto strEnd = str.find_last_not_of(whitespace);
+
+    // Remove the white space.
+    const auto strRange = strEnd - strBegin + 1;
+
+    return str.substr(strBegin, strRange);
 }
