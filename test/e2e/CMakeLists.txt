@@ -3,9 +3,9 @@ cmake_minimum_required (VERSION 3.16.3)
 project(end-to-end-test C CXX)
 
 set(TEST_SOURCES
-  ./src/main.cc
-  ./src/abstractions.cc
-  ./src/file_rules.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/abstractions.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/file_rules.cc
 )
 
 #### Check that gtest is installed ####

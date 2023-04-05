@@ -3,8 +3,8 @@ cmake_minimum_required (VERSION 3.16.3)
 project (appanvil C CXX)
 
 #### Set some variables #####
-set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/src)
-set(AUTOGEN_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
+set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(AUTOGEN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/dist)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/dist)
@@ -80,7 +80,7 @@ if(${USE_CLANG_TIDY})
     message(WARNING "Could not find clang-tidy installation. Please install clang-tidy if you want to use it for static analysis.")
   else()
     message(STATUS "Adding clang-tidy to build")
-    set(CMAKE_CXX_CLANG_TIDY clang-tidy; --config-file ${CMAKE_CURRENT_BINARY_DIR}/.clang-tidy)
+    set(CMAKE_CXX_CLANG_TIDY clang-tidy; --config-file ${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy)
   endif()
   unset(USE_CLANG_TIDY CACHE)
 endif()
@@ -144,11 +144,11 @@ install(FILES ${OUTPUT_HEADERS} DESTINATION include/${PROJECT_NAME})
 if(NOT TARGET uninstall)
   configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake"
     IMMEDIATE @ONLY)
 
   add_custom_target(uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake)
 endif()
 
 #### Create the test executable ####
