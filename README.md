@@ -39,7 +39,7 @@ sudo apt install clang-tidy-15 cppcheck
 
 ## Compilation Instructions
 ### Prebuild
-If you want to run the tests, first you must load the example profiles from the main [apparmor](https://gitlab.com/apparmor/apparmor/-/tree/master/parser/tst/simple_tests) repository. These profiles are included in a submodule for convenience.
+If you want to run the tests, first you must load the example profiles from the main [AppArmor](https://gitlab.com/apparmor/apparmor/-/tree/master/parser/tst/simple_tests) repository. These profiles are included in a submodule for convenience.
 ```
 git submodule update --init --recursive
 ```
