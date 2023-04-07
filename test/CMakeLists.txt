@@ -8,5 +8,8 @@ file(GLOB_RECURSE
      ${PROFILE_SOURCE_DIR}/*/*.sd
 )
 
-add_subdirectory(simple)
-add_subdirectory(e2e)
+# Add tests if CMake version is at least 3.19
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.19.0")
+     add_subdirectory(simple)
+     add_subdirectory(e2e)
+endif()
