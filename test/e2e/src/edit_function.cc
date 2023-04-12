@@ -56,7 +56,7 @@ namespace EditFunctionCheck {
         AppArmor::Profile prof = editParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
-        editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules, "/bin/ls", "ixixixix");
 
@@ -76,7 +76,7 @@ namespace EditFunctionCheck {
         AppArmor::Profile prof = editParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
-        editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules, "/bin/ls", "ixixixix");
         emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
@@ -98,7 +98,7 @@ namespace EditFunctionCheck {
         AppArmor::Profile prof = editParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
-        editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules1, "/bin/ls", "ixixixix");
         check_file_rules_for_single_profile(filename, expected_file_rules1, "/**");
@@ -121,7 +121,7 @@ namespace EditFunctionCheck {
         AppArmor::Profile prof = editParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
-        editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules1, "/bin/ls", "ixixixix");
         emplace_back(expected_file_rules1, "/bin/echo", "uxuxuxuxux");
@@ -145,11 +145,11 @@ namespace EditFunctionCheck {
         AppArmor::Profile prof = editParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
-        editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         frule = prof.getFileRules().back();
 
-        editParser.editRule(prof, frule, "/var/log/messages", "www");
+        editParser = editParser.editRule(prof, frule, "/var/log/messages", "www");
 
         emplace_back(expected_file_rules, "/bin/ls", "ixixixix");
         emplace_back(expected_file_rules, "/var/log/messages", "www");
@@ -171,7 +171,7 @@ namespace EditFunctionCheck {
         AppArmor::Profile prof = editParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
-        editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules1, "/bin/ls", "ixixixix");
         check_file_rules_for_single_profile(filename, expected_file_rules1, "/**");
@@ -179,7 +179,7 @@ namespace EditFunctionCheck {
         prof = editParser.getProfileList().back();
         frule = prof.getFileRules().front();
 
-        editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules2, "/bin/ls", "ixixixix");
         check_file_rules_for_single_profile(filename, expected_file_rules2, "/*");
@@ -199,7 +199,7 @@ namespace EditFunctionCheck {
         AppArmor::Profile prof = editParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
-        editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules1, "/bin/ls", "ixixixix");
 
@@ -207,7 +207,7 @@ namespace EditFunctionCheck {
 
         frule = prof.getFileRules().front();
 
-        editParser.editRule(prof, frule, "/usr/X11R6/lib/lib*so*", "rrr");
+        editParser = editParser.editRule(prof, frule, "/usr/X11R6/lib/lib*so*", "rrr");
 
         emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
 
