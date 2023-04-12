@@ -12,8 +12,9 @@
 namespace RemoveFunctionCheck {
     std::list<AppArmor::Profile> getProfileList(std::string filename)
     {
-        std::ifstream stream(filename);
-        AppArmor::Parser parser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser parser(stream);
+        AppArmor::Parser parser(filename);
         return parser.getProfileList();
     }
 
@@ -48,8 +49,9 @@ namespace RemoveFunctionCheck {
 
         //remove rule /usr/X11R6/lib/lib*so* rrr,
         //Something between here and the check_file_rules method is making the test fail
-        std::ifstream stream(filename);
-        AppArmor::Parser removeParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser removeParser(stream);
+        AppArmor::Parser removeParser(filename);
 
         AppArmor::Profile prof = removeParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
@@ -69,8 +71,9 @@ namespace RemoveFunctionCheck {
         emplace_back(expected_file_rules, "/var/log/messages", "www");
 
         //remove rule /usr/X11R6/lib/lib*so* rrr,
-        std::ifstream stream(filename);
-        AppArmor::Parser removeParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser removeParser(stream);
+        AppArmor::Parser removeParser(filename);
 
         AppArmor::Profile prof = removeParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
@@ -90,8 +93,9 @@ namespace RemoveFunctionCheck {
         emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
 
         //remove rule /usr/X11R6/lib/lib*so* rrr, from profile /**
-        std::ifstream stream(filename);
-        AppArmor::Parser removeParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser removeParser(stream);
+        AppArmor::Parser removeParser(filename);
 
         AppArmor::Profile prof = removeParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
@@ -117,8 +121,9 @@ namespace RemoveFunctionCheck {
         emplace_back(expected_file_rules2, "/var/log/messages", "www");
 
         //remove rule /usr/X11R6/lib/lib*so* rrr, from profile /**
-        std::ifstream stream(filename);
-        AppArmor::Parser removeParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser removeParser(stream);
+        AppArmor::Parser removeParser(filename);
 
         AppArmor::Profile prof = removeParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();

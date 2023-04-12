@@ -12,8 +12,9 @@
 namespace AddFunctionCheck {
     std::list<AppArmor::Profile> getProfileList(std::string filename)
     {
-        std::ifstream stream(filename);
-        AppArmor::Parser parser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser parser(stream);
+        AppArmor::Parser parser(filename);
         return parser.getProfileList();
     }
 
@@ -50,8 +51,9 @@ namespace AddFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules;
 
         //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        std::ifstream stream(filename);
-        AppArmor::Parser addParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser addParser(stream);
+        AppArmor::Parser addParser(filename);
 
         AppArmor::Profile prof = addParser.getProfileList().front();
 
@@ -72,8 +74,9 @@ namespace AddFunctionCheck {
         emplace_back(expected_file_rules, "/usr/X11R6/lib/lib*so*", "rrr");
 
         //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        std::ifstream stream(filename);
-        AppArmor::Parser addParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser addParser(stream);
+        AppArmor::Parser addParser(filename);
 
         AppArmor::Profile prof = addParser.getProfileList().front();
 
@@ -92,8 +95,9 @@ namespace AddFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules;
 
         //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        std::ifstream stream(filename);
-        AppArmor::Parser addParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser addParser(stream);
+        AppArmor::Parser addParser(filename);
 
         AppArmor::Profile prof = addParser.getProfileList().front();
 
@@ -119,8 +123,9 @@ namespace AddFunctionCheck {
         emplace_back(expected_file_rules, "/usr/X11R6/lib/lib*so*", "rrr");
 
         //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        std::ifstream stream(filename);
-        AppArmor::Parser addParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser addParser(stream);
+        AppArmor::Parser addParser(filename);
 
         AppArmor::Profile prof = addParser.getProfileList().front();
 
@@ -145,8 +150,9 @@ namespace AddFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules2;
 
         //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        std::ifstream stream(filename);
-        AppArmor::Parser addParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser addParser(stream);
+        AppArmor::Parser addParser(filename);
 
         AppArmor::Profile prof = addParser.getProfileList().front();
 
@@ -169,8 +175,9 @@ namespace AddFunctionCheck {
         emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
 
         //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        std::ifstream stream(filename);
-        AppArmor::Parser addParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser addParser(stream);
+        AppArmor::Parser addParser(filename);
 
         AppArmor::Profile prof = addParser.getProfileList().front();
 
@@ -191,8 +198,9 @@ namespace AddFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules2;
 
         //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        std::ifstream stream(filename);
-        AppArmor::Parser addParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser addParser(stream);
+        AppArmor::Parser addParser(filename);
 
         AppArmor::Profile prof1 = addParser.getProfileList().front();
 
@@ -221,8 +229,9 @@ namespace AddFunctionCheck {
         emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
 
         //Call add-rule function for rule "/bin/echo uxuxuxuxux," on profile "/**"
-        std::ifstream stream(filename);
-        AppArmor::Parser addParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser addParser(stream);
+        AppArmor::Parser addParser(filename);
 
         AppArmor::Profile prof1 = addParser.getProfileList().front();
 

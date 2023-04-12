@@ -12,8 +12,9 @@
 namespace EditFunctionCheck {
     std::list<AppArmor::Profile> getProfileList(std::string filename)
     {
-        std::ifstream stream(filename);
-        AppArmor::Parser parser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser parser(stream);
+        AppArmor::Parser parser(filename);
         return parser.getProfileList();
     }
 
@@ -49,8 +50,9 @@ namespace EditFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules;
 
         //Edit the one rule into the new rule
-        std::ifstream stream(filename);
-        AppArmor::Parser editParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser editParser(stream);
+        AppArmor::Parser editParser(filename);
         AppArmor::Profile prof = editParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
@@ -68,8 +70,9 @@ namespace EditFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules;
 
         //Edit the one rule into the new rule
-        std::ifstream stream(filename);
-        AppArmor::Parser editParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser editParser(stream);
+        AppArmor::Parser editParser(filename);
         AppArmor::Profile prof = editParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
@@ -89,8 +92,9 @@ namespace EditFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules2;
 
         //Edit the one rule into the new rule
-        std::ifstream stream(filename);
-        AppArmor::Parser editParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser editParser(stream);
+        AppArmor::Parser editParser(filename);
         AppArmor::Profile prof = editParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
@@ -111,8 +115,9 @@ namespace EditFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules2;
 
         //Edit the one rule into the new rule
-        std::ifstream stream(filename);
-        AppArmor::Parser editParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser editParser(stream);
+        AppArmor::Parser editParser(filename);
         AppArmor::Profile prof = editParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
@@ -134,8 +139,9 @@ namespace EditFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules;
 
         //Edit the one rule into the new rule
-        std::ifstream stream(filename);
-        AppArmor::Parser editParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser editParser(stream);
+        AppArmor::Parser editParser(filename);
         AppArmor::Profile prof = editParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
@@ -159,8 +165,9 @@ namespace EditFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules2;
 
         //Edit the one rule into the new rule
-        std::ifstream stream(filename);
-        AppArmor::Parser editParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser editParser(stream);
+        AppArmor::Parser editParser(filename);
         AppArmor::Profile prof = editParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
@@ -186,8 +193,9 @@ namespace EditFunctionCheck {
         std::list<AppArmor::FileRule> expected_file_rules2;
 
         //Edit the one rule into the new rule
-        std::ifstream stream(filename);
-        AppArmor::Parser editParser(stream);
+        //std::ifstream stream(filename);
+        //AppArmor::Parser editParser(stream);
+        AppArmor::Parser editParser(filename);
         AppArmor::Profile prof = editParser.getProfileList().front();
         AppArmor::FileRule frule = prof.getFileRules().front();
 
