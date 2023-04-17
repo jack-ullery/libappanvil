@@ -10,8 +10,9 @@
 namespace AbstractionCheck {
   std::list<AppArmor::Profile> getProfileList(std::string filename)
   {
-    std::ifstream stream(filename);
-    AppArmor::Parser parser(stream);
+    //std::ifstream stream(filename);
+    //AppArmor::Parser parser(stream);
+    AppArmor::Parser parser(filename);
     return parser.getProfileList();
   }
 
