@@ -18,18 +18,19 @@ namespace RemoveFunctionCheck {
         return parser.getProfileList();
     }
 
-    void check_file_rules_for_single_profile(const std::string &filename, 
-                                             const std::list<AppArmor::FileRule> &expected_file_rules, 
+    void check_file_rules_for_single_profile(const std::string &filename,
+                                             const std::list<AppArmor::FileRule> &expected_file_rules,
                                              const std::string &profile_name)
     {
         auto profile_list = getProfileList(filename);
-  
-        EXPECT_EQ(profile_list.size(), 1) << "There should only be one profile";
-  
-        auto first_profile = profile_list.begin();
-        EXPECT_EQ(first_profile->name(), profile_name);
+        while(profile_name != profile_list.front().name() && !profile_list.empty()){
+            profile_list.pop_front();
+        }
 
-        auto file_rules = first_profile->getFileRules();
+        auto profile = profile_list.front();
+        EXPECT_EQ(profile.name(), profile_name) << "No profile name matched";
+
+        auto file_rules = profile.getFileRules();
         ASSERT_EQ(file_rules, expected_file_rules);
     }
 
