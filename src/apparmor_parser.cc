@@ -16,9 +16,11 @@
  * Create ifstream within constructor
  * Create ofstream within remove function
 */
-AppArmor::Parser::Parser(std::ifstream &stream)
+AppArmor::Parser::Parser(const std::string &path)
 {
     Driver driver;
+    std::ifstream stream;
+    stream.open(path);
     Lexer lexer(stream, std::cout);
 
     yy::parser parse(lexer, driver);
@@ -48,7 +50,7 @@ std::list<AppArmor::Profile> AppArmor::Parser::getProfileList() const
     return profile_list;
 }
 
-AppArmor::Parser AppArmor::Parser::removeRule(std::string path, AppArmor::Profile profile, AppArmor::FileRule fileRule) 
+AppArmor::Parser AppArmor::Parser::removeRule(AppArmor::Profile profile, AppArmor::FileRule fileRule) 
 {
     std::string line {};
     std::string profileName = profile.name();
@@ -83,12 +85,11 @@ AppArmor::Parser AppArmor::Parser::removeRule(std::string path, AppArmor::Profil
     std::remove(path.c_str());
     std::rename("temp.txt", path.c_str());
 
-    std::ifstream stream(path, std::ios::in);
-    AppArmor::Parser parser(stream);
+    AppArmor::Parser parser(path);
     return parser;
 }
 
-AppArmor::Parser AppArmor::Parser::addRule(std::string path, AppArmor::Profile profile, const std::string& fileRule, std::string& fileMode)
+AppArmor::Parser AppArmor::Parser::addRule(AppArmor::Profile profile, const std::string& fileRule, std::string& fileMode)
 {
     std::string line {};
     std::string profileName = profile.name();
@@ -122,9 +123,51 @@ AppArmor::Parser AppArmor::Parser::addRule(std::string path, AppArmor::Profile p
     std::remove(path.c_str());
     std::rename("temp.txt", path.c_str());
 
-    std::ifstream stream(path, std::ios::in);
-    AppArmor::Parser parser(stream);
+    AppArmor::Parser parser(path);
     return parser;
+}
+
+// What should this do if old version of rule not found?
+AppArmor::Parser AppArmor::Parser::editRule(AppArmor::Profile profile, AppArmor::FileRule oldFileRule, const std::string& newFileRule, const std::string& newFileMode) {
+    
+    std::string line {};
+    std::string profileName = profile.name();
+    std::string uneditedRule = oldFileRule.getFilename() + " " + oldFileRule.getFilemode() + ",";
+    std::string editedRule = "  " + newFileRule + " " + newFileMode + ",";
+
+    std::ifstream file;
+    std::ofstream temp;
+    bool foundProfile = false, edited = false;
+
+    // Open the file we are working with and create a new temp file to write to.
+    file.open(path);
+    temp.open("temp.txt");
+
+    // Write each line except for the old/unedited rule.
+    // Write the edited version in its place.
+    while (getline(file, line)) {
+        if(!foundProfile && !edited && (line == (profileName + " {") || line == ("profile " + profileName + " {")))
+            foundProfile = true;
+        
+        if (foundProfile && !edited && trim(line) == uneditedRule){
+            temp << editedRule << std::endl;
+            edited = true;
+            continue;
+        }else{
+            temp << line << std::endl;
+        }
+    }
+
+    temp.close();
+    file.close();
+
+    // Delete original file and rename new file to old one.
+    std::remove(path.c_str());
+    std::rename("temp.txt", path.c_str());
+
+    AppArmor::Parser parser(path);
+    return parser;
+
 }
 
 // Trims leading and trailing whitespace

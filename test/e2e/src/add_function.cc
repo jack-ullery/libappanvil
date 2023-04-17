@@ -59,7 +59,7 @@ namespace AddFunctionCheck {
 
         std::string filemode = "uxuxuxuxux";
         //Idk why I needed to, but the compiler didn't like it if I used the filemode string without it being declared first
-        addParser = addParser.addRule(filename, prof, "/bin/echo", filemode);
+        addParser = addParser.addRule(prof, "/bin/echo", filemode);
 
         emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
 
@@ -81,7 +81,7 @@ namespace AddFunctionCheck {
         AppArmor::Profile prof = addParser.getProfileList().front();
 
         std::string filemode = "uxuxuxuxux";
-        addParser = addParser.addRule(filename, prof, "/bin/echo", filemode);
+        addParser = addParser.addRule(prof, "/bin/echo", filemode);
         
         emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
 
@@ -102,11 +102,11 @@ namespace AddFunctionCheck {
         AppArmor::Profile prof = addParser.getProfileList().front();
 
         std::string filemode1 = "uxuxuxuxux";
-        addParser = addParser.addRule(filename, prof, "/bin/echo", filemode1);
+        addParser = addParser.addRule(prof, "/bin/echo", filemode1);
 
         //Call add-rule function for rule "/var/log/messages www," on profile "/**"
         std::string filemode2 = "www";
-        addParser = addParser.addRule(filename, prof, "/var/log/messages", filemode2);
+        addParser = addParser.addRule(prof, "/var/log/messages", filemode2);
 
 
        emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
@@ -130,11 +130,11 @@ namespace AddFunctionCheck {
         AppArmor::Profile prof = addParser.getProfileList().front();
 
         std::string filemode1 = "uxuxuxuxux";
-        addParser = addParser.addRule(filename, prof, "/bin/echo", filemode1);
+        addParser = addParser.addRule(prof, "/bin/echo", filemode1);
 
         //Call add-rule function for rule "/var/log/messages www," on profile "/**"
         std::string filemode2 = "www";
-        addParser = addParser.addRule(filename, prof, "/var/log/messages", filemode2);
+        addParser = addParser.addRule(prof, "/var/log/messages", filemode2);
 
         emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
         emplace_back(expected_file_rules, "/var/log/messages", "www");
@@ -157,7 +157,7 @@ namespace AddFunctionCheck {
         AppArmor::Profile prof = addParser.getProfileList().front();
 
         std::string filemode = "uxuxuxuxux";
-        addParser = addParser.addRule(filename, prof, "/bin/echo", filemode);
+        addParser = addParser.addRule(prof, "/bin/echo", filemode);
 
        emplace_back(expected_file_rules1, "/bin/echo", "uxuxuxuxux");
 
@@ -182,7 +182,7 @@ namespace AddFunctionCheck {
         AppArmor::Profile prof = addParser.getProfileList().front();
 
         std::string filemode = "uxuxuxuxux";
-        addParser = addParser.addRule(filename, prof, "/bin/echo", filemode);
+        addParser = addParser.addRule(prof, "/bin/echo", filemode);
 
        emplace_back(expected_file_rules1, "/bin/echo", "uxuxuxuxux");
 
@@ -205,12 +205,12 @@ namespace AddFunctionCheck {
         AppArmor::Profile prof1 = addParser.getProfileList().front();
 
         std::string filemode1 = "uxuxuxuxux";
-        addParser = addParser.addRule(filename, prof1, "/bin/echo", filemode1);
+        addParser = addParser.addRule(prof1, "/bin/echo", filemode1);
         //Call add-rule function for rule "/var/log/messages www," on profile "/*"
         AppArmor::Profile prof2 = addParser.getProfileList().back();
 
         std::string filemode2 = "www";
-        addParser = addParser.addRule(filename, prof2, "/var/log/messages", filemode2);
+        addParser = addParser.addRule(prof2, "/var/log/messages", filemode2);
 
        emplace_back(expected_file_rules1, "/bin/echo", "uxuxuxuxux");
        emplace_back(expected_file_rules2, "/var/log/messages", "www");
@@ -236,12 +236,12 @@ namespace AddFunctionCheck {
         AppArmor::Profile prof1 = addParser.getProfileList().front();
 
         std::string filemode1 = "uxuxuxuxux";
-        addParser = addParser.addRule(filename, prof1, "/bin/echo", filemode1);
+        addParser = addParser.addRule(prof1, "/bin/echo", filemode1);
         //Call add-rule function for rule "/var/log/messages www," on profile "/*"
         AppArmor::Profile prof2 = addParser.getProfileList().back();
 
         std::string filemode2 = "www";
-        addParser = addParser.addRule(filename, prof2, "/var/log/messages", filemode2);
+        addParser = addParser.addRule(prof2, "/var/log/messages", filemode2);
 
        emplace_back(expected_file_rules1, "/bin/echo", "uxuxuxuxux");
        emplace_back(expected_file_rules2, "/var/log/messages", "www");
