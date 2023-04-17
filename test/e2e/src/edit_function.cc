@@ -43,7 +43,7 @@ namespace EditFunctionCheck {
     //Test to edit a rule from a file with 1 profile and 1 rule
     TEST(EditFunctionCheck, test1_edit) // NOLINT
     {
-        std::string filename = PROFILE_SOURCE_DIR "/edit-untouched/test1_edit.sd";
+        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test1_edit.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
 
         //Edit the one rule into the new rule
@@ -67,7 +67,7 @@ namespace EditFunctionCheck {
     //Test to edit a rule from a file with 1 profile and 2 rules
     TEST(EditFunctionCheck, test2_edit) // NOLINT
     {
-        std::string filename = PROFILE_SOURCE_DIR "/edit-untouched/test2_edit.sd";
+        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test2_edit.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
 
         //Edit the one rule into the new rule
@@ -92,7 +92,7 @@ namespace EditFunctionCheck {
     //Test to edit a rule from a file with 2 profiles and 1 rule each
     TEST(EditFunctionCheck, test3_edit) // NOLINT
     {
-        std::string filename = PROFILE_SOURCE_DIR "/edit-untouched/test3_edit.sd";
+        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test3_edit.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
@@ -119,7 +119,7 @@ namespace EditFunctionCheck {
     //Test to edit a rule from a file with 2 profiles and 2 rules each
     TEST(EditFunctionCheck, test4_edit) // NOLINT
     {
-        std::string filename = PROFILE_SOURCE_DIR "/edit-untouched/test4_edit.sd";
+        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test4_edit.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
@@ -148,7 +148,7 @@ namespace EditFunctionCheck {
     //Test to edit 2 rules from a file with 1 profile and 2 rule
     TEST(EditFunctionCheck, test5_edit) // NOLINT
     {
-        std::string filename = PROFILE_SOURCE_DIR "/edit-untouched/test5_edit.sd";
+        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test5_edit.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
 
         //Edit the one rule into the new rule
@@ -176,7 +176,7 @@ namespace EditFunctionCheck {
     //Test to edit 2 rules from a file with 2 profiles and 1 rule each
     TEST(EditFunctionCheck, test6_edit) // NOLINT
     {
-        std::string filename = PROFILE_SOURCE_DIR "/edit-untouched/test6_edit.sd";
+        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test6_edit.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
@@ -191,7 +191,7 @@ namespace EditFunctionCheck {
         ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
         auto frule = rule_list.front();
 
-        parser = parser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        parser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules1, "/bin/ls", "ixixixix");
         check_file_rules_for_single_profile(filename, expected_file_rules1, "/**");
@@ -199,7 +199,7 @@ namespace EditFunctionCheck {
         prof = parser.getProfileList().back();
         frule = prof.getFileRules().front();
 
-        parser = parser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        parser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules2, "/bin/ls", "ixixixix");
         check_file_rules_for_single_profile(filename, expected_file_rules2, "/*");
@@ -208,7 +208,7 @@ namespace EditFunctionCheck {
     //Test to edit a rule twice from a file with 1 profile and 1 rule
     TEST(EditFunctionCheck, test7_edit) // NOLINT
     {
-        std::string filename = PROFILE_SOURCE_DIR "/edit-untouched/test7_edit.sd";
+        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test7_edit.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 

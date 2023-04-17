@@ -43,7 +43,7 @@ namespace AddFunctionCheck {
     //Test to add a rule to a file with 1 profile and 0 rules
     TEST(AddFunctionCheck, test1_add) // NOLINT
     {
-        std::string filename = PROFILE_SOURCE_DIR "/add-untouched/test1_add.sd";
+        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test1_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
 
         AppArmor::Parser parser(filename);
@@ -64,7 +64,7 @@ namespace AddFunctionCheck {
     //Test to add a rule to a file with 1 profile and 1 rule
     TEST(AddFunctionCheck, test2_add) // NOLINT
     {
-        std::string filename = PROFILE_SOURCE_DIR "/add-untouched/test2_add.sd";
+        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test2_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
         emplace_back(expected_file_rules, "/usr/X11R6/lib/lib*so*", "rrr");
 
@@ -85,7 +85,7 @@ namespace AddFunctionCheck {
     //Test to add 2 rules to a file with 1 profile and 0 rules
     TEST(AddFunctionCheck, test3_add) // NOLINT
     {
-        std::string filename = PROFILE_SOURCE_DIR "/add-untouched/test3_add.sd";
+        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test3_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
 
         AppArmor::Parser parser(filename);
@@ -110,7 +110,7 @@ namespace AddFunctionCheck {
     //Test to add 2 rules to a file with 1 profile and 1 rule
     TEST(AddFunctionCheck, test4_add) // NOLINT
     {
-        std::string filename = PROFILE_SOURCE_DIR "/add-untouched/test4_add.sd";
+        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test4_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
         emplace_back(expected_file_rules, "/usr/X11R6/lib/lib*so*", "rrr");
 
@@ -136,7 +136,7 @@ namespace AddFunctionCheck {
     //Test to add 1 rule to a file with 2 profiles and 0 rules each
     TEST(AddFunctionCheck, test5_add) // NOLINT
     {
-        std::string filename = PROFILE_SOURCE_DIR "/add-untouched/test5_add.sd";
+        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test5_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
@@ -158,7 +158,7 @@ namespace AddFunctionCheck {
     //Test to add 1 rule to a file with 2 profiles and 1 rule each
     TEST(AddFunctionCheck, test6_add) // NOLINT
     {
-        std::string filename = PROFILE_SOURCE_DIR "/add-untouched/test6_add.sd";
+        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test6_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
         emplace_back(expected_file_rules1, "/usr/X11R6/lib/lib*so*", "rrr");
@@ -182,7 +182,7 @@ namespace AddFunctionCheck {
     //Test to add 2 rules to a file with 2 profiles and 0 rules each
     TEST(AddFunctionCheck, test7_add) // NOLINT
     {
-        std::string filename = PROFILE_SOURCE_DIR "/add-untouched/test7_add.sd";
+        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test7_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
@@ -211,7 +211,7 @@ namespace AddFunctionCheck {
     //Test to add 2 rules to a file with 2 profiles and 1 rule each
     TEST(AddFunctionCheck, test8_add) // NOLINT
     {
-        std::string filename = PROFILE_SOURCE_DIR "/add-untouched/test8_add.sd";
+        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test8_add.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
         emplace_back(expected_file_rules1, "/usr/X11R6/lib/lib*so*", "rrr");
