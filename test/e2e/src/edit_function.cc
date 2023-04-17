@@ -1,7 +1,7 @@
-#include <exception>
-#include <fstream>
 #include <gtest/gtest-param-test.h>
 #include <gtest/gtest.h>
+#include <exception>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <unordered_set>
@@ -10,21 +10,21 @@
 #include "parser/tree/FileNode.hh"
 
 namespace EditFunctionCheck {
-    std::list<AppArmor::Profile> getProfileList(std::string filename)
+    std::list<AppArmor::Profile> getProfileList(const std::string &filename)
     {
-        //std::ifstream stream(filename);
-        //AppArmor::Parser parser(stream);
         AppArmor::Parser parser(filename);
         return parser.getProfileList();
     }
 
-    void check_file_rules_for_single_profile(std::string filename, std::list<AppArmor::FileRule> expected_file_rules, std::string profile_name)
+    void check_file_rules_for_single_profile(const std::string &filename,
+                                             const std::list<AppArmor::FileRule> &expected_file_rules,
+                                             const std::string &profile_name)
     {
         auto profile_list = getProfileList(filename);
-
-        while(profile_name.compare(profile_list.front().name()) != 0 && profile_list.size() != 0){
+        while(profile_name != profile_list.front().name() && !profile_list.empty()){
             profile_list.pop_front();
         }
+
         auto profile = profile_list.front();
         EXPECT_EQ(profile.name(), profile_name) << "No profile name matched";
 
@@ -40,23 +40,24 @@ namespace EditFunctionCheck {
         list.emplace_back(rule);
     }
 
-    //Quick reference for editing rules
-    //     /bin/ls ixixixix,
-
     //Test to edit a rule from a file with 1 profile and 1 rule
-    TEST(EditFunctionCheck, test1_edit)
+    TEST(EditFunctionCheck, test1_edit) // NOLINT
     {
-        auto filename = PROFILE_SOURCE_DIR "/edit-untouched/test1_edit.sd";
+        std::string filename = PROFILE_SOURCE_DIR "/edit-untouched/test1_edit.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
 
         //Edit the one rule into the new rule
-        //std::ifstream stream(filename);
-        //AppArmor::Parser editParser(stream);
-        AppArmor::Parser editParser(filename);
-        AppArmor::Profile prof = editParser.getProfileList().front();
-        AppArmor::FileRule frule = prof.getFileRules().front();
+        AppArmor::Parser parser(filename);
 
-        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        auto profile_list = parser.getProfileList();
+        ASSERT_FALSE(profile_list.empty()) << "There should be at least one profile";
+        auto prof = profile_list.front();
+
+        auto rule_list = prof.getFileRules();
+        ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
+        auto frule = rule_list.front();
+
+        parser = parser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules, "/bin/ls", "ixixixix");
 
@@ -64,19 +65,23 @@ namespace EditFunctionCheck {
     }
 
     //Test to edit a rule from a file with 1 profile and 2 rules
-    TEST(EditFunctionCheck, test2_edit)
+    TEST(EditFunctionCheck, test2_edit) // NOLINT
     {
-        auto filename = PROFILE_SOURCE_DIR "/edit-untouched/test2_edit.sd";
+        std::string filename = PROFILE_SOURCE_DIR "/edit-untouched/test2_edit.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
 
         //Edit the one rule into the new rule
-        //std::ifstream stream(filename);
-        //AppArmor::Parser editParser(stream);
-        AppArmor::Parser editParser(filename);
-        AppArmor::Profile prof = editParser.getProfileList().front();
-        AppArmor::FileRule frule = prof.getFileRules().front();
+        AppArmor::Parser parser(filename);
 
-        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        auto profile_list = parser.getProfileList();
+        ASSERT_FALSE(profile_list.empty()) << "There should be at least one profile";
+        auto prof = profile_list.front();
+
+        auto rule_list = prof.getFileRules();
+        ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
+        auto frule = rule_list.front();
+
+        parser = parser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules, "/bin/ls", "ixixixix");
         emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
@@ -85,20 +90,24 @@ namespace EditFunctionCheck {
     }
 
     //Test to edit a rule from a file with 2 profiles and 1 rule each
-    TEST(EditFunctionCheck, test3_edit)
+    TEST(EditFunctionCheck, test3_edit) // NOLINT
     {
-        auto filename = PROFILE_SOURCE_DIR "/edit-untouched/test3_edit.sd";
+        std::string filename = PROFILE_SOURCE_DIR "/edit-untouched/test3_edit.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
         //Edit the one rule into the new rule
-        //std::ifstream stream(filename);
-        //AppArmor::Parser editParser(stream);
-        AppArmor::Parser editParser(filename);
-        AppArmor::Profile prof = editParser.getProfileList().front();
-        AppArmor::FileRule frule = prof.getFileRules().front();
+        AppArmor::Parser parser(filename);
 
-        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        auto profile_list = parser.getProfileList();
+        ASSERT_FALSE(profile_list.empty()) << "There should be at least one profile";
+        auto prof = profile_list.front();
+
+        auto rule_list = prof.getFileRules();
+        ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
+        auto frule = rule_list.front();
+
+        parser = parser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules1, "/bin/ls", "ixixixix");
         check_file_rules_for_single_profile(filename, expected_file_rules1, "/**");
@@ -108,20 +117,24 @@ namespace EditFunctionCheck {
     }
 
     //Test to edit a rule from a file with 2 profiles and 2 rules each
-    TEST(EditFunctionCheck, test4_edit)
+    TEST(EditFunctionCheck, test4_edit) // NOLINT
     {
-        auto filename = PROFILE_SOURCE_DIR "/edit-untouched/test4_edit.sd";
+        std::string filename = PROFILE_SOURCE_DIR "/edit-untouched/test4_edit.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
         //Edit the one rule into the new rule
-        //std::ifstream stream(filename);
-        //AppArmor::Parser editParser(stream);
-        AppArmor::Parser editParser(filename);
-        AppArmor::Profile prof = editParser.getProfileList().front();
-        AppArmor::FileRule frule = prof.getFileRules().front();
+        AppArmor::Parser parser(filename);
 
-        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        auto profile_list = parser.getProfileList();
+        ASSERT_FALSE(profile_list.empty()) << "There should be at least one profile";
+        auto prof = profile_list.front();
+
+        auto rule_list = prof.getFileRules();
+        ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
+        auto frule = rule_list.front();
+
+        parser = parser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules1, "/bin/ls", "ixixixix");
         emplace_back(expected_file_rules1, "/bin/echo", "uxuxuxuxux");
@@ -133,23 +146,26 @@ namespace EditFunctionCheck {
     }
 
     //Test to edit 2 rules from a file with 1 profile and 2 rule
-    TEST(EditFunctionCheck, test5_edit)
+    TEST(EditFunctionCheck, test5_edit) // NOLINT
     {
-        auto filename = PROFILE_SOURCE_DIR "/edit-untouched/test5_edit.sd";
+        std::string filename = PROFILE_SOURCE_DIR "/edit-untouched/test5_edit.sd";
         std::list<AppArmor::FileRule> expected_file_rules;
 
         //Edit the one rule into the new rule
-        //std::ifstream stream(filename);
-        //AppArmor::Parser editParser(stream);
-        AppArmor::Parser editParser(filename);
-        AppArmor::Profile prof = editParser.getProfileList().front();
-        AppArmor::FileRule frule = prof.getFileRules().front();
+        AppArmor::Parser parser(filename);
 
-        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        auto profile_list = parser.getProfileList();
+        ASSERT_FALSE(profile_list.empty()) << "There should be at least one profile";
+        auto prof = profile_list.front();
+
+        auto rule_list = prof.getFileRules();
+        ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
+        auto frule = rule_list.front();
+
+        parser = parser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         frule = prof.getFileRules().back();
-
-        editParser = editParser.editRule(prof, frule, "/var/log/messages", "www");
+        parser = parser.editRule(prof, frule, "/var/log/messages", "www");
 
         emplace_back(expected_file_rules, "/bin/ls", "ixixixix");
         emplace_back(expected_file_rules, "/var/log/messages", "www");
@@ -158,48 +174,56 @@ namespace EditFunctionCheck {
     }
 
     //Test to edit 2 rules from a file with 2 profiles and 1 rule each
-    TEST(EditFunctionCheck, test6_edit)
+    TEST(EditFunctionCheck, test6_edit) // NOLINT
     {
-        auto filename = PROFILE_SOURCE_DIR "/edit-untouched/test6_edit.sd";
+        std::string filename = PROFILE_SOURCE_DIR "/edit-untouched/test6_edit.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
         //Edit the one rule into the new rule
-        //std::ifstream stream(filename);
-        //AppArmor::Parser editParser(stream);
-        AppArmor::Parser editParser(filename);
-        AppArmor::Profile prof = editParser.getProfileList().front();
-        AppArmor::FileRule frule = prof.getFileRules().front();
+        AppArmor::Parser parser(filename);
 
-        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        auto profile_list = parser.getProfileList();
+        ASSERT_FALSE(profile_list.empty()) << "There should be at least one profile";
+        auto prof = profile_list.front();
+
+        auto rule_list = prof.getFileRules();
+        ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
+        auto frule = rule_list.front();
+
+        parser = parser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules1, "/bin/ls", "ixixixix");
         check_file_rules_for_single_profile(filename, expected_file_rules1, "/**");
 
-        prof = editParser.getProfileList().back();
+        prof = parser.getProfileList().back();
         frule = prof.getFileRules().front();
 
-        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        parser = parser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules2, "/bin/ls", "ixixixix");
         check_file_rules_for_single_profile(filename, expected_file_rules2, "/*");
     }
 
     //Test to edit a rule twice from a file with 1 profile and 1 rule
-    TEST(EditFunctionCheck, test7_edit)
+    TEST(EditFunctionCheck, test7_edit) // NOLINT
     {
-        auto filename = PROFILE_SOURCE_DIR "/edit-untouched/test7_edit.sd";
+        std::string filename = PROFILE_SOURCE_DIR "/edit-untouched/test7_edit.sd";
         std::list<AppArmor::FileRule> expected_file_rules1;
         std::list<AppArmor::FileRule> expected_file_rules2;
 
         //Edit the one rule into the new rule
-        //std::ifstream stream(filename);
-        //AppArmor::Parser editParser(stream);
-        AppArmor::Parser editParser(filename);
-        AppArmor::Profile prof = editParser.getProfileList().front();
-        AppArmor::FileRule frule = prof.getFileRules().front();
+        AppArmor::Parser parser(filename);
 
-        editParser = editParser.editRule(prof, frule, "/bin/ls", "ixixixix");
+        auto profile_list = parser.getProfileList();
+        ASSERT_FALSE(profile_list.empty()) << "There should be at least one profile";
+        auto prof = profile_list.front();
+
+        auto rule_list = prof.getFileRules();
+        ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
+        auto frule = rule_list.front();
+
+        parser = parser.editRule(prof, frule, "/bin/ls", "ixixixix");
 
         emplace_back(expected_file_rules1, "/bin/ls", "ixixixix");
 
@@ -207,10 +231,10 @@ namespace EditFunctionCheck {
 
         frule = prof.getFileRules().front();
 
-        editParser = editParser.editRule(prof, frule, "/usr/X11R6/lib/lib*so*", "rrr");
+        parser = parser.editRule(prof, frule, "/usr/X11R6/lib/lib*so*", "rrr");
 
         emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
 
         check_file_rules_for_single_profile(filename, expected_file_rules2, "/**");
     }
-}
+} // namespace EditFunctionCheck
