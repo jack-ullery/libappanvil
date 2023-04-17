@@ -38,6 +38,7 @@ if(${GTEST_FOUND})
 
   # Set the location of profiles as a global variable for the tests
   target_compile_definitions(${PROJECT_NAME} PUBLIC -DPROFILE_SOURCE_DIR="${PROFILE_SOURCE_DIR}")
+  target_compile_definitions(${PROJECT_NAME} PUBLIC -DADDITIONAL_PROFILE_SOURCE_DIR="${ADDITIONAL_PROFILE_SOURCE_DIR}")
 
   # Add the tests to ctest
   gtest_add_tests(
