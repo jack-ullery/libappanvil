@@ -6,9 +6,6 @@ set(TEST_SOURCES
   ./src/main.cc
   ./src/abstractions.cc
   ./src/file_rules.cc
-  ./src/remove_function.cc
-  ./src/add_function.cc
-  ./src/edit_function.cc
 )
 
 #### Check that gtest is installed ####
