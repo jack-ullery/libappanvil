@@ -1,12 +1,13 @@
 #include "apparmor_profile.hh"
 #include "parser/tree/AbstractionNode.hh"
-#include "parser/tree/ProfileNode.hh"
 #include "parser/tree/FileNode.hh"
+#include "parser/tree/ProfileNode.hh"
 
 #include <iostream>
+#include <utility>
 
 AppArmor::Profile::Profile(std::shared_ptr<ProfileNode> profile_model)
-  : profile_model{profile_model}
+  : profile_model{std::move(profile_model)}
 {   }
 
 std::string AppArmor::Profile::name() const
