@@ -17,6 +17,11 @@ Packages needed to compile the library:
 sudo apt install pkg-config cmake clang bison flex libfl-dev
 ```
 
+#### Install commands (openSUSE)
+```
+sudo zypper in cmake clang bison flex
+```
+
 ### Testing (Optional)
 Additional packages needed to run the tests:
 * GoogleTest
@@ -27,6 +32,11 @@ Additional packages needed to run the tests:
 sudo apt install libgtest-dev libgmock-dev
 ```
 
+#### Install commands (openSUSE)
+```
+sudo zypper in gtest gmock
+```
+
 ### Linters and Static Analysis (Optional)
 Optional packages needed to run linters and static analysis checks:
 * clang-tidy
@@ -35,6 +45,11 @@ Optional packages needed to run linters and static analysis checks:
 #### Install commands (Ubuntu)
 ```
 sudo apt install clang-tidy-15 cppcheck
+```
+
+#### Install commands (openSUSE)
+```
+sudo apt install clang cppcheck
 ```
 
 ## Compilation Instructions
