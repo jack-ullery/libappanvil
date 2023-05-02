@@ -80,43 +80,24 @@ void AppArmor::Parser::removeRule(AppArmor::Profile &profile, AppArmor::FileRule
     output << file_contents;
 }
 
-AppArmor::Parser AppArmor::Parser::addRule(Profile &profile, const std::string &fileRule, std::string &fileMode)
+void AppArmor::Parser::addRule(Profile &profile, const std::string &fileglob, const std::string &fileMode)
 {
-    std::string line {};
-    std::string profileName = profile.name();
-    std::string addRule = "  " + fileRule + " " + fileMode + ",";
+    std::ofstream output_file(path);
+    addRule(profile, fileglob, fileMode, output_file);
+    output_file.close();
+}
 
-    std::ifstream file;
-    std::ofstream temp;
-    bool foundProfile = false;
-    bool added = false;
+void AppArmor::Parser::addRule(Profile &profile, const std::string &fileglob, const std::string &fileMode, std::ostream &output)
+{
+    // Get the position of the last rule
+    auto pos = profile.getRuleEndPosition();
 
-    file.open(path);
-    temp.open("temp.txt");
+    // Create and insert the rule (TODO: Fix possible invalid rules and injection of extra rules)
+    std::string addRule = "  " + fileglob + " " + fileMode + ",\n";
+    file_contents.insert(pos, addRule);
 
-    while(getline(file, line)){
-        if(!foundProfile && !added && (line == (profileName + " {") || line == ("profile " + profileName + " {"))) {
-            foundProfile = true;
-        }
-
-        if (foundProfile && !added && (line == "}")) {
-            added = true;
-            temp << addRule << std::endl;
-            temp << "}" << std::endl;
-        } else {
-            temp << line << std::endl;
-        }
-    }
-
-    temp.close();
-    file.close();
-
-    // Delete original file and rename new file to old one.
-    std::ignore = std::remove(path.c_str());
-    std::ignore = std::rename("temp.txt", path.c_str());
-
-    AppArmor::Parser parser(path);
-    return parser;
+    // Push changes to 'output_file'
+    output << file_contents;
 }
 
 // What should this do if old version of rule not found?

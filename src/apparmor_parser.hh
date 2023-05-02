@@ -5,6 +5,7 @@
 
 #include <fstream>
 #include <list>
+#include <ostream>
 #include <string>
 
 std::string trim(const std::string &str);
@@ -21,7 +22,9 @@ namespace AppArmor {
       void removeRule(AppArmor::Profile &profile, AppArmor::FileRule &fileRule);
       void removeRule(AppArmor::Profile &profile, AppArmor::FileRule &fileRule, std::ostream &output);
 
-      Parser addRule(Profile &profile, const std::string &fileRule, std::string &fileMode);
+      void addRule(Profile &profile, const std::string &fileglob, const std::string &fileMode);
+      void addRule(Profile &profile, const std::string &fileglob, const std::string &fileMode, std::ostream &output);
+
       Parser editRule(Profile &profile, FileRule &oldFileRule, const std::string &newFileRule, const std::string &newFileMode);
 
     private:

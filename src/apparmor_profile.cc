@@ -44,3 +44,13 @@ std::list<AppArmor::FileRule> AppArmor::Profile::getFileRules() const
 
   return set;
 }
+
+uint64_t AppArmor::Profile::getRuleStartPosition() const
+{
+  return profile_model->getRules().getStartPosition();
+}
+
+uint64_t AppArmor::Profile::getRuleEndPosition() const
+{
+  return profile_model->getRules().getStopPosition();  
+}

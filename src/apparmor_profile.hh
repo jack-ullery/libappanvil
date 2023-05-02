@@ -23,6 +23,12 @@ namespace AppArmor {
       // Returns a list of file rules included in the profile
       std::list<AppArmor::FileRule> getFileRules() const;
 
+      // Gets the start position of the rule list (after the opening bracket)
+      uint64_t getRuleStartPosition() const;
+
+      // Gets the end position of the rule list (before the closing bracket)
+      uint64_t getRuleEndPosition() const;
+
     private:
       std::shared_ptr<ProfileNode> profile_model;
   };
