@@ -1,172 +1,151 @@
-#include <gtest/gtest-param-test.h>
 #include <gtest/gtest.h>
 #include <exception>
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <ostream>
 #include <unordered_set>
 
-#include "apparmor_file_rule.hh"
-#include "apparmor_parser.hh"
-#include "apparmor_profile.hh"
+#include "remove_function.hh"
 #include "parser/tree/FileNode.hh"
 
-namespace RemoveFunctionCheck {
-    std::list<AppArmor::Profile> getProfileList(const std::string &filename)
-    {
-        AppArmor::Parser parser(filename);
-        return parser.getProfileList();
+inline void RemoveFunctionCheck::remove_file_rule_from_first_profile(AppArmor::Parser &parser)
+{
+    auto profile_list = parser.getProfileList();
+    ASSERT_FALSE(profile_list.empty()) << "There should be at least one profile";
+    auto prof = profile_list.front();
+
+    // Get first file rule in profile
+    auto rule_list = prof.getFileRules();
+    ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
+    auto frule = rule_list.front();
+
+    // Remove file rule and push changes to temporary file
+    std::ofstream temp_stream(temp_file);
+    parser.removeRule(prof, frule, temp_stream);
+    temp_stream.close();
+}
+
+inline void RemoveFunctionCheck::check_file_rules_for_profile(const AppArmor::Parser &parser,
+                                                              const std::list<AppArmor::FileRule> &expected_file_rules,
+                                                              const std::string &profile_name)
+{
+    auto profile_list = parser.getProfileList();
+    ASSERT_NE(profile_list.size(), 0) << "There should be a profile";
+
+    while(profile_name != profile_list.front().name() && !profile_list.empty()){
+        profile_list.pop_front();
     }
 
-    void check_file_rules_for_single_profile(const std::string &filename,
-                                             const std::list<AppArmor::FileRule> &expected_file_rules,
-                                             const std::string &profile_name)
-    {
-        auto profile_list = getProfileList(filename);
-        while(profile_name != profile_list.front().name() && !profile_list.empty()){
-            profile_list.pop_front();
-        }
+    auto profile = profile_list.front();
+    EXPECT_EQ(profile.name(), profile_name) << "No profile name matched";
 
-        auto profile = profile_list.front();
-        EXPECT_EQ(profile.name(), profile_name) << "No profile name matched";
+    auto file_rules = profile.getFileRules();
+    ASSERT_EQ(file_rules, expected_file_rules);
+}
 
-        auto file_rules = profile.getFileRules();
-        ASSERT_EQ(file_rules, expected_file_rules);
-    }
+// Creates and places a FileNode object at the end of the list
+void emplace_back(std::list<AppArmor::FileRule> &list, const std::string &filename, const std::string &filemode)
+{
+    FileNode node(0, 1, filename, filemode);
+    auto node_pointer = std::make_shared<FileNode>(node);
+    AppArmor::FileRule rule(node_pointer);
+    list.emplace_back(rule);
+}
 
-    void emplace_back(std::list<AppArmor::FileRule> &list, const std::string &filename, const std::string &filemode)
-    {
-        FileNode node(0, 1, filename, filemode);
-        auto node_pointer = std::make_shared<FileNode>(node);
-        AppArmor::FileRule rule(node_pointer);
-        list.emplace_back(rule);
-    }
+//Test to remove a rule from a file with 1 profile and 1 rule
+TEST_F(RemoveFunctionCheck, test1_remove) // NOLINT
+{
+    std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test1_remove.sd";
 
-    //Test to remove a rule from a file with 1 profile and 1 rule
-    TEST(RemoveFunctionCheck, test1_remove) // NOLINT
-    {
-        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test1_remove.sd";
+    std::list<AppArmor::FileRule> expected_file_rules;
 
-        std::list<AppArmor::FileRule> expected_file_rules;
+    //remove rule /usr/X11R6/lib/lib*so* rrr,
+    AppArmor::Parser parser(filename);
 
-        //remove rule /usr/X11R6/lib/lib*so* rrr,
-        AppArmor::Parser parser(filename);
+    remove_file_rule_from_first_profile(parser);
+    AppArmor::Parser new_parser(temp_file);
 
-        auto profile_list = parser.getProfileList();
-        ASSERT_FALSE(profile_list.empty()) << "There should be at least one profile";
-        auto prof = profile_list.front();
+    check_file_rules_for_profile(new_parser, expected_file_rules, "/**");
+}
 
-        auto rule_list = prof.getFileRules();
-        ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
-        auto frule = rule_list.front();
+//Test to remove a rule from a file with 1 profile and more than 1 rule
+TEST_F(RemoveFunctionCheck, test2_remove) // NOLINT
+{
+    std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test2_remove.sd";
+    std::list<AppArmor::FileRule> expected_file_rules;
 
-        parser = parser.removeRule(prof, frule);
+    emplace_back(expected_file_rules, "/does/not/exist", "r");
+    emplace_back(expected_file_rules, "/var/log/messages", "www");
 
-        check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
-    }
+    AppArmor::Parser parser(filename);
+    remove_file_rule_from_first_profile(parser);
+    AppArmor::Parser new_parser(temp_file);
 
-    //Test to remove a rule from a file with 1 profile and more than 1 rule
-    TEST(RemoveFunctionCheck, test2_remove) // NOLINT
-    {
-        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test2_remove.sd";
-        std::list<AppArmor::FileRule> expected_file_rules;
+    check_file_rules_for_profile(new_parser, expected_file_rules, "/**");
+}
 
-        emplace_back(expected_file_rules, "/does/not/exist", "r");
-        emplace_back(expected_file_rules, "/var/log/messages", "www");
+//Test to remove a rule from a file with 2 profiles and 1 rule each
+TEST_F(RemoveFunctionCheck, test3_remove) // NOLINT
+{
+    std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test3_remove.sd";
+    std::list<AppArmor::FileRule> expected_file_rules1;
+    std::list<AppArmor::FileRule> expected_file_rules2;
 
-        AppArmor::Parser parser(filename);
+    emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
 
-        auto profile_list = parser.getProfileList();
-        ASSERT_FALSE(profile_list.empty()) << "There should be at least one profile";
-        auto prof = profile_list.front();
+    AppArmor::Parser parser(filename);
+    remove_file_rule_from_first_profile(parser);
+    AppArmor::Parser new_parser(temp_file);
 
-        auto rule_list = prof.getFileRules();
-        ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
-        auto frule = rule_list.front();
+    check_file_rules_for_profile(new_parser, expected_file_rules1, "/**");
+    check_file_rules_for_profile(new_parser, expected_file_rules2, "/*");
+}
 
-        parser = parser.removeRule(prof, frule);
+//Test to remove a rule from a file with 2 profiles and more than 1 rule each
+TEST_F(RemoveFunctionCheck, test4_remove) // NOLINT
+{
+    std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test4_remove.sd";
+    std::list<AppArmor::FileRule> expected_file_rules1;
+    std::list<AppArmor::FileRule> expected_file_rules2;
 
-        check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
-    }
+    emplace_back(expected_file_rules1, "/does/not/exist", "r");
+    emplace_back(expected_file_rules1, "/var/log/messages", "www");
 
-    //Test to remove a rule from a file with 2 profiles and 1 rule each
-    TEST(RemoveFunctionCheck, test3_remove) // NOLINT
-    {
-        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test3_remove.sd";
-        std::list<AppArmor::FileRule> expected_file_rules1;
-        std::list<AppArmor::FileRule> expected_file_rules2;
+    emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
+    emplace_back(expected_file_rules2, "/does/not/exist", "r");
+    emplace_back(expected_file_rules2, "/var/log/messages", "www");
 
-        emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
+    AppArmor::Parser parser(filename);
+    remove_file_rule_from_first_profile(parser);
+    AppArmor::Parser new_parser(temp_file);
 
-        AppArmor::Parser parser(filename);
+    check_file_rules_for_profile(new_parser, expected_file_rules1, "/**");
+    check_file_rules_for_profile(new_parser, expected_file_rules2, "/*");
+}
 
-        auto profile_list = parser.getProfileList();
-        ASSERT_FALSE(profile_list.empty()) << "There should be at least one profile";
-        auto prof = profile_list.front();
+// //Test to remove a rule that DNI from a file with 1 profile and 1 rule
+// TEST_F(RemoveFunctionCheck, test5)
+// {
+//     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test5.sd";
+//     std::list<AppArmor::FileRule> expected_file_rules;
 
-        auto rule_list = prof.getFileRules();
-        ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
-        auto frule = rule_list.front();
+//     emplace_back(expected_file_rules, /usr/X11R6/lib/lib*so*, rrr);
 
-        parser = parser.removeRule(prof, frule);
+//     //remove nonexistant rule from profile /**
 
-        check_file_rules_for_single_profile(filename, expected_file_rules1, "/**");
-        check_file_rules_for_single_profile(filename, expected_file_rules2, "/*");
-    }
+//     check_file_rules_for_profile(parser, expected_file_rules, "/**");
+// }
 
-    //Test to remove a rule from a file with 2 profiles and more than 1 rule each
-    TEST(RemoveFunctionCheck, test4_remove) // NOLINT
-    {
-        std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test4_remove.sd";
-        std::list<AppArmor::FileRule> expected_file_rules1;
-        std::list<AppArmor::FileRule> expected_file_rules2;
+// //Test to remove a rule from a profile that DNI from a file with 1 profile and 1 rule
+// TEST_F(RemoveFunctionCheck, test6)
+// {
+//     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test6.sd";
+//     std::list<AppArmor::FileRule> expected_file_rules;
 
-        emplace_back(expected_file_rules1, "/does/not/exist", "r");
-        emplace_back(expected_file_rules1, "/var/log/messages", "www");
+//     emplace_back(expected_file_rules, /usr/X11R6/lib/lib*so*, rrr);
 
-        emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
-        emplace_back(expected_file_rules2, "/does/not/exist", "r");
-        emplace_back(expected_file_rules2, "/var/log/messages", "www");
+//     //remove rule /usr/X11R6/lib/lib*so* rrr, from nonexistant profile
 
-        AppArmor::Parser parser(filename);
-
-        auto profile_list = parser.getProfileList();
-        ASSERT_FALSE(profile_list.empty()) << "There should be at least one profile";
-        auto prof = profile_list.front();
-
-        auto rule_list = prof.getFileRules();
-        ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
-        auto frule = rule_list.front();
-
-        parser = parser.removeRule(prof, frule);
-
-        check_file_rules_for_single_profile(filename, expected_file_rules1, "/**");
-        check_file_rules_for_single_profile(filename, expected_file_rules2, "/*");
-    }
-
-    // //Test to remove a rule that DNI from a file with 1 profile and 1 rule
-    // TEST(RemoveFunctionCheck, test5)
-    // {
-    //     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test5.sd";
-    //     std::list<AppArmor::FileRule> expected_file_rules;
-
-    //     emplace_back(expected_file_rules, /usr/X11R6/lib/lib*so*, rrr);
-
-    //     //remove nonexistant rule from profile /**
-
-    //     check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
-    // }
-
-    // //Test to remove a rule from a profile that DNI from a file with 1 profile and 1 rule
-    // TEST(RemoveFunctionCheck, test6)
-    // {
-    //     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test6.sd";
-    //     std::list<AppArmor::FileRule> expected_file_rules;
-
-    //     emplace_back(expected_file_rules, /usr/X11R6/lib/lib*so*, rrr);
-
-    //     //remove rule /usr/X11R6/lib/lib*so* rrr, from nonexistant profile
-
-    //     check_file_rules_for_single_profile(filename, expected_file_rules, "/**");
-    // }
-} // namespace RemoveFunctionCheck
+//     check_file_rules_for_profile(parser, expected_file_rules, "/**");
+// }
