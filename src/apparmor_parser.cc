@@ -4,7 +4,6 @@
 #include "parser/tree/ParseTree.hh"
 
 #include <fstream>
-#include <iostream>
 #include <memory>
 #include <parser_yacc.hh>
 #include <string>
@@ -15,18 +14,32 @@
  * Create ofstream within remove function
 */
 AppArmor::Parser::Parser(const std::string &path)
+  : path{path}
 {
-    Driver driver;
     std::ifstream stream(path);
-    Lexer lexer(stream, std::cout);
 
+    // Read entire file into string and store if for later
+    std::stringstream ss;
+    ss << stream.rdbuf();
+    file_contents = ss.str();
+
+    // Seek back to beginning of file
+    stream.seekg(0);
+
+    // Perform lexical analysis
+    Lexer lexer(stream, std::cerr);
+
+    // Parse the file
+    Driver driver;
     yy::parser parse(lexer, driver);
     parse();
 
+    // If parsing was not successful, throw an exception
     if(!driver.success) {
         std::throw_with_nested(std::runtime_error("error occured when parsing profile"));
     }
 
+    // Create list of profiles
     initializeProfileList(driver.ast);
 }
 
@@ -47,46 +60,24 @@ std::list<AppArmor::Profile> AppArmor::Parser::getProfileList() const
     return profile_list;
 }
 
-AppArmor::Parser AppArmor::Parser::removeRule(AppArmor::Profile &profile, AppArmor::FileRule &fileRule) 
+void AppArmor::Parser::removeRule(AppArmor::Profile &profile, AppArmor::FileRule &fileRule)
 {
-    std::string line {};
-    std::string profileName = profile.name();
-    std::string removeRule = fileRule.getFilename() + " " + fileRule.getFilemode() + ",";
+    std::ofstream output_file(path);
+    removeRule(profile, fileRule, output_file);
+    output_file.close();
+}
 
-    std::ifstream file;
-    std::ofstream temp;
-    bool foundProfile = false;
-    bool removed = false;
-    
-    // Open the file we are working with and create a new temp file to write to.
-    file.open(path);
-    temp.open("temp.txt");
+void AppArmor::Parser::removeRule(AppArmor::Profile &profile, AppArmor::FileRule &fileRule, std::ostream &output)
+{
+    // Erase the fileRule from 'file_contents'
+    auto start_pos = static_cast<uint>(fileRule.getStartPosition()) - 1;
+    auto end_pos   = fileRule.getEndPosition();
+    auto length    = end_pos - start_pos;
 
-    // Write each line except the one we are replacing.
-    // Flags used to make sure we don't delete multiple similar rules in different profiles.
-    while (getline(file, line))
-    {
-        if(!foundProfile && !removed && (line == (profileName + " {") || line == ("profile " + profileName + " {"))) {
-            foundProfile = true;
-        }
-        
-        if (foundProfile && !removed && trim(line) == removeRule) {
-            removed = true;
-        }
-        else {
-            temp << line << std::endl;
-        }
-    }
+    file_contents.erase(start_pos, length);
 
-    temp.close();
-    file.close();
-
-    // Delete original file and rename new file to old one.
-    std::ignore = std::remove(path.c_str());
-    std::ignore = std::rename("temp.txt", path.c_str());
-
-    AppArmor::Parser parser(path);
-    return parser;
+    // Push changes to 'output_file'
+    output << file_contents;
 }
 
 AppArmor::Parser AppArmor::Parser::addRule(Profile &profile, const std::string &fileRule, std::string &fileMode)
