@@ -3,12 +3,12 @@ cmake_minimum_required (VERSION 3.16.3)
 project(end-to-end-test C CXX)
 
 set(TEST_SOURCES
-  ./src/main.cc
-  ./src/abstractions.cc
-  ./src/file_rules.cc
-  ./src/remove_function.cc
-  ./src/add_function.cc
-  ./src/edit_function.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/abstractions.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/file_rules.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/remove_function.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/add_function.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/edit_function.cc
 )
 
 #### Check that gtest is installed ####
@@ -41,9 +41,9 @@ if(${GTEST_FOUND})
   target_compile_definitions(${PROJECT_NAME} PUBLIC -DADDITIONAL_PROFILE_SOURCE_DIR="${ADDITIONAL_PROFILE_SOURCE_DIR}")
 
   # Add the tests to ctest
-  gtest_add_tests(
-    TARGET ${PROJECT_NAME}
-    SOURCES ${TEST_SOURCES}
+  gtest_discover_tests(
+    ${PROJECT_NAME}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src"
     TEST_PREFIX "[end-to-end] e2e."
     TEST_LIST ADDED_TESTS
   )
