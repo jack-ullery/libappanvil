@@ -31,6 +31,7 @@ namespace AppArmor {
 
       // Checks whether two Profiles are the same object by comparing their profile_model pointers, to see if they are the same
       bool operator==(const Profile& that) const;
+      bool operator!=(const Profile& that) const;
 
       // Checks whether a given FileRule is in the profile_model
       // Throws an exception if it is not

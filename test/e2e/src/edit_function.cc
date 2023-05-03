@@ -32,7 +32,7 @@ inline void EditFunctionCheck::edit_file_rule_in_profile(AppArmor::Parser &parse
 
     // Edit file rule and push changes to temporary file
     std::ofstream temp_stream(temp_file);
-    parser.editRule(prof, frule, fileglob, filemode, temp_stream);
+    EXPECT_NO_THROW(parser.editRule(prof, frule, fileglob, filemode, temp_stream));
     temp_stream.close();
 
     // Add rule to expected rules
@@ -156,13 +156,114 @@ TEST_F(EditFunctionCheck, test6_edit) // NOLINT
 TEST_F(EditFunctionCheck, test7_edit) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test7_edit.sd";
-    std::list<AppArmor::FileRule> expected_file_rules1;
-    std::list<AppArmor::FileRule> expected_file_rules2;
+    std::list<AppArmor::FileRule> dummy_list;
+    std::list<AppArmor::FileRule> expected_file_rules;
 
     AppArmor::Parser parser(filename);
-    edit_file_rule_in_profile(parser, "/var/log/messages", "www", expected_file_rules1);
-    edit_file_rule_in_profile(parser, "/bin/ls", "ixixixix", expected_file_rules2);
+    edit_file_rule_in_profile(parser, "/var/log/messages", "www", dummy_list);
+    edit_file_rule_in_profile(parser, "/bin/ls", "ixixixix", expected_file_rules);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(parser, new_parser, expected_file_rules2, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules, "/**");
+}
+
+// Attempts to edit a non-existant rule in a profile
+TEST_F(EditFunctionCheck, test1_invalid_edit) // NOLINT
+{
+    std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test1_remove.sd";
+
+    AppArmor::Parser parser(filename);
+    auto profile_list = parser.getProfileList();
+    ASSERT_FALSE(profile_list.empty()) << "There should be at least one profile";
+    auto prof = profile_list.front();
+
+    // Create a fake file rule
+    auto node = std::make_shared<FileNode>(0, 10, "/does/not/exist", "rw");
+    AppArmor::FileRule frule(node);
+
+    // Attempt to edit file rule
+    std::ofstream temp_stream(temp_file);
+    EXPECT_ANY_THROW(parser.editRule(prof, frule, "/usr/bin/echo", "rwx", temp_stream));
+    temp_stream.close();
+}
+
+// Attempts to edit a file rule using the wrong profile
+TEST_F(EditFunctionCheck, test2_invalid_edit) // NOLINT
+{
+    std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test3_remove.sd";
+
+    AppArmor::Parser parser(filename);
+    auto profile_list = parser.getProfileList();
+    ASSERT_FALSE(profile_list.empty()) << "There should be at least one profile";
+    auto front_prof = profile_list.front();
+    auto back_prof = profile_list.back();
+    ASSERT_NE(front_prof, back_prof) << "These should be two distinct profiles";
+
+    // Get a frule from the first profile
+    auto rule_list = front_prof.getFileRules();
+    ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
+    auto frule = rule_list.front();
+
+    // Attempt to edit file rule with the second profile
+    std::ofstream temp_stream(temp_file);
+    EXPECT_ANY_THROW(parser.editRule(back_prof, frule, "/usr/bin/echo", "rwx", temp_stream));
+    temp_stream.close();
+}
+
+// Attempts to edit a file rule using fake profile
+TEST_F(EditFunctionCheck, test3_invalid_edit) // NOLINT
+{
+    std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test1_remove.sd";
+
+    AppArmor::Parser parser(filename);
+    auto profile_list = parser.getProfileList();
+    ASSERT_FALSE(profile_list.empty()) << "There should be at least one profile";
+    auto prof = profile_list.front();
+
+    // Get a frule from the profile
+    auto rule_list = prof.getFileRules();
+    ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
+    auto frule = rule_list.front();
+
+    // Create fake profile
+    auto empty_node = std::make_shared<ProfileNode>();
+    AppArmor::Profile fake_prof(empty_node);
+
+    // Attempt to edit file rule
+    std::ofstream temp_stream(temp_file);
+    EXPECT_ANY_THROW(parser.editRule(fake_prof, frule, "/usr/bin/echo", "rwx", temp_stream));
+    temp_stream.close();
+}
+
+// Attempts to edit a file rule in an outdated parser
+TEST_F(EditFunctionCheck, test4_invalid_edit) // NOLINT
+{
+    std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test4_remove.sd";
+    AppArmor::Parser parser(filename);
+
+    // Gets the profile from the first parser
+    auto old_profile_list = parser.getProfileList();
+    ASSERT_FALSE(old_profile_list.empty()) << "There should be at least one profile";
+    auto old_prof = old_profile_list.back();
+
+    // Get a frule from the old profile
+    auto rule_list = old_prof.getFileRules();
+    ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
+    auto frule = rule_list.front();
+
+    // Remove a rule from the first profile
+    std::ofstream temp(temp_file);
+    EXPECT_NO_THROW(parser.editRule(old_prof, frule, "/usr/bin/echo", "r", temp));
+    temp.close();
+
+    AppArmor::Parser new_parser(temp_file);
+
+    auto new_profile_list = new_parser.getProfileList();
+    ASSERT_FALSE(new_profile_list.empty()) << "There should be at least one profile";
+    auto new_prof = new_profile_list.front();
+
+    // Attempt to remove old file rule from new parser
+    std::ofstream temp_stream(temp_file);
+    EXPECT_ANY_THROW(new_parser.editRule(new_prof, frule, "/usr/bin/echo", "rwx", temp_stream));
+    temp_stream.close();
 }

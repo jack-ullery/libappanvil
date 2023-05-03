@@ -23,7 +23,7 @@ inline void AddFunctionCheck::add_file_rule_to_profile(AppArmor::Parser &parser,
 
     // Add file rule and push changes to temporary file
     std::ofstream temp_stream(temp_file);
-    parser.addRule(prof, fileglob, filemode, temp_stream);
+    EXPECT_NO_THROW(parser.addRule(prof, fileglob, filemode, temp_stream));
     temp_stream.close();
 
     // Add rule to expected rules
@@ -151,4 +151,20 @@ TEST_F(AddFunctionCheck, test8_add) // NOLINT
 
     check_file_rules_for_profile(parser, new_parser, expected_file_rules1, "/**");
     check_file_rules_for_profile(parser, new_parser, expected_file_rules2, "/*");
+}
+
+// Test to add rule to fake profile
+TEST_F(AddFunctionCheck, test1_invalid_add) // NOLINT
+{
+    std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test1_add.sd";
+    AppArmor::Parser parser(filename);
+
+    // Create fake profile
+    auto empty_node = std::make_shared<ProfileNode>();
+    AppArmor::Profile fake_prof(empty_node);
+
+    // Add file rule and push changes to temporary file
+    std::ofstream temp_stream(temp_file);
+    EXPECT_ANY_THROW(parser.addRule(fake_prof, "/usr/bin/echo", "rwix", temp_stream));
+    temp_stream.close();
 }

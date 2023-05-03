@@ -62,6 +62,11 @@ bool AppArmor::Profile::operator==(const Profile& that) const
   return this->profile_model == that.profile_model;
 }
 
+bool AppArmor::Profile::operator!=(const Profile& that) const
+{
+  return this->profile_model != that.profile_model;
+}
+
 void AppArmor::Profile::checkFileRuleValid(AppArmor::FileRule &file_rule) const
 {
     const auto &rules = profile_model->getRules();

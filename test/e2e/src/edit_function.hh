@@ -5,6 +5,7 @@
 
 #include "apparmor_parser.hh"
 #include "parser/tree/FileNode.hh"
+#include "parser/tree/ProfileNode.hh"
 
 class EditFunctionCheck : public ::testing::Test {
 public:
