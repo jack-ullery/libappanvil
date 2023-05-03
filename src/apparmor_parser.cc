@@ -80,90 +80,54 @@ void AppArmor::Parser::removeRule(AppArmor::Profile &profile, AppArmor::FileRule
     output << file_contents;
 }
 
-void AppArmor::Parser::addRule(Profile &profile, const std::string &fileglob, const std::string &fileMode)
+void AppArmor::Parser::addRule(Profile &profile, const std::string &fileglob, const std::string &filemode)
 {
     std::ofstream output_file(path);
-    addRule(profile, fileglob, fileMode, output_file);
+    addRule(profile, fileglob, filemode, output_file);
     output_file.close();
 }
 
-void AppArmor::Parser::addRule(Profile &profile, const std::string &fileglob, const std::string &fileMode, std::ostream &output)
+void AppArmor::Parser::addRule(Profile &profile, const std::string &fileglob, const std::string &filemode, std::ostream &output)
 {
     // Get the position of the last rule
     auto pos = profile.getRuleEndPosition();
 
     // Create and insert the rule (TODO: Fix possible invalid rules and injection of extra rules)
-    std::string addRule = "  " + fileglob + " " + fileMode + ",\n";
+    std::string addRule = "  " + fileglob + " " + filemode + ",\n";
     file_contents.insert(pos, addRule);
 
     // Push changes to 'output_file'
     output << file_contents;
 }
 
-// What should this do if old version of rule not found?
-AppArmor::Parser AppArmor::Parser::editRule(Profile &profile, FileRule &oldFileRule, const std::string &newFileRule, const std::string &newFileMode) {
-    
-    std::string line {};
-    std::string profileName = profile.name();
-    std::string uneditedRule = oldFileRule.getFilename() + " " + oldFileRule.getFilemode() + ",";
-    std::string editedRule = "  " + newFileRule + " " + newFileMode + ",";
-
-    std::ifstream file;
-    std::ofstream temp;
-    bool foundProfile = false;
-    bool edited = false;
-
-    // Open the file we are working with and create a new temp file to write to.
-    file.open(path);
-    temp.open("temp.txt");
-
-    // Write each line except for the old/unedited rule.
-    // Write the edited version in its place.
-    while (getline(file, line)) {
-        if(!foundProfile && !edited && (line == (profileName + " {") || line == ("profile " + profileName + " {")))
-        {
-            foundProfile = true;
-        }
-        
-        if (foundProfile && !edited && trim(line) == uneditedRule){
-            temp << editedRule << std::endl;
-            edited = true;
-        } else {
-            temp << line << std::endl;
-        }
-    }
-
-    temp.close();
-    file.close();
-
-    // Delete original file and rename new file to old one.
-    std::ignore = std::remove(path.c_str());
-    std::ignore = std::rename("temp.txt", path.c_str());
-
-    AppArmor::Parser parser(path);
-    return parser;
-
+void AppArmor::Parser::editRule(Profile &profile,
+                                FileRule &oldRule,
+                                const std::string &fileglob,
+                                const std::string &filemode)
+{
+    std::ofstream output_file(path);
+    editRule(profile, oldRule, fileglob, filemode, output_file);
+    output_file.close();
 }
 
-// Trims leading and trailing whitespace
-std::string trim(const std::string& str)
+void AppArmor::Parser::editRule(Profile &profile,
+                                FileRule &oldRule,
+                                const std::string &fileglob,
+                                const std::string &filemode,
+                                std::ostream &output)
 {
+    // Remove and replace the fileRule from 'file_contents'
+    auto start_pos = oldRule.getStartPosition() - 1;
+    auto end_pos   = oldRule.getEndPosition();
+    auto length    = end_pos - start_pos;
 
-    const std::string& whitespace = " \t";
+    // Remove the old rule
+    file_contents.erase(start_pos, length);
 
-    // Find the character that isn't whitespace.
-    const auto strBegin = str.find_first_not_of(whitespace);
+    // Create and insert the new rule (TODO: Fix possible invalid rules and injection of extra rules)
+    std::string addRule = fileglob + " " + filemode + ",\n";
+    file_contents.insert(start_pos, addRule);
 
-    // If it cannot find it, then return an empty string.
-    if (strBegin == std::string::npos) {
-        return ""; // no content
-    }
-
-    // Find the last character that isn't whitespace.
-    const auto strEnd = str.find_last_not_of(whitespace);
-
-    // Remove the white space.
-    const auto strRange = strEnd - strBegin + 1;
-
-    return str.substr(strBegin, strRange);
+    // Push changes to 'output_file'
+    output << file_contents;
 }

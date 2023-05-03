@@ -22,10 +22,11 @@ namespace AppArmor {
       void removeRule(AppArmor::Profile &profile, AppArmor::FileRule &fileRule);
       void removeRule(AppArmor::Profile &profile, AppArmor::FileRule &fileRule, std::ostream &output);
 
-      void addRule(Profile &profile, const std::string &fileglob, const std::string &fileMode);
-      void addRule(Profile &profile, const std::string &fileglob, const std::string &fileMode, std::ostream &output);
+      void addRule(Profile &profile, const std::string &fileglob, const std::string &filemode);
+      void addRule(Profile &profile, const std::string &fileglob, const std::string &filemode, std::ostream &output);
 
-      Parser editRule(Profile &profile, FileRule &oldFileRule, const std::string &newFileRule, const std::string &newFileMode);
+      void editRule(Profile &profile, FileRule &oldRule, const std::string &fileglob, const std::string &filemode);
+      void editRule(Profile &profile, FileRule &oldRule, const std::string &fileglob, const std::string &filemode, std::ostream &output);
 
     private:
       void initializeProfileList(const std::shared_ptr<ParseTree> &ast);
