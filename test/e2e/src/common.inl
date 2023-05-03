@@ -26,6 +26,14 @@ namespace Common {
       ASSERT_EQ(file_rules, expected_file_rules);
   }
 
+  static void emplace_front(std::list<AppArmor::FileRule> &list, const std::string &filename, const std::string &filemode)
+  {
+      FileNode node(0, 1, filename, filemode);
+      auto node_pointer = std::make_shared<FileNode>(node);
+      AppArmor::FileRule rule(node_pointer);
+      list.emplace_front(rule);
+  }
+
   static void emplace_back(std::list<AppArmor::FileRule> &list, const std::string &filename, const std::string &filemode)
   {
       FileNode node(0, 1, filename, filemode);
