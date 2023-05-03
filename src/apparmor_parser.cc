@@ -8,11 +8,6 @@
 #include <parser_yacc.hh>
 #include <string>
 
-/**
- * Idea: change constructor to take a file path as an argument rather than ifstream.
- * Create ifstream within constructor
- * Create ofstream within remove function
-*/
 AppArmor::Parser::Parser(const std::string &path)
   : path{path}
 {
@@ -35,8 +30,6 @@ void AppArmor::Parser::update_from_file_contents()
     // Put the file contents into a stream
     std::stringstream stream;
     stream << file_contents;
-
-    // Parse the file
     update_from_stream(stream);
 }
 
