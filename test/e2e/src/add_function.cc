@@ -40,7 +40,8 @@ TEST_F(AddFunctionCheck, test1_add) // NOLINT
     add_file_rule_to_profile(parser, "/bin/echo", "uxuxuxuxux", expected_file_rules);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules, "/**");
+    // Check that the expected file rules are present for both the old and new parser
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules, "/**");
 }
 
 //Test to add a rule to a file with 1 profile and 1 rule
@@ -54,7 +55,7 @@ TEST_F(AddFunctionCheck, test2_add) // NOLINT
     add_file_rule_to_profile(parser, "/bin/echo", "uxuxuxuxux", expected_file_rules);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules, "/**");
 }
 
 //Test to add 2 rules to a file with 1 profile and 0 rules
@@ -68,7 +69,7 @@ TEST_F(AddFunctionCheck, test3_add) // NOLINT
     add_file_rule_to_profile(parser, "/var/log/messages", "www", expected_file_rules);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules, "/**");
 }
 
 //Test to add 2 rules to a file with 1 profile and 1 rule
@@ -83,7 +84,7 @@ TEST_F(AddFunctionCheck, test4_add) // NOLINT
     add_file_rule_to_profile(parser, "/var/log/messages", "www", expected_file_rules);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules, "/**");
 }
 
 //Test to add 1 rule to a file with 2 profiles and 0 rules each
@@ -97,8 +98,8 @@ TEST_F(AddFunctionCheck, test5_add) // NOLINT
     add_file_rule_to_profile(parser, "/bin/echo", "uxuxuxuxux", expected_file_rules1);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules1, "/**");
-    check_file_rules_for_profile(new_parser, expected_file_rules2, "/*");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules1, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules2, "/*");
 }
 
 //Test to add 1 rule to a file with 2 profiles and 1 rule each
@@ -114,8 +115,8 @@ TEST_F(AddFunctionCheck, test6_add) // NOLINT
     add_file_rule_to_profile(parser, "/bin/echo", "uxuxuxuxux", expected_file_rules1);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules1, "/**");
-    check_file_rules_for_profile(new_parser, expected_file_rules2, "/*");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules1, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules2, "/*");
 }
 
 //Test to add 2 rules to a file with 2 profiles and 0 rules each
@@ -130,8 +131,8 @@ TEST_F(AddFunctionCheck, test7_add) // NOLINT
     add_file_rule_to_profile(parser, "/var/log/messages", "www", expected_file_rules2, false);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules1, "/**");
-    check_file_rules_for_profile(new_parser, expected_file_rules2, "/*");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules1, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules2, "/*");
 }
 
 //Test to add 2 rules to a file with 2 profiles and 1 rule each
@@ -148,6 +149,6 @@ TEST_F(AddFunctionCheck, test8_add) // NOLINT
     add_file_rule_to_profile(parser, "/var/log/messages", "www", expected_file_rules2, false);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules1, "/**");
-    check_file_rules_for_profile(new_parser, expected_file_rules2, "/*");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules1, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules2, "/*");
 }

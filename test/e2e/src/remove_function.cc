@@ -43,7 +43,8 @@ TEST_F(RemoveFunctionCheck, test1_remove) // NOLINT
     remove_file_rule_from_first_profile(parser);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules, "/**");
+    // Check that the expected file rules are present for both the old and new parser
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules, "/**");
 }
 
 //Test to remove a rule from a file with 1 profile and more than 1 rule
@@ -59,7 +60,7 @@ TEST_F(RemoveFunctionCheck, test2_remove) // NOLINT
     remove_file_rule_from_first_profile(parser);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules, "/**");
 }
 
 //Test to remove a rule from a file with 2 profiles and 1 rule each
@@ -75,8 +76,8 @@ TEST_F(RemoveFunctionCheck, test3_remove) // NOLINT
     remove_file_rule_from_first_profile(parser);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules1, "/**");
-    check_file_rules_for_profile(new_parser, expected_file_rules2, "/*");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules1, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules2, "/*");
 }
 
 //Test to remove a rule from a file with 2 profiles and more than 1 rule each
@@ -97,8 +98,8 @@ TEST_F(RemoveFunctionCheck, test4_remove) // NOLINT
     remove_file_rule_from_first_profile(parser);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules1, "/**");
-    check_file_rules_for_profile(new_parser, expected_file_rules2, "/*");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules1, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules2, "/*");
 }
 
 // //Test to remove a rule that DNI from a file with 1 profile and 1 rule

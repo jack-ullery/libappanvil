@@ -26,6 +26,18 @@ namespace Common {
       ASSERT_EQ(file_rules, expected_file_rules);
   }
 
+  // Calls 'check_file_rules_for_profile()' on two parsers, checking that they both have the same expected file_rules
+  inline void check_file_rules_for_profile(const AppArmor::Parser &old_parser,
+                                           const AppArmor::Parser &new_parser,
+                                           const std::list<AppArmor::FileRule> &expected_file_rules,
+                                           const std::string &profile_name)
+  {
+    check_file_rules_for_profile(old_parser, expected_file_rules, profile_name);
+    check_file_rules_for_profile(new_parser, expected_file_rules, profile_name);
+  }
+
+  // Creates a AppArmor::FileRule at the front of the list
+  [[maybe_unused]]
   static void emplace_front(std::list<AppArmor::FileRule> &list, const std::string &filename, const std::string &filemode)
   {
       FileNode node(0, 1, filename, filemode);
@@ -34,6 +46,8 @@ namespace Common {
       list.emplace_front(rule);
   }
 
+  // Creates a AppArmor::FileRule at the back of the list
+  [[maybe_unused]]
   static void emplace_back(std::list<AppArmor::FileRule> &list, const std::string &filename, const std::string &filemode)
   {
       FileNode node(0, 1, filename, filemode);

@@ -54,7 +54,8 @@ TEST_F(EditFunctionCheck, test1_edit) // NOLINT
     edit_file_rule_in_profile(parser, "/bin/ls", "ixixixix", expected_file_rules);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules, "/**");
+    // Check that the expected file rules are present for both the old and new parser
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules, "/**");
 }
 
 //Test to edit a rule from a file with 1 profile and 2 rules
@@ -69,7 +70,7 @@ TEST_F(EditFunctionCheck, test2_edit) // NOLINT
     edit_file_rule_in_profile(parser, "/bin/ls", "ixixixix", expected_file_rules);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules, "/**");
 }
 
 //Test to edit a rule from a file with 2 profiles and 1 rule each
@@ -85,7 +86,7 @@ TEST_F(EditFunctionCheck, test3_edit) // NOLINT
     edit_file_rule_in_profile(parser, "/bin/ls", "ixixixix", expected_file_rules1);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules2, "/*");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules2, "/*");
 }
 
 //Test to edit a rule from a file with 2 profiles and 2 rules each
@@ -103,8 +104,8 @@ TEST_F(EditFunctionCheck, test4_edit) // NOLINT
     edit_file_rule_in_profile(parser, "/bin/ls", "ixixixix", expected_file_rules1);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules1, "/**");
-    check_file_rules_for_profile(new_parser, expected_file_rules2, "/*");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules1, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules2, "/*");
 }
 
 //Test to edit 2 rules from a file with 1 profile and 2 rule
@@ -118,7 +119,7 @@ TEST_F(EditFunctionCheck, test5_edit_reverse) // NOLINT
     edit_file_rule_in_profile(parser, "/var/log/messages", "www", expected_file_rules);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules, "/**");
 }
 
 //Test to edit 2 rules from a file with 1 profile and 2 rule sequentially
@@ -132,7 +133,7 @@ TEST_F(EditFunctionCheck, test5_edit_sequential) // NOLINT
     edit_file_rule_in_profile(parser, "/bin/ls", "ixixixix", expected_file_rules, true, false);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules, "/**");
 }
 
 //Test to edit 2 rules from a file with 2 profiles and 1 rule each
@@ -147,8 +148,8 @@ TEST_F(EditFunctionCheck, test6_edit) // NOLINT
     edit_file_rule_in_profile(parser, "/bin/ls", "ixixixix", expected_file_rules2, false);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules1, "/**");
-    check_file_rules_for_profile(new_parser, expected_file_rules2, "/*");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules1, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules2, "/*");
 }
 
 //Test to edit a rule twice from a file with 1 profile and 1 rule
@@ -163,5 +164,5 @@ TEST_F(EditFunctionCheck, test7_edit) // NOLINT
     edit_file_rule_in_profile(parser, "/bin/ls", "ixixixix", expected_file_rules2);
     AppArmor::Parser new_parser(temp_file);
 
-    check_file_rules_for_profile(new_parser, expected_file_rules2, "/**");
+    check_file_rules_for_profile(parser, new_parser, expected_file_rules2, "/**");
 }
