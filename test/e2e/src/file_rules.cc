@@ -10,16 +10,10 @@
 #include "parser/tree/FileNode.hh"
 
 namespace FileRuleCheck {
-
-  std::list<AppArmor::Profile> getProfileList(std::string filename)
+  inline void check_file_rules_for_single_profile(const std::string &filename, const std::list<AppArmor::FileRule> &expected_file_rules, const std::string &profile_name)
   {
     AppArmor::Parser parser(filename);
-    return parser.getProfileList();
-  }
-  
-  void check_file_rules_for_single_profile(std::string filename, std::list<AppArmor::FileRule> expected_file_rules, std::string profile_name)
-  {
-    auto profile_list = getProfileList(filename);
+    auto profile_list = parser.getProfileList();
   
     EXPECT_EQ(profile_list.size(), 1) << "There should only be one profile";
   

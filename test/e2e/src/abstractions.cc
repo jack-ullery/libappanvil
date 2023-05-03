@@ -8,15 +8,10 @@
 #include "apparmor_parser.hh"
 
 namespace AbstractionCheck {
-  std::list<AppArmor::Profile> getProfileList(std::string filename)
-  {
-    AppArmor::Parser parser(filename);
-    return parser.getProfileList();
-  }
-
   void check_abstractions_for_single_profile(std::string filename, std::unordered_set<std::string> expected_abstractions, std::string profile_name = "/does/not/exist")
   {
-    auto profile_list = getProfileList(filename);
+    AppArmor::Parser parser(filename);
+    auto profile_list = parser.getProfileList();
 
     EXPECT_EQ(profile_list.size(), 1) << "There should only be one profile";
 
