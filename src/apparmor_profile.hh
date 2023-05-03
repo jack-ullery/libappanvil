@@ -29,6 +29,13 @@ namespace AppArmor {
       // Gets the end position of the rule list (before the closing bracket)
       uint64_t getRuleEndPosition() const;
 
+      // Checks whether two Profiles are the same object by comparing their profile_model pointers, to see if they are the same
+      bool operator==(const Profile& that) const;
+
+      // Checks whether a given FileRule is in the profile_model
+      // Throws an exception if it is not
+      void checkFileRuleValid(AppArmor::FileRule &file_rule) const;
+
     private:
       std::shared_ptr<ProfileNode> profile_model;
   };

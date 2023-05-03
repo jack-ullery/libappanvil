@@ -23,11 +23,11 @@ class RuleList : public RuleNode {
     void appendAbstraction(AbstractionNode &node);
     void appendSubprofile(ProfileNode &node);
 
-    std::list<FileNode>        getFileList();
-    std::list<LinkNode>        getLinkList();
-    std::list<RuleList>        getRuleList();
-    std::list<AbstractionNode> getAbstractionList();
-    std::list<ProfileNode>     getSubprofiles();
+    std::list<FileNode>        getFileList() const;
+    std::list<LinkNode>        getLinkList() const;
+    std::list<RuleList>        getRuleList() const;
+    std::list<AbstractionNode> getAbstractionList() const;
+    std::list<ProfileNode>     getSubprofiles() const;
 
   private:
     std::list<FileNode>         files;

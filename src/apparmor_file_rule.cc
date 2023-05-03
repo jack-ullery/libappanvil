@@ -32,3 +32,11 @@ bool AppArmor::FileRule::operator==(const AppArmor::FileRule& that) const
   return (that.getFilename() == this->getFilename()) && 
          (that.getFilemode() == this->getFilemode());
 }
+
+bool AppArmor::FileRule::operator==(const FileNode& that) const
+{
+  return (that.getFilename() == this->getFilename()) && 
+         (that.getFilemode() == this->getFilemode()) &&
+         (that.getStartPosition() == this->getStartPosition()) &&
+         (that.getStopPosition()  == this->getEndPosition());
+}

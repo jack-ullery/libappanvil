@@ -33,6 +33,10 @@ namespace AppArmor {
       void update_from_stream(std::istream &stream);
       void initializeProfileList(const std::shared_ptr<ParseTree> &ast);
 
+      // Checks whether a given Profile is in the profile_list
+      // Throws an exception if it is not
+      void checkProfileValid(AppArmor::Profile &profile);
+
       std::string path;
       std::string file_contents;
 

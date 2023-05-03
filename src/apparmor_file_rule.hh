@@ -17,8 +17,14 @@ namespace AppArmor {
       uint64_t getStartPosition() const;
       uint64_t getEndPosition() const;
 
-      // Whether or not two FileRule objects are equal
+      // Whether or not two FileRule objects have same filename/filemode
+      // Does not check other values like start/stop position
+      // This is useful for testing
       bool operator==(const AppArmor::FileRule& that) const;
+
+      // Checks whether this object points to a copy of that FileNode
+      // Checks that the filename, filemode, start_pos, and stop_pos are the same
+      bool operator==(const FileNode& that) const;
 
     private:
       std::shared_ptr<FileNode> model;

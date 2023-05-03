@@ -52,31 +52,31 @@ void RuleList<ProfileNode>::appendSubprofile(ProfileNode &node)
 
 /** Get methods **/
 template<class ProfileNode>
-std::list<FileNode> RuleList<ProfileNode>::getFileList()
+std::list<FileNode> RuleList<ProfileNode>::getFileList() const
 {
   return files;
 }
 
 template<class ProfileNode>
-std::list<LinkNode> RuleList<ProfileNode>::getLinkList()
+std::list<LinkNode> RuleList<ProfileNode>::getLinkList() const
 {
   return links;
 }
 
 template<class ProfileNode>
-std::list<RuleList<ProfileNode>> RuleList<ProfileNode>::getRuleList()
+std::list<RuleList<ProfileNode>> RuleList<ProfileNode>::getRuleList() const
 {
   return rules;
 }
 
 template<class ProfileNode>
-std::list<AbstractionNode> RuleList<ProfileNode>::getAbstractionList()
+std::list<AbstractionNode> RuleList<ProfileNode>::getAbstractionList() const
 {
   return abstractions;
 }
 
 template<class ProfileNode>
-std::list<ProfileNode> RuleList<ProfileNode>::getSubprofiles()
+std::list<ProfileNode> RuleList<ProfileNode>::getSubprofiles() const
 {
   return subprofiles;
 }
