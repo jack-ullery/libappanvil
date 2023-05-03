@@ -21,8 +21,14 @@ class Lexer : public yyFlexLexer {
     Lexer(std::istream& arg_yyin, std::ostream& arg_yyout)
       : yyFlexLexer(arg_yyin, arg_yyout) {}
 
-    // NOLINTNEXTLINE
     virtual symbol_type yylex(Driver& driver);
+
+    [[deprecated("This was added to avoid a compiler warning. Recommended to use the other constructor")]]
+    int yylex() override
+    {
+      Driver driver;
+      return yylex(driver).value.as<int>();
+    }
 };
 
 // Define the lexer prototype
