@@ -26,6 +26,22 @@ AppArmor::Parser::Parser(const std::string &path)
     // Seek back to beginning of file
     stream.seekg(0);
 
+    // Parse the file contents
+    update_from_stream(stream);
+}
+
+void AppArmor::Parser::update_from_file_contents()
+{
+    // Put the file contents into a stream
+    std::stringstream stream;
+    stream << file_contents;
+
+    // Parse the file
+    update_from_stream(stream);
+}
+
+void AppArmor::Parser::update_from_stream(std::istream &stream)
+{
     // Perform lexical analysis
     Lexer lexer(stream, std::cerr);
 
@@ -39,7 +55,7 @@ AppArmor::Parser::Parser(const std::string &path)
         std::throw_with_nested(std::runtime_error("error occured when parsing profile"));
     }
 
-    // Create list of profiles
+    // Create or update the list of profiles
     initializeProfileList(driver.ast);
 }
 
@@ -76,8 +92,9 @@ void AppArmor::Parser::removeRule(AppArmor::Profile &profile, AppArmor::FileRule
 
     file_contents.erase(start_pos, length);
 
-    // Push changes to 'output_file'
+    // Push changes to 'output_file' and update changes
     output << file_contents;
+    update_from_file_contents();
 }
 
 void AppArmor::Parser::addRule(Profile &profile, const std::string &fileglob, const std::string &filemode)
@@ -96,8 +113,9 @@ void AppArmor::Parser::addRule(Profile &profile, const std::string &fileglob, co
     std::string addRule = "  " + fileglob + " " + filemode + ",\n";
     file_contents.insert(pos, addRule);
 
-    // Push changes to 'output_file'
+    // Push changes to 'output_file' and update changes
     output << file_contents;
+    update_from_file_contents();
 }
 
 void AppArmor::Parser::editRule(Profile &profile,
@@ -128,6 +146,7 @@ void AppArmor::Parser::editRule(Profile &profile,
     std::string addRule = fileglob + " " + filemode + ",\n";
     file_contents.insert(start_pos, addRule);
 
-    // Push changes to 'output_file'
+    // Push changes to 'output_file' and update changes
     output << file_contents;
+    update_from_file_contents();
 }

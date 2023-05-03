@@ -29,6 +29,8 @@ namespace AppArmor {
       void editRule(Profile &profile, FileRule &oldRule, const std::string &fileglob, const std::string &filemode, std::ostream &output);
 
     private:
+      void update_from_file_contents();
+      void update_from_stream(std::istream &stream);
       void initializeProfileList(const std::shared_ptr<ParseTree> &ast);
 
       std::string path;
