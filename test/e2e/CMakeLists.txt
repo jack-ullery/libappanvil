@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.16.3)
+cmake_minimum_required (VERSION 3.19)
 
 project(end-to-end-test C CXX)
 

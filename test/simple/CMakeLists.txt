@@ -1,8 +1,8 @@
-cmake_minimum_required (VERSION 3.16.3)
+cmake_minimum_required (VERSION 3.19)
 
 project(simple-test C CXX)
 
-set(TEST_SOURCES ./src/main.cc)
+set(TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cc)
 
 #### Create the test executable ####
 add_executable(${PROJECT_NAME} ${TEST_SOURCES})
