@@ -10,9 +10,11 @@
 
 std::string trim(const std::string &str);
 
-class ParseTree;
-
 namespace AppArmor {
+  namespace Tree {
+    class ParseTree;
+  }
+
   class Parser {
     public:
       explicit Parser(const std::string &path);
@@ -31,7 +33,7 @@ namespace AppArmor {
     private:
       void update_from_file_contents();
       void update_from_stream(std::istream &stream);
-      void initializeProfileList(const std::shared_ptr<ParseTree> &ast);
+      void initializeProfileList(const std::shared_ptr<AppArmor::Tree::ParseTree> &ast);
 
       // Checks whether a given Profile is in the profile_list
       // Throws an exception if it is not

@@ -7,12 +7,14 @@
 
 #include "apparmor_file_rule.hh"
 
-class ProfileNode;
-
 namespace AppArmor {
+  namespace Tree {
+    class ProfileNode;
+  }
+
   class Profile {
     public:
-      explicit Profile(std::shared_ptr<ProfileNode> profile_model);
+      explicit Profile(std::shared_ptr<AppArmor::Tree::ProfileNode> profile_model);
 
       // Returns the name of this profile
       std::string name() const;
@@ -38,7 +40,7 @@ namespace AppArmor {
       void checkFileRuleValid(AppArmor::FileRule &file_rule) const;
 
     private:
-      std::shared_ptr<ProfileNode> profile_model;
+      std::shared_ptr<AppArmor::Tree::ProfileNode> profile_model;
   };
 } // namespace AppArmor
 

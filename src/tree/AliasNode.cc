@@ -3,12 +3,12 @@
 
 #include <sstream>
 
-AliasNode::AliasNode(const std::string &from, const std::string &to)
+AppArmor::Tree::AliasNode::AliasNode(const std::string &from, const std::string &to)
   : from{from},
     to{to}
 {   }
 
-AliasNode::operator std::string() const
+AppArmor::Tree::AliasNode::operator std::string() const
 {
   std::stringstream stream;
   stream << "alias " << from << " => " << to << ",\n";

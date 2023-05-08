@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 
 #include "apparmor_parser.hh"
-#include "parser/tree/FileNode.hh"
+#include "tree/FileNode.hh"
 
 namespace Common {
   // Checks that the AppArmor::Parser contains a profile with the expected file rules
@@ -40,8 +40,8 @@ namespace Common {
   [[maybe_unused]]
   static void emplace_front(std::list<AppArmor::FileRule> &list, const std::string &filename, const std::string &filemode)
   {
-      FileNode node(0, 1, filename, filemode);
-      auto node_pointer = std::make_shared<FileNode>(node);
+      AppArmor::Tree::FileNode node(0, 1, filename, filemode);
+      auto node_pointer = std::make_shared<AppArmor::Tree::FileNode>(node);
       AppArmor::FileRule rule(node_pointer);
       list.emplace_front(rule);
   }
@@ -50,8 +50,8 @@ namespace Common {
   [[maybe_unused]]
   static void emplace_back(std::list<AppArmor::FileRule> &list, const std::string &filename, const std::string &filemode)
   {
-      FileNode node(0, 1, filename, filemode);
-      auto node_pointer = std::make_shared<FileNode>(node);
+      AppArmor::Tree::FileNode node(0, 1, filename, filemode);
+      auto node_pointer = std::make_shared<AppArmor::Tree::FileNode>(node);
       AppArmor::FileRule rule(node_pointer);
       list.emplace_back(rule);
   }

@@ -4,8 +4,8 @@
 #include <gtest/gtest.h>
 
 #include "apparmor_parser.hh"
-#include "parser/tree/FileNode.hh"
-#include "parser/tree/ProfileNode.hh"
+#include "tree/FileNode.hh"
+#include "tree/ProfileNode.hh"
 
 class AddFunctionCheck : public ::testing::Test {
 public:

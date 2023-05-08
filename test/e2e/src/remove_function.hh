@@ -6,7 +6,7 @@
 #include "apparmor_file_rule.hh"
 #include "apparmor_parser.hh"
 #include "apparmor_profile.hh"
-#include "parser/tree/ProfileNode.hh"
+#include "tree/ProfileNode.hh"
 
 class RemoveFunctionCheck : public ::testing::Test {
 public:

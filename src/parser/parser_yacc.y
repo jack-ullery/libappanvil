@@ -154,23 +154,25 @@ while (0)
 %token TOK_FLAGS
 
 %code requires {
-	#include <memory>
-	#include <sstream>
+  #include <memory>
+  #include <sstream>
 
-	#include "parser.h"
-	#include "tree/AbstractionNode.hh"
-	#include "tree/AliasNode.hh"
-	#include "tree/FileNode.hh"
-	#include "tree/LinkNode.hh"
-	#include "tree/ParseTree.hh"
-	#include "tree/ProfileNode.hh"
-	#include "tree/PrefixNode.hh"
-	#include "tree/RuleList.hh"
-	#include "tree/RuleNode.hh"
-	#include "tree/TreeNode.hh"
+  #include "parser.h"
+  #include "tree/AbstractionNode.hh"
+  #include "tree/AliasNode.hh"
+  #include "tree/FileNode.hh"
+  #include "tree/LinkNode.hh"
+  #include "tree/ParseTree.hh"
+  #include "tree/ProfileNode.hh"
+  #include "tree/PrefixNode.hh"
+  #include "tree/RuleList.hh"
+  #include "tree/RuleNode.hh"
+  #include "tree/TreeNode.hh"
 
-	class Driver;
-	class Lexer;
+  class Driver;
+  class Lexer;
+
+  using namespace AppArmor::Tree;
 }
 
 // The parsing context.
@@ -180,6 +182,7 @@ while (0)
 %code{
   #undef yylex
   #define yylex scanner.yylex
+  using namespace AppArmor::Tree;
 }
 
 %type <std::shared_ptr<ParseTree>> 				tree
@@ -188,7 +191,7 @@ while (0)
 %type <ProfileNode> 							profile
 %type <ProfileNode> 							local_profile
 %type <TreeNode> 								preamble
-%type <RuleList> 					rules
+%type <RuleList> 								rules
 %type <TreeNode> 								alias
 %type <PrefixNode> 								opt_prefix
 

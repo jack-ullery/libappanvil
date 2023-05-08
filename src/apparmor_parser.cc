@@ -2,7 +2,7 @@
 #include "apparmor_profile.hh"
 #include "parser/driver.hh"
 #include "parser/lexer.hh"
-#include "parser/tree/ParseTree.hh"
+#include "tree/ParseTree.hh"
 
 #include <fstream>
 #include <memory>
@@ -54,7 +54,7 @@ void AppArmor::Parser::update_from_stream(std::istream &stream)
     initializeProfileList(driver.ast);
 }
 
-void AppArmor::Parser::initializeProfileList(const std::shared_ptr<ParseTree> &ast)
+void AppArmor::Parser::initializeProfileList(const std::shared_ptr<AppArmor::Tree::ParseTree> &ast)
 {
     profile_list = std::list<Profile>();
     

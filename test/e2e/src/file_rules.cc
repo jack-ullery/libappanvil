@@ -7,7 +7,9 @@
 #include <unordered_set>
 
 #include "apparmor_parser.hh"
-#include "parser/tree/FileNode.hh"
+#include "common.inl"
+
+using Common::emplace_back;
 
 namespace FileRuleCheck {
   inline void check_file_rules_for_single_profile(const std::string &filename, const std::list<AppArmor::FileRule> &expected_file_rules, const std::string &profile_name)
@@ -22,15 +24,6 @@ namespace FileRuleCheck {
 
     auto file_rules = first_profile->getFileRules();
     ASSERT_EQ(file_rules, expected_file_rules);
-  }
-  
-  // Creates and inserts an AppArmor::FileRule to the end of a list
-  void emplace_back(std::list<AppArmor::FileRule> &list, const std::string &filename, const std::string &filemode)
-  {
-    FileNode node(0, 1, filename, filemode);
-    auto node_pointer = std::make_shared<FileNode>(node);
-    AppArmor::FileRule rule(node_pointer);
-    list.emplace_back(rule);
   }
 
   TEST(FileRuleCheck, abi_ok_1)

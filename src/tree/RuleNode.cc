@@ -8,13 +8,13 @@
 
 // Used by Bison to create as a default value
 // Objects using this constructor should be overwritten, not used! 
-RuleNode::RuleNode()
+AppArmor::Tree::RuleNode::RuleNode()
   : TreeNode("invalid"),
     startPos{UINT64_MAX},
     stopPos{0}
 {   }
 
-RuleNode::RuleNode(uint64_t startPos, uint64_t stopPos)
+AppArmor::Tree::RuleNode::RuleNode(uint64_t startPos, uint64_t stopPos)
   : TreeNode("rule"),
     startPos{startPos},
     stopPos{stopPos}
@@ -22,7 +22,7 @@ RuleNode::RuleNode(uint64_t startPos, uint64_t stopPos)
   assert_things;
 }
 
-RuleNode::RuleNode(const std::string &text, uint64_t startPos, uint64_t stopPos)
+AppArmor::Tree::RuleNode::RuleNode(const std::string &text, uint64_t startPos, uint64_t stopPos)
   : TreeNode(text),
     startPos{startPos},
     stopPos{stopPos}
@@ -30,29 +30,29 @@ RuleNode::RuleNode(const std::string &text, uint64_t startPos, uint64_t stopPos)
   assert_things;
 }
 
-void RuleNode::setPrefix(const PrefixNode &prefix)
+void AppArmor::Tree::RuleNode::setPrefix(const PrefixNode &prefix)
 {
   assert_things;
   this->prefix = prefix;
 }
 
-void RuleNode::setStartPosition(const uint64_t &startPos)
+void AppArmor::Tree::RuleNode::setStartPosition(const uint64_t &startPos)
 {
   this->startPos = startPos;
 }
 
-void RuleNode::setStopPosition(const uint64_t &stopPos)
+void AppArmor::Tree::RuleNode::setStopPosition(const uint64_t &stopPos)
 {
   this->stopPos = stopPos;
 }
 
-uint64_t RuleNode::getStartPosition() const
+uint64_t AppArmor::Tree::RuleNode::getStartPosition() const
 {
   assert_things;
   return startPos;
 }
 
-uint64_t RuleNode::getStopPosition() const
+uint64_t AppArmor::Tree::RuleNode::getStopPosition() const
 {
   assert_things;
   return stopPos;

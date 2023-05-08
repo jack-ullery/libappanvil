@@ -178,7 +178,7 @@ TEST_F(EditFunctionCheck, test1_invalid_edit) // NOLINT
     auto prof = profile_list.front();
 
     // Create a fake file rule
-    auto node = std::make_shared<FileNode>(0, 10, "/does/not/exist", "rw");
+    auto node = std::make_shared<AppArmor::Tree::FileNode>(0, 10, "/does/not/exist", "rw");
     AppArmor::FileRule frule(node);
 
     // Attempt to edit file rule
@@ -226,7 +226,7 @@ TEST_F(EditFunctionCheck, test3_invalid_edit) // NOLINT
     auto frule = rule_list.front();
 
     // Create fake profile
-    auto empty_node = std::make_shared<ProfileNode>();
+    auto empty_node = std::make_shared<AppArmor::Tree::ProfileNode>();
     AppArmor::Profile fake_prof(empty_node);
 
     // Attempt to edit file rule

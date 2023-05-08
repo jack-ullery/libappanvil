@@ -1,9 +1,9 @@
 #include <utility>
 
 #include "apparmor_file_rule.hh"
-#include "parser/tree/FileNode.hh"
+#include "tree/FileNode.hh"
 
-AppArmor::FileRule::FileRule(std::shared_ptr<FileNode> model)
+AppArmor::FileRule::FileRule(std::shared_ptr<AppArmor::Tree::FileNode> model)
   : model{std::move(model)}
 {   }
 
@@ -33,7 +33,7 @@ bool AppArmor::FileRule::operator==(const AppArmor::FileRule& that) const
          (that.getFilemode() == this->getFilemode());
 }
 
-bool AppArmor::FileRule::operator==(const FileNode& that) const
+bool AppArmor::FileRule::operator==(const AppArmor::Tree::FileNode& that) const
 {
   return (that.getFilename() == this->getFilename()) && 
          (that.getFilemode() == this->getFilemode()) &&

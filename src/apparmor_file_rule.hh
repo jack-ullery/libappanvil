@@ -4,13 +4,15 @@
 #include <memory>
 #include <string>
 
-class FileNode;
-
 namespace AppArmor {
+  namespace Tree {
+    class FileNode;
+  };
+
   class FileRule {
     public:
       FileRule() = default;
-      explicit FileRule(std::shared_ptr<FileNode> model);
+      explicit FileRule(std::shared_ptr<AppArmor::Tree::FileNode> model);
 
       std::string getFilename() const;
       std::string getFilemode() const;
@@ -24,10 +26,10 @@ namespace AppArmor {
 
       // Checks whether this object points to a copy of that FileNode
       // Checks that the filename, filemode, start_pos, and stop_pos are the same
-      bool operator==(const FileNode& that) const;
+      bool operator==(const AppArmor::Tree::FileNode& that) const;
 
     private:
-      std::shared_ptr<FileNode> model;
+      std::shared_ptr<AppArmor::Tree::FileNode> model;
   };
 } // namespace AppArmor
 

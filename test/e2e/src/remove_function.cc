@@ -10,7 +10,7 @@
 #include "apparmor_parser.hh"
 #include "common.inl"
 #include "remove_function.hh"
-#include "parser/tree/FileNode.hh"
+#include "tree/FileNode.hh"
 
 using Common::check_file_rules_for_profile;
 using Common::emplace_back;
@@ -115,7 +115,7 @@ TEST_F(RemoveFunctionCheck, test1_invalid_remove) // NOLINT
     auto prof = profile_list.front();
 
     // Create a fake file rule
-    auto node = std::make_shared<FileNode>(0, 10, "/does/not/exist", "rw");
+    auto node = std::make_shared<AppArmor::Tree::FileNode>(0, 10, "/does/not/exist", "rw");
     AppArmor::FileRule frule(node);
 
     // Attempt to remove file rule and push changes to temporary file
@@ -163,7 +163,7 @@ TEST_F(RemoveFunctionCheck, test3_invalid_remove) // NOLINT
     auto frule = rule_list.front();
 
     // Create fake profile
-    auto empty_node = std::make_shared<ProfileNode>();
+    auto empty_node = std::make_shared<AppArmor::Tree::ProfileNode>();
     AppArmor::Profile fake_prof(empty_node);
 
     // Attempt to edit file rule

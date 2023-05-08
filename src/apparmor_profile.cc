@@ -1,20 +1,22 @@
 #include "apparmor_profile.hh"
 #include "apparmor_file_rule.hh"
-#include "parser/tree/AbstractionNode.hh"
-#include "parser/tree/FileNode.hh"
-#include "parser/tree/ProfileNode.hh"
+#include "tree/AbstractionNode.hh"
+#include "tree/FileNode.hh"
+#include "tree/ProfileNode.hh"
 
 #include <iostream>
 #include <sstream>
 #include <utility>
 
-AppArmor::Profile::Profile(std::shared_ptr<ProfileNode> profile_model)
+using namespace AppArmor::Tree;
+
+AppArmor::Profile::Profile(std::shared_ptr<AppArmor::Tree::ProfileNode> profile_model)
   : profile_model{std::move(profile_model)}
 {   }
 
 std::string AppArmor::Profile::name() const
 {
-    return profile_model->getText();
+    return profile_model->name();
 }
 
 std::unordered_set<std::string> AppArmor::Profile::getAbstractions() const
@@ -24,7 +26,7 @@ std::unordered_set<std::string> AppArmor::Profile::getAbstractions() const
   auto ruleList = profile_model->getRules();
   auto abstractionList = ruleList.getAbstractionList();
 
-  for(AbstractionNode node : abstractionList) {
+  for(const AbstractionNode &node : abstractionList) {
     set.insert(node.getPath());
   }
 

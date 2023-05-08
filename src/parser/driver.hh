@@ -12,7 +12,7 @@ class Driver
     bool success = false;
 
     // Parser fields
-    std::shared_ptr<ParseTree> ast;
+    std::shared_ptr<AppArmor::Tree::ParseTree> ast;
 
     // Lexer fields
     YYLTYPE yylloc = {.first_pos = 0, .last_pos = 0};

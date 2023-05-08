@@ -3,12 +3,12 @@
 
 #include <sstream>
 
-FileNode::FileNode(uint64_t startPos, uint64_t stopPos) 
+AppArmor::Tree::FileNode::FileNode(uint64_t startPos, uint64_t stopPos) 
   : RuleNode("file", startPos, stopPos),
     isSubset{false}
 {   }
 
-FileNode::FileNode(uint64_t startPos, 
+AppArmor::Tree::FileNode::FileNode(uint64_t startPos, 
                    uint64_t stopPos, 
                    const std::string &filename, 
                    const std::string &fileMode, 
@@ -21,12 +21,12 @@ FileNode::FileNode(uint64_t startPos,
     fileMode{fileMode}
 {   }
 
-std::string FileNode::getFilename() const
+std::string AppArmor::Tree::FileNode::getFilename() const
 {
   return filename;
 }
 
-std::string FileNode::getFilemode() const
+std::string AppArmor::Tree::FileNode::getFilemode() const
 {
   return fileMode;
 }

@@ -160,7 +160,7 @@ TEST_F(AddFunctionCheck, test1_invalid_add) // NOLINT
     AppArmor::Parser parser(filename);
 
     // Create fake profile
-    auto empty_node = std::make_shared<ProfileNode>();
+    auto empty_node = std::make_shared<AppArmor::Tree::ProfileNode>();
     AppArmor::Profile fake_prof(empty_node);
 
     // Add file rule and push changes to temporary file
