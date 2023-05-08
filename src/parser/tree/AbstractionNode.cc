@@ -15,7 +15,7 @@ AbstractionNode::operator std::string() const
   return stream.str();
 };
 
-std::string AbstractionNode::getPath()
+std::string AbstractionNode::getPath() const
 {
   return path;
 }

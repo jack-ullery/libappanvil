@@ -7,79 +7,60 @@
 
 #include <iostream>
 
-template<class ProfileNode>
-RuleList<ProfileNode>::RuleList(uint64_t startPos)
+RuleList::RuleList(uint64_t startPos)
   : RuleNode(startPos, startPos)
 {   }
 
-/** Append methods **/
-template <typename T, typename = typename std::enable_if<std::is_base_of<RuleNode, T>::value, T>::type>
-inline void appendPrefixedNode(const PrefixNode &prefix, T &node, std::list<T> &list)
+void RuleList::appendFileNode(const PrefixNode &prefix, FileNode &node)
 {
   node.setPrefix(prefix);
-  list.push_back(node);
+  files.push_back(node);
 }
 
-template<class ProfileNode>
-void RuleList<ProfileNode>::appendFileNode(const PrefixNode &prefix, FileNode &node)
+void RuleList::appendLinkNode(const PrefixNode &prefix, LinkNode &node)
 {
-  appendPrefixedNode(prefix, node, files);
+  node.setPrefix(prefix);
+  links.push_back(node);
 }
 
-template<class ProfileNode>
-void RuleList<ProfileNode>::appendLinkNode(const PrefixNode &prefix, LinkNode &node)
+void RuleList::appendRuleList(const PrefixNode &prefix, RuleList &node)
 {
-  appendPrefixedNode(prefix, node, links);
+  node.setPrefix(prefix);
+  rules.push_back(node);
 }
 
-template<class ProfileNode>
-void RuleList<ProfileNode>::appendRuleList(const PrefixNode &prefix, RuleList<ProfileNode> &node)
-{
-  appendPrefixedNode(prefix, node, rules);
-}
-
-template<class ProfileNode>
-void RuleList<ProfileNode>::appendAbstraction(AbstractionNode &node)
+void RuleList::appendAbstraction(AbstractionNode &node)
 {
   abstractions.push_back(node);
 }
 
-template<class ProfileNode>
-void RuleList<ProfileNode>::appendSubprofile(ProfileNode &node)
+void RuleList::appendSubprofile(ProfileNode &node)
 {
   subprofiles.push_back(node);
 }
 
 /** Get methods **/
-template<class ProfileNode>
-std::list<FileNode> RuleList<ProfileNode>::getFileList() const
+std::list<FileNode> RuleList::getFileList() const
 {
   return files;
 }
 
-template<class ProfileNode>
-std::list<LinkNode> RuleList<ProfileNode>::getLinkList() const
+std::list<LinkNode> RuleList::getLinkList() const
 {
   return links;
 }
 
-template<class ProfileNode>
-std::list<RuleList<ProfileNode>> RuleList<ProfileNode>::getRuleList() const
+std::list<RuleList> RuleList::getRuleList() const
 {
   return rules;
 }
 
-template<class ProfileNode>
-std::list<AbstractionNode> RuleList<ProfileNode>::getAbstractionList() const
+std::list<AbstractionNode> RuleList::getAbstractionList() const
 {
   return abstractions;
 }
 
-template<class ProfileNode>
-std::list<ProfileNode> RuleList<ProfileNode>::getSubprofiles() const
+std::list<ProfileNode> RuleList::getSubprofiles() const
 {
   return subprofiles;
 }
-
-// Helpful for the linker
-template class RuleList<ProfileNode>;

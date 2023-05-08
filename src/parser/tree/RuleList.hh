@@ -11,23 +11,27 @@
 #include <cstdint>
 #include <string>
 
-template <class ProfileNode>
+class ProfileNode;
+
 class RuleList : public RuleNode {
   public:
     RuleList() = default;
     explicit RuleList(uint64_t startPos);
-
-    void appendFileNode(const PrefixNode &prefix, FileNode &node);
-    void appendLinkNode(const PrefixNode &prefix, LinkNode &node);
-    void appendRuleList(const PrefixNode &prefix, RuleList &node);
-    void appendAbstraction(AbstractionNode &node);
-    void appendSubprofile(ProfileNode &node);
 
     std::list<FileNode>        getFileList() const;
     std::list<LinkNode>        getLinkList() const;
     std::list<RuleList>        getRuleList() const;
     std::list<AbstractionNode> getAbstractionList() const;
     std::list<ProfileNode>     getSubprofiles() const;
+
+  protected:
+    friend class yy::parser;
+
+    void appendFileNode(const PrefixNode &prefix, FileNode &node);
+    void appendLinkNode(const PrefixNode &prefix, LinkNode &node);
+    void appendRuleList(const PrefixNode &prefix, RuleList &node);
+    void appendAbstraction(AbstractionNode &node);
+    void appendSubprofile(ProfileNode &node);
 
   private:
     std::list<FileNode>         files;

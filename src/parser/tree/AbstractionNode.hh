@@ -9,7 +9,7 @@ class AbstractionNode : public RuleNode {
     AbstractionNode() = default;
     AbstractionNode(uint64_t startPos, uint64_t stopPos, const std::string &path, bool is_if_exists = false);
 
-    std::string getPath();
+    std::string getPath() const;
 
   private:
     virtual explicit operator std::string() const;

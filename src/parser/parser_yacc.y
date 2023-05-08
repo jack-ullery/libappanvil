@@ -188,7 +188,7 @@ while (0)
 %type <ProfileNode> 							profile
 %type <ProfileNode> 							local_profile
 %type <TreeNode> 								preamble
-%type <RuleList<ProfileNode>> 					rules
+%type <RuleList> 					rules
 %type <TreeNode> 								alias
 %type <PrefixNode> 								opt_prefix
 
@@ -316,7 +316,7 @@ opt_perm_mode:				{$$ = false;}
 
 opt_prefix: opt_audit_flag opt_perm_mode opt_owner_flag {$$ = PrefixNode($1, $2, $3);}
 
-rules:												{$$ = RuleList<ProfileNode>(@0.last_pos);}
+rules:												{$$ = RuleList(@0.last_pos);}
 	 | rules abi_rule								{$$ = $1;}
 	 | rules opt_prefix file_rule					{$$ = $1; $$.appendFileNode($2, $3);}
 	 | rules opt_prefix link_rule					{$$ = $1; $$.appendLinkNode($2, $3);}
