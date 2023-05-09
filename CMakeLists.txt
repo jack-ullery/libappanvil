@@ -39,6 +39,19 @@ set(OUTPUT_HEADERS
   ${PROJECT_SOURCE_DIR}/apparmor_parser.hh
 )
 
+set(OUTPUT_TREE_HEADERS
+  ${PROJECT_SOURCE_DIR}/tree/TreeNode.hh
+  ${PROJECT_SOURCE_DIR}/tree/ParseTree.hh
+  ${PROJECT_SOURCE_DIR}/tree/ProfileNode.hh
+  ${PROJECT_SOURCE_DIR}/tree/PrefixNode.hh
+  ${PROJECT_SOURCE_DIR}/tree/AliasNode.hh
+  ${PROJECT_SOURCE_DIR}/tree/RuleNode.hh
+  ${PROJECT_SOURCE_DIR}/tree/FileNode.hh
+  ${PROJECT_SOURCE_DIR}/tree/LinkNode.hh
+  ${PROJECT_SOURCE_DIR}/tree/AbstractionNode.hh
+  ${PROJECT_SOURCE_DIR}/tree/RuleList.hh
+)
+
 #### Bison stuff ####
 find_package(BISON REQUIRED)
 
@@ -136,6 +149,7 @@ target_include_directories(${LIBRARY_NAME} SYSTEM PRIVATE ${AUTOGEN_SOURCE_DIR})
 # Create target to install library
 install(TARGETS ${LIBRARY_NAME} DESTINATION lib/${PROJECT_NAME})
 install(FILES ${OUTPUT_HEADERS} DESTINATION include/${PROJECT_NAME})
+install(FILES ${OUTPUT_TREE_HEADERS} DESTINATION include/${PROJECT_NAME}/tree/)
 
 # Create uninstall target
 # Copied from: https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake
