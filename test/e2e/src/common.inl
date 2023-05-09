@@ -7,6 +7,26 @@
 #include "tree/FileNode.hh"
 
 namespace Common {
+
+  template<class T>
+  inline void checkRuleListsEqual(const std::list<T> &expected, const std::list<T> &observed)
+  {
+    EXPECT_EQ(expected.size(), observed.size()) << "There should be the same number of abstractions";
+
+    // Iterate over every value of each list to ensure that they point to the same path
+    auto it1 = expected.begin();
+    auto it2 = observed.begin();
+    while(it1 != expected.end() && 
+          it2 != observed.end())
+    {
+      EXPECT_TRUE(it1->almostEquals(*it2)) << "These two values should be equal";
+
+      // Increment iterator
+      it1++;
+      it2++;
+    }
+  }
+
   // Checks that the AppArmor::Parser contains a profile with the expected file rules
   inline void check_file_rules_for_profile(const AppArmor::Parser &parser,
                                            const std::list<AppArmor::Tree::FileNode> &expected_file_rules,
@@ -23,7 +43,7 @@ namespace Common {
       EXPECT_EQ(profile.name(), profile_name) << "No profile name matched";
 
       auto file_rules = profile.getFileList();
-      ASSERT_EQ(file_rules, expected_file_rules);
+      checkRuleListsEqual(file_rules, expected_file_rules);
   }
 
   // Calls 'check_file_rules_for_profile()' on two parsers, checking that they both have the same expected file_rules

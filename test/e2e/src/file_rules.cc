@@ -23,7 +23,7 @@ namespace FileRuleCheck {
     EXPECT_EQ(first_profile->name(), profile_name);
 
     auto file_rules = first_profile->getFileList();
-    ASSERT_EQ(file_rules, expected_file_rules);
+    Common::checkRuleListsEqual(file_rules, expected_file_rules);
   }
 
   TEST(FileRuleCheck, abi_ok_1)

@@ -2,6 +2,7 @@
 #include "parser/driver.hh"
 #include "parser/lexer.hh"
 #include "tree/ParseTree.hh"
+#include "tree/RuleNode.hh"
 
 #include <fstream>
 #include <memory>
@@ -82,21 +83,21 @@ void AppArmor::Parser::checkProfileValid(Profile &profile)
     throw std::domain_error(message.str());
 }
 
-void AppArmor::Parser::removeRule(Profile &profile, FileNode &fileRule)
+void AppArmor::Parser::removeRule(Profile &profile, RuleNode &rule)
 {
     std::ofstream output_file(path);
-    removeRule(profile, fileRule, output_file);
+    removeRule(profile, rule, output_file);
     output_file.close();
 }
 
-void AppArmor::Parser::removeRule(Profile &profile, FileNode &fileRule, std::ostream &output)
+void AppArmor::Parser::removeRule(Profile &profile, RuleNode &rule, std::ostream &output)
 {
     checkProfileValid(profile);
-    profile.checkRuleValid(fileRule);
+    profile.checkRuleValid(rule);
 
-    // Erase the fileRule from 'file_contents'
-    auto start_pos = static_cast<uint>(fileRule.getStartPosition()) - 1;
-    auto end_pos   = fileRule.getEndPosition();
+    // Erase the rule from 'file_contents'
+    auto start_pos = static_cast<uint>(rule.getStartPosition()) - 1;
+    auto end_pos   = rule.getEndPosition();
     auto length    = end_pos - start_pos;
 
     file_contents.erase(start_pos, length);
