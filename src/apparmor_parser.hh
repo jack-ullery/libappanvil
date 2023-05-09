@@ -6,13 +6,14 @@
 #include <ostream>
 #include <string>
 
-#include "tree/ParseTree.hh"
 #include "tree/FileNode.hh"
 #include "tree/ProfileNode.hh"
 
-std::string trim(const std::string &str);
-
 namespace AppArmor {
+  namespace Tree {
+    class ParseTree;
+  } // namespace Tree
+
   using Profile = Tree::ProfileNode;
   using FileNode = Tree::FileNode;
   using RuleNode = Tree::RuleNode;

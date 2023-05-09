@@ -41,7 +41,6 @@ set(OUTPUT_HEADERS
 
 set(OUTPUT_TREE_HEADERS
   ${PROJECT_SOURCE_DIR}/tree/TreeNode.hh
-  ${PROJECT_SOURCE_DIR}/tree/ParseTree.hh
   ${PROJECT_SOURCE_DIR}/tree/ProfileNode.hh
   ${PROJECT_SOURCE_DIR}/tree/PrefixNode.hh
   ${PROJECT_SOURCE_DIR}/tree/AliasNode.hh
