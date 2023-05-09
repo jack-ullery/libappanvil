@@ -20,7 +20,10 @@ namespace AppArmor::Tree {
       RuleNode(const std::string &text, uint64_t startPos, uint64_t stopPos);
 
       uint64_t getStartPosition() const;
-      uint64_t getStopPosition()  const;
+      uint64_t getEndPosition()  const;
+
+      virtual bool operator==(const RuleNode &other) const;
+      virtual bool operator!=(const RuleNode &other) const;
 
     protected:
       friend class yy::parser;

@@ -3,9 +3,7 @@
 
 #include <gtest/gtest.h>
 
-#include "apparmor_file_rule.hh"
 #include "apparmor_parser.hh"
-#include "apparmor_profile.hh"
 #include "tree/ProfileNode.hh"
 
 class RemoveFunctionCheck : public ::testing::Test {

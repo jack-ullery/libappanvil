@@ -14,7 +14,7 @@ using Common::emplace_back;
 inline void AddFunctionCheck::add_file_rule_to_profile(AppArmor::Parser &parser, 
                                                        const std::string &fileglob,
                                                        const std::string &filemode,
-                                                       std::list<AppArmor::FileRule> &expected_file_rules,
+                                                       std::list<AppArmor::Tree::FileNode> &expected_file_rules,
                                                        const bool &first_profile)
 {
     auto profile_list = parser.getProfileList();
@@ -34,7 +34,7 @@ inline void AddFunctionCheck::add_file_rule_to_profile(AppArmor::Parser &parser,
 TEST_F(AddFunctionCheck, test1_add) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test1_add.sd";
-    std::list<AppArmor::FileRule> expected_file_rules;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules;
 
     AppArmor::Parser parser(filename);
     add_file_rule_to_profile(parser, "/bin/echo", "uxuxuxuxux", expected_file_rules);
@@ -48,7 +48,7 @@ TEST_F(AddFunctionCheck, test1_add) // NOLINT
 TEST_F(AddFunctionCheck, test2_add) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test2_add.sd";
-    std::list<AppArmor::FileRule> expected_file_rules;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules;
     emplace_back(expected_file_rules, "/usr/X11R6/lib/lib*so*", "rrr");
 
     AppArmor::Parser parser(filename);
@@ -62,7 +62,7 @@ TEST_F(AddFunctionCheck, test2_add) // NOLINT
 TEST_F(AddFunctionCheck, test3_add) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test3_add.sd";
-    std::list<AppArmor::FileRule> expected_file_rules;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules;
 
     AppArmor::Parser parser(filename);
     add_file_rule_to_profile(parser, "/bin/echo", "uxuxuxuxux", expected_file_rules);
@@ -76,7 +76,7 @@ TEST_F(AddFunctionCheck, test3_add) // NOLINT
 TEST_F(AddFunctionCheck, test4_add) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test4_add.sd";
-    std::list<AppArmor::FileRule> expected_file_rules;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules;
     emplace_back(expected_file_rules, "/usr/X11R6/lib/lib*so*", "rrr");
 
     AppArmor::Parser parser(filename);
@@ -91,8 +91,8 @@ TEST_F(AddFunctionCheck, test4_add) // NOLINT
 TEST_F(AddFunctionCheck, test5_add) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test5_add.sd";
-    std::list<AppArmor::FileRule> expected_file_rules1;
-    std::list<AppArmor::FileRule> expected_file_rules2;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules1;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules2;
 
     AppArmor::Parser parser(filename);
     add_file_rule_to_profile(parser, "/bin/echo", "uxuxuxuxux", expected_file_rules1);
@@ -106,8 +106,8 @@ TEST_F(AddFunctionCheck, test5_add) // NOLINT
 TEST_F(AddFunctionCheck, test6_add) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test6_add.sd";
-    std::list<AppArmor::FileRule> expected_file_rules1;
-    std::list<AppArmor::FileRule> expected_file_rules2;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules1;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules2;
     emplace_back(expected_file_rules1, "/usr/X11R6/lib/lib*so*", "rrr");
     emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
 
@@ -123,8 +123,8 @@ TEST_F(AddFunctionCheck, test6_add) // NOLINT
 TEST_F(AddFunctionCheck, test7_add) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test7_add.sd";
-    std::list<AppArmor::FileRule> expected_file_rules1;
-    std::list<AppArmor::FileRule> expected_file_rules2;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules1;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules2;
 
     AppArmor::Parser parser(filename);
     add_file_rule_to_profile(parser, "/bin/echo",  "uxuxuxuxux", expected_file_rules1);
@@ -139,8 +139,8 @@ TEST_F(AddFunctionCheck, test7_add) // NOLINT
 TEST_F(AddFunctionCheck, test8_add) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/add-untouched/test8_add.sd";
-    std::list<AppArmor::FileRule> expected_file_rules1;
-    std::list<AppArmor::FileRule> expected_file_rules2;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules1;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules2;
     emplace_back(expected_file_rules1, "/usr/X11R6/lib/lib*so*", "rrr");
     emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
 
@@ -160,8 +160,7 @@ TEST_F(AddFunctionCheck, test1_invalid_add) // NOLINT
     AppArmor::Parser parser(filename);
 
     // Create fake profile
-    auto empty_node = std::make_shared<AppArmor::Tree::ProfileNode>();
-    AppArmor::Profile fake_prof(empty_node);
+    AppArmor::Tree::ProfileNode fake_prof;
 
     // Add file rule and push changes to temporary file
     std::ofstream temp_stream(temp_file);

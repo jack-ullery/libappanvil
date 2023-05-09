@@ -16,7 +16,7 @@ using Common::emplace_back;
 inline void EditFunctionCheck::edit_file_rule_in_profile(AppArmor::Parser &parser, 
                                                          const std::string &fileglob,
                                                          const std::string &filemode,
-                                                         std::list<AppArmor::FileRule> &expected_file_rules,
+                                                         std::list<AppArmor::Tree::FileNode> &expected_file_rules,
                                                          const bool &first_profile,
                                                          const bool &first_rule)
 {
@@ -26,7 +26,7 @@ inline void EditFunctionCheck::edit_file_rule_in_profile(AppArmor::Parser &parse
     auto prof = (first_profile)? profile_list.front() : profile_list.back();
 
     // Retrieve either the first or last file rule in profile
-    auto rule_list = prof.getFileRules();
+    auto rule_list = prof.getFileList();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = (first_rule)? rule_list.front() : rule_list.back();
 
@@ -48,7 +48,7 @@ inline void EditFunctionCheck::edit_file_rule_in_profile(AppArmor::Parser &parse
 TEST_F(EditFunctionCheck, test1_edit) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test1_edit.sd";
-    std::list<AppArmor::FileRule> expected_file_rules;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules;
 
     AppArmor::Parser parser(filename);
     edit_file_rule_in_profile(parser, "/bin/ls", "ixixixix", expected_file_rules);
@@ -62,7 +62,7 @@ TEST_F(EditFunctionCheck, test1_edit) // NOLINT
 TEST_F(EditFunctionCheck, test2_edit) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test2_edit.sd";
-    std::list<AppArmor::FileRule> expected_file_rules;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules;
 
     emplace_back(expected_file_rules, "/bin/echo", "uxuxuxuxux");
 
@@ -77,8 +77,8 @@ TEST_F(EditFunctionCheck, test2_edit) // NOLINT
 TEST_F(EditFunctionCheck, test3_edit) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test3_edit.sd";
-    std::list<AppArmor::FileRule> expected_file_rules1;
-    std::list<AppArmor::FileRule> expected_file_rules2;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules1;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules2;
 
     emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
 
@@ -93,8 +93,8 @@ TEST_F(EditFunctionCheck, test3_edit) // NOLINT
 TEST_F(EditFunctionCheck, test4_edit) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test4_edit.sd";
-    std::list<AppArmor::FileRule> expected_file_rules1;
-    std::list<AppArmor::FileRule> expected_file_rules2;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules1;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules2;
 
     emplace_back(expected_file_rules1, "/bin/echo", "uxuxuxuxux");
     emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
@@ -112,7 +112,7 @@ TEST_F(EditFunctionCheck, test4_edit) // NOLINT
 TEST_F(EditFunctionCheck, test5_edit_reverse) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test5_edit.sd";
-    std::list<AppArmor::FileRule> expected_file_rules;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules;
 
     AppArmor::Parser parser(filename);
     edit_file_rule_in_profile(parser, "/bin/ls", "ixixixix", expected_file_rules, true, false);
@@ -126,7 +126,7 @@ TEST_F(EditFunctionCheck, test5_edit_reverse) // NOLINT
 TEST_F(EditFunctionCheck, test5_edit_sequential) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test5_edit.sd";
-    std::list<AppArmor::FileRule> expected_file_rules;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules;
 
     AppArmor::Parser parser(filename);
     edit_file_rule_in_profile(parser, "/var/log/messages", "www", expected_file_rules);
@@ -140,8 +140,8 @@ TEST_F(EditFunctionCheck, test5_edit_sequential) // NOLINT
 TEST_F(EditFunctionCheck, test6_edit) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test6_edit.sd";
-    std::list<AppArmor::FileRule> expected_file_rules1;
-    std::list<AppArmor::FileRule> expected_file_rules2;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules1;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules2;
 
     AppArmor::Parser parser(filename);
     edit_file_rule_in_profile(parser, "/var/log/messages", "www", expected_file_rules1);
@@ -156,8 +156,8 @@ TEST_F(EditFunctionCheck, test6_edit) // NOLINT
 TEST_F(EditFunctionCheck, test7_edit) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/edit-untouched/test7_edit.sd";
-    std::list<AppArmor::FileRule> dummy_list;
-    std::list<AppArmor::FileRule> expected_file_rules;
+    std::list<AppArmor::Tree::FileNode> dummy_list;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules;
 
     AppArmor::Parser parser(filename);
     edit_file_rule_in_profile(parser, "/var/log/messages", "www", dummy_list);
@@ -178,8 +178,7 @@ TEST_F(EditFunctionCheck, test1_invalid_edit) // NOLINT
     auto prof = profile_list.front();
 
     // Create a fake file rule
-    auto node = std::make_shared<AppArmor::Tree::FileNode>(0, 10, "/does/not/exist", "rw");
-    AppArmor::FileRule frule(node);
+    AppArmor::Tree::FileNode frule(0, 10, "/does/not/exist", "rw");
 
     // Attempt to edit file rule
     std::ofstream temp_stream(temp_file);
@@ -200,7 +199,7 @@ TEST_F(EditFunctionCheck, test2_invalid_edit) // NOLINT
     ASSERT_NE(front_prof, back_prof) << "These should be two distinct profiles";
 
     // Get a frule from the first profile
-    auto rule_list = front_prof.getFileRules();
+    auto rule_list = front_prof.getFileList();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = rule_list.front();
 
@@ -221,13 +220,12 @@ TEST_F(EditFunctionCheck, test3_invalid_edit) // NOLINT
     auto prof = profile_list.front();
 
     // Get a frule from the profile
-    auto rule_list = prof.getFileRules();
+    auto rule_list = prof.getFileList();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = rule_list.front();
 
     // Create fake profile
-    auto empty_node = std::make_shared<AppArmor::Tree::ProfileNode>();
-    AppArmor::Profile fake_prof(empty_node);
+    AppArmor::Tree::ProfileNode fake_prof;
 
     // Attempt to edit file rule
     std::ofstream temp_stream(temp_file);
@@ -247,7 +245,7 @@ TEST_F(EditFunctionCheck, test4_invalid_edit) // NOLINT
     auto old_prof = old_profile_list.back();
 
     // Get a frule from the old profile
-    auto rule_list = old_prof.getFileRules();
+    auto rule_list = old_prof.getFileList();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = rule_list.front();
 

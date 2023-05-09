@@ -52,8 +52,20 @@ uint64_t AppArmor::Tree::RuleNode::getStartPosition() const
   return startPos;
 }
 
-uint64_t AppArmor::Tree::RuleNode::getStopPosition() const
+uint64_t AppArmor::Tree::RuleNode::getEndPosition() const
 {
   assert_things;
   return stopPos;
+}
+
+bool AppArmor::Tree::RuleNode::operator==(const RuleNode &other) const
+{
+  return this->prefix == other.prefix &&
+         this->startPos == other.startPos &&
+         this->stopPos == other.stopPos;
+}
+
+bool AppArmor::Tree::RuleNode::operator!=(const RuleNode &other) const
+{
+  return !(*this == other);
 }

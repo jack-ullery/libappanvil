@@ -1,5 +1,4 @@
 #include "apparmor_parser.hh"
-#include "apparmor_profile.hh"
 #include "parser/driver.hh"
 #include "parser/lexer.hh"
 #include "tree/ParseTree.hh"
@@ -57,12 +56,9 @@ void AppArmor::Parser::update_from_stream(std::istream &stream)
 void AppArmor::Parser::initializeProfileList(const std::shared_ptr<AppArmor::Tree::ParseTree> &ast)
 {
     profile_list = std::list<Profile>();
-    
     auto astList = ast->profileList;
     for (auto prof_iter = astList->begin(); prof_iter != astList->end(); prof_iter++){
-        std::shared_ptr<ProfileNode> node = std::make_shared<ProfileNode>(*prof_iter);
-        Profile profile(node);
-        profile_list.push_back(profile);
+        profile_list.push_back(*prof_iter);
     }
 }
 
@@ -71,10 +67,10 @@ std::list<AppArmor::Profile> AppArmor::Parser::getProfileList() const
     return profile_list;
 }
 
-void AppArmor::Parser::checkProfileValid(AppArmor::Profile &profile)
+void AppArmor::Parser::checkProfileValid(Profile &profile)
 {
     // Attempt to find profile from the list and return on success
-    for(const AppArmor::Profile &prof : profile_list) {
+    for(const Profile &prof : profile_list) {
         if(profile == prof) {
             return;
         }
@@ -86,17 +82,17 @@ void AppArmor::Parser::checkProfileValid(AppArmor::Profile &profile)
     throw std::domain_error(message.str());
 }
 
-void AppArmor::Parser::removeRule(AppArmor::Profile &profile, AppArmor::FileRule &fileRule)
+void AppArmor::Parser::removeRule(Profile &profile, FileNode &fileRule)
 {
     std::ofstream output_file(path);
     removeRule(profile, fileRule, output_file);
     output_file.close();
 }
 
-void AppArmor::Parser::removeRule(AppArmor::Profile &profile, AppArmor::FileRule &fileRule, std::ostream &output)
+void AppArmor::Parser::removeRule(Profile &profile, FileNode &fileRule, std::ostream &output)
 {
     checkProfileValid(profile);
-    profile.checkFileRuleValid(fileRule);
+    profile.checkRuleValid(fileRule);
 
     // Erase the fileRule from 'file_contents'
     auto start_pos = static_cast<uint>(fileRule.getStartPosition()) - 1;
@@ -134,7 +130,7 @@ void AppArmor::Parser::addRule(Profile &profile, const std::string &fileglob, co
 }
 
 void AppArmor::Parser::editRule(Profile &profile,
-                                FileRule &oldRule,
+                                FileNode &oldRule,
                                 const std::string &fileglob,
                                 const std::string &filemode)
 {
@@ -144,13 +140,13 @@ void AppArmor::Parser::editRule(Profile &profile,
 }
 
 void AppArmor::Parser::editRule(Profile &profile,
-                                FileRule &oldRule,
+                                FileNode &oldRule,
                                 const std::string &fileglob,
                                 const std::string &filemode,
                                 std::ostream &output)
 {
     checkProfileValid(profile);
-    profile.checkFileRuleValid(oldRule);
+    profile.checkRuleValid(oldRule);
 
     // Remove and replace the fileRule from 'file_contents'
     auto start_pos = oldRule.getStartPosition() - 1;

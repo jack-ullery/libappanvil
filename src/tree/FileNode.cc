@@ -30,3 +30,17 @@ std::string AppArmor::Tree::FileNode::getFilemode() const
 {
   return fileMode;
 }
+
+bool AppArmor::Tree::FileNode::operator==(const FileNode &other) const
+{
+  return this->isSubset == other.isSubset &&
+         this->filename == other.filename &&
+         this->exec_target == other.exec_target &&
+         this->fileMode == other.fileMode;
+}
+
+bool AppArmor::Tree::FileNode::strictEquals(const FileNode &other) const
+{
+  return *this == other &&
+         ((RuleNode) *this) == ((RuleNode) other);
+}

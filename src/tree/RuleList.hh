@@ -21,7 +21,7 @@ namespace AppArmor::Tree {
       std::list<FileNode>        getFileList() const;
       std::list<LinkNode>        getLinkList() const;
       std::list<RuleList>        getRuleList() const;
-      std::list<AbstractionNode> getAbstractionList() const;
+      std::list<AbstractionNode> getAbstractions() const;
       std::list<ProfileNode>     getSubprofiles() const;
 
     protected:

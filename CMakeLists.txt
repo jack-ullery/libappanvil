@@ -28,8 +28,6 @@ set(SOURCES
   ${PROJECT_SOURCE_DIR}/tree/RuleList.cc
   ${PROJECT_SOURCE_DIR}/parser/lib.c
   ${PROJECT_SOURCE_DIR}/parser/parser.cc
-  ${PROJECT_SOURCE_DIR}/apparmor_file_rule.cc
-  ${PROJECT_SOURCE_DIR}/apparmor_profile.cc
   ${PROJECT_SOURCE_DIR}/apparmor_parser.cc
 )
 
@@ -38,8 +36,6 @@ set(LEXER_INPUT ${PROJECT_SOURCE_DIR}/parser/parser_lex.l)
 
 # Public headers that will be used by the client
 set(OUTPUT_HEADERS
-  ${PROJECT_SOURCE_DIR}/apparmor_file_rule.hh
-  ${PROJECT_SOURCE_DIR}/apparmor_profile.hh
   ${PROJECT_SOURCE_DIR}/apparmor_parser.hh
 )
 

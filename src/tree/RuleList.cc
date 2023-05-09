@@ -57,7 +57,7 @@ std::list<RuleList> AppArmor::Tree::RuleList::getRuleList() const
   return rules;
 }
 
-std::list<AbstractionNode> AppArmor::Tree::RuleList::getAbstractionList() const
+std::list<AbstractionNode> AppArmor::Tree::RuleList::getAbstractions() const
 {
   return abstractions;
 }

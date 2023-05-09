@@ -6,7 +6,6 @@
 #include <ostream>
 #include <unordered_set>
 
-#include "apparmor_file_rule.hh"
 #include "apparmor_parser.hh"
 #include "common.inl"
 #include "remove_function.hh"
@@ -22,7 +21,7 @@ inline void RemoveFunctionCheck::remove_file_rule_from_first_profile(AppArmor::P
     auto prof = profile_list.front();
 
     // Get first file rule in the profile
-    auto rule_list = prof.getFileRules();
+    auto rule_list = prof.getFileList();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = rule_list.front();
 
@@ -37,7 +36,7 @@ TEST_F(RemoveFunctionCheck, test1_remove) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test1_remove.sd";
 
-    std::list<AppArmor::FileRule> expected_file_rules;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules;
 
     //remove rule /usr/X11R6/lib/lib*so* rrr,
     AppArmor::Parser parser(filename);
@@ -53,7 +52,7 @@ TEST_F(RemoveFunctionCheck, test1_remove) // NOLINT
 TEST_F(RemoveFunctionCheck, test2_remove) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test2_remove.sd";
-    std::list<AppArmor::FileRule> expected_file_rules;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules;
 
     emplace_back(expected_file_rules, "/does/not/exist", "r");
     emplace_back(expected_file_rules, "/var/log/messages", "www");
@@ -69,8 +68,8 @@ TEST_F(RemoveFunctionCheck, test2_remove) // NOLINT
 TEST_F(RemoveFunctionCheck, test3_remove) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test3_remove.sd";
-    std::list<AppArmor::FileRule> expected_file_rules1;
-    std::list<AppArmor::FileRule> expected_file_rules2;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules1;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules2;
 
     emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
 
@@ -86,8 +85,8 @@ TEST_F(RemoveFunctionCheck, test3_remove) // NOLINT
 TEST_F(RemoveFunctionCheck, test4_remove) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test4_remove.sd";
-    std::list<AppArmor::FileRule> expected_file_rules1;
-    std::list<AppArmor::FileRule> expected_file_rules2;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules1;
+    std::list<AppArmor::Tree::FileNode> expected_file_rules2;
 
     emplace_back(expected_file_rules1, "/does/not/exist", "r");
     emplace_back(expected_file_rules1, "/var/log/messages", "www");
@@ -115,8 +114,7 @@ TEST_F(RemoveFunctionCheck, test1_invalid_remove) // NOLINT
     auto prof = profile_list.front();
 
     // Create a fake file rule
-    auto node = std::make_shared<AppArmor::Tree::FileNode>(0, 10, "/does/not/exist", "rw");
-    AppArmor::FileRule frule(node);
+    AppArmor::Tree::FileNode frule(0, 10, "/does/not/exist", "rw");
 
     // Attempt to remove file rule and push changes to temporary file
     std::ofstream temp_stream(temp_file);
@@ -137,7 +135,7 @@ TEST_F(RemoveFunctionCheck, test2_invalid_remove) // NOLINT
     ASSERT_NE(front_prof, back_prof) << "These should be two distinct profiles";
 
     // Get a frule from the first profile
-    auto rule_list = front_prof.getFileRules();
+    auto rule_list = front_prof.getFileList();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = rule_list.front();
 
@@ -158,13 +156,12 @@ TEST_F(RemoveFunctionCheck, test3_invalid_remove) // NOLINT
     auto prof = profile_list.front();
 
     // Get a frule from the profile
-    auto rule_list = prof.getFileRules();
+    auto rule_list = prof.getFileList();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = rule_list.front();
 
     // Create fake profile
-    auto empty_node = std::make_shared<AppArmor::Tree::ProfileNode>();
-    AppArmor::Profile fake_prof(empty_node);
+    AppArmor::Tree::ProfileNode fake_prof;
 
     // Attempt to edit file rule
     std::ofstream temp_stream(temp_file);
@@ -184,7 +181,7 @@ TEST_F(RemoveFunctionCheck, test4_invalid_remove) // NOLINT
     auto old_prof = old_profile_list.back();
 
     // Get a frule from the old profile
-    auto rule_list = old_prof.getFileRules();
+    auto rule_list = old_prof.getFileList();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = rule_list.front();
 

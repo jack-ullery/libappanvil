@@ -12,11 +12,46 @@ namespace AppArmor::Tree {
       ProfileNode(const std::string &profile_name, const RuleList &rules);
       ProfileNode() = default;
 
+      // Returns the name of this profile
       std::string name() const;
-      RuleList getRules() const;
+
+      // Returns a list of RuleLists in the profile
+      std::list<RuleList> getRuleList() const;
+
+      // Returns a list of file rules included in the profile
+      std::list<FileNode> getFileList() const;
+
+      // Returns a list of link rules included in the profile
+      std::list<LinkNode> getLinkList() const;
+
+      // Returns a list of abstractions included in the profile
+      std::list<AbstractionNode> getAbstractions() const;
+
+      // Returns a list of subprofiles defined in this profile
+      std::list<ProfileNode> getSubprofiles() const;
+
+      // Gets the character position where the rules start (after the first '{' of this profile)
+      uint64_t getRuleStartPosition() const;
+
+      // Gets the character position where the rules end (before the last '}' of this profile)
+      uint64_t getRuleEndPosition() const;
+
+      // Checks whether a given FileRule is in the profile_model
+      // Throws an exception if it is not
+      void checkRuleValid(FileNode &file_rule) const;
+
+      virtual bool operator==(const ProfileNode &other) const;
+      virtual bool operator!=(const ProfileNode &other) const;
 
     private:
       RuleList rules;
+
+      // Helper method for checkRuleValid()
+      template<class T>
+      inline void checkRuleInList(const T &obj, 
+                                  const std::list<T> &list,
+                                  const std::string &class_name,
+                                  const std::string &obj_name) const;
   };
 } // namespace AppArmor::Tree
 

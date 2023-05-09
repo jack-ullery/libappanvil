@@ -27,7 +27,7 @@ protected:
   inline void edit_file_rule_in_profile(AppArmor::Parser &parser, 
                                         const std::string &fileglob,
                                         const std::string &filemode,
-                                        std::list<AppArmor::FileRule> &expected_file_rules,
+                                        std::list<AppArmor::Tree::FileNode> &expected_file_rules,
                                         const bool &first_profile = true,
                                         const bool &first_rule = true);
 };

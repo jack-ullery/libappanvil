@@ -13,6 +13,8 @@ namespace AppArmor::Tree {
       static constexpr bool DEFAULT_PERM_MODE   = false;
       static constexpr bool DEFAULT_OWNER       = false;
 
+      bool operator==(const PrefixNode &other) const;
+
     private:
       bool audit; 
       bool should_deny;

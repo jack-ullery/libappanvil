@@ -19,6 +19,12 @@ namespace AppArmor::Tree {
       std::string getFilename() const;
       std::string getFilemode() const;
 
+      // Checks all private memebers are equal, not including members of superclass
+      bool operator==(const FileNode &other) const;
+
+      // Checks all private memebrs are equal, including members of superclass
+      bool strictEquals(const FileNode &other) const;
+
     private:
       bool isSubset = false;
       std::string filename;

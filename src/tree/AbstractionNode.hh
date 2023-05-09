@@ -12,6 +12,9 @@ namespace AppArmor::Tree {
 
       std::string getPath() const;
 
+      virtual bool operator==(const AbstractionNode &other) const;
+      virtual bool operator==(const std::string &path) const;
+
     private:
       virtual explicit operator std::string() const;
 
