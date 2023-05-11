@@ -42,7 +42,7 @@ namespace Common {
       auto profile = profile_list.front();
       EXPECT_EQ(profile.name(), profile_name) << "No profile name matched";
 
-      auto file_rules = profile.getFileList();
+      auto file_rules = profile.getFileRules();
       checkRuleListsEqual(file_rules, expected_file_rules);
   }
 

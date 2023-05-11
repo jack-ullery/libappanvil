@@ -21,7 +21,7 @@ inline void RemoveFunctionCheck::remove_file_rule_from_first_profile(AppArmor::P
     auto prof = profile_list.front();
 
     // Get first file rule in the profile
-    auto rule_list = prof.getFileList();
+    auto rule_list = prof.getFileRules();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = rule_list.front();
 
@@ -135,7 +135,7 @@ TEST_F(RemoveFunctionCheck, test2_invalid_remove) // NOLINT
     ASSERT_NE(front_prof, back_prof) << "These should be two distinct profiles";
 
     // Get a frule from the first profile
-    auto rule_list = front_prof.getFileList();
+    auto rule_list = front_prof.getFileRules();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = rule_list.front();
 
@@ -156,7 +156,7 @@ TEST_F(RemoveFunctionCheck, test3_invalid_remove) // NOLINT
     auto prof = profile_list.front();
 
     // Get a frule from the profile
-    auto rule_list = prof.getFileList();
+    auto rule_list = prof.getFileRules();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = rule_list.front();
 
@@ -181,7 +181,7 @@ TEST_F(RemoveFunctionCheck, test4_invalid_remove) // NOLINT
     auto old_prof = old_profile_list.back();
 
     // Get a frule from the old profile
-    auto rule_list = old_prof.getFileList();
+    auto rule_list = old_prof.getFileRules();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = rule_list.front();
 

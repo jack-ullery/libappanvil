@@ -19,10 +19,10 @@ namespace AppArmor::Tree {
       std::list<RuleList> getRuleList() const;
 
       // Returns a list of file rules included in the profile
-      std::list<FileRule> getFileList() const;
+      std::list<FileRule> getFileRules() const;
 
       // Returns a list of link rules included in the profile
-      std::list<LinkRule> getLinkList() const;
+      std::list<LinkRule> getLinkRules() const;
 
       // Returns a list of abstractions included in the profile
       std::list<AbstractionRule> getAbstractions() const;

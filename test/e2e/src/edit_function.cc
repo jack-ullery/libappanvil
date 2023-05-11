@@ -26,7 +26,7 @@ inline void EditFunctionCheck::edit_file_rule_in_profile(AppArmor::Parser &parse
     auto prof = (first_profile)? profile_list.front() : profile_list.back();
 
     // Retrieve either the first or last file rule in profile
-    auto rule_list = prof.getFileList();
+    auto rule_list = prof.getFileRules();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = (first_rule)? rule_list.front() : rule_list.back();
 
@@ -199,7 +199,7 @@ TEST_F(EditFunctionCheck, test2_invalid_edit) // NOLINT
     ASSERT_NE(front_prof, back_prof) << "These should be two distinct profiles";
 
     // Get a frule from the first profile
-    auto rule_list = front_prof.getFileList();
+    auto rule_list = front_prof.getFileRules();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = rule_list.front();
 
@@ -220,7 +220,7 @@ TEST_F(EditFunctionCheck, test3_invalid_edit) // NOLINT
     auto prof = profile_list.front();
 
     // Get a frule from the profile
-    auto rule_list = prof.getFileList();
+    auto rule_list = prof.getFileRules();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = rule_list.front();
 
@@ -245,7 +245,7 @@ TEST_F(EditFunctionCheck, test4_invalid_edit) // NOLINT
     auto old_prof = old_profile_list.back();
 
     // Get a frule from the old profile
-    auto rule_list = old_prof.getFileList();
+    auto rule_list = old_prof.getFileRules();
     ASSERT_FALSE(rule_list.empty()) << "There should be at least one file rule";
     auto frule = rule_list.front();
 

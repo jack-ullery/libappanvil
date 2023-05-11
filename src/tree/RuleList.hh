@@ -18,8 +18,8 @@ namespace AppArmor::Tree {
       RuleList() = default;
       explicit RuleList(uint64_t startPos);
 
-      std::list<FileRule>        getFileList() const;
-      std::list<LinkRule>        getLinkList() const;
+      std::list<FileRule>        getFileRules() const;
+      std::list<LinkRule>        getLinkRules() const;
       std::list<RuleList>        getRuleList() const;
       std::list<AbstractionRule> getAbstractions() const;
       std::list<ProfileRule>     getSubprofiles() const;

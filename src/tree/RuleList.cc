@@ -42,12 +42,12 @@ void AppArmor::Tree::RuleList::appendSubprofile(ProfileRule &node)
 }
 
 /** Get methods **/
-std::list<FileRule> AppArmor::Tree::RuleList::getFileList() const
+std::list<FileRule> AppArmor::Tree::RuleList::getFileRules() const
 {
   return files;
 }
 
-std::list<LinkRule> AppArmor::Tree::RuleList::getLinkList() const
+std::list<LinkRule> AppArmor::Tree::RuleList::getLinkRules() const
 {
   return links;
 }

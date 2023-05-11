@@ -16,14 +16,14 @@ std::string AppArmor::Tree::ProfileRule::name() const
   return this->getText();
 }
 
-std::list<FileRule> AppArmor::Tree::ProfileRule::getFileList() const
+std::list<FileRule> AppArmor::Tree::ProfileRule::getFileRules() const
 {
-  return rules.getFileList();
+  return rules.getFileRules();
 }
 
-std::list<LinkRule> AppArmor::Tree::ProfileRule::getLinkList() const
+std::list<LinkRule> AppArmor::Tree::ProfileRule::getLinkRules() const
 {
-  return rules.getLinkList();
+  return rules.getLinkRules();
 }
 
 std::list<RuleList> AppArmor::Tree::ProfileRule::getRuleList() const
@@ -72,13 +72,13 @@ inline void AppArmor::Tree::ProfileRule::checkRuleInList(const T &obj,
 
 void AppArmor::Tree::ProfileRule::checkRuleValid(const FileRule &file_rule) const
 {
-  const auto &list = rules.getFileList();
+  const auto &list = rules.getFileRules();
   checkRuleInList(file_rule, list, "AppArmor::Tree::FileRule", file_rule.getFilemode());
 }
 
 void AppArmor::Tree::ProfileRule::checkRuleValid(const LinkRule &rule) const
 {
-  const auto &list = rules.getLinkList();
+  const auto &list = rules.getLinkRules();
   checkRuleInList(rule, list, "AppArmor::Tree::LinkRule", "link");
 }
 
