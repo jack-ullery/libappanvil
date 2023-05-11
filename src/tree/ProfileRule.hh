@@ -1,5 +1,5 @@
-#ifndef PROFILE_NODE_HH
-#define PROFILE_NODE_HH
+#ifndef PROFILE_RULE_HH
+#define PROFILE_RULE_HH
 
 #include "RuleList.hh"
 #include "TreeNode.hh"
@@ -7,10 +7,10 @@
 #include <string>
 
 namespace AppArmor::Tree {
-  class ProfileNode : protected TreeNode {
+  class ProfileRule : protected TreeNode {
     public:
-      ProfileNode(const std::string &profile_name, const RuleList &rules);
-      ProfileNode() = default;
+      ProfileRule(const std::string &profile_name, const RuleList &rules);
+      ProfileRule() = default;
 
       // Returns the name of this profile
       std::string name() const;
@@ -19,16 +19,16 @@ namespace AppArmor::Tree {
       std::list<RuleList> getRuleList() const;
 
       // Returns a list of file rules included in the profile
-      std::list<FileNode> getFileList() const;
+      std::list<FileRule> getFileList() const;
 
       // Returns a list of link rules included in the profile
-      std::list<LinkNode> getLinkList() const;
+      std::list<LinkRule> getLinkList() const;
 
       // Returns a list of abstractions included in the profile
-      std::list<AbstractionNode> getAbstractions() const;
+      std::list<AbstractionRule> getAbstractions() const;
 
       // Returns a list of subprofiles defined in this profile
-      std::list<ProfileNode> getSubprofiles() const;
+      std::list<ProfileRule> getSubprofiles() const;
 
       // Gets the character position where the rules start (after the first '{' of this profile)
       uint64_t getRuleStartPosition() const;
@@ -39,14 +39,14 @@ namespace AppArmor::Tree {
       // Checks whether a given RuleNode is in the profile_model
       // Throws an exception if it is not
       void checkRuleValid(const RuleNode &file_rule) const;
-      void checkRuleValid(const FileNode &file_rule) const;
-      void checkRuleValid(const LinkNode &rule) const;
+      void checkRuleValid(const FileRule &file_rule) const;
+      void checkRuleValid(const LinkRule &rule) const;
       void checkRuleValid(const RuleList &rule) const;
-      void checkRuleValid(const AbstractionNode &rule) const;
-      void checkRuleValid(const ProfileNode &rule) const;
+      void checkRuleValid(const AbstractionRule &rule) const;
+      void checkRuleValid(const ProfileRule &rule) const;
 
-      virtual bool operator==(const ProfileNode &other) const;
-      virtual bool operator!=(const ProfileNode &other) const;
+      virtual bool operator==(const ProfileRule &other) const;
+      virtual bool operator!=(const ProfileRule &other) const;
 
     private:
       RuleList rules;
@@ -63,4 +63,4 @@ namespace AppArmor::Tree {
   };
 } // namespace AppArmor::Tree
 
-#endif // PROFILE_NODE_HH
+#endif // PROFILE_RULE_HH

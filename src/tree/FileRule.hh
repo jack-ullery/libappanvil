@@ -1,15 +1,15 @@
-#ifndef FILE_NODE_HH
-#define FILE_NODE_HH
+#ifndef FILE_RULE_HH
+#define FILE_RULE_HH
 
 #include "RuleNode.hh"
 #include <string>
 
 namespace AppArmor::Tree {
-  class FileNode : public RuleNode {
+  class FileRule : public RuleNode {
     public:
-      FileNode() = default;
-      FileNode(uint64_t startPos, uint64_t stopPos);
-      FileNode(uint64_t startPos, 
+      FileRule() = default;
+      FileRule(uint64_t startPos, uint64_t stopPos);
+      FileRule(uint64_t startPos, 
               uint64_t stopPos, 
               const std::string &filename, 
               const std::string &fileMode, 
@@ -20,10 +20,10 @@ namespace AppArmor::Tree {
       std::string getFilemode() const;
 
       // Checks all private memebrs are equal, including members of superclass (RuleNode)
-      bool operator==(const FileNode &other) const;
+      bool operator==(const FileRule &other) const;
 
       // Checks all private memebers are equal, not including members of superclass
-      bool almostEquals(const FileNode &other) const;
+      bool almostEquals(const FileRule &other) const;
 
     private:
       bool isSubset = false;
@@ -33,4 +33,4 @@ namespace AppArmor::Tree {
   };
 } // namespace AppArmor::Tree
 
-#endif // FILE_NODE_HH
+#endif // FILE_RULE_HH

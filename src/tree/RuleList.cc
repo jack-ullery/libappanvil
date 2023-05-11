@@ -1,8 +1,8 @@
-#include "AbstractionNode.hh"
-#include "FileNode.hh"
-#include "LinkNode.hh"
+#include "AbstractionRule.hh"
+#include "FileRule.hh"
+#include "LinkRule.hh"
 #include "PrefixNode.hh"
-#include "ProfileNode.hh"
+#include "ProfileRule.hh"
 #include "TreeNode.hh"
 
 #include <iostream>
@@ -13,13 +13,13 @@ AppArmor::Tree::RuleList::RuleList(uint64_t startPos)
   : RuleNode(startPos, startPos)
 {   }
 
-void AppArmor::Tree::RuleList::appendFileNode(const PrefixNode &prefix, FileNode &node)
+void AppArmor::Tree::RuleList::appendFileRule(const PrefixNode &prefix, FileRule &node)
 {
   node.setPrefix(prefix);
   files.push_back(node);
 }
 
-void AppArmor::Tree::RuleList::appendLinkNode(const PrefixNode &prefix, LinkNode &node)
+void AppArmor::Tree::RuleList::appendLinkRule(const PrefixNode &prefix, LinkRule &node)
 {
   node.setPrefix(prefix);
   links.push_back(node);
@@ -31,23 +31,23 @@ void AppArmor::Tree::RuleList::appendRuleList(const PrefixNode &prefix, RuleList
   rules.push_back(node);
 }
 
-void AppArmor::Tree::RuleList::appendAbstraction(AbstractionNode &node)
+void AppArmor::Tree::RuleList::appendAbstraction(AbstractionRule &node)
 {
   abstractions.push_back(node);
 }
 
-void AppArmor::Tree::RuleList::appendSubprofile(ProfileNode &node)
+void AppArmor::Tree::RuleList::appendSubprofile(ProfileRule &node)
 {
   subprofiles.push_back(node);
 }
 
 /** Get methods **/
-std::list<FileNode> AppArmor::Tree::RuleList::getFileList() const
+std::list<FileRule> AppArmor::Tree::RuleList::getFileList() const
 {
   return files;
 }
 
-std::list<LinkNode> AppArmor::Tree::RuleList::getLinkList() const
+std::list<LinkRule> AppArmor::Tree::RuleList::getLinkList() const
 {
   return links;
 }
@@ -57,12 +57,12 @@ std::list<RuleList> AppArmor::Tree::RuleList::getRuleList() const
   return rules;
 }
 
-std::list<AbstractionNode> AppArmor::Tree::RuleList::getAbstractions() const
+std::list<AbstractionRule> AppArmor::Tree::RuleList::getAbstractions() const
 {
   return abstractions;
 }
 
-std::list<ProfileNode> AppArmor::Tree::RuleList::getSubprofiles() const
+std::list<ProfileRule> AppArmor::Tree::RuleList::getSubprofiles() const
 {
   return subprofiles;
 }

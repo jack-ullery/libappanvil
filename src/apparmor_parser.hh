@@ -6,16 +6,16 @@
 #include <ostream>
 #include <string>
 
-#include "tree/FileNode.hh"
-#include "tree/ProfileNode.hh"
+#include "tree/FileRule.hh"
+#include "tree/ProfileRule.hh"
 
 namespace AppArmor {
   namespace Tree {
     class ParseTree;
   } // namespace Tree
 
-  using Profile = Tree::ProfileNode;
-  using FileNode = Tree::FileNode;
+  using Profile = Tree::ProfileRule;
+  using FileRule = Tree::FileRule;
   using RuleNode = Tree::RuleNode;
 
   class Parser {
@@ -30,8 +30,8 @@ namespace AppArmor {
       void addRule(Profile &profile, const std::string &fileglob, const std::string &filemode);
       void addRule(Profile &profile, const std::string &fileglob, const std::string &filemode, std::ostream &output);
 
-      void editRule(Profile &profile, FileNode &oldRule, const std::string &fileglob, const std::string &filemode);
-      void editRule(Profile &profile, FileNode &oldRule, const std::string &fileglob, const std::string &filemode, std::ostream &output);
+      void editRule(Profile &profile, FileRule &oldRule, const std::string &fileglob, const std::string &filemode);
+      void editRule(Profile &profile, FileRule &oldRule, const std::string &fileglob, const std::string &filemode, std::ostream &output);
 
     private:
       void update_from_file_contents();

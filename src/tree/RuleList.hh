@@ -1,9 +1,9 @@
 #ifndef RULE_LIST_HH
 #define RULE_LIST_HH
 
-#include "AbstractionNode.hh"
-#include "FileNode.hh"
-#include "LinkNode.hh"
+#include "AbstractionRule.hh"
+#include "FileRule.hh"
+#include "LinkRule.hh"
 #include "PrefixNode.hh"
 #include "RuleNode.hh"
 #include "TreeNode.hh"
@@ -12,33 +12,33 @@
 #include <string>
 
 namespace AppArmor::Tree {
-  class ProfileNode;
+  class ProfileRule;
   class RuleList : public RuleNode {
     public:
       RuleList() = default;
       explicit RuleList(uint64_t startPos);
 
-      std::list<FileNode>        getFileList() const;
-      std::list<LinkNode>        getLinkList() const;
+      std::list<FileRule>        getFileList() const;
+      std::list<LinkRule>        getLinkList() const;
       std::list<RuleList>        getRuleList() const;
-      std::list<AbstractionNode> getAbstractions() const;
-      std::list<ProfileNode>     getSubprofiles() const;
+      std::list<AbstractionRule> getAbstractions() const;
+      std::list<ProfileRule>     getSubprofiles() const;
 
     protected:
       friend class yy::parser;
 
-      void appendFileNode(const PrefixNode &prefix, FileNode &node);
-      void appendLinkNode(const PrefixNode &prefix, LinkNode &node);
+      void appendFileRule(const PrefixNode &prefix, FileRule &node);
+      void appendLinkRule(const PrefixNode &prefix, LinkRule &node);
       void appendRuleList(const PrefixNode &prefix, RuleList &node);
-      void appendAbstraction(AbstractionNode &node);
-      void appendSubprofile(ProfileNode &node);
+      void appendAbstraction(AbstractionRule &node);
+      void appendSubprofile(ProfileRule &node);
 
     private:
-      std::list<FileNode>         files;
-      std::list<LinkNode>         links;
+      std::list<FileRule>         files;
+      std::list<LinkRule>         links;
       std::list<RuleList>         rules;
-      std::list<AbstractionNode>  abstractions;
-      std::list<ProfileNode>      subprofiles;
+      std::list<AbstractionRule>  abstractions;
+      std::list<ProfileRule>      subprofiles;
   };
 } // namespace AppArmor::Tree
 

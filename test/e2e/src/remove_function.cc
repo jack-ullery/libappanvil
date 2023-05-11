@@ -9,7 +9,7 @@
 #include "apparmor_parser.hh"
 #include "common.inl"
 #include "remove_function.hh"
-#include "tree/FileNode.hh"
+#include "tree/FileRule.hh"
 
 using Common::check_file_rules_for_profile;
 using Common::emplace_back;
@@ -36,7 +36,7 @@ TEST_F(RemoveFunctionCheck, test1_remove) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test1_remove.sd";
 
-    std::list<AppArmor::Tree::FileNode> expected_file_rules;
+    std::list<AppArmor::Tree::FileRule> expected_file_rules;
 
     //remove rule /usr/X11R6/lib/lib*so* rrr,
     AppArmor::Parser parser(filename);
@@ -52,7 +52,7 @@ TEST_F(RemoveFunctionCheck, test1_remove) // NOLINT
 TEST_F(RemoveFunctionCheck, test2_remove) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test2_remove.sd";
-    std::list<AppArmor::Tree::FileNode> expected_file_rules;
+    std::list<AppArmor::Tree::FileRule> expected_file_rules;
 
     emplace_back(expected_file_rules, "/does/not/exist", "r");
     emplace_back(expected_file_rules, "/var/log/messages", "www");
@@ -68,8 +68,8 @@ TEST_F(RemoveFunctionCheck, test2_remove) // NOLINT
 TEST_F(RemoveFunctionCheck, test3_remove) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test3_remove.sd";
-    std::list<AppArmor::Tree::FileNode> expected_file_rules1;
-    std::list<AppArmor::Tree::FileNode> expected_file_rules2;
+    std::list<AppArmor::Tree::FileRule> expected_file_rules1;
+    std::list<AppArmor::Tree::FileRule> expected_file_rules2;
 
     emplace_back(expected_file_rules2, "/usr/X11R6/lib/lib*so*", "rrr");
 
@@ -85,8 +85,8 @@ TEST_F(RemoveFunctionCheck, test3_remove) // NOLINT
 TEST_F(RemoveFunctionCheck, test4_remove) // NOLINT
 {
     std::string filename = ADDITIONAL_PROFILE_SOURCE_DIR "/remove-untouched/test4_remove.sd";
-    std::list<AppArmor::Tree::FileNode> expected_file_rules1;
-    std::list<AppArmor::Tree::FileNode> expected_file_rules2;
+    std::list<AppArmor::Tree::FileRule> expected_file_rules1;
+    std::list<AppArmor::Tree::FileRule> expected_file_rules2;
 
     emplace_back(expected_file_rules1, "/does/not/exist", "r");
     emplace_back(expected_file_rules1, "/var/log/messages", "www");
@@ -114,7 +114,7 @@ TEST_F(RemoveFunctionCheck, test1_invalid_remove) // NOLINT
     auto prof = profile_list.front();
 
     // Create a fake file rule
-    AppArmor::Tree::FileNode frule(0, 10, "/does/not/exist", "rw");
+    AppArmor::Tree::FileRule frule(0, 10, "/does/not/exist", "rw");
 
     // Attempt to remove file rule and push changes to temporary file
     std::ofstream temp_stream(temp_file);
@@ -161,7 +161,7 @@ TEST_F(RemoveFunctionCheck, test3_invalid_remove) // NOLINT
     auto frule = rule_list.front();
 
     // Create fake profile
-    AppArmor::Tree::ProfileNode fake_prof;
+    AppArmor::Tree::ProfileRule fake_prof;
 
     // Attempt to edit file rule
     std::ofstream temp_stream(temp_file);

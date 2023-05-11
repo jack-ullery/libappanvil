@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 
 #include "apparmor_parser.hh"
-#include "tree/ProfileNode.hh"
+#include "tree/ProfileRule.hh"
 
 class RemoveFunctionCheck : public ::testing::Test {
 public:

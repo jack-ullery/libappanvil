@@ -131,7 +131,7 @@ void AppArmor::Parser::addRule(Profile &profile, const std::string &fileglob, co
 }
 
 void AppArmor::Parser::editRule(Profile &profile,
-                                FileNode &oldRule,
+                                FileRule &oldRule,
                                 const std::string &fileglob,
                                 const std::string &filemode)
 {
@@ -141,7 +141,7 @@ void AppArmor::Parser::editRule(Profile &profile,
 }
 
 void AppArmor::Parser::editRule(Profile &profile,
-                                FileNode &oldRule,
+                                FileRule &oldRule,
                                 const std::string &fileglob,
                                 const std::string &filemode,
                                 std::ostream &output)

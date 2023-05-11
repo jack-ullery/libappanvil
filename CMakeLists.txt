@@ -18,13 +18,13 @@ file(MAKE_DIRECTORY ${AUTOGEN_SOURCE_DIR})
 set(SOURCES
   ${PROJECT_SOURCE_DIR}/tree/TreeNode.cc
   ${PROJECT_SOURCE_DIR}/tree/ParseTree.cc
-  ${PROJECT_SOURCE_DIR}/tree/ProfileNode.cc
+  ${PROJECT_SOURCE_DIR}/tree/ProfileRule.cc
   ${PROJECT_SOURCE_DIR}/tree/PrefixNode.cc
   ${PROJECT_SOURCE_DIR}/tree/AliasNode.cc
   ${PROJECT_SOURCE_DIR}/tree/RuleNode.cc
-  ${PROJECT_SOURCE_DIR}/tree/FileNode.cc
-  ${PROJECT_SOURCE_DIR}/tree/LinkNode.cc
-  ${PROJECT_SOURCE_DIR}/tree/AbstractionNode.cc
+  ${PROJECT_SOURCE_DIR}/tree/FileRule.cc
+  ${PROJECT_SOURCE_DIR}/tree/LinkRule.cc
+  ${PROJECT_SOURCE_DIR}/tree/AbstractionRule.cc
   ${PROJECT_SOURCE_DIR}/tree/RuleList.cc
   ${PROJECT_SOURCE_DIR}/parser/lib.c
   ${PROJECT_SOURCE_DIR}/parser/parser.cc
@@ -41,13 +41,13 @@ set(OUTPUT_HEADERS
 
 set(OUTPUT_TREE_HEADERS
   ${PROJECT_SOURCE_DIR}/tree/TreeNode.hh
-  ${PROJECT_SOURCE_DIR}/tree/ProfileNode.hh
+  ${PROJECT_SOURCE_DIR}/tree/ProfileRule.hh
   ${PROJECT_SOURCE_DIR}/tree/PrefixNode.hh
   ${PROJECT_SOURCE_DIR}/tree/AliasNode.hh
   ${PROJECT_SOURCE_DIR}/tree/RuleNode.hh
-  ${PROJECT_SOURCE_DIR}/tree/FileNode.hh
-  ${PROJECT_SOURCE_DIR}/tree/LinkNode.hh
-  ${PROJECT_SOURCE_DIR}/tree/AbstractionNode.hh
+  ${PROJECT_SOURCE_DIR}/tree/FileRule.hh
+  ${PROJECT_SOURCE_DIR}/tree/LinkRule.hh
+  ${PROJECT_SOURCE_DIR}/tree/AbstractionRule.hh
   ${PROJECT_SOURCE_DIR}/tree/RuleList.hh
 )
 

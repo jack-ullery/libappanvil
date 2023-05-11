@@ -1,14 +1,14 @@
-#include "FileNode.hh"
+#include "FileRule.hh"
 #include "RuleNode.hh"
 
 #include <sstream>
 
-AppArmor::Tree::FileNode::FileNode(uint64_t startPos, uint64_t stopPos) 
+AppArmor::Tree::FileRule::FileRule(uint64_t startPos, uint64_t stopPos) 
   : RuleNode("file", startPos, stopPos),
     isSubset{false}
 {   }
 
-AppArmor::Tree::FileNode::FileNode(uint64_t startPos, 
+AppArmor::Tree::FileRule::FileRule(uint64_t startPos, 
                    uint64_t stopPos, 
                    const std::string &filename, 
                    const std::string &fileMode, 
@@ -21,17 +21,17 @@ AppArmor::Tree::FileNode::FileNode(uint64_t startPos,
     fileMode{fileMode}
 {   }
 
-std::string AppArmor::Tree::FileNode::getFilename() const
+std::string AppArmor::Tree::FileRule::getFilename() const
 {
   return filename;
 }
 
-std::string AppArmor::Tree::FileNode::getFilemode() const
+std::string AppArmor::Tree::FileRule::getFilemode() const
 {
   return fileMode;
 }
 
-bool AppArmor::Tree::FileNode::operator==(const FileNode &other) const
+bool AppArmor::Tree::FileRule::operator==(const FileRule &other) const
 {
   // Check that all the member fields are equal
   //  and that the objects are equal when interpreted as RuleNodes
@@ -39,7 +39,7 @@ bool AppArmor::Tree::FileNode::operator==(const FileNode &other) const
          RuleNode(*this) == other; // NOLINT(*slicing)
 }
 
-bool AppArmor::Tree::FileNode::almostEquals(const FileNode &other) const
+bool AppArmor::Tree::FileRule::almostEquals(const FileRule &other) const
 {
   return this->isSubset == other.isSubset &&
          this->filename == other.filename &&

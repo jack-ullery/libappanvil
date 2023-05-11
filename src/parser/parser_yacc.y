@@ -158,12 +158,12 @@ while (0)
   #include <sstream>
 
   #include "parser.h"
-  #include "tree/AbstractionNode.hh"
+  #include "tree/AbstractionRule.hh"
   #include "tree/AliasNode.hh"
-  #include "tree/FileNode.hh"
-  #include "tree/LinkNode.hh"
+  #include "tree/FileRule.hh"
+  #include "tree/LinkRule.hh"
   #include "tree/ParseTree.hh"
-  #include "tree/ProfileNode.hh"
+  #include "tree/ProfileRule.hh"
   #include "tree/PrefixNode.hh"
   #include "tree/RuleList.hh"
   #include "tree/RuleNode.hh"
@@ -186,16 +186,16 @@ while (0)
 }
 
 %type <std::shared_ptr<ParseTree>> 				tree
-%type <std::shared_ptr<std::list<ProfileNode>>> profilelist
-%type <ProfileNode> 							profile_base
-%type <ProfileNode> 							profile
-%type <ProfileNode> 							local_profile
+%type <std::shared_ptr<std::list<ProfileRule>>> profilelist
+%type <ProfileRule> 							profile_base
+%type <ProfileRule> 							profile
+%type <ProfileRule> 							local_profile
 %type <TreeNode> 								preamble
 %type <RuleList> 								rules
 %type <TreeNode> 								alias
 %type <PrefixNode> 								opt_prefix
 
-%type <AbstractionNode> abstraction
+%type <AbstractionRule> abstraction
 %type <TreeNode> abi_rule
 %type <RuleNode> network_rule
 %type <RuleNode> mnt_rule
@@ -208,10 +208,10 @@ while (0)
 %type <RuleNode> capability
 %type <RuleNode> hat
 %type <RuleNode> cond_rule
-%type <LinkNode> link_rule
-%type <FileNode> file_rule
-%type <FileNode> frule
-%type <FileNode> file_rule_tail
+%type <LinkRule> link_rule
+%type <FileRule> file_rule
+%type <FileRule> frule
+%type <FileRule> file_rule_tail
 
 %type <std::string> TOK_ID
 %type <std::string>	TOK_CONDID
@@ -246,7 +246,7 @@ tree: preamble profilelist {
 								driver.success = true;
 						   };
 
-profilelist:					 { $$ = std::make_shared<std::list<ProfileNode>>(); }
+profilelist:					 { $$ = std::make_shared<std::list<ProfileRule>>(); }
 		   | profilelist profile { $$ = $1; $$->push_back($2); }
 
 opt_profile_flag:
@@ -264,7 +264,7 @@ profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE 
 		$6.setStartPosition(@6.first_pos);
 		$6.setStopPosition(@6.last_pos);
 
-		$$ = ProfileNode($1, $6);
+		$$ = ProfileRule($1, $6);
 	}
 
 profile: opt_profile_flag profile_base { $$ = $2; }
@@ -321,8 +321,8 @@ opt_prefix: opt_audit_flag opt_perm_mode opt_owner_flag {$$ = PrefixNode($1, $2,
 
 rules:												{$$ = RuleList(@0.last_pos);}
 	 | rules abi_rule								{$$ = $1;}
-	 | rules opt_prefix file_rule					{$$ = $1; $$.appendFileNode($2, $3);}
-	 | rules opt_prefix link_rule					{$$ = $1; $$.appendLinkNode($2, $3);}
+	 | rules opt_prefix file_rule					{$$ = $1; $$.appendFileRule($2, $3);}
+	 | rules opt_prefix link_rule					{$$ = $1; $$.appendLinkRule($2, $3);}
 	 | rules opt_prefix TOK_OPEN rules TOK_CLOSE	{$$ = $1; $$.appendRuleList($2, $4);}
 	 | rules opt_prefix network_rule				{$$ = $1; /* $$.appendChildren({$2, $3}); */}
 	 | rules opt_prefix mnt_rule					{$$ = $1; /* $$.appendChildren({$2, $3}); */}
@@ -360,10 +360,10 @@ opt_named_transition:						{$$ = "";}
 abi_rule: TOK_ABI TOK_ID 	TOK_END_OF_RULE	{$$ = TreeNode($2);}
 		| TOK_ABI TOK_VALUE TOK_END_OF_RULE	{$$ = TreeNode($2);}
 
-abstraction: TOK_INCLUDE		   TOK_ID 	 {$$ = AbstractionNode(@1.first_pos, @2.last_pos, $2, false);}
-		   | TOK_INCLUDE		   TOK_VALUE {$$ = AbstractionNode(@1.first_pos, @2.last_pos, $2, false);}
-		   | TOK_INCLUDE_IF_EXISTS TOK_ID 	 {$$ = AbstractionNode(@1.first_pos, @2.last_pos, $2, true);}
-		   | TOK_INCLUDE_IF_EXISTS TOK_VALUE {$$ = AbstractionNode(@1.first_pos, @2.last_pos, $2, true);}
+abstraction: TOK_INCLUDE		   TOK_ID 	 {$$ = AbstractionRule(@1.first_pos, @2.last_pos, $2, false);}
+		   | TOK_INCLUDE		   TOK_VALUE {$$ = AbstractionRule(@1.first_pos, @2.last_pos, $2, false);}
+		   | TOK_INCLUDE_IF_EXISTS TOK_ID 	 {$$ = AbstractionRule(@1.first_pos, @2.last_pos, $2, true);}
+		   | TOK_INCLUDE_IF_EXISTS TOK_VALUE {$$ = AbstractionRule(@1.first_pos, @2.last_pos, $2, true);}
 
 opt_exec_mode:
 			 | TOK_UNSAFE
@@ -373,16 +373,16 @@ opt_file:
 		| TOK_FILE
 
 // Should utilize the deleted get_mode() from parser.h instead of yylval mode
-frule: id_or_var file_mode opt_named_transition TOK_END_OF_RULE					{$$ = FileNode(@1.first_pos, @4.last_pos, $1, $2, $3);}
-	 | file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE	{$$ = FileNode(@1.first_pos, @5.last_pos, $3, $1, $4, $2);}
+frule: id_or_var file_mode opt_named_transition TOK_END_OF_RULE					{$$ = FileRule(@1.first_pos, @4.last_pos, $1, $2, $3);}
+	 | file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE	{$$ = FileRule(@1.first_pos, @5.last_pos, $3, $1, $4, $2);}
 
-file_rule: TOK_FILE TOK_END_OF_RULE	{$$ = FileNode(@1.first_pos, @2.last_pos);}
+file_rule: TOK_FILE TOK_END_OF_RULE	{$$ = FileRule(@1.first_pos, @2.last_pos);}
 		 | opt_file file_rule_tail	{$$ = $2;}
 
 file_rule_tail: opt_exec_mode frule							{$$ = $2;}
-			  | opt_exec_mode id_or_var file_mode id_or_var	{$$ = FileNode(@1.first_pos, @4.last_pos, $2, $3, $4);}
+			  | opt_exec_mode id_or_var file_mode id_or_var	{$$ = FileRule(@1.first_pos, @4.last_pos, $2, $3, $4);}
 
-link_rule: TOK_LINK opt_subset_flag id_or_var TOK_ARROW id_or_var TOK_END_OF_RULE	{$$ = LinkNode(@1.first_pos, @6.last_pos, $2, $3, $5);}
+link_rule: TOK_LINK opt_subset_flag id_or_var TOK_ARROW id_or_var TOK_END_OF_RULE	{$$ = LinkRule(@1.first_pos, @6.last_pos, $2, $3, $5);}
 
 network_rule: TOK_NETWORK TOK_END_OF_RULE
 			| TOK_NETWORK TOK_ID TOK_END_OF_RULE

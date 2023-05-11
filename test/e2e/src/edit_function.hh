@@ -4,8 +4,8 @@
 #include <gtest/gtest.h>
 
 #include "apparmor_parser.hh"
-#include "tree/FileNode.hh"
-#include "tree/ProfileNode.hh"
+#include "tree/FileRule.hh"
+#include "tree/ProfileRule.hh"
 
 class EditFunctionCheck : public ::testing::Test {
 public:
@@ -27,7 +27,7 @@ protected:
   inline void edit_file_rule_in_profile(AppArmor::Parser &parser, 
                                         const std::string &fileglob,
                                         const std::string &filemode,
-                                        std::list<AppArmor::Tree::FileNode> &expected_file_rules,
+                                        std::list<AppArmor::Tree::FileRule> &expected_file_rules,
                                         const bool &first_profile = true,
                                         const bool &first_rule = true);
 };

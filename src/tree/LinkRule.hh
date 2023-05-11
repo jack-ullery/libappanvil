@@ -1,14 +1,14 @@
-#ifndef LINK_NODE_HH
-#define LINK_NODE_HH
+#ifndef LINK_RULE_HH
+#define LINK_RULE_HH
 
 #include "RuleNode.hh"
 #include <string>
 
 namespace AppArmor::Tree {
-  class LinkNode : public RuleNode {
+  class LinkRule : public RuleNode {
     public:
-      LinkNode() = default;
-      LinkNode(uint64_t startPos, uint64_t stopPos, bool isSubset, const std::string &linkFrom, const std::string &linkTo);
+      LinkRule() = default;
+      LinkRule(uint64_t startPos, uint64_t stopPos, bool isSubset, const std::string &linkFrom, const std::string &linkTo);
 
       virtual explicit operator std::string() const;
 
@@ -19,4 +19,4 @@ namespace AppArmor::Tree {
   };
 } // namespace AppArmor::Tree
 
-#endif // LINK_NODE_HH
+#endif // LINK_RULE_HH
