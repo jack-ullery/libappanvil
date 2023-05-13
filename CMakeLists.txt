@@ -116,7 +116,7 @@ if(${USE_CPPCHECK})
 endif()
 
 #### Set Compiler Options ####
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall -Wextra")
 set(CMAKE_CXX_STANDARD 17)
 
 ## set_source_files_properties(${CXX_SOURCES} PROPERTIES LANGUAGE CXX)
@@ -145,11 +145,17 @@ target_include_directories(${LIBRARY_NAME} PUBLIC  ${PROJECT_SOURCE_DIR})
 target_include_directories(${LIBRARY_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/parser)
 target_include_directories(${LIBRARY_NAME} SYSTEM PRIVATE ${AUTOGEN_SOURCE_DIR})
 
-# Create target to install library
+# Pkg-config module (I couldn't figure out the configuration for find_package)
 set(INSTALL_NAME "lib${PROJECT_NAME}")
-install(TARGETS ${LIBRARY_NAME} DESTINATION lib/${INSTALL_NAME})
+set(PKG_CONFIG_FILE_IN "libappanvil.pc.in")
+set(PKG_CONFIG_FILE_OUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libappanvil.pc")
+configure_file("${PKG_CONFIG_FILE_IN}" "${PKG_CONFIG_FILE_OUT}" @ONLY) 
+
+# Create target to install library
+install(TARGETS ${LIBRARY_NAME} DESTINATION lib64/)
 install(FILES ${OUTPUT_HEADERS} DESTINATION include/${INSTALL_NAME})
 install(FILES ${OUTPUT_TREE_HEADERS} DESTINATION include/${INSTALL_NAME}/tree/)
+install(FILES ${PKG_CONFIG_FILE_OUT} DESTINATION lib64/pkgconfig)
 
 # Create uninstall target
 # Copied from: https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake
