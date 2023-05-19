@@ -100,34 +100,6 @@ void AppArmor::Tree::ProfileRule::checkRuleValid(const ProfileRule &rule) const
   checkRuleInList(rule, list, "AppArmor::Tree::ProfileRule", rule.name());
 }
 
-template<class T>
-inline bool AppArmor::Tree::ProfileRule::tryCheckRuleValid(const RuleNode &rule) const
-{
-  auto *cast_rule = dynamic_cast<const T*>(&rule);
-  if(cast_rule != nullptr) {
-    checkRuleValid(*cast_rule);
-    return true;
-  }
-  return false;
-}
-
-void AppArmor::Tree::ProfileRule::checkRuleValid(const RuleNode &rule) const
-{
-  // Attempt to cast the rule to the following types, and run checkRUleValid on that type
-  if(!(tryCheckRuleValid<FileRule>(rule)        ||
-       tryCheckRuleValid<LinkRule>(rule)        ||
-       tryCheckRuleValid<RuleList>(rule)        ||
-       tryCheckRuleValid<AbstractionRule>(rule) ||
-       tryCheckRuleValid<ProfileRule>(rule)))
-  {
-    // If the rule was not a FileRule, LinkRule, RuleList, AbstractionRule, or ProfileRule
-    //   then it was some other invalid type of RuleNode, so we should throw an error
-    std::stringstream message;
-    message << "Invalid rule type was given as argument. This rule could not be found in Profile: " << this->name() << ".\n";
-    throw std::domain_error(message.str());
-  }
-}
-
 bool AppArmor::Tree::ProfileRule::operator==(const ProfileRule &other) const
 {
   return this->rules == other.rules;

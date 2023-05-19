@@ -1,6 +1,7 @@
 #include "apparmor_parser.hh"
 #include "parser/driver.hh"
 #include "parser/lexer.hh"
+#include "tree/FileRule.hh"
 #include "tree/ParseTree.hh"
 #include "tree/RuleNode.hh"
 
@@ -83,14 +84,19 @@ void AppArmor::Parser::checkProfileValid(Profile &profile)
     throw std::domain_error(message.str());
 }
 
-void AppArmor::Parser::removeRule(Profile &profile, RuleNode &rule)
+template<AppArmor::RuleDerived RuleType>
+void AppArmor::Parser::removeRule(Profile &profile, RuleType &rule)
 {
+    checkProfileValid(profile);
+    profile.checkRuleValid(rule);
+
     std::ofstream output_file(path);
     removeRule(profile, rule, output_file);
     output_file.close();
 }
 
-void AppArmor::Parser::removeRule(Profile &profile, RuleNode &rule, std::ostream &output)
+template<AppArmor::RuleDerived RuleType>
+void AppArmor::Parser::removeRule(Profile &profile, RuleType &rule, std::ostream &output)
 {
     checkProfileValid(profile);
     profile.checkRuleValid(rule);
@@ -165,3 +171,13 @@ void AppArmor::Parser::editRule(Profile &profile,
     output << file_contents;
     update_from_file_contents();
 }
+
+template void AppArmor::Parser::removeRule<AppArmor::Tree::FileRule>(Profile &profile, AppArmor::Tree::FileRule &rule);
+template void AppArmor::Parser::removeRule<AppArmor::Tree::LinkRule>(Profile &profile, AppArmor::Tree::LinkRule &rule);
+template void AppArmor::Parser::removeRule<AppArmor::Tree::RuleList>(Profile &profile, AppArmor::Tree::RuleList &rule);
+template void AppArmor::Parser::removeRule<AppArmor::Tree::AbstractionRule>(Profile &profile, AppArmor::Tree::AbstractionRule &rule);
+
+template void AppArmor::Parser::removeRule<AppArmor::Tree::FileRule>(Profile &profile, AppArmor::Tree::FileRule &rule, std::ostream &output);
+template void AppArmor::Parser::removeRule<AppArmor::Tree::LinkRule>(Profile &profile, AppArmor::Tree::LinkRule &rule, std::ostream &output);
+template void AppArmor::Parser::removeRule<AppArmor::Tree::RuleList>(Profile &profile, AppArmor::Tree::RuleList &rule, std::ostream &output);
+template void AppArmor::Parser::removeRule<AppArmor::Tree::AbstractionRule>(Profile &profile, AppArmor::Tree::AbstractionRule &rule, std::ostream &output);

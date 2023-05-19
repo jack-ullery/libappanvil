@@ -38,7 +38,6 @@ namespace AppArmor::Tree {
 
       // Checks whether a given RuleNode is in the profile_model
       // Throws an exception if it is not
-      void checkRuleValid(const RuleNode &file_rule) const;
       void checkRuleValid(const FileRule &file_rule) const;
       void checkRuleValid(const LinkRule &rule) const;
       void checkRuleValid(const RuleList &rule) const;
@@ -57,9 +56,6 @@ namespace AppArmor::Tree {
                                   const std::list<T> &list,
                                   const std::string &class_name,
                                   const std::string &obj_name) const;
-
-      template<class T>
-      inline bool tryCheckRuleValid(const RuleNode &rule) const;
   };
 } // namespace AppArmor::Tree
 

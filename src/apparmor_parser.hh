@@ -1,6 +1,7 @@
 #ifndef APPARMOR_PARSER_HH
 #define APPARMOR_PARSER_HH
 
+#include <algorithm>
 #include <fstream>
 #include <list>
 #include <ostream>
@@ -18,14 +19,22 @@ namespace AppArmor {
   using FileRule = Tree::FileRule;
   using RuleNode = Tree::RuleNode;
 
+  // Concept checks whether class is a subclass of RuleNode
+  // Does not match RuleNode
+  template<class RuleType>
+  concept RuleDerived = std::is_base_of<RuleNode, RuleType>::value && !std::is_base_of<RuleType, RuleNode>::value;
+
   class Parser {
     public:
       explicit Parser(const std::string &path);
 
       std::list<Profile> getProfileList() const;
 
-      void removeRule(Profile &profile, RuleNode &rule);
-      void removeRule(Profile &profile, RuleNode &rule, std::ostream &output);
+      template<RuleDerived RuleType>
+      void removeRule(Profile &profile, RuleType &rule);
+
+      template<RuleDerived RuleType>
+      void removeRule(Profile &profile, RuleType &rule, std::ostream &output);
 
       void addRule(Profile &profile, const std::string &fileglob, const std::string &filemode);
       void addRule(Profile &profile, const std::string &fileglob, const std::string &filemode, std::ostream &output);
