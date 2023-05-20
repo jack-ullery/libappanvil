@@ -73,7 +73,7 @@ inline void AppArmor::Tree::ProfileRule::checkRuleInList(const T &obj,
 void AppArmor::Tree::ProfileRule::checkRuleValid(const FileRule &file_rule) const
 {
   const auto &list = rules.getFileRules();
-  checkRuleInList(file_rule, list, "AppArmor::Tree::FileRule", file_rule.getFilemode());
+  checkRuleInList(file_rule, list, "AppArmor::Tree::FileRule", file_rule.getFilename());
 }
 
 void AppArmor::Tree::ProfileRule::checkRuleValid(const LinkRule &rule) const
