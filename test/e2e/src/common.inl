@@ -43,7 +43,7 @@ namespace Common {
       EXPECT_EQ(profile.name(), profile_name) << "No profile name matched";
 
       auto file_rules = profile.getFileRules();
-      checkRuleListsEqual(file_rules, expected_file_rules);
+      checkRuleListsEqual(expected_file_rules, file_rules);
   }
 
   // Calls 'check_file_rules_for_profile()' on two parsers, checking that they both have the same expected file_rules
