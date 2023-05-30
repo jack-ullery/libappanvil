@@ -145,28 +145,36 @@ struct var_string {
 	char *suffix;
 };
 
-#define COD_READ_CHAR 		'r'
-#define COD_WRITE_CHAR 		'w'
-#define COD_APPEND_CHAR		'a'
-#define COD_EXEC_CHAR 		'x'
-#define COD_LINK_CHAR 		'l'
-#define COD_LOCK_CHAR		'k'
-#define COD_MMAP_CHAR		'm'
-#define COD_INHERIT_CHAR 	'i'
-#define COD_UNCONFINED_CHAR	'U'
-#define COD_UNSAFE_UNCONFINED_CHAR	'u'
-#define COD_PROFILE_CHAR	'P'
-#define COD_UNSAFE_PROFILE_CHAR	'p'
-#define COD_LOCAL_CHAR		'C'
-#define COD_UNSAFE_LOCAL_CHAR	'c'
+enum ProfileMode {
+  PROFILE_MODE_EMPTY,
+  PROFILE_MODE_START,
+  PROFILE_MODE_HAT,
+};
 
-#define OPTION_ADD      1
-#define OPTION_REMOVE   2
-#define OPTION_REPLACE  3
-#define OPTION_STDOUT	4
-#define OPTION_OFILE	5
+enum COD {
+  COD_READ_CHAR              = 'r',
+  COD_WRITE_CHAR             = 'w',
+  COD_APPEND_CHAR            = 'a',
+  COD_EXEC_CHAR              = 'x',
+  COD_LINK_CHAR              = 'l',
+  COD_LOCK_CHAR              = 'k',
+  COD_MMAP_CHAR              = 'm',
+  COD_INHERIT_CHAR           = 'i',
+  COD_UNCONFINED_CHAR        = 'U',
+  COD_UNSAFE_UNCONFINED_CHAR = 'u',
+  COD_PROFILE_CHAR           = 'P',
+  COD_UNSAFE_PROFILE_CHAR    = 'p',
+  COD_LOCAL_CHAR             = 'C',
+  COD_UNSAFE_LOCAL_CHAR      = 'c',
+};
 
-#define BOOL int
+enum Option {
+  OPTION_ADD     = 1,
+  OPTION_REMOVE  = 2,
+  OPTION_REPLACE = 3,
+  OPTION_STDOUT  = 4,
+  OPTION_OFILE   = 5,
+};
 
 #define PATH_CHROOT_REL 0x1
 #define PATH_NS_REL 0x2
@@ -177,7 +185,11 @@ struct var_string {
 #define PATH_ATTACH 0x40
 #define PATH_NO_ATTACH 0x80
 
-
+enum ExecMode {
+  EXEC_MODE_EMPTY = 0,
+  EXEC_MODE_UNSAFE = 1,
+  EXEC_MODE_SAFE = 2
+};
 
 #ifdef DEBUG
 #define PDEBUG(fmt, args...)				\
