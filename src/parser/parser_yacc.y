@@ -249,15 +249,15 @@ tree: preamble profilelist {
 profilelist:					 { $$ = std::make_shared<std::list<ProfileRule>>(); }
 		   | profilelist profile { $$ = $1; $$->push_back($2); }
 
-opt_profile_flag:
-				| TOK_PROFILE
-				| hat_start
+opt_profile_flag:				{ $$ = PROFILE_MODE_EMPTY; }
+				| TOK_PROFILE	{ $$ = PROFILE_MODE_START; }
+				| hat_start		{ $$ = PROFILE_MODE_HAT; }
 
-opt_id:
-	  | TOK_ID
+opt_id:			{ $$ = ""; }
+	  | TOK_ID	{ $$ = $1; }
 
-opt_id_or_var:
-			 | id_or_var
+opt_id_or_var:				{ $$ = ""; }
+			 | id_or_var	{ $$ = $1; }
 
 // Should eventually add optional stuff into 
 profile_base: TOK_ID opt_id_or_var opt_cond_list flags TOK_OPEN rules TOK_CLOSE {
@@ -290,8 +290,13 @@ varassign: TOK_SET_VAR TOK_EQUALS valuelist
 valuelist: TOK_VALUE
 		 | valuelist TOK_VALUE
 
-opt_flags:
-	| TOK_CONDID TOK_EQUALS
+opt_flags:					{ $$ = false; }
+	| TOK_CONDID TOK_EQUALS	{ 
+							  if($1 != "flags") {
+								yyerror("expected flags= got %s=", $1.c_str());
+							  }
+							  $$ = true;
+							}
 
 flags:
 	 | opt_flags TOK_OPENPAREN flagvals TOK_CLOSEPAREN
@@ -351,10 +356,10 @@ expr:	TOK_NOT expr
 id_or_var: TOK_ID		{$$ = $1;}
 		 | TOK_SET_VAR	{$$ = $1;}
 
-opt_target: /* nothing */
-		  | TOK_ARROW id_or_var
+opt_target: /* nothing */		{ $$ = ""; }
+		  | TOK_ARROW id_or_var	{ $$ = $2; }
 
-opt_named_transition:						{$$ = "";}
+opt_named_transition: /* nothing */			{$$ = "";}
 					| TOK_ARROW id_or_var	{$$ = $2;}
 
 abi_rule: TOK_ABI TOK_ID 	TOK_END_OF_RULE	{$$ = TreeNode($2);}
@@ -365,12 +370,12 @@ abstraction: TOK_INCLUDE		   TOK_ID 	 {$$ = AbstractionRule(@1.first_pos, @2.las
 		   | TOK_INCLUDE_IF_EXISTS TOK_ID 	 {$$ = AbstractionRule(@1.first_pos, @2.last_pos, $2, true);}
 		   | TOK_INCLUDE_IF_EXISTS TOK_VALUE {$$ = AbstractionRule(@1.first_pos, @2.last_pos, $2, true);}
 
-opt_exec_mode:
-			 | TOK_UNSAFE
-			 | TOK_SAFE
+opt_exec_mode:				{ $$ = EXEC_MODE_EMPTY; }
+			 | TOK_UNSAFE	{ $$ = EXEC_MODE_UNSAFE; }
+			 | TOK_SAFE		{ $$ = EXEC_MODE_SAFE; }
 
-opt_file:
-		| TOK_FILE
+opt_file:			{ $$ = 0; }
+		| TOK_FILE  { $$ = 1; }
 
 // Should utilize the deleted get_mode() from parser.h instead of yylval mode
 frule: id_or_var file_mode opt_named_transition TOK_END_OF_RULE					{$$ = FileRule(@1.first_pos, @4.last_pos, $1, $2, $3);}
