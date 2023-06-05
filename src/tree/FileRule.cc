@@ -8,12 +8,12 @@ AppArmor::Tree::FileRule::FileRule(uint64_t startPos, uint64_t stopPos)
     isSubset{false}
 {   }
 
-AppArmor::Tree::FileRule::FileRule(uint64_t startPos, 
-                   uint64_t stopPos, 
-                   const std::string &filename, 
-                   const std::string &fileMode, 
-                   const std::string &exec_target, 
-                   bool isSubset)
+AppArmor::Tree::FileRule::FileRule(uint64_t startPos,
+                                   uint64_t stopPos,
+                                   const std::string &filename,
+                                   const FileMode &fileMode,
+                                   const std::string &exec_target,
+                                   bool isSubset)
   : RuleNode("file", startPos, stopPos),
     isSubset{isSubset},
     filename{filename},
@@ -21,12 +21,25 @@ AppArmor::Tree::FileRule::FileRule(uint64_t startPos,
     fileMode{fileMode}
 {   }
 
+AppArmor::Tree::FileRule::FileRule(uint64_t startPos,
+                                   uint64_t stopPos,
+                                   const std::string &filename,
+                                   const std::string &fileMode,
+                                   const std::string &exec_target,
+                                   bool isSubset)
+  : RuleNode("file", startPos, stopPos),
+    isSubset{isSubset},
+    filename{filename},
+    exec_target{exec_target},
+    fileMode(fileMode)
+{   }
+
 std::string AppArmor::Tree::FileRule::getFilename() const
 {
   return filename;
 }
 
-std::string AppArmor::Tree::FileRule::getFilemode() const
+AppArmor::Tree::FileMode AppArmor::Tree::FileRule::getFilemode() const
 {
   return fileMode;
 }

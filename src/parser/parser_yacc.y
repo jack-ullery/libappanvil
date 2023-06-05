@@ -166,6 +166,7 @@ while (0)
   #include "tree/ProfileRule.hh"
   #include "tree/PrefixNode.hh"
   #include "tree/RuleList.hh"
+  #include "tree/FileMode.hh"
   #include "tree/RuleNode.hh"
   #include "tree/TreeNode.hh"
 
@@ -231,7 +232,7 @@ while (0)
 %type <bool> opt_exec_mode
 %type <bool> opt_file
 
-%type <std::string> file_mode
+%type <FileMode> file_mode
 %type <std::string>	id_or_var
 %type <std::string>	opt_id_or_var
 %type <std::string>	opt_id
@@ -509,7 +510,14 @@ userns_rule: TOK_USERNS opt_userns_perm opt_conds TOK_END_OF_RULE
 hat_start: TOK_CARET
 		 | TOK_HAT
 
-file_mode: TOK_MODE
+file_mode: TOK_MODE {
+		try {
+			$$ = FileMode($1);
+		} catch(const std::exception &ex) {
+			std::cerr << ex.what() << std::endl;
+			yy::parser::error(@1, ex.what());
+		}
+	}
 
 change_profile: TOK_CHANGE_PROFILE opt_exec_mode opt_id opt_named_transition TOK_END_OF_RULE
 
