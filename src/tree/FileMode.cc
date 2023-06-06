@@ -61,6 +61,41 @@ AppArmor::Tree::FileMode::FileMode(const std::string &mode)
   }
 }
 
+bool AppArmor::Tree::FileMode::getRead() const
+{
+  return read;
+}
+
+bool AppArmor::Tree::FileMode::getWrite() const
+{
+  return write;
+}
+
+bool AppArmor::Tree::FileMode::getAppend() const
+{
+  return append;
+}
+
+bool AppArmor::Tree::FileMode::getMemoryMap() const
+{
+  return memory_map;
+}
+
+bool AppArmor::Tree::FileMode::getLink() const
+{
+  return link;
+}
+
+bool AppArmor::Tree::FileMode::getLock() const
+{
+  return lock;
+}
+
+std::string AppArmor::Tree::FileMode::getExecuteMode() const
+{
+  return execute_mode;
+}
+
 bool AppArmor::Tree::FileMode::operator==(const FileMode &other) const
 {
   return read == other.read &&

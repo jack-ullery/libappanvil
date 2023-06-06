@@ -10,13 +10,13 @@ namespace AppArmor::Tree {
       FileMode() = default;
       explicit FileMode(const std::string &mode);
 
-      // enum ExecuteMode {
-      //   None,
-      //   Unconfined_Execute,
-      //   Profile_Execute,
-      //   Local_Subprofile_Execute,
-      //   InheritExecute,
-      // };
+      bool getRead() const;
+      bool getWrite() const;
+      bool getAppend() const;
+      bool getMemoryMap() const;
+      bool getLink() const;
+      bool getLock() const;
+      std::string getExecuteMode() const;
 
       bool operator==(const FileMode &other) const;
 
