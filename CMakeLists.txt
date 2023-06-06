@@ -49,6 +49,7 @@ set(OUTPUT_TREE_HEADERS
   ${PROJECT_SOURCE_DIR}/tree/FileRule.hh
   ${PROJECT_SOURCE_DIR}/tree/LinkRule.hh
   ${PROJECT_SOURCE_DIR}/tree/AbstractionRule.hh
+  ${PROJECT_SOURCE_DIR}/tree/FileMode.hh
   ${PROJECT_SOURCE_DIR}/tree/RuleList.hh
 )
 
