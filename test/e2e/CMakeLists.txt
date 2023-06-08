@@ -9,6 +9,7 @@ set(TEST_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/remove_function.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/src/add_function.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/src/edit_function.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/file_mode.cc
 )
 
 #### Check that gtest is installed ####
