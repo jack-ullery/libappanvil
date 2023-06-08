@@ -16,10 +16,18 @@ AppArmor::Tree::FileMode::FileMode(const std::string &mode)
         break;
 
       case COD_WRITE_CHAR:
+        if(append) {
+          throw std::runtime_error("Both write and append permissions granted to same file_rule, which is not allowed.");
+        }
+
         write = true;
         break;
 
       case COD_APPEND_CHAR:
+        if(write) {
+          throw std::runtime_error("Both write and append permissions granted to same file_rule, which is not allowed.");
+        }
+
         append = true;
         break;
 
