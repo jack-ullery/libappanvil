@@ -137,3 +137,8 @@ std::string AppArmor::Tree::FileMode::buildString(bool read, bool write, bool ap
 
   return ss.str();
 }
+
+AppArmor::Tree::FileMode::operator std::string() const
+{
+  return buildString(read, write, append, memory_map, link, lock, execute_mode);
+}
