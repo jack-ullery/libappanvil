@@ -7,6 +7,10 @@
 #include <stdexcept>
 #include <sstream>
 
+AppArmor::Tree::FileMode::FileMode(bool read, bool write, bool append, bool memory_map, bool link, bool lock, const std::string &execute_mode)
+  : AppArmor::Tree::FileMode::FileMode(buildString(read, write, append, memory_map, link, lock, execute_mode))
+{ }
+
 AppArmor::Tree::FileMode::FileMode(const std::string &mode)
 {
   std::stringstream potential_execute_mode;
@@ -110,4 +114,26 @@ bool AppArmor::Tree::FileMode::operator==(const FileMode &other) const
          link == other.link &&
          lock == other.lock &&
          execute_mode == other.execute_mode;
+}
+
+// Append a character to a stringstream if the boolean is true
+inline void conditionalAppend(std::stringstream &ss, bool value, char ch)
+{
+  if(value) {
+    ss << ch;
+  }
+}
+
+std::string AppArmor::Tree::FileMode::buildString(bool read, bool write, bool append, bool memory_map, bool link, bool lock, const std::string &execute_mode)
+{
+  std::stringstream ss;
+  conditionalAppend(ss, read, COD_READ_CHAR);
+  conditionalAppend(ss, write, COD_WRITE_CHAR);
+  conditionalAppend(ss, append, COD_APPEND_CHAR);
+  conditionalAppend(ss, memory_map, COD_MMAP_CHAR);
+  conditionalAppend(ss, link, COD_LINK_CHAR);
+  conditionalAppend(ss, lock, COD_LOCK_CHAR);
+  ss << execute_mode;
+
+  return ss.str();
 }

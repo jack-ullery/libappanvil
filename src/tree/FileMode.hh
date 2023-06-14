@@ -9,6 +9,7 @@ namespace AppArmor::Tree {
     public:
       FileMode() = default;
       explicit FileMode(const std::string &mode);
+      FileMode(bool read, bool write, bool append, bool memory_map, bool link, bool lock, const std::string &execute_mode);
 
       bool getRead() const;
       bool getWrite() const;
@@ -19,6 +20,10 @@ namespace AppArmor::Tree {
       std::string getExecuteMode() const;
 
       bool operator==(const FileMode &other) const;
+      explicit operator std::string() const;
+
+    protected:
+      static std::string buildString(bool read, bool write, bool append, bool memory_map, bool link, bool lock, const std::string &execute_mode);
 
     private:
       bool read = false;

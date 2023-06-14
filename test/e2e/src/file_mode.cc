@@ -30,6 +30,18 @@ namespace FileModeCheck {
     ASSERT_EQ(file_mode.getExecuteMode(), exec_mode);
   }
 
+  inline void construct_and_check_permissions(bool expect_read = false,
+                                              bool expect_write = false,
+                                              bool expect_append = false,
+                                              bool expect_mmap = false,
+                                              bool expect_link = false,
+                                              bool expect_lock = false,
+                                              const std::string exec_mode = "")
+  {
+    AppArmor::Tree::FileMode file_mode(expect_read, expect_write, expect_append, expect_mmap, expect_link, expect_lock, exec_mode);
+    check_permissions(file_mode, expect_read, expect_write, expect_append, expect_mmap, expect_link, expect_lock, exec_mode);
+  }
+
   TEST(FileModeCheck, read)
   {
     AppArmor::Tree::FileMode file_mode("r");
@@ -175,6 +187,131 @@ namespace FileModeCheck {
     const std::string execute_mode = "Cux";
     AppArmor::Tree::FileMode file_mode(execute_mode);
     check_permissions(file_mode, false, false, false, false, false, false, execute_mode);
+  }
+
+  TEST(FileModeCheck, read_2)
+  {
+    construct_and_check_permissions(true);
+  }
+
+  TEST(FileModeCheck, write_2)
+  {
+    construct_and_check_permissions(false, true);
+  }
+
+  TEST(FileModeCheck, append_2)
+  {
+    construct_and_check_permissions(false, false, true);
+  }
+
+  TEST(FileModeCheck, mmap_2)
+  {
+    construct_and_check_permissions(false, false, false, true);
+  }
+
+  TEST(FileModeCheck, link_2)
+  {
+    construct_and_check_permissions(false, false, false, false, true);
+  }
+
+  TEST(FileModeCheck, lock_2)
+  {
+    construct_and_check_permissions(false, false, false, false, false, true);
+  }
+
+  TEST(FileModeCheck, write_append_conflict_2)
+  {
+    EXPECT_ANY_THROW(AppArmor::Tree::FileMode(false, true, true, false, false, false, ""));
+  }
+
+  TEST(FileModeCheck, unconfined_execute_2)
+  {
+    const std::string execute_mode = "ux";
+    construct_and_check_permissions(false, false, false, false, false, false, execute_mode);
+  }
+
+  TEST(FileModeCheck, unconfined_execute_scrub_2)
+  {
+    const std::string execute_mode = "Ux";
+    construct_and_check_permissions(false, false, false, false, false, false, execute_mode);
+  }
+
+  TEST(FileModeCheck, discrete_profile_execute_2)
+  {
+    const std::string execute_mode = "px";
+    construct_and_check_permissions(false, false, false, false, false, false, execute_mode);
+  }
+
+  TEST(FileModeCheck, discrete_profile_execute_scrub_2)
+  {
+    const std::string execute_mode = "Px";
+    construct_and_check_permissions(false, false, false, false, false, false, execute_mode);
+  }
+
+  TEST(FileModeCheck, subprofile_execute_2)
+  {
+    const std::string execute_mode = "cx";
+    construct_and_check_permissions(false, false, false, false, false, false, execute_mode);
+  }
+
+  TEST(FileModeCheck, subprofile_execute_scrub_2)
+  {
+    const std::string execute_mode = "Cx";
+    construct_and_check_permissions(false, false, false, false, false, false, execute_mode);
+  }
+
+  TEST(FileModeCheck, inherit_execute_2)
+  {
+    const std::string execute_mode = "ix";
+    construct_and_check_permissions(false, false, false, false, false, false, execute_mode);
+  }
+
+  TEST(FileModeCheck, discrete_profile_execute_inherit_fallback_2)
+  {
+    const std::string execute_mode = "pix";
+    construct_and_check_permissions(false, false, false, false, false, false, execute_mode);
+  }
+
+  TEST(FileModeCheck, discrete_profile_execute_scrub_inherit_fallback_2)
+  {
+    const std::string execute_mode = "Pix";
+    construct_and_check_permissions(false, false, false, false, false, false, execute_mode);
+  }
+
+  TEST(FileModeCheck, subprofile_execute_inherit_fallback_2)
+  {
+    const std::string execute_mode = "cix";
+    construct_and_check_permissions(false, false, false, false, false, false, execute_mode);
+  }
+
+  TEST(FileModeCheck, subprofile_execute_scrub_inherit_fallback_2)
+  {
+    const std::string execute_mode = "Cix";
+    construct_and_check_permissions(false, false, false, false, false, false, execute_mode);
+  }
+
+  TEST(FileModeCheck, discrete_profile_execute_unconfined_fallback_2)
+  {
+    const std::string execute_mode = "pux";
+    construct_and_check_permissions(false, false, false, false, false, false, execute_mode);
+  }
+
+  TEST(FileModeCheck, discrete_profile_execute_scrub_unconfined_fallback_2)
+  {
+    const std::string execute_mode = "Pux";
+    construct_and_check_permissions(false, false, false, false, false, false, execute_mode);
+  }
+
+  TEST(FileModeCheck, subprofile_execute_unconfined_fallback_2)
+  {
+    const std::string execute_mode = "cux";
+    construct_and_check_permissions(false, false, false, false, false, false, execute_mode);
+  }
+
+  TEST(FileModeCheck, subprofile_execute_scrub_unconfined_fallback_2)
+  {
+    const std::string execute_mode = "Cux";
+    construct_and_check_permissions(false, false, false, false, false, false, execute_mode);
   }
 
 } // namespace FileModeCheck
