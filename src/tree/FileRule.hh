@@ -26,8 +26,11 @@ namespace AppArmor::Tree {
                const std::string &exec_target = "", 
                bool isSubset = false);
 
+      // Accessor Methods
       std::string getFilename() const;
       FileMode getFilemode() const;
+      bool getIsSubset() const;
+      std::string getExecTarget() const;
 
       // Checks all private memebrs are equal, including members of superclass (RuleNode)
       bool operator==(const FileRule &other) const;

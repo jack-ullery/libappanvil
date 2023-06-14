@@ -44,6 +44,16 @@ AppArmor::Tree::FileMode AppArmor::Tree::FileRule::getFilemode() const
   return fileMode;
 }
 
+bool AppArmor::Tree::FileRule::getIsSubset() const
+{
+  return isSubset;
+}
+
+std::string AppArmor::Tree::FileRule::getExecTarget() const
+{
+  return exec_target;
+}
+
 bool AppArmor::Tree::FileRule::operator==(const FileRule &other) const
 {
   // Check that all the member fields are equal
