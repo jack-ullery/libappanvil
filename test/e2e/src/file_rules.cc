@@ -111,4 +111,14 @@ namespace FileRuleCheck {
 
     check_file_rules_for_single_profile(filename, expected_file_rules, "test");
   }
+
+  TEST(FileRuleCheck, file_stacking_ok_1)
+  {
+    auto filename = PROFILE_SOURCE_DIR "/file/stacking_ok_1.sd";
+    std::list<AppArmor::Tree::FileRule> expected_file_rules;
+
+    emplace_back(expected_file_rules, "/bin/bar", "px", "&baz");
+
+    check_file_rules_for_single_profile(filename, expected_file_rules, "/usr/bin/foo");
+  }
 }

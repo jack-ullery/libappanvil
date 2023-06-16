@@ -58,18 +58,26 @@ namespace Common {
 
   // Creates a AppArmor::Tree::FileRule at the front of the list
   [[maybe_unused]]
-  static void emplace_front(std::list<AppArmor::Tree::FileRule> &list, const std::string &filename, const std::string &filemode)
+  static void emplace_front(std::list<AppArmor::Tree::FileRule> &list,
+                            const std::string &filename,
+                            const std::string &filemode,
+                            std::string optional_exec_mode = "",
+                            bool is_subset = false)
   {
-      AppArmor::Tree::FileRule rule(0, 1, filename, filemode);
-      list.emplace_front(rule);
+    AppArmor::Tree::FileRule rule(0, 1, filename, filemode, optional_exec_mode, is_subset);
+    list.emplace_front(rule);
   }
 
   // Creates a AppArmor::Tree::FileRule at the back of the list
   [[maybe_unused]]
-  static void emplace_back(std::list<AppArmor::Tree::FileRule> &list, const std::string &filename, const std::string &filemode)
+  static void emplace_back(std::list<AppArmor::Tree::FileRule> &list,
+                           const std::string &filename,
+                           const std::string &filemode,
+                           std::string optional_exec_mode = "",
+                           bool is_subset = false)
   {
-      AppArmor::Tree::FileRule rule(0, 1, filename, filemode);
-      list.emplace_back(rule);
+    AppArmor::Tree::FileRule rule(0, 1, filename, filemode, optional_exec_mode, is_subset);
+    list.emplace_back(rule);
   }
 } // namespace Common
 

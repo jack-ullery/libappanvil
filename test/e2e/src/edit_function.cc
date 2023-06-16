@@ -38,10 +38,10 @@ inline void EditFunctionCheck::edit_file_rule_in_profile(AppArmor::Parser &parse
 
     // Add rule to expected rules
     if(first_rule) {
-        emplace_front(expected_file_rules, fileglob, filemode);
+        expected_file_rules.emplace_front(new_rule);
     }
     else {
-        emplace_back(expected_file_rules, fileglob, filemode);
+        expected_file_rules.emplace_back(new_rule);
     }
 }
 

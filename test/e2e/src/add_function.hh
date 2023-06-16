@@ -28,7 +28,9 @@ protected:
                                              const std::string &fileglob,
                                              const std::string &filemode,
                                              std::list<AppArmor::Tree::FileRule> &expected_file_rules,
-                                             const bool &first_profile = true);
+                                             const bool &first_profile = true,
+                                             std::string optional_exec_mode = "",
+                                             bool is_subset = false);
 };
 
 #endif // ADD_FUNCTION_HH
