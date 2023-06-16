@@ -75,20 +75,16 @@ AppArmor::Tree::FileRule::operator std::string() const
   std::stringstream ss;
 
   if(!filename.empty()) {
-    // Add the filename (and a space)
-    ss << filename << ' ';
-
-    // Add the subset string if this rule had one
-    if(isSubset) {
-      ss << "<= ";
+    if(!isSubset) {
+      // Recreate the rule: using filename first, followed by permissions for non subset rule
+      ss << filename << ' ' << fileMode.operator std::string();
+    } else {
+      ss << fileMode.operator std::string() << " subset " << filename;
     }
-
-    // Add the access permissions
-    ss << fileMode.operator std::string();
 
     // If there was an exec_target, add it
     if(!exec_target.empty()) {
-      ss << "->" << exec_target;
+      ss << " -> " << exec_target;
     }
 
     // Closing comma
