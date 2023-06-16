@@ -128,7 +128,7 @@ void AppArmor::Parser::addRule(Profile &profile, const FileRule &newRule, std::o
     auto pos = profile.getRuleEndPosition();
 
     // Create and insert the rule (TODO: Fix possible invalid rules and injection of extra rules)
-    std::string addRule = "  " + newRule.operator std::string();
+    std::string addRule = "  " + newRule.operator std::string() + '\n';
     file_contents.insert(pos, addRule);
 
     // Push changes to 'output_file' and update changes
