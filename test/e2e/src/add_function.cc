@@ -5,8 +5,10 @@
 #include <memory>
 #include <unordered_set>
 
+#include "apparmor_parser.hh"
 #include "common.inl"
 #include "add_function.hh"
+#include "tree/FileRule.hh"
 
 using Common::check_file_rules_for_profile;
 using Common::emplace_back;
@@ -22,8 +24,9 @@ inline void AddFunctionCheck::add_file_rule_to_profile(AppArmor::Parser &parser,
     auto prof = (first_profile)? profile_list.front() : profile_list.back();
 
     // Add file rule and push changes to temporary file
+    AppArmor::Tree::FileRule new_rule(0, 0, fileglob, filemode);
     std::ofstream temp_stream(temp_file);
-    EXPECT_NO_THROW(parser.addRule(prof, fileglob, filemode, temp_stream));
+    EXPECT_NO_THROW(parser.addRule(prof, new_rule, temp_stream));
     temp_stream.close();
 
     // Add rule to expected rules
@@ -163,7 +166,8 @@ TEST_F(AddFunctionCheck, test1_invalid_add) // NOLINT
     AppArmor::Tree::ProfileRule fake_prof;
 
     // Add file rule and push changes to temporary file
+    AppArmor::Tree::FileRule new_rule(0, 0, "/usr/bin/echo", "rwix");
     std::ofstream temp_stream(temp_file);
-    EXPECT_ANY_THROW(parser.addRule(fake_prof, "/usr/bin/echo", "rwix", temp_stream));
+    EXPECT_ANY_THROW(parser.addRule(fake_prof, new_rule, temp_stream));
     temp_stream.close();
 }

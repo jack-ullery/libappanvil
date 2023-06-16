@@ -31,8 +31,9 @@ inline void EditFunctionCheck::edit_file_rule_in_profile(AppArmor::Parser &parse
     auto frule = (first_rule)? rule_list.front() : rule_list.back();
 
     // Edit file rule and push changes to temporary file
+    AppArmor::Tree::FileRule new_rule(0, 1, fileglob, filemode);
     std::ofstream temp_stream(temp_file);
-    EXPECT_NO_THROW(parser.editRule(prof, frule, fileglob, filemode, temp_stream));
+    EXPECT_NO_THROW(parser.editRule(prof, frule, new_rule, temp_stream));
     temp_stream.close();
 
     // Add rule to expected rules
@@ -181,8 +182,9 @@ TEST_F(EditFunctionCheck, test1_invalid_edit) // NOLINT
     AppArmor::Tree::FileRule frule(0, 10, "/does/not/exist", "rw");
 
     // Attempt to edit file rule
+    AppArmor::Tree::FileRule new_rule(0, 1, "/usr/bin/echo", "rwx");
     std::ofstream temp_stream(temp_file);
-    EXPECT_ANY_THROW(parser.editRule(prof, frule, "/usr/bin/echo", "rwx", temp_stream));
+    EXPECT_ANY_THROW(parser.editRule(prof, frule, new_rule, temp_stream));
     temp_stream.close();
 }
 
@@ -204,8 +206,9 @@ TEST_F(EditFunctionCheck, test2_invalid_edit) // NOLINT
     auto frule = rule_list.front();
 
     // Attempt to edit file rule with the second profile
+    AppArmor::Tree::FileRule new_rule(0, 1, "/usr/bin/echo", "rwx");
     std::ofstream temp_stream(temp_file);
-    EXPECT_ANY_THROW(parser.editRule(back_prof, frule, "/usr/bin/echo", "rwx", temp_stream));
+    EXPECT_ANY_THROW(parser.editRule(back_prof, frule, new_rule, temp_stream));
     temp_stream.close();
 }
 
@@ -228,8 +231,9 @@ TEST_F(EditFunctionCheck, test3_invalid_edit) // NOLINT
     AppArmor::Tree::ProfileRule fake_prof;
 
     // Attempt to edit file rule
+    AppArmor::Tree::FileRule new_rule(0, 1, "/usr/bin/echo", "rwx");
     std::ofstream temp_stream(temp_file);
-    EXPECT_ANY_THROW(parser.editRule(fake_prof, frule, "/usr/bin/echo", "rwx", temp_stream));
+    EXPECT_ANY_THROW(parser.editRule(fake_prof, frule, new_rule, temp_stream));
     temp_stream.close();
 }
 
@@ -250,8 +254,9 @@ TEST_F(EditFunctionCheck, test4_invalid_edit) // NOLINT
     auto frule = rule_list.front();
 
     // Remove a rule from the first profile
+    AppArmor::Tree::FileRule new_rule(0, 1, "/usr/bin/echo", "r");
     std::ofstream temp(temp_file);
-    EXPECT_NO_THROW(parser.editRule(old_prof, frule, "/usr/bin/echo", "r", temp));
+    EXPECT_NO_THROW(parser.editRule(old_prof, frule, new_rule, temp));
     temp.close();
 
     AppArmor::Parser new_parser(temp_file);
@@ -261,7 +266,8 @@ TEST_F(EditFunctionCheck, test4_invalid_edit) // NOLINT
     auto new_prof = new_profile_list.front();
 
     // Attempt to remove old file rule from new parser
+    AppArmor::Tree::FileRule new_rule_2(0, 1, "/usr/bin/echo", "rwx");
     std::ofstream temp_stream(temp_file);
-    EXPECT_ANY_THROW(new_parser.editRule(new_prof, frule, "/usr/bin/echo", "rwx", temp_stream));
+    EXPECT_ANY_THROW(new_parser.editRule(new_prof, frule, new_rule_2, temp_stream));
     temp_stream.close();
 }

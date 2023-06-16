@@ -69,3 +69,31 @@ bool AppArmor::Tree::FileRule::almostEquals(const FileRule &other) const
          this->exec_target == other.exec_target &&
          this->fileMode == other.fileMode;
 }
+
+AppArmor::Tree::FileRule::operator std::string() const
+{
+  std::stringstream ss;
+
+  if(!filename.empty()) {
+    // Add the filename (and a space)
+    ss << filename << ' ';
+
+    // Add the subset string if this rule had one
+    if(isSubset) {
+      ss << "<= ";
+    }
+
+    // Add the access permissions
+    ss << fileMode.operator std::string();
+
+    // If there was an exec_target, add it
+    if(!exec_target.empty()) {
+      ss << "->" << exec_target;
+    }
+
+    // Closing comma
+    ss << ',';
+  }
+
+  return ss.str();
+}

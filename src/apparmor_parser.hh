@@ -36,11 +36,11 @@ namespace AppArmor {
       template<RuleDerived RuleType>
       void removeRule(Profile &profile, RuleType &rule, std::ostream &output);
 
-      void addRule(Profile &profile, const std::string &fileglob, const std::string &filemode);
-      void addRule(Profile &profile, const std::string &fileglob, const std::string &filemode, std::ostream &output);
+      void addRule(Profile &profile, const FileRule &newRule);
+      void addRule(Profile &profile, const FileRule &newRule, std::ostream &output);
 
-      void editRule(Profile &profile, FileRule &oldRule, const std::string &fileglob, const std::string &filemode);
-      void editRule(Profile &profile, FileRule &oldRule, const std::string &fileglob, const std::string &filemode, std::ostream &output);
+      void editRule(Profile &profile, FileRule &oldRule, const FileRule &newRule);
+      void editRule(Profile &profile, FileRule &oldRule, const FileRule &newRule, std::ostream &output);
 
     private:
       void update_from_file_contents();

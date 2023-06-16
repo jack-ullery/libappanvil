@@ -38,6 +38,9 @@ namespace AppArmor::Tree {
       // Checks all private memebers are equal, not including members of superclass
       bool almostEquals(const FileRule &other) const;
 
+      // Conversion operator to string, attempts to write a string for a profile that would correspond to this FileRule
+      explicit operator std::string() const;
+
     private:
       bool isSubset = false;
       std::string filename;

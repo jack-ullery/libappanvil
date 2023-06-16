@@ -69,3 +69,8 @@ bool AppArmor::Tree::RuleNode::operator!=(const RuleNode &other) const
 {
   return !(*this == other);
 }
+
+AppArmor::Tree::PrefixNode AppArmor::Tree::RuleNode::getPrefix() const
+{
+  return prefix;
+}

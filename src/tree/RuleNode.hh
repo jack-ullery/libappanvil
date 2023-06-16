@@ -21,6 +21,7 @@ namespace AppArmor::Tree {
 
       uint64_t getStartPosition() const;
       uint64_t getEndPosition()  const;
+      PrefixNode getPrefix() const;
 
       virtual bool operator==(const RuleNode &other) const;
       virtual bool operator!=(const RuleNode &other) const;

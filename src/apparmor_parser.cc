@@ -113,14 +113,14 @@ void AppArmor::Parser::removeRule(Profile &profile, RuleType &rule, std::ostream
     update_from_file_contents();
 }
 
-void AppArmor::Parser::addRule(Profile &profile, const std::string &fileglob, const std::string &filemode)
+void AppArmor::Parser::addRule(Profile &profile, const FileRule &newRule)
 {
     std::ofstream output_file(path);
-    addRule(profile, fileglob, filemode, output_file);
+    addRule(profile, newRule, output_file);
     output_file.close();
 }
 
-void AppArmor::Parser::addRule(Profile &profile, const std::string &fileglob, const std::string &filemode, std::ostream &output)
+void AppArmor::Parser::addRule(Profile &profile, const FileRule &newRule, std::ostream &output)
 {
     checkProfileValid(profile);
 
@@ -128,7 +128,7 @@ void AppArmor::Parser::addRule(Profile &profile, const std::string &fileglob, co
     auto pos = profile.getRuleEndPosition();
 
     // Create and insert the rule (TODO: Fix possible invalid rules and injection of extra rules)
-    std::string addRule = "  " + fileglob + " " + filemode + ",\n";
+    std::string addRule = "  " + std::string(newRule);
     file_contents.insert(pos, addRule);
 
     // Push changes to 'output_file' and update changes
@@ -138,18 +138,16 @@ void AppArmor::Parser::addRule(Profile &profile, const std::string &fileglob, co
 
 void AppArmor::Parser::editRule(Profile &profile,
                                 FileRule &oldRule,
-                                const std::string &fileglob,
-                                const std::string &filemode)
+                                const FileRule &newRule)
 {
     std::ofstream output_file(path);
-    editRule(profile, oldRule, fileglob, filemode, output_file);
+    editRule(profile, oldRule, newRule, output_file);
     output_file.close();
 }
 
 void AppArmor::Parser::editRule(Profile &profile,
                                 FileRule &oldRule,
-                                const std::string &fileglob,
-                                const std::string &filemode,
+                                const FileRule &newRule,
                                 std::ostream &output)
 {
     checkProfileValid(profile);
@@ -164,7 +162,7 @@ void AppArmor::Parser::editRule(Profile &profile,
     file_contents.erase(start_pos, length);
 
     // Create and insert the new rule (TODO: Fix possible invalid rules and injection of extra rules)
-    std::string addRule = fileglob + " " + filemode + ",\n";
+    std::string addRule = "  " + std::string(newRule);
     file_contents.insert(start_pos, addRule);
 
     // Push changes to 'output_file' and update changes
