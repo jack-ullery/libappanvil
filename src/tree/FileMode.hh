@@ -19,6 +19,9 @@ namespace AppArmor::Tree {
       bool getLock() const;
       std::string getExecuteMode() const;
 
+      // Returns true if this does not grant any permission: read, write, append, ...
+      bool empty() const;
+
       bool operator==(const FileMode &other) const;
       explicit operator std::string() const;
 

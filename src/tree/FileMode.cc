@@ -105,6 +105,17 @@ std::string AppArmor::Tree::FileMode::getExecuteMode() const
   return execute_mode;
 }
 
+bool AppArmor::Tree::FileMode::empty() const
+{
+  return !read &&
+         !write &&
+         !append &&
+         !memory_map &&
+         !link &&
+         !lock &&
+         execute_mode.empty();
+}
+
 bool AppArmor::Tree::FileMode::operator==(const FileMode &other) const
 {
   return read == other.read &&

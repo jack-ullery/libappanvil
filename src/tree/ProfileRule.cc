@@ -74,6 +74,11 @@ void AppArmor::Tree::ProfileRule::checkRuleValid(const FileRule &file_rule) cons
 {
   const auto &list = rules.getFileRules();
   checkRuleInList(file_rule, list, "AppArmor::Tree::FileRule", file_rule.getFilename());
+
+  if(file_rule.getFilemode().empty()) {
+    std::stringstream message;
+    message << "Invalid FileRule \"" << file_rule.getFilename() << "\" was given as argument. This rule had an empty FileMode.";
+  }
 }
 
 void AppArmor::Tree::ProfileRule::checkRuleValid(const LinkRule &rule) const
