@@ -28,6 +28,9 @@ namespace AppArmor {
     public:
       explicit Parser(const std::string &path);
 
+      // Returns the path that was used to create the constructor
+      std::string getPath() const;
+
       std::list<Profile> getProfileList() const;
 
       template<RuleDerived RuleType>

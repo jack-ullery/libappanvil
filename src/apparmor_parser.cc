@@ -64,6 +64,11 @@ void AppArmor::Parser::initializeProfileList(const std::shared_ptr<AppArmor::Tre
     }
 }
 
+std::string AppArmor::Parser::getPath() const
+{
+    return path;
+}
+
 std::list<AppArmor::Profile> AppArmor::Parser::getProfileList() const
 {
     return profile_list;
