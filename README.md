@@ -56,7 +56,7 @@ sudo apt install clang cppcheck
 ### Prebuild
 If you want to run the tests, first you must load the example profiles from the main [apparmor](https://gitlab.com/apparmor/apparmor/-/tree/master/parser/tst/simple_tests) repository. These profiles are included in a submodule for convenience. We also disable a few irrelevant tests using a patch.
 ```
-git submodule update --init --recursive --ignore-submodule=none
+git submodule update --init --recursive --remote
 git -C modules/apparmor am ../disable_tests.patch
 ```
 
