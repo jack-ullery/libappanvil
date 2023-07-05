@@ -2,10 +2,9 @@
 #include "parser/parser.h"
 
 #include <cctype>
-#include <format>
 #include <iterator>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 
 AppArmor::Tree::FileMode::FileMode(bool read, bool write, bool append, bool memory_map, bool link, bool lock, const std::string &execute_mode)
   : AppArmor::Tree::FileMode::FileMode(buildString(read, write, append, memory_map, link, lock, execute_mode))
@@ -65,7 +64,9 @@ AppArmor::Tree::FileMode::FileMode(const std::string &mode)
         break;
 
       default:
-        throw std::runtime_error(std::format("Encountered unexpected character when parsing file mode: {}", ch));
+        std::stringstream message;
+        message << "Encountered unexpected character when parsing file mode: " << ch;
+        throw std::runtime_error(message.str());
     }
   }
 }
