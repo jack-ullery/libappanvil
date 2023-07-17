@@ -14,6 +14,7 @@ AppArmor::Tree::LinkRule::LinkRule(uint64_t startPos, uint64_t stopPos, bool isS
 AppArmor::Tree::LinkRule::operator std::string() const
 {
   std::stringstream stream;
+  stream << getPrefix().operator std::string();
   stream << "(" << getStartPosition() << ", " << getEndPosition() << "): ";
   stream << "link " << (isSubset? "subset " : "") << from << " -> " << to << "," << std::endl;;
   return stream.str();
