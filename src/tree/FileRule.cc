@@ -75,6 +75,9 @@ AppArmor::Tree::FileRule::operator std::string() const
   std::stringstream ss;
 
   if(!filename.empty()) {
+    // Add prefix to file rule
+    ss << getPrefix().operator std::string();
+
     if(!isSubset) {
       // Recreate the rule: using filename first, followed by permissions for non subset rule
       ss << filename << ' ' << fileMode.operator std::string();

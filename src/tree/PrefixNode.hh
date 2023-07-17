@@ -19,6 +19,9 @@ namespace AppArmor::Tree {
 
       bool operator==(const PrefixNode &other) const;
 
+      // Conversion operator to string, attempts to write a string for this prefix
+      explicit operator std::string() const;
+
     private:
       bool audit; 
       bool should_deny;
