@@ -175,6 +175,12 @@ void AppArmor::Parser::editRule(Profile &profile,
     update_from_file_contents();
 }
 
+AppArmor::Parser::operator std::string() const
+{
+    std::string return_string(file_contents);
+    return return_string;
+}
+
 template void AppArmor::Parser::removeRule<AppArmor::Tree::FileRule>(Profile &profile, AppArmor::Tree::FileRule &rule);
 template void AppArmor::Parser::removeRule<AppArmor::Tree::LinkRule>(Profile &profile, AppArmor::Tree::LinkRule &rule);
 template void AppArmor::Parser::removeRule<AppArmor::Tree::RuleList>(Profile &profile, AppArmor::Tree::RuleList &rule);
