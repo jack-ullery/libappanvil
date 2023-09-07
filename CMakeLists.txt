@@ -157,10 +157,10 @@ set(PKG_CONFIG_FILE_OUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libappanvil.pc")
 configure_file("${PKG_CONFIG_FILE_IN}" "${PKG_CONFIG_FILE_OUT}" @ONLY) 
 
 # Create target to install library
-install(TARGETS ${LIBRARY_NAME} DESTINATION lib64/)
+install(TARGETS ${LIBRARY_NAME} DESTINATION lib/)
 install(FILES ${OUTPUT_HEADERS} DESTINATION include/${INSTALL_NAME})
 install(FILES ${OUTPUT_TREE_HEADERS} DESTINATION include/${INSTALL_NAME}/tree/)
-install(FILES ${PKG_CONFIG_FILE_OUT} DESTINATION lib64/pkgconfig)
+install(FILES ${PKG_CONFIG_FILE_OUT} DESTINATION lib/pkgconfig)
 
 # Create uninstall target
 # Copied from: https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake

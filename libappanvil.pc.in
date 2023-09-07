@@ -1,6 +1,6 @@
 prefix="@CMAKE_INSTALL_PREFIX@"
 includedir=${prefix}/include/@INSTALL_NAME@
-libdir=${prefix}/lib64/
+libdir=${prefix}/lib/
 
 Name: @INSTALL_NAME@
 Description: A C++ library to read and modify AppArmor profiles.
