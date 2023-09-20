@@ -168,7 +168,7 @@ void AppArmor::Parser::editRule(Profile &profile,
     file_contents.erase(start_pos, length);
 
     // Create and insert the new rule (TODO: Fix possible invalid rules and injection of extra rules)
-    std::string addRule = "  " + newRule.operator std::string();
+    std::string addRule = newRule.operator std::string();
     file_contents.insert(start_pos, addRule);
 
     // Push changes to 'output_file' and update changes
