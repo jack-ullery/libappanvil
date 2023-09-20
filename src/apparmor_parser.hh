@@ -46,6 +46,13 @@ namespace AppArmor {
       void editRule(Profile &profile, FileRule &oldRule, const FileRule &newRule, std::ostream &output);
 
       /**
+      * @brief Returns whether this class has staged change to the AppArmor profile, which are not saved
+      *
+      * @returns boolean, true if there are unsaved changes to the AppArmor profile
+      */
+      bool hasChanges();
+
+      /**
       * @brief Save changes to AppArmor profile, loading them into the kernel
       *
       * @details
@@ -56,6 +63,8 @@ namespace AppArmor {
       * @returns int, the exit status of aa-replace. This should be zero if and only if there was no error.
       */
       int saveChanges();
+
+      void cancelChanges();
 
       // Converts class to std::string by returning the up-to-date raw file data, which this class represents
       explicit operator std::string() const;
@@ -71,6 +80,7 @@ namespace AppArmor {
 
       std::string path;
       std::string file_contents;
+      std::string old_file_contents;
 
       std::list<Profile> profile_list; 
   };

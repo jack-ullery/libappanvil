@@ -21,6 +21,7 @@ AppArmor::Parser::Parser(const std::string &path)
     std::stringstream ss;
     ss << stream.rdbuf();
     file_contents = ss.str();
+    old_file_contents = std::string(file_contents);
 
     // Seek back to beginning of file
     stream.seekg(0);
@@ -176,6 +177,11 @@ void AppArmor::Parser::editRule(Profile &profile,
     update_from_file_contents();
 }
 
+bool AppArmor::Parser::hasChanges()
+{
+    return file_contents != old_file_contents;
+}
+
 int AppArmor::Parser::saveChanges()
 {
   const std::vector<std::string> command = {"pkexec", "aa-replace", getPath(), file_contents};
@@ -196,11 +202,18 @@ int AppArmor::Parser::saveChanges()
 
   if(!exit_status) {
     std::cout << output;
+    old_file_contents = std::string(file_contents);
   } else {
     std::cerr << error;
   }
 
   return exit_status;
+}
+
+void AppArmor::Parser::cancelChanges()
+{
+    file_contents = std::string(old_file_contents);
+    update_from_file_contents();
 }
 
 AppArmor::Parser::operator std::string() const
