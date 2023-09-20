@@ -174,6 +174,9 @@ if(NOT TARGET uninstall)
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake)
 endif()
 
+#### Create aa-replace executable ####
+add_subdirectory(aa-replace)
+
 #### Create the test executable ####
 enable_testing()
 add_subdirectory(test)
