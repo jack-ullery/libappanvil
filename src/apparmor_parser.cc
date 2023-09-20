@@ -97,9 +97,8 @@ void AppArmor::Parser::removeRule(Profile &profile, RuleType &rule)
     checkProfileValid(profile);
     profile.checkRuleValid(rule);
 
-    std::ofstream output_file(path);
-    removeRule(profile, rule, output_file);
-    output_file.close();
+    std::stringstream output;
+    removeRule(profile, rule, output);
 }
 
 template<AppArmor::RuleDerived RuleType>
@@ -115,16 +114,15 @@ void AppArmor::Parser::removeRule(Profile &profile, RuleType &rule, std::ostream
 
     file_contents.erase(start_pos, length);
 
-    // Push changes to 'output_file' and update changes
+    // Push changes to 'output' and update changes
     output << file_contents;
     update_from_file_contents();
 }
 
 void AppArmor::Parser::addRule(Profile &profile, const FileRule &newRule)
 {
-    std::ofstream output_file(path);
-    addRule(profile, newRule, output_file);
-    output_file.close();
+    std::stringstream output;
+    addRule(profile, newRule, output);
 }
 
 void AppArmor::Parser::addRule(Profile &profile, const FileRule &newRule, std::ostream &output)
@@ -138,7 +136,7 @@ void AppArmor::Parser::addRule(Profile &profile, const FileRule &newRule, std::o
     std::string addRule = "  " + newRule.operator std::string() + '\n';
     file_contents.insert(pos, addRule);
 
-    // Push changes to 'output_file' and update changes
+    // Push changes to 'output' and update changes
     output << file_contents;
     update_from_file_contents();
 }
@@ -147,9 +145,8 @@ void AppArmor::Parser::editRule(Profile &profile,
                                 FileRule &oldRule,
                                 const FileRule &newRule)
 {
-    std::ofstream output_file(path);
-    editRule(profile, oldRule, newRule, output_file);
-    output_file.close();
+    std::stringstream output;
+    editRule(profile, oldRule, newRule, output);
 }
 
 void AppArmor::Parser::editRule(Profile &profile,
@@ -172,7 +169,7 @@ void AppArmor::Parser::editRule(Profile &profile,
     std::string addRule = newRule.operator std::string();
     file_contents.insert(start_pos, addRule);
 
-    // Push changes to 'output_file' and update changes
+    // Push changes to 'output' and update changes
     output << file_contents;
     update_from_file_contents();
 }
