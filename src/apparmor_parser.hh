@@ -45,6 +45,16 @@ namespace AppArmor {
       void editRule(Profile &profile, FileRule &oldRule, const FileRule &newRule);
       void editRule(Profile &profile, FileRule &oldRule, const FileRule &newRule, std::ostream &output);
 
+      /**
+      * @brief Save changes to AppArmor profile, loading them into the kernel
+      *
+      * @details
+      * This method call 'pkexec aa-replace' to save and load profile changes to the kernel.
+      * aa-replace is a binary we created that does two things: it first overwrites a file with the current profile data,
+      * then it calls 'apparmor_parser -r' to replace the profile in the kernel.
+      *
+      * @returns int, the exit status of aa-replace. This should be zero if and only if there was no error.
+      */
       int saveChanges();
 
       // Converts class to std::string by returning the up-to-date raw file data, which this class represents
