@@ -178,7 +178,7 @@ void AppArmor::Parser::editRule(Profile &profile,
 
 int AppArmor::Parser::saveChanges()
 {
-  const std::vector<std::string> command = {"pkexec", "aa-replace", getPath(), };
+  const std::vector<std::string> command = {"pkexec", "aa-replace", getPath(), file_contents};
   std::vector<std::string> envp = { "PATH=/usr/bin:/usr/sbin:/usr/local/bin" };
 
   std::string output;
@@ -195,9 +195,9 @@ int AppArmor::Parser::saveChanges()
                    &exit_status);
 
   if(!exit_status) {
-    std::cout << output << std::endl;
+    std::cout << output;
   } else {
-    std::cerr << error << std::endl;
+    std::cerr << error;
   }
 
   return exit_status;
