@@ -6,6 +6,7 @@
 #include "tree/RuleNode.hh"
 
 #include <fstream>
+#include <glibmm/spawn.h>
 #include <memory>
 #include <parser_yacc.hh>
 #include <stdexcept>
@@ -173,6 +174,33 @@ void AppArmor::Parser::editRule(Profile &profile,
     // Push changes to 'output_file' and update changes
     output << file_contents;
     update_from_file_contents();
+}
+
+int AppArmor::Parser::saveChanges()
+{
+  const std::vector<std::string> command = {"pkexec", "aa-replace", getPath(), };
+  std::vector<std::string> envp = { "PATH=/usr/bin:/usr/sbin:/usr/local/bin" };
+
+  std::string output;
+  std::string error;
+  int exit_status;
+
+  Glib::spawn_sync("/usr/sbin/",
+                   command,
+                   envp,
+                   Glib::SpawnFlags::SPAWN_SEARCH_PATH_FROM_ENVP,
+                   {},
+                   &output,
+                   &error,
+                   &exit_status);
+
+  if(!exit_status) {
+    std::cout << output << std::endl;
+  } else {
+    std::cerr << error << std::endl;
+  }
+
+  return exit_status;
 }
 
 AppArmor::Parser::operator std::string() const

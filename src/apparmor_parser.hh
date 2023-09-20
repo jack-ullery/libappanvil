@@ -45,6 +45,8 @@ namespace AppArmor {
       void editRule(Profile &profile, FileRule &oldRule, const FileRule &newRule);
       void editRule(Profile &profile, FileRule &oldRule, const FileRule &newRule, std::ostream &output);
 
+      int saveChanges();
+
       // Converts class to std::string by returning the up-to-date raw file data, which this class represents
       explicit operator std::string() const;
 

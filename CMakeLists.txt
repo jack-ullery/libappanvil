@@ -71,6 +71,10 @@ FLEX_TARGET(LEXER
 
 ADD_FLEX_BISON_DEPENDENCY(LEXER PARSER)
 
+#### GLib (we use spawn_sync) ####
+find_package(PkgConfig)
+pkg_check_modules(GLIBMM glibmm-3.0)
+
 #### Linter and Static Analysis ####
 find_program(CLANG_TIDY NAMES clang-tidy)
 find_program(CPPCHECK NAMES cppcheck)
@@ -149,6 +153,9 @@ target_link_options(${LIBRARY_NAME} PUBLIC "-fPIE")
 target_include_directories(${LIBRARY_NAME} PUBLIC  ${PROJECT_SOURCE_DIR})
 target_include_directories(${LIBRARY_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/parser)
 target_include_directories(${LIBRARY_NAME} SYSTEM PRIVATE ${AUTOGEN_SOURCE_DIR})
+target_include_directories(${LIBRARY_NAME} SYSTEM PUBLIC ${GTKMM_INCLUDE_DIRS})
+
+target_link_libraries(${LIBRARY_NAME} PUBLIC ${GTKMM_LIBRARIES})
 
 # Pkg-config module (I couldn't figure out the configuration for find_package)
 set(INSTALL_NAME "lib${PROJECT_NAME}")
