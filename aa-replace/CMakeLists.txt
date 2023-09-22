@@ -10,7 +10,7 @@ set(
 #====================================
 
 find_package(PkgConfig)
-pkg_check_modules(GTKMM gtkmm-3.0)
+pkg_check_modules(GLIBMM glibmm-2.4 REQUIRED)
 
 #====================================
 
@@ -19,9 +19,9 @@ message(STATUS "Adding aa-replace to build")
 set(CALLER_LIBRARY_NAME ${PROJECT_NAME}_dev)
 add_library(${CALLER_LIBRARY_NAME} STATIC ${CALLER_SOURCES})
 
-target_include_directories(${CALLER_LIBRARY_NAME} SYSTEM PUBLIC ${GTKMM_INCLUDE_DIRS})
+target_include_directories(${CALLER_LIBRARY_NAME} SYSTEM PUBLIC ${GLIBMM_INCLUDE_DIRS})
 
-target_link_libraries(${CALLER_LIBRARY_NAME} PUBLIC ${GTKMM_LIBRARIES})
+target_link_libraries(${CALLER_LIBRARY_NAME} PUBLIC ${GLIBMM_LIBRARIES})
 target_link_libraries(${CALLER_LIBRARY_NAME} PUBLIC pthread)
 
 add_executable(${PROJECT_NAME} ./src/main.cc)
