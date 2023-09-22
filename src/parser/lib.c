@@ -21,11 +21,8 @@
 
 #include <ctype.h>
 #include <stdbool.h>
-#include <stdint.h>
 #include <string.h>
 
-#include <sys/stat.h>
-#include <sys/types.h>
 
 //NOLINTBEGIN
 /**
