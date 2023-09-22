@@ -22,21 +22,11 @@
 #ifndef __AA_PARSER_H
 #define __AA_PARSER_H
 
-#include <endian.h>
 #include <stdint.h>
-#include <string.h>
 #include <sys/resource.h>
 
 #include <libintl.h>
 #define _(s) gettext(s)
-
-#define MODULE_NAME "apparmor"
-
-/* Global variable to pass token to lexer.  Will be replaced by parameter
- * when lexer and parser are made reentrant
- */
-// extern int parser_token;
-
 
 #define WARN_RULE_NOT_ENFORCED	0x1
 #define WARN_RULE_DOWNGRADED	0x2
