@@ -21,16 +21,7 @@
 /* assistance routines */
 
 #include <cassert>
-#include <cctype>
-#include <cstdarg>
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
-#include <fcntl.h>
-#include <linux/capability.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #include "lib.h"
 #include "common.hh"
