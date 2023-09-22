@@ -37,16 +37,6 @@
 #include "lexer.hh"
 
 // NOLINTBEGIN
-/* #define DEBUG */
-#ifdef DEBUG
-#undef PDEBUG
-#define PDEBUG(fmt, args...) fprintf(stderr, "Lexer: " fmt, ## args)
-#else
-#undef PDEBUG
-#define PDEBUG(fmt, args...)	/* Do nothing */
-#endif
-#define NPDEBUG(fmt, args...)	/* Do nothing */
-
 struct keyword_table {
 	const char *keyword;
 	unsigned int token;
@@ -135,32 +125,27 @@ static struct keyword_table rlimit_table[] = {
 };
 
 /* for alpha matches, check for keywords */
-static int get_table_token(const char *name unused, struct keyword_table *table,
+static int get_table_token(struct keyword_table *table,
 			   const char *keyword)
 {
 	int i;
-
 	for (i = 0; table[i].keyword; i++) {
-		PDEBUG("Checking %s %s\n", name, table[i].keyword);
 		if (strcmp(keyword, table[i].keyword) == 0) {
-			PDEBUG("Found %s %s\n", name, table[i].keyword);
 			return table[i].token;
 		}
 	}
-
-	PDEBUG("Unable to find %s %s\n", name, keyword);
 	return -1;
 }
 
 /* for alpha matches, check for keywords */
 int get_keyword_token(const char *keyword)
 {
-	return get_table_token("keyword", keyword_table, keyword);
+	return get_table_token(keyword_table, keyword);
 }
 
 int get_rlimit(const char *name)
 {
-	return get_table_token("rlimit", rlimit_table, name);
+	return get_table_token(rlimit_table, name);
 }
 
 char *processunquoted(const char *string, int len)
