@@ -191,38 +191,8 @@ enum ExecMode {
   EXEC_MODE_SAFE = 2
 };
 
-#ifdef DEBUG
-#define PDEBUG(fmt, args...)				\
-do {							\
-	int pdebug_error = errno;			\
-	fprintf(stderr, "parser: " fmt, ## args);	\
-	errno = pdebug_error;				\
-} while (0)
-#else
-#define PDEBUG(fmt, args...)	/* Do nothing */
-#endif
-#define NPDEBUG(fmt, args...)	/* Do nothing */
-
-#define PERROR(fmt, args...)			\
-do {						\
-	int perror_error = errno;		\
-	fprintf(stderr, fmt, ## args);		\
-	errno = perror_error;			\
-} while (0)
-
-#ifndef TRUE
-#define TRUE	(1)
-#endif
-#ifndef FALSE
-#define FALSE	(0)
-#endif
-
 #define MIN_PORT 0
 #define MAX_PORT 65535
-
-#ifndef unused
-#define unused __attribute__ ((unused))
-#endif
 
 /* provided by parser_lex.l */
 extern int yyparse(void);
