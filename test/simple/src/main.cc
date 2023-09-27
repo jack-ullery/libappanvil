@@ -6,7 +6,13 @@
 int main(int argc, char** argv) {
 	if(argc == 2) {
 		std::string path = argv[1];
-		AppArmor::Parser parser(path);
+
+		try {
+			AppArmor::Parser parser(path);
+		} catch(const std::exception &) {
+			return 2;
+		}
+
 		return 0;
 	}
 
