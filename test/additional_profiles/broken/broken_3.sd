@@ -1,0 +1,7 @@
+#
+#=Description missing open bracket
+#=EXRESULT FAIL
+#
+/usr/bin/foo
+  /usr/bin/foo r,
+}
