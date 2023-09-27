@@ -46,6 +46,28 @@ namespace AppArmor {
       void editRule(Profile &profile, FileRule &oldRule, const FileRule &newRule, std::ostream &output);
 
       /**
+      * @brief Attempts to parse profile from a user-supplied string, and replace this profile with it
+      *
+      * @details
+      * If the string parses successfully, this replaces the content of this class with that data.
+      * In this case the following things will change:
+      *   - output of getProfileList()
+      *   - file_contents (private variable)
+      *   - profile_list  (private variable)
+      *
+      * The following things would not change:
+      *   - output of getPath()
+      *   - old_file_contents (private variable)
+      *
+      * If the string does not parse successfully, there should be no changes.
+      *
+      * @param new_file_contents the string to parse
+      *
+      * @throws std::runtime_error if the profile did not parse correctly
+      */
+      void updateFromString(const std::string &new_file_contents);
+
+      /**
       * @brief Returns whether this class has staged change to the AppArmor profile, which are not saved
       *
       * @returns boolean, true if there are unsaved changes to the AppArmor profile

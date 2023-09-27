@@ -174,6 +174,13 @@ void AppArmor::Parser::editRule(Profile &profile,
     update_from_file_contents();
 }
 
+void AppArmor::Parser::updateFromString(const std::string &new_file_contents)
+{
+    std::stringstream stream;
+    stream << new_file_contents;
+    update_from_stream(stream);
+}
+
 bool AppArmor::Parser::hasChanges()
 {
     return file_contents != old_file_contents;
