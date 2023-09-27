@@ -7,6 +7,7 @@ set(ADDITIONAL_PROFILE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/additional_profile
 file(GLOB_RECURSE 
      TEST_PROFILES 
      ${PROFILE_SOURCE_DIR}/*/*.sd
+     ${ADDITIONAL_PROFILE_SOURCE_DIR}/*/*.sd
 )
 
 # Add tests if CMake version is at least 3.19
