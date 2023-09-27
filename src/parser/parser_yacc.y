@@ -20,6 +20,7 @@
 
 #define YYERROR_VERBOSE 1
 #include <iostream>
+#include <sstream>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -527,33 +528,21 @@ caps:
 	| caps TOK_ID
 %%
 
-#define MAXBUFSIZE 4096
-
-void vprintyyerror(const char *msg, va_list argptr)
-{
-	char buf[MAXBUFSIZE];
-
-	vsnprintf(buf, sizeof(buf), msg, argptr);
-}
-
-void printyyerror(const char *msg, ...)
-{
-	va_list arg;
-
-	va_start(arg, msg);
-	vprintyyerror(msg, arg);
-	va_end(arg);
-}
-
 void yyerror(const char *msg, ...)
 {
-	va_list arg;
+	std::stringstream out;
 
-	va_start(arg, msg);
-	vprintyyerror(msg, arg);
+	// Print all arguments to 'out'
+	va_list arg;
+	va_start(arg, msg);	
+	while(*msg != '\0') {
+		out << msg;
+		++msg;
+	}
 	va_end(arg);
 
-	exit(1);
+	std::runtime_error ex(out.str());
+	std::throw_with_nested(ex);
 }
 
 void yy::parser::error(YYLTYPE const& location, 
