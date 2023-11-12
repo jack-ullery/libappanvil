@@ -14,6 +14,9 @@ TEST(ParserCheck, update_from_string)
   ASSERT_EQ(parser_1.getProfileList(), parser_2.getProfileList());
   ASSERT_NO_THROW(parser_1.updateFromString(new_profile_data));
   ASSERT_NE(parser_1.getProfileList(), parser_2.getProfileList());
+
+  ASSERT_EQ(parser_1.operator std::string(), new_profile_data);
+  ASSERT_NE(parser_2.operator std::string(), new_profile_data);
 }
 
 TEST(ParserCheck, update_from_string_fail)
@@ -27,6 +30,9 @@ TEST(ParserCheck, update_from_string_fail)
   ASSERT_EQ(parser_1.getProfileList(), parser_2.getProfileList());
   ASSERT_NO_FATAL_FAILURE(ASSERT_ANY_THROW(parser_1.updateFromString(new_profile_data)));
   ASSERT_EQ(parser_1.getProfileList(), parser_2.getProfileList());
+
+  ASSERT_NE(parser_1.operator std::string(), new_profile_data);
+  ASSERT_NE(parser_2.operator std::string(), new_profile_data);
 }
 
 // Broken profiles should throw an exception, without a greater segfault
