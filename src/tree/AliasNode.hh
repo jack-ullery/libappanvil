@@ -9,8 +9,9 @@ namespace AppArmor::Tree {
     public:
       AliasNode(const std::string &from, const std::string &to);
 
-    private:
       virtual explicit operator std::string() const;
+
+    private:
       std::string from;
       std::string to;
   };

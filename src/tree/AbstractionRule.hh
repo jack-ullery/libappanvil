@@ -15,9 +15,9 @@ namespace AppArmor::Tree {
       virtual bool operator==(const AbstractionRule &other) const;
       virtual bool operator==(const std::string &path) const;
 
-    private:
       virtual explicit operator std::string() const;
 
+    private:
       std::string path;
       bool is_if_exists = false;
   };
