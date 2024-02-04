@@ -381,7 +381,7 @@ opt_file:			{ $$ = 0; }
 
 // Should utilize the deleted get_mode() from parser.h instead of yylval mode
 frule: id_or_var file_mode opt_named_transition TOK_END_OF_RULE					{$$ = FileRule(@1.first_pos, @4.last_pos, $1, $2, $3);}
-	 | file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE	{$$ = FileRule(@1.first_pos, @5.last_pos, $3, $1, $4, $2);}
+//	 | file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE	{$$ = FileRule(@1.first_pos, @5.last_pos, $3, $1, $4, $2);}
 
 file_rule: TOK_FILE TOK_END_OF_RULE	{$$ = FileRule(@1.first_pos, @2.last_pos);}
 		 | opt_file file_rule_tail	{$$ = $2;}

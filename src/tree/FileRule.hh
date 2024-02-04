@@ -16,20 +16,25 @@ namespace AppArmor::Tree {
                uint64_t stopPos, 
                const std::string &filename, 
                const std::string &fileMode, 
-               const std::string &exec_target = "", 
-               bool isSubset = false);
+               const std::string &exec_target = "");
 
       FileRule(uint64_t startPos, 
                uint64_t stopPos, 
                const std::string &filename, 
                const FileMode &fileMode, 
-               const std::string &exec_target = "", 
-               bool isSubset = false);
+               const std::string &exec_target = "");
+
+      FileRule(const std::string &filename, 
+               const std::string &fileMode, 
+               const std::string &exec_target = "");
+
+      FileRule(const std::string &filename, 
+               const FileMode &fileMode, 
+               const std::string &exec_target = "");
 
       // Accessor Methods
       std::string getFilename() const;
       FileMode getFilemode() const;
-      bool getIsSubset() const;
       std::string getExecTarget() const;
 
       // Checks all private memebrs are equal, including members of superclass (RuleNode)
@@ -42,7 +47,6 @@ namespace AppArmor::Tree {
       explicit operator std::string() const override;
 
     private:
-      bool isSubset = false;
       std::string filename;
       std::string exec_target;
       FileMode fileMode;
