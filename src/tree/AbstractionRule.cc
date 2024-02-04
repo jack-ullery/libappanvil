@@ -10,10 +10,7 @@ AppArmor::Tree::AbstractionRule::AbstractionRule(uint64_t startPos, uint64_t sto
 {   }
 
 AppArmor::Tree::AbstractionRule::AbstractionRule(const std::string &path, bool is_relative, bool is_if_exists)
-  : RuleNode("abstraction", 0, -1),
-    path{path},
-    is_relative{is_relative},
-    is_if_exists{is_if_exists}
+  : AbstractionRule(0, -1, path, is_relative, is_if_exists)
 {   }
 
 std::string AppArmor::Tree::AbstractionRule::getPath() const
