@@ -7,6 +7,7 @@
 #include <ostream>
 #include <string>
 
+#include "tree/AbstractionRule.hh"
 #include "tree/FileRule.hh"
 #include "tree/ProfileRule.hh"
 
@@ -17,6 +18,7 @@ namespace AppArmor {
 
   using Profile = Tree::ProfileRule;
   using FileRule = Tree::FileRule;
+  using AbstractionRule = Tree::AbstractionRule;
   using RuleNode = Tree::RuleNode;
 
   // Concept checks whether class is a subclass of RuleNode
@@ -39,8 +41,11 @@ namespace AppArmor {
       template<RuleDerived RuleType>
       void removeRule(Profile &profile, RuleType &rule, std::ostream &output);
 
-      void addRule(Profile &profile, const FileRule &newRule);
-      void addRule(Profile &profile, const FileRule &newRule, std::ostream &output);
+      template<RuleDerived RuleType>
+      void addRule(Profile &profile, const RuleType &newRule);
+
+      template<RuleDerived RuleType>
+      void addRule(Profile &profile, const RuleType &newRule, std::ostream &output);
 
       void editRule(Profile &profile, FileRule &oldRule, const FileRule &newRule);
       void editRule(Profile &profile, FileRule &oldRule, const FileRule &newRule, std::ostream &output);

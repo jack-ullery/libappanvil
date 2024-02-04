@@ -1,6 +1,7 @@
 #include "apparmor_parser.hh"
 #include "parser/driver.hh"
 #include "parser/lexer.hh"
+#include "tree/AbstractionRule.hh"
 #include "tree/FileRule.hh"
 #include "tree/ParseTree.hh"
 #include "tree/RuleNode.hh"
@@ -119,13 +120,15 @@ void AppArmor::Parser::removeRule(Profile &profile, RuleType &rule, std::ostream
     update_from_file_contents();
 }
 
-void AppArmor::Parser::addRule(Profile &profile, const FileRule &newRule)
+template<AppArmor::RuleDerived RuleType>
+void AppArmor::Parser::addRule(Profile &profile, const RuleType &newRule)
 {
     std::stringstream output;
     addRule(profile, newRule, output);
 }
 
-void AppArmor::Parser::addRule(Profile &profile, const FileRule &newRule, std::ostream &output)
+template<AppArmor::RuleDerived RuleType>
+void AppArmor::Parser::addRule(Profile &profile, const RuleType &newRule, std::ostream &output)
 {
     checkProfileValid(profile);
 
@@ -194,7 +197,7 @@ int AppArmor::Parser::saveChanges()
 
   std::string output;
   std::string error;
-  int exit_status;
+  int exit_status = 1;
 
   Glib::spawn_sync("/usr/sbin/",
                    command,
@@ -205,7 +208,7 @@ int AppArmor::Parser::saveChanges()
                    &error,
                    &exit_status);
 
-  if(!exit_status) {
+  if(exit_status == 0) {
     std::cout << output;
     old_file_contents = std::string(file_contents);
   } else {
@@ -227,6 +230,7 @@ AppArmor::Parser::operator std::string() const
     return return_string;
 }
 
+// Link removeRule() functions
 template void AppArmor::Parser::removeRule<AppArmor::Tree::FileRule>(Profile &profile, AppArmor::Tree::FileRule &rule);
 template void AppArmor::Parser::removeRule<AppArmor::Tree::LinkRule>(Profile &profile, AppArmor::Tree::LinkRule &rule);
 template void AppArmor::Parser::removeRule<AppArmor::Tree::RuleList>(Profile &profile, AppArmor::Tree::RuleList &rule);
@@ -236,3 +240,10 @@ template void AppArmor::Parser::removeRule<AppArmor::Tree::FileRule>(Profile &pr
 template void AppArmor::Parser::removeRule<AppArmor::Tree::LinkRule>(Profile &profile, AppArmor::Tree::LinkRule &rule, std::ostream &output);
 template void AppArmor::Parser::removeRule<AppArmor::Tree::RuleList>(Profile &profile, AppArmor::Tree::RuleList &rule, std::ostream &output);
 template void AppArmor::Parser::removeRule<AppArmor::Tree::AbstractionRule>(Profile &profile, AppArmor::Tree::AbstractionRule &rule, std::ostream &output);
+
+// Link addRule() functions
+template void AppArmor::Parser::addRule<AppArmor::Tree::FileRule>(AppArmor::Profile&, AppArmor::FileRule const&);
+template void AppArmor::Parser::addRule<AppArmor::Tree::AbstractionRule>(AppArmor::Profile&, AppArmor::AbstractionRule const&);
+
+template void AppArmor::Parser::addRule<AppArmor::Tree::FileRule>(AppArmor::Profile&, AppArmor::FileRule const&, std::ostream&);
+template void AppArmor::Parser::addRule<AppArmor::Tree::AbstractionRule>(AppArmor::Profile&, AppArmor::AbstractionRule const&, std::ostream&);
