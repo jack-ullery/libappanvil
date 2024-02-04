@@ -26,6 +26,8 @@ namespace AppArmor::Tree {
       virtual bool operator==(const RuleNode &other) const;
       virtual bool operator!=(const RuleNode &other) const;
 
+      explicit virtual operator std::string() const;
+
     protected:
       friend class yy::parser;
       friend class RuleList;

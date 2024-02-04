@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <stdexcept>
 
 #define assert_things assert(startPos <= stopPos) //NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
@@ -68,6 +69,11 @@ bool AppArmor::Tree::RuleNode::operator==(const RuleNode &other) const
 bool AppArmor::Tree::RuleNode::operator!=(const RuleNode &other) const
 {
   return !(*this == other);
+}
+
+AppArmor::Tree::RuleNode::operator std::string() const
+{
+  throw std::logic_error("RuleNode.operator std::string() is not intended to be used directly. This is intended to be used by subclasses.");
 }
 
 AppArmor::Tree::PrefixNode AppArmor::Tree::RuleNode::getPrefix() const

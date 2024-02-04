@@ -39,7 +39,7 @@ namespace AppArmor::Tree {
       bool almostEquals(const FileRule &other) const;
 
       // Conversion operator to string, attempts to write a string for a profile that would correspond to this FileRule
-      explicit operator std::string() const;
+      explicit operator std::string() const override;
 
     private:
       bool isSubset = false;
