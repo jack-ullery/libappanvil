@@ -12,6 +12,7 @@ set(TEST_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/file_mode.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/src/parser.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/src/tree/abstraction_rule_test.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/tree/file_rule_test.cc
 )
 
 #### Check that gtest is installed ####
