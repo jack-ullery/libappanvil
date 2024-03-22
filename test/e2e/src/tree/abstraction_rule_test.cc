@@ -16,28 +16,28 @@ inline void test_rule_to_string(const std::string &path, bool is_relative, bool 
 TEST_F(AbstractionRuleTest, test_string_operator_1)
 {
     std::stringstream expected_output;
-    expected_output << "include <" << rel_path << ">,";
+    expected_output << "#include <" << rel_path << ">";
     test_rule_to_string(rel_path, true, false, expected_output.str());
 }
 
 TEST_F(AbstractionRuleTest, test_string_operator_2)
 {
     std::stringstream expected_output;
-    expected_output << "include \"" << rel_path << "\",";
+    expected_output << "#include \"" << rel_path << "\"";
     test_rule_to_string(rel_path, false, false, expected_output.str());
 }
 
 TEST_F(AbstractionRuleTest, test_string_operator_3)
 {
     std::stringstream expected_output;
-    expected_output << "include if exists <" << rel_path << ">,";
+    expected_output << "#include if exists <" << rel_path << ">";
     test_rule_to_string(rel_path, true, true, expected_output.str());
 }
 
 TEST_F(AbstractionRuleTest, test_string_operator_4)
 {
     std::stringstream expected_output;
-    expected_output << "include if exists \"" << rel_path << "\",";
+    expected_output << "#include if exists \"" << rel_path << "\"";
     test_rule_to_string(rel_path, false, true, expected_output.str());
 }
 

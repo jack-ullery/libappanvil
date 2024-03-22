@@ -43,7 +43,7 @@ bool AppArmor::Tree::AbstractionRule::operator==(const std::string &path) const
 AppArmor::Tree::AbstractionRule::operator std::string() const
 {
   std::stringstream stream;
-  stream << "include ";
+  stream << "#include ";
 
   if(is_if_exists) {
     stream << "if exists ";
@@ -56,6 +56,5 @@ AppArmor::Tree::AbstractionRule::operator std::string() const
     stream << "\"" << path << "\"";
   }
 
-  stream << ",";
   return stream.str();
 };
