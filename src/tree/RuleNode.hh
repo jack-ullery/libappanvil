@@ -23,6 +23,8 @@ namespace AppArmor::Tree {
       uint64_t getEndPosition()  const;
       PrefixNode getPrefix() const;
 
+      void setPrefix(const PrefixNode &prefix);
+
       virtual bool operator==(const RuleNode &other) const;
       virtual bool operator!=(const RuleNode &other) const;
 
@@ -34,7 +36,6 @@ namespace AppArmor::Tree {
 
       void setStartPosition(const uint64_t &startPos);
       void setStopPosition(const uint64_t &stopPos);
-      void setPrefix(const PrefixNode &prefix);
 
     private:
       PrefixNode prefix;
