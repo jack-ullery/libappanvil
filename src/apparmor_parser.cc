@@ -41,21 +41,29 @@ void AppArmor::Parser::update_from_file_contents()
 
 void AppArmor::Parser::update_from_stream(std::istream &stream)
 {
-    // Perform lexical analysis
-    Lexer lexer(stream, std::cerr);
+    try
+    {
+        // Perform lexical analysis
+        Lexer lexer(stream, std::cerr);
 
-    // Parse the file
-    Driver driver;
-    yy::parser parse(lexer, driver);
-    parse();
+        // Parse the file
+        Driver driver;
+        yy::parser parse(lexer, driver);
+        parse();
 
-    // If parsing was not successful, throw an exception
-    if(!driver.success) {
-        std::throw_with_nested(std::runtime_error("error occured when parsing profile"));
+        // If parsing was not successful, throw an exception
+        if(!driver.success) {
+            std::throw_with_nested(std::runtime_error("error occured when parsing profile"));
+        }
+
+        // Create or update the list of profiles
+        initializeProfileList(driver.ast);
     }
-
-    // Create or update the list of profiles
-    initializeProfileList(driver.ast);
+    catch (const std::runtime_error &ex)
+    {
+        file_contents = old_file_contents;
+        std::throw_with_nested(ex);
+    }
 }
 
 void AppArmor::Parser::initializeProfileList(const std::shared_ptr<AppArmor::Tree::ParseTree> &ast)
