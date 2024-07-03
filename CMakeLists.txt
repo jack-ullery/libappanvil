@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.16.3)
 project (appanvil C CXX)
 
 #### Set some variables #####
-set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libappanvil)
 set(AUTOGEN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/dist)
@@ -158,7 +158,7 @@ target_include_directories(${LIBRARY_NAME} SYSTEM PUBLIC ${GLIBMM_INCLUDE_DIRS})
 target_link_libraries(${LIBRARY_NAME} PUBLIC ${GLIBMM_LIBRARIES})
 
 # Pkg-config module (I couldn't figure out the configuration for find_package)
-set(INSTALL_NAME "lib${PROJECT_NAME}")
+set(INSTALL_NAME "libappanvil")
 set(PKG_CONFIG_FILE_IN "libappanvil.pc.in")
 set(PKG_CONFIG_FILE_OUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libappanvil.pc")
 configure_file("${PKG_CONFIG_FILE_IN}" "${PKG_CONFIG_FILE_OUT}" @ONLY) 
