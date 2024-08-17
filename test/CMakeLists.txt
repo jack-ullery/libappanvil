@@ -13,5 +13,5 @@ file(GLOB_RECURSE
 # Add tests if CMake version is at least 3.19
 if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.19.0")
      add_subdirectory(simple)
-     add_subdirectory(e2e)
+     add_subdirectory(unit)
 endif()

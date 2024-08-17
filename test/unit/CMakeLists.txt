@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.19)
 
-project(end-to-end-test C CXX)
+project(unit-test C CXX)
 
 set(TEST_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cc
@@ -32,13 +32,13 @@ if(${GTEST_FOUND})
   target_link_libraries(${PROJECT_NAME} PUBLIC gtest)
 
   #### Create fixture for tests ####
-  add_test(e2e_test_build
+  add_test(unit_test_build
     "${CMAKE_COMMAND}"
     --build "${CMAKE_BINARY_DIR}"
     --config "$<CONFIG>"
     --target "${PROJECT_NAME}"
   )
-  set_tests_properties(e2e_test_build PROPERTIES FIXTURES_SETUP e2e_test_fixture)
+  set_tests_properties(unit_test_build PROPERTIES FIXTURES_SETUP unit_test_fixture)
 
   # Set the location of profiles as a global variable for the tests
   target_compile_definitions(${PROJECT_NAME} PUBLIC -DPROFILE_SOURCE_DIR="${PROFILE_SOURCE_DIR}")
@@ -48,7 +48,7 @@ if(${GTEST_FOUND})
   gtest_discover_tests(
     ${PROJECT_NAME}
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src"
-    TEST_PREFIX "[end-to-end] e2e."
+    TEST_PREFIX "[libappanvil] unit."
     TEST_LIST ADDED_TESTS
   )
 
