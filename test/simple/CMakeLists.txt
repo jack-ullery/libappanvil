@@ -4,6 +4,9 @@ project(simple-test C CXX)
 
 set(TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cc)
 
+#### Get the disabled tests ####
+include(disabled_tests.cmake)
+
 #### Create the test executable ####
 add_executable(${PROJECT_NAME} ${TEST_SOURCES})
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARY_NAME})
@@ -31,7 +34,7 @@ foreach(PROFILE ${TEST_PROFILES})
   file(RELATIVE_PATH PROFILE_NAME ${PROFILE_SOURCE_DIR} ${PROFILE})
 
   # Create the test, if it is not marked as disabled
-  if(${TEST_DISABLED} EQUAL -1)
+  if(${TEST_DISABLED} EQUAL -1 AND (NOT "${PROFILE_NAME}" IN_LIST DISABLED_TESTS))
     set(TEST_NAME "[simple] ${PROFILE_NAME}")
     add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME} ${PROFILE})
 
