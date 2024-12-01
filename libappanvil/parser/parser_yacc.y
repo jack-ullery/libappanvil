@@ -395,9 +395,9 @@ file_rule_tail: opt_exec_mode frule							{$$ = $2;}
 
 link_rule: TOK_LINK opt_subset_flag id_or_var TOK_ARROW id_or_var TOK_END_OF_RULE	{$$ = LinkRule(@1.first_pos, @6.last_pos, $2, $3, $5);}
 
-network_rule: TOK_NETWORK TOK_END_OF_RULE
-			| TOK_NETWORK TOK_ID TOK_END_OF_RULE
-			| TOK_NETWORK TOK_ID TOK_ID TOK_END_OF_RULE
+network_rule: TOK_NETWORK opt_net_perm               opt_conds opt_cond_list TOK_END_OF_RULE {$$ = RuleNode(@1.first_pos, @5.last_pos);}
+			| TOK_NETWORK opt_net_perm TOK_ID        opt_conds opt_cond_list TOK_END_OF_RULE {$$ = RuleNode(@1.first_pos, @6.last_pos);}
+			| TOK_NETWORK opt_net_perm TOK_ID TOK_ID opt_conds opt_cond_list TOK_END_OF_RULE {$$ = RuleNode(@1.first_pos, @7.last_pos);}
 
 cond: TOK_CONDID
 	| TOK_CONDID TOK_EQUALS TOK_VALUE
@@ -514,7 +514,7 @@ userns_rule: TOK_USERNS opt_userns_perm opt_conds TOK_END_OF_RULE
 
 
 all_rule: opt_prefix TOK_ALL TOK_END_OF_RULE {
-		{$$ = AllRule($1, @1.first_pos, @2.last_pos);}
+		{$$ = AllRule($1, @1.first_pos, @3.last_pos);}
 }
 
 hat_start: TOK_CARET
