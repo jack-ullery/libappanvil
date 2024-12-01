@@ -34,7 +34,7 @@ foreach(PROFILE ${TEST_PROFILES})
   file(RELATIVE_PATH PROFILE_NAME ${PROFILE_SOURCE_DIR} ${PROFILE})
 
   # Create the test, if it is not marked as disabled
-  if(${TEST_DISABLED} EQUAL -1 AND (NOT "${PROFILE_NAME}" IN_LIST DISABLED_TESTS))
+  if(${TEST_DISABLED} EQUAL -1)
     set(TEST_NAME "[simple] ${PROFILE_NAME}")
     add_test(${TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME} ${PROFILE})
 
@@ -45,6 +45,12 @@ foreach(PROFILE ${TEST_PROFILES})
         set_tests_properties(${TEST_NAME} PROPERTIES WILL_FAIL FALSE)
     else()
         set_tests_properties(${TEST_NAME} PROPERTIES WILL_FAIL TRUE)
+    endif()
+
+    # Disable the test if it was marked disabled
+    # This will show up in CTest as 'Disabled'
+    if("${PROFILE_NAME}" IN_LIST DISABLED_TESTS)
+      set_tests_properties(${TEST_NAME} PROPERTIES DISABLED TRUE)
     endif()
   endif()
 endforeach()
