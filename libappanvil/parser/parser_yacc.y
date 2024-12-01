@@ -127,6 +127,7 @@ while (0)
 %token TOK_USERNS
 %token TOK_INCLUDE
 %token TOK_INCLUDE_IF_EXISTS
+%token TOK_ALL
 
  /* rlimits */
 %token TOK_RLIMIT
@@ -170,6 +171,7 @@ while (0)
   #include "tree/FileMode.hh"
   #include "tree/RuleNode.hh"
   #include "tree/TreeNode.hh"
+  #include "tree/AllRule.hh"
 
   class Driver;
   class Lexer;
@@ -214,6 +216,7 @@ while (0)
 %type <FileRule> file_rule
 %type <FileRule> frule
 %type <FileRule> file_rule_tail
+%type <AllRule>	 all_rule
 
 %type <std::string> TOK_ID
 %type <std::string>	TOK_CONDID
@@ -340,6 +343,7 @@ rules:												{$$ = RuleList(@0.last_pos);}
 	 | rules opt_prefix userns_rule					{$$ = $1; /* $$.appendChildren({$2, $3}); */}
 	 | rules opt_prefix change_profile				{$$ = $1; /* $$.appendChildren({$2, $3}); */}
 	 | rules opt_prefix capability					{$$ = $1; /* $$.appendChildren({$2, $3}); */}
+	 | rules all_rule								{$$ = $1; /* $$.appendChild({$2}); */}
 	 | rules hat									{$$ = $1; /* $$.appendChild($2); */}
 	 | rules local_profile							{$$ = $1; $$.appendSubprofile($2);}
 	 | rules cond_rule								{$$ = $1; /* $$.appendChild($2); */}
@@ -507,6 +511,11 @@ opt_userns_perm:
 			   | TOK_OPENPAREN userns_perms TOK_CLOSEPAREN
 
 userns_rule: TOK_USERNS opt_userns_perm opt_conds TOK_END_OF_RULE
+
+
+all_rule: opt_prefix TOK_ALL TOK_END_OF_RULE {
+		{$$ = AllRule($1, @1.first_pos, @2.last_pos);}
+}
 
 hat_start: TOK_CARET
 		 | TOK_HAT

@@ -27,6 +27,7 @@ set(SOURCES
   ${PROJECT_SOURCE_DIR}/tree/AbstractionRule.cc
   ${PROJECT_SOURCE_DIR}/tree/RuleList.cc
   ${PROJECT_SOURCE_DIR}/tree/FileMode.cc
+  ${PROJECT_SOURCE_DIR}/tree/AllRule.cc
   ${PROJECT_SOURCE_DIR}/parser/lib.c
   ${PROJECT_SOURCE_DIR}/parser/parser.cc
   ${PROJECT_SOURCE_DIR}/apparmor_parser.cc

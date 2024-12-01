@@ -516,6 +516,10 @@ include/{WS}	{
 	return yy::parser::make_TOK_INCLUDE(driver.yylloc);
 }
 
+all/({WS}|[^[:alnum:]_]) {
+	return yy::parser::make_TOK_ALL(driver.yylloc);
+}
+
 #.*\r?\n	{ /* normal comment */
 	DUMP_AND_DEBUG("comment(%d): %s\n", driver.current_lineno, yytext);
 	driver.current_lineno++;

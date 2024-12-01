@@ -1,11 +1,5 @@
 set(DISABLED_TESTS
     "abi/bad_16.sd"
-    "all/ok_01.sd"
-    "all/ok_02.sd"
-    "all/ok_03.sd"
-    "all/ok_04.sd"
-    "all/ok_05.sd"
-    "all/ok_06.sd"
     "bare_include_tests/bad_1.sd"
     "bare_include_tests/bad_11.sd"
     "bare_include_tests/bad_12.sd"
