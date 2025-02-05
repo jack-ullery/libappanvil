@@ -83,6 +83,7 @@ sudo make install
 ### Test
 To build an run the tests:
 ```
+make libappanvil_test -j$(nproc)
 make test
 ```
 

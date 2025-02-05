@@ -11,6 +11,7 @@ compile_commands.json
 CTestTestfile.cmake
 
 unit*_tests.cmake
+libappanvil*_tests.cmake
 *include.cmake
 
 .cache/
