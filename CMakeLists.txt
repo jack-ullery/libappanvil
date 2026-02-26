@@ -87,6 +87,7 @@ add_custom_command(
   COMMAND ${BISON_EXECUTABLE}
             -d
             -o "${BISON_PARSER_OUTPUT}"
+            --skeleton "${PROJECT_SOURCE_DIR}/skeleton/lalr1.cc"
             "${PARSE_INPUT}"
   BYPRODUCTS "${BISON_PARSER_OUTPUT}" "${CMAKE_CURRENT_SOURCE_DIR}/generated/parser_yacc.hh"
   DEPENDS "${FLEX_LEXER_OUTPUT}" "${SKELETON_FILES}"
