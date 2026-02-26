@@ -60,7 +60,9 @@ find_package(BISON REQUIRED)
 BISON_TARGET(PARSER 
               ${PARSE_INPUT} 
               ${AUTOGEN_SOURCE_DIR}/parser_yacc.cc
-              DEFINES_FILE ${AUTOGEN_SOURCE_DIR}/parser_yacc.hh)
+              DEFINES_FILE ${AUTOGEN_SOURCE_DIR}/parser_yacc.hh
+              COMPILE_FLAGS --skeleton=libappanvil/skeleton/lalr1.cc
+              )
 
 #### Flex stuff ####
 find_package(FLEX 2.5.5 REQUIRED)
