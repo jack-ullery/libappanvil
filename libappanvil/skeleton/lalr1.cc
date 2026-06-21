@@ -538,6 +538,10 @@ m4_if(b4_prefix, [yy], [],
 
 ]b4_user_pre_prologue[
 
+#include <iomanip>
+
+int num_tabs = 0;
+
 ]b4_header_if([[#include "@basename(]b4_spec_header_file[@)"]],
                [b4_shared_declarations([cc])])[
 
@@ -609,6 +613,7 @@ m4_if(b4_prefix, [yy], [],
 # define YY_REDUCE_PRINT(Rule)           static_cast<void> (0)
 # define YY_STACK_PRINT()                static_cast<void> (0)
 
+
 #endif // !]b4_api_PREFIX[DEBUG
 
 #define yyerrok         (yyerrstatus_ = 0)
@@ -618,6 +623,10 @@ m4_if(b4_prefix, [yy], [],
 #define YYABORT         goto yyabortlab
 #define YYERROR         goto yyerrorlab
 #define YYRECOVERING()  (!!yyerrstatus_)
+
+std::ostream &operator<<(std::ostream &os, const yy::parser::location_type &loc) { 
+    return os << loc.first_pos << ',' << loc.last_pos;
+}
 
 ]b4_namespace_open[
   /// Build a parser object.
@@ -764,12 +773,14 @@ m4_if(b4_prefix, [yy], [],
   {
     if (m)
       YY_SYMBOL_PRINT (m, sym);
+    num_tabs++;
     yystack_.push (YY_MOVE (sym));
   }
 
   void
   ]b4_parser_class[::yypush_ (const char* m, state_type s, YY_MOVE_REF (symbol_type) sym)
   {
+    // num_tabs++;
 #if 201103L <= YY_CPLUSPLUS
     yypush_ (m, stack_symbol_type (s, std::move (sym)));
 #else
@@ -781,6 +792,7 @@ m4_if(b4_prefix, [yy], [],
   void
   ]b4_parser_class[::yypop_ (int n)
   {
+    num_tabs--;
     yystack_.pop (n);
   }
 
@@ -888,9 +900,14 @@ b4_dollar_popdef])[]dnl
     YYCDEBUG << "Entering state " << int (yystack_[0].state) << '\n';
     YY_STACK_PRINT ();
 
+    std::cout << "enter:  state: " << yystack_[0].state << " " <<
+      "level: " << num_tabs  << "    " << std::endl;
+
     // Accept?
     if (yystack_[0].state == yyfinal_)
       YYACCEPT;
+
+    // num_tabs++;
 
     goto yybackup;
 
@@ -1013,26 +1030,17 @@ b4_dollar_popdef])[]dnl
 
       // Perform the reduction.
       YY_REDUCE_PRINT (yyn);
-#if YY_EXCEPTIONS
-      try
-#endif // YY_EXCEPTIONS
-        {
-          switch (yyn)
-            {
-]b4_user_actions[
-            default:
-              break;
-            }
-        }
-#if YY_EXCEPTIONS
-      catch (const syntax_error& yyexc)
-        {
-          YYCDEBUG << "Caught exception: " << yyexc.what() << '\n';
-          error (yyexc);
-          YYERROR;
-        }
-#endif // YY_EXCEPTIONS
-      YY_SYMBOL_PRINT ("-> $$ =", yylhs);
+      std::cout << "reduce: state: " << yystack_[0].state << " symbol: " << 
+        std::left << std::setw(5) << yylhs.kind() << 
+        "name: " << std::left << std::setw(18) << yylhs.name() << 
+        "level: " << num_tabs  << "    " <<
+        "location: " << yylhs.location << std::endl;
+      // num_tabs--;
+
+      yy_stack_print_();
+      // YY_SYMBOL_PRINT ("-> $$ =", yylhs);
+      
+      // yy_print_("-> $$ =", yylhs.name());
       yypop_ (yylen);
       yylen = 0;
 
@@ -1164,8 +1172,10 @@ b4_dollar_popdef])[]dnl
   | yyreturn -- parsing is finished, return the result.  |
   `-----------------------------------------------------*/
   yyreturn:
+    std::cout << std::endl << "yyreturn" << std::endl;
     if (!yyla.empty ())
       yy_destroy_ ("Cleanup: discarding lookahead", yyla);
+        // std::cout << "Cleanup: discarding lookahead: " << yyla << std::endl;
 
     /* Do not reclaim the symbols of the rule whose action triggered
        this YYABORT or YYACCEPT.  */
@@ -1174,6 +1184,7 @@ b4_dollar_popdef])[]dnl
     while (1 < yystack_.size ())
       {
         yy_destroy_ ("Cleanup: popping", yystack_[0]);
+        std::cout << "Cleanup: popping: " << yystack_[0].state << std::endl;
         yypop_ ();
       }
 

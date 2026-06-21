@@ -85,7 +85,7 @@ find_package(BISON REQUIRED)
 add_custom_command(
   OUTPUT "${BISON_PARSER_OUTPUT}"
   COMMAND ${BISON_EXECUTABLE}
-            -d
+            -d --debug
             -o "${BISON_PARSER_OUTPUT}"
             --skeleton "${PROJECT_SOURCE_DIR}/skeleton/lalr1.cc"
             "${PARSE_INPUT}"
